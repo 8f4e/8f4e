@@ -65,13 +65,11 @@ export function compileFunction(
 	// Parameters are always at indices 0, 1, 2, ..., (parameterCount - 1)
 	// Regular locals declared with the 'local' instruction come after parameters
 	const parameterCount = functionMetadata.signature.parameters.length;
-	const localDeclarations = Object.entries(context.locals)
-		.filter(([, local]) => local.index >= parameterCount)
-		.map(([, local]) => ({
-			isInteger: local.isInteger,
-			isFloat64: local.isFloat64,
-			count: 1,
-		}));
+	const localDeclarations = context.locals.slice(parameterCount).map(local => ({
+		isInteger: local.isInteger,
+		isFloat64: local.isFloat64,
+		count: 1,
+	}));
 
 	return {
 		analysis,

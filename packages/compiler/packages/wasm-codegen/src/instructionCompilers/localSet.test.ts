@@ -10,9 +10,7 @@ describe('localSet instruction compiler', () => {
 	it('stores a local value', () => {
 		const local = { isInteger: true, index: 0 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				0: local,
-			},
+			locals: [local],
 		});
 
 		compileInstructionForTest(

@@ -101,7 +101,6 @@ export type LocalMap = Record<string, LocalValueMetadata>;
 export type ScalarLocalBinding = ScalarLocalMetadata & { index: number };
 export type PointerLocalBinding = PointerLocalMetadata & { index: number };
 export type LocalBinding = ScalarLocalBinding | PointerLocalBinding;
-export type LocalStorageMap = Record<string, LocalBinding>;
 
 /** One resolved source declaration; its identity remains stable across later stages. */
 export interface SourceLocalBinding {
@@ -259,8 +258,8 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, 
 	/** Planned native assertion calls keyed by physical source line; absent when disabled. */
 	assertionCalls?: AssertionCodegenSites;
 	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
-	locals: LocalStorageMap;
-	nextLocalIndex: number;
+	/** Wasm slots in index order, starting with parameters and source locals. */
+	locals: LocalBinding[];
 	functionLayout: WasmFunctionLayout;
 	functionTypeRegistry?: FunctionTypeRegistry;
 }

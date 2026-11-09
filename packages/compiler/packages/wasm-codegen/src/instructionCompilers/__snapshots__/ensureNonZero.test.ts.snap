@@ -26,12 +26,12 @@ exports[`ensureNonZero instruction compiler > ensures float operand is non-zero 
     32,
     0,
   ],
-  "locals": {
-    "__ensureNonZero_temp_2": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": false,
     },
-  },
+  ],
 }
 `;
 
@@ -69,13 +69,13 @@ exports[`ensureNonZero instruction compiler > ensures float64 operand is non-zer
     32,
     0,
   ],
-  "locals": {
-    "__ensureNonZero_temp_3": {
+  "locals": [
+    {
       "index": 0,
       "isFloat64": true,
       "isInteger": false,
     },
-  },
+  ],
 }
 `;
 
@@ -96,11 +96,11 @@ exports[`ensureNonZero instruction compiler > ensures integer operand is non-zer
     0,
     11,
   ],
-  "locals": {
-    "__ensureNonZero_temp_1": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": true,
     },
-  },
+  ],
 }
 `;

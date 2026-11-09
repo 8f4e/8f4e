@@ -43,12 +43,12 @@ exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": true,
     },
-  },
+  ],
 }
 `;
 
@@ -96,12 +96,12 @@ exports[`loop instruction compiler > compiles the loop segment with default cap 
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": true,
     },
-  },
+  ],
 }
 `;
 
@@ -148,11 +148,11 @@ exports[`loop instruction compiler > compiles the loop segment with explicit cap
     33,
     0,
   ],
-  "locals": {
-    "__infiniteLoopProtectionCounter2": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": true,
     },
-  },
+  ],
 }
 `;

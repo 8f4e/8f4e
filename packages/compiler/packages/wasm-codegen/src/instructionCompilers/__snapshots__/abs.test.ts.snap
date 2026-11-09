@@ -22,12 +22,12 @@ exports[`abs instruction compiler > compiles int abs via segment instructions 1`
     0,
     11,
   ],
-  "locals": {
-    "__absify_value3": {
+  "locals": [
+    {
       "index": 0,
       "isInteger": true,
     },
-  },
+  ],
 }
 `;
 

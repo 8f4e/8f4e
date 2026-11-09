@@ -1,6 +1,7 @@
 import type { CodegenContext, SourceLocalBinding } from '@8f4e/language-spec';
+import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 import { createBlockState } from '@8f4e/semantic-utils';
-import { allocateLocalFromType } from './localStorage';
+import { allocateLocal } from './localStorage';
 
 /** Initializes bytecode emission state and allocates the resolved source bindings. */
 export function createCodegenContext(
@@ -9,11 +10,11 @@ export function createCodegenContext(
 ): CodegenContext {
 	const context: CodegenContext = {
 		byteCode: [],
-		locals: {},
-		nextLocalIndex: 0,
+		locals: [],
 		...overrides,
 		...createBlockState(overrides.blockStack),
 	};
-	for (const binding of bindings) allocateLocalFromType(context, String(binding.id), binding.type);
+	// The resolver assigns binding IDs in declaration order, with parameters first.
+	for (const binding of bindings) allocateLocal(context, functionValueTypeToLocalMetadata(binding.type));
 	return context;
 }

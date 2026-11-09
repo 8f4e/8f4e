@@ -9,11 +9,9 @@ const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
 describe('pushLocal', () => {
 	it('pushes a local via local.get', () => {
-		const local = { isInteger: true, index: 3 };
+		const local = { isInteger: true, index: 0 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				0: local,
-			},
+			locals: [local],
 		});
 
 		pushLocal(
@@ -26,6 +24,6 @@ describe('pushLocal', () => {
 			context
 		);
 
-		expect(context.byteCode).toEqual(localGet(3));
+		expect(context.byteCode).toEqual(localGet(0));
 	});
 });

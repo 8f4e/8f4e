@@ -25,8 +25,7 @@ const loop: InstructionCompiler<ResolvedLoopLine> = (line, context) => {
 	const capArg = line.arguments[0];
 	const effectiveCap = capArg.value;
 
-	const infiniteLoopProtectionCounterName = '__infiniteLoopProtectionCounter' + line.lineNumber;
-	const loopCounterLocal = allocateLocal(context, infiniteLoopProtectionCounterName, {
+	const loopCounterLocal = allocateLocal(context, {
 		isInteger: true,
 	});
 	const counterLocalIndex = loopCounterLocal.index;

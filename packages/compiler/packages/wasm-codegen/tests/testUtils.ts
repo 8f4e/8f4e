@@ -20,9 +20,6 @@ export default function createInstructionCompilerTestContext(overrides: Partial<
 			moduleFunctionIndices: {},
 		},
 		...overrides,
-		nextLocalIndex:
-			overrides.nextLocalIndex ??
-			Object.values(overrides.locals ?? {}).reduce((next, local) => Math.max(next, local.index + 1), 0),
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		codeBlockId: overrides.codeBlockId ?? 'test',
 		codeBlockType: overrides.codeBlockType ?? 'module',

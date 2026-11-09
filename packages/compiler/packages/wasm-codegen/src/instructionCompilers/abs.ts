@@ -20,15 +20,11 @@ import { saveByteCode } from './utils/saveByteCode';
  * Instruction compiler for `abs`.
  * @see [Instruction docs](../../docs/instructions/math-helpers.md)
  */
-const abs: InstructionCompiler = (line, context, facts) => {
+const abs: InstructionCompiler = (_line, context, facts) => {
 	const [operand] = facts.stackAnalysis.consumedOperands;
 
 	if (operand.valueType === 'int') {
-		const valueName = '__absify_value' + line.lineNumber;
-		const valueLocal = allocateLocal(context, valueName, {
-			isInteger: true,
-		});
-		const valueLocalIndex = valueLocal.index;
+		const { index: valueLocalIndex } = allocateLocal(context, { isInteger: true });
 
 		return saveByteCode(context, [
 			...localSet(valueLocalIndex),

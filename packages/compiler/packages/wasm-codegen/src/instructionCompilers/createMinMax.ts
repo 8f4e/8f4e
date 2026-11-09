@@ -19,22 +19,14 @@ import { saveByteCode } from './utils/saveByteCode';
 
 const createMinMax =
 	(instruction: 'min' | 'max'): InstructionCompiler =>
-	(line, context, facts) => {
+	(_line, context, facts) => {
 		const numericOperandKind = facts.numericOperandKind!;
 		const isInteger = numericOperandKind === 'int32';
 		const isFloat64 = numericOperandKind === 'float64';
 
 		if (isInteger) {
-			const leftName = `__${instruction}_left${line.lineNumber}`;
-			const rightName = `__${instruction}_right${line.lineNumber}`;
-			const leftLocal = allocateLocal(context, leftName, {
-				isInteger: true,
-			});
-			const rightLocal = allocateLocal(context, rightName, {
-				isInteger: true,
-			});
-			const leftLocalIndex = leftLocal.index;
-			const rightLocalIndex = rightLocal.index;
+			const { index: leftLocalIndex } = allocateLocal(context, { isInteger: true });
+			const { index: rightLocalIndex } = allocateLocal(context, { isInteger: true });
 
 			return saveByteCode(context, [
 				...localSet(rightLocalIndex),

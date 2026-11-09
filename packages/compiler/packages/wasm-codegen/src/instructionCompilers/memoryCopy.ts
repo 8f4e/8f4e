@@ -24,13 +24,7 @@ const memoryCopy: InstructionCompiler<ResolvedMemoryCopyLine> = (line, context, 
 		return saveByteCode(context, [...i32const(byteLength), ...memoryCopyByteCode]);
 	}
 
-	return saveByteCode(
-		context,
-		guardedMemoryCopy(context, {
-			byteLength,
-			lineNumber: line.lineNumber,
-		})
-	);
+	return saveByteCode(context, guardedMemoryCopy(context, byteLength));
 };
 
 export default memoryCopy;

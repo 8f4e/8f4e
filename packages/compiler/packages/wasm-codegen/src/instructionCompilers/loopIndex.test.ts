@@ -7,11 +7,9 @@ import loopIndex from './loopIndex';
 
 describe('loopIndex instruction compiler', () => {
 	it('reads the nearest active loop counter as a zero-based index', () => {
-		const loopCounterLocal = { isInteger: true, index: 3 };
+		const loopCounterLocal = { isInteger: true, index: 0 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				__loopCounter2: loopCounterLocal,
-			},
+			locals: [loopCounterLocal],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,
@@ -35,17 +33,14 @@ describe('loopIndex instruction compiler', () => {
 			context
 		);
 
-		expect(context.byteCode).toEqual([...localGet(3), ...i32const(1), WASM_I32_SUB]);
+		expect(context.byteCode).toEqual([...localGet(0), ...i32const(1), WASM_I32_SUB]);
 	});
 
 	it('uses the innermost loop when nested', () => {
-		const outerLoopCounterLocal = { isInteger: true, index: 1 };
-		const innerLoopCounterLocal = { isInteger: true, index: 2 };
+		const outerLoopCounterLocal = { isInteger: true, index: 0 };
+		const innerLoopCounterLocal = { isInteger: true, index: 1 };
 		const context = createInstructionCompilerTestContext({
-			locals: {
-				__outer: outerLoopCounterLocal,
-				__inner: innerLoopCounterLocal,
-			},
+			locals: [outerLoopCounterLocal, innerLoopCounterLocal],
 			blockStack: [
 				{
 					blockType: BlockType.MODULE,
@@ -74,6 +69,6 @@ describe('loopIndex instruction compiler', () => {
 			context
 		);
 
-		expect(context.byteCode).toEqual([...localGet(2), ...i32const(1), WASM_I32_SUB]);
+		expect(context.byteCode).toEqual([...localGet(1), ...i32const(1), WASM_I32_SUB]);
 	});
 });

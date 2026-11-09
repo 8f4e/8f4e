@@ -1,7 +1,8 @@
 import { i32store8, localGet, localSet } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, StoreBytesLine } from '@8f4e/language-spec';
 import { getInstructionSpec } from '@8f4e/language-spec';
-import { getOrCreateMemoryGuardLocal, guardedStoreFromLocals, isSafeMemoryAccess } from './utils/memoryAccessGuard';
+import { allocateLocal } from '../localStorage';
+import { guardedStoreFromLocals, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**
@@ -13,25 +14,20 @@ const storeBytes: InstructionCompiler<StoreBytesLine> = (line, context, facts) =
 	const operation = getInstructionSpec(line.instruction).effects.memory;
 	const accessByteWidth = operation.accessByteWidth;
 
-	const lineNumber = line.lineNumber;
 	const address = facts.stackAnalysis.consumedOperands[facts.stackAnalysis.consumedOperands.length - 1];
 	const addressIsSafe = isSafeMemoryAccess(address, count);
 
-	const tempAddrLocal = getOrCreateMemoryGuardLocal(context, `__storeBytesAddr_${lineNumber}`, {
-		valueType: 'int',
-	});
-	const tempByteLocal = getOrCreateMemoryGuardLocal(context, `__storeBytesByte_${lineNumber}`, {
-		valueType: 'int',
-	});
+	const { index: addressLocalIndex } = allocateLocal(context, { isInteger: true });
+	const { index: byteLocalIndex } = allocateLocal(context, { isInteger: true });
 
-	const byteCode = [...localSet(tempAddrLocal.index)];
+	const byteCode = [...localSet(addressLocalIndex)];
 	for (let i = 0; i < count; i++) {
 		const storeByteCode = i32store8(undefined, undefined, 0, i);
 		byteCode.push(
-			...localSet(tempByteLocal.index),
+			...localSet(byteLocalIndex),
 			...(addressIsSafe
-				? [...localGet(tempAddrLocal.index), ...localGet(tempByteLocal.index), ...storeByteCode]
-				: guardedStoreFromLocals(tempAddrLocal.index, tempByteLocal.index, i + accessByteWidth, storeByteCode))
+				? [...localGet(addressLocalIndex), ...localGet(byteLocalIndex), ...storeByteCode]
+				: guardedStoreFromLocals(addressLocalIndex, byteLocalIndex, i + accessByteWidth, storeByteCode))
 		);
 	}
 
