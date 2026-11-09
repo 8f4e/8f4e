@@ -222,11 +222,6 @@ describe('analyzeStack integration', () => {
 				increment: 1,
 			},
 		} as const;
-		const functionTypeRegistry = {
-			types: [],
-			signatures: [],
-			baseTypeIndex: 3,
-		} as const;
 		const valueBinding: SourceLocalBinding = { id: 0, name: 'value', type: 'int' };
 		const tempBinding: SourceLocalBinding = { id: 1, name: 'temp', type: 'int' };
 		const semanticReferences = {
@@ -282,7 +277,6 @@ describe('analyzeStack integration', () => {
 				memoryPlan,
 				pointerMetadataByModuleId,
 				functions,
-				functionTypeRegistry,
 			} satisfies StackAnalyzerIntegrationInput)
 		).toMatchSnapshot();
 	});

@@ -7,41 +7,33 @@ import {
 } from '@8f4e/compiler-wasm-utils';
 import type {
 	CompiledModule,
-	CompileOptions,
+	CompiledStackAnalysisLine,
 	ComposedModuleAST,
 	FunctionTypeRegistry,
+	ReferenceSlotMap,
 	WasmFunctionLayout,
 	WasmIRBody,
 } from '@8f4e/language-spec';
 
-import type { ModuleSemanticReferences } from '@8f4e/semantic-reference-resolver';
-import type { StackAnalyzedModule } from '@8f4e/stack-analyzer';
 import { emitWasmInstructions } from './emitWasmInstructions';
 
-/**
- * Emits one lowered module cycle function and its memory metadata.
- *
- * @param resolved - Module metadata and source AST.
- * @param body - Lowered Wasm instructions and bindings.
- * @param index - WASM index or source index assigned to the compiled item.
- * @param functionLayout - Final function indices shared with binary emission.
- * @param options - Compiler options for this compilation pass.
- * @param typeRegistry - Function type registry used for WASM block signatures.
- * @param stackReport - Stack-analysis report for this module.
- * @returns The compiled module artifact.
- */
+interface CompileModuleInput {
+	ast: ComposedModuleAST;
+	referenceSlots: ReferenceSlotMap;
+	skipExecutionInCycle: boolean;
+	body: WasmIRBody;
+	index: number;
+	stackAnalysis?: CompiledStackAnalysisLine[];
+}
+
+/** Emits one lowered module cycle function and its memory metadata. */
 export function compileModule(
-	resolved: ModuleSemanticReferences<ComposedModuleAST>,
-	body: WasmIRBody,
-	index: number,
+	{ ast, referenceSlots, skipExecutionInCycle, body, index, stackAnalysis }: CompileModuleInput,
 	functionLayout: WasmFunctionLayout,
-	stackReport: StackAnalyzedModule,
-	options: Pick<CompileOptions, 'includeStackAnalysis'>,
 	typeRegistry: FunctionTypeRegistry
 ): CompiledModule {
-	const { ast } = resolved;
 	return {
-		referenceSlots: resolved.referenceSlots,
+		referenceSlots,
 		id: ast.id,
 		executionEntryName: ast.executionEntryName,
 		cycleFunction: createFunction(
@@ -54,8 +46,8 @@ export function compileModule(
 			emitWasmInstructions(body.instructions, functionLayout, typeRegistry)
 		),
 		ast,
-		...(options.includeStackAnalysis ? { stackAnalysis: stackReport.stackAnalysis } : {}),
+		...(stackAnalysis ? { stackAnalysis } : {}),
 		index,
-		...(resolved.skipExecutionInCycle ? { skipExecutionInCycle: true } : {}),
+		...(skipExecutionInCycle ? { skipExecutionInCycle } : {}),
 	};
 }

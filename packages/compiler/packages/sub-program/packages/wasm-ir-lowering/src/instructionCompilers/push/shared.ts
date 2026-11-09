@@ -14,7 +14,7 @@ import { typedLoad } from './typedLoad';
 type PointerValueSource = 'pointer-slot' | 'pointer-value';
 type PointerLoadStep = { accessByteWidth: number; loadByteCode: number[] };
 
-export { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../../pushValueKind';
+export { resolveArgumentValueKind, resolveMemoryValueKind } from '../../pushValueKind';
 export { loadOpcode } from './typedLoad';
 
 /** Numeric constant emitters keyed by resolved value kind. */

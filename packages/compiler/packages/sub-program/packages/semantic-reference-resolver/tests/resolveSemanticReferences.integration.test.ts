@@ -282,11 +282,6 @@ describe('resolveSemanticReferences integration', () => {
 				increment: 1,
 			},
 		} as const;
-		const functionTypeRegistry = {
-			types: [],
-			signatures: [],
-			baseTypeIndex: 3,
-		} as const;
 		const pointerMetadataByModuleId = {
 			main: {},
 		} as const;
@@ -303,7 +298,6 @@ describe('resolveSemanticReferences integration', () => {
 			constantReferences,
 			memoryReferences,
 			functions,
-			functionTypeRegistry,
 			prototypeShapes,
 		} satisfies SemanticReferenceResolverIntegrationInput);
 		expect(result.references.modules.main.ast).toBe(ast.modules[0]);

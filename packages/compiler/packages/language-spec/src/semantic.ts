@@ -1,4 +1,3 @@
-import type { WASMInstructionCode, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type {
 	ArgumentCompileTimeExpression,
 	ArgumentIdentifier,
@@ -22,7 +21,7 @@ import type {
 	PushLine,
 	PushShapeLine,
 } from './ast';
-import type { FunctionMetadata, FunctionRegistry, FunctionTypeRegistry, SourceMetadata } from './compiled';
+import type { FunctionMetadata, FunctionRegistry, SourceMetadata } from './compiled';
 import type { CompilerDiagnosticContext } from './diagnostics';
 import type { FunctionValueType } from './functionTypes';
 import type { CodegenInstructionName, CompilerSourceBlockType, CompilerSourceCompilationMode } from './instructions';
@@ -123,7 +122,6 @@ export interface CompilationContext extends BlockState {
 	memoryAliases: ProjectMemoryAliasLookup;
 	currentPlannedModule?: PlannedMemoryModule;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
-	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
 	mode: CompilationMode;
 	codeBlockId?: string;
 	codeBlockType?: CompilerSourceBlockType;
@@ -132,7 +130,6 @@ export interface CompilationContext extends BlockState {
 	currentFunctionId?: string;
 	currentFunctionName?: string;
 	currentFunctionMetadata?: FunctionMetadata;
-	functionTypeRegistry?: FunctionTypeRegistry;
 	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
 
@@ -148,7 +145,6 @@ export interface FunctionCompilationContext extends CompilationContext {
 	currentFunctionId: string;
 	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
-	functionTypeRegistry: FunctionTypeRegistry;
 }
 
 export type StackValueType = 'int' | 'float' | 'float64';

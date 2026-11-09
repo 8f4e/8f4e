@@ -33,7 +33,7 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
+import { compileFunction, compileModule, planFunctionLayout } from '@8f4e/wasm-codegen';
 import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
@@ -258,11 +258,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
 
-	const functionTypeRegistry: FunctionTypeRegistry = {
-		types: [],
-		signatures: [],
-		baseTypeIndex: 3,
-	};
 	const semanticReferences = resolveSemanticReferences({
 		ast: subProgramAst,
 		registeredFunctions: registration.declarations,
@@ -272,17 +267,14 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		constantReferences: constantResolution.references,
 		memoryReferences: memoryReferenceResolution.references,
 		functions: functionRegistry,
-		functionTypeRegistry,
 		prototypeShapes: prototypeShapesById,
 	}).references;
-	const stackAnalysisInput = {
+	const stackReport = analyzeStack({
 		semanticReferences,
 		memoryPlan,
 		pointerMetadataByModuleId,
 		functions: functionRegistry,
-		functionTypeRegistry,
-	};
-	const stackReport = analyzeStack(stackAnalysisInput);
+	});
 	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries });
 	// Assertions remain at their original sites because assertion instructions are ineligible for inlining.
 	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
@@ -292,31 +284,47 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			? lowered
 			: inlineFunctions(lowered, functionAnalysis, options.functionInlining);
 
+	const functions = Object.values(semanticReferences.functions);
+	const modules = Object.values(semanticReferences.modules);
+	const functionTypeRegistry: FunctionTypeRegistry = {
+		types: [],
+		signatures: [],
+		baseTypeIndex: 3,
+	};
 	const functionLayout = planFunctionLayout(
-		semanticReferences,
+		functions.map(({ metadata }) => metadata),
+		modules.map(({ ast }) => ast.id),
 		entryNames,
 		assertionPlan?.imports ?? [],
 		functionTypeRegistry
 	);
 
-	const compiledFunctions = Object.values(semanticReferences.functions).map(resolved =>
+	const compiledFunctions = functions.map(({ ast, metadata }) =>
 		compileFunction(
-			resolved,
-			wasmIR.functions[resolved.metadata.id],
-			functionTypeRegistry,
+			{
+				ast,
+				metadata,
+				body: wasmIR.functions[metadata.id],
+				analysis: functionAnalysis.functions[metadata.id].analysis,
+				stackAnalysis: options.includeStackAnalysis ? stackReport.functions[metadata.id].stackAnalysis : undefined,
+			},
 			functionLayout,
-			stackReport.functions[resolved.metadata.id],
-			functionAnalysis.functions[resolved.metadata.id].analysis,
-			options
+			functionTypeRegistry
 		)
 	);
-	const compiledModules = compileModules(
-		Object.values(semanticReferences.modules),
-		wasmIR.modules,
-		options,
-		stackReport,
-		functionLayout,
-		functionTypeRegistry
+	const compiledModules = modules.map(({ ast, referenceSlots, skipExecutionInCycle }, index) =>
+		compileModule(
+			{
+				ast,
+				referenceSlots,
+				skipExecutionInCycle,
+				body: wasmIR.modules[ast.id],
+				index,
+				stackAnalysis: options.includeStackAnalysis ? stackReport.modules[ast.id].stackAnalysis : undefined,
+			},
+			functionLayout,
+			functionTypeRegistry
+		)
 	);
 
 	return {

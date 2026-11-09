@@ -1,20 +1,19 @@
 import type {
 	AssertionImport,
-	ComposedFunctionAST,
-	ComposedModuleAST,
+	FunctionMetadata,
 	FunctionTypeRegistry,
 	WasmFunctionImport,
 	WasmFunctionLayout,
 	WasmFunctionMetadata,
 } from '@8f4e/language-spec';
 import { createFunctionId } from '@8f4e/language-spec';
-import type { SemanticReferenceReport } from '@8f4e/semantic-reference-resolver';
 import { getOrRegisterFunctionType } from './functionTypeRegistry';
 import { functionValueTypeToWasmType } from './functionValueType';
 
 /** Assigns all function indices once, after symbols, operands, and callback signatures are known. */
 export function planFunctionLayout(
-	references: SemanticReferenceReport<ComposedModuleAST, ComposedFunctionAST>,
+	functions: readonly FunctionMetadata[],
+	moduleIds: readonly string[],
 	entryNames: readonly string[],
 	assertionImports: readonly AssertionImport[],
 	types: FunctionTypeRegistry
@@ -23,9 +22,8 @@ export function planFunctionLayout(
 	const functionMetadata: Record<string, WasmFunctionMetadata> = {};
 	const moduleFunctionIndices: Record<string, number> = {};
 	const assertionCallbacks = new Map<AssertionImport['fieldName'], number>();
-	const functions = Object.values(references.functions);
 	const typeIndices = new Map(
-		functions.map(({ metadata }) => [
+		functions.map(metadata => [
 			metadata.id,
 			getOrRegisterFunctionType(types, {
 				params: metadata.signature.parameters.map(parameter => functionValueTypeToWasmType(parameter.type)),
@@ -33,7 +31,7 @@ export function planFunctionLayout(
 			}),
 		])
 	);
-	for (const { metadata } of functions) {
+	for (const metadata of functions) {
 		if (!metadata.import) continue;
 		const typeIndex = typeIndices.get(metadata.id)!;
 		functionMetadata[metadata.id] = { wasmIndex: imports.length, typeIndex };
@@ -52,13 +50,13 @@ export function planFunctionLayout(
 	for (const name of entryNames) {
 		functionMetadata[createFunctionId(name, [])] = { wasmIndex: nextIndex++, typeIndex: 0 };
 	}
-	for (const { metadata } of functions) {
+	for (const metadata of functions) {
 		if (!metadata.import) {
 			functionMetadata[metadata.id] = { wasmIndex: nextIndex++, typeIndex: typeIndices.get(metadata.id)! };
 		}
 	}
-	for (const { ast } of Object.values(references.modules)) {
-		moduleFunctionIndices[ast.id] = nextIndex++;
+	for (const id of moduleIds) {
+		moduleFunctionIndices[id] = nextIndex++;
 	}
 	return { imports, functions: functionMetadata, assertionCallbacks, initDefaultsIndex, moduleFunctionIndices };
 }

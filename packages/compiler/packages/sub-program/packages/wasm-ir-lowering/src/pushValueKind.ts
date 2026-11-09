@@ -1,7 +1,7 @@
 import { WASM_TYPE_F32, WASM_TYPE_F64, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
-import type { ResolvedMemoryDeclaration, StackItem } from '@8f4e/language-spec';
+import type { ResolvedMemoryDeclaration } from '@8f4e/language-spec';
 
-/** Scalar kind used by push analysis and code generation before choosing concrete stack or WASM types. */
+/** Scalar kind used by lowering to select concrete Wasm operations. */
 export type PushValueKind = 'int32' | 'float32' | 'float64';
 
 /**
@@ -41,34 +41,4 @@ export function valueKindToWasmType(
 	}
 
 	return kind === 'float32' ? WASM_TYPE_F32 : WASM_TYPE_I32;
-}
-
-type StackItemExtras = Pick<StackItem, 'isNonZero' | 'knownValue'> &
-	Partial<Pick<Extract<StackItem, { kind: 'address' }>, 'address' | 'pointsTo'>>;
-
-/**
- * Creates the stack item represented by a push scalar kind and optional address metadata.
- *
- * @param kind - Scalar value kind to convert.
- * @param extras - Optional stack metadata to attach to the produced item.
- * @returns The relevant stack items for the analysis step.
- */
-export function kindToStackItem(kind: PushValueKind, extras?: StackItemExtras): StackItem {
-	if (kind === 'int32' && extras?.address) {
-		return {
-			kind: 'address',
-			valueType: 'int',
-			address: extras.address,
-			...(extras.pointsTo ? { pointsTo: extras.pointsTo } : {}),
-			...(extras.isNonZero !== undefined ? { isNonZero: extras.isNonZero } : {}),
-			...(extras.knownValue !== undefined ? { knownValue: extras.knownValue } : {}),
-		};
-	}
-
-	return {
-		kind: 'value',
-		valueType: kind === 'int32' ? 'int' : kind === 'float64' ? 'float64' : 'float',
-		...(extras?.isNonZero !== undefined ? { isNonZero: extras.isNonZero } : {}),
-		...(extras?.knownValue !== undefined ? { knownValue: extras.knownValue } : {}),
-	};
 }

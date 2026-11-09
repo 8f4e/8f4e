@@ -7,41 +7,32 @@ import {
 } from '@8f4e/compiler-wasm-utils';
 import type {
 	CompiledFunction,
-	CompileOptions,
+	CompiledStackAnalysisLine,
 	ComposedFunctionAST,
 	FunctionAnalysis,
+	FunctionMetadata,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
 	WasmIRBody,
 } from '@8f4e/language-spec';
 
-import type { FunctionSemanticReferences } from '@8f4e/semantic-reference-resolver';
-import type { StackAnalyzedFunction } from '@8f4e/stack-analyzer';
 import { emitWasmInstructions } from './emitWasmInstructions';
 
-/**
- * Compiles one resolved function into a WebAssembly function body or import metadata.
- *
- * @param resolved - Registered function metadata and source AST.
- * @param body - Lowered Wasm instructions and bindings.
- * @param typeRegistry - Function type registry used for WASM block signatures.
- * @param functionLayout - Final function indices and signatures shared with binary emission.
- * @param stackReport - Stack-analysis report for this function.
- * @param analysis - Structural function facts passed through to compiled output.
- * @param options - Compiler options for this compilation pass.
- * @returns The compiled function artifact.
- */
+interface CompileFunctionInput {
+	ast: ComposedFunctionAST;
+	metadata: FunctionMetadata;
+	body: WasmIRBody;
+	analysis: FunctionAnalysis;
+	stackAnalysis?: CompiledStackAnalysisLine[];
+}
+
+/** Emits one lowered function body and its source metadata. */
 export function compileFunction(
-	resolved: FunctionSemanticReferences<ComposedFunctionAST>,
-	body: WasmIRBody,
-	typeRegistry: FunctionTypeRegistry,
+	{ ast, metadata, body, analysis, stackAnalysis }: CompileFunctionInput,
 	functionLayout: WasmFunctionLayout,
-	stackReport: StackAnalyzedFunction,
-	analysis: FunctionAnalysis,
-	options: Pick<CompileOptions, 'includeStackAnalysis'> = {}
+	typeRegistry: FunctionTypeRegistry
 ): CompiledFunction {
-	const { ast, metadata: functionMetadata } = resolved;
-	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
+	const { wasmIndex, typeIndex } = functionLayout.functions[metadata.id];
 	const localDeclarations = body.locals.slice(body.parameterCount).map(local => ({
 		isInteger: local.isInteger,
 		isFloat64: local.isFloat64,
@@ -50,10 +41,10 @@ export function compileFunction(
 
 	return {
 		analysis,
-		id: functionMetadata.id,
-		name: functionMetadata.name,
-		signature: functionMetadata.signature,
-		body: functionMetadata.import
+		id: metadata.id,
+		name: metadata.name,
+		signature: metadata.signature,
+		body: metadata.import
 			? []
 			: createFunction(
 					localDeclarations.map(local =>
@@ -64,13 +55,13 @@ export function compileFunction(
 					),
 					emitWasmInstructions(body.instructions, functionLayout, typeRegistry)
 				),
-		locals: functionMetadata.import ? [] : localDeclarations,
-		...(functionMetadata.exportName ? { exportName: functionMetadata.exportName } : {}),
-		...(functionMetadata.import ? { import: functionMetadata.import } : {}),
+		locals: metadata.import ? [] : localDeclarations,
+		...(metadata.exportName ? { exportName: metadata.exportName } : {}),
+		...(metadata.import ? { import: metadata.import } : {}),
 		wasmIndex,
 		typeIndex: typeIndex,
 		ast,
-		...(functionMetadata.paramShapeExpansions ? { paramShapeExpansions: functionMetadata.paramShapeExpansions } : {}),
-		...(options.includeStackAnalysis ? { stackAnalysis: stackReport.stackAnalysis } : {}),
+		...(metadata.paramShapeExpansions ? { paramShapeExpansions: metadata.paramShapeExpansions } : {}),
+		...(stackAnalysis ? { stackAnalysis } : {}),
 	};
 }
