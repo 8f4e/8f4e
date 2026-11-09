@@ -1,15 +1,5 @@
 # Example Modules Plugin
 
-- Track each source read with ID `module:<slug>` and message `Loading module <slug>...`. Report done/failed;
-  cancel pending reads on disposal. Repeated source reads replace the same ID; presentation owns private visibility.
-- Own the Add Built-in Block menu, category navigation, catalog metadata, loading/cache, public-block selection,
-  and dependency insertion here.
-- Export `createExampleModulesPlugin({ sources })`; receive lazy source loaders from the host, keyed by paths
-  relative to the module directory without the extension. Keep Vite discovery in the host composition.
-- Expose pure helpers through the `./catalog` and `./public-block` package subpaths so the WebMCP content build can reuse metadata, dependency discovery, and public-block extraction without installing the plugin.
-- Keep generic menu generation and navigation in core; presentation belongs to the context-menu plugin. Use `menus.registerMenu` for the plugin submenu.
-- Insert source through `insertCodeBlock`. Use public editor-state parsers and measurement helpers; keep generic
-  source insertion, entry assignment, and persistence in core.
-- Own registrations and pending-load disposal explicitly. Keep catalog/cache state per installation.
-- Verify with `npx nx run @8f4e/editor-plugin-example-modules:build|test|typecheck` and
-  `npx nx run @8f4e/editor-plugin-example-modules:test:browser`.
+- Own the built-in block menu, catalog interpretation, source caching, public-block selection and dependency
+  insertion. Consume lazy source loaders supplied by the composition. Insert through `insertCodeBlock`.
+- Keep pure catalog and public-block helpers available through package subpaths for the WebMCP content build.

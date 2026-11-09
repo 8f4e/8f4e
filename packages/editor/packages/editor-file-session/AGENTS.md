@@ -1,9 +1,6 @@
-# Editor File Session
+# Editor File Session Guidelines
 
-- Construct one session per editor. Install its `plugin` before project loaders and pass it to Open and Save.
-- Keep only the shared file handle and reset lifecycle here. Clear the handle on `loadProject` and disposal;
-  undo/redo retain it. Each editor has its own session.
-- Open assigns a handle after successfully reading, parsing, and loading a project. Save owns serialization,
-  browser writing, permissions, pending destination, write queue, and stale-completion generation handling.
-- Use clean TypeScript output. Verify build/typecheck through Nx; behavior is covered by editor-default's composed
-  unit/browser tests and the product website's gallery-editor browser tests.
+- Store only the editor's shared file handle and reset lifecycle. Clear the handle on `loadProject` and
+  disposal. Undo and redo retain it.
+- Open assigns a handle after successfully loading a project. Save owns browser writes and destination
+  coordination. Exercise the shared lifecycle in composition tests.

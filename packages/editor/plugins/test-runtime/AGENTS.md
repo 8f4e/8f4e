@@ -1,16 +1,6 @@
 # Test Runtime Plugin
 
-- Contribute ID `test-runtime` with message `Running tests...`. Passing marks done; test/worker failures mark
-  failed. Replacement, disable, and disposal cancel pending jobs. Presentation owns private visibility.
-- Ordinary browser `EditorPlugin` factory; inject only live compiler getters from the host composition.
-- Import `@8f4e/runtime-test-runner?worker` here and own worker creation and cleanup. Keep execution code in its separate package.
-- The TypeScript build preserves Vite asset imports for the consuming browser build; `src/source-files.d.ts` supplies their types.
-- Own the `testRuntime` schema, enabled lifecycle, subscriptions, and disposal. Other runtimes remain independent.
-- Keep execution-message handling tests here; worker/worklet algorithm tests stay in their execution packages.
-- Publish info only under `info.testRuntime` and use generic environment constant contributions.
-- Publish failed source assertions as raw `CodeError` records under `codeErrors.test-runtime`, deduplicated by site.
-  Format failure text directly from execution results and keep it only in raw errors; shared `assertionResults`
-  carries source sites and outcomes.
-  Exclude included/unowned sites and disabled blocks. Refresh on compilation input changes and remove this bucket
-  on disposal. Inline message layout and drawing belong to error-messages.
-- Run `npx nx run @8f4e/editor-plugin-test-runtime:build|test|typecheck`.
+- Own `testRuntime` configuration, worker setup and job lifecycle. Import the worker asset here and keep
+  execution in runtime-test-runner.
+- Publish source assertion outcomes separately from raw assertion errors. Report errors against owned,
+  enabled source blocks. Inline error presentation belongs to error-messages.

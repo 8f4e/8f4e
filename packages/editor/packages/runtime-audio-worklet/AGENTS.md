@@ -1,25 +1,6 @@
-# Repository Guidelines
+# Audio Worklet Guidelines
 
-## Package Scope & Layout
-- Path: `packages/editor/packages/runtime-audio-worklet`; source in `src/`, output in `dist/`.
-- Alias: `@8f4e/runtime-audio-worklet` for the app/editor.
-
-## Build, Test, Dev
-- From root: `npx nx run @8f4e/runtime-audio-worklet:build|test|typecheck`.
-- From package directory: use `npx nx run @8f4e/runtime-audio-worklet:<target>` (e.g., `npx nx run @8f4e/runtime-audio-worklet:dev`).
-- Build before integrating in the default editor composition to ensure alias resolution.
-- Clean `dist/` once before the sequential Vite worklet and TypeScript builds; preserve the worklet bundle when emitting TypeScript output.
-
-## Coding Style
-- TypeScript. Use Biome as the fixer (`npx biome check --write <files>`); it owns formatting rules such as tabs, single quotes, semicolons, and width 120.
-- Keep worklet entrypoints small and dependency-free; avoid DOM APIs.
-
-## Testing
-- Vitest (via Nx). Unit-test helpers; integration tests can mock AudioWorklet.
-
-## Commits & PRs
-- Commits: `runtime-audio-worklet: <change>`; PRs should describe audio thread implications.
-
-- Page-side editor integration and lifecycle tests live in `packages/editor/plugins/audio-runtime`. This package owns execution code and its message protocol.
-
-- Carry `requestId` through init and initialized/error replies. Ignore stale initialization completion; loading UI stays in the host plugin.
+- Own audio-thread execution and the message protocol. Page-side setup and lifecycle tests belong to the
+  audio-runtime plugin. Keep the worklet entry small and free of DOM dependencies.
+- Correlate initialization replies with `requestId` and ignore stale completions.
+- Emit the Vite worklet bundle before TypeScript output. Preserve the bundle for consuming plugins.
