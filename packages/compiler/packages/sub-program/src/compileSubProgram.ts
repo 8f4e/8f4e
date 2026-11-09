@@ -296,7 +296,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const codegenReferences =
 		options.enableFunctionInlining === false
 			? semanticReferences
-			: inlineFunctions({ semanticReferences, stackReport: sourceStackReport });
+			: inlineFunctions(
+					{ semanticReferences, stackReport: sourceStackReport, functionAnalysis },
+					options.functionInlining
+				);
 
 	let stackReport = sourceStackReport;
 	if (codegenReferences !== semanticReferences) {
@@ -322,7 +325,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			functionTypeRegistry,
 			functionLayout,
 			stackReport.functions[resolved.metadata.id],
-			functionAnalysis.functions[resolved.metadata.id],
+			functionAnalysis.functions[resolved.metadata.id].analysis,
 			options,
 			assertionPlan?.calls.get(resolved.ast)
 		)

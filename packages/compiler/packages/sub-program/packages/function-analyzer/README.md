@@ -4,7 +4,7 @@ Reports structural facts about resolved functions after stack analysis has selec
 
 ```ts
 const report = analyzeFunctions({ semanticReferences, stackReport, entries });
-const analysis = report.functions[functionId];
+const { analysis, bodyFacts } = report.functions[functionId];
 ```
 
 The report is keyed by canonical function ID. Each `FunctionAnalysis` contains:
@@ -22,7 +22,10 @@ Return facts describe body structure rather than proving reachability. Import fa
 Host callback reentry is outside the statically known call graph. All analysis is recomputed per compilation without
 mutating source ASTs, semantic reports, or stack facts.
 
-The shared `FunctionAnalysis` contract lives in `@8f4e/language-spec`. Sub-program orchestration passes each result
+The `bodyFacts` report describes the resolved operation count, distinct instruction and push operand kinds, and
+whether parameters, locals, or returns use pointer types.
+
+The shared `FunctionAnalysis` contract lives in `@8f4e/language-spec`. Sub-program orchestration passes `analysis`
 through to the required `CompiledFunction.analysis` field, independently of `includeStackAnalysis`.
 
 This package owns facts. Optimization passes own eligibility rules, expansion costs, and transformations.

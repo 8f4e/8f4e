@@ -1,22 +1,21 @@
+import type { FunctionAnalysisReport, FunctionBodyFacts } from '@8f4e/function-analyzer';
 import type {
 	ArgumentIdentifier,
 	CodegenInstructionName,
 	ExecutableInstructionLine,
 	FunctionAST,
+	FunctionInliningOptions,
 	ModuleAST,
 	SourceLocalBinding,
 	StackAnalysisLineFacts,
 } from '@8f4e/language-spec';
-import { ArgumentType, isPointerFunctionValueType } from '@8f4e/language-spec';
+import { ArgumentType } from '@8f4e/language-spec';
 import type {
 	FunctionSemanticReferences,
 	ResolvedOperation,
 	SemanticReferenceReport,
 } from '@8f4e/semantic-reference-resolver';
 import type { StackAnalysisSubProgramReport } from '@8f4e/stack-analyzer';
-
-const MAX_EXPANSION_OPERATIONS = 12;
-const MAX_CALLER_GROWTH = 64;
 
 const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 	'abs',
@@ -41,6 +40,7 @@ const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 	'notEqual',
 	'notZero',
 	'or',
+	'push',
 	'remainder',
 	'round',
 	'shiftLeft',
@@ -54,6 +54,7 @@ const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 interface InlineFunctionsInput<TModule extends ModuleAST, TFunction extends FunctionAST> {
 	semanticReferences: SemanticReferenceReport<TModule, TFunction>;
 	stackReport: StackAnalysisSubProgramReport;
+	functionAnalysis: FunctionAnalysisReport;
 }
 
 interface Candidate {
@@ -71,31 +72,28 @@ interface BodyBuilder {
 	bindings: SourceLocalBinding[];
 }
 
-function isScalarInstruction({ line }: ResolvedOperation): boolean {
-	if (line.instruction === 'push') {
-		if ('resolvedTarget' in line) return line.resolvedTarget.kind === 'local';
-		const [operand] = line.arguments;
-		return operand.type === ArgumentType.LITERAL && !operand.address;
-	}
-	return scalarInstructions.has(line.instruction);
-}
-
-function hasScalarBody(callee: FunctionSemanticReferences): boolean {
+function hasScalarBody(body: FunctionBodyFacts): boolean {
 	return (
-		!callee.bindings.some(binding => isPointerFunctionValueType(binding.type)) &&
-		!callee.metadata.signature.returns.some(isPointerFunctionValueType) &&
-		callee.body.every(isScalarInstruction)
+		!body.hasPointerBindings &&
+		!body.hasPointerReturns &&
+		body.instructionKinds.every(instruction => scalarInstructions.has(instruction)) &&
+		body.pushOperandKinds.every(kind => kind === 'literal' || kind === 'local')
 	);
 }
 
-function getCandidates(functions: SemanticReferenceReport['functions']): ReadonlyMap<string, Candidate> {
+function getCandidates(
+	functions: SemanticReferenceReport['functions'],
+	functionAnalysis: FunctionAnalysisReport,
+	maxExpansionOperations: number
+): ReadonlyMap<string, Candidate> {
 	const candidates = new Map<string, Candidate>();
 	for (const [id, callee] of Object.entries(functions)) {
-		if (callee.metadata.import) continue;
+		const { analysis, bodyFacts } = functionAnalysis.functions[id];
+		if (analysis.isImported) continue;
 		const { parameters } = callee.metadata.signature;
 		const localCount = callee.bindings.length - parameters.length;
-		const expansionSize = callee.body.length + parameters.length + localCount * 2;
-		if (expansionSize <= MAX_EXPANSION_OPERATIONS && hasScalarBody(callee)) {
+		const expansionSize = bodyFacts.operationCount + parameters.length + localCount * 2;
+		if (expansionSize <= maxExpansionOperations && hasScalarBody(bodyFacts)) {
 			candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
 		}
 	}
@@ -160,10 +158,11 @@ function expandCall(caller: BodyBuilder, call: ResolvedOperation, callee: Functi
 function rewriteBody<T extends Body>(
 	original: T,
 	facts: readonly StackAnalysisLineFacts[],
-	candidates: ReadonlyMap<string, Candidate>
+	candidates: ReadonlyMap<string, Candidate>,
+	maxCallerGrowth: number
 ): T {
 	let rewritten: BodyBuilder | undefined;
-	let remainingGrowth = MAX_CALLER_GROWTH;
+	let remainingGrowth = maxCallerGrowth;
 	for (const [index, operation] of original.body.entries()) {
 		const candidate =
 			operation.line.instruction === 'call' ? candidates.get(facts[index].targetFunctionId!) : undefined;
@@ -181,11 +180,12 @@ function rewriteBody<T extends Body>(
 function rewriteBodies<T extends Body>(
 	bodies: Record<string, T>,
 	stackReport: Record<string, { operationFacts: readonly StackAnalysisLineFacts[] }>,
-	candidates: ReadonlyMap<string, Candidate>
+	candidates: ReadonlyMap<string, Candidate>,
+	maxCallerGrowth: number
 ): Record<string, T> {
 	let rewritten: Record<string, T> | undefined;
 	for (const [id, body] of Object.entries(bodies)) {
-		const result = rewriteBody(body, stackReport[id].operationFacts, candidates);
+		const result = rewriteBody(body, stackReport[id].operationFacts, candidates, maxCallerGrowth);
 		if (result !== body) {
 			rewritten ??= { ...bodies };
 			rewritten[id] = result;
@@ -195,14 +195,17 @@ function rewriteBodies<T extends Body>(
 }
 
 /** Replaces eligible calls in resolved bodies, preserving the original report when there are no rewrites. */
-export function inlineFunctions<TModule extends ModuleAST, TFunction extends FunctionAST>({
-	semanticReferences,
-	stackReport,
-}: InlineFunctionsInput<TModule, TFunction>): SemanticReferenceReport<TModule, TFunction> {
-	const candidates = getCandidates(semanticReferences.functions);
+export function inlineFunctions<TModule extends ModuleAST, TFunction extends FunctionAST>(
+	{ semanticReferences, stackReport, functionAnalysis }: InlineFunctionsInput<TModule, TFunction>,
+	{
+		maxExpansionOperations = Number.POSITIVE_INFINITY,
+		maxCallerGrowth = Number.POSITIVE_INFINITY,
+	}: FunctionInliningOptions = {}
+): SemanticReferenceReport<TModule, TFunction> {
+	const candidates = getCandidates(semanticReferences.functions, functionAnalysis, maxExpansionOperations);
 	if (candidates.size === 0) return semanticReferences;
-	const modules = rewriteBodies(semanticReferences.modules, stackReport.modules, candidates);
-	const functions = rewriteBodies(semanticReferences.functions, stackReport.functions, candidates);
+	const modules = rewriteBodies(semanticReferences.modules, stackReport.modules, candidates, maxCallerGrowth);
+	const functions = rewriteBodies(semanticReferences.functions, stackReport.functions, candidates, maxCallerGrowth);
 	return modules === semanticReferences.modules && functions === semanticReferences.functions
 		? semanticReferences
 		: { modules, functions };

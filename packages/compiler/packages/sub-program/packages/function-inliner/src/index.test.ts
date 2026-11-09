@@ -1,3 +1,4 @@
+import { analyzeFunctions } from '@8f4e/function-analyzer';
 import { ArgumentType, createFunctionId, type ExecutableInstructionLine, type FunctionAST } from '@8f4e/language-spec';
 import type { FunctionSemanticReferences, SemanticReferenceReport } from '@8f4e/semantic-reference-resolver';
 import { describe, expect, it } from 'vitest';
@@ -72,13 +73,14 @@ function createInput(leafBody: ExecutableInstructionLine[], callCount: number) {
 			},
 		},
 	};
-	return { semanticReferences, stackReport, caller, leaf };
+	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries: [] });
+	return { semanticReferences, stackReport, functionAnalysis, caller, leaf };
 }
 
 describe('inlineFunctions', () => {
 	it('bounds caller growth and keeps original bodies and source lines available', () => {
 		const input = createInput([push, drop], 65);
-		const result = inlineFunctions(input);
+		const result = inlineFunctions(input, { maxCallerGrowth: 64 });
 		const { body, ast } = result.functions[input.caller.metadata.id];
 
 		expect(body).toHaveLength(129);
@@ -90,10 +92,18 @@ describe('inlineFunctions', () => {
 		expect(ast).toBe(input.caller.ast);
 		expect(input.caller.body).toHaveLength(65);
 		expect(result.functions[input.leaf.metadata.id]).toBe(input.leaf);
+		expect(inlineFunctions(input).functions[input.caller.metadata.id].body).toHaveLength(130);
 	});
 
-	it('returns the original report when the callee exceeds the expansion limit', () => {
+	it('applies an expansion limit when configured', () => {
 		const input = createInput(Array.from({ length: 7 }, () => [push, drop]).flat(), 1);
-		expect(inlineFunctions(input)).toBe(input.semanticReferences);
+		expect(input.functionAnalysis.functions[input.leaf.metadata.id].bodyFacts).toMatchObject({
+			operationCount: 14,
+			instructionKinds: ['push', 'drop'],
+			pushOperandKinds: ['literal'],
+		});
+		expect(inlineFunctions(input, { maxExpansionOperations: 12 })).toBe(input.semanticReferences);
+		const rewritten = inlineFunctions(input);
+		expect(rewritten.functions[input.caller.metadata.id].body).toHaveLength(14);
 	});
 });

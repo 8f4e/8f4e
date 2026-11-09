@@ -138,4 +138,58 @@ functionEnd int`);
 		expect(await countCalls(result)).toBe(1);
 		expect(getExportedFunction(await instantiate(result), 'run')()).toBe(109);
 	});
+
+	it('retains calls to functions that push strings or resolved addresses', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function text
+push "A"
+drop
+functionEnd
+
+function address
+#impure
+push &source:
+drop
+functionEnd
+
+function run
+#export
+call text
+call address
+functionEnd
+
+entry main
+module source
+int value
+moduleEnd
+entryEnd`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		const result = await compileProject(project);
+		expect(result.codeBuffer).toEqual(baseline.codeBuffer);
+	});
+
+	it('applies configurable expansion and caller growth limits', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function leaf
+push 7
+add 1
+functionEnd int
+
+function run
+#export
+call leaf
+call leaf
+add
+functionEnd int`);
+		const cases = [
+			{ functionInlining: {}, remainingCalls: 0 },
+			{ functionInlining: { maxExpansionOperations: 2 }, remainingCalls: 2 },
+			{ functionInlining: { maxCallerGrowth: 2 }, remainingCalls: 1 },
+		];
+		for (const { functionInlining, remainingCalls } of cases) {
+			const result = await compileProject(project, { functionInlining });
+			expect(await countCalls(result)).toBe(remainingCalls);
+			expect(getExportedFunction(await instantiate(result), 'run')()).toBe(16);
+		}
+	});
 });

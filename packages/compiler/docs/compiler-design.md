@@ -64,14 +64,16 @@ The call graph includes source functions, composed entry dispatchers, and module
 excluded. Return facts inspect executable body structure: a final top-level return is explicit but not early.
 
 Codegen passes these facts through to the required `CompiledFunction.analysis` field independently of
-`includeStackAnalysis`.
+`includeStackAnalysis`. The analyzer also reports each body's operation count, distinct instruction and push operand
+kinds, and pointer bindings and returns for compiler passes.
 
 ## Function Inlining
 
-`@8f4e/function-inliner` uses resolved bodies and the canonical call targets from stack analysis to expand eligible
-calls in modules and functions. Eligible callees are small, straight-line scalar leaf functions with implicit returns.
-Each replacement contains at most 12 operations including argument stores and local
-initialization. Total growth is capped at 64 operations per caller.
+`@8f4e/function-inliner` combines structural function facts with the canonical call targets from stack analysis and
+rewrites resolved bodies. Its allowlist selects straight-line scalar leaf functions with implicit returns. It expands
+all eligible calls by default. In `compileProject` options, `functionInlining.maxExpansionOperations` limits the
+size of a replacement, including argument stores and local initialization. `functionInlining.maxCallerGrowth` limits
+the additional operations in a caller.
 
 Each expansion assigns fresh caller-local binding IDs, stores the already evaluated arguments, and zeroes callee
 locals on every execution. The expanded operations use the caller's source location. The original function definitions
