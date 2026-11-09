@@ -3,8 +3,8 @@
 - Export `createCompilerPlugin({ resolveInclude, createWorker })`, returning `plugin` plus stable `getMemory`,
   `getCodeBuffer`, `getAssertionSites`, `getDiagnostics`, and `writeMemory` handles. Construct once per editor; install before dependents.
 - Diagnostic reads are detached and identify the current input revision, completed revision, and readiness. Do not present previous-input compiler errors as current while a new compilation is pending.
-- Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, memory-write views,
-  and the recompile debounce schema contribution here. Core must not invoke a compiler callback or install a compilation effect.
+- Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, and memory-write
+  views here. Core must not invoke a compiler callback or install a compilation effect.
 - Publish raw errors through the contributor-owned `codeErrors.compiler` list and remove it on disposal. Message
   presentation belongs to error-messages; do not reserve layout or store drawing geometry here.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree
@@ -13,8 +13,8 @@
   Report done/failed results; cancel superseded attempts and pending work on disposal. New attempts replace the
   same ID. Queued requests remain sequential; the presentation plugin owns private visibility.
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
-- Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
-  Keep its typing and default in this package; use the shared directive validation and parsing mechanism.
+- The compiler plugin owns its config schemas and defaults. Mark schemas that affect compiler inputs with
+  `affectsCompilation`. Editor-state publishes the compiler input revision after config and diagnostics settle.
 - The internal worker adapter requires an explicit current-input check and returns the canonical language-spec result.
   Core receives only `ProgramArtifacts` containing `memoryRef`; bytecode stays on the compiler getter.
   Do not reconstruct the old core compiler-result interface.
