@@ -1,10 +1,10 @@
-import { f32const, f64const, WASM_F32_EQ, WASM_F64_EQ, WASM_I32_EQZ } from '@8f4e/compiler-wasm-utils';
+import { WASM_F32_EQ, WASM_F64_EQ, WASM_I32_EQZ } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
-
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
 } from '../../tests/testUtils';
+import { f32const, f64const } from '../operations';
 import equalToZero from './equalToZero';
 
 describe('equalToZero instruction compiler', () => {

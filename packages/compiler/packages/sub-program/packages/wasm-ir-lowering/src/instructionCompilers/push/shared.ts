@@ -1,4 +1,3 @@
-import { f32const, f64const, i32const, i32load } from '@8f4e/compiler-wasm-utils';
 import type { CodegenContext, PointerMetadata, WasmIRInstruction } from '@8f4e/language-spec';
 import {
 	getDereferencedValueKindFromMetadata,
@@ -7,18 +6,19 @@ import {
 	WORD_MEMORY_ACCESS_WIDTH,
 } from '@8f4e/language-spec';
 import { allocateLocal } from '../../localStorage';
+import { f32const, f64const, i32const, i32load } from '../../operations';
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
 import { guardedLoadWithLocal } from '../utils/memoryAccessGuard';
 import { typedLoad } from './typedLoad';
 
 type PointerValueSource = 'pointer-slot' | 'pointer-value';
-type PointerLoadStep = { accessByteWidth: number; loadByteCode: number[] };
+type PointerLoadStep = { accessByteWidth: number; loadByteCode: WasmIRInstruction[] };
 
 export { resolveArgumentValueKind, resolveMemoryValueKind } from '../../pushValueKind';
 export { loadOpcode } from './typedLoad';
 
 /** Numeric constant emitters keyed by resolved value kind. */
-export const constOpcode: Record<PushValueKind, (value: number) => number[]> = {
+export const constOpcode: Record<PushValueKind, (value: number) => WasmIRInstruction[]> = {
 	int32: i32const,
 	float32: f32const,
 	float64: f64const,

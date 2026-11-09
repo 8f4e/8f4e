@@ -1,7 +1,7 @@
-import { i32store8 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, StoreBytesLine } from '@8f4e/language-spec';
 import { getInstructionSpec, wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { allocateLocal } from '../localStorage';
+import { i32store8 } from '../operations';
 import { guardedStoreFromLocals, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -22,7 +22,7 @@ const storeBytes: InstructionCompiler<StoreBytesLine> = (line, context, facts) =
 
 	const byteCode = [...localSet(addressLocalIndex)];
 	for (let i = 0; i < count; i++) {
-		const storeByteCode = i32store8(undefined, undefined, 0, i);
+		const storeByteCode = i32store8(0, i);
 		byteCode.push(
 			...localSet(byteLocalIndex),
 			...(addressIsSafe

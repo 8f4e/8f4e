@@ -1,5 +1,5 @@
-import { i32const } from '@8f4e/compiler-wasm-utils';
 import type { ArgumentStringLiteral, CodegenContext } from '@8f4e/language-spec';
+import { i32const } from '../../../operations';
 import { saveByteCode } from '../../utils/saveByteCode';
 
 /**

@@ -11,13 +11,22 @@ exports[`abs instruction compiler > compiles int abs via segment instructions 1`
       "binding": 0,
       "kind": "local.get",
     },
-    65,
-    0,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
     72,
-    4,
-    127,
-    65,
-    0,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
     {
       "binding": 0,
       "kind": "local.get",

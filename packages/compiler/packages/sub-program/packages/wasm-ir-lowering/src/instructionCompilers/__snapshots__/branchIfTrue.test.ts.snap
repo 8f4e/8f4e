@@ -3,8 +3,11 @@
 exports[`branchIfTrue instruction compiler > emits br_if bytecode 1`] = `
 {
   "instructions": [
-    13,
-    2,
+    {
+      "depth": 2,
+      "kind": "branch",
+      "opcode": 13,
+    },
   ],
 }
 `;

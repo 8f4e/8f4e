@@ -27,7 +27,7 @@ describe('large WebAssembly function indices', () => {
 		});
 		const source = `8f4e/v1\n${functions.join('\n\n')}\n\nfunction selected\n#export\npush 1234\nfunctionEnd int`;
 		const result = await compileProject(parseProjectSource(source));
-		expect(Math.max(...Object.values(result.compiledFunctions).map(func => func.typeIndex))).toBeGreaterThan(255);
+		expect(Math.max(...Object.values(result.compiledFunctions).map(func => func.typeIndex!))).toBeGreaterThan(255);
 
 		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });

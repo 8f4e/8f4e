@@ -1,14 +1,13 @@
-import {
-	f32load,
-	i32load,
-	i32load8s,
-	i32load8u,
-	i32load16s,
-	i32load16u,
-	WASM_TYPE_I32,
-} from '@8f4e/compiler-wasm-utils';
-import type { ASTLineBase, InstructionCompiler, LoadInstructionSpecName, MemoryLoadVariant } from '@8f4e/language-spec';
+import { WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
+import type {
+	ASTLineBase,
+	InstructionCompiler,
+	LoadInstructionSpecName,
+	MemoryLoadVariant,
+	WasmIRInstruction,
+} from '@8f4e/language-spec';
 import { getInstructionSpec } from '@8f4e/language-spec';
+import { f32load, i32load, i32load8s, i32load8u, i32load16s, i32load16u } from '../operations';
 import { guardedLoad, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -18,7 +17,7 @@ type LoadLine = ASTLineBase<LoadInstructionSpecName, []>;
  * Instruction compiler for `load` variants.
  * @see [Instruction docs](../../docs/instructions/memory.md)
  */
-const loadVariantByteCode: Record<MemoryLoadVariant, number[]> = {
+const loadVariantByteCode: Record<MemoryLoadVariant, WasmIRInstruction[]> = {
 	i32: i32load(2, 0),
 	i32_8s: i32load8s(0, 0),
 	i32_8u: i32load8u(0, 0),

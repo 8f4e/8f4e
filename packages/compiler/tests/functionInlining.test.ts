@@ -108,7 +108,7 @@ moduleEnd
 entryEnd`);
 		const result = await compileProject(project, { enableAssertions: true });
 		const baseline = await compileProject(project, { enableAssertions: true, enableFunctionInlining: false });
-		expect(await countCalls(result)).toBe((await countCalls(baseline)) - 3);
+		expect(await countCalls(result)).toBe((await countCalls(baseline)) - 4);
 		const assertEqualI32 = vi.fn();
 		const assertEqualF64 = vi.fn();
 		const exports = await instantiate(result, { assertEqualI32, assertEqualF64 });
@@ -121,7 +121,7 @@ entryEnd`);
 		expect(getExportedFunction(exports, 'increment')(2.5)).toBe(3.5);
 	});
 
-	it('retains calls to functions with whole-stack effects', async () => {
+	it('preserves the caller stack when inlining a lowered clearStack', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function clear
 push 7
@@ -136,11 +136,11 @@ call clear
 add
 functionEnd int`);
 		const result = await compileProject(project);
-		expect(await countCalls(result)).toBe(1);
+		expect(await countCalls(result)).toBe(0);
 		expect(getExportedFunction(await instantiate(result), 'run')()).toBe(109);
 	});
 
-	it('retains calls to functions that push strings or resolved addresses', async () => {
+	it('inlines bodies with lowered string and address constants', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function text
 push "A"
@@ -166,7 +166,8 @@ moduleEnd
 entryEnd`);
 		const baseline = await compileProject(project, { enableFunctionInlining: false });
 		const result = await compileProject(project);
-		expect(result.codeBuffer).toEqual(baseline.codeBuffer);
+		expect(await countCalls(result)).toBeLessThan(await countCalls(baseline));
+		getExportedFunction(await instantiate(result), 'run')();
 	});
 
 	it('applies configurable expansion and caller growth limits', async () => {
@@ -192,6 +193,64 @@ functionEnd int`);
 			expect(await countCalls(result)).toBe(remainingCalls);
 			expect(getExportedFunction(await instantiate(result), 'run')()).toBe(16);
 		}
+	});
+
+	it('folds nested dispatchers in execution order and skips disabled cycles', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module first
+push 1
+assertEqual 1
+moduleEnd
+group voice
+entry main
+module second
+push 2
+assertEqual 2
+moduleEnd
+module skipped
+#skipExecution
+push 99
+assertEqual 99
+moduleEnd
+entryEnd
+groupEnd
+module third
+push 3
+assertEqual 3
+moduleEnd
+entryEnd`);
+		const result = await compileProject(project, { enableAssertions: true });
+		const assertEqualI32 = vi.fn();
+		getExportedFunction(await instantiate(result, { assertEqualI32 }), 'main')();
+		expect(assertEqualI32.mock.calls.map(([actual]) => actual)).toEqual([1, 2, 3]);
+		expect(await countCalls(result)).toBe(4); // Three live assertions and the retained skipped body.
+	});
+
+	it('returns from an inlined callee without returning from the caller', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function select
+param int condition
+push condition
+if
+push 7
+return
+ifEnd
+push 9
+functionEnd int
+
+function run
+#export
+param int condition
+push 100
+call select condition
+add
+functionEnd int`);
+		const result = await compileProject(project);
+		expect(await countCalls(result)).toBe(0);
+		const run = getExportedFunction(await instantiate(result), 'run');
+		expect(run(1)).toBe(107);
+		expect(run(0)).toBe(109);
 	});
 
 	it('keeps calls that would exceed the Wasm local slot limit', async () => {

@@ -1,26 +1,19 @@
 import type { WASMInstructionCode } from '@8f4e/compiler-wasm-utils';
-import {
-	f32const,
-	f64const,
-	i32const,
-	WASM_DROP,
-	WASM_F32_EQ,
-	WASM_F64_EQ,
-	WASM_I32_EQ,
-	WASM_SELECT,
-} from '@8f4e/compiler-wasm-utils';
+import { WASM_DROP, WASM_F32_EQ, WASM_F64_EQ, WASM_I32_EQ, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
 import type {
 	InstructionCompiler,
 	MapBlockStackFrame,
 	MapEndLine,
 	StackAnalysisNumericValueKind,
+	WasmIRInstruction,
 } from '@8f4e/language-spec';
 import { wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { popBlock } from '@8f4e/semantic-utils';
 import { allocateLocal } from '../localStorage';
+import { f32const, f64const, i32const } from '../operations';
 import { saveByteCode } from './utils/saveByteCode';
 
-const constOp: Record<StackAnalysisNumericValueKind, (v: number) => number[]> = {
+const constOp: Record<StackAnalysisNumericValueKind, (v: number) => WasmIRInstruction[]> = {
 	int32: i32const,
 	float32: f32const,
 	float64: f64const,

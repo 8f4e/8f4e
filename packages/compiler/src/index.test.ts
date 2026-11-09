@@ -376,7 +376,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function consume', 'param float value', 'functionEnd'] },
 				],
 			},
-			{}
+			{ enableFunctionInlining: false }
 		);
 
 		const intOverloadId = createFunctionId('consume', ['int']);

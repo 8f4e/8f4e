@@ -1,7 +1,7 @@
 import type { CompilerCache } from './compiled';
 import type { ProjectIncludeResolver } from './project';
 
-/** Size limits for function inlining, measured in resolved operations. */
+/** Size limits for function inlining, measured in lowered Wasm operations. */
 export interface FunctionInliningOptions {
 	/** Maximum replacement size, including argument stores and local initialization. Omit for no limit. */
 	maxExpansionOperations?: number;

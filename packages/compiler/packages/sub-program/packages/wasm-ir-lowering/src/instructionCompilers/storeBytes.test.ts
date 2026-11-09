@@ -1,4 +1,3 @@
-import { WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
@@ -41,7 +40,9 @@ describe('storeBytes instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions.filter(b => b === 0x3a)).toHaveLength(2);
+		expect(
+			context.instructions.filter(op => typeof op !== 'number' && op.kind === 'memoryAccess' && op.opcode === 0x3a)
+		).toHaveLength(2);
 	});
 
 	it('guards byte stores when address metadata is shorter than the byte count', () => {
@@ -76,6 +77,6 @@ describe('storeBytes instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
 	});
 });

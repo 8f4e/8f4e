@@ -1,4 +1,4 @@
-import { WASM_I32_LT_S, WASM_I32_LT_U, WASM_MEMORY_SIZE, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
+import { WASM_I32_LT_S, WASM_I32_LT_U, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
 import type { ClampAddressLine, MemoryAddressRange } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
@@ -44,7 +44,7 @@ describe('clamp address instruction compilers', () => {
 		);
 
 		expect(context.instructions).toContain(WASM_SELECT);
-		expect(context.instructions).not.toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 	});
 
 	it('emits a signed comparison for the lower range bound', () => {
@@ -88,7 +88,7 @@ describe('clamp address instruction compilers', () => {
 		);
 
 		expect(context.instructions).toContain(WASM_SELECT);
-		expect(context.instructions).not.toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 	});
 
 	it('clamps to the full global memory range', () => {
@@ -101,7 +101,7 @@ describe('clamp address instruction compilers', () => {
 			createStackFacts({ clamp: { accessByteWidth: 4 } })
 		);
 
-		expect(context.instructions).toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
 		expect(context.instructions).toContain(WASM_SELECT);
 	});
 });

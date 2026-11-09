@@ -17,7 +17,8 @@ float& input ${targetAddress}
 push *input
 drop
 moduleEnd
-entryEnd`)
+entryEnd`),
+				{ enableFunctionInlining: false }
 			);
 			const target = result.memoryPlan.modules.source.memory.output;
 			expect(result.memoryPlan.modules.sink.memory).toEqual({});

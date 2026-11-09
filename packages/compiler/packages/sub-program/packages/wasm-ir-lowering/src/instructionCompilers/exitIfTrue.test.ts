@@ -1,4 +1,4 @@
-import { WASM_DROP, WASM_END, WASM_IF, WASM_RETURN, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
+import { WASM_DROP, WASM_END, WASM_IF, WASM_RETURN } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -22,6 +22,11 @@ describe('exitIfTrue instruction compiler', () => {
 			createStackFacts({ droppedStackItems: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);
 
-		expect(context.instructions).toEqual([WASM_IF, WASM_TYPE_VOID, WASM_DROP, WASM_RETURN, WASM_END]);
+		expect(context.instructions).toEqual([
+			{ kind: 'block', opcode: WASM_IF, results: [] },
+			WASM_DROP,
+			WASM_RETURN,
+			WASM_END,
+		]);
 	});
 });

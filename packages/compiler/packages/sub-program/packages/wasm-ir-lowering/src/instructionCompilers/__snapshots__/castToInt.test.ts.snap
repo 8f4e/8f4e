@@ -3,8 +3,11 @@
 exports[`castToInt instruction compiler > converts float operand to int 1`] = `
 {
   "instructions": [
-    252,
-    0,
+    {
+      "kind": "prefixed",
+      "opcode": 0,
+      "prefix": 252,
+    },
   ],
 }
 `;
@@ -12,8 +15,11 @@ exports[`castToInt instruction compiler > converts float operand to int 1`] = `
 exports[`castToInt instruction compiler > converts float64 operand to int 1`] = `
 {
   "instructions": [
-    252,
-    2,
+    {
+      "kind": "prefixed",
+      "opcode": 2,
+      "prefix": 252,
+    },
   ],
 }
 `;

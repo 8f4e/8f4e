@@ -13,7 +13,7 @@ const _if: InstructionCompiler<PairedIfLine> = (line, context) => {
 	const { blockState, wasmBlockType } = createResultBlockState(line.ifBlock.resultTypes, BlockType.CONDITION);
 
 	pushBlock(context, blockState);
-	return saveByteCode(context, [WASM_IF, ...wasmBlockType]);
+	return saveByteCode(context, [{ kind: 'block', opcode: WASM_IF, results: wasmBlockType }]);
 };
 
 export default _if;

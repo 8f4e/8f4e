@@ -1,8 +1,7 @@
-import { i32const, i32load } from '@8f4e/compiler-wasm-utils';
 import type { ResolvedMemoryPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-
 import createInstructionCompilerTestContext, { identifier } from '../../../../tests/testUtils';
+import { i32const, i32load } from '../../../operations';
 import pushMemoryIdentifier from './pushMemoryIdentifier';
 
 describe('pushMemoryIdentifier', () => {

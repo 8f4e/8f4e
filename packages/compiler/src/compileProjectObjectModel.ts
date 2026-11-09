@@ -5,7 +5,6 @@ import {
 	type IncludedFunctionsByProjectGroupPath,
 } from '@8f4e/program-composer/internal';
 import { compileSubProgram } from '@8f4e/sub-program/internal';
-import { emitWasmProgram } from '@8f4e/wasm-codegen';
 
 /** Synchronous compiler stage used after asynchronous project dependencies have been resolved. */
 export function compileProjectObjectModel(
@@ -15,5 +14,5 @@ export function compileProjectObjectModel(
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath = new Map()
 ): CompileResult {
 	const program = composeProgram(project, cache, includedFunctionsByProjectPath);
-	return emitWasmProgram(compileSubProgram(program, options));
+	return compileSubProgram(program, options);
 }

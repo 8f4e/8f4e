@@ -2,7 +2,6 @@ import type { FunctionType, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type { AssertionSite } from './assertions';
 import type { ComposedFunctionAST, ComposedModuleAST, FunctionAST, ValidatedAST, ValidatedFunctionAST } from './ast';
 import type { ASTCache } from './cache';
-import type { FunctionAnalysis } from './functionAnalysis';
 import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
@@ -95,12 +94,12 @@ export interface FunctionRegistry {
 
 /** Code generation output and metadata for a compiled function. */
 export interface CompiledFunction extends FunctionMetadata {
-	analysis: FunctionAnalysis;
-	wasmIndex: number;
+	/** Index of the emitted function, when its body or import survives optimization. */
+	wasmIndex?: number;
 	body: number[];
 	locals: Array<{ isInteger: boolean; count: number }>;
 	exportName?: string;
-	typeIndex: number;
+	typeIndex?: number;
 	ast: ComposedFunctionAST;
 	stackAnalysis?: CompiledStackAnalysisLine[];
 }

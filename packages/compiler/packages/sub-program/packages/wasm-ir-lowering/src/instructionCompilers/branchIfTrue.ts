@@ -1,5 +1,5 @@
-import { br_if } from '@8f4e/compiler-wasm-utils';
 import type { BranchIfTrueLine, InstructionCompiler } from '@8f4e/language-spec';
+import { br_if } from '../operations';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**

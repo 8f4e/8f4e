@@ -13,7 +13,7 @@ const block: InstructionCompiler<PairedBlockLine> = (line, context) => {
 	const { blockState, wasmBlockType } = createResultBlockState(line.blockBlock.resultTypes, BlockType.BLOCK);
 
 	pushBlock(context, blockState);
-	return saveByteCode(context, [WASM_BLOCK, ...wasmBlockType]);
+	return saveByteCode(context, [{ kind: 'block', opcode: WASM_BLOCK, results: wasmBlockType }]);
 };
 
 export default block;
