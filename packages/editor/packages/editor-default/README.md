@@ -206,7 +206,16 @@ npx nx run @8f4e/editor-default:typecheck
 
 The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Audio, worker, test, and texture runtime plugins load through the ordinary lazy registry and own independent execution lifecycles.
 
-The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`. The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics. It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism and emits accepted memory and bytecode through `compilationSucceeded`, which core consumes to update its views before dependent features and runtimes react to metadata. Runtime plugins release their resources during plugin disposal; the compiler then cancels scheduling and terminates its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without redundant byte-size or instance-reset flags.
+The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`.
+The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics.
+It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism.
+The `compilationSucceeded` event carries only `{ memoryRef }`. Core uses it to update its memory views before
+dependent features and runtimes react to accepted metadata. Consumers obtain bytecode through the compiler plugin's
+`getCodeBuffer()` getter.
+
+Runtime plugins release their resources during plugin disposal. The compiler then cancels scheduling and terminates
+its worker after dependent plugins have shut down. Worker results carry current artifacts and memory actions without
+redundant byte-size or instance-reset flags.
 
 Runtime plugins activate from `audioRuntime`, `workerRuntime`, or `testRuntime` configuration roots. Each has an
 `enabled` setting, defaulting to false; several may be enabled together. The host injects live compiler getters and
