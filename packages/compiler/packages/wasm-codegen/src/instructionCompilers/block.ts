@@ -10,11 +10,7 @@ import { saveByteCode } from './utils/saveByteCode';
  * @see [Instruction docs](../../docs/instructions/control-flow.md)
  */
 const block: InstructionCompiler<PairedBlockLine> = (line, context) => {
-	const { blockState, wasmBlockType } = createResultBlockState(
-		line.blockBlock.resultTypes,
-		BlockType.BLOCK,
-		context.functionTypeRegistry
-	);
+	const { blockState, wasmBlockType } = createResultBlockState(line.blockBlock.resultTypes, BlockType.BLOCK);
 
 	pushBlock(context, blockState);
 	return saveByteCode(context, [WASM_BLOCK, ...wasmBlockType]);

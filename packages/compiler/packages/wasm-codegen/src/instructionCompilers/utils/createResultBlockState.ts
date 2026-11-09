@@ -1,13 +1,12 @@
 import type { WasmTypeValue } from '@8f4e/compiler-wasm-utils';
-import { signedLEB128, WASM_TYPE_F32, WASM_TYPE_I32, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
-import type { BlockResultTypes, BlockStack, BlockType, FunctionTypeRegistry } from '@8f4e/language-spec';
-import { getOrRegisterFunctionType } from './functionTypeRegistry';
+import { WASM_TYPE_F32, WASM_TYPE_I32, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
+import type { BlockResultTypes, BlockStack, BlockType, WasmIRInstruction } from '@8f4e/language-spec';
 
 type ResultBlockType = typeof BlockType.BLOCK | typeof BlockType.CONDITION;
 
 interface ResultBlockState<TBlockType extends ResultBlockType> {
 	blockState: Extract<BlockStack[number], { blockType: TBlockType }>;
-	wasmBlockType: number[];
+	wasmBlockType: WasmIRInstruction[];
 }
 
 function resultTypeToWasmType(resultType: BlockResultTypes[number]): WasmTypeValue {
@@ -19,31 +18,19 @@ function resultTypeToWasmType(resultType: BlockResultTypes[number]): WasmTypeVal
  *
  * @param resultTypes - Result types expected from the block.
  * @param blockType - Compiler block type to inspect.
- * @param typeRegistry - Function type registry used for multi-value result signatures.
  * @returns Created result block state.
  */
 export default function createResultBlockState<TBlockType extends ResultBlockType>(
 	resultTypes: BlockResultTypes,
-	blockType: TBlockType,
-	typeRegistry?: FunctionTypeRegistry
+	blockType: TBlockType
 ): ResultBlockState<TBlockType> {
 	if (resultTypes.length > 1) {
-		if (!typeRegistry) {
-			throw new Error('Missing function type registry for multi-result block.');
-		}
-
-		const resultWasmTypes = resultTypes.map(resultTypeToWasmType);
-		const typeIndex = getOrRegisterFunctionType(typeRegistry, {
-			params: [],
-			results: resultWasmTypes,
-		});
-
 		return {
 			blockState: {
 				expectedResultTypes: resultTypes,
 				blockType,
 			} as Extract<BlockStack[number], { blockType: TBlockType }>,
-			wasmBlockType: signedLEB128(typeIndex),
+			wasmBlockType: [{ kind: 'blockType', results: resultTypes.map(resultTypeToWasmType) }],
 		};
 	}
 

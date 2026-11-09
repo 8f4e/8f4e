@@ -1,5 +1,5 @@
-import { localSet } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, ResolvedLocalSetLine } from '@8f4e/language-spec';
+import { wasmLocalSet as localSet } from '@8f4e/language-spec';
 
 import { saveByteCode } from './utils/saveByteCode';
 

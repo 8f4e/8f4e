@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import load from './load';
 
@@ -39,7 +40,7 @@ describe('load instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -58,7 +59,7 @@ describe('load instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -92,7 +93,7 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_MEMORY_SIZE);
 	});
 
 	it('does not guard when an explicit clamp proves the access width is safe', () => {
@@ -113,6 +114,6 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).not.toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).not.toContain(WASM_MEMORY_SIZE);
 	});
 });

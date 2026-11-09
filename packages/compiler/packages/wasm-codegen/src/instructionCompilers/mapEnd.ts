@@ -3,8 +3,6 @@ import {
 	f32const,
 	f64const,
 	i32const,
-	localGet,
-	localSet,
 	WASM_DROP,
 	WASM_F32_EQ,
 	WASM_F64_EQ,
@@ -17,6 +15,7 @@ import type {
 	MapEndLine,
 	StackAnalysisNumericValueKind,
 } from '@8f4e/language-spec';
+import { wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { popBlock } from '@8f4e/semantic-utils';
 import { allocateLocal } from '../localStorage';
 import { saveByteCode } from './utils/saveByteCode';

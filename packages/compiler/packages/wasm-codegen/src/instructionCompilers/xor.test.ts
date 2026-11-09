@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import xor from './xor';
 
 describe('xor instruction compiler', () => {
@@ -18,7 +21,7 @@ describe('xor instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

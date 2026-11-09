@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import lessOrEqual from './lessOrEqual';
 
@@ -29,7 +30,7 @@ describe('lessOrEqual instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -54,7 +55,7 @@ describe('lessOrEqual instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -78,6 +79,6 @@ describe('lessOrEqual instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toEqual([WASM_F64_LE]);
+		expect(emitTestInstructions(context)).toEqual([WASM_F64_LE]);
 	});
 });

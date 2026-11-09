@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import sqrt from './sqrt';
 
@@ -23,7 +24,7 @@ describe('sqrt instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -41,6 +42,6 @@ describe('sqrt instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);
 
-		expect(context.byteCode).toEqual([WASM_F64_SQRT]);
+		expect(emitTestInstructions(context)).toEqual([WASM_F64_SQRT]);
 	});
 });

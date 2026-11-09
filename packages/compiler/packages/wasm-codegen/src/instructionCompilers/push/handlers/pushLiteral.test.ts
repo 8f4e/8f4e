@@ -3,7 +3,7 @@ import type { ArgumentLiteral } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext from '../../../../tests/testUtils';
+import createInstructionCompilerTestContext, { emitTestInstructions } from '../../../../tests/testUtils';
 import pushLiteral from './pushLiteral';
 
 describe('pushLiteral', () => {
@@ -17,7 +17,7 @@ describe('pushLiteral', () => {
 
 		pushLiteral(literal, context);
 
-		expect(context.byteCode).toEqual(i32const(7));
+		expect(emitTestInstructions(context)).toEqual(i32const(7));
 	});
 
 	it('emits f64.const for float64 literals', () => {
@@ -31,6 +31,6 @@ describe('pushLiteral', () => {
 
 		pushLiteral(literal, context);
 
-		expect(context.byteCode).toEqual(f64const(1.5));
+		expect(emitTestInstructions(context)).toEqual(f64const(1.5));
 	});
 });

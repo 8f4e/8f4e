@@ -2,7 +2,7 @@ import { f64load, i32const, i32load, i32load8s, i32load8u, i32load16s, i32load16
 import type { ResolvedMemoryDeclaration, ResolvedMemoryPointerPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext from '../../../../tests/testUtils';
+import createInstructionCompilerTestContext, { emitTestInstructions } from '../../../../tests/testUtils';
 import pushMemoryPointer from './pushMemoryPointer';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
@@ -51,7 +51,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(12), ...i32load(), ...i32load()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(12), ...i32load(), ...i32load()]);
 	});
 
 	it('dereferences double pointers twice and loads target kind', () => {
@@ -67,7 +67,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr, 2), context);
 
-		expect(context.byteCode).toEqual([...i32const(12), ...i32load(), ...i32load(), ...f64load()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(12), ...i32load(), ...i32load(), ...f64load()]);
 	});
 
 	it('dereferences int8* with i32load8s for the final load', () => {
@@ -82,7 +82,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(8), ...i32load(), ...i32load8s()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(8), ...i32load(), ...i32load8s()]);
 	});
 
 	it('dereferences int8u* with i32load8u for the final load', () => {
@@ -97,7 +97,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(8), ...i32load(), ...i32load8u()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(8), ...i32load(), ...i32load8u()]);
 	});
 
 	it('dereferences int8** once without the final load', () => {
@@ -112,7 +112,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('pptr', pptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(4), ...i32load(), ...i32load()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(4), ...i32load(), ...i32load()]);
 	});
 
 	it('dereferences int16* with i32load16s for the final load', () => {
@@ -127,7 +127,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(8), ...i32load(), ...i32load16s()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(8), ...i32load(), ...i32load16s()]);
 	});
 
 	it('dereferences int16u* with i32load16u for the final load', () => {
@@ -142,7 +142,7 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr), context);
 
-		expect(context.byteCode).toEqual([...i32const(8), ...i32load(), ...i32load16u()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(8), ...i32load(), ...i32load16u()]);
 	});
 
 	it('dereferences int16** twice with i32load16s for the final load', () => {
@@ -157,6 +157,6 @@ describe('pushMemoryPointer', () => {
 
 		pushMemoryPointer(createResolvedMemoryPointerPushLine('pptr', pptr, 2), context);
 
-		expect(context.byteCode).toEqual([...i32const(4), ...i32load(), ...i32load(), ...i32load16s()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(4), ...i32load(), ...i32load(), ...i32load16s()]);
 	});
 });

@@ -1,7 +1,10 @@
 import { BlockType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import loopEnd from './loopEnd';
 
 describe('loopEnd instruction compiler', () => {
@@ -30,7 +33,7 @@ describe('loopEnd instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

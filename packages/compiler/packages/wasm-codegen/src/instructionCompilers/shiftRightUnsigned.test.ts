@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import shiftRightUnsigned from './shiftRightUnsigned';
 
 describe('shiftRightUnsigned instruction compiler', () => {
@@ -18,7 +21,7 @@ describe('shiftRightUnsigned instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

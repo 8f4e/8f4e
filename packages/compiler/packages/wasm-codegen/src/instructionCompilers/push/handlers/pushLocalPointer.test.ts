@@ -2,7 +2,10 @@ import { f32load, i32load8u, localGet, WASM_TYPE_F32, WASM_TYPE_I32 } from '@8f4
 import type { ResolvedLocalPointerPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { expectGuardedDereference } from '../../../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	emitTestInstructions,
+	expectGuardedDereference,
+} from '../../../../tests/testUtils';
 import pushLocalPointer from './pushLocalPointer';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
@@ -22,7 +25,7 @@ describe('pushLocalPointer', () => {
 			context
 		);
 
-		expectGuardedDereference(context.byteCode, {
+		expectGuardedDereference(emitTestInstructions(context), {
 			prefix: localGet(0),
 			finalLoad: f32load(),
 			guardCount: 2,
@@ -47,7 +50,7 @@ describe('pushLocalPointer', () => {
 			context
 		);
 
-		expectGuardedDereference(context.byteCode, {
+		expectGuardedDereference(emitTestInstructions(context), {
 			prefix: localGet(0),
 			finalLoad: f32load(),
 			guardCount: 1,
@@ -71,7 +74,7 @@ describe('pushLocalPointer', () => {
 			context
 		);
 
-		expectGuardedDereference(context.byteCode, {
+		expectGuardedDereference(emitTestInstructions(context), {
 			prefix: localGet(0),
 			finalLoad: i32load8u(),
 			guardCount: 1,

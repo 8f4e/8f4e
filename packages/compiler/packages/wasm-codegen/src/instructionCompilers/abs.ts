@@ -1,7 +1,5 @@
 import {
 	i32const,
-	localGet,
-	localSet,
 	WASM_ELSE,
 	WASM_END,
 	WASM_F32_ABS,
@@ -12,6 +10,7 @@ import {
 	WASM_TYPE_I32,
 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
+import { wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { allocateLocal } from '../localStorage';
 
 import { saveByteCode } from './utils/saveByteCode';

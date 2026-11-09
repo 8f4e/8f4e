@@ -2,23 +2,35 @@ import { WASM_IF, WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
 import type {
 	CodegenContext,
 	CompilerASTLine,
+	FunctionTypeRegistry,
 	InstructionCompiler,
 	Stack,
 	StackAnalysisLineFacts,
+	WasmFunctionLayout,
 } from '@8f4e/language-spec';
 import { BlockType } from '@8f4e/language-spec';
 import { expect } from 'vitest';
 import { createCodegenContext } from '../src/createCodegenContext';
+import { emitWasmInstructions } from '../src/emitWasmInstructions';
+
+const emptyLayout: WasmFunctionLayout = {
+	imports: [],
+	functions: {},
+	assertionCallbacks: new Map(),
+	initDefaultsIndex: 0,
+	moduleFunctionIndices: {},
+};
+
+export function emitTestInstructions(
+	context: CodegenContext,
+	layout = emptyLayout,
+	typeRegistry: FunctionTypeRegistry = { baseTypeIndex: 0, signatures: [], types: [] }
+): number[] {
+	return emitWasmInstructions(context.instructions, layout, typeRegistry);
+}
 
 export default function createInstructionCompilerTestContext(overrides: Partial<CodegenContext> = {}): CodegenContext {
 	return createCodegenContext({
-		functionLayout: {
-			imports: [],
-			functions: {},
-			assertionCallbacks: new Map(),
-			initDefaultsIndex: 0,
-			moduleFunctionIndices: {},
-		},
 		...overrides,
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		codeBlockId: overrides.codeBlockId ?? 'test',

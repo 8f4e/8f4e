@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import _if from './if';
 
 describe('if instruction compiler', () => {
@@ -20,7 +23,7 @@ describe('if instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -40,7 +43,7 @@ describe('if instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -60,7 +63,7 @@ describe('if instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -80,18 +83,13 @@ describe('if instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
 	it('emits a multi-result if block type index', () => {
-		const context = createInstructionCompilerTestContext({
-			functionTypeRegistry: {
-				baseTypeIndex: 0,
-				signatures: [],
-				types: [],
-			},
-		});
+		const context = createInstructionCompilerTestContext();
+		const typeRegistry = { baseTypeIndex: 0, signatures: [], types: [] };
 
 		compileInstructionForTest(
 			_if,
@@ -106,9 +104,9 @@ describe('if instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
-			typeSignatures: context.functionTypeRegistry?.signatures,
-			typeCount: context.functionTypeRegistry?.types.length,
+			byteCode: emitTestInstructions(context, undefined, typeRegistry),
+			typeSignatures: typeRegistry.signatures,
+			typeCount: typeRegistry.types.length,
 		}).toMatchSnapshot();
 	});
 });

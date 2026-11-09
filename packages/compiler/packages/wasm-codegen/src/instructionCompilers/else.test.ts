@@ -1,7 +1,10 @@
 import { BlockType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import _else from './else';
 
 describe('else instruction compiler', () => {
@@ -28,7 +31,7 @@ describe('else instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

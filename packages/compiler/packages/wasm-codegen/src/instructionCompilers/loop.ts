@@ -1,8 +1,6 @@
 import {
 	br,
 	i32const,
-	localGet,
-	localSet,
 	WASM_BLOCK,
 	WASM_END,
 	WASM_I32_ADD,
@@ -12,7 +10,7 @@ import {
 	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
 import type { CodegenLoopBlockStackFrame, InstructionCompiler, ResolvedLoopLine } from '@8f4e/language-spec';
-import { BlockType } from '@8f4e/language-spec';
+import { BlockType, wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { pushBlock } from '@8f4e/semantic-utils';
 import { allocateLocal } from '../localStorage';
 import { saveByteCode } from './utils/saveByteCode';

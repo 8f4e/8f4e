@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import equalToZero from './equalToZero';
 
@@ -22,7 +23,7 @@ describe('equalToZero instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
 
-		expect(context.byteCode).toEqual([WASM_I32_EQZ]);
+		expect(emitTestInstructions(context)).toEqual([WASM_I32_EQZ]);
 	});
 
 	it('emits F32_EQ for float32 operands', () => {
@@ -39,7 +40,7 @@ describe('equalToZero instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);
 
-		expect(context.byteCode).toEqual([...f32const(0), WASM_F32_EQ]);
+		expect(emitTestInstructions(context)).toEqual([...f32const(0), WASM_F32_EQ]);
 	});
 
 	it('emits F64_EQ for float64 operands', () => {
@@ -56,6 +57,6 @@ describe('equalToZero instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: false }] })
 		);
 
-		expect(context.byteCode).toEqual([...f64const(0), WASM_F64_EQ]);
+		expect(emitTestInstructions(context)).toEqual([...f64const(0), WASM_F64_EQ]);
 	});
 });

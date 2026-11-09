@@ -25,3 +25,4 @@ export * from './project';
 export * from './referenceSlots';
 export * from './runtime';
 export * from './semantic';
+export * from './wasmIR';

@@ -2,7 +2,7 @@ import { i32const, i32load } from '@8f4e/compiler-wasm-utils';
 import type { ResolvedMemoryPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext from '../../../../tests/testUtils';
+import createInstructionCompilerTestContext, { emitTestInstructions } from '../../../../tests/testUtils';
 import pushMemoryIdentifier from './pushMemoryIdentifier';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
@@ -34,6 +34,6 @@ describe('pushMemoryIdentifier', () => {
 			context
 		);
 
-		expect(context.byteCode).toEqual([...i32const(8), ...i32load()]);
+		expect(emitTestInstructions(context)).toEqual([...i32const(8), ...i32load()]);
 	});
 });

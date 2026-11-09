@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import store from './store';
 
@@ -40,7 +41,7 @@ describe('store instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -64,7 +65,7 @@ describe('store instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -99,9 +100,9 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(57); // F64_STORE opcode
-		expect(context.byteCode).not.toContain(56); // no F32_STORE
-		expect(context.byteCode).not.toContain(54); // no I32_STORE
+		expect(emitTestInstructions(context)).toContain(57); // F64_STORE opcode
+		expect(emitTestInstructions(context)).not.toContain(56); // no F32_STORE
+		expect(emitTestInstructions(context)).not.toContain(54); // no I32_STORE
 	});
 
 	it('emits f32.store (opcode 56) for float32 value at safe address, not f64.store', () => {
@@ -135,8 +136,8 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(56); // F32_STORE opcode
-		expect(context.byteCode).not.toContain(57); // no F64_STORE
+		expect(emitTestInstructions(context)).toContain(56); // F32_STORE opcode
+		expect(emitTestInstructions(context)).not.toContain(57); // no F64_STORE
 	});
 
 	it('emits f64.store for float64 value at unsafe address', () => {
@@ -158,8 +159,8 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(57); // F64_STORE opcode
-		expect(context.byteCode).not.toContain(56); // no F32_STORE
+		expect(emitTestInstructions(context)).toContain(57); // F64_STORE opcode
+		expect(emitTestInstructions(context)).not.toContain(56); // no F32_STORE
 	});
 
 	it('does not guard when an explicit clamp proves the access width is safe', () => {
@@ -181,6 +182,6 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).not.toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).not.toContain(WASM_MEMORY_SIZE);
 	});
 });

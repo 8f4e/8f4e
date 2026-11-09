@@ -22,7 +22,7 @@ async function countCalls(result: CompileResult) {
 }
 
 describe('function inlining', () => {
-	it('removes eligible calls by default, including repeated calls with fresh locals inside a loop', async () => {
+	it('inlines repeated calls with fresh source and scratch locals inside a loop', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function subtract
 param int left
@@ -31,6 +31,7 @@ local int previous
 push previous
 push left
 sub right
+abs
 add
 push 9
 localSet previous
@@ -41,7 +42,7 @@ function run
 local int previous
 loop 3
 push previous
-call subtract 7 2
+call subtract 2 7
 add
 call subtract 4 1
 add

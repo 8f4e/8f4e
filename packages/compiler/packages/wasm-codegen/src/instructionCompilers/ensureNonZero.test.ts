@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import ensureNonZero from './ensureNonZero';
 
@@ -24,7 +25,7 @@ describe('ensureNonZero instruction compiler', () => {
 
 		expect({
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -44,7 +45,7 @@ describe('ensureNonZero instruction compiler', () => {
 
 		expect({
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -70,7 +71,7 @@ describe('ensureNonZero instruction compiler', () => {
 
 		expect({
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

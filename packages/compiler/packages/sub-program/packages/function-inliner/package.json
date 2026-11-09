@@ -2,7 +2,7 @@
   "name": "@8f4e/function-inliner",
   "version": "0.1.0",
   "private": true,
-  "description": "Function inlining for resolved 8f4e compiler bodies",
+  "description": "Function inlining for lowered Wasm IR",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,5 +1,5 @@
-import { localGet } from '@8f4e/compiler-wasm-utils';
 import type { CodegenContext, ResolvedLocalPushLine } from '@8f4e/language-spec';
+import { wasmLocalGet as localGet } from '@8f4e/language-spec';
 import { saveByteCode } from '../../utils/saveByteCode';
 
 /**

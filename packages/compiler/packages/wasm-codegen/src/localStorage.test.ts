@@ -14,8 +14,7 @@ describe('WebAssembly local storage', () => {
 	});
 
 	it('allocates parameters and source locals before scratch slots', () => {
-		const { functionLayout } = createInstructionCompilerTestContext();
-		const context = createCodegenContext({ functionLayout }, [
+		const context = createCodegenContext({}, [
 			{ id: 0, name: 'pointer', type: 'float64*' },
 			{ id: 1, name: 'value', type: 'float64' },
 		]);

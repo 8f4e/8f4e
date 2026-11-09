@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import exitIfTrue from './exitIfTrue';
 
@@ -22,6 +23,6 @@ describe('exitIfTrue instruction compiler', () => {
 			createStackFacts({ droppedStackItems: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);
 
-		expect(context.byteCode).toEqual([WASM_IF, WASM_TYPE_VOID, WASM_DROP, WASM_RETURN, WASM_END]);
+		expect(emitTestInstructions(context)).toEqual([WASM_IF, WASM_TYPE_VOID, WASM_DROP, WASM_RETURN, WASM_END]);
 	});
 });

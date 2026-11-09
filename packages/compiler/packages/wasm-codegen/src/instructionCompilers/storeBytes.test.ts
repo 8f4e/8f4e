@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import storeBytes from './storeBytes';
 
@@ -41,7 +42,7 @@ describe('storeBytes instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode.filter(b => b === 0x3a)).toHaveLength(2);
+		expect(emitTestInstructions(context).filter(b => b === 0x3a)).toHaveLength(2);
 	});
 
 	it('guards byte stores when address metadata is shorter than the byte count', () => {
@@ -76,6 +77,6 @@ describe('storeBytes instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_MEMORY_SIZE);
 	});
 });

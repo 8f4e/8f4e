@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import { clampAddress, clampGlobalAddress, clampModuleAddress } from './clampAddress';
 
@@ -43,8 +44,8 @@ describe('clamp address instruction compilers', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_SELECT);
-		expect(context.byteCode).not.toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_SELECT);
+		expect(emitTestInstructions(context)).not.toContain(WASM_MEMORY_SIZE);
 	});
 
 	it('emits a signed comparison for the lower range bound', () => {
@@ -68,8 +69,8 @@ describe('clamp address instruction compilers', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_I32_LT_S);
-		expect(context.byteCode).not.toContain(WASM_I32_LT_U);
+		expect(emitTestInstructions(context)).toContain(WASM_I32_LT_S);
+		expect(emitTestInstructions(context)).not.toContain(WASM_I32_LT_U);
 	});
 
 	it('clamps to the current module range', () => {
@@ -87,8 +88,8 @@ describe('clamp address instruction compilers', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_SELECT);
-		expect(context.byteCode).not.toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_SELECT);
+		expect(emitTestInstructions(context)).not.toContain(WASM_MEMORY_SIZE);
 	});
 
 	it('clamps to the full global memory range', () => {
@@ -101,7 +102,7 @@ describe('clamp address instruction compilers', () => {
 			createStackFacts({ clamp: { accessByteWidth: 4 } })
 		);
 
-		expect(context.byteCode).toContain(WASM_MEMORY_SIZE);
-		expect(context.byteCode).toContain(WASM_SELECT);
+		expect(emitTestInstructions(context)).toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_SELECT);
 	});
 });

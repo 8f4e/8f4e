@@ -3,13 +3,13 @@ import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 import { createBlockState } from '@8f4e/semantic-utils';
 import { allocateLocal } from './localStorage';
 
-/** Initializes bytecode emission state and allocates the resolved source bindings. */
+/** Initializes Wasm lowering state and allocates the resolved source bindings. */
 export function createCodegenContext(
-	overrides: Partial<CodegenContext> & Pick<CodegenContext, 'functionLayout'>,
+	overrides: Partial<CodegenContext>,
 	bindings: readonly SourceLocalBinding[] = []
 ): CodegenContext {
 	const context: CodegenContext = {
-		byteCode: [],
+		instructions: [],
 		locals: [],
 		...overrides,
 		...createBlockState(overrides.blockStack),

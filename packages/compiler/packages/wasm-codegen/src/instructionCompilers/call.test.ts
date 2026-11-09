@@ -17,11 +17,7 @@ function createCallLine(): SemanticCallLine {
 describe('call instruction compiler', () => {
 	it('emits the call selected by stack analysis', () => {
 		const context = createInstructionCompilerTestContext();
-		context.functionLayout.functions = {
-			[targetId]: { wasmIndex: 3, typeIndex: 1 },
-			convert__int: { wasmIndex: 2, typeIndex: 2 },
-		};
 		call(createCallLine(), context, createStackFacts({ targetFunctionId: targetId }));
-		expect(context.byteCode).toEqual([0x10, 3]);
+		expect(context.instructions).toEqual([{ kind: 'call', targetFunctionId: targetId }]);
 	});
 });

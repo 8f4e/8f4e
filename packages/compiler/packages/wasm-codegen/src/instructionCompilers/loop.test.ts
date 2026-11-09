@@ -12,7 +12,10 @@ import {
 import { ArgumentType, type CompilerASTLine, type ResolvedLoopLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import loop from './loop';
 import loopEnd from './loopEnd';
 
@@ -39,7 +42,7 @@ describe('loop instruction compiler', () => {
 			...createWasmVersion(1),
 			...createTypeSection([createFunctionType([])]),
 			...createFunctionSection([0]),
-			...createCodeSection([createFunction(declarations, context.byteCode)]),
+			...createCodeSection([createFunction(declarations, emitTestInstructions(context))]),
 		]);
 		expect(WebAssembly.validate(wasm)).toBe(true);
 	});
@@ -60,7 +63,7 @@ describe('loop instruction compiler', () => {
 		expect({
 			blockStack: context.blockStack,
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -80,7 +83,7 @@ describe('loop instruction compiler', () => {
 		expect({
 			blockStack: context.blockStack,
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -100,7 +103,7 @@ describe('loop instruction compiler', () => {
 		expect({
 			blockStack: context.blockStack,
 			locals: context.locals,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

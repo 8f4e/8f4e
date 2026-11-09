@@ -1,5 +1,5 @@
 import { f32const, f64const, i32const, i32load } from '@8f4e/compiler-wasm-utils';
-import type { CodegenContext, PointerMetadata } from '@8f4e/language-spec';
+import type { CodegenContext, PointerMetadata, WasmIRInstruction } from '@8f4e/language-spec';
 import {
 	getDereferencedValueKindFromMetadata,
 	getDereferencedValueWordSizeFromMetadata,
@@ -28,12 +28,12 @@ function buildGuardedPointerLoadChain(
 	context: CodegenContext,
 	kind: PushValueKind,
 	steps: PointerLoadStep[]
-): number[] {
+): WasmIRInstruction[] {
 	const resultType = valueKindToWasmType(kind);
 	// Each step consumes its address before the next step overwrites the same slot.
 	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
-	return steps.reduceRight<number[]>(
+	return steps.reduceRight<WasmIRInstruction[]>(
 		(continuation, step) =>
 			guardedLoadWithLocal(addressLocalIndex, {
 				accessByteWidth: step.accessByteWidth,
@@ -57,10 +57,10 @@ function buildGuardedPointerLoadChain(
 export function buildPointerDereferenceByteCode(
 	context: CodegenContext,
 	pointerMetadata: PointerMetadata,
-	baseAddressByteCode: number[],
+	baseAddressByteCode: WasmIRInstruction[],
 	pointerValueSource: PointerValueSource,
 	dereferenceDepth: number
-): { kind: PushValueKind; byteCode: number[] } {
+): { kind: PushValueKind; byteCode: WasmIRInstruction[] } {
 	const declaredPointerDepth = getPointerDepthFromMetadata(pointerMetadata);
 	const isFinalDereference = dereferenceDepth === declaredPointerDepth;
 	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);

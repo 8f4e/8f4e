@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import and from './and';
 
 describe('and instruction compiler', () => {
@@ -17,7 +20,7 @@ describe('and instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

@@ -1,5 +1,6 @@
-import { i32const, localGet, localSet, WASM_I32_GT_U, WASM_I32_LT_S, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
-import type { CodegenContext, MemoryAddressRange } from '@8f4e/language-spec';
+import { i32const, WASM_I32_GT_U, WASM_I32_LT_S, WASM_SELECT } from '@8f4e/compiler-wasm-utils';
+import type { CodegenContext, MemoryAddressRange, WasmIRInstruction } from '@8f4e/language-spec';
+import { wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { allocateLocal } from '../../localStorage';
 
 /**
@@ -14,7 +15,7 @@ export function clampAddressByteCode(
 	context: CodegenContext,
 	lowerByteAddress: number,
 	upperByteAddressCode: number[]
-): number[] {
+): WasmIRInstruction[] {
 	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return [

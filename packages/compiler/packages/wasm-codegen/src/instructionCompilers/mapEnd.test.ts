@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import mapEnd from './mapEnd';
 
@@ -42,7 +43,7 @@ describe('mapEnd instruction compiler', () => {
 
 		expect(context.locals).toHaveLength(2);
 		expect(rows).toEqual(originalRows);
-		expect({ byteCode: context.byteCode, locals: context.locals }).toMatchSnapshot();
+		expect({ byteCode: emitTestInstructions(context), locals: context.locals }).toMatchSnapshot();
 	});
 
 	it('emits DROP + typed zero for zero rows', () => {
@@ -77,7 +78,7 @@ describe('mapEnd instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 			blockStack: context.blockStack,
 		}).toMatchSnapshot();
 	});

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import round from './round';
 
@@ -22,7 +23,7 @@ describe('round instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
 
-		expect(context.byteCode).toEqual([WASM_F32_NEAREST]);
+		expect(emitTestInstructions(context)).toEqual([WASM_F32_NEAREST]);
 	});
 
 	it('emits F64_NEAREST for float64 operands', () => {
@@ -39,6 +40,6 @@ describe('round instruction compiler', () => {
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);
 
-		expect(context.byteCode).toEqual([WASM_F64_NEAREST]);
+		expect(emitTestInstructions(context)).toEqual([WASM_F64_NEAREST]);
 	});
 });

@@ -1,21 +1,16 @@
+import { f32const, f64const, i32const } from '@8f4e/compiler-wasm-utils';
 import type { FunctionAnalysisReport, FunctionBodyFacts } from '@8f4e/function-analyzer';
 import type {
-	ArgumentIdentifier,
 	CodegenInstructionName,
-	ExecutableInstructionLine,
-	FunctionAST,
 	FunctionInliningOptions,
-	ModuleAST,
-	SourceLocalBinding,
-	StackAnalysisLineFacts,
+	WasmIR,
+	WasmIRBody,
+	WasmIRInstruction,
 } from '@8f4e/language-spec';
-import { ArgumentType } from '@8f4e/language-spec';
-import type {
-	FunctionSemanticReferences,
-	ResolvedOperation,
-	SemanticReferenceReport,
-} from '@8f4e/semantic-reference-resolver';
-import type { StackAnalysisSubProgramReport } from '@8f4e/stack-analyzer';
+import { wasmLocalSet } from '@8f4e/language-spec';
+
+/** V8 counts parameters and declared locals toward the same per-function limit. */
+const MAX_WASM_LOCAL_SLOTS = 50_000;
 
 const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 	'abs',
@@ -51,32 +46,9 @@ const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
 	'xor',
 ]);
 
-interface InlineFunctionsInput<TModule extends ModuleAST, TFunction extends FunctionAST> {
-	semanticReferences: SemanticReferenceReport<TModule, TFunction>;
-	stackReport: StackAnalysisSubProgramReport;
-	functionAnalysis: FunctionAnalysisReport;
-	localSlots: LocalSlotBudget;
-}
-
-interface LocalSlotBudget {
-	limit: number;
-	reserveScratchSlots: (body: readonly ResolvedOperation[], facts: readonly StackAnalysisLineFacts[]) => number;
-}
-
 interface Candidate {
-	callee: FunctionSemanticReferences;
+	callee: WasmIRBody;
 	growth: number;
-	localSlots: number;
-}
-
-interface Body {
-	body: readonly ResolvedOperation[];
-	bindings: readonly SourceLocalBinding[];
-}
-
-interface BodyBuilder {
-	body: ResolvedOperation[];
-	bindings: SourceLocalBinding[];
 }
 
 function hasScalarBody(body: FunctionBodyFacts): boolean {
@@ -89,122 +61,83 @@ function hasScalarBody(body: FunctionBodyFacts): boolean {
 }
 
 function getCandidates(
-	{ semanticReferences, functionAnalysis, stackReport, localSlots }: InlineFunctionsInput<ModuleAST, FunctionAST>,
+	functions: WasmIR['functions'],
+	functionAnalysis: FunctionAnalysisReport,
 	maxExpansionOperations: number
 ): ReadonlyMap<string, Candidate> {
 	const candidates = new Map<string, Candidate>();
-	for (const [id, callee] of Object.entries(semanticReferences.functions)) {
+	for (const [id, callee] of Object.entries(functions)) {
 		const { analysis, bodyFacts } = functionAnalysis.functions[id];
-		if (analysis.isImported) continue;
-		const { parameters } = callee.metadata.signature;
-		const localCount = callee.bindings.length - parameters.length;
-		const expansionSize = bodyFacts.operationCount + parameters.length + localCount * 2;
-		if (expansionSize <= maxExpansionOperations && hasScalarBody(bodyFacts)) {
-			const scratchSlots = localSlots.reserveScratchSlots(callee.body, stackReport.functions[id].operationFacts);
-			candidates.set(id, {
-				callee,
-				growth: Math.max(0, expansionSize - 1),
-				localSlots: callee.bindings.length + scratchSlots,
-			});
+		if (analysis.isImported || !hasScalarBody(bodyFacts)) continue;
+
+		const localCount = callee.sourceBindingCount - callee.parameterCount;
+		const expansionSize = bodyFacts.operationCount + callee.parameterCount + localCount * 2;
+		if (expansionSize <= maxExpansionOperations) {
+			candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
 		}
 	}
 	return candidates;
 }
 
-function bindingArgument(binding: SourceLocalBinding): ArgumentIdentifier {
-	return { type: ArgumentType.IDENTIFIER, value: binding.name, referenceKind: 'plain', scope: 'local' };
-}
-
-function remapBindings(
-	line: ExecutableInstructionLine,
-	bindings: readonly SourceLocalBinding[],
-	lineNumber: number
-): ExecutableInstructionLine {
-	if (line.instruction === 'localSet') {
-		return { ...line, lineNumber, binding: bindings[line.binding.id] };
-	}
-	if (line.instruction === 'push' && 'resolvedTarget' in line && line.resolvedTarget.kind === 'local') {
-		return {
-			...line,
-			lineNumber,
-			resolvedTarget: { kind: 'local', binding: bindings[line.resolvedTarget.binding.id] },
-		};
-	}
-	return { ...line, lineNumber };
-}
-
-function expandCall(caller: BodyBuilder, call: ResolvedOperation, callee: FunctionSemanticReferences): void {
-	const {
-		sourceLineIndex,
-		line: { lineNumber },
-	} = call;
-	const bindings = callee.bindings.map((binding, index) => ({ ...binding, id: caller.bindings.length + index }));
-	caller.bindings.push(...bindings);
-	const emit = (line: ExecutableInstructionLine) => caller.body.push({ sourceLineIndex, line });
-	const store = (binding: SourceLocalBinding) =>
-		emit({ instruction: 'localSet', lineNumber, arguments: [bindingArgument(binding)], binding });
-
+function expandCall(instructions: WasmIRInstruction[], callee: WasmIRBody, bindingOffset: number): void {
 	// The last argument is on top of the caller's stack.
-	const parameterCount = callee.metadata.signature.parameters.length;
-	for (let index = parameterCount - 1; index >= 0; index--) store(bindings[index]);
-	for (const binding of bindings.slice(parameterCount)) {
-		// Wasm zeroes locals on function entry. An inline expansion can execute repeatedly in one frame.
-		emit({
-			instruction: 'push',
-			lineNumber,
-			arguments: [
-				{
-					type: ArgumentType.LITERAL,
-					value: 0,
-					isInteger: binding.type === 'int',
-					...(binding.type === 'float64' ? { isFloat64: true } : {}),
-				},
-			],
-		});
-		store(binding);
+	for (let index = callee.parameterCount - 1; index >= 0; index--) {
+		instructions.push(...wasmLocalSet(bindingOffset + index));
 	}
-	for (const { line } of callee.body) emit(remapBindings(line, bindings, lineNumber));
-}
-
-function rewriteBody<T extends Body>(
-	original: T,
-	facts: readonly StackAnalysisLineFacts[],
-	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number,
-	localSlots: LocalSlotBudget
-): T {
-	let rewritten: BodyBuilder | undefined;
-	let remainingSlots: number | undefined;
-	let remainingGrowth = maxCallerGrowth;
-	for (const [index, operation] of original.body.entries()) {
-		const candidate =
-			operation.line.instruction === 'call' ? candidates.get(facts[index].targetFunctionId!) : undefined;
-		if (candidate && candidate.growth <= remainingGrowth) {
-			remainingSlots ??=
-				localSlots.limit - original.bindings.length - localSlots.reserveScratchSlots(original.body, facts);
-			if (candidate.localSlots <= remainingSlots) {
-				rewritten ??= { body: original.body.slice(0, index), bindings: [...original.bindings] };
-				expandCall(rewritten, operation, candidate.callee);
-				remainingGrowth -= candidate.growth;
-				remainingSlots -= candidate.localSlots;
-				continue;
-			}
+	// Restore Wasm's zero-initialization of declared locals on each execution.
+	for (let index = callee.parameterCount; index < callee.sourceBindingCount; index++) {
+		const local = callee.locals[index];
+		const zero = local.isInteger ? i32const(0) : local.isFloat64 ? f64const(0) : f32const(0);
+		instructions.push(...zero, ...wasmLocalSet(bindingOffset + index));
+	}
+	for (const instruction of callee.instructions) {
+		if (typeof instruction !== 'number' && (instruction.kind === 'local.get' || instruction.kind === 'local.set')) {
+			instructions.push({ ...instruction, binding: bindingOffset + instruction.binding });
+		} else {
+			instructions.push(instruction);
 		}
-		rewritten?.body.push(operation);
 	}
-	return rewritten ? { ...original, ...rewritten } : original;
 }
 
-function rewriteBodies<T extends Body>(
-	bodies: Record<string, T>,
-	stackReport: Record<string, { operationFacts: readonly StackAnalysisLineFacts[] }>,
+function rewriteBody(
+	original: WasmIRBody,
 	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number,
-	localSlots: LocalSlotBudget
-): Record<string, T> {
-	let rewritten: Record<string, T> | undefined;
+	maxCallerGrowth: number
+): WasmIRBody {
+	let instructions: WasmIRInstruction[] | undefined;
+	let locals: WasmIRBody['locals'][number][] | undefined;
+	let remainingGrowth = maxCallerGrowth;
+	for (const [index, instruction] of original.instructions.entries()) {
+		const candidate =
+			typeof instruction !== 'number' && instruction.kind === 'call'
+				? candidates.get(instruction.targetFunctionId)
+				: undefined;
+		const localCount = (locals ?? original.locals).length;
+		if (
+			candidate &&
+			candidate.growth <= remainingGrowth &&
+			localCount + candidate.callee.locals.length <= MAX_WASM_LOCAL_SLOTS
+		) {
+			instructions ??= original.instructions.slice(0, index);
+			locals ??= [...original.locals];
+			expandCall(instructions, candidate.callee, localCount);
+			locals.push(...candidate.callee.locals);
+			remainingGrowth -= candidate.growth;
+		} else {
+			instructions?.push(instruction);
+		}
+	}
+	return instructions && locals ? { ...original, instructions, locals } : original;
+}
+
+function rewriteBodies(
+	bodies: WasmIR['functions'],
+	candidates: ReadonlyMap<string, Candidate>,
+	maxCallerGrowth: number
+): WasmIR['functions'] {
+	let rewritten: Record<string, WasmIRBody> | undefined;
 	for (const [id, body] of Object.entries(bodies)) {
-		const result = rewriteBody(body, stackReport[id].operationFacts, candidates, maxCallerGrowth, localSlots);
+		const result = rewriteBody(body, candidates, maxCallerGrowth);
 		if (result !== body) {
 			rewritten ??= { ...bodies };
 			rewritten[id] = result;
@@ -213,32 +146,18 @@ function rewriteBodies<T extends Body>(
 	return rewritten ?? bodies;
 }
 
-/** Replaces eligible calls in resolved bodies, preserving the original report when there are no rewrites. */
-export function inlineFunctions<TModule extends ModuleAST, TFunction extends FunctionAST>(
-	input: InlineFunctionsInput<TModule, TFunction>,
+/** Replaces eligible calls in Wasm IR using the slots already declared by lowering. */
+export function inlineFunctions(
+	ir: WasmIR,
+	functionAnalysis: FunctionAnalysisReport,
 	{
 		maxExpansionOperations = Number.POSITIVE_INFINITY,
 		maxCallerGrowth = Number.POSITIVE_INFINITY,
 	}: FunctionInliningOptions = {}
-): SemanticReferenceReport<TModule, TFunction> {
-	const { semanticReferences, stackReport, localSlots } = input;
-	const candidates = getCandidates(input, maxExpansionOperations);
-	if (candidates.size === 0) return semanticReferences;
-	const modules = rewriteBodies(
-		semanticReferences.modules,
-		stackReport.modules,
-		candidates,
-		maxCallerGrowth,
-		localSlots
-	);
-	const functions = rewriteBodies(
-		semanticReferences.functions,
-		stackReport.functions,
-		candidates,
-		maxCallerGrowth,
-		localSlots
-	);
-	return modules === semanticReferences.modules && functions === semanticReferences.functions
-		? semanticReferences
-		: { modules, functions };
+): WasmIR {
+	const candidates = getCandidates(ir.functions, functionAnalysis, maxExpansionOperations);
+	if (candidates.size === 0) return ir;
+	const modules = rewriteBodies(ir.modules, candidates, maxCallerGrowth);
+	const functions = rewriteBodies(ir.functions, candidates, maxCallerGrowth);
+	return modules === ir.modules && functions === ir.functions ? ir : { modules, functions };
 }

@@ -6,7 +6,10 @@ import type {
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import push from './push';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
@@ -73,7 +76,7 @@ describe('push instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -91,7 +94,7 @@ describe('push instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -116,7 +119,7 @@ describe('push instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -141,7 +144,7 @@ describe('push instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -159,7 +162,7 @@ describe('push instruction compiler', () => {
 		);
 
 		// f32.const opcode is 67 (0x43), f64.const opcode is 68 (0x44)
-		expect(context.byteCode[0]).toBe(67);
+		expect(emitTestInstructions(context)[0]).toBe(67);
 	});
 
 	describe('float64 memory push', () => {
@@ -177,7 +180,7 @@ describe('push instruction compiler', () => {
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF64', memoryItem), context);
 
 			expect({
-				byteCode: context.byteCode,
+				byteCode: emitTestInstructions(context),
 			}).toMatchSnapshot();
 		});
 
@@ -195,7 +198,7 @@ describe('push instruction compiler', () => {
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF64', memoryItem), context);
 
 			// byteCode: i32const(0) + f64load() = [65, 0, 43, 3, 0]
-			expect(context.byteCode).toContain(43); // F64_LOAD opcode
+			expect(emitTestInstructions(context)).toContain(43); // F64_LOAD opcode
 		});
 
 		it('emits f32.load (opcode 42) for float32 memory, not f64.load', () => {
@@ -210,8 +213,8 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF32', memoryItem), context);
 
-			expect(context.byteCode).toContain(42); // F32_LOAD opcode
-			expect(context.byteCode).not.toContain(43); // no F64_LOAD
+			expect(emitTestInstructions(context)).toContain(42); // F32_LOAD opcode
+			expect(emitTestInstructions(context)).not.toContain(43); // no F64_LOAD
 		});
 
 		it('dereferencing float64* emits f64.load', () => {
@@ -226,7 +229,7 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPointerPushLine('floatPointer', memoryItem), context);
 
-			expect(context.byteCode).toContain(43); // F64_LOAD opcode
+			expect(emitTestInstructions(context)).toContain(43); // F64_LOAD opcode
 		});
 
 		it('dereferencing float64** once emits an integer load', () => {
@@ -241,7 +244,7 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPointerPushLine('floatPointerPointer', memoryItem), context);
 
-			expect(context.byteCode).not.toContain(43); // no F64_LOAD opcode for one-level dereference
+			expect(emitTestInstructions(context)).not.toContain(43); // no F64_LOAD opcode for one-level dereference
 		});
 
 		it('handles mixed int32/float32/float64 memory layout', () => {
@@ -267,28 +270,28 @@ describe('push instruction compiler', () => {
 
 			const contextInt = {
 				...context,
-				byteCode: [] as typeof context.byteCode,
+				instructions: [] as typeof context.instructions,
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myInt', memory.myInt), contextInt);
 
-			expect(contextInt.byteCode).not.toContain(42);
-			expect(contextInt.byteCode).not.toContain(43);
+			expect(emitTestInstructions(contextInt)).not.toContain(42);
+			expect(emitTestInstructions(contextInt)).not.toContain(43);
 
 			const contextFloat = {
 				...context,
-				byteCode: [] as typeof context.byteCode,
+				instructions: [] as typeof context.instructions,
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myFloat', memory.myFloat), contextFloat);
 
-			expect(contextFloat.byteCode).toContain(42); // F32_LOAD
+			expect(emitTestInstructions(contextFloat)).toContain(42); // F32_LOAD
 
 			const contextF64 = {
 				...context,
-				byteCode: [] as typeof context.byteCode,
+				instructions: [] as typeof context.instructions,
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF64', memory.myF64), contextF64);
 
-			expect(contextF64.byteCode).toContain(43); // F64_LOAD
+			expect(emitTestInstructions(contextF64)).toContain(43); // F64_LOAD
 		});
 	});
 });

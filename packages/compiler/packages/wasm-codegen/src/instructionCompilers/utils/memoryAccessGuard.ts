@@ -3,8 +3,6 @@ import {
 	f64const,
 	i32const,
 	ifelse,
-	localGet,
-	localSet,
 	memoryCopy,
 	WASM_I32_ADD,
 	WASM_I32_AND,
@@ -18,7 +16,14 @@ import {
 	type WASM_TYPE_I32,
 	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
-import { type CodegenContext, functionValueTypeToLocalMetadata, type StackItem } from '@8f4e/language-spec';
+import {
+	type CodegenContext,
+	functionValueTypeToLocalMetadata,
+	wasmLocalGet as localGet,
+	wasmLocalSet as localSet,
+	type StackItem,
+	type WasmIRInstruction,
+} from '@8f4e/language-spec';
 import { allocateLocal } from '../../localStorage';
 
 type NumericWasmValueType = typeof WASM_TYPE_I32 | typeof WASM_TYPE_F32 | typeof WASM_TYPE_F64;
@@ -26,7 +31,7 @@ type NumericWasmValueType = typeof WASM_TYPE_I32 | typeof WASM_TYPE_F32 | typeof
 type GuardedLoadOptions = {
 	accessByteWidth: number;
 	resultType: NumericWasmValueType;
-	loadByteCode: number[];
+	loadByteCode: WasmIRInstruction[];
 };
 
 type GuardedStoreOptions = {
@@ -76,11 +81,11 @@ function linearMemoryByteLength(): number[] {
 	return [WASM_MEMORY_SIZE, 0, ...i32const(16), WASM_I32_SHL];
 }
 
-function addressWithinMemoryBounds(addressLocalIndex: number, accessByteWidth: number): number[] {
+function addressWithinMemoryBounds(addressLocalIndex: number, accessByteWidth: number): WasmIRInstruction[] {
 	return [...localGet(addressLocalIndex), ...linearLastValidStartAddress(accessByteWidth), WASM_I32_LE_U];
 }
 
-function rangeWithinMemoryBounds(addressLocalIndex: number, byteLength: number): number[] {
+function rangeWithinMemoryBounds(addressLocalIndex: number, byteLength: number): WasmIRInstruction[] {
 	return [
 		...localGet(addressLocalIndex),
 		...linearMemoryByteLength(),
@@ -109,7 +114,7 @@ function zeroValue(type: NumericWasmValueType): number[] {
  * @param options - Compiler options for this compilation pass.
  * @returns The computed result.
  */
-export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions): number[] {
+export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions): WasmIRInstruction[] {
 	const index = allocateLocal(context, { isInteger: true });
 	return guardedLoadWithLocal(index, options);
 }
@@ -118,7 +123,7 @@ export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions
 export function guardedLoadWithLocal(
 	addressLocalIndex: number,
 	{ accessByteWidth, resultType, loadByteCode }: GuardedLoadOptions
-): number[] {
+): WasmIRInstruction[] {
 	return [
 		...localSet(addressLocalIndex),
 		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),
@@ -133,7 +138,7 @@ export function guardedLoadWithLocal(
  * @param options - Compiler options for this compilation pass.
  * @returns The computed result.
  */
-export function guardedStore(context: CodegenContext, options: GuardedStoreOptions): number[] {
+export function guardedStore(context: CodegenContext, options: GuardedStoreOptions): WasmIRInstruction[] {
 	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 	const valueLocalIndex = allocateLocal(context, functionValueTypeToLocalMetadata(options.value.valueType));
 
@@ -163,7 +168,7 @@ export function isSafeMemoryCopy(destination: StackItem, source: StackItem, byte
  * @param byteLength - Number of bytes to copy.
  * @returns The computed result.
  */
-export function guardedMemoryCopy(context: CodegenContext, byteLength: number): number[] {
+export function guardedMemoryCopy(context: CodegenContext, byteLength: number): WasmIRInstruction[] {
 	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
 	const sourceLocalIndex = allocateLocal(context, { isInteger: true });
 
@@ -196,7 +201,7 @@ export function guardedStoreFromLocals(
 	valueLocalIndex: number,
 	accessByteWidth: number,
 	storeByteCode: number[]
-): number[] {
+): WasmIRInstruction[] {
 	return [
 		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),
 		...ifelse(WASM_TYPE_VOID, [...localGet(addressLocalIndex), ...localGet(valueLocalIndex), ...storeByteCode]),

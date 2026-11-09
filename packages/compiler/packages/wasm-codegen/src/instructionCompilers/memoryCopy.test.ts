@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	createStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import memoryCopy from './memoryCopy';
 
@@ -55,7 +56,7 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toStrictEqual([0x41, 0x14, 0xfc, WASM_MISC_MEMORY_COPY, 0x00, 0x00]);
+		expect(emitTestInstructions(context)).toStrictEqual([0x41, 0x14, 0xfc, WASM_MISC_MEMORY_COPY, 0x00, 0x00]);
 	});
 
 	it('guards the copy when the length is not proven at compile time', () => {
@@ -73,8 +74,8 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toContain(WASM_MEMORY_SIZE);
-		expect(context.byteCode).toContain(WASM_MISC_MEMORY_COPY);
+		expect(emitTestInstructions(context)).toContain(WASM_MEMORY_SIZE);
+		expect(emitTestInstructions(context)).toContain(WASM_MISC_MEMORY_COPY);
 	});
 
 	it('compiles memoryCopy 0 as a stack-only no-op', () => {
@@ -95,6 +96,6 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.byteCode).toStrictEqual([]);
+		expect(emitTestInstructions(context)).toStrictEqual([]);
 	});
 });

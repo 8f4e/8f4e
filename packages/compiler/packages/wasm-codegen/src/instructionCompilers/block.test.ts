@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import createInstructionCompilerTestContext, { compileInstructionForTest } from '../../tests/testUtils';
+import createInstructionCompilerTestContext, {
+	compileInstructionForTest,
+	emitTestInstructions,
+} from '../../tests/testUtils';
 import block from './block';
 
 describe('block instruction compiler', () => {
@@ -20,7 +23,7 @@ describe('block instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -40,7 +43,7 @@ describe('block instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -60,7 +63,7 @@ describe('block instruction compiler', () => {
 
 		expect({
 			blockStack: context.blockStack,
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });

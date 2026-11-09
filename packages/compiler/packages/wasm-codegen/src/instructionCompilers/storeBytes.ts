@@ -1,6 +1,6 @@
-import { i32store8, localGet, localSet } from '@8f4e/compiler-wasm-utils';
+import { i32store8 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, StoreBytesLine } from '@8f4e/language-spec';
-import { getInstructionSpec } from '@8f4e/language-spec';
+import { getInstructionSpec, wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { allocateLocal } from '../localStorage';
 import { guardedStoreFromLocals, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';

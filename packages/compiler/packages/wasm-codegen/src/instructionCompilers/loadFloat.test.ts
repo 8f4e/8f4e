@@ -4,6 +4,7 @@ import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
 	containsByteCodeSequence,
 	createStackFacts as createBaseStackFacts,
+	emitTestInstructions,
 } from '../../tests/testUtils';
 import loadFloat from './loadFloat';
 
@@ -34,9 +35,9 @@ describe('loadFloat instruction compiler', () => {
 		});
 		facts.stackAnalysis.producedStackItems = [{ kind: 'value', valueType: 'float64', isNonZero: false }];
 		compileInstructionForTest(loadFloat, { lineNumber: 1, instruction: 'loadFloat', arguments: [] }, context, facts);
-		expect(containsByteCodeSequence(context.byteCode, [0x2b, 3, 0])).toBe(true);
-		expect(containsByteCodeSequence(context.byteCode, [0x04, 0x7c])).toBe(guarded);
-		expect(context.byteCode).toMatchSnapshot();
+		expect(containsByteCodeSequence(emitTestInstructions(context), [0x2b, 3, 0])).toBe(true);
+		expect(containsByteCodeSequence(emitTestInstructions(context), [0x04, 0x7c])).toBe(guarded);
+		expect(emitTestInstructions(context)).toMatchSnapshot();
 	});
 
 	it('loads from a safe memory address', () => {
@@ -70,7 +71,7 @@ describe('loadFloat instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 
@@ -89,7 +90,7 @@ describe('loadFloat instruction compiler', () => {
 		);
 
 		expect({
-			byteCode: context.byteCode,
+			byteCode: emitTestInstructions(context),
 		}).toMatchSnapshot();
 	});
 });
