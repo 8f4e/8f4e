@@ -38,6 +38,24 @@ async function loadExampleProject(relativePath: string) {
 }
 
 describe('compileProject (example projects)', () => {
+	it('passes the function inlining option to the compiler', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function value
+push 7
+functionEnd int
+entry main
+module example
+call value
+drop
+moduleEnd
+entryEnd`);
+		const cliModule = await import(pathToFileURL(path.join(packageRoot, 'dist', 'index.js')).href);
+		const optimized = await cliModule.compileProject(project);
+		const baseline = await cliModule.compileProject(project, { compilerOptions: { enableFunctionInlining: false } });
+		expect(baseline.compilerOptions?.enableFunctionInlining).toBe(false);
+		expect(baseline.compiledWasm).not.toEqual(optimized.compiledWasm);
+	});
+
 	it.each(exampleProjects)('compiles %s consistently', async relativePath => {
 		const project = await loadExampleProject(relativePath);
 		const cliModule = await import(pathToFileURL(path.join(packageRoot, 'dist', 'index.js')).href);

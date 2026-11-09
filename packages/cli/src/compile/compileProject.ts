@@ -8,9 +8,11 @@ export async function compileProject(
 ): Promise<CompileProjectResult> {
 	const includeModules = options.includeModules ?? true;
 	const includeWasm = options.includeWasm ?? true;
+	const enableFunctionInlining = options.compilerOptions?.enableFunctionInlining;
 
 	const compilerOptions: CompileOptions = {
 		startingMemoryAllocationUnitAddress: options.compilerOptions?.startingMemoryAllocationUnitAddress ?? 0,
+		...(enableFunctionInlining === undefined ? {} : { enableFunctionInlining }),
 	};
 
 	const moduleResult = await compileProjectModules(project, {
