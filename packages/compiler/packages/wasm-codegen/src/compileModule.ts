@@ -29,6 +29,7 @@ import { createCodegenContext } from './createCodegenContext';
  * @param options - Compiler options for this compilation pass.
  * @param typeRegistry - Function type registry used for WASM block signatures.
  * @param stackReport - Stack-analysis report for this module.
+ * @param assertionCalls - Planned assertion callbacks keyed by operation index.
  * @returns The compiled module artifact.
  */
 export function compileModule(
@@ -44,7 +45,6 @@ export function compileModule(
 	const context = createCodegenContext(
 		{
 			functionLayout,
-			assertionCalls,
 			byteCode: [],
 			blockStack: [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 			functionTypeRegistry: typeRegistry,
@@ -57,7 +57,7 @@ export function compileModule(
 	);
 
 	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context, assertionCalls?.get(operationIndex));
 
 	return {
 		referenceSlots: resolved.referenceSlots,

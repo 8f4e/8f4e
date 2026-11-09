@@ -1,5 +1,6 @@
 import { WASM_TYPE_F32, WASM_TYPE_F64, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
 import type {
+	AssertionCodegenSite,
 	AssertionCodegenSites,
 	AssertionImport,
 	AssertionImportName,
@@ -29,7 +30,7 @@ export function planAssertions(
 	for (const block of blocks) {
 		const { ast, body } = block;
 		const report = 'metadata' in block ? stackReport.functions[block.metadata.id] : stackReport.modules[block.ast.id];
-		const calls = new Map<number, { siteId: number; fieldName: AssertionImportName }>();
+		const calls = new Map<number, AssertionCodegenSite>();
 		for (const [operationIndex, { line }] of body.entries()) {
 			if (line.instruction !== 'assert' && line.instruction !== 'assertEqual') continue;
 			const valueType =
@@ -68,7 +69,7 @@ export function planAssertions(
 				...(ast.projectBlockId !== undefined ? { projectBlockId: ast.projectBlockId } : {}),
 				...(ast.source ? { source: { ...ast.source, symbolName: origin.codeBlockId } } : {}),
 			});
-			calls.set(line.lineNumber, { siteId, fieldName });
+			calls.set(operationIndex, { siteId, fieldName });
 		}
 		plan.calls.set(ast, calls);
 	}

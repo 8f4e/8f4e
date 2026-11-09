@@ -30,6 +30,7 @@ import { createCodegenContext } from './createCodegenContext';
  * @param stackReport - Stack-analysis report for this function.
  * @param analysis - Structural function facts passed through to compiled output.
  * @param options - Compiler options for this compilation pass.
+ * @param assertionCalls - Planned assertion callbacks keyed by operation index.
  * @returns The compiled function artifact.
  */
 export function compileFunction(
@@ -45,7 +46,6 @@ export function compileFunction(
 	const context = createCodegenContext(
 		{
 			functionLayout,
-			assertionCalls,
 			byteCode: [],
 			blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
 			codeBlockType: 'function',
@@ -58,7 +58,7 @@ export function compileFunction(
 	);
 
 	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context);
+		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context, assertionCalls?.get(operationIndex));
 	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
 
 	// Collect locals (excluding parameters)

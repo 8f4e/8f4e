@@ -36,5 +36,10 @@ export interface AssertionImport extends FunctionImportMetadata {
 	signature: FunctionTypeSignature;
 }
 
-/** Internal assertion calls keyed by physical source line within one block. */
-export type AssertionCodegenSites = ReadonlyMap<number, { siteId: number; fieldName: AssertionImportName }>;
+export interface AssertionCodegenSite {
+	siteId: number;
+	fieldName: AssertionImportName;
+}
+
+/** Internal assertion calls keyed by operation index within one resolved body. */
+export type AssertionCodegenSites = ReadonlyMap<number, AssertionCodegenSite>;
