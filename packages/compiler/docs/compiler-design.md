@@ -63,9 +63,23 @@ canonical function ID. It records imports, explicit returns, early returns, and 
 The call graph includes source functions, composed entry dispatchers, and module bodies, with skipped module dispatches
 excluded. Return facts inspect executable body structure: a final top-level return is explicit but not early.
 
-The report does not change source bodies or generated WebAssembly. Codegen passes its facts through to the required
-`CompiledFunction.analysis` field, including when source stack analysis is not requested. The analyzer owns facts;
-future optimization passes own inlining eligibility, budgets, and transformations.
+Codegen passes these facts through to the required `CompiledFunction.analysis` field independently of
+`includeStackAnalysis`. Optimization passes use the facts to choose their own eligibility rules and budgets.
+
+## Function Inlining
+
+`@8f4e/function-inliner` uses resolved bodies, the canonical call targets from stack analysis, and structural function
+facts to expand eligible calls in modules and functions. Eligible callees are small, straight-line scalar leaf
+functions with implicit returns. Each replacement contains at most 12 operations including argument stores and local
+initialization. Total growth is capped at 64 operations per caller.
+
+Each expansion assigns fresh caller-local binding IDs, stores the already evaluated arguments, and zeroes callee
+locals on every execution. The expanded operations use the caller's source location. The original function definitions
+and exports remain available.
+
+Sub-program orchestration refreshes operation facts when a body changes, then plans assertion callbacks and Wasm
+function indices from the resulting bodies. The compiled metadata uses the original source stack view. To compile with
+ordinary calls, set `enableFunctionInlining: false` in `compileProject` options. Inlining is enabled by default.
 
 ## Design Rule
 
