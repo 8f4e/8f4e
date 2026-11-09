@@ -52,6 +52,59 @@ describe('cli', () => {
 		await expect(execCli(['compile', fixturePath])).rejects.toThrow('Command failed');
 	});
 
+	it('controls function inlining in the emitted Wasm', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'inlining.8f4e');
+		const output = path.join(tmpDir, 'inlining.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function leaf
+push 7
+add 1
+functionEnd int
+
+function run
+#export
+call leaf
+call leaf
+add
+functionEnd int
+
+entry main
+module main
+moduleEnd
+entryEnd
+`
+		);
+		async function compile(...flags: string[]) {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			return fs.readFile(output);
+		}
+
+		const inlined = await compile();
+		const calls = await compile('--no-inline-functions');
+		expect(inlined).not.toEqual(calls);
+		expect(await compile('--no-inline-functions', '--inline-functions')).toEqual(inlined);
+		expect(await compile('--inline-functions', '--no-inline-functions')).toEqual(calls);
+		expect(await compile('--max-inline-expansion-operations', '0')).toEqual(calls);
+		const oneCall = await compile('--max-inline-caller-growth', '2');
+		expect(oneCall).not.toEqual(inlined);
+		expect(oneCall).not.toEqual(calls);
+		expect(await compile('--max-inline-expansion-operations', '0', '--max-inline-caller-growth', '2')).toEqual(calls);
+	});
+
+	it.each([
+		[['--max-inline-expansion-operations'], 'Missing value for --max-inline-expansion-operations'],
+		[['--max-inline-expansion-operations', '-1'], '--max-inline-expansion-operations expects a non-negative integer'],
+		[['--max-inline-caller-growth', '2.5'], '--max-inline-caller-growth expects a non-negative integer'],
+		[['--max-inline-caller-growth', '9007199254740993'], '--max-inline-caller-growth expects a non-negative integer'],
+	])('rejects invalid inlining flags %j', async (flags, message) => {
+		await expect(execCli(['compile', fixturePath, '--wasm-output', wasmPath, ...flags])).rejects.toMatchObject({
+			stderr: expect.stringContaining(message),
+		});
+	});
+
 	it('exports compiler memory information and executable shared-memory WASM', async () => {
 		const outputWasm = path.join(tmpDir, 'native.wasm');
 		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');

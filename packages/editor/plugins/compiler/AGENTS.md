@@ -4,7 +4,7 @@
   `getCodeBuffer`, `getAssertionSites`, `getDiagnostics`, and `writeMemory` handles. Construct once per editor; install before dependents.
 - Diagnostic reads are detached and identify the current input revision, completed revision, and readiness. Do not present previous-input compiler errors as current while a new compilation is pending.
 - Own scheduling, worker transport, include requests, accepted artifacts, diagnostics, statistics, memory-write views,
-  and the recompile debounce schema contribution here. Core must not invoke a compiler callback or install a compilation effect.
+  and the compiler config schemas here. Core must not invoke a compiler callback or install a compilation effect.
 - Publish raw errors through the contributor-owned `codeErrors.compiler` list and remove it on disposal. Message
   presentation belongs to error-messages; do not reserve layout or store drawing geometry here.
 - Listen to `compilationInputChanged`, emitted by core after its input revision advances. Read the latest project tree
@@ -15,6 +15,8 @@
 - Run only one worker compilation at a time; coalesce edits received in flight and respect the latest debounce interval.
 - Contribute the integer `recompileDebounceDelay` config schema through `editorConfigSchemaContributions.compiler`.
   Keep its typing and default in this package; use the shared directive validation and parsing mechanism.
+- Contribute the `functionInlining` schema through `editorConfigSchemaContributions.compilerFunctionInlining`.
+  Advance the compiler input revision when the resolved inlining settings change, including when notes are reordered.
 - The internal worker adapter requires an explicit current-input check and returns the canonical language-spec result.
   Core receives only `ProgramArtifacts` containing `memoryRef`; bytecode stays on the compiler getter.
   Do not reconstruct the old core compiler-result interface.

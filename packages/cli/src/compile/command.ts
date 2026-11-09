@@ -1,4 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import type { CompileOptions } from '@8f4e/language-spec';
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { RuntimeMemoryInfo } from '../shared/types';
@@ -8,12 +9,14 @@ interface CompileCommandArgs {
 	inputPath?: string;
 	wasmOutputPath?: string;
 	memoryOutputPath?: string;
+	compilerOptions: CompileOptions;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let inputPath: string | undefined;
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
+	const compilerOptions: CompileOptions = {};
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -30,6 +33,24 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			i += 1;
 			continue;
 		}
+		if (arg === '--inline-functions' || arg === '--no-inline-functions') {
+			compilerOptions.enableFunctionInlining = arg === '--inline-functions';
+			continue;
+		}
+		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
+			const value = args[i + 1];
+			if (!value || value.startsWith('--')) {
+				throw new Error(`Missing value for ${arg}`);
+			}
+			const limit = Number(value);
+			if (!/^\d+$/.test(value) || !Number.isSafeInteger(limit)) {
+				throw new Error(`${arg} expects a non-negative integer`);
+			}
+			const key = arg === '--max-inline-expansion-operations' ? 'maxExpansionOperations' : 'maxCallerGrowth';
+			(compilerOptions.functionInlining ??= {})[key] = limit;
+			i += 1;
+			continue;
+		}
 		if (!inputPath && !arg.startsWith('-')) {
 			inputPath = arg;
 			continue;
@@ -37,15 +58,19 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		throw new Error(`Unknown compile argument: ${arg}`);
 	}
 
-	return { inputPath, wasmOutputPath, memoryOutputPath };
+	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions };
 }
 
 export function getCompileUsage(): string {
-	return 'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]';
+	return [
+		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
+		'    [--inline-functions | --no-inline-functions]',
+		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
+	].join('\n');
 }
 
 export async function runCompileCommand(args: string[]): Promise<void> {
-	const { inputPath, wasmOutputPath, memoryOutputPath } = parseCompileArgs(args);
+	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions } = parseCompileArgs(args);
 
 	if (!inputPath) {
 		throw new Error(getCompileUsage());
@@ -72,7 +97,7 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
 
-	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project);
+	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, { compilerOptions });
 
 	await fs.mkdir(path.dirname(resolvedWasmOutput), { recursive: true });
 	await fs.writeFile(resolvedWasmOutput, Buffer.from(compiledWasm, 'base64'));

@@ -1,12 +1,17 @@
 import type { EditorPluginContext, LoadingIndicatorHandle } from '@8f4e/editor-core';
-import { logMessage, serializeProjectLevel } from '@8f4e/editor-state';
+import { incrementCompilerInputRevision, logMessage, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
 import type { CompilerDiagnostic } from '@8f4e/language-spec';
 import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { hasTestEntry } from '@8f4e/test-runner';
 import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
-import { compilerEditorConfigSchemaContribution, getRecompileDebounceDelay } from './editor-config';
+import {
+	compilerEditorConfigSchemaContribution,
+	functionInliningSchemaContribution,
+	getFunctionInliningOptions,
+	getRecompileDebounceDelay,
+} from './editor-config';
 
 export interface CompilerDiagnostics {
 	inputRevision: number;
@@ -22,7 +27,12 @@ export default function installCompilation(
 ) {
 	const state = store.getState();
 	store.set('codeErrors.compiler', []);
-	store.set('editorConfigSchemaContributions.compiler', compilerEditorConfigSchemaContribution);
+	store.set('editorConfigSchemaContributions', {
+		...state.editorConfigSchemaContributions,
+		compiler: compilerEditorConfigSchemaContribution,
+		compilerFunctionInlining: functionInliningSchemaContribution,
+	});
+	let inliningOptions = getFunctionInliningOptions(state.editorConfig);
 	let disposed = false;
 	let inputGeneration = 0;
 	let compiling = false;
@@ -69,6 +79,7 @@ export default function installCompilation(
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: hasTestEntry(project),
+				...inliningOptions,
 			};
 			const result = await compileCode(project, compilerOptions, isCurrent);
 			if (!isCurrent()) {
@@ -160,7 +171,22 @@ export default function installCompilation(
 		scheduleRecompile();
 	}
 
+	function onInliningConfigChanged(): void {
+		const next = getFunctionInliningOptions(state.editorConfig);
+		if (
+			next.enableFunctionInlining === inliningOptions.enableFunctionInlining &&
+			next.functionInlining?.maxExpansionOperations === inliningOptions.functionInlining?.maxExpansionOperations &&
+			next.functionInlining?.maxCallerGrowth === inliningOptions.functionInlining?.maxCallerGrowth
+		) {
+			return;
+		}
+		inliningOptions = next;
+		// Reordering notes can change config precedence without changing compilation order.
+		incrementCompilerInputRevision(store);
+	}
+
 	events.on('compilationInputChanged', onInputChanged);
+	store.subscribe('editorConfig.functionInlining', onInliningConfigChanged);
 
 	const dispose = () => {
 		if (disposed) return;
@@ -169,8 +195,10 @@ export default function installCompilation(
 		compilationLoading = undefined;
 		scheduleRecompile.cancel();
 		events.off('compilationInputChanged', onInputChanged);
+		store.unsubscribe('editorConfig.functionInlining', onInliningConfigChanged);
 		const schemas = { ...state.editorConfigSchemaContributions };
 		delete schemas.compiler;
+		delete schemas.compilerFunctionInlining;
 		store.set('editorConfigSchemaContributions', schemas);
 		const errors = { ...state.codeErrors };
 		delete errors.compiler;

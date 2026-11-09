@@ -59,11 +59,25 @@ The plugin replaces its raw errors through `codeErrors.compiler` and removes tha
 Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
 Inline message layout and drawing belong to `editor-plugin-error-messages`.
 
+## Function inlining
+
+The editor inlines eligible functions by default. Use `; @config functionInlining.enabled false` to disable inlining
+for the project, or set it to `true` to enable it explicitly. Changes to these settings trigger compilation.
+
+```8f4e
+; @config functionInlining.maxExpansionOperations 24
+; @config functionInlining.maxCallerGrowth 64
+```
+
+Both limits accept non-negative integers, including zero. `maxExpansionOperations` caps each replacement, including
+argument stores and local initialization. `maxCallerGrowth` caps the total additional operations from inlining in
+each caller. Omit a limit to leave that budget uncapped.
+
 ## Lifecycle
 
 Editor initialization installs plugins before loading initial content. On editor disposal, core sends `dispose` to
 dispose execution plugins before releasing compiler resources. Plugins are released in reverse installation order, so dependent
-feature plugins shut down before the compiler. Compiler cleanup removes its event listener and configuration schema,
+feature plugins shut down before the compiler. Compiler cleanup removes its subscriptions and configuration schemas,
 cancels the debounce, ignores late results, rejects pending worker requests, and terminates its worker. Cleanup also
 runs after initialization failures and when another plugin's disposer throws.
 

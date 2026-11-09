@@ -64,7 +64,7 @@ describe('compilation scheduling and publication', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
 		const on = vi.spyOn(events, 'on');
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		expect(subscribeSpy).not.toHaveBeenCalled();
+		expect(subscribeSpy.mock.calls.map(([path]) => path)).toEqual(['editorConfig.functionInlining']);
 		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
 	});
 
