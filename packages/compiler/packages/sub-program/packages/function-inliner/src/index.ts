@@ -55,11 +55,18 @@ interface InlineFunctionsInput<TModule extends ModuleAST, TFunction extends Func
 	semanticReferences: SemanticReferenceReport<TModule, TFunction>;
 	stackReport: StackAnalysisSubProgramReport;
 	functionAnalysis: FunctionAnalysisReport;
+	localSlots: LocalSlotBudget;
+}
+
+interface LocalSlotBudget {
+	limit: number;
+	reserveScratchSlots: (body: readonly ResolvedOperation[], facts: readonly StackAnalysisLineFacts[]) => number;
 }
 
 interface Candidate {
 	callee: FunctionSemanticReferences;
 	growth: number;
+	localSlots: number;
 }
 
 interface Body {
@@ -82,19 +89,23 @@ function hasScalarBody(body: FunctionBodyFacts): boolean {
 }
 
 function getCandidates(
-	functions: SemanticReferenceReport['functions'],
-	functionAnalysis: FunctionAnalysisReport,
+	{ semanticReferences, functionAnalysis, stackReport, localSlots }: InlineFunctionsInput<ModuleAST, FunctionAST>,
 	maxExpansionOperations: number
 ): ReadonlyMap<string, Candidate> {
 	const candidates = new Map<string, Candidate>();
-	for (const [id, callee] of Object.entries(functions)) {
+	for (const [id, callee] of Object.entries(semanticReferences.functions)) {
 		const { analysis, bodyFacts } = functionAnalysis.functions[id];
 		if (analysis.isImported) continue;
 		const { parameters } = callee.metadata.signature;
 		const localCount = callee.bindings.length - parameters.length;
 		const expansionSize = bodyFacts.operationCount + parameters.length + localCount * 2;
 		if (expansionSize <= maxExpansionOperations && hasScalarBody(bodyFacts)) {
-			candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
+			const scratchSlots = localSlots.reserveScratchSlots(callee.body, stackReport.functions[id].operationFacts);
+			candidates.set(id, {
+				callee,
+				growth: Math.max(0, expansionSize - 1),
+				localSlots: callee.bindings.length + scratchSlots,
+			});
 		}
 	}
 	return candidates;
@@ -159,20 +170,27 @@ function rewriteBody<T extends Body>(
 	original: T,
 	facts: readonly StackAnalysisLineFacts[],
 	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number
+	maxCallerGrowth: number,
+	localSlots: LocalSlotBudget
 ): T {
 	let rewritten: BodyBuilder | undefined;
+	let remainingSlots: number | undefined;
 	let remainingGrowth = maxCallerGrowth;
 	for (const [index, operation] of original.body.entries()) {
 		const candidate =
 			operation.line.instruction === 'call' ? candidates.get(facts[index].targetFunctionId!) : undefined;
 		if (candidate && candidate.growth <= remainingGrowth) {
-			rewritten ??= { body: original.body.slice(0, index), bindings: [...original.bindings] };
-			expandCall(rewritten, operation, candidate.callee);
-			remainingGrowth -= candidate.growth;
-		} else {
-			rewritten?.body.push(operation);
+			remainingSlots ??=
+				localSlots.limit - original.bindings.length - localSlots.reserveScratchSlots(original.body, facts);
+			if (candidate.localSlots <= remainingSlots) {
+				rewritten ??= { body: original.body.slice(0, index), bindings: [...original.bindings] };
+				expandCall(rewritten, operation, candidate.callee);
+				remainingGrowth -= candidate.growth;
+				remainingSlots -= candidate.localSlots;
+				continue;
+			}
 		}
+		rewritten?.body.push(operation);
 	}
 	return rewritten ? { ...original, ...rewritten } : original;
 }
@@ -181,11 +199,12 @@ function rewriteBodies<T extends Body>(
 	bodies: Record<string, T>,
 	stackReport: Record<string, { operationFacts: readonly StackAnalysisLineFacts[] }>,
 	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number
+	maxCallerGrowth: number,
+	localSlots: LocalSlotBudget
 ): Record<string, T> {
 	let rewritten: Record<string, T> | undefined;
 	for (const [id, body] of Object.entries(bodies)) {
-		const result = rewriteBody(body, stackReport[id].operationFacts, candidates, maxCallerGrowth);
+		const result = rewriteBody(body, stackReport[id].operationFacts, candidates, maxCallerGrowth, localSlots);
 		if (result !== body) {
 			rewritten ??= { ...bodies };
 			rewritten[id] = result;
@@ -196,16 +215,29 @@ function rewriteBodies<T extends Body>(
 
 /** Replaces eligible calls in resolved bodies, preserving the original report when there are no rewrites. */
 export function inlineFunctions<TModule extends ModuleAST, TFunction extends FunctionAST>(
-	{ semanticReferences, stackReport, functionAnalysis }: InlineFunctionsInput<TModule, TFunction>,
+	input: InlineFunctionsInput<TModule, TFunction>,
 	{
 		maxExpansionOperations = Number.POSITIVE_INFINITY,
 		maxCallerGrowth = Number.POSITIVE_INFINITY,
 	}: FunctionInliningOptions = {}
 ): SemanticReferenceReport<TModule, TFunction> {
-	const candidates = getCandidates(semanticReferences.functions, functionAnalysis, maxExpansionOperations);
+	const { semanticReferences, stackReport, localSlots } = input;
+	const candidates = getCandidates(input, maxExpansionOperations);
 	if (candidates.size === 0) return semanticReferences;
-	const modules = rewriteBodies(semanticReferences.modules, stackReport.modules, candidates, maxCallerGrowth);
-	const functions = rewriteBodies(semanticReferences.functions, stackReport.functions, candidates, maxCallerGrowth);
+	const modules = rewriteBodies(
+		semanticReferences.modules,
+		stackReport.modules,
+		candidates,
+		maxCallerGrowth,
+		localSlots
+	);
+	const functions = rewriteBodies(
+		semanticReferences.functions,
+		stackReport.functions,
+		candidates,
+		maxCallerGrowth,
+		localSlots
+	);
 	return modules === semanticReferences.modules && functions === semanticReferences.functions
 		? semanticReferences
 		: { modules, functions };

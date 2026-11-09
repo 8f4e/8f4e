@@ -1,4 +1,4 @@
-import { analyzeFunctions } from '@8f4e/function-analyzer';
+import type { FunctionAnalysisReport } from '@8f4e/function-analyzer';
 import { ArgumentType, createFunctionId, type ExecutableInstructionLine, type FunctionAST } from '@8f4e/language-spec';
 import type { FunctionSemanticReferences, SemanticReferenceReport } from '@8f4e/semantic-reference-resolver';
 import { describe, expect, it } from 'vitest';
@@ -73,8 +73,32 @@ function createInput(leafBody: ExecutableInstructionLine[], callCount: number) {
 			},
 		},
 	};
-	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries: [] });
-	return { semanticReferences, stackReport, functionAnalysis, caller, leaf };
+	const analysis = { isImported: false, isRecursive: false, hasExplicitReturn: false, hasEarlyReturn: false };
+	const scalarTypes = { hasPointerBindings: false, hasPointerReturns: false };
+	const functionAnalysis: FunctionAnalysisReport = {
+		functions: {
+			[leaf.metadata.id]: {
+				analysis,
+				bodyFacts: {
+					operationCount: leafBody.length,
+					instructionKinds: ['push', 'drop'],
+					pushOperandKinds: ['literal'],
+					...scalarTypes,
+				},
+			},
+			[caller.metadata.id]: {
+				analysis,
+				bodyFacts: {
+					operationCount: callCount,
+					instructionKinds: ['call'],
+					pushOperandKinds: [],
+					...scalarTypes,
+				},
+			},
+		},
+	};
+	const localSlots = { limit: 50_000, reserveScratchSlots: () => 0 };
+	return { semanticReferences, stackReport, functionAnalysis, localSlots, caller, leaf };
 }
 
 describe('inlineFunctions', () => {
@@ -97,11 +121,6 @@ describe('inlineFunctions', () => {
 
 	it('applies an expansion limit when configured', () => {
 		const input = createInput(Array.from({ length: 7 }, () => [push, drop]).flat(), 1);
-		expect(input.functionAnalysis.functions[input.leaf.metadata.id].bodyFacts).toMatchObject({
-			operationCount: 14,
-			instructionKinds: ['push', 'drop'],
-			pushOperandKinds: ['literal'],
-		});
 		expect(inlineFunctions(input, { maxExpansionOperations: 12 })).toBe(input.semanticReferences);
 		const rewritten = inlineFunctions(input);
 		expect(rewritten.functions[input.caller.metadata.id].body).toHaveLength(14);

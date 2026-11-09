@@ -34,7 +34,13 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
+import {
+	compileFunction,
+	compileModules,
+	MAX_WASM_LOCAL_SLOTS,
+	planFunctionLayout,
+	reserveWasmScratchSlots,
+} from '@8f4e/wasm-codegen';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 
@@ -297,7 +303,15 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		options.enableFunctionInlining === false
 			? semanticReferences
 			: inlineFunctions(
-					{ semanticReferences, stackReport: sourceStackReport, functionAnalysis },
+					{
+						semanticReferences,
+						stackReport: sourceStackReport,
+						functionAnalysis,
+						localSlots: {
+							limit: MAX_WASM_LOCAL_SLOTS,
+							reserveScratchSlots: (body, facts) => reserveWasmScratchSlots(body, facts, options.enableAssertions),
+						},
+					},
 					options.functionInlining
 				);
 

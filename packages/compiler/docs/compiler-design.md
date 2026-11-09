@@ -79,6 +79,9 @@ Each expansion assigns fresh caller-local binding IDs, stores the already evalua
 locals on every execution. The expanded operations use the caller's source location. The original function definitions
 and exports remain available.
 
+The inliner leaves a call in place if its expansion would exceed V8's 50,000-slot limit. This count includes
+parameters, source locals, and scratch slots reserved for lowering.
+
 Sub-program orchestration refreshes operation facts when a body changes, then plans assertion callbacks and Wasm
 function indices from the resulting bodies. The compiled metadata uses the original source stack view. To compile with
 ordinary calls, set `enableFunctionInlining: false` in `compileProject` options. Inlining is enabled by default.

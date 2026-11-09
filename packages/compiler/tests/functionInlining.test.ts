@@ -192,4 +192,36 @@ functionEnd int`);
 			expect(getExportedFunction(await instantiate(result), 'run')()).toBe(16);
 		}
 	});
+
+	it('keeps calls that would exceed the Wasm local slot limit', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function heavy
+${Array.from({ length: 63 }, (_, index) => `local int heavy${index}`).join('\n')}
+push -7
+abs
+drop
+functionEnd
+
+function light
+local int value
+functionEnd
+
+function run
+#export
+param int value
+${Array.from({ length: 14 }, (_, index) => `local int caller${index}`).join('\n')}
+push value
+abs
+drop
+${'call heavy\n'.repeat(782)}call light
+functionEnd`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		expect(WebAssembly.validate(new Uint8Array(baseline.codeBuffer))).toBe(true);
+
+		const result = await compileProject(project);
+		expect(WebAssembly.validate(new Uint8Array(result.codeBuffer))).toBe(true);
+		expect(await countCalls(result)).toBe(2);
+		const run = result.compiledFunctions![createFunctionId('run', ['int'])];
+		expect(run.locals.length + run.signature.parameters.length).toBe(50_000);
+	});
 });
