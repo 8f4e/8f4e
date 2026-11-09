@@ -1,4 +1,7 @@
 import { type CompileResult, ErrorCode, getProjectModules } from '@8f4e/language-spec';
+import { composeProgram } from '@8f4e/program-composer/internal';
+import { compileSubProgram } from '@8f4e/sub-program/internal';
+import { emitWasmProgram } from '@8f4e/wasm-codegen';
 import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
@@ -21,6 +24,34 @@ function imports(result: CompileResult) {
 }
 
 describe('native compiler assertions', () => {
+	it.each([
+		['module', 'entry main\nmodule checks', 'moduleEnd\nentryEnd', 'main'],
+		['function', 'function checks\n#export', 'functionEnd', 'checks'],
+	] as const)(
+		'keeps typed callbacks distinct for %s assertions on the same source line',
+		async (type, start, end, entry) => {
+			const program = composeProgram(
+				parseProjectSource(`8f4e/v1\n${start}\npush 7\nassertEqual 7\npush 0.5\nassertEqual 0.5\n${end}`)
+			);
+			const [block] = type === 'module' ? program.ast.modules : program.ast.functions;
+			const [first, second] = block.lines.filter(line => line.instruction === 'assertEqual');
+			// Simulate two generated operations sharing a source location.
+			second.lineNumber = first.lineNumber;
+
+			const result = emitWasmProgram(compileSubProgram(program, { enableAssertions: true }));
+			expect(result.assertionSites?.map(({ siteId, lineNumber }) => [siteId, lineNumber])).toEqual([
+				[0, first.lineNumber],
+				[1, first.lineNumber],
+			]);
+			const assertEqualI32 = vi.fn();
+			const assertEqualF32 = vi.fn();
+			const runtime = await instantiate(result, { assertEqualI32, assertEqualF32 });
+			runtime.exports[entry]();
+			expect(assertEqualI32.mock.calls).toEqual([[7, 7, 0]]);
+			expect(assertEqualF32.mock.calls).toEqual([[0.5, 0.5, 1]]);
+		}
+	);
+
 	it('resolves inline constants, expressions, locals, memory values, and pointer reads', async () => {
 		const result = await compile(
 			`entry main
