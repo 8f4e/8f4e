@@ -18,6 +18,7 @@ The workflow performs these stages:
 A failed check or build prevents the release push and deployments. A failed release push prevents deployments.
 If `main` changes during a release, the atomic push rejects the stale release so it can be rerun from the new head.
 Both deployments use immutable artifacts built from the versioned release checkout.
+Each website artifact includes a top-level `404.html` that Cloudflare Pages serves with HTTP 404 for missing URLs.
 
 The repository must provide the `CLOUDFLARE_API_TOKEN` Actions secret and the `CLOUDFLARE_ACCOUNT_ID` Actions
 variable. Existing release tags are required; the workflow refuses to initialize a first release.

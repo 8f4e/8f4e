@@ -33,7 +33,7 @@ export default defineConfig(() => {
 				workbox: {
 					// Download lazy chunks without importing them. Include workers, worklets, fonts, and source collections.
 					globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm,woff,woff2,webmanifest}'],
-					globIgnores: ['blocked.html'],
+					globIgnores: ['404.html'],
 					navigateFallback: 'index.html',
 					navigateFallbackAllowlist: [/^\/(?:index\.html)?(?:\?.*)?$/],
 					cleanupOutdatedCaches: true,
@@ -48,11 +48,7 @@ export default defineConfig(() => {
 						dest: '',
 					},
 					{
-						src: '_redirects',
-						dest: '',
-					},
-					{
-						src: 'blocked.html',
+						src: '404.html',
 						dest: '',
 					},
 				],
