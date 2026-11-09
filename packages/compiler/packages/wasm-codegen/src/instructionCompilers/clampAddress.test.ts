@@ -12,7 +12,7 @@ const range: MemoryAddressRange = {
 	source: 'memory-start',
 	byteAddress: 0,
 	safeByteLength: 128,
-	memoryId: 'arr',
+	memoryId: 0,
 };
 
 function createLine(
@@ -53,7 +53,7 @@ describe('clamp address instruction compilers', () => {
 			source: 'memory-start',
 			byteAddress: 64,
 			safeByteLength: 128,
-			memoryId: 'arr',
+			memoryId: 0,
 		};
 
 		compileInstructionForTest(

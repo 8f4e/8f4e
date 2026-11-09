@@ -119,8 +119,8 @@ describe('resolveMemoryDefaults', () => {
 		});
 
 		expect(result.main).toEqual({
-			counter: { value: 7, hasExplicitDefault: true, isInherited: false },
-			values: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true, isInherited: false },
+			0: { value: 7, hasExplicitDefault: true, isInherited: false },
+			1: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true, isInherited: false },
 		});
 	});
 
@@ -143,11 +143,11 @@ describe('resolveMemoryDefaults', () => {
 		});
 
 		expect(result.main).toMatchObject({
-			implicitScalar: { hasExplicitDefault: false },
-			explicitScalar: { hasExplicitDefault: true },
-			__anonymous__4: { hasExplicitDefault: true },
-			implicitArray: { hasExplicitDefault: false },
-			explicitArray: { hasExplicitDefault: true },
+			0: { hasExplicitDefault: false },
+			1: { hasExplicitDefault: true },
+			2: { hasExplicitDefault: true },
+			3: { hasExplicitDefault: false },
+			4: { hasExplicitDefault: true },
 		});
 	});
 
@@ -179,7 +179,7 @@ describe('resolveMemoryDefaults', () => {
 									byteAddress: bufferDeclaration.byteAddress,
 									safeByteLength: bufferDeclaration.elementByteLength,
 									moduleId: 'main',
-									memoryId: 'buffer',
+									memoryId: 0,
 								},
 							},
 						},
@@ -193,7 +193,7 @@ describe('resolveMemoryDefaults', () => {
 			memoryReferences,
 		});
 
-		expect(result.main.ptr).toMatchObject({
+		expect(result.main[1]).toMatchObject({
 			value: memoryPlan.modules.main.memory.buffer.byteAddress,
 			hasExplicitDefault: true,
 			isInherited: false,
@@ -223,8 +223,9 @@ describe('resolveMemoryDefaults', () => {
 		});
 
 		expect(result.main).toEqual({
-			foo: { value: 2, hasExplicitDefault: true, isInherited: false },
-			bar: { value: 3, hasExplicitDefault: true, isInherited: true },
+			0: { value: 2, hasExplicitDefault: true, isInherited: true },
+			2: { value: 2, hasExplicitDefault: true, isInherited: false },
+			1: { value: 3, hasExplicitDefault: true, isInherited: true },
 		});
 	});
 

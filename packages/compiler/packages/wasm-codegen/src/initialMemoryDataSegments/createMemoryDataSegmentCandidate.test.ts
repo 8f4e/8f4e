@@ -35,7 +35,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 		],
 	] as const)('encodes a one-element %s array initializer', (_name, overrides, value, bytes) => {
 		const candidates = createMemoryDataSegmentCandidate(
-			createMemory({ id: 'array', byteAddress: 16, ...overrides }),
+			createMemory({ id: 0, byteAddress: 16, ...overrides }),
 			createMemoryDefault({ 0: value }, { hasExplicitDefault: true })
 		);
 
@@ -43,7 +43,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	});
 
 	test('skips omitted and explicit zero initializers for one-element arrays', () => {
-		const memory = createMemory({ id: 'array', byteAddress: 16 });
+		const memory = createMemory({ id: 0, byteAddress: 16 });
 
 		expect(createMemoryDataSegmentCandidate(memory, createMemoryDefault({}))).toEqual([]);
 		expect(
@@ -54,7 +54,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('creates scalar candidates with encoded default bytes', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'scalar',
+				id: 0,
 				byteAddress: 12,
 			}),
 			createMemoryDefault(2.9)
@@ -69,7 +69,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('creates explicit array candidates only for non-zero initializer runs', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'array',
+				id: 0,
 				byteAddress: 16,
 				numberOfElements: 4,
 			}),
@@ -107,7 +107,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('does not create a full byte image for large sparse array initializers', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'array',
+				id: 0,
 				byteAddress: 16,
 				numberOfElements: 1_000_000,
 			}),
@@ -127,7 +127,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('skips implicit zero-filled arrays', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'array',
+				id: 0,
 				byteAddress: 16,
 				numberOfElements: 3,
 			}),
@@ -140,7 +140,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('skips implicit zero scalar candidates', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'scalar',
+				id: 0,
 				byteAddress: 12,
 			}),
 			createMemoryDefault(0)
@@ -152,7 +152,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('creates explicit zero scalar candidates', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'scalar',
+				id: 0,
 				byteAddress: 12,
 			}),
 			createMemoryDefault(0, { hasExplicitDefault: true })
@@ -167,7 +167,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 	test('skips explicit zero-filled array candidates', () => {
 		const candidates = createMemoryDataSegmentCandidate(
 			createMemory({
-				id: 'array',
+				id: 0,
 				byteAddress: 16,
 				numberOfElements: 3,
 			}),
@@ -196,7 +196,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 		try {
 			const candidates = createMemoryDataSegmentCandidate(
 				createMemory({
-					id: 'array',
+					id: 0,
 					byteAddress: 16,
 					numberOfElements: 3,
 					elementWordSize: format.elementWordSize,
@@ -217,7 +217,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 		const allocations = trackDataViewAllocations();
 		try {
 			const candidates = createMemoryDataSegmentCandidate(
-				createMemory({ id: 'array', byteAddress: 16, numberOfElements: 9 }),
+				createMemory({ id: 0, byteAddress: 16, numberOfElements: 9 }),
 				createMemoryDefault({ 0: 0, 1: 1, 2: 2, 3: 0, 5: 3, 6: 0, 7: 4, 8: 0 }, { hasExplicitDefault: true })
 			);
 
@@ -244,7 +244,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 		{ name: 'float32 negative underflow', elementWordSize: 4, value: -1e-50, byteAddress: 20, bytes: [0, 0, 0, 128] },
 	])('preserves the sign bit of $name between positive zeros', ({ elementWordSize, value, byteAddress, bytes }) => {
 		const candidates = createMemoryDataSegmentCandidate(
-			createMemory({ id: 'array', byteAddress: 16, numberOfElements: 3, isInteger: false, elementWordSize }),
+			createMemory({ id: 0, byteAddress: 16, numberOfElements: 3, isInteger: false, elementWordSize }),
 			createMemoryDefault({ 0: 0, 1: value, 2: 0 }, { hasExplicitDefault: true })
 		);
 
@@ -296,7 +296,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 		for (const value of format.values) {
 			const candidates = createMemoryDataSegmentCandidate(
 				createMemory({
-					id: 'array',
+					id: 0,
 					byteAddress: 16,
 					numberOfElements: 3,
 					elementWordSize: format.elementWordSize,
@@ -315,7 +315,7 @@ describe('createMemoryDataSegmentCandidate', () => {
 
 	test.each([4, 8])('preserves NaN and infinities in %i-byte float arrays', elementWordSize => {
 		const candidates = createMemoryDataSegmentCandidate(
-			createMemory({ id: 'array', byteAddress: 16, numberOfElements: 4, isInteger: false, elementWordSize }),
+			createMemory({ id: 0, byteAddress: 16, numberOfElements: 4, isInteger: false, elementWordSize }),
 			createMemoryDefault({ 0: -Infinity, 1: NaN, 2: Infinity, 3: 0 }, { hasExplicitDefault: true })
 		);
 		expect(candidates).toHaveLength(1);

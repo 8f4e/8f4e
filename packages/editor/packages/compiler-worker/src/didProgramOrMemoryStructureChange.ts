@@ -7,6 +7,7 @@ export interface ProgramMemoryStructure {
 
 function didMemoryDeclarationChange(current: PlannedMemoryDeclaration, previous: PlannedMemoryDeclaration): boolean {
 	return (
+		current.name !== previous.name ||
 		current.type !== previous.type ||
 		current.numberOfElements !== previous.numberOfElements ||
 		current.elementWordSize !== previous.elementWordSize ||
@@ -22,19 +23,13 @@ function didMemoryDeclarationChange(current: PlannedMemoryDeclaration, previous:
 }
 
 function didMemoryStructureChange(
-	current: Record<string, PlannedMemoryDeclaration>,
-	previous: Record<string, PlannedMemoryDeclaration>
+	current: readonly PlannedMemoryDeclaration[],
+	previous: readonly PlannedMemoryDeclaration[]
 ): boolean {
-	const currentMemoryIds = Object.keys(current);
-	const previousMemoryIds = Object.keys(previous);
-	if (currentMemoryIds.length !== previousMemoryIds.length) {
-		return true;
-	}
-
-	return currentMemoryIds.some(memoryId => {
-		const previousDeclaration = previous[memoryId];
-		return !previousDeclaration || didMemoryDeclarationChange(current[memoryId]!, previousDeclaration);
-	});
+	return (
+		current.length !== previous.length ||
+		current.some((declaration, index) => didMemoryDeclarationChange(declaration, previous[index]!))
+	);
 }
 
 export default function didProgramOrMemoryStructureChange(
@@ -65,7 +60,7 @@ export default function didProgramOrMemoryStructureChange(
 			return true;
 		}
 
-		if (didMemoryStructureChange(plannedModule.memory, previousPlannedModule.memory)) {
+		if (didMemoryStructureChange(plannedModule.declarations, previousPlannedModule.declarations)) {
 			return true;
 		}
 	}

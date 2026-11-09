@@ -178,7 +178,10 @@ export interface PlannedMemoryDeclaration {
 	 * - `'int8u'` / `'int16u'`: narrow unsigned integer pointee
 	 */
 	pointeeBaseType?: PointeeBaseType;
-	id: string;
+	/** Index in the owning module's expanded declarations. */
+	id: number;
+	/** Source name when the declaration is named. */
+	name?: string;
 	/** Number of pointer layers in the declaration. Non-pointers have depth 0. */
 	pointerDepth: number;
 	isUnsigned: boolean;
@@ -201,9 +204,9 @@ export interface PlannedMemoryModule {
 	endByteAddress: number;
 	/** Safe byte length when addressing this module through its end address. */
 	endAddressSafeByteLength: number;
-	/** Declaration lookup by id, materialized by the planner from the ordered declarations below. */
+	/** Effective named declarations, keyed by source name. */
 	memory: Record<string, PlannedMemoryDeclaration>;
-	/** Declarations in planned/source order; entries are the same objects exposed through `memory`. */
+	/** All declarations in expanded source order, indexed by declaration ID. */
 	declarations: readonly PlannedMemoryDeclaration[];
 	declarationSources: readonly PlannedMemoryDeclarationSource[];
 }
@@ -223,14 +226,14 @@ export interface MemoryDefault {
 	isInherited: boolean;
 }
 
-export type MemoryDefaults = Record<string, MemoryDefault>;
+export type MemoryDefaults = Record<number, MemoryDefault>;
 
 export interface MemoryPointerMetadata {
 	/** Element count of the known pointee memory item, when initialized from a tracked memory address. */
 	pointeeElementCount?: number;
 }
 
-export type MemoryPointerMetadataMap = Record<string, MemoryPointerMetadata>;
+export type MemoryPointerMetadataMap = Record<number, MemoryPointerMetadata>;
 
 export type ResolvedMemoryDeclaration = PlannedMemoryDeclaration & MemoryPointerMetadata;
 

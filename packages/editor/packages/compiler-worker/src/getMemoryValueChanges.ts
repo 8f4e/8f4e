@@ -17,9 +17,9 @@ export default function getMemoryValueChanges(
 	}
 
 	for (const [id, plannedModule] of Object.entries(current.memoryPlan.modules)) {
-		for (const [memoryIdentifier, memory] of Object.entries(plannedModule.memory)) {
-			const memoryDefault = current.memoryDefaultsByModuleId[id]![memoryIdentifier]!;
-			const previousMemoryDefault = previous.memoryDefaultsByModuleId[id]![memoryIdentifier]!;
+		for (const memory of plannedModule.declarations) {
+			const memoryDefault = current.memoryDefaultsByModuleId[id]![memory.id]!;
+			const previousMemoryDefault = previous.memoryDefaultsByModuleId[id]![memory.id]!;
 			const defaultValue = memoryDefault.value;
 			const previousDefaultValue = previousMemoryDefault.value;
 

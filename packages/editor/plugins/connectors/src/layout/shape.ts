@@ -11,6 +11,6 @@ export function getShapeDeclarations(codeBlock: CodeBlockGraphicData, state: Sta
 		.map(({ memory, rowOffset }) => ({
 			sourceLineIndex: memory.lineNumber,
 			rowOffset,
-			text: `${memory.type} ${memory.id}`,
+			text: memory.name === undefined ? memory.type : `${memory.type} ${memory.name}`,
 		}));
 }

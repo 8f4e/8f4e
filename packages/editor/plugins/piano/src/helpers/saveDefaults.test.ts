@@ -25,13 +25,14 @@ function createPianoCodeBlock(
 			pressedKeysListModuleId: 'synth',
 			pressedKeyCountModuleId: 'synth',
 			pressedKeysListMemory: {
-				id: 'notes',
+				id: 0,
+				name: 'notes',
 				allocationUnitAddress: 4,
 				numberOfElements: 4,
 				elementWordSize: 4,
 				isInteger: true,
 			},
-			pressedKeyCountMemory: { id: 'count', allocationUnitAddress: 8, isInteger: true },
+			pressedKeyCountMemory: { id: 1, name: 'count', allocationUnitAddress: 8, isInteger: true },
 		} as PianoKeyboard,
 	];
 	return { codeBlock, keyboards };

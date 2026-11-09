@@ -22,11 +22,12 @@ function getEndAddressSafeByteLength(allocationUnitCount: number): number {
 }
 
 function createMemoryDeclaration(
-	id: string,
+	name: string,
 	overrides: Partial<PlannedMemoryDeclaration> = {}
 ): PlannedMemoryDeclaration {
 	const declaration = {
-		id,
+		id: 0,
+		name,
 		lineNumber: 0,
 		type: 'int',
 		numberOfElements: 1,
@@ -54,13 +55,17 @@ function createPlannedModule(
 	memory: Record<string, PlannedMemoryDeclaration>,
 	overrides: Partial<PlannedMemoryModule> = {}
 ): PlannedMemoryModule {
+	const declarations = Object.values(memory);
+	declarations.forEach((declaration, index) => {
+		declaration.id = index;
+	});
 	const module = {
 		id,
 		lineNumber: 0,
 		byteAddress: 24,
 		allocationUnitCount: 5,
 		memory,
-		declarations: Object.values(memory),
+		declarations,
 		declarationSources: [],
 		...overrides,
 	};
@@ -169,7 +174,7 @@ describe('resolveMemoryReferences', () => {
 					byteAddress: 20,
 					safeByteLength: 12,
 					moduleId: 'main',
-					memoryId: 'buffer',
+					memoryId: 0,
 				},
 			},
 		});
@@ -377,12 +382,12 @@ describe('resolveMemoryReferences', () => {
 		expect(result.references.modules[0].lineFacts[1]?.arguments?.[1]).toMatchObject({
 			type: ArgumentType.LITERAL,
 			value: 64,
-			address: { safeRange: { moduleId: 'audio/source', memoryId: 'value' } },
+			address: { safeRange: { moduleId: 'audio/source', memoryId: 0 } },
 		});
 		expect(result.references.modules[0].lineFacts[2]?.arguments?.[0]).toMatchObject({
 			type: ArgumentType.LITERAL,
 			value: value.endByteAddress,
-			address: { safeRange: { moduleId: 'audio/source', memoryId: 'value' } },
+			address: { safeRange: { moduleId: 'audio/source', memoryId: 0 } },
 		});
 		expect(result.references.modules[0].lineFacts[3]?.arguments?.[0]).toMatchObject({
 			type: ArgumentType.LITERAL,
@@ -392,7 +397,7 @@ describe('resolveMemoryReferences', () => {
 			type: ArgumentType.LITERAL,
 			value: 5,
 		});
-		expect(result.references.pointerMetadataByModuleId.consumer.pointer).toEqual({
+		expect(result.references.pointerMetadataByModuleId.consumer[pointer.id]).toEqual({
 			pointeeElementCount: 8,
 		});
 	});
@@ -427,7 +432,7 @@ describe('tryResolveValueArgument', () => {
 	const mockContext = createTestContext(mainModule, {
 		pointerMetadata: {
 			main: {
-				floatPtr: {
+				[floatPtr.id]: {
 					pointeeElementCount: 4,
 				},
 			},
@@ -706,7 +711,7 @@ describe('tryResolveValueArgument', () => {
 					byteAddress: 8,
 					safeByteLength: 16,
 					moduleId: 'source',
-					memoryId: 'buffer',
+					memoryId: 0,
 				},
 			},
 		});
@@ -733,7 +738,7 @@ describe('tryResolveValueArgument', () => {
 					byteAddress: 20,
 					safeByteLength: 4,
 					moduleId: 'source',
-					memoryId: 'buffer',
+					memoryId: 0,
 				},
 			},
 		});
@@ -847,7 +852,7 @@ describe('tryResolveValueArgument', () => {
 					byteAddress: 20,
 					safeByteLength: 12,
 					moduleId: 'main',
-					memoryId: 'arr',
+					memoryId: 0,
 				},
 			},
 		});
@@ -871,7 +876,7 @@ describe('tryResolveValueArgument', () => {
 					byteAddress: 20,
 					safeByteLength: 12,
 					moduleId: 'main',
-					memoryId: 'arr',
+					memoryId: 0,
 				},
 			},
 		});
@@ -956,7 +961,7 @@ describe('metadata query compatibility', () => {
 		const pointer = createMemoryDeclaration('ptr', { pointeeBaseType: 'int8', pointerDepth: 1 });
 		const local = { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } as const;
 		const pointerContext = createTestContext(createPlannedModule('main', { ptr: pointer }), {
-			pointerMetadata: { main: { ptr: { pointeeElementCount: 1 } } },
+			pointerMetadata: { main: { [pointer.id]: { pointeeElementCount: 1 } } },
 			locals: { ptr: local, localOnly: local },
 		});
 		expect(
@@ -1005,7 +1010,7 @@ describe('metadata query compatibility', () => {
 	] as const)('uses identical memory and local pointer metadata for %s', (baseType, size, max, min, isInteger) => {
 		const pointer = createMemoryDeclaration('memoryPtr', { pointeeBaseType: baseType, pointerDepth: 1 });
 		const pointerContext = createTestContext(createPlannedModule('main', { memoryPtr: pointer }), {
-			pointerMetadata: { main: { memoryPtr: { pointeeElementCount: 1 } } },
+			pointerMetadata: { main: { [pointer.id]: { pointeeElementCount: 1 } } },
 			locals: { localPtr: { isInteger: true, pointeeBaseType: baseType, pointerDepth: 1, pointeeElementCount: 1 } },
 		});
 		for (const target of ['memoryPtr', 'localPtr']) {
@@ -1024,7 +1029,7 @@ describe('metadata query compatibility', () => {
 			const pointerContext = createTestContext(
 				createPlannedModule('main', storage === 'memory' ? { ptr: pointer } : {}),
 				{
-					pointerMetadata: { main: { ptr: { pointeeElementCount: count } } },
+					pointerMetadata: { main: { [pointer.id]: { pointeeElementCount: count } } },
 					locals:
 						storage === 'local'
 							? { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 2, pointeeElementCount: count } }
@@ -1053,7 +1058,7 @@ describe('metadata query compatibility', () => {
 				isInteger: true,
 			});
 		}
-		pointerContext.pointerMetadata = { main: { ptr: { pointeeElementCount: 0 } } };
+		pointerContext.pointerMetadata = { main: { [pointer.id]: { pointeeElementCount: 0 } } };
 		expect(resolveMemoryExpressionOperand(classifyIdentifier('count(*ptr)'), pointerContext)).toEqual({
 			value: 0,
 			isInteger: true,

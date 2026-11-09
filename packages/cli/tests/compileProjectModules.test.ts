@@ -39,7 +39,7 @@ describe('compileProjectModules', () => {
 
 		expect(result.compiledModules.target.index).toBe(0);
 		expect(result.compiledModules.source.index).toBe(1);
-		expect(result.memoryDefaultsByModuleId.target!.ptr!.value).toBe(
+		expect(result.memoryDefaultsByModuleId.target![result.memoryPlan.modules.target.memory.ptr.id]!.value).toBe(
 			result.memoryPlan.modules.source!.memory.value!.byteAddress
 		);
 	});
@@ -65,7 +65,7 @@ describe('compileProjectModules', () => {
 
 		expect(result.compiledModules.source.index).toBe(0);
 		expect(result.compiledModules.target.index).toBe(1);
-		expect(result.memoryDefaultsByModuleId.target!.ptr!.value).toBe(
+		expect(result.memoryDefaultsByModuleId.target![result.memoryPlan.modules.target.memory.ptr.id]!.value).toBe(
 			result.memoryPlan.modules.source!.memory.value!.byteAddress
 		);
 	});

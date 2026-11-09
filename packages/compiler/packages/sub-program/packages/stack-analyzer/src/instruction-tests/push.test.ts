@@ -58,7 +58,7 @@ describe('push stack analysis', () => {
 								source: 'memory-start',
 								byteAddress: 12,
 								safeByteLength: 16,
-								memoryId: 'buffer',
+								memoryId: 0,
 							},
 						},
 					},
@@ -72,7 +72,7 @@ describe('push stack analysis', () => {
 			valueType: 'int',
 			isNonZero: true,
 			address: {
-				safeRange: { source: 'memory-start', byteAddress: 12, safeByteLength: 16, memoryId: 'buffer' },
+				safeRange: { source: 'memory-start', byteAddress: 12, safeByteLength: 16, memoryId: 0 },
 			},
 		});
 	});

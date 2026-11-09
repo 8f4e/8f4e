@@ -11,7 +11,6 @@ import type {
 	PlannedMemoryDeclarationSource,
 	PlannedMemoryModule,
 	PrototypeAST,
-	ScalarMemoryDeclarationLine,
 	ShapeLine,
 	ValidatedModuleAST,
 	ValidatedPrototypeAST,
@@ -102,13 +101,11 @@ function plannerError(
 	return new MemoryPlannerError(compilerErrorCode, line, message, details);
 }
 
-function getScalarDeclarationId(line: ScalarMemoryDeclarationLine): string {
+function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
 	const firstArgument = line.arguments[0];
 	if (firstArgument?.type === ArgumentType.IDENTIFIER && firstArgument.referenceKind === 'plain') {
 		return firstArgument.value;
 	}
-
-	return '__anonymous__' + line.lineNumber;
 }
 
 function getPrototypeMap(
@@ -268,7 +265,6 @@ function planDeclarationLine(
 ) {
 	if (isScalarMemoryDeclarationLine(line)) {
 		return planScalarDeclarationLayout({
-			id: getScalarDeclarationId(line),
 			lineNumber: line.lineNumber,
 			instruction: line.instruction,
 			startingByteAddress,
@@ -278,7 +274,6 @@ function planDeclarationLine(
 
 	const elementCountArgument = line.arguments[1] as { value: number };
 	return planArrayDeclarationLayout({
-		id: line.arguments[0].value,
 		lineNumber: line.lineNumber,
 		instruction: line.instruction,
 		numberOfElements: elementCountArgument.value,
@@ -306,9 +301,14 @@ function planModuleMemory(
 			moduleByteAddress,
 			localAllocationUnitOffset
 		);
-		const declaration = plannedDeclaration.declaration;
+		const name = getDeclarationName(declarationSource.line);
+		const declaration = {
+			...plannedDeclaration.declaration,
+			id: declarations.length,
+			...(name !== undefined ? { name } : {}),
+		};
 
-		memory[declaration.id] = declaration;
+		if (name !== undefined) memory[name] = declaration;
 		declarations.push(declaration);
 		localAllocationUnitOffset = plannedDeclaration.nextLocalAllocationUnitOffset;
 	}

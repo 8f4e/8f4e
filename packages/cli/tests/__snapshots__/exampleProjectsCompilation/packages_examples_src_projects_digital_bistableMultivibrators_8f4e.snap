@@ -148,12 +148,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "in2": {
@@ -171,12 +172,13 @@
             "elementByteLength": 4,
             "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         }
       },
@@ -454,12 +456,13 @@
             "elementByteLength": 4,
             "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "in2": {
@@ -477,12 +480,13 @@
             "elementByteLength": 4,
             "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 3,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         }
       },
@@ -759,12 +763,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         }
       },
@@ -1214,12 +1219,13 @@
             "elementByteLength": 4,
             "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
-            "id": "reset",
             "lineNumber": 6,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset"
           }
         }
       },
@@ -1450,12 +1456,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "in2": {
@@ -1473,12 +1480,13 @@
             "elementByteLength": 4,
             "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
-            "id": "set",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "set"
           }
         }
       },
@@ -1755,12 +1763,13 @@
             "elementByteLength": 4,
             "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "in2": {
@@ -1778,12 +1787,13 @@
             "elementByteLength": 4,
             "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         }
       },
@@ -2060,12 +2070,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         }
       },
@@ -2445,12 +2456,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2464,12 +2476,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2509,12 +2522,13 @@
             "elementByteLength": 4,
             "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
-            "id": "set",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "set"
           },
           "reset": {
             "numberOfElements": 1,
@@ -2526,12 +2540,13 @@
             "elementByteLength": 4,
             "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
-            "id": "reset",
             "lineNumber": 6,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset"
           }
         },
         "declarations": [
@@ -2545,12 +2560,13 @@
             "elementByteLength": 4,
             "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
-            "id": "set",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "set"
           },
           {
             "numberOfElements": 1,
@@ -2562,12 +2578,13 @@
             "elementByteLength": 4,
             "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
-            "id": "reset",
             "lineNumber": 6,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset"
           }
         ],
         "declarationSources": [
@@ -2622,12 +2639,13 @@
             "elementByteLength": 4,
             "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2641,12 +2659,13 @@
             "elementByteLength": 4,
             "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2686,12 +2705,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2705,12 +2725,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2750,12 +2771,13 @@
             "elementByteLength": 4,
             "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2769,12 +2791,13 @@
             "elementByteLength": 4,
             "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2814,12 +2837,13 @@
             "elementByteLength": 4,
             "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2833,12 +2857,13 @@
             "elementByteLength": 4,
             "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2878,12 +2903,13 @@
             "elementByteLength": 4,
             "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 3,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -2897,12 +2923,13 @@
             "elementByteLength": 4,
             "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 3,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -2938,7 +2965,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 8,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 32,
             "elementByteLength": 256,
@@ -2947,7 +2973,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -2959,12 +2987,13 @@
             "elementByteLength": 4,
             "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         },
         "declarations": [
@@ -2974,7 +3003,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 8,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 32,
             "elementByteLength": 256,
@@ -2983,7 +3011,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -2995,12 +3025,13 @@
             "elementByteLength": 4,
             "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         ],
         "declarationSources": [
@@ -3064,7 +3095,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 73,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 292,
             "elementByteLength": 256,
@@ -3073,7 +3103,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -3085,12 +3117,13 @@
             "elementByteLength": 4,
             "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         },
         "declarations": [
@@ -3100,7 +3133,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 73,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 292,
             "elementByteLength": 256,
@@ -3109,7 +3141,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -3121,12 +3155,13 @@
             "elementByteLength": 4,
             "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         ],
         "declarationSources": [
@@ -3194,12 +3229,13 @@
             "elementByteLength": 4,
             "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3213,12 +3249,13 @@
             "elementByteLength": 4,
             "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3260,12 +3297,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3279,12 +3317,13 @@
             "elementByteLength": 4,
             "endByteAddress": 0,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3324,12 +3363,13 @@
             "elementByteLength": 4,
             "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
-            "id": "set",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "set"
           },
           "reset": {
             "numberOfElements": 1,
@@ -3341,12 +3381,13 @@
             "elementByteLength": 4,
             "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
-            "id": "reset",
             "lineNumber": 6,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset"
           }
         },
         "declarations": [
@@ -3360,12 +3401,13 @@
             "elementByteLength": 4,
             "endByteAddress": 4,
             "endAddressSafeByteLength": 4,
-            "id": "set",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "set"
           },
           {
             "numberOfElements": 1,
@@ -3377,12 +3419,13 @@
             "elementByteLength": 4,
             "endByteAddress": 8,
             "endAddressSafeByteLength": 4,
-            "id": "reset",
             "lineNumber": 6,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset"
           }
         ],
         "declarationSources": [
@@ -3437,12 +3480,13 @@
             "elementByteLength": 4,
             "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3456,12 +3500,13 @@
             "elementByteLength": 4,
             "endByteAddress": 12,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3501,12 +3546,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3520,12 +3566,13 @@
             "elementByteLength": 4,
             "endByteAddress": 16,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3565,12 +3612,13 @@
             "elementByteLength": 4,
             "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3584,12 +3632,13 @@
             "elementByteLength": 4,
             "endByteAddress": 20,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3629,12 +3678,13 @@
             "elementByteLength": 4,
             "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3648,12 +3698,13 @@
             "elementByteLength": 4,
             "endByteAddress": 24,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3693,12 +3744,13 @@
             "elementByteLength": 4,
             "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 3,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -3712,12 +3764,13 @@
             "elementByteLength": 4,
             "endByteAddress": 28,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 3,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -3753,7 +3806,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 8,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 32,
             "elementByteLength": 256,
@@ -3762,7 +3814,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -3774,12 +3828,13 @@
             "elementByteLength": 4,
             "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         },
         "declarations": [
@@ -3789,7 +3844,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 8,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 32,
             "elementByteLength": 256,
@@ -3798,7 +3852,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -3810,12 +3866,13 @@
             "elementByteLength": 4,
             "endByteAddress": 288,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         ],
         "declarationSources": [
@@ -3879,7 +3936,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 73,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 292,
             "elementByteLength": 256,
@@ -3888,7 +3944,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -3900,12 +3958,13 @@
             "elementByteLength": 4,
             "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         },
         "declarations": [
@@ -3915,7 +3974,6 @@
             "allocationUnitCount": 64,
             "allocatedByteLength": 256,
             "allocationUnitAddress": 73,
-            "id": "buffer",
             "lineNumber": 4,
             "byteAddress": 292,
             "elementByteLength": 256,
@@ -3924,7 +3982,9 @@
             "isInteger": true,
             "pointerDepth": 0,
             "type": "int",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -3936,12 +3996,13 @@
             "elementByteLength": 4,
             "endByteAddress": 548,
             "endAddressSafeByteLength": 4,
-            "id": "bufferPointer",
             "lineNumber": 5,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer"
           }
         ],
         "declarationSources": [
@@ -4009,12 +4070,13 @@
             "elementByteLength": 4,
             "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         },
         "declarations": [
@@ -4028,12 +4090,13 @@
             "elementByteLength": 4,
             "endByteAddress": 552,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -4058,85 +4121,85 @@
   },
   "memoryDefaultsByModuleId": {
     "andGate": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "buttons": {
-      "set": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       },
-      "reset": {
+      "1": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "negate": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "norGate": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "norGate2": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "orGate": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "resetButton": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       }
     },
     "scope": {
-      "buffer": {
+      "0": {
         "value": {},
         "hasExplicitDefault": false,
         "isInherited": false
       },
-      "bufferPointer": {
+      "1": {
         "value": 32,
         "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "scope2": {
-      "buffer": {
+      "0": {
         "value": {},
         "hasExplicitDefault": false,
         "isInherited": false
       },
-      "bufferPointer": {
+      "1": {
         "value": 292,
         "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "setButton": {
-      "out": {
+      "0": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false

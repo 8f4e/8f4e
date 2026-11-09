@@ -292,7 +292,7 @@
           },
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "values",
+          "id": 0,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 2,

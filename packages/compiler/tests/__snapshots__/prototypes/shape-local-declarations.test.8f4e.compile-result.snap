@@ -2,6 +2,129 @@
   "functionAst": {},
   "functionOverview": {},
   "moduleAst": {
+    "anonymousStorage": {
+      "id": "anonymousStorage",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "anonymousStorage",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "anonymousFields",
+            },
+          ],
+          "instruction": "shape",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "__anonymous__1",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 19,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "anonymousStorage",
+              "type": "identifier",
+              "value": "&anonymousStorage:0",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 42,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 1,
+              "targetModuleId": "anonymousStorage",
+              "type": "identifier",
+              "value": "&anonymousStorage:1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "__anonymous__1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 19,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
     "boson": {
       "id": "boson",
       "lines": [
@@ -305,6 +428,60 @@
           "instruction": "assertEqual",
         },
         {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 1,
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 2,
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:2",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
           "arguments": [],
           "instruction": "moduleEnd",
         },
@@ -313,19 +490,69 @@
     },
   },
   "moduleMemory": {
+    "anonymousStorage": {
+      "anonymousMemory": [
+        {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 42,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInherited": true,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 7,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInherited": true,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      ],
+      "memory": {
+        "__anonymous__1": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 19,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
     "boson": {
       "memory": {},
     },
     "tau": {
       "memory": {
         "bar": {
-          "allocationUnitAddress": 7,
+          "allocationUnitAddress": 10,
           "allocationUnitCount": 1,
-          "byteAddress": 28,
+          "byteAddress": 40,
           "default": 16,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "bar",
+          "id": 6,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,
@@ -333,13 +560,13 @@
           "type": "int",
         },
         "foo": {
-          "allocationUnitAddress": 1,
+          "allocationUnitAddress": 4,
           "allocationUnitCount": 1,
-          "byteAddress": 4,
+          "byteAddress": 16,
           "default": 1,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "foo",
+          "id": 0,
           "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
@@ -348,13 +575,13 @@
           "type": "int",
         },
         "he": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 7,
           "allocationUnitCount": 1,
-          "byteAddress": 16,
+          "byteAddress": 28,
           "default": 10,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "he",
+          "id": 3,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,
@@ -367,10 +594,11 @@
   "overview": {
     "compiledFunctions": [],
     "compiledModules": [
+      "anonymousStorage",
       "boson",
       "tau",
     ],
-    "requiredMemoryBytes": 32,
+    "requiredMemoryBytes": 44,
     "wasmExports": [
       "initDefaults",
       "main",

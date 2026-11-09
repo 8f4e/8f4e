@@ -16,7 +16,7 @@ describe('store stack analysis', () => {
 						source: 'memory-start',
 						byteAddress: 0,
 						safeByteLength: 8,
-						memoryId: 'test',
+						memoryId: 0,
 					},
 				},
 			},

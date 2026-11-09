@@ -52,7 +52,7 @@ describe('analyzeStack integration', () => {
 			endAddressSafeByteLength: 4,
 			lineNumber: 2,
 			isInteger: true,
-			id: 'buffer',
+			id: 0,
 			pointerDepth: 0,
 			type: 'int',
 			isUnsigned: false,
@@ -62,7 +62,7 @@ describe('analyzeStack integration', () => {
 			byteAddress: 4,
 			safeByteLength: 16,
 			moduleId: 'main',
-			memoryId: 'buffer',
+			memoryId: 0,
 		} as const;
 		const ast = {
 			modules: [

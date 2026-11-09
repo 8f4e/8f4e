@@ -27,7 +27,7 @@ describe('loadFloat instruction compiler', () => {
 					kind: 'address',
 					valueType: 'int',
 					address: {
-						safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength, memoryId: 'double' },
+						safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength, memoryId: 0 },
 					},
 				},
 			],
@@ -61,7 +61,7 @@ describe('loadFloat instruction compiler', () => {
 								source: 'memory-start',
 								byteAddress: 0,
 								safeByteLength: 4,
-								memoryId: 'test',
+								memoryId: 0,
 							},
 						},
 					},

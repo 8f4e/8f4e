@@ -33,7 +33,7 @@ function resolveSliderLayout(
 		height: state.viewport.hGrid * 2,
 		x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 		y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
-		id: memory.memory.id,
+		id: memory.memory.name!,
 		allocationUnitAddress: memory.memory.allocationUnitAddress,
 		byteAddress: memory.memory.byteAddress,
 		isInteger: memory.memory.isInteger,

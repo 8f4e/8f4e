@@ -78,7 +78,7 @@ functionEnd int`);
 		const patterns = [10, 8, 0, 9, 11, 15, 7, 13, 12, 6, 18, 14, 4, 5, 3, 23, 16, 21, 1, 2, 24, 19, 17, 20, 22];
 		for (const [cell, pattern] of patterns.entries()) {
 			const name = `pattern${String(pattern).padStart(2, '0')}`;
-			const target = Object.values(result.memoryPlan.modules[name].memory)[0].byteAddress;
+			const target = result.memoryPlan.modules[name].declarations[0].byteAddress;
 			for (const step of [0, 17, 31]) {
 				expect(lookup(Math.floor(cell / 5), cell % 5, step)).toBe(target + step * 4);
 			}

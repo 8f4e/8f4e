@@ -41,7 +41,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences double pointers once and returns the inner pointer value', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 12,
 			isInteger: false,
 			pointeeBaseType: 'float64',
@@ -57,7 +57,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences double pointers twice and loads target kind', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 12,
 			isInteger: false,
 			pointeeBaseType: 'float64',
@@ -73,7 +73,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int8* with i32load8s for the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 8,
 			pointeeBaseType: 'int8',
 			pointerDepth: 1,
@@ -88,7 +88,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int8u* with i32load8u for the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 8,
 			pointeeBaseType: 'int8u',
 			pointerDepth: 1,
@@ -103,7 +103,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int8** once without the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const pptr = createPointerMemoryItem({
-			id: 'pptr',
+			id: 0,
 			byteAddress: 4,
 			pointeeBaseType: 'int8',
 			pointerDepth: 2,
@@ -118,7 +118,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int16* with i32load16s for the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 8,
 			pointeeBaseType: 'int16',
 			pointerDepth: 1,
@@ -133,7 +133,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int16u* with i32load16u for the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const ptr = createPointerMemoryItem({
-			id: 'ptr',
+			id: 0,
 			byteAddress: 8,
 			pointeeBaseType: 'int16u',
 			pointerDepth: 1,
@@ -148,7 +148,7 @@ describe('pushMemoryPointer', () => {
 	it('dereferences int16** twice with i32load16s for the final load', () => {
 		const context = createInstructionCompilerTestContext();
 		const pptr = createPointerMemoryItem({
-			id: 'pptr',
+			id: 0,
 			byteAddress: 4,
 			pointeeBaseType: 'int16',
 			pointerDepth: 2,

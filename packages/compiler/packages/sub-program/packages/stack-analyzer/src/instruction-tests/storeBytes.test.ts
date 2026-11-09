@@ -39,7 +39,7 @@ describe('storeBytes stack analysis', () => {
 						source: 'memory-start',
 						byteAddress: 0,
 						safeByteLength: 3,
-						memoryId: 'test',
+						memoryId: 0,
 					},
 				},
 			}
@@ -71,7 +71,7 @@ describe('storeBytes stack analysis', () => {
 						source: 'memory-start',
 						byteAddress: 0,
 						safeByteLength: 1,
-						memoryId: 'test',
+						memoryId: 0,
 					},
 				},
 			}
@@ -100,7 +100,7 @@ describe('storeBytes stack analysis', () => {
 					source: 'memory-start',
 					byteAddress: 0,
 					safeByteLength: 0,
-					memoryId: 'test',
+					memoryId: 0,
 				},
 			},
 		});

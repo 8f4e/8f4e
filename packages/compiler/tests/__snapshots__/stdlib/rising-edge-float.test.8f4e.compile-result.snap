@@ -563,7 +563,7 @@
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
-          "id": "previousFloat",
+          "id": 0,
           "isInteger": false,
           "isUnsigned": false,
           "numberOfElements": 1,

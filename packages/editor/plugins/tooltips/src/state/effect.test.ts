@@ -265,7 +265,7 @@ describe('tooltip effect', () => {
 			compiler: {
 				result: {
 					compiledModules: { [moduleId]: { id: moduleId, ast: { projectBlockId: 0, lines: [] } } },
-					memoryDefaultsByModuleId: { [moduleId]: { value: { value: 0 } } },
+					memoryDefaultsByModuleId: { [moduleId]: { 0: { value: 0 } } },
 					memoryPlan: {
 						modules: {
 							[moduleId]: {
@@ -278,7 +278,8 @@ describe('tooltip effect', () => {
 								endAddressSafeByteLength: 0,
 								memory: {
 									value: {
-										id: 'value',
+										id: 0,
+										name: 'value',
 										numberOfElements: 1,
 										byteAddress: 4,
 										allocationUnitAddress: 1,

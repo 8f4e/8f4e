@@ -26,7 +26,7 @@ entryEnd`)
 			expect(result.compiledModules.sink.referenceSlots.input).toMatchObject({
 				type: 'float&',
 				targetModuleId: 'source',
-				targetMemory: { id: 'output' },
+				targetMemory: { id: 0, name: 'output' },
 			});
 			expect(result.compiledModules.sink.referenceSlots.input.targetMemory).toBe(target);
 			expect(result.compiledModules.source.referenceSlots).toEqual({});
@@ -81,6 +81,6 @@ entryEnd`);
 			second.memoryPlan.modules.source.memory.padding
 		);
 		expect(firstSlot.targetMemory).toBe(first.memoryPlan.modules.source.memory.output);
-		expect(firstSlot.targetMemory.id).toBe('output');
+		expect(firstSlot.targetMemory.name).toBe('output');
 	});
 });

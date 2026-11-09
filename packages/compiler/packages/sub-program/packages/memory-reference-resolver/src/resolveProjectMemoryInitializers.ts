@@ -15,8 +15,8 @@ import { tryResolveValueArgument } from './tryResolveValueArgument';
 export function resolveProjectMemoryInitializers(
 	scopes: readonly ProjectMemoryInitializerScope[],
 	context: MemoryReferenceResolutionContext
-): Map<string, Map<string, Const>> {
-	const defaults = new Map<string, Map<string, Const>>();
+): Map<string, Map<number, Const>> {
+	const defaults = new Map<string, Map<number, Const>>();
 	for (const scope of scopes) {
 		for (const line of scope.initializers) {
 			const diagnosticContext = { projectGroupPath: scope.groupPath };
@@ -29,9 +29,7 @@ export function resolveProjectMemoryInitializers(
 				{ scope: 'intermodule', targetModuleId: scope.groupPath, targetMemoryId: name },
 				context
 			);
-			const declaration =
-				resolved &&
-				resolved.targetModule.declarationSources[resolved.targetModule.declarations.indexOf(resolved.targetMemory)];
+			const declaration = resolved?.targetModule.declarationSources[resolved.targetMemory.id];
 			if (
 				!context.memoryAliases.get(scope.groupPath)?.has(name) ||
 				!resolved ||
@@ -43,7 +41,7 @@ export function resolveProjectMemoryInitializers(
 			}
 			const { targetMemory, targetModule } = resolved;
 			const targetModuleId = targetModule.id;
-			const moduleDefaults = defaults.get(targetModuleId) ?? new Map<string, Const>();
+			const moduleDefaults = defaults.get(targetModuleId) ?? new Map<number, Const>();
 			if (moduleDefaults.has(targetMemory.id)) {
 				throw getError(ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER, line, diagnosticContext, { identifier: name });
 			}

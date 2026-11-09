@@ -181,7 +181,7 @@ describe('analyzeInstruction', () => {
 			source: 'memory-start',
 			byteAddress: 16,
 			safeByteLength: 64,
-			memoryId: 'buffer',
+			memoryId: 0,
 		};
 		const context = createStackAnalyzerTestContext();
 		context.stack.push({
