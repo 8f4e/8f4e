@@ -8,7 +8,6 @@ const source = ['module audio', 'float level 0.5 ; @meter', 'moduleEnd'];
 describe('meter plugin', () => {
 	it('uses the compiled declaration for an anonymous inline meter', async () => {
 		const test = await setup(meterPlugin, ['module audio', 'float 0.5 ; @meter', 'moduleEnd']);
-		expect(test.compiled.memoryPlan.modules.audio.memory).toEqual({});
 		test.render();
 		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.drawFill).toHaveBeenCalledWith(

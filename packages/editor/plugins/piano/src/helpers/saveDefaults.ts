@@ -12,10 +12,10 @@ function getPianoDefaults(keyboards: PianoKeyboard[], read: (address: number) =>
 			values.push(read(notes.allocationUnitAddress + index).toString());
 		}
 		return [
-			{ moduleId: keyboard.pressedKeysListModuleId, memoryId: notes.name!, value: values.join(' '), isArray: true },
+			{ moduleId: keyboard.pressedKeysListModuleId, memoryName: notes.name!, value: values.join(' '), isArray: true },
 			{
 				moduleId: keyboard.pressedKeyCountModuleId,
-				memoryId: countMemory.name!,
+				memoryName: countMemory.name!,
 				value: count.toString(),
 				isArray: false,
 			},

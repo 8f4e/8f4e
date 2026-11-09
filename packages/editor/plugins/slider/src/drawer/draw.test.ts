@@ -13,7 +13,7 @@ const slider: Slider = {
 	y: 20,
 	width: 32,
 	height: 32,
-	id: 'gain',
+	memoryName: 'gain',
 	allocationUnitAddress: 0,
 	byteAddress: 0,
 	isInteger: false,
