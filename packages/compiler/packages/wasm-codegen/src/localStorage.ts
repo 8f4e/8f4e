@@ -1,37 +1,8 @@
-import type { FunctionValueType, LocalBinding, LocalStorageMap, LocalValueMetadata } from '@8f4e/language-spec';
-import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
+import type { CodegenContext, LocalValueMetadata } from '@8f4e/language-spec';
 
-type LocalAllocationContext = { locals: LocalStorageMap; nextLocalIndex: number };
-
-function registerLocal(context: LocalAllocationContext, name: string, local: LocalBinding): LocalBinding {
-	context.locals[name] = local;
-	context.nextLocalIndex += 1;
-	return local;
-}
-
-/** Allocates and registers one named local binding at the next available index. */
-export function allocateLocal(
-	context: LocalAllocationContext,
-	name: string,
-	binding: LocalValueMetadata
-): LocalBinding {
-	return registerLocal(context, name, { ...binding, index: context.nextLocalIndex } as LocalBinding);
-}
-
-/** Allocates a local binding from a source-language function value type. */
-export function allocateLocalFromType(
-	context: LocalAllocationContext,
-	name: string,
-	type: FunctionValueType
-): LocalBinding {
-	return allocateLocal(context, name, functionValueTypeToLocalMetadata(type));
-}
-
-/** Returns an existing named local binding or allocates it when absent. */
-export function getOrCreateLocal(
-	context: LocalAllocationContext,
-	name: string,
-	binding: LocalValueMetadata
-): LocalBinding {
-	return context.locals[name] ?? allocateLocal(context, name, binding);
+/** Appends a local to the current Wasm body and returns its slot. */
+export function allocateLocal(context: Pick<CodegenContext, 'locals'>, metadata: LocalValueMetadata): number {
+	const index = context.locals.length;
+	context.locals.push(metadata);
+	return index;
 }

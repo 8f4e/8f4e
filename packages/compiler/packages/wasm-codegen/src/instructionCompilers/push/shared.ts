@@ -1,4 +1,4 @@
-import { f32const, f64const, i32const, i32load, localGet } from '@8f4e/compiler-wasm-utils';
+import { f32const, f64const, i32const, i32load } from '@8f4e/compiler-wasm-utils';
 import type { CodegenContext, PointerMetadata } from '@8f4e/language-spec';
 import {
 	getDereferencedValueKindFromMetadata,
@@ -6,8 +6,9 @@ import {
 	getPointerDepthFromMetadata,
 	WORD_MEMORY_ACCESS_WIDTH,
 } from '@8f4e/language-spec';
+import { allocateLocal } from '../../localStorage';
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
-import { guardedAddressOperation } from '../utils/memoryAccessGuard';
+import { guardedLoadWithLocal } from '../utils/memoryAccessGuard';
 import { typedLoad } from './typedLoad';
 
 type PointerValueSource = 'pointer-slot' | 'pointer-value';
@@ -25,19 +26,19 @@ export const constOpcode: Record<PushValueKind, (value: number) => number[]> = {
 
 function buildGuardedPointerLoadChain(
 	context: CodegenContext,
-	lineNumber: number,
 	kind: PushValueKind,
 	steps: PointerLoadStep[]
 ): number[] {
 	const resultType = valueKindToWasmType(kind);
+	// Each step consumes its address before the next step overwrites the same slot.
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return steps.reduceRight<number[]>(
 		(continuation, step) =>
-			guardedAddressOperation(context, {
+			guardedLoadWithLocal(addressLocalIndex, {
 				accessByteWidth: step.accessByteWidth,
-				lineNumber,
 				resultType,
-				buildTrueBranch: addressLocalIndex => [...localGet(addressLocalIndex), ...step.loadByteCode, ...continuation],
+				loadByteCode: [...step.loadByteCode, ...continuation],
 			}),
 		[]
 	);
@@ -47,7 +48,6 @@ function buildGuardedPointerLoadChain(
  * Builds bytecode for loading through a pointer with optional guarded access checks.
  *
  * @param context - Compilation context used by the operation.
- * @param lineNumber - Source line number used for generated guard diagnostics.
  * @param pointerMetadata - Pointer metadata to inspect.
  * @param baseAddressByteCode - Bytecode that leaves the base pointer address on the stack.
  * @param pointerValueSource - Source of the pointer value being dereferenced.
@@ -56,7 +56,6 @@ function buildGuardedPointerLoadChain(
  */
 export function buildPointerDereferenceByteCode(
 	context: CodegenContext,
-	lineNumber: number,
 	pointerMetadata: PointerMetadata,
 	baseAddressByteCode: number[],
 	pointerValueSource: PointerValueSource,
@@ -92,6 +91,6 @@ export function buildPointerDereferenceByteCode(
 
 	return {
 		kind,
-		byteCode: [...baseAddressByteCode, ...buildGuardedPointerLoadChain(context, lineNumber, kind, guardedLoadSteps)],
+		byteCode: [...baseAddressByteCode, ...buildGuardedPointerLoadChain(context, kind, guardedLoadSteps)],
 	};
 }

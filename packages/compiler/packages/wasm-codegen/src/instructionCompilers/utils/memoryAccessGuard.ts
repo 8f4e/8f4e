@@ -18,59 +18,22 @@ import {
 	type WASM_TYPE_I32,
 	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
-import type { CodegenContext, StackItem } from '@8f4e/language-spec';
-import { getOrCreateLocal } from '../../localStorage';
+import { type CodegenContext, functionValueTypeToLocalMetadata, type StackItem } from '@8f4e/language-spec';
+import { allocateLocal } from '../../localStorage';
 
 type NumericWasmValueType = typeof WASM_TYPE_I32 | typeof WASM_TYPE_F32 | typeof WASM_TYPE_F64;
 
 type GuardedLoadOptions = {
 	accessByteWidth: number;
-	lineNumber: number;
 	resultType: NumericWasmValueType;
 	loadByteCode: number[];
-};
-
-type GuardedAddressOperationOptions = {
-	accessByteWidth: number;
-	lineNumber: number;
-	resultType: NumericWasmValueType;
-	buildTrueBranch: (addressLocalIndex: number) => number[];
-	falseByteCode?: number[];
 };
 
 type GuardedStoreOptions = {
 	value: StackItem;
 	accessByteWidth: number;
-	lineNumber: number;
 	storeByteCode: number[];
 };
-
-type GuardedMemoryCopyOptions = {
-	byteLength: number;
-	lineNumber: number;
-};
-
-type MemoryGuardContext = CodegenContext;
-
-/**
- * Allocates or reuses a hidden local used by emitted memory guard bytecode.
- *
- * @param context - Compilation context used by the operation.
- * @param name - Local name used for the generated guard slot.
- * @param item - Memory item that needs a guard local.
- * @returns Resolved or create memory guard local.
- */
-export function getOrCreateMemoryGuardLocal(
-	context: MemoryGuardContext,
-	name: string,
-	item: Pick<StackItem, 'valueType'>
-) {
-	const valueType = item.valueType;
-	return getOrCreateLocal(context, name, {
-		isInteger: valueType === 'int',
-		...(valueType === 'float64' ? { isFloat64: true } : {}),
-	});
-}
 
 /**
  * Returns whether stack analysis proves an address can safely access the requested byte width.
@@ -146,36 +109,20 @@ function zeroValue(type: NumericWasmValueType): number[] {
  * @param options - Compiler options for this compilation pass.
  * @returns The computed result.
  */
-export function guardedLoad(context: MemoryGuardContext, options: GuardedLoadOptions): number[] {
-	return guardedAddressOperation(context, {
-		...options,
-		buildTrueBranch: addressLocalIndex => [...localGet(addressLocalIndex), ...options.loadByteCode],
-	});
+export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions): number[] {
+	const index = allocateLocal(context, { isInteger: true });
+	return guardedLoadWithLocal(index, options);
 }
 
-/**
- * Builds a guarded address operation with caller-provided bytecode for the in-bounds branch.
- *
- * @param context - Compilation context used by the operation.
- * @param options - Compiler options for this compilation pass.
- * @returns The computed result.
- */
-export function guardedAddressOperation(
-	context: MemoryGuardContext,
-	options: GuardedAddressOperationOptions
+/** Builds a guarded load using a caller-provided scratch slot for the stack address. */
+export function guardedLoadWithLocal(
+	addressLocalIndex: number,
+	{ accessByteWidth, resultType, loadByteCode }: GuardedLoadOptions
 ): number[] {
-	const addressLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardAddr_${options.lineNumber}`, {
-		valueType: 'int',
-	});
-
 	return [
-		...localSet(addressLocal.index),
-		...addressWithinMemoryBounds(addressLocal.index, options.accessByteWidth),
-		...ifelse(
-			options.resultType,
-			options.buildTrueBranch(addressLocal.index),
-			options.falseByteCode ?? zeroValue(options.resultType)
-		),
+		...localSet(addressLocalIndex),
+		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),
+		...ifelse(resultType, [...localGet(addressLocalIndex), ...loadByteCode], zeroValue(resultType)),
 	];
 }
 
@@ -186,21 +133,14 @@ export function guardedAddressOperation(
  * @param options - Compiler options for this compilation pass.
  * @returns The computed result.
  */
-export function guardedStore(context: MemoryGuardContext, options: GuardedStoreOptions): number[] {
-	const addressLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardAddr_${options.lineNumber}`, {
-		valueType: 'int',
-	});
-	const valueLocal = getOrCreateMemoryGuardLocal(context, `__memoryGuardValue_${options.lineNumber}`, options.value);
+export function guardedStore(context: CodegenContext, options: GuardedStoreOptions): number[] {
+	const addressLocalIndex = allocateLocal(context, { isInteger: true });
+	const valueLocalIndex = allocateLocal(context, functionValueTypeToLocalMetadata(options.value.valueType));
 
 	return [
-		...localSet(valueLocal.index),
-		...localSet(addressLocal.index),
-		...addressWithinMemoryBounds(addressLocal.index, options.accessByteWidth),
-		...ifelse(WASM_TYPE_VOID, [
-			...localGet(addressLocal.index),
-			...localGet(valueLocal.index),
-			...options.storeByteCode,
-		]),
+		...localSet(valueLocalIndex),
+		...localSet(addressLocalIndex),
+		...guardedStoreFromLocals(addressLocalIndex, valueLocalIndex, options.accessByteWidth, options.storeByteCode),
 	];
 }
 
@@ -220,27 +160,23 @@ export function isSafeMemoryCopy(destination: StackItem, source: StackItem, byte
  * Builds a guarded memory.copy that skips copying when either range is out of bounds.
  *
  * @param context - Compilation context used by the operation.
- * @param options - Compiler options for this compilation pass.
+ * @param byteLength - Number of bytes to copy.
  * @returns The computed result.
  */
-export function guardedMemoryCopy(context: MemoryGuardContext, options: GuardedMemoryCopyOptions): number[] {
-	const destinationLocal = getOrCreateMemoryGuardLocal(context, `__memoryCopyDestination_${options.lineNumber}`, {
-		valueType: 'int',
-	});
-	const sourceLocal = getOrCreateMemoryGuardLocal(context, `__memoryCopySource_${options.lineNumber}`, {
-		valueType: 'int',
-	});
+export function guardedMemoryCopy(context: CodegenContext, byteLength: number): number[] {
+	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
+	const sourceLocalIndex = allocateLocal(context, { isInteger: true });
 
 	return [
-		...localSet(sourceLocal.index),
-		...localSet(destinationLocal.index),
-		...rangeWithinMemoryBounds(destinationLocal.index, options.byteLength),
-		...rangeWithinMemoryBounds(sourceLocal.index, options.byteLength),
+		...localSet(sourceLocalIndex),
+		...localSet(destinationLocalIndex),
+		...rangeWithinMemoryBounds(destinationLocalIndex, byteLength),
+		...rangeWithinMemoryBounds(sourceLocalIndex, byteLength),
 		WASM_I32_AND,
 		...ifelse(WASM_TYPE_VOID, [
-			...localGet(destinationLocal.index),
-			...localGet(sourceLocal.index),
-			...i32const(options.byteLength),
+			...localGet(destinationLocalIndex),
+			...localGet(sourceLocalIndex),
+			...i32const(byteLength),
 			...memoryCopy(),
 		]),
 	];

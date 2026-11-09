@@ -6,7 +6,9 @@ This package owns bytecode emission, instruction compilers, WebAssembly local st
 
 Module and function emitters consume resolved executable bodies and stack-analysis facts. Function signatures, imports, exports, expanded parameters, and module execution directives arrive as metadata. Declaration instructions do not enter the instruction dispatcher. Arithmetic and call operand shorthand has already been lowered to ordinary resolved pushes; codegen neither expands source operands nor handles deferred references. Stack facts are aligned with executable body positions, not source-line indexes.
 
-Codegen assigns WebAssembly indexes to source binding identities, placing parameters first, and allocates its own temporary locals for loops, maps, clamps, and memory guards. Source names do not participate in storage lookup. Allocating a later source local cannot change which binding an earlier instruction references, and generated temporary names cannot shadow source bindings.
+Codegen stores locals in WebAssembly slot order, with parameters first, then source locals, then scratch locals.
+Source binding IDs select their slots directly. Codegen allocates scratch slots for operations such as loops, maps,
+clamps, and memory guards. When a lowering shares a scratch slot across steps, it passes the slot explicitly.
 
 Source ASTs remain attached to compiled output for tooling and diagnostics. Codegen does not replay those ASTs, resolve source references, validate syntax, repeat stack analysis, or decide compiler pass ordering.
 

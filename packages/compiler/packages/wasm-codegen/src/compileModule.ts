@@ -64,7 +64,7 @@ export function compileModule(
 		id: ast.id,
 		executionEntryName: ast.executionEntryName,
 		cycleFunction: createFunction(
-			Object.values(context.locals).map(local => {
+			context.locals.map(local => {
 				return createLocalDeclaration(
 					local.isInteger ? WASM_TYPE_I32 : local.isFloat64 ? WASM_TYPE_F64 : WASM_TYPE_F32,
 					1

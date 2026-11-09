@@ -7,12 +7,13 @@ import loopEnd from './loopEnd';
 describe('loopEnd instruction compiler', () => {
 	it('ends a loop block', () => {
 		const context = createInstructionCompilerTestContext({
+			locals: [{ isInteger: true }],
 			blockStack: [
 				...createInstructionCompilerTestContext().blockStack,
 				{
 					blockType: BlockType.LOOP,
 					expectedResultTypes: [],
-					loopCounterLocal: { isInteger: true, index: 0 },
+					loopCounterIndex: 0,
 				},
 			],
 		});

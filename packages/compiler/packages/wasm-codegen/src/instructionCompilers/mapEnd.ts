@@ -49,7 +49,7 @@ const eqOpcode: Record<StackAnalysisNumericValueKind, WASMInstructionCode> = {
  *
  * @see [Instruction docs](../../docs/instructions/control-flow.md)
  */
-const mapEnd: InstructionCompiler<MapEndLine> = (line: MapEndLine, context, facts) => {
+const mapEnd: InstructionCompiler<MapEndLine> = (_line, context, facts) => {
 	const { inputKind, outputKind } = facts.map!;
 	const outputIsInteger = outputKind === 'int32';
 	const outputIsFloat64 = outputKind === 'float64';
@@ -68,16 +68,14 @@ const mapEnd: InstructionCompiler<MapEndLine> = (line: MapEndLine, context, fact
 		saveByteCode(context, [WASM_DROP, ...constOp[outputKind](defaultValue)]);
 	} else {
 		// Allocate only the input and accumulated result.
-		const inputLocal = allocateLocal(context, `__map_${line.lineNumber}_input`, {
+		const inputLocalIdx = allocateLocal(context, {
 			isInteger: inputIsInteger,
 			...(inputIsFloat64 ? { isFloat64: true } : {}),
 		});
-		const resultLocal = allocateLocal(context, `__map_${line.lineNumber}_result`, {
+		const resultLocalIdx = allocateLocal(context, {
 			isInteger: outputIsInteger,
 			...(outputIsFloat64 ? { isFloat64: true } : {}),
 		});
-		const inputLocalIdx = inputLocal.index;
-		const resultLocalIdx = resultLocal.index;
 
 		// Save the input and initialize the result to the default.
 		saveByteCode(context, [

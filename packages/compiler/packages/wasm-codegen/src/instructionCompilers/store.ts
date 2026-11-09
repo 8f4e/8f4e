@@ -31,7 +31,6 @@ const store: InstructionCompiler<StoreLine> = (line, context, facts) => {
 		guardedStore(context, {
 			value: operand1Value,
 			accessByteWidth,
-			lineNumber: line.lineNumber,
 			storeByteCode: instructions,
 		})
 	);

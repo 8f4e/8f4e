@@ -64,15 +64,13 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
     32,
     1,
   ],
-  "locals": {
-    "__map_1_input": {
-      "index": 0,
+  "locals": [
+    {
       "isInteger": true,
     },
-    "__map_1_result": {
-      "index": 1,
+    {
       "isInteger": true,
     },
-  },
+  ],
 }
 `;

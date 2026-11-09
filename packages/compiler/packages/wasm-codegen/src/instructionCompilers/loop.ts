@@ -25,38 +25,34 @@ const loop: InstructionCompiler<ResolvedLoopLine> = (line, context) => {
 	const capArg = line.arguments[0];
 	const effectiveCap = capArg.value;
 
-	const infiniteLoopProtectionCounterName = '__infiniteLoopProtectionCounter' + line.lineNumber;
-	const loopCounterLocal = allocateLocal(context, infiniteLoopProtectionCounterName, {
-		isInteger: true,
-	});
-	const counterLocalIndex = loopCounterLocal.index;
+	const loopCounterIndex = allocateLocal(context, { isInteger: true });
 
 	const loopBlock: CodegenLoopBlockStackFrame = {
 		expectedResultTypes: [],
 		blockType: BlockType.LOOP,
-		loopCounterLocal,
+		loopCounterIndex,
 	};
 
 	pushBlock(context, loopBlock);
 
 	return saveByteCode(context, [
 		...i32const(0),
-		...localSet(counterLocalIndex),
+		...localSet(loopCounterIndex),
 		WASM_BLOCK,
 		WASM_TYPE_VOID,
 		WASM_LOOP,
 		WASM_TYPE_VOID,
-		...localGet(counterLocalIndex),
+		...localGet(loopCounterIndex),
 		...i32const(effectiveCap),
 		WASM_I32_GE_S,
 		WASM_IF,
 		WASM_TYPE_VOID,
 		...br(2),
 		WASM_END,
-		...localGet(counterLocalIndex),
+		...localGet(loopCounterIndex),
 		...i32const(1),
 		WASM_I32_ADD,
-		...localSet(counterLocalIndex),
+		...localSet(loopCounterIndex),
 	]);
 };
 

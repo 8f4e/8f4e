@@ -98,17 +98,11 @@ export interface PointerLocalMetadata {
 export type LocalValueMetadata = ScalarLocalMetadata | PointerLocalMetadata;
 export type LocalMap = Record<string, LocalValueMetadata>;
 
-export type ScalarLocalBinding = ScalarLocalMetadata & { index: number };
-export type PointerLocalBinding = PointerLocalMetadata & { index: number };
-export type LocalBinding = ScalarLocalBinding | PointerLocalBinding;
-export type LocalStorageMap = Record<string, LocalBinding>;
-
 /** One resolved source declaration; its identity remains stable across later stages. */
 export interface SourceLocalBinding {
 	id: number;
 	name: string;
 	type: FunctionValueType;
-	parameterIndex?: number;
 }
 
 /** Mutable namespace state available while compiling modules, constants, and functions. */
@@ -259,8 +253,8 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, 
 	/** Planned native assertion calls keyed by physical source line; absent when disabled. */
 	assertionCalls?: AssertionCodegenSites;
 	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
-	locals: LocalStorageMap;
-	nextLocalIndex: number;
+	/** Wasm slots in index order, starting with parameters and source locals. */
+	locals: LocalValueMetadata[];
 	functionLayout: WasmFunctionLayout;
 	functionTypeRegistry?: FunctionTypeRegistry;
 }
@@ -462,7 +456,7 @@ export interface LoopBlockStackFrame extends BlockStackFrameBase {
 
 /** Backend loop frame with its generated WebAssembly counter slot. */
 export interface CodegenLoopBlockStackFrame extends LoopBlockStackFrame {
-	loopCounterLocal: LocalBinding;
+	loopCounterIndex: number;
 }
 
 /** Block stack frame for an open map block and its accumulated rows. */
