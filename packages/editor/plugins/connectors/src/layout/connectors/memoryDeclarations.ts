@@ -4,10 +4,6 @@ export function isInputMemoryDeclaration(memory: PlannedMemoryDeclaration): bool
 	return memory.pointerDepth > 0;
 }
 
-function isPrivateOutputId(id: string): boolean {
-	return id.startsWith('_') && !id.startsWith('__anonymous__');
-}
-
 export function isOutputMemoryDeclaration(memory: PlannedMemoryDeclaration): boolean {
-	return memory.pointerDepth === 0 && !isPrivateOutputId(memory.id);
+	return memory.pointerDepth === 0 && !memory.name?.startsWith('_');
 }

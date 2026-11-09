@@ -22,7 +22,8 @@ function fixture(width = 8, height = 16) {
 		calibratedMax: 1,
 		calibratedMin: -1,
 		memory: {
-			id: 'value',
+			id: 0,
+			name: 'value',
 			type: 'float',
 			numberOfElements: 1,
 			elementWordSize: 4,

@@ -64,7 +64,9 @@ function formatRuntimeSliderValue(value: number, slider: Slider): string | undef
 function getSliderDefaults(sliders: Slider[], read: (address: number) => number): MemoryDefaultValue[][] {
 	return sliders.flatMap(slider => {
 		const value = formatRuntimeSliderValue(readRuntimeSliderValue(slider, read), slider);
-		return value === undefined ? [] : [[{ moduleId: slider.moduleId, memoryId: slider.id, value, isArray: false }]];
+		return value === undefined
+			? []
+			: [[{ moduleId: slider.moduleId, memoryName: slider.memoryName, value, isArray: false }]];
 	});
 }
 

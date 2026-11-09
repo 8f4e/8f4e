@@ -13,7 +13,6 @@ describe('memory declaration layout planner', () => {
 		'keeps scalar float64 bounds inside its storage at base $startingByteAddress and offset $localAllocationUnitOffset',
 		({ startingByteAddress, localAllocationUnitOffset, byteAddress, padding }) => {
 			const result = planScalarDeclarationLayout({
-				id: 'value',
 				lineNumber: 1,
 				instruction: 'float64',
 				startingByteAddress,
@@ -29,7 +28,6 @@ describe('memory declaration layout planner', () => {
 			});
 			expect(result.nextLocalAllocationUnitOffset).toBe(localAllocationUnitOffset + padding + 2);
 			const following = planScalarDeclarationLayout({
-				id: 'next',
 				lineNumber: 2,
 				instruction: 'int',
 				startingByteAddress,
@@ -43,7 +41,6 @@ describe('memory declaration layout planner', () => {
 		'keeps $numberOfElements-element float64 array bounds inside its storage at base $startingByteAddress and offset $localAllocationUnitOffset',
 		({ startingByteAddress, localAllocationUnitOffset, byteAddress, padding, numberOfElements }) => {
 			const result = planArrayDeclarationLayout({
-				id: 'values',
 				lineNumber: 1,
 				instruction: 'float64[]',
 				startingByteAddress,
@@ -60,7 +57,6 @@ describe('memory declaration layout planner', () => {
 			});
 			expect(result.nextLocalAllocationUnitOffset).toBe(localAllocationUnitOffset + padding + numberOfElements * 2);
 			const following = planScalarDeclarationLayout({
-				id: 'next',
 				lineNumber: 2,
 				instruction: 'int',
 				startingByteAddress,
@@ -72,7 +68,6 @@ describe('memory declaration layout planner', () => {
 
 	it.each([0, 1, 2])('marks a float64 array of length %i as a float64 value', numberOfElements => {
 		const { declaration } = planArrayDeclarationLayout({
-			id: 'doubles',
 			lineNumber: 1,
 			instruction: 'float64[]',
 			numberOfElements,
@@ -95,7 +90,6 @@ describe('memory declaration layout planner', () => {
 		['float64**[]', true, 2, 'float64'],
 	] as const)('keeps the existing value metadata for %s', (instruction, isInteger, pointerDepth, pointeeBaseType) => {
 		const { declaration } = planArrayDeclarationLayout({
-			id: 'values',
 			lineNumber: 1,
 			instruction,
 			numberOfElements: 2,
@@ -110,7 +104,6 @@ describe('memory declaration layout planner', () => {
 
 	it('plans scalar declaration addresses on the 4-byte grid', () => {
 		const result = planScalarDeclarationLayout({
-			id: 'counter',
 			lineNumber: 1,
 			instruction: 'int',
 			startingByteAddress: 4,
@@ -128,7 +121,6 @@ describe('memory declaration layout planner', () => {
 				elementByteLength: 4,
 				endByteAddress: 4,
 				endAddressSafeByteLength: 4,
-				id: 'counter',
 				lineNumber: 1,
 				type: 'int',
 				pointerDepth: 0,
@@ -141,7 +133,6 @@ describe('memory declaration layout planner', () => {
 
 	it('adds alignment padding before scalar float64 declarations at odd allocation-unit offsets', () => {
 		const result = planScalarDeclarationLayout({
-			id: 'phase',
 			lineNumber: 2,
 			instruction: 'float64',
 			startingByteAddress: 4,
@@ -156,7 +147,6 @@ describe('memory declaration layout planner', () => {
 
 	it('plans narrow arrays using byte width rounded to the allocation grid', () => {
 		const result = planArrayDeclarationLayout({
-			id: 'bytes',
 			lineNumber: 3,
 			instruction: 'int8[]',
 			numberOfElements: 5,
@@ -170,7 +160,6 @@ describe('memory declaration layout planner', () => {
 			allocationUnitAddress: 1,
 			allocationUnitCount: 2,
 			byteAddress: 4,
-			id: 'bytes',
 			lineNumber: 3,
 			type: 'int8',
 			pointerDepth: 0,
@@ -189,7 +178,6 @@ describe('memory declaration layout planner', () => {
 		'keeps %s element widths separate from allocation-unit counts',
 		(instruction, numberOfElements, elementWordSize, allocationUnitCount) => {
 			const result = planArrayDeclarationLayout({
-				id: 'values',
 				lineNumber: 1,
 				instruction,
 				numberOfElements,
@@ -211,7 +199,6 @@ describe('memory declaration layout planner', () => {
 
 	it('aligns float64 arrays to 8-byte boundaries', () => {
 		const result = planArrayDeclarationLayout({
-			id: 'doubles',
 			lineNumber: 4,
 			instruction: 'float64[]',
 			numberOfElements: 2,

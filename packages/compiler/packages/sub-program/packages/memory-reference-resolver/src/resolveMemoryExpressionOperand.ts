@@ -23,9 +23,9 @@ import { resolveMemoryTarget, resolveModuleTarget } from './resolveMemoryTarget'
 
 function getPointerMetadata(
 	context: MemoryReferenceResolutionContext,
-	memoryId: string,
+	memoryId: number,
 	moduleId = context.moduleName ?? context.currentModule?.id
-): MemoryPointerMetadataMap[string] | undefined {
+): MemoryPointerMetadataMap[number] | undefined {
 	return moduleId ? context.pointerMetadata[moduleId]?.[memoryId] : undefined;
 }
 
@@ -133,7 +133,7 @@ export function resolveMemoryExpressionOperand(
 					byteAddress: targetMemory.byteAddress,
 					safeByteLength: targetMemory.allocatedByteLength,
 					moduleId: targetModule.id,
-					...(targetMemory.id ? { memoryId: targetMemory.id } : {}),
+					memoryId: targetMemory.id,
 				},
 			},
 		};

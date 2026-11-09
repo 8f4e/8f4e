@@ -450,7 +450,7 @@
           },
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "buffer",
+          "id": 0,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 4,

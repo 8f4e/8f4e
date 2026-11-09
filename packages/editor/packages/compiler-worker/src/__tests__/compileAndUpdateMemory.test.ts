@@ -192,6 +192,27 @@ describe('compileAndUpdateMemory live code updates', () => {
 			0, 0,
 		]);
 	});
+
+	it('keeps anonymous declaration IDs and live memory when source lines move', async () => {
+		const project = createInput([{ code: ['module voice', 'int 42', 'int 7', 'moduleEnd'] }]);
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const firstDeclarations = first.memoryPlan.modules.voice!.declarations;
+		const [firstCell, secondCell] = firstDeclarations;
+		const memory = new Int32Array(first.memoryRef.buffer);
+		expect(memory[firstCell.allocationUnitAddress]).toBe(42);
+		memory[firstCell.allocationUnitAddress] = 99;
+
+		getProjectModules(project)[0].code = ['module voice', '', 'int 42', 'int 8', 'moduleEnd'];
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		const secondDeclarations = second.memoryPlan.modules.voice!.declarations;
+		expect(secondDeclarations.map(({ id, byteAddress }) => ({ id, byteAddress }))).toEqual(
+			firstDeclarations.map(({ id, byteAddress }) => ({ id, byteAddress }))
+		);
+		expect(secondDeclarations.map(({ lineNumber }) => lineNumber)).toEqual([2, 3]);
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(memory[firstCell.allocationUnitAddress]).toBe(99);
+		expect(memory[secondCell.allocationUnitAddress]).toBe(8);
+	});
 });
 
 describe('compileAndUpdateMemory float64 incremental patching', () => {

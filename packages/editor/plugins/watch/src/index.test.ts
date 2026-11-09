@@ -9,12 +9,6 @@ const source = ['module audio', 'int value 7 ; @watch', 'moduleEnd'];
 describe('watch plugin', () => {
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {
 		const test = await setup(plugin, ['module audio', `int 7 ; @${directive}`, 'moduleEnd']);
-		const module = test.compiled.memoryPlan.modules.audio;
-		const declaration = module.declarations[0];
-		delete module.memory[declaration.id];
-		declaration.id = 'compiler:anonymous:0';
-		module.memory[declaration.id] = declaration;
-		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawNumericText).toHaveBeenCalledWith(
 			expect.any(Number),

@@ -572,10 +572,10 @@ entryEnd`;
 	view.gallery.querySelector<HTMLButtonElement>('#example-templates')!.click();
 	const reopened = await view.mounted(2);
 	await vi.waitFor(
-		() => expect(reopened.state.compiler.result.memoryDefaultsByModuleId['left/counter']?.value.value).toBe(1),
+		() => expect(reopened.state.compiler.result.memoryDefaultsByModuleId['left/counter']?.[0].value).toBe(1),
 		{ timeout: 10000 }
 	);
-	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'].value.value).toBe(1);
+	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'][0].value).toBe(1);
 	expect(reopened.state.codeErrors.compiler).toEqual([]);
 	expect(reopened.state.codeErrors['editor-directives']).toEqual([]);
 });

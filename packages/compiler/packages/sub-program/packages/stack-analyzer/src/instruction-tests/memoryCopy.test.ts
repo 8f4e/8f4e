@@ -22,7 +22,7 @@ describe('memoryCopy stack analysis', () => {
 						source: 'memory-start',
 						byteAddress: 20,
 						safeByteLength: 20,
-						memoryId: 'target',
+						memoryId: 0,
 					},
 				},
 			},
@@ -35,7 +35,7 @@ describe('memoryCopy stack analysis', () => {
 						source: 'memory-start',
 						byteAddress: 0,
 						safeByteLength: 20,
-						memoryId: 'source',
+						memoryId: 0,
 					},
 				},
 			}

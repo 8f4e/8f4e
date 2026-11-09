@@ -196,8 +196,9 @@ describe('planSubProgramMemoryLayout', () => {
 			constantReferences: noConstantReferences(),
 		});
 
-		expect(plan.modules.main.declarations[0].id).toBe('__anonymous__2');
-		expect(plan.modules.main.memory.__anonymous__2.byteAddress).toBe(4);
+		expect(plan.modules.main.declarations[0]).toMatchObject({ id: 0, byteAddress: 4 });
+		expect(plan.modules.main.declarations[0].name).toBeUndefined();
+		expect(plan.modules.main.memory).toEqual({});
 	});
 
 	it('expands shape declarations into effective declaration sources', () => {
@@ -224,7 +225,7 @@ describe('planSubProgramMemoryLayout', () => {
 			startingByteAddress: 4,
 		});
 
-		expect(plan.modules.main.declarations.map(declaration => declaration.id)).toEqual(['foo', 'bar', 'local']);
+		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['foo', 'bar', 'local']);
 		expect(plan.modules.main.declarationSources).toEqual([
 			{ line: { ...foo, lineNumber: 11 }, isInherited: true },
 			{ line: { ...bar, lineNumber: 11 }, isInherited: true },
@@ -316,7 +317,7 @@ describe('planner input building', () => {
 			startingByteAddress: 4,
 		});
 
-		expect(plan.modules.main.declarations.map(declaration => declaration.id)).toEqual(['inherited', 'values']);
+		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['inherited', 'values']);
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(6);
 		expect(plan.modules.main.declarationSources).toEqual([
 			{ line: { ...inherited, lineNumber: 3 }, isInherited: true },
@@ -447,7 +448,11 @@ describe('planner input building', () => {
 			startingByteAddress: 4,
 		});
 
-		expect(plan.modules.main.declarations.map(declaration => declaration.id)).toEqual(['first', 'inherited', 'items']);
+		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual([
+			'first',
+			'inherited',
+			'items',
+		]);
 		expect(plan.modules.main.declarationSources).toEqual([
 			{ line: firstDeclaration, isInherited: false },
 			{ line: { ...inherited, lineNumber: 13 }, isInherited: true },

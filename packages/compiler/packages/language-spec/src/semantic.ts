@@ -44,7 +44,7 @@ export interface MemoryAddressRange {
 	byteAddress: number;
 	safeByteLength: number;
 	moduleId?: string;
-	memoryId?: string;
+	memoryId?: number;
 }
 
 /** Compiler metadata carried alongside values known to represent memory addresses. */

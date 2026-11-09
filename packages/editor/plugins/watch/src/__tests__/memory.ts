@@ -1,7 +1,8 @@
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 export function createMemory(overrides: Partial<PlannedMemoryDeclaration>): PlannedMemoryDeclaration {
 	return {
-		id: 'value',
+		id: 0,
+		name: 'value',
 		type: 'int',
 		numberOfElements: 1,
 		elementWordSize: 4,

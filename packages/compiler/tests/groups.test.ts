@@ -70,13 +70,23 @@ entryEnd`);
 
 		const second = await compileProject(project, { cache: first.cache });
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(first.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(11);
-		expect(second.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(22);
+		expect(
+			first.memoryDefaultsByModuleId['values/processor']![first.memoryPlan.modules['values/processor'].memory.foo.id]!
+				.value
+		).toBe(11);
+		expect(
+			second.memoryDefaultsByModuleId['values/processor']![second.memoryPlan.modules['values/processor'].memory.foo.id]!
+				.value
+		).toBe(22);
 		expect(getProjectModules(group)[0]!.code).toContain('int foo 3');
 
 		group.code.splice(initializerRow, 1);
 		const restored = await compileProject(project, { cache: second.cache });
-		expect(restored.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(3);
+		expect(
+			restored.memoryDefaultsByModuleId['values/processor']![
+				restored.memoryPlan.modules['values/processor'].memory.foo.id
+			]!.value
+		).toBe(3);
 	});
 
 	it('re-resolves group initializers without changing cached declaration source', async () => {
@@ -89,21 +99,35 @@ entryEnd`);
 
 		const second = await compileProject(project, { cache: first.cache });
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(second.memoryDefaultsByModuleId['synth/processor']!.input!.value).toBe(
-			second.memoryPlan.modules.source!.memory.alternate!.byteAddress
-		);
-		expect(first.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(3);
-		expect(second.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(2);
+		expect(
+			second.memoryDefaultsByModuleId['synth/processor']![second.memoryPlan.modules['synth/processor'].memory.input.id]!
+				.value
+		).toBe(second.memoryPlan.modules.source!.memory.alternate!.byteAddress);
+		expect(
+			first.pointerMetadataByModuleId['synth/processor']![first.memoryPlan.modules['synth/processor'].memory.input.id]!
+				.pointeeElementCount
+		).toBe(3);
+		expect(
+			second.pointerMetadataByModuleId['synth/processor']![
+				second.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.pointeeElementCount
+		).toBe(2);
 		expect(getProjectModules(group).find(module => module.code[0] === 'module processor')!.code).toContain(
 			'int* input &fallback'
 		);
 
 		group.code.splice(initializerRow, 1);
 		const restored = await compileProject(project, { cache: second.cache });
-		expect(restored.memoryDefaultsByModuleId['synth/processor']!.input!.value).toBe(
-			restored.memoryPlan.modules['synth/processor']!.memory.fallback!.byteAddress
-		);
-		expect(restored.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(2);
+		expect(
+			restored.memoryDefaultsByModuleId['synth/processor']![
+				restored.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.value
+		).toBe(restored.memoryPlan.modules['synth/processor']!.memory.fallback!.byteAddress);
+		expect(
+			restored.pointerMetadataByModuleId['synth/processor']![
+				restored.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.pointeeElementCount
+		).toBe(2);
 	});
 
 	it('re-resolves passed namespaces when cached child ASTs are unchanged', async () => {
@@ -120,8 +144,14 @@ entryEnd`);
 		const second = await compileProject(project, { cache: first.cache });
 
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(second.memoryDefaultsByModuleId['audio/voice']!.rate!.value).toBe(96_000);
-		expect(second.memoryDefaultsByModuleId['audio/nested/nestedVoice']!.blockSize!.value).toBe(96);
+		expect(
+			second.memoryDefaultsByModuleId['audio/voice']![second.memoryPlan.modules['audio/voice'].memory.rate.id]!.value
+		).toBe(96_000);
+		expect(
+			second.memoryDefaultsByModuleId['audio/nested/nestedVoice']![
+				second.memoryPlan.modules['audio/nested/nestedVoice'].memory.blockSize.id
+			]!.value
+		).toBe(96);
 	});
 
 	it('indexes recursively owned group blocks by their canonical paths', async () => {

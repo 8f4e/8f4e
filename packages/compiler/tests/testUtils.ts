@@ -197,10 +197,14 @@ function serializeCompiledModuleMemory(
 ): Record<string, unknown> {
 	const memoryDefaults = result.memoryDefaultsByModuleId[plannedModule.id]!;
 	const pointerMetadata = result.pointerMetadataByModuleId[plannedModule.id]!;
+	const anonymousMemory = plannedModule.declarations
+		.filter(data => data.name === undefined)
+		.map(data => serializeMemoryData(data, memoryDefaults[data.id], pointerMetadata[data.id]));
 	return {
-		memory: sortRecord(plannedModule.memory, (data, id) =>
-			serializeMemoryData(data, memoryDefaults[id], pointerMetadata[id])
+		memory: sortRecord(plannedModule.memory, data =>
+			serializeMemoryData(data, memoryDefaults[data.id], pointerMetadata[data.id])
 		),
+		...(anonymousMemory.length ? { anonymousMemory } : {}),
 	};
 }
 

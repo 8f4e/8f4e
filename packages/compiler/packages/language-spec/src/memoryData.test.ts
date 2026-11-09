@@ -18,7 +18,7 @@ import {
 function memory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
 	const byteAddress = overrides.byteAddress ?? 100;
 	const declaration = {
-		id: 'memory',
+		id: 0,
 		type: 'int' as const,
 		numberOfElements: 10,
 		elementWordSize: 4,

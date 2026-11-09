@@ -162,12 +162,12 @@ function getPointeeMemoryItem(
 	context: MemoryReferenceResolutionContext
 ): MemoryReferenceModuleNamespace['memory'][string] | undefined {
 	const memoryId = safeRange.memoryId;
-	if (!memoryId) {
+	if (memoryId === undefined) {
 		return undefined;
 	}
 
 	const moduleId = safeRange.moduleId ?? context.moduleName ?? context.currentModule?.id;
-	return moduleId ? context.memoryPlan.modules[moduleId]?.memory[memoryId] : undefined;
+	return moduleId ? context.memoryPlan.modules[moduleId]?.declarations[memoryId] : undefined;
 }
 
 function getPointeeElementCount(
@@ -212,9 +212,9 @@ function updatePointerMemoryMetadata(line: CompilerASTLine, context: MemoryRefer
 	}
 
 	if (pointeeElementCount !== undefined) {
-		context.pointerMetadata[moduleId]![idArgument.value] = { pointeeElementCount };
+		context.pointerMetadata[moduleId]![declaration.id] = { pointeeElementCount };
 	} else {
-		delete context.pointerMetadata[moduleId]![idArgument.value];
+		delete context.pointerMetadata[moduleId]![declaration.id];
 	}
 }
 
@@ -247,14 +247,15 @@ function resolveMemoryReferenceArgument(
 function resolveMemoryReferenceLineFacts(
 	line: CompilerASTLine,
 	context: MemoryReferenceResolutionContext,
-	initializerDefaults: ReadonlyMap<string, Const> | undefined
+	initializerDefaults: ReadonlyMap<number, Const> | undefined
 ): MemoryReferenceResolutionLineFacts | undefined {
 	if (isReferenceSlotLine(line)) return undefined;
 	const firstArgument = line.arguments[0];
-	const initializer =
-		isScalarMemoryDeclarationLine(line) && firstArgument?.type === ArgumentType.IDENTIFIER
-			? initializerDefaults?.get(firstArgument.value)
+	const declaration =
+		initializerDefaults && isScalarMemoryDeclarationLine(line) && firstArgument?.type === ArgumentType.IDENTIFIER
+			? context.currentModule?.memory[firstArgument.value]
 			: undefined;
+	const initializer = declaration && initializerDefaults?.get(declaration.id);
 	if (initializer) return { arguments: [firstArgument!, resolvedValueToLiteral(initializer)] };
 	let changed = false;
 	const nextArguments = line.arguments.map((argument, index) => {
@@ -308,7 +309,7 @@ function resolveMemoryReferencesInAst(
 	pointerMetadata: MemoryReferencePointerMetadataByModuleId,
 	memoryAliases: ProjectMemoryAliasLookup,
 	constantReferences: ConstantResolutionBlockFacts | undefined,
-	initializerDefaults: ReadonlyMap<string, Const> | undefined,
+	initializerDefaults: ReadonlyMap<number, Const> | undefined,
 	referenceSlots: ReferenceSlotMap = EMPTY_REFERENCE_SLOTS
 ): MemoryReferenceResolutionBlockFacts {
 	const context =
@@ -342,7 +343,7 @@ function resolveDeclarationSourceReferences(
 	memoryPlan: MemoryLayoutPlan,
 	pointerMetadata: MemoryReferencePointerMetadataByModuleId,
 	memoryAliases: ProjectMemoryAliasLookup,
-	initializerDefaults: ReadonlyMap<string, Const> | undefined,
+	initializerDefaults: ReadonlyMap<number, Const> | undefined,
 	referenceSlots: ReferenceSlotMap
 ): MemoryReferenceResolutionBlockFacts {
 	pointerMetadata[module.id] = pointerMetadata[module.id] ?? {};

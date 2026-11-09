@@ -374,7 +374,7 @@ entryEnd`);
 	it('rebinds geometry and the output index when compilation changes memory addresses', async () => {
 		const { state, events, memoryViews, gl, render } = await setup();
 		const module = state.compiler.result.memoryPlan.modules.source;
-		module.memory.output = { ...module.memory.output, byteAddress: 128, allocationUnitAddress: 32 };
+		Object.assign(module.memory.output, { byteAddress: 128, allocationUnitAddress: 32 });
 		memoryViews.int32[state.compiler.result.memoryPlan.modules.sink.memory.input.allocationUnitAddress] = 128;
 		events.dispatch('memoryValuesChanged');
 		render();

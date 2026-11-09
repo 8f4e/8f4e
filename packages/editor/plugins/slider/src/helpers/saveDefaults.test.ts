@@ -41,7 +41,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'foo',
+				memoryName: 'foo',
 				allocationUnitAddress: 4,
 				byteAddress: 16,
 				isInteger: false,
@@ -54,7 +54,7 @@ describe('save slider default values to code', () => {
 			},
 			{
 				moduleId: 'synth',
-				id: 'bar',
+				memoryName: 'bar',
 				allocationUnitAddress: 5,
 				byteAddress: 20,
 				isInteger: true,
@@ -93,7 +93,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'gain',
+				memoryName: 'gain',
 				allocationUnitAddress: 8,
 				byteAddress: 32,
 				isInteger: false,
@@ -127,7 +127,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'gain',
+				memoryName: 'gain',
 				allocationUnitAddress: 4,
 				byteAddress: 16,
 				isInteger: false,
@@ -161,7 +161,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'phase',
+				memoryName: 'phase',
 				allocationUnitAddress: 4,
 				byteAddress: 16,
 				isInteger: false,
@@ -196,7 +196,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'foo',
+				memoryName: 'foo',
 				allocationUnitAddress: 4,
 				byteAddress: 16,
 				isInteger: false,
@@ -221,7 +221,7 @@ describe('save slider default values to code', () => {
 		const sliders: Slider[] = [
 			{
 				moduleId: 'synth',
-				id: 'foo',
+				memoryName: 'foo',
 				allocationUnitAddress: 4,
 				byteAddress: 16,
 				isInteger: false,

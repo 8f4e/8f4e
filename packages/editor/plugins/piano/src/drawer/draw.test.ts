@@ -25,7 +25,8 @@ function createMockEngine(): Engine {
 
 function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
 	return {
-		id: 'memory',
+		id: 0,
+		name: 'memory',
 		numberOfElements: 1,
 		elementWordSize: 4,
 		type: 'int' as const,
@@ -77,14 +78,16 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 		blackKeyGapHeight: 8,
 		keys: createPianoKeyboardKeys(),
 		pressedKeysListMemory: createMockMemory({
-			id: 'notes',
+			id: 0,
+			name: 'notes',
 			byteAddress: 16,
 			allocationUnitAddress: 4,
 			allocationUnitCount: 12,
 			numberOfElements: 12,
 		}),
 		pressedKeyCountMemory: createMockMemory({
-			id: 'notesCount',
+			id: 1,
+			name: 'notesCount',
 			byteAddress: 4,
 			allocationUnitAddress: 1,
 		}),

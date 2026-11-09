@@ -11,7 +11,8 @@ export function getMemoryDeclarationRows(
 	memoryDefaults: MemoryDefaults
 ): MemoryDeclarationRow[] {
 	const inheritedRowsByLine = new Map<number, number>();
-	return Object.values(plannedModule.memory)
+	return plannedModule.declarations
+		.filter(memory => memory.name === undefined || plannedModule.memory[memory.name]?.id === memory.id)
 		.map(memory => {
 			let rowOffset = 0;
 			if (memoryDefaults[memory.id].isInherited === true) {

@@ -95,7 +95,7 @@ export function createMemoryPlan(
 	};
 }
 
-export function createMemoryDefaults(defaults: Record<string, MemoryDefault>): Record<string, MemoryDefaults> {
+export function createMemoryDefaults(defaults: MemoryDefaults): Record<string, MemoryDefaults> {
 	return {
 		test: defaults,
 	};

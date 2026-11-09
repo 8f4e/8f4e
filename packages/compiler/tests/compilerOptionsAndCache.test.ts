@@ -193,13 +193,17 @@ entryEnd`);
 		const reordered = await compileProject(project, { cache: first.cache });
 		expect(reordered.cache.ast.entries.get('root:entry:main:module:0')?.ast).toBe(cachedModuleAst);
 		expect(reordered.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(2);
-		expect(reordered.memoryDefaultsByModuleId.consumer!.kept!.value).toBe(7);
+		expect(
+			reordered.memoryDefaultsByModuleId.consumer![reordered.memoryPlan.modules.consumer.memory.kept.id]!.value
+		).toBe(7);
 		expect(first.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
 
 		project.constants[1]!.disabled = true;
 		const disabled = await compileProject(project, { cache: reordered.cache });
 		expect(disabled.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
-		expect(disabled.memoryDefaultsByModuleId.consumer!.kept!.value).toBe(9);
+		expect(
+			disabled.memoryDefaultsByModuleId.consumer![disabled.memoryPlan.modules.consumer.memory.kept.id]!.value
+		).toBe(9);
 	});
 
 	test('selects module replacements after reordering and disabling definitions with a cached consumer', async () => {
@@ -226,7 +230,7 @@ entryEnd`);
 		const first = await compileProject(project);
 		const cachedConsumer = first.cache.ast.entries.get('root:entry:main:module:1')?.ast;
 		expect(first.memoryPlan.modules.voice!.memory.buffer!.numberOfElements).toBe(4);
-		expect(first.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
+		expect(first.memoryDefaultsByModuleId.voice![first.memoryPlan.modules.voice.memory.value.id]!.value).toBe(22);
 
 		project.execution.reverse();
 		const reordered = await compileProject(project, { cache: first.cache });
@@ -234,16 +238,18 @@ entryEnd`);
 		expect(reordered.compiledModules.voice!.ast.projectBlockId).toBe(project.execution[2]!.id);
 		expect(reordered.memoryPlan.modules.voice!.memory.buffer!.numberOfElements).toBe(2);
 		expect(reordered.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(2);
-		expect(reordered.memoryDefaultsByModuleId.voice!.value!.value).toBe(11);
-		expect(reordered.memoryDefaultsByModuleId.consumer!.input!.value).toBe(
-			reordered.memoryPlan.modules.voice!.memory.value!.byteAddress
+		expect(reordered.memoryDefaultsByModuleId.voice![reordered.memoryPlan.modules.voice.memory.value.id]!.value).toBe(
+			11
 		);
-		expect(first.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
+		expect(
+			reordered.memoryDefaultsByModuleId.consumer![reordered.memoryPlan.modules.consumer.memory.input.id]!.value
+		).toBe(reordered.memoryPlan.modules.voice!.memory.value!.byteAddress);
+		expect(first.memoryDefaultsByModuleId.voice![first.memoryPlan.modules.voice.memory.value.id]!.value).toBe(22);
 
 		getProjectModules(project)[2]!.disabled = true;
 		const disabled = await compileProject(project, { cache: reordered.cache });
 		expect(disabled.compiledModules.voice!.ast.projectBlockId).toBe(project.execution[0]!.id);
 		expect(disabled.memoryPlan.modules.consumer!.memory.buffer!.numberOfElements).toBe(4);
-		expect(disabled.memoryDefaultsByModuleId.voice!.value!.value).toBe(22);
+		expect(disabled.memoryDefaultsByModuleId.voice![disabled.memoryPlan.modules.voice.memory.value.id]!.value).toBe(22);
 	});
 });

@@ -8,7 +8,7 @@ const range: MemoryAddressRange = {
 	source: 'memory-start',
 	byteAddress: 0,
 	safeByteLength: 128,
-	memoryId: 'arr',
+	memoryId: 0,
 };
 
 function createPlannedModule(overrides: Partial<PlannedMemoryModule> = {}): PlannedMemoryModule {
@@ -99,7 +99,7 @@ describe('clampAddress stack analysis', () => {
 			source: 'memory-start',
 			byteAddress: 64,
 			safeByteLength: 128,
-			memoryId: 'arr',
+			memoryId: 0,
 		};
 		context.stack.push({
 			kind: 'address',
@@ -195,7 +195,7 @@ describe('clampAddress stack analysis', () => {
 			valueType: 'int',
 			isNonZero: false,
 			address: {
-				clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 2, memoryId: 'tiny' },
+				clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 2, memoryId: 0 },
 			},
 		});
 

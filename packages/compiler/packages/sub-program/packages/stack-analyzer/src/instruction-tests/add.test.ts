@@ -14,7 +14,7 @@ describe('add stack analysis', () => {
 				isNonZero: false,
 				knownValue: 0,
 				address: {
-					safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 'arr' },
+					safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 0 },
 				},
 			},
 			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 4 }
@@ -36,8 +36,8 @@ describe('add stack analysis', () => {
 				isNonZero: true,
 				knownValue: 4,
 				address: {
-					safeRange: { source: 'memory-start', byteAddress: 4, safeByteLength: 124, memoryId: 'arr' },
-					clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 'arr' },
+					safeRange: { source: 'memory-start', byteAddress: 4, safeByteLength: 124, memoryId: 0 },
+					clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 0 },
 				},
 			},
 		]);
@@ -52,7 +52,7 @@ describe('add stack analysis', () => {
 				isNonZero: false,
 				knownValue: 0,
 				address: {
-					safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 'arr' },
+					safeRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 0 },
 				},
 			},
 			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 1024 }
@@ -74,7 +74,7 @@ describe('add stack analysis', () => {
 				isNonZero: true,
 				knownValue: 1024,
 				address: {
-					clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 'arr' },
+					clampRange: { source: 'memory-start', byteAddress: 0, safeByteLength: 128, memoryId: 0 },
 				},
 			},
 		]);

@@ -73,7 +73,7 @@ describe('resolveCompileTimeExpression', () => {
 								source: 'memory-start',
 								byteAddress: 16,
 								safeByteLength: 16,
-								memoryId: 'buffer',
+								memoryId: 0,
 							},
 						},
 					}
@@ -89,7 +89,7 @@ describe('resolveCompileTimeExpression', () => {
 					source: 'memory-start',
 					byteAddress: 20,
 					safeByteLength: 12,
-					memoryId: 'buffer',
+					memoryId: 0,
 				},
 			},
 		});

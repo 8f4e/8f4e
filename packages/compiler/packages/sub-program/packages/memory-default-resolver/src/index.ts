@@ -308,7 +308,7 @@ function declarationHasExplicitDefault(line: MemoryDeclarationLine): boolean {
 
 function setMemoryDefault(
 	defaults: MemoryDefaults,
-	memoryId: string,
+	memoryId: number,
 	value: MemoryDefault['value'],
 	line: MemoryDeclarationLine,
 	isInherited: boolean
@@ -359,6 +359,18 @@ function resolveModuleMemoryDefaults(
 			isInherited
 		);
 	});
+
+	// A repeated name uses the winning default at each allocation of that name.
+	for (const declaration of plannedModule.declarations) {
+		if (declaration.name === undefined) continue;
+		const effective = plannedModule.memory[declaration.name]!;
+		if (effective.id !== declaration.id) {
+			memoryDefaults[declaration.id] = {
+				...memoryDefaults[effective.id]!,
+				isInherited: memoryDefaults[declaration.id]!.isInherited,
+			};
+		}
+	}
 
 	return memoryDefaults;
 }

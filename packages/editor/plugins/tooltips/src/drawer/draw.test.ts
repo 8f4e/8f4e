@@ -133,7 +133,8 @@ function createTooltipCharacters(lines: string[]): number[][] {
 
 function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
 	return {
-		id: 'value',
+		id: 0,
+		name: 'value',
 		numberOfElements: 1,
 		elementWordSize: 4,
 		type: 'int' as const,
@@ -240,7 +241,8 @@ describe('tooltip drawing', () => {
 			code: ['add'],
 		});
 		const pointer = createMemory({
-			id: 'pointer',
+			id: 0,
+			name: 'pointer',
 			type: 'int*' as const,
 			byteAddress: 8,
 			allocationUnitAddress: 2,

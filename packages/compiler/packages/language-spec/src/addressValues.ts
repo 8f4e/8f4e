@@ -18,7 +18,7 @@ export function memoryStartAddressValue(memoryItem: PlannedMemoryDeclaration, mo
 				byteAddress: memoryItem.byteAddress,
 				safeByteLength: memoryItem.allocatedByteLength,
 				...(moduleId ? { moduleId } : {}),
-				...(memoryItem.id ? { memoryId: memoryItem.id } : {}),
+				memoryId: memoryItem.id,
 			},
 		},
 	};
@@ -41,7 +41,7 @@ export function memoryEndAddressValue(memoryItem: PlannedMemoryDeclaration, modu
 				byteAddress: memoryItem.endByteAddress,
 				safeByteLength: memoryItem.endAddressSafeByteLength,
 				...(moduleId ? { moduleId } : {}),
-				...(memoryItem.id ? { memoryId: memoryItem.id } : {}),
+				memoryId: memoryItem.id,
 			},
 		},
 	};

@@ -232,6 +232,10 @@ Compiled programs import one WebAssembly linear memory as `host.memory`. All mod
 space. The memory planner lays modules out alphabetically by id, while module execution follows the composer-provided
 order. `CompileResult.requiredMemoryBytes` reports the allocation size, and `initDefaults()` initializes that memory.
 
+Each module in `CompileResult.memoryPlan` lists every allocation in `declarations`, including anonymous and inherited
+fields. The numeric declaration ID is its index after `shape` expansion. Use the module's `memory` lookup for source
+names and the declaration ID for defaults and pointer metadata. Anonymous declarations have no source name.
+
 Layout addresses and counts use fixed 4-byte allocation units. Typed element widths remain independent of that grid:
 one `float64` occupies two units, while four `int8[]` elements fit in one unit. See
 [allocation units and API migration](docs/allocation-units.md) for the layout fields and renamed public APIs.

@@ -11,31 +11,34 @@ import createInitialMemoryDataSegments from './createInitialMemoryDataSegments';
 describe('createInitialMemoryDataSegments', () => {
 	test('skips implicit zero defaults while retaining non-zero and explicit defaults', () => {
 		const memoryPlan = createMemoryPlan({
-			scalarZero: createMemory({ id: 'scalarZero', byteAddress: 0 }),
-			scalarValue: createMemory({ id: 'scalarValue', byteAddress: 4 }),
+			scalarZero: createMemory({ id: 0, name: 'scalarZero', byteAddress: 0 }),
+			scalarValue: createMemory({ id: 1, name: 'scalarValue', byteAddress: 4 }),
 			implicitArray: createMemory({
-				id: 'implicitArray',
+				id: 2,
+				name: 'implicitArray',
 				byteAddress: 8,
 				numberOfElements: 4,
 				allocationUnitCount: 4,
 			}),
 			explicitArray: createMemory({
-				id: 'explicitArray',
+				id: 3,
+				name: 'explicitArray',
 				byteAddress: 24,
 				numberOfElements: 3,
 				allocationUnitCount: 3,
 			}),
 			explicitScalarZero: createMemory({
-				id: 'explicitScalarZero',
+				id: 4,
+				name: 'explicitScalarZero',
 				byteAddress: 36,
 			}),
 		});
 		const memoryDefaultsByModuleId = createMemoryDefaults({
-			scalarZero: createMemoryDefault(0),
-			scalarValue: createMemoryDefault(5),
-			implicitArray: createMemoryDefault({}),
-			explicitArray: createMemoryDefault({ 1: 2 }, { hasExplicitDefault: true }),
-			explicitScalarZero: createMemoryDefault(0, { hasExplicitDefault: true }),
+			0: createMemoryDefault(0),
+			1: createMemoryDefault(5),
+			2: createMemoryDefault({}),
+			3: createMemoryDefault({ 1: 2 }, { hasExplicitDefault: true }),
+			4: createMemoryDefault(0, { hasExplicitDefault: true }),
 		});
 
 		expect(serializeSegments(createInitialMemoryDataSegments(memoryPlan, memoryDefaultsByModuleId))).toEqual([
@@ -49,14 +52,15 @@ describe('createInitialMemoryDataSegments', () => {
 	test('skips explicit zero-filled array defaults', () => {
 		const memoryPlan = createMemoryPlan({
 			zeroArray: createMemory({
-				id: 'zeroArray',
+				id: 0,
+				name: 'zeroArray',
 				byteAddress: 0,
 				numberOfElements: 2,
 				allocationUnitCount: 2,
 			}),
 		});
 		const memoryDefaultsByModuleId = createMemoryDefaults({
-			zeroArray: createMemoryDefault({ 0: 0 }, { hasExplicitDefault: true }),
+			0: createMemoryDefault({ 0: 0 }, { hasExplicitDefault: true }),
 		});
 
 		expect(serializeSegments(createInitialMemoryDataSegments(memoryPlan, memoryDefaultsByModuleId))).toEqual([]);

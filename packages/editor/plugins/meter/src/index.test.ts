@@ -8,12 +8,6 @@ const source = ['module audio', 'float level 0.5 ; @meter', 'moduleEnd'];
 describe('meter plugin', () => {
 	it('uses the compiled declaration for an anonymous inline meter', async () => {
 		const test = await setup(meterPlugin, ['module audio', 'float 0.5 ; @meter', 'moduleEnd']);
-		const module = test.compiled.memoryPlan.modules.audio;
-		const declaration = module.declarations[0];
-		delete module.memory[declaration.id];
-		declaration.id = 'compiler:anonymous:0';
-		module.memory[declaration.id] = declaration;
-		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.drawFill).toHaveBeenCalledWith(

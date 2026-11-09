@@ -53,7 +53,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
                 "address": {
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "samples",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -103,7 +103,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
                 "address": {
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "samples",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -121,7 +121,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
                 "address": {
                   "safeRange": {
                     "byteAddress": 8,
-                    "memoryId": "samples",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 12,
                     "source": "memory-start",
@@ -148,7 +148,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
                 "address": {
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "samples",
+                    "memoryId": 0,
                     "moduleId": "audio",
                     "safeByteLength": 12,
                     "source": "memory-start",
@@ -176,7 +176,7 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
     "pointerMetadataByModuleId": {
       "audio": {},
       "main": {
-        "ptr": {
+        "1": {
           "pointeeElementCount": 4,
         },
       },
