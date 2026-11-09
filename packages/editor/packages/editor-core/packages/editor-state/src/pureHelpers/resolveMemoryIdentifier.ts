@@ -41,6 +41,27 @@ export function getDeclarationsByByteAddress(
 	return declarationsByByteAddress;
 }
 
+export interface MemoryAccessOptions {
+	showAddress?: boolean;
+	dereference?: boolean;
+	bufferPointer?: number;
+}
+
+/** Resolves an access to a declaration that has already been identified. */
+export function resolveMemoryAccess(
+	state: State,
+	memory: PlannedMemoryDeclaration,
+	{ showAddress = false, dereference = false, bufferPointer = 0 }: MemoryAccessOptions = {}
+): MemoryIdentifier | undefined {
+	if (dereference && memory.pointeeBaseType) {
+		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
+		const pointee = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
+		return pointee && { showAddress, memory: pointee, bufferPointer };
+	}
+
+	return { showAddress, memory, bufferPointer };
+}
+
 export default function resolveMemoryIdentifier(
 	state: State,
 	scope: MemoryScope,
@@ -73,20 +94,10 @@ export default function resolveMemoryIdentifier(
 
 	const target = resolveMemoryTarget(state, scope, memoryIdentifier);
 	if (!target) return;
-	let memory: PlannedMemoryDeclaration | undefined = target.memory;
-	if (operator === '*' && memory.pointeeBaseType) {
-		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
-		memory = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
-	}
-
-	if (!memory) {
-		return;
-	}
-
-	return {
-		target,
+	const access = resolveMemoryAccess(state, target.memory, {
 		showAddress,
-		memory,
+		dereference: operator === '*',
 		bufferPointer,
-	};
+	});
+	return access && { ...access, target };
 }

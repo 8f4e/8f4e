@@ -5,7 +5,8 @@ describe('meter directive data', () => {
 	it('accepts plain, address-of, and inferred typed value sources', () => {
 		expect(createMeterDirectiveData(['level'], 2)).toEqual({ memoryId: 'level', lineNumber: 2 });
 		expect(createMeterDirectiveData(['&buffer'], 3)).toEqual({ memoryId: '&buffer', lineNumber: 3 });
-		expect(createMeterDirectiveData([], 4, 'float out ; @meter')).toEqual({ memoryId: 'out', lineNumber: 4 });
+		expect(createMeterDirectiveData([], 4, 'float out ; @meter')).toEqual({ lineNumber: 4 });
+		expect(createMeterDirectiveData([], 4, 'shape fields ; @meter')).toBeUndefined();
 	});
 
 	it('rejects debugger expressions and malformed ranges', () => {

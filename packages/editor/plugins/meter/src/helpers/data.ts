@@ -1,46 +1,20 @@
 import { isPointerSource, parseFiniteNumber } from '@8f4e/editor-state';
-import { ArgumentType, isMemoryDeclarationLine } from '@8f4e/language-spec';
+import { isMemoryDeclarationLine } from '@8f4e/language-spec';
 import { parseLine } from '@8f4e/tokenizer';
 
 export interface MeterDirectiveData {
-	memoryId: string;
+	memoryId?: string;
 	lineNumber: number;
 	minValueOverride?: number;
 	maxValueOverride?: number;
 }
 
-function inferMeterIdFromSourceLine(sourceLine: string, lineNumber: number): string | undefined {
+function isInlineDeclaration(sourceLine: string | undefined, lineNumber: number): boolean {
+	if (sourceLine === undefined) return false;
 	try {
-		const parsedLine = parseLine(sourceLine, lineNumber);
-		const [firstArg] = parsedLine.arguments;
-
-		if (!isMemoryDeclarationLine(parsedLine)) {
-			return undefined;
-		}
-
-		if (!firstArg) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		if (firstArg.type === ArgumentType.IDENTIFIER && firstArg.referenceKind === 'plain') {
-			return firstArg.value;
-		}
-
-		if (firstArg.type === ArgumentType.LITERAL) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		if (
-			firstArg.type === ArgumentType.IDENTIFIER &&
-			firstArg.referenceKind === 'constant' &&
-			parsedLine.arguments.length > 1
-		) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		return undefined;
+		return isMemoryDeclarationLine(parseLine(sourceLine, lineNumber));
 	} catch {
-		return undefined;
+		return false;
 	}
 }
 
@@ -49,19 +23,10 @@ export function createMeterDirectiveData(
 	lineNumber: number,
 	sourceLine?: string
 ): MeterDirectiveData | undefined {
-	const inferredId = sourceLine ? inferMeterIdFromSourceLine(sourceLine, lineNumber) : undefined;
-	const memoryId = args[0] ?? inferredId;
-
-	if (!memoryId || !isPointerSource(memoryId)) {
-		return undefined;
-	}
-
-	if (args.length === 0 || args.length === 1) {
-		return {
-			memoryId,
-			lineNumber,
-		};
-	}
+	const [memoryId] = args;
+	if (memoryId === undefined) return isInlineDeclaration(sourceLine, lineNumber) ? { lineNumber } : undefined;
+	if (!isPointerSource(memoryId)) return;
+	if (args.length === 1) return { memoryId, lineNumber };
 
 	if (args.length !== 3) {
 		return undefined;

@@ -18,7 +18,8 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ; @watch <memoryExpression>
 ```
 
-Watch also accepts `@w`; inline directives can infer the memory declaration on the same line.
+Watch also accepts `@w`. With no target name, an inline watch reads the compiled memory declaration on its source line,
+including anonymous declarations. Format and access modifiers such as `0x` or `*[1]` can be used without a name.
 The plugin parses `0b`/`0x` display prefixes and the trailing `&` end-address form before asking core to resolve
 the memory reference. Formatting choices remain private to watch.
 

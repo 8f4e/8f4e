@@ -1,7 +1,9 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
+	getMemoryDeclarationAtSourceLine,
 	resolveDirectOrPointerTypedValueSpec,
+	resolveMemoryAccess,
 	resolveMemoryIdentifier,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
@@ -25,8 +27,13 @@ export function registerMeterLayout(
 			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
 		});
 		metersByBlock.set(graphicData, []);
+		const scope = getCodeBlockMemoryScope(graphicData);
 		items.forEach(data => {
-			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.memoryId);
+			const declaration =
+				data.memoryId === undefined && getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber);
+			const memory = declaration
+				? resolveMemoryAccess(state, declaration)
+				: resolveMemoryIdentifier(state, scope, data.memoryId);
 			const valueSpec = memory ? resolveDirectOrPointerTypedValueSpec(memory) : undefined;
 
 			if (!memory || !valueSpec) {
