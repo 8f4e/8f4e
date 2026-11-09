@@ -988,5 +988,11 @@
 		"version": "8.3.14",
 		"benchmark": "sineGenerator.8f4e",
 		"emittedBytes": 474
+	},
+	{
+		"commit": "d95510d3fc815518b5cb913a089b06e092a335d3",
+		"version": "9.0.0",
+		"benchmark": "sineGenerator.8f4e",
+		"emittedBytes": 474
 	}
 ]
