@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-font-preview",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "private": true,
   "description": "Temporary keyboard font previews for the 8f4e editor",
   "type": "module",
