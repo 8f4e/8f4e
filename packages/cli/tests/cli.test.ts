@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { promisify } from 'util';
 
 import { describe, expect, it } from 'vitest';
+import wabt from 'wabt';
 
 const execFileAsync = promisify(execFile);
 
@@ -77,22 +78,37 @@ moduleEnd
 entryEnd
 `
 		);
-		async function compile(...flags: string[]) {
+		const wabtApi = await wabt();
+		async function compileAndCountCalls(...flags: string[]) {
 			await execCli(['compile', input, '--wasm-output', output, ...flags]);
-			return fs.readFile(output);
+			const wasm = await fs.readFile(output);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(wasm, { host: { memory } });
+			expect((instance.exports.run as () => number)()).toBe(16);
+
+			const module = wabtApi.readWasm(wasm, { threads: true });
+			try {
+				return (module.toText({ foldExprs: false }).match(/\bcall\s/g) ?? []).length;
+			} finally {
+				module.destroy();
+			}
 		}
 
-		const calls = await compile();
-		const inlined = await compile('--inline-functions');
-		expect(inlined).not.toEqual(calls);
-		expect(await compile('--max-inline-caller-growth', '2')).toEqual(calls);
-		expect(await compile('--inline-functions', '--max-inline-expansion-operations', '0')).toEqual(calls);
-		const oneCall = await compile('--inline-functions', '--max-inline-caller-growth', '2');
-		expect(oneCall).not.toEqual(inlined);
-		expect(oneCall).not.toEqual(calls);
+		expect(await compileAndCountCalls()).toBe(3);
+		expect(await compileAndCountCalls('--max-inline-caller-growth', '2')).toBe(3);
+		expect(await compileAndCountCalls('--inline-functions')).toBe(0);
+		expect(await compileAndCountCalls('--inline-functions', '--max-inline-caller-growth', '2')).toBe(1);
+		// An empty module cycle fits even a zero-operation expansion budget.
+		expect(await compileAndCountCalls('--inline-functions', '--max-inline-expansion-operations', '0')).toBe(2);
 		expect(
-			await compile('--inline-functions', '--max-inline-expansion-operations', '0', '--max-inline-caller-growth', '2')
-		).toEqual(calls);
+			await compileAndCountCalls(
+				'--inline-functions',
+				'--max-inline-expansion-operations',
+				'0',
+				'--max-inline-caller-growth',
+				'2'
+			)
+		).toBe(2);
 	});
 
 	it.each([

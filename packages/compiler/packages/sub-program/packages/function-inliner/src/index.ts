@@ -111,7 +111,6 @@ export function inlineFunctions(
 	ir: WasmIR,
 	{ maxExpansionOperations = Infinity, maxCallerGrowth = Infinity }: FunctionInliningOptions = {}
 ): WasmIR {
-	if (maxExpansionOperations === 0) return ir;
 	const functions = new Map(ir.functions);
 	const exports = new Set(ir.exports.values());
 	const recursive = findRecursiveNodes(new Map([...functions].map(([id, func]) => [id, getCalls(func)])));
