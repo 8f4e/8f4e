@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`castToInt instruction compiler > converts float operand to int 1`] = `
+{
+  "instructions": [
+    252,
+    0,
+  ],
+}
+`;
+
+exports[`castToInt instruction compiler > converts float64 operand to int 1`] = `
+{
+  "instructions": [
+    252,
+    2,
+  ],
+}
+`;

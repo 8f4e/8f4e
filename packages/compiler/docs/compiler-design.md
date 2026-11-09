@@ -67,24 +67,23 @@ Codegen passes these facts through to the required `CompiledFunction.analysis` f
 `includeStackAnalysis`. The analyzer also reports each body's operation count, distinct instruction and push operand
 kinds, and pointer bindings and returns for compiler passes.
 
-## Function Inlining
+## Wasm IR Lowering and Function Inlining
 
-`@8f4e/function-inliner` combines structural function facts with the canonical call targets from stack analysis and
-rewrites resolved bodies. Its allowlist selects straight-line scalar leaf functions with implicit returns. It expands
-all eligible calls by default. In `compileProject` options, `functionInlining.maxExpansionOperations` limits the
-size of a replacement, including argument stores and local initialization. `functionInlining.maxCallerGrowth` limits
-the additional operations in a caller.
+After stack and function analysis, sub-program orchestration plans assertion sites against the source operations.
+`@8f4e/wasm-ir-lowering` expands resolved operations and records every parameter, declared local, and temporary binding.
+Local operands, function calls, assertion callbacks, and multi-value block types remain symbolic until emission.
 
-Each expansion assigns fresh caller-local binding IDs, stores the already evaluated arguments, and zeroes callee
-locals on every execution. The expanded operations use the caller's source location. The original function definitions
-and exports remain available.
+`@8f4e/function-inliner` applies its scalar leaf policy using the function analyzer's structural facts. It copies the
+lowered callee body, remaps all its bindings, stores the already evaluated arguments, and zeroes declared callee locals
+on each execution. The inliner keeps the original call if the caller's total bindings would exceed V8's 50,000-slot
+limit. The count includes the actual scratch locals allocated by lowering.
 
-The inliner leaves a call in place if its expansion would exceed V8's 50,000-slot limit. This count includes
-parameters, source locals, and scratch slots reserved for lowering.
+`functionInlining.maxExpansionOperations` limits the size of a replacement in source operations, including argument
+stores and local initialization. `functionInlining.maxCallerGrowth` limits the additional operations in a caller.
+Both limits are optional. Set `enableFunctionInlining: false` to retain ordinary calls throughout the program.
 
-Sub-program orchestration refreshes operation facts when a body changes, then plans assertion callbacks and Wasm
-function indices from the resulting bodies. The compiled metadata uses the original source stack view. To compile with
-ordinary calls, set `enableFunctionInlining: false` in `compileProject` options. Inlining is enabled by default.
+`@8f4e/wasm-codegen` assigns function and type indices and encodes the lowered bodies. Compiled metadata uses the original
+source stack report.
 
 ## Design Rule
 

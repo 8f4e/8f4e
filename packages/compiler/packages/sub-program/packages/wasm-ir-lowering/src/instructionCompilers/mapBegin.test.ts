@@ -1,0 +1,60 @@
+import { describe, expect, it } from 'vitest';
+
+import createInstructionCompilerTestContext, { compileInstructionForTest, identifier } from '../../tests/testUtils';
+import mapBegin from './mapBegin';
+
+describe('mapBegin instruction compiler', () => {
+	it('opens a map block for int input type', () => {
+		const context = createInstructionCompilerTestContext();
+
+		compileInstructionForTest(
+			mapBegin,
+			{
+				lineNumber: 1,
+				instruction: 'mapBegin',
+				arguments: [identifier('int')],
+			},
+			context
+		);
+
+		expect({
+			blockStack: context.blockStack,
+		}).toMatchSnapshot();
+	});
+
+	it('opens a map block for float input type', () => {
+		const context = createInstructionCompilerTestContext();
+
+		compileInstructionForTest(
+			mapBegin,
+			{
+				lineNumber: 1,
+				instruction: 'mapBegin',
+				arguments: [identifier('float')],
+			},
+			context
+		);
+
+		expect({
+			blockStack: context.blockStack,
+		}).toMatchSnapshot();
+	});
+
+	it('opens a map block for float64 input type', () => {
+		const context = createInstructionCompilerTestContext();
+
+		compileInstructionForTest(
+			mapBegin,
+			{
+				lineNumber: 1,
+				instruction: 'mapBegin',
+				arguments: [identifier('float64')],
+			},
+			context
+		);
+
+		expect({
+			blockStack: context.blockStack,
+		}).toMatchSnapshot();
+	});
+});

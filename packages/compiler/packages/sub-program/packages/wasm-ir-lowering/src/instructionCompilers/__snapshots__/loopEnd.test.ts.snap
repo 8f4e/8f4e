@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loopEnd instruction compiler > ends a loop block 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    12,
+    0,
+    11,
+    11,
+  ],
+}
+`;

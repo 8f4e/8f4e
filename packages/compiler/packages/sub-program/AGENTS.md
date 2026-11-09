@@ -16,8 +16,9 @@ This file extends the root and `packages/compiler/AGENTS.md` guidance for
 - Pass packages used exclusively by this pipeline live under `packages/`.
 - Run `@8f4e/function-analyzer` after stack analysis and pass its per-function facts to codegen as output metadata.
   Keep optimization eligibility and transformations out of function analysis.
-- Run `@8f4e/function-inliner` after function analysis when enabled. Refresh stack facts for rewritten bodies before
-  assertion planning and codegen. Retain the source stack report for compiled metadata.
+- Plan assertions and run `@8f4e/wasm-ir-lowering` using the source stack report. Run
+  `@8f4e/function-inliner` on the lowered bodies when enabled, before assigning indices and emitting bytes. Retain
+  the source stack report for compiled metadata.
 
 ## Commands
 

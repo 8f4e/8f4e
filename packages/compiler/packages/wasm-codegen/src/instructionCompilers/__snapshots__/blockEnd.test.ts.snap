@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`blockEnd instruction compiler > emits the end of a block with a result 1`] = `
-{
-  "byteCode": [
-    11,
-  ],
-}
-`;

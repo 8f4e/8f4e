@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`or instruction compiler > emits I32_OR 1`] = `
+{
+  "instructions": [
+    114,
+  ],
+}
+`;

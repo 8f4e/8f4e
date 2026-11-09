@@ -1,0 +1,170 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    65,
+    0,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    2,
+    64,
+    3,
+    64,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    10,
+    78,
+    4,
+    64,
+    12,
+    2,
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    1,
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;
+
+exports[`loop instruction compiler > compiles the loop segment with default cap 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    65,
+    0,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    2,
+    64,
+    3,
+    64,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    232,
+    7,
+    78,
+    4,
+    64,
+    12,
+    2,
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    1,
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;
+
+exports[`loop instruction compiler > compiles the loop segment with explicit cap argument 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    65,
+    0,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    2,
+    64,
+    3,
+    64,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    32,
+    78,
+    4,
+    64,
+    12,
+    2,
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    1,
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

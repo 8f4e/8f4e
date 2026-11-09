@@ -243,7 +243,6 @@ describe('push stack analysis', () => {
 		const contextInt = {
 			...context,
 			stack: [] as typeof context.stack,
-			byteCode: [] as typeof context.byteCode,
 		};
 		analyzeInstruction(resolvedMemoryPushLine('myInt', memory.myInt), contextInt);
 		expect(contextInt.stack[0]).toMatchObject({ kind: 'value', valueType: 'int' });
@@ -251,20 +250,16 @@ describe('push stack analysis', () => {
 		const contextFloat = {
 			...context,
 			stack: [] as typeof context.stack,
-			byteCode: [] as typeof context.byteCode,
 		};
 		analyzeInstruction(resolvedMemoryPushLine('myFloat', memory.myFloat), contextFloat);
 		expect(contextFloat.stack[0]).toMatchObject({ kind: 'value', valueType: 'float' });
-		// F32_LOAD
 
 		const contextF64 = {
 			...context,
 			stack: [] as typeof context.stack,
-			byteCode: [] as typeof context.byteCode,
 		};
 		analyzeInstruction(resolvedMemoryPushLine('myF64', memory.myF64), contextF64);
 		expect(contextF64.stack[0]).toMatchObject({ kind: 'value', valueType: 'float64' });
-		// F64_LOAD
 	});
 
 	it('tracks pointer metadata when pushing a pointer-typed memory identifier', () => {

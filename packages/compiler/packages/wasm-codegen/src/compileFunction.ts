@@ -6,66 +6,34 @@ import {
 	WASM_TYPE_I32,
 } from '@8f4e/compiler-wasm-utils';
 import type {
-	AssertionCodegenSites,
 	CompiledFunction,
-	CompileOptions,
+	CompiledStackAnalysisLine,
 	ComposedFunctionAST,
 	FunctionAnalysis,
+	FunctionMetadata,
 	FunctionTypeRegistry,
 	WasmFunctionLayout,
+	WasmIRBody,
 } from '@8f4e/language-spec';
 
-import { BlockType } from '@8f4e/language-spec';
-import type { FunctionSemanticReferences } from '@8f4e/semantic-reference-resolver';
-import type { StackAnalyzedFunction } from '@8f4e/stack-analyzer';
-import { compileCodegenLine } from './compileLine';
-import { createCodegenContext } from './createCodegenContext';
+import { emitWasmInstructions } from './emitWasmInstructions';
 
-/**
- * Compiles one resolved function into a WebAssembly function body or import metadata.
- *
- * @param resolved - Executable body, source bindings, and registered function metadata.
- * @param typeRegistry - Function type registry used for WASM block signatures.
- * @param functionLayout - Final function indices and signatures shared with binary emission.
- * @param stackReport - Stack-analysis report for this function.
- * @param analysis - Structural function facts passed through to compiled output.
- * @param options - Compiler options for this compilation pass.
- * @param assertionCalls - Planned assertion callbacks keyed by operation index.
- * @returns The compiled function artifact.
- */
+interface CompileFunctionInput {
+	ast: ComposedFunctionAST;
+	metadata: FunctionMetadata;
+	body: WasmIRBody;
+	analysis: FunctionAnalysis;
+	stackAnalysis?: CompiledStackAnalysisLine[];
+}
+
+/** Emits one lowered function body and its source metadata. */
 export function compileFunction(
-	resolved: FunctionSemanticReferences<ComposedFunctionAST>,
-	typeRegistry: FunctionTypeRegistry,
+	{ ast, metadata, body, analysis, stackAnalysis }: CompileFunctionInput,
 	functionLayout: WasmFunctionLayout,
-	stackReport: StackAnalyzedFunction,
-	analysis: FunctionAnalysis,
-	options: Pick<CompileOptions, 'includeStackAnalysis'> = {},
-	assertionCalls?: AssertionCodegenSites
+	typeRegistry: FunctionTypeRegistry
 ): CompiledFunction {
-	const { ast, metadata: functionMetadata, bindings, body } = resolved;
-	const context = createCodegenContext(
-		{
-			functionLayout,
-			byteCode: [],
-			blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
-			codeBlockType: 'function',
-			projectBlockId: ast.projectBlockId,
-			source: ast.source,
-			codeBlockId: functionMetadata.name,
-			functionTypeRegistry: typeRegistry,
-		},
-		bindings
-	);
-
-	for (const [operationIndex, { line }] of body.entries())
-		compileCodegenLine(line, stackReport.operationFacts[operationIndex], context, assertionCalls?.get(operationIndex));
-	const { wasmIndex, typeIndex } = functionLayout.functions[functionMetadata.id];
-
-	// Collect locals (excluding parameters)
-	// Parameters are always at indices 0, 1, 2, ..., (parameterCount - 1)
-	// Regular locals declared with the 'local' instruction come after parameters
-	const parameterCount = functionMetadata.signature.parameters.length;
-	const localDeclarations = context.locals.slice(parameterCount).map(local => ({
+	const { wasmIndex, typeIndex } = functionLayout.functions[metadata.id];
+	const localDeclarations = body.locals.slice(body.parameterCount).map(local => ({
 		isInteger: local.isInteger,
 		isFloat64: local.isFloat64,
 		count: 1,
@@ -73,10 +41,10 @@ export function compileFunction(
 
 	return {
 		analysis,
-		id: functionMetadata.id,
-		name: functionMetadata.name,
-		signature: functionMetadata.signature,
-		body: functionMetadata.import
+		id: metadata.id,
+		name: metadata.name,
+		signature: metadata.signature,
+		body: metadata.import
 			? []
 			: createFunction(
 					localDeclarations.map(local =>
@@ -85,15 +53,15 @@ export function compileFunction(
 							local.count
 						)
 					),
-					context.byteCode
+					emitWasmInstructions(body.instructions, functionLayout, typeRegistry)
 				),
-		locals: functionMetadata.import ? [] : localDeclarations,
-		...(functionMetadata.exportName ? { exportName: functionMetadata.exportName } : {}),
-		...(functionMetadata.import ? { import: functionMetadata.import } : {}),
+		locals: metadata.import ? [] : localDeclarations,
+		...(metadata.exportName ? { exportName: metadata.exportName } : {}),
+		...(metadata.import ? { import: metadata.import } : {}),
 		wasmIndex,
 		typeIndex: typeIndex,
 		ast,
-		...(functionMetadata.paramShapeExpansions ? { paramShapeExpansions: functionMetadata.paramShapeExpansions } : {}),
-		...(options.includeStackAnalysis ? { stackAnalysis: stackReport.stackAnalysis } : {}),
+		...(metadata.paramShapeExpansions ? { paramShapeExpansions: metadata.paramShapeExpansions } : {}),
+		...(stackAnalysis ? { stackAnalysis } : {}),
 	};
 }

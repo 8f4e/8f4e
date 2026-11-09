@@ -43,7 +43,6 @@ function resolveFunction(body: string[], isImpure = false) {
 			byId: { [metadata.id]: metadata, [consumer.id]: consumer },
 			arityByName: { caller: 1, consume: 1 },
 		},
-		functionTypeRegistry: { types: [], signatures: [], baseTypeIndex: 3 },
 		prototypeShapes: {},
 	}).references.functions[metadata.id];
 }

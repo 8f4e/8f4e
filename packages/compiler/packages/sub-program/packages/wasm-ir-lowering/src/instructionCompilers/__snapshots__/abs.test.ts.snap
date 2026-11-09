@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`abs instruction compiler > compiles int abs via segment instructions 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    65,
+    0,
+    72,
+    4,
+    127,
+    65,
+    0,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    107,
+    5,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    11,
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;
+
+exports[`abs instruction compiler > emits F32_ABS for float operands 1`] = `
+{
+  "instructions": [
+    139,
+  ],
+}
+`;
+
+exports[`abs instruction compiler > emits F64_ABS for float64 operands 1`] = `
+{
+  "instructions": [
+    153,
+  ],
+}
+`;

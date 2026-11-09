@@ -17,7 +17,6 @@ import type {
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
 	ProjectMemoryExposuresByGroupPath,
-	StackAnalysisLineFacts,
 	ValidatedAST,
 	WasmFunctionLayout,
 } from '@8f4e/language-spec';
@@ -34,13 +33,8 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import {
-	compileFunction,
-	compileModules,
-	MAX_WASM_LOCAL_SLOTS,
-	planFunctionLayout,
-	reserveWasmScratchSlots,
-} from '@8f4e/wasm-codegen';
+import { compileFunction, compileModule, planFunctionLayout } from '@8f4e/wasm-codegen';
+import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 
@@ -200,15 +194,6 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
 	return getError(error.compilerErrorCode, error.line, ast ? getAstDiagnosticContext(ast) : undefined, error.details);
 }
 
-function withUpdatedOperationFacts<T extends { operationFacts: StackAnalysisLineFacts[] }>(
-	source: Record<string, T>,
-	rewritten: Record<string, T>
-): Record<string, T> {
-	return Object.fromEntries(
-		Object.entries(source).map(([id, report]) => [id, { ...report, operationFacts: rewritten[id].operationFacts }])
-	);
-}
-
 /**
  * Compiles one composed program into emission-ready module, function, memory, and data-segment artifacts.
  *
@@ -273,11 +258,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
 
-	const functionTypeRegistry: FunctionTypeRegistry = {
-		types: [],
-		signatures: [],
-		baseTypeIndex: 3,
-	};
 	const semanticReferences = resolveSemanticReferences({
 		ast: subProgramAst,
 		registeredFunctions: registration.declarations,
@@ -287,70 +267,64 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		constantReferences: constantResolution.references,
 		memoryReferences: memoryReferenceResolution.references,
 		functions: functionRegistry,
-		functionTypeRegistry,
 		prototypeShapes: prototypeShapesById,
 	}).references;
-	const stackAnalysisInput = {
+	const stackReport = analyzeStack({
 		semanticReferences,
 		memoryPlan,
 		pointerMetadataByModuleId,
 		functions: functionRegistry,
-		functionTypeRegistry,
-	};
-	const sourceStackReport = analyzeStack(stackAnalysisInput);
-	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport: sourceStackReport, entries });
-	const codegenReferences =
+	});
+	const functionAnalysis = analyzeFunctions({ semanticReferences, stackReport, entries });
+	// Assertions remain at their original sites because assertion instructions are ineligible for inlining.
+	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
+	const lowered = lowerToWasmIR(semanticReferences, stackReport, assertionPlan?.calls);
+	const wasmIR =
 		options.enableFunctionInlining === false
-			? semanticReferences
-			: inlineFunctions(
-					{
-						semanticReferences,
-						stackReport: sourceStackReport,
-						functionAnalysis,
-						localSlots: {
-							limit: MAX_WASM_LOCAL_SLOTS,
-							reserveScratchSlots: (body, facts) => reserveWasmScratchSlots(body, facts, options.enableAssertions),
-						},
-					},
-					options.functionInlining
-				);
+			? lowered
+			: inlineFunctions(lowered, functionAnalysis, options.functionInlining);
 
-	let stackReport = sourceStackReport;
-	if (codegenReferences !== semanticReferences) {
-		const rewritten = analyzeStack({ ...stackAnalysisInput, semanticReferences: codegenReferences });
-		// Keep the public stack view tied to the original source.
-		stackReport = {
-			modules: withUpdatedOperationFacts(sourceStackReport.modules, rewritten.modules),
-			functions: withUpdatedOperationFacts(sourceStackReport.functions, rewritten.functions),
-		};
-	}
-
-	const assertionPlan = options.enableAssertions ? planAssertions(codegenReferences, stackReport) : undefined;
+	const functions = Object.values(semanticReferences.functions);
+	const modules = Object.values(semanticReferences.modules);
+	const functionTypeRegistry: FunctionTypeRegistry = {
+		types: [],
+		signatures: [],
+		baseTypeIndex: 3,
+	};
 	const functionLayout = planFunctionLayout(
-		codegenReferences,
+		functions.map(({ metadata }) => metadata),
+		modules.map(({ ast }) => ast.id),
 		entryNames,
 		assertionPlan?.imports ?? [],
 		functionTypeRegistry
 	);
 
-	const compiledFunctions = Object.values(codegenReferences.functions).map(resolved =>
+	const compiledFunctions = functions.map(({ ast, metadata }) =>
 		compileFunction(
-			resolved,
-			functionTypeRegistry,
+			{
+				ast,
+				metadata,
+				body: wasmIR.functions[metadata.id],
+				analysis: functionAnalysis.functions[metadata.id].analysis,
+				stackAnalysis: options.includeStackAnalysis ? stackReport.functions[metadata.id].stackAnalysis : undefined,
+			},
 			functionLayout,
-			stackReport.functions[resolved.metadata.id],
-			functionAnalysis.functions[resolved.metadata.id].analysis,
-			options,
-			assertionPlan?.calls.get(resolved.ast)
+			functionTypeRegistry
 		)
 	);
-	const compiledModules = compileModules(
-		Object.values(codegenReferences.modules),
-		options,
-		stackReport,
-		functionLayout,
-		functionTypeRegistry,
-		assertionPlan?.calls
+	const compiledModules = modules.map(({ ast, referenceSlots, skipExecutionInCycle }, index) =>
+		compileModule(
+			{
+				ast,
+				referenceSlots,
+				skipExecutionInCycle,
+				body: wasmIR.modules[ast.id],
+				index,
+				stackAnalysis: options.includeStackAnalysis ? stackReport.modules[ast.id].stackAnalysis : undefined,
+			},
+			functionLayout,
+			functionTypeRegistry
+		)
 	);
 
 	return {

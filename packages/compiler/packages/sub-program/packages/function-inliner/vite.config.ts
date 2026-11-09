@@ -6,12 +6,7 @@ const baseConfig = createLibConfig({
 	outDir: 'dist',
 	formats: ['es'],
 	fileName: () => 'index.js',
-	external: [
-		'@8f4e/function-analyzer',
-		'@8f4e/language-spec',
-		'@8f4e/semantic-reference-resolver',
-		'@8f4e/stack-analyzer',
-	],
+	external: ['@8f4e/compiler-wasm-utils', '@8f4e/function-analyzer', '@8f4e/language-spec'],
 });
 
 export default defineConfig({

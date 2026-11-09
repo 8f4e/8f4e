@@ -1,92 +1,40 @@
+import { WASM_DROP, WASM_I32_CONST } from '@8f4e/compiler-wasm-utils';
 import type { FunctionAnalysisReport } from '@8f4e/function-analyzer';
-import { ArgumentType, createFunctionId, type ExecutableInstructionLine, type FunctionAST } from '@8f4e/language-spec';
-import type { FunctionSemanticReferences, SemanticReferenceReport } from '@8f4e/semantic-reference-resolver';
+import type { WasmIR, WasmIRBody, WasmIRInstruction } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { inlineFunctions } from '.';
 
-function identifier(value: string) {
-	return { type: ArgumentType.IDENTIFIER, value, referenceKind: 'plain', scope: 'local' } as const;
-}
+const call: WasmIRInstruction = { kind: 'call', targetFunctionId: 'leaf' };
+const scalarOperation = [WASM_I32_CONST, 7, WASM_DROP];
+const analysis = { isImported: false, isRecursive: false, hasExplicitReturn: false, hasEarlyReturn: false };
+const scalarTypes = { hasPointerBindings: false, hasPointerReturns: false };
 
-function resolvedFunction(name: string, instructions: ExecutableInstructionLine[]): FunctionSemanticReferences {
-	const body = instructions.map((instruction, index) => ({
-		line: { ...instruction, lineNumber: index + 1 },
-		sourceLineIndex: index + 1,
-	}));
-	const functionLine: FunctionAST['functionLine'] = {
-		instruction: 'function',
-		arguments: [identifier(name)],
-		lineNumber: 0,
+function createInput(operationPairs: number, callCount: number) {
+	const leaf: WasmIRBody = {
+		instructions: Array.from({ length: operationPairs }, () => scalarOperation).flat(),
+		locals: [],
+		parameterCount: 0,
+		sourceBindingCount: 0,
 	};
-	const functionEndLine: FunctionAST['functionEndLine'] = {
-		instruction: 'functionEnd',
-		arguments: [],
-		lineNumber: body.length + 1,
+	const caller: WasmIRBody = {
+		instructions: Array<WasmIRInstruction>(callCount).fill(call),
+		locals: [],
+		parameterCount: 0,
+		sourceBindingCount: 0,
 	};
-	return {
-		ast: {
-			type: 'function',
-			name,
-			functionLine,
-			functionEndLine,
-			lines: [functionLine, ...body.map(({ line }) => line), functionEndLine],
-		},
-		metadata: { id: createFunctionId(name, []), name, signature: { parameters: [], returns: [] } },
-		body,
-		bindings: [],
-	};
-}
-
-const push: ExecutableInstructionLine = {
-	instruction: 'push',
-	lineNumber: 0,
-	arguments: [{ type: ArgumentType.LITERAL, value: 7, isInteger: true }],
-};
-const drop: ExecutableInstructionLine = { instruction: 'drop', lineNumber: 0, arguments: [] };
-const call: ExecutableInstructionLine = { instruction: 'call', lineNumber: 0, arguments: [identifier('leaf')] };
-
-function createInput(leafBody: ExecutableInstructionLine[], callCount: number) {
-	const leaf = resolvedFunction('leaf', leafBody);
-	const caller = resolvedFunction(
-		'caller',
-		Array.from({ length: callCount }, () => call)
-	);
-	const semanticReferences: SemanticReferenceReport = {
-		modules: {},
-		functions: { [leaf.metadata.id]: leaf, [caller.metadata.id]: caller },
-	};
-	const facts = { stackBefore: [], stackAfter: [], consumedOperands: [], producedStackItems: [] };
-	const stackReport = {
-		modules: {},
-		functions: {
-			[leaf.metadata.id]: {
-				functionId: leaf.metadata.id,
-				finalStack: [],
-				stackAnalysis: [],
-				operationFacts: leaf.body.map(() => ({ stackAnalysis: facts })),
-			},
-			[caller.metadata.id]: {
-				functionId: caller.metadata.id,
-				finalStack: [],
-				stackAnalysis: [],
-				operationFacts: caller.body.map(() => ({ stackAnalysis: facts, targetFunctionId: leaf.metadata.id })),
-			},
-		},
-	};
-	const analysis = { isImported: false, isRecursive: false, hasExplicitReturn: false, hasEarlyReturn: false };
-	const scalarTypes = { hasPointerBindings: false, hasPointerReturns: false };
+	const ir: WasmIR = { modules: {}, functions: { leaf, caller } };
 	const functionAnalysis: FunctionAnalysisReport = {
 		functions: {
-			[leaf.metadata.id]: {
+			leaf: {
 				analysis,
 				bodyFacts: {
-					operationCount: leafBody.length,
+					operationCount: operationPairs * 2,
 					instructionKinds: ['push', 'drop'],
 					pushOperandKinds: ['literal'],
 					...scalarTypes,
 				},
 			},
-			[caller.metadata.id]: {
+			caller: {
 				analysis,
 				bodyFacts: {
 					operationCount: callCount,
@@ -97,32 +45,28 @@ function createInput(leafBody: ExecutableInstructionLine[], callCount: number) {
 			},
 		},
 	};
-	const localSlots = { limit: 50_000, reserveScratchSlots: () => 0 };
-	return { semanticReferences, stackReport, functionAnalysis, localSlots, caller, leaf };
+	return { ir, functionAnalysis };
 }
 
 describe('inlineFunctions', () => {
-	it('bounds caller growth and keeps original bodies and source lines available', () => {
-		const input = createInput([push, drop], 65);
-		const result = inlineFunctions(input, { maxCallerGrowth: 64 });
-		const { body, ast } = result.functions[input.caller.metadata.id];
+	it('bounds caller growth and keeps the input bodies intact', () => {
+		const { ir, functionAnalysis } = createInput(1, 65);
+		const result = inlineFunctions(ir, functionAnalysis, { maxCallerGrowth: 64 });
+		const caller = result.functions.caller;
 
-		expect(body).toHaveLength(129);
-		expect(body[128]).toBe(input.caller.body[64]);
-		expect(body.slice(0, 2).map(operation => [operation.line.instruction, operation.sourceLineIndex])).toEqual([
-			['push', 1],
-			['drop', 1],
-		]);
-		expect(ast).toBe(input.caller.ast);
-		expect(input.caller.body).toHaveLength(65);
-		expect(result.functions[input.leaf.metadata.id]).toBe(input.leaf);
-		expect(inlineFunctions(input).functions[input.caller.metadata.id].body).toHaveLength(130);
+		expect(caller.instructions).toHaveLength(64 * scalarOperation.length + 1);
+		expect(caller.instructions.at(-1)).toBe(call);
+		expect(caller.instructions.slice(0, scalarOperation.length)).toEqual(scalarOperation);
+		expect(ir.functions.caller.instructions).toHaveLength(65);
+		expect(result.functions.leaf).toBe(ir.functions.leaf);
+		expect(inlineFunctions(ir, functionAnalysis).functions.caller.instructions).toHaveLength(
+			65 * scalarOperation.length
+		);
 	});
 
 	it('applies an expansion limit when configured', () => {
-		const input = createInput(Array.from({ length: 7 }, () => [push, drop]).flat(), 1);
-		expect(inlineFunctions(input, { maxExpansionOperations: 12 })).toBe(input.semanticReferences);
-		const rewritten = inlineFunctions(input);
-		expect(rewritten.functions[input.caller.metadata.id].body).toHaveLength(14);
+		const { ir, functionAnalysis } = createInput(7, 1);
+		expect(inlineFunctions(ir, functionAnalysis, { maxExpansionOperations: 12 })).toBe(ir);
+		expect(inlineFunctions(ir, functionAnalysis).functions.caller.instructions).toEqual(ir.functions.leaf.instructions);
 	});
 });

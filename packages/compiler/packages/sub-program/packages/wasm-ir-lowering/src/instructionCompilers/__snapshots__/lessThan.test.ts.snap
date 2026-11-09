@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`lessThan instruction compiler > emits F32_LT for float operands 1`] = `
+{
+  "instructions": [
+    93,
+  ],
+}
+`;
+
+exports[`lessThan instruction compiler > emits I32_LT_S for integer operands 1`] = `
+{
+  "instructions": [
+    72,
+  ],
+}
+`;

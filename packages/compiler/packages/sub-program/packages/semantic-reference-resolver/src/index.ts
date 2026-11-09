@@ -6,7 +6,6 @@ import type {
 	FunctionAST,
 	FunctionMetadata,
 	FunctionRegistry,
-	FunctionTypeRegistry,
 	FunctionValueType,
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
@@ -75,7 +74,6 @@ export interface ResolveSemanticReferencesInput<
 	};
 	memoryReferences: MemoryReferenceResolutionReport;
 	functions: FunctionRegistry;
-	functionTypeRegistry: FunctionTypeRegistry;
 	prototypeShapes: Readonly<Record<string, TPrototype>>;
 }
 
@@ -333,7 +331,6 @@ function createModuleContext(
 		locals: {},
 		bindings: [],
 		bindingsByName: {},
-		byteCode: [],
 		stack: [],
 		blockStack: [],
 		memoryPlan: input.memoryPlan,
@@ -341,7 +338,6 @@ function createModuleContext(
 		currentPlannedModule: plannedModule,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
-		functionTypeRegistry: input.functionTypeRegistry,
 		prototypeShapes: input.prototypeShapes,
 		projectBlockId: ast.projectBlockId,
 		source: ast.source,
@@ -363,7 +359,6 @@ function createFunctionContext(
 		locals: {},
 		bindings: [],
 		bindingsByName: {},
-		byteCode: [],
 		stack: [],
 		blockStack: [],
 		memoryPlan: input.memoryPlan,
@@ -377,7 +372,6 @@ function createFunctionContext(
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 		codeBlockId: functionMetadata.name,
-		functionTypeRegistry: input.functionTypeRegistry,
 		prototypeShapes: input.prototypeShapes,
 	});
 }

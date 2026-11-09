@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`equal instruction compiler > emits F32_EQ for float operands 1`] = `
+{
+  "instructions": [
+    91,
+  ],
+}
+`;
+
+exports[`equal instruction compiler > emits I32_EQ for integer operands 1`] = `
+{
+  "instructions": [
+    70,
+  ],
+}
+`;

@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`remainder instruction compiler > emits I32_REM_S for integer operands 1`] = `
-{
-  "byteCode": [
-    111,
-  ],
-}
-`;

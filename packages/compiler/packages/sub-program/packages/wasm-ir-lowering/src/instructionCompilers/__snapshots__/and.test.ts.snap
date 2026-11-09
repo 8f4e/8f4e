@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`and instruction compiler > emits I32_AND for integer operands 1`] = `
+{
+  "instructions": [
+    113,
+  ],
+}
+`;

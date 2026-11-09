@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`div instruction compiler > emits F32_DIV for float32 operands 1`] = `
+{
+  "instructions": [
+    149,
+  ],
+}
+`;
+
+exports[`div instruction compiler > emits F64_DIV for float64 operands 1`] = `
+{
+  "instructions": [
+    163,
+  ],
+}
+`;
+
+exports[`div instruction compiler > emits I32_DIV_S for integer operands 1`] = `
+{
+  "instructions": [
+    109,
+  ],
+}
+`;

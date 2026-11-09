@@ -1,4 +1,3 @@
-import type { WASMInstructionCode, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type {
 	ArgumentCompileTimeExpression,
 	ArgumentIdentifier,
@@ -22,9 +21,8 @@ import type {
 	PushLine,
 	PushShapeLine,
 } from './ast';
-import type { FunctionMetadata, FunctionRegistry, FunctionTypeRegistry, SourceMetadata } from './compiled';
+import type { FunctionMetadata, FunctionRegistry, SourceMetadata } from './compiled';
 import type { CompilerDiagnosticContext } from './diagnostics';
-import type { WasmFunctionLayout } from './functionLayout';
 import type { FunctionValueType } from './functionTypes';
 import type { CodegenInstructionName, CompilerSourceBlockType, CompilerSourceCompilationMode } from './instructions';
 import type {
@@ -37,6 +35,7 @@ import type {
 } from './memory';
 import type { ProjectMemoryAliasLookup } from './project';
 import type { ReferenceSlotMap, ResolvedReferenceSlot } from './referenceSlots';
+import type { WasmIRInstruction } from './wasmIR';
 
 /** Proven byte range associated with an address expression or memory boundary. */
 export interface MemoryAddressRange {
@@ -123,7 +122,6 @@ export interface CompilationContext extends BlockState {
 	memoryAliases: ProjectMemoryAliasLookup;
 	currentPlannedModule?: PlannedMemoryModule;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
-	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
 	mode: CompilationMode;
 	codeBlockId?: string;
 	codeBlockType?: CompilerSourceBlockType;
@@ -132,7 +130,6 @@ export interface CompilationContext extends BlockState {
 	currentFunctionId?: string;
 	currentFunctionName?: string;
 	currentFunctionMetadata?: FunctionMetadata;
-	functionTypeRegistry?: FunctionTypeRegistry;
 	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
 
@@ -148,7 +145,6 @@ export interface FunctionCompilationContext extends CompilationContext {
 	currentFunctionId: string;
 	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
-	functionTypeRegistry: FunctionTypeRegistry;
 }
 
 export type StackValueType = 'int' | 'float' | 'float64';
@@ -248,13 +244,10 @@ export interface MemoryReferenceResolutionReport {
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 }
 
-/** Bytecode emission state, independent of semantic analysis and memory planning. */
+/** Mutable state for lowering one resolved body to Wasm IR. */
 export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
-	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
-	/** Wasm slots in index order, starting with parameters and source locals. */
+	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
-	functionLayout: WasmFunctionLayout;
-	functionTypeRegistry?: FunctionTypeRegistry;
 }
 
 export type ResolvedMapValueArgument = ResolvedArgumentLiteral | ArgumentStringLiteral;

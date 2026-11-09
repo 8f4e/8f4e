@@ -4,7 +4,6 @@ import type {
 	CompilerASTLine,
 	FunctionCompilationContext,
 	FunctionRegistry,
-	FunctionTypeRegistry,
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
 	ModuleCompilationContext,
@@ -37,7 +36,6 @@ export interface AnalyzeStackSubProgramInput {
 	memoryPlan: MemoryLayoutPlan;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 	functions: FunctionRegistry;
-	functionTypeRegistry: FunctionTypeRegistry;
 }
 
 export interface StackAnalyzedModule {
@@ -263,7 +261,6 @@ function createModuleContext(
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
 		),
-		byteCode: [],
 		stack: [],
 		blockStack: [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		memoryPlan: input.memoryPlan,
@@ -272,7 +269,6 @@ function createModuleContext(
 		mode: 'module',
 		codeBlockId: ast.id,
 		codeBlockType: 'module',
-		functionTypeRegistry: input.functionTypeRegistry,
 		projectBlockId: ast.projectBlockId,
 		source: ast.source,
 	});
@@ -301,7 +297,6 @@ function createFunctionContext(
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
 		),
-		byteCode: [],
 		stack: [],
 		blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
 		memoryPlan: input.memoryPlan,
@@ -314,8 +309,6 @@ function createFunctionContext(
 		currentFunctionId: functionMetadata.id,
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
-
-		functionTypeRegistry: input.functionTypeRegistry,
 	});
 }
 

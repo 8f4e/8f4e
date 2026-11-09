@@ -551,7 +551,6 @@ describe('resolveSemanticReferences', () => {
 				},
 				arityByName: { echo: 1 },
 			},
-			functionTypeRegistry: { types: [], signatures: [], baseTypeIndex: 3 },
 			prototypeShapes: {},
 		});
 

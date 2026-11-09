@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`add instruction compiler > emits F32_ADD for float32 operands 1`] = `
+{
+  "instructions": [
+    146,
+  ],
+}
+`;
+
+exports[`add instruction compiler > emits F64_ADD for float64 operands 1`] = `
+{
+  "instructions": [
+    160,
+  ],
+}
+`;
+
+exports[`add instruction compiler > emits I32_ADD for integer operands 1`] = `
+{
+  "instructions": [
+    106,
+  ],
+}
+`;
