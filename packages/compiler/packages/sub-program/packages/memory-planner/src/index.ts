@@ -102,6 +102,7 @@ function plannerError(
 }
 
 function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
+	if (isArrayMemoryDeclarationLine(line)) return line.arguments[0].value;
 	const firstArgument = line.arguments[0];
 	if (firstArgument?.type === ArgumentType.IDENTIFIER && firstArgument.referenceKind === 'plain') {
 		return firstArgument.value;

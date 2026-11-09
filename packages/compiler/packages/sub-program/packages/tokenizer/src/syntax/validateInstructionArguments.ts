@@ -189,6 +189,13 @@ export default function validateInstructionArguments(instruction: string, args: 
 			validateArgumentShape(argument, spec.argumentTypes[i], instruction);
 		}
 		if (isArrayMemoryDeclarationInstructionName(instruction)) {
+			const name = args[0];
+			if (name.type === ArgumentType.IDENTIFIER && name.referenceKind === 'constant') {
+				throw new SyntaxRulesError(
+					SyntaxErrorCode.INVALID_IDENTIFIER,
+					`Array name "${name.value}" uses a naming pattern reserved for constants.`
+				);
+			}
 			for (let i = spec.argumentTypes.length; i < args.length; i++) {
 				validateArgumentShape(args[i], 'compileTimeValue', instruction);
 			}
