@@ -16,7 +16,8 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ; @meter <typedValueSource> [min max]
 ```
 
-References use the public editor-state memory helpers, including memory exposed by project groups.
+References use the public editor-state memory helpers, including memory exposed by project groups. With no arguments,
+an inline meter reads the compiled memory declaration on its source line, including anonymous declarations.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
 

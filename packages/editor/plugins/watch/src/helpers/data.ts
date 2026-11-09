@@ -1,99 +1,29 @@
-import { ArgumentType, isMemoryDeclarationLine } from '@8f4e/language-spec';
-import { parseLine } from '@8f4e/tokenizer';
+import type { MemoryAccessOptions } from '@8f4e/editor-state/memory';
 
-export interface WatchDirectiveData {
-	memoryId: string;
+export type WatchDirectiveData = {
 	lineNumber: number;
 	displayFormat: 'decimal' | 'binary' | 'hex';
 	showEndAddress: boolean;
-}
+} & ({ memoryId: string; inlineAccess?: never } | { memoryId?: never; inlineAccess: MemoryAccessOptions });
 
-function applyWatchTemplate(template: string, inferredId: string): string | undefined {
-	let remaining = template;
-	let formatPrefix = '';
-	let leadingOperator = '';
-	let trailingEndAddress = '';
-	let indexSuffix = '';
-
-	if (remaining.startsWith('0b') || remaining.startsWith('0x')) {
-		formatPrefix = remaining.slice(0, 2);
-		remaining = remaining.slice(2);
+export function createWatchDirectiveData(args: string[], lineNumber: number): WatchDirectiveData {
+	const expression = args[0] ?? '';
+	const displayFormat = expression.startsWith('0b') ? 'binary' : expression.startsWith('0x') ? 'hex' : 'decimal';
+	const formattedExpression = displayFormat === 'decimal' ? expression : expression.slice(2);
+	const inline = /^([&*]?)(?:\[(\d+)\]|(&))?$/.exec(formattedExpression);
+	if (inline) {
+		const [, operator, index, end] = inline;
+		return {
+			lineNumber,
+			displayFormat,
+			showEndAddress: end === '&',
+			inlineAccess: { showAddress: operator === '&', dereference: operator === '*', bufferPointer: Number(index ?? 0) },
+		};
 	}
 
-	if (remaining.startsWith('&') || remaining.startsWith('*')) {
-		leadingOperator = remaining[0];
-		remaining = remaining.slice(1);
-	}
-
-	if (remaining.endsWith('&')) {
-		trailingEndAddress = '&';
-		remaining = remaining.slice(0, -1);
-	}
-
-	const indexMatch = remaining.match(/\[\d+\]$/);
-	if (indexMatch) {
-		indexSuffix = indexMatch[0];
-		remaining = remaining.slice(0, -indexSuffix.length);
-	}
-
-	if (remaining.length > 0) {
-		return undefined;
-	}
-
-	return formatPrefix + leadingOperator + inferredId + trailingEndAddress + indexSuffix;
-}
-
-function inferWatchIdFromSourceLine(sourceLine: string, lineNumber: number): string | undefined {
-	try {
-		const parsedLine = parseLine(sourceLine, lineNumber);
-		const [firstArg] = parsedLine.arguments;
-
-		if (!isMemoryDeclarationLine(parsedLine)) {
-			return undefined;
-		}
-
-		if (!firstArg) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		if (firstArg.type === ArgumentType.IDENTIFIER && firstArg.referenceKind === 'plain') {
-			return firstArg.value;
-		}
-
-		if (firstArg.type === ArgumentType.LITERAL) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		if (
-			firstArg.type === ArgumentType.IDENTIFIER &&
-			firstArg.referenceKind === 'constant' &&
-			parsedLine.arguments.length > 1
-		) {
-			return '__anonymous__' + lineNumber;
-		}
-
-		return undefined;
-	} catch {
-		return undefined;
-	}
-}
-
-export function createWatchDirectiveData(
-	args: string[],
-	lineNumber: number,
-	sourceLine?: string
-): WatchDirectiveData | undefined {
-	const inferredId = sourceLine ? inferWatchIdFromSourceLine(sourceLine, lineNumber) : undefined;
-	const id = !args[0] ? inferredId : inferredId ? (applyWatchTemplate(args[0], inferredId) ?? args[0]) : args[0];
-	if (!id) {
-		return undefined;
-	}
-	const displayFormat = id.startsWith('0b') ? 'binary' : id.startsWith('0x') ? 'hex' : 'decimal';
-	const formattedId = displayFormat === 'decimal' ? id : id.slice(2);
-	const showEndAddress = formattedId.endsWith('&');
-
+	const showEndAddress = formattedExpression.endsWith('&');
 	return {
-		memoryId: showEndAddress ? formattedId.slice(0, -1) : formattedId,
+		memoryId: showEndAddress ? formattedExpression.slice(0, -1) : formattedExpression,
 		lineNumber,
 		displayFormat,
 		showEndAddress,

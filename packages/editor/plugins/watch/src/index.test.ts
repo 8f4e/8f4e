@@ -9,6 +9,12 @@ const source = ['module audio', 'int value 7 ; @watch', 'moduleEnd'];
 describe('watch plugin', () => {
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {
 		const test = await setup(plugin, ['module audio', `int 7 ; @${directive}`, 'moduleEnd']);
+		const module = test.compiled.memoryPlan.modules.audio;
+		const declaration = module.declarations[0];
+		delete module.memory[declaration.id];
+		declaration.id = 'compiler:anonymous:0';
+		module.memory[declaration.id] = declaration;
+		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawNumericText).toHaveBeenCalledWith(
 			expect.any(Number),
@@ -16,6 +22,9 @@ describe('watch plugin', () => {
 			'7',
 			expect.any(Number)
 		);
+		test.update(['module audio', `; @${directive}`, 'moduleEnd']);
+		test.render();
+		expect(test.draw.drawNumericText).not.toHaveBeenCalled();
 	});
 	it.each([
 		['0x', '00 00 00 07'],
@@ -129,6 +138,33 @@ describe('watch plugin', () => {
 			expect.any(Number),
 			expect.any(Number),
 			expected,
+			expect.any(Number)
+		);
+	});
+	it('follows an inline dereference after the pointer changes', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int8u[] first 2 1 2',
+			'int8u[] second 2 3 4',
+			'int8u* pointer &first ; @watch 0x*[1]',
+			'push &pointer',
+			'push &second',
+			'store',
+			'moduleEnd',
+		]);
+		test.render();
+		expect(test.draw.drawNumericText).toHaveBeenCalledExactlyOnceWith(
+			expect.any(Number),
+			expect.any(Number),
+			'02',
+			expect.any(Number)
+		);
+		test.run();
+		test.render();
+		expect(test.draw.drawNumericText).toHaveBeenCalledExactlyOnceWith(
+			expect.any(Number),
+			expect.any(Number),
+			'04',
 			expect.any(Number)
 		);
 	});
