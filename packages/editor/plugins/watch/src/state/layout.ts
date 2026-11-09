@@ -20,7 +20,8 @@ export function registerWatchLayout(
 		watchesByBlock.set(graphicData, []);
 		const scope = getCodeBlockMemoryScope(graphicData);
 		items.forEach(data => {
-			const declaration = data.inlineAccess && getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber);
+			const declaration =
+				data.inlineAccess && getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber)?.memory;
 			if (data.inlineAccess && !declaration) return;
 			const resolveMemory = declaration
 				? () => resolveMemoryAccess(state, declaration, data.inlineAccess)

@@ -101,6 +101,18 @@ describe('meter plugin', () => {
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
+	it('reserves space for an inline declaration while waiting for compilation', async () => {
+		const test = await setup(meterPlugin, source);
+		test.update(['module audio', '; @meter', 'moduleEnd']);
+		test.render();
+		expect(test.block.gaps.size).toBe(0);
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+
+		test.update(['module audio', 'float renamed 0.5 ; @meter', 'moduleEnd']);
+		test.render();
+		expect(test.block.gaps.get(1)?.size).toBe(1);
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+	});
 	it('is optional, disposes its contributions, and isolates editors', async () => {
 		const omitted = await setup(meterPlugin, source, { installed: false });
 		omitted.render();

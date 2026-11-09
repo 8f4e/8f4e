@@ -19,21 +19,23 @@ export function registerMeterLayout(
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
+		const scope = getCodeBlockMemoryScope(graphicData);
 		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'meter' }]).flatMap(directive => {
-			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex, directive.sourceLine);
-			return data ? [data] : [];
+			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
+			if (!data) return [];
+			const declaration =
+				data.memoryId === undefined ? getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber) : undefined;
+			if (data.memoryId === undefined && !declaration) return [];
+			const memory = declaration?.memory
+				? resolveMemoryAccess(state, declaration.memory)
+				: resolveMemoryIdentifier(state, scope, data.memoryId);
+			return [{ data, memory }];
 		});
 		contribution.update(graphicData, {
-			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
+			verticalSpaceAfterSourceLine: items.map(({ data }) => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
 		});
 		metersByBlock.set(graphicData, []);
-		const scope = getCodeBlockMemoryScope(graphicData);
-		items.forEach(data => {
-			const declaration =
-				data.memoryId === undefined && getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber);
-			const memory = declaration
-				? resolveMemoryAccess(state, declaration)
-				: resolveMemoryIdentifier(state, scope, data.memoryId);
+		items.forEach(({ data, memory }) => {
 			const valueSpec = memory ? resolveDirectOrPointerTypedValueSpec(memory) : undefined;
 
 			if (!memory || !valueSpec) {

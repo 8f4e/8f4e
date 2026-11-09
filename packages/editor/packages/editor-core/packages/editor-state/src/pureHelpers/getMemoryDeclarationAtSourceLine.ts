@@ -14,16 +14,13 @@ function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
 	return firstArg?.type === ArgumentType.IDENTIFIER && firstArg.referenceKind === 'plain' ? firstArg.value : undefined;
 }
 
-/** Finds a declaration written on this row of the compiled source block. */
+/** Checks for a declaration on the source row and returns its memory when compiled. */
 export default function getMemoryDeclarationAtSourceLine(
 	state: State,
 	codeBlock: CodeBlockGraphicData,
 	sourceLineIndex: number
-): PlannedMemoryDeclaration | undefined {
+): { memory: PlannedMemoryDeclaration | undefined } | undefined {
 	if (codeBlock.blockType !== 'module') return;
-	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
-	const plannedModule = compiledModule && state.compiler.result.memoryPlan.modules[compiledModule.id];
-	if (!plannedModule) return;
 
 	// Source edits can refresh layout while the previous compilation is still active.
 	let sourceLine: CompilerASTLine;
@@ -33,6 +30,10 @@ export default function getMemoryDeclarationAtSourceLine(
 		return;
 	}
 	if (!isMemoryDeclarationLine(sourceLine)) return;
+	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
+	const plannedModule = compiledModule && state.compiler.result.memoryPlan.modules[compiledModule.id];
+	if (!plannedModule) return { memory: undefined };
+
 	const sourceName = getDeclarationName(sourceLine);
 	const index = plannedModule.declarationSources.findIndex(
 		({ line, isInherited }) =>
@@ -41,5 +42,5 @@ export default function getMemoryDeclarationAtSourceLine(
 			line.instruction === sourceLine.instruction &&
 			getDeclarationName(line) === sourceName
 	);
-	return plannedModule.declarations[index];
+	return { memory: plannedModule.declarations[index] };
 }
