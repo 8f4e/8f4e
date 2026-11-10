@@ -19,6 +19,9 @@ The package is intentionally declarative. Other compiler packages import these f
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete
 function signature, including calls to generated entry dispatchers.
 
+The Wasm IR contracts describe a complete module with symbolic function and data references. The compiler result
+carries the emitted Wasm binary alongside source and semantic metadata for functions and modules.
+
 This package does not own:
 
 - Parsing source text into ASTs. That belongs to `@8f4e/tokenizer`.

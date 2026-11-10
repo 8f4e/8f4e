@@ -4,12 +4,13 @@ import resolveMemoryIdentifier, { getDeclarationsByByteAddress } from './resolve
 import { createMockState } from './testingUtils/testUtils';
 
 function createMemory(
-	id: string,
+	name: string,
 	byteAddress: number,
 	overrides: Partial<PlannedMemoryDeclaration> = {}
 ): PlannedMemoryDeclaration {
 	return {
-		id,
+		id: 0,
+		name,
 		numberOfElements: 1,
 		elementWordSize: 4,
 		elementByteLength: 4,
@@ -37,7 +38,7 @@ function createModule(id: string, declarations: PlannedMemoryDeclaration[]): Pla
 		allocatedByteLength: declarations.reduce((size, declaration) => size + declaration.allocatedByteLength, 0),
 		endByteAddress: declarations.at(-1)?.endByteAddress ?? 0,
 		endAddressSafeByteLength: declarations.at(-1)?.endAddressSafeByteLength ?? 0,
-		memory: Object.fromEntries(declarations.map(declaration => [declaration.id, declaration])),
+		memory: Object.fromEntries(declarations.map(declaration => [declaration.name, declaration])),
 		declarations,
 		declarationSources: [],
 	};

@@ -8,8 +8,8 @@ const fileSession = createProjectFileSession();
 const plugins = [fileSession.plugin, createProjectSavePlugin({ inputTarget: canvas, fileSession })];
 ```
 
-Install the session plugin before project loaders. The minimal editor installs this composition for saving and
-exporting edited examples. The default editor also installs Open with the same session, so Save can reuse an opened file.
+Install the session plugin before project loaders. Share the same session with the Open plugin when installed together
+so Save can reuse an opened file.
 
 The `saveProject` action and keyboard shortcut reuse the current handle, requesting write permission when needed.
 The first Save chooses a destination. `exportProject` always chooses a destination and adopts it for later saves.
@@ -26,4 +26,4 @@ file session contains only the handle and reset lifecycle. Open handles file rea
 
 Validate with `npx nx run @8f4e/editor-plugin-project-save:build|test|typecheck`. Tests here cover source formatting,
 saving/export, permissions, queued writes, and shortcuts without Open. The default editor owns composed file tests;
-its `test:screenshot` target and the minimal-editor gallery suite cover the browser workflows.
+its `test:screenshot` target and the gallery editor's browser suite cover the browser workflows.

@@ -22,7 +22,8 @@ function fixture(width = 8, height = 16) {
 		calibratedMax: 1,
 		calibratedMin: -1,
 		memory: {
-			id: 'value',
+			id: 0,
+			name: 'value',
 			type: 'float',
 			numberOfElements: 1,
 			elementWordSize: 4,
@@ -72,7 +73,7 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, widgets, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 128, PALETTE_INDICES.surfaceOverlay, width * 3, height],
+			[2, 3, 256, PALETTE_INDICES.surfaceOverlay, width * 3, height],
 			[2, 3, 91, PALETTE_INDICES.primaryBase, width, height],
 			[2 + width * 2, 3, 93, PALETTE_INDICES.primaryBase, width, height],
 		]);
@@ -92,7 +93,7 @@ describe('drawConnectors', () => {
 		drawConnectors(engine, state, widgets, memory);
 
 		expect(drawSprite.mock.calls).toEqual([
-			[2, 3, 128, PALETTE_INDICES.surfaceOverlay, 24, 16],
+			[2, 3, 256, PALETTE_INDICES.surfaceOverlay, 24, 16],
 			[2, 3, 91, PALETTE_INDICES.secondaryBase, 8, 16],
 			[10, 3, 42, star, 8, 16],
 			[18, 3, 93, PALETTE_INDICES.secondaryBase, 8, 16],

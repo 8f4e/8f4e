@@ -1,5 +1,5 @@
 import { toPaletteBytes } from '@8f4e/editor-palette';
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { Engine } from 'glugglugglug';
@@ -7,20 +7,20 @@ import { subscribeToAppearance, updateGridSize } from './appearance';
 import { getConfiguredFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
-import drawContextMenu from './drawers/contextMenu';
-import drawDialog from './drawers/dialog';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import BackgroundRenderer from './plugins/background';
 import type { MemoryViews } from './types';
 
+export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
 export { registerWebUiConfig } from './config';
 export { DrawContext } from './drawContext';
 export type {
-	CanvasOverlayDrawer,
-	CanvasOverlayDrawerContext,
+	CanvasDrawer,
+	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
+	OffscreenCodeBlockDrawer,
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
@@ -45,6 +45,9 @@ export interface RenderStats {
 }
 
 export interface WebUiOptions {
+	loading: EditorLoadingRegistry;
+	/** Per-editor font used when project configuration does not select one. Defaults to ibmvga8x16. */
+	defaultFont?: Font;
 	/** Startup project preparation may run alongside the initial font download. */
 	initialProjectReady?: Promise<void>;
 	drawers?: EditorDrawerHost;
@@ -57,19 +60,19 @@ export default async function init(
 	events: EventDispatcher,
 	canvas: HTMLCanvasElement,
 	memoryViews: MemoryViews,
-	options: WebUiOptions = {}
+	options: WebUiOptions
 ): Promise<{
 	resize: (width: number, height: number) => boolean;
-	pauseRendering: () => void;
 	releaseRenderingResources: () => void;
-	resumeRendering: () => void;
+	resetRenderStats: () => void;
 	renderFrame: () => void;
 	destroy: () => void;
 }> {
 	const state = store.getState();
-	const [initialFontAtlas] = await Promise.all([loadFontAtlas(DEFAULT_FONT), options.initialProjectReady]);
-	const font = getConfiguredFont(state.editorConfig);
-	const fontAtlas = font === DEFAULT_FONT ? initialFontAtlas : await loadFontAtlas(font);
+	const defaultFont = options.defaultFont ?? DEFAULT_FONT;
+	const [initialFontAtlas] = await Promise.all([loadFontAtlas(defaultFont), options.initialProjectReady]);
+	const font = getConfiguredFont(state.editorConfig, defaultFont);
+	const fontAtlas = font === defaultFont ? initialFontAtlas : await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	updateGridSize(state, events, fontAtlas);
 	const engine = new Engine(canvas);
@@ -105,12 +108,19 @@ export default async function init(
 		engine.destroy();
 		throw error;
 	}
-	const unsubscribeAppearance = subscribeToAppearance(store, events, installFontAtlas, palette => {
-		const bytes = toPaletteBytes(palette);
-		engine.setPalette(bytes);
-		background.setPalette(bytes);
-		renderLayers.loadPalette(palette);
-	});
+	const unsubscribeAppearance = subscribeToAppearance(
+		store,
+		events,
+		options.loading,
+		installFontAtlas,
+		palette => {
+			const bytes = toPaletteBytes(palette);
+			engine.setPalette(bytes);
+			background.setPalette(bytes);
+			renderLayers.loadPalette(palette);
+		},
+		defaultFont
+	);
 	const layerFrame = { state, memoryViews };
 	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 
@@ -154,45 +164,16 @@ export default async function init(
 	engine.hooks.postDraw.push(renderStatsHook);
 
 	const drawFrame = () => {
+		drawers.drawCanvasBackground({ draw, state, memoryViews });
 		drawCodeBlocks(draw, state, memoryViews, drawers);
-		drawContextMenu(draw, state);
+		drawers.drawCanvas({ draw, state, memoryViews });
 		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
-		drawDialog(draw, state);
+		drawers.drawContextMenuOverlays({ draw, state, memoryViews });
+		drawers.drawModalOverlays({ draw, state, memoryViews });
 	};
 
-	let rendering = false;
 	let renderingResourcesReleased = false;
-	let animationFrameRequest: number | null = null;
-	const renderNextFrame = () => {
-		animationFrameRequest = null;
-		if (!rendering) {
-			return;
-		}
-
-		try {
-			engine.renderFrame(drawFrame);
-		} catch (error) {
-			rendering = false;
-			throw error;
-		}
-
-		if (rendering) {
-			animationFrameRequest = requestAnimationFrame(renderNextFrame);
-		}
-	};
-	const pauseRendering = () => {
-		if (!rendering) {
-			return;
-		}
-
-		rendering = false;
-		if (animationFrameRequest !== null) {
-			cancelAnimationFrame(animationFrameRequest);
-			animationFrameRequest = null;
-		}
-	};
 	const releaseRenderingResources = () => {
-		pauseRendering();
 		if (renderingResourcesReleased) {
 			return;
 		}
@@ -212,19 +193,10 @@ export default async function init(
 		engine.resize(viewportWidth, viewportHeight);
 		renderingResourcesReleased = false;
 	};
-	const resumeRendering = () => {
-		if (rendering) {
-			return;
-		}
-
-		restoreRenderingResources();
-		rendering = true;
+	const resetRenderStats = () => {
 		statsSampleStartTime = performance.now();
 		statsSampleStartFrameCount = renderedFrameCount;
-		renderNextFrame();
 	};
-
-	resumeRendering();
 
 	return {
 		resize: (width, height) => {
@@ -236,15 +208,13 @@ export default async function init(
 			engine.resize(width, height);
 			return true;
 		},
-		pauseRendering,
 		releaseRenderingResources,
-		resumeRendering,
+		resetRenderStats,
 		renderFrame: () => {
 			restoreRenderingResources();
 			engine.renderFrame(drawFrame);
 		},
 		destroy: () => {
-			pauseRendering();
 			unsubscribeAppearance();
 			try {
 				renderLayers.destroy();

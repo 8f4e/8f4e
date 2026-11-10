@@ -1,6 +1,6 @@
 /** Bundled fixed-cell fonts. Build tooling reads dimensions without loading bitmap payloads. */
 export const FONTS = {
-	'6x10': { width: 6, height: 10, load: () => import('../generated/6x10.ts') },
+	x11miscfixed6x10: { width: 6, height: 10, load: () => import('../generated/x11miscfixed6x10.ts') },
 	olivettithin8x16: { width: 8, height: 16, load: () => import('../generated/olivettithin8x16.ts') },
 	spleen5x8: { width: 5, height: 8, load: () => import('../generated/spleen5x8.ts') },
 	spleen6x12: { width: 6, height: 12, load: () => import('../generated/spleen6x12.ts') },
@@ -14,6 +14,13 @@ export const FONTS = {
 	terminus12x24: { width: 12, height: 24, load: () => import('../generated/terminus12x24.ts') },
 	terminus12x24bold: { width: 12, height: 24, load: () => import('../generated/terminus12x24bold.ts') },
 	spleen16x32: { width: 16, height: 32, load: () => import('../generated/spleen16x32.ts') },
+	startrek25th8x9: { width: 8, height: 9, load: () => import('../generated/startrek25th8x9.ts') },
+	dilithiumpixels7x10: { width: 7, height: 10, load: () => import('../generated/dilithiumpixels7x10.ts') },
+	departuremono7x14: { width: 7, height: 14, load: () => import('../generated/departuremono7x14.ts') },
+	pixelcode6x12: { width: 6, height: 12, load: () => import('../generated/pixelcode6x12.ts') },
+	eaglespcgaalt38x8: { width: 8, height: 8, load: () => import('../generated/eaglespcgaalt38x8.ts') },
+	sergamon8x16: { width: 8, height: 16, load: () => import('../generated/sergamon8x16.ts') },
+	scientifica5x11: { width: 5, height: 11, load: () => import('../generated/scientifica5x11.ts') },
 } as const;
 
 export type Font = keyof typeof FONTS;

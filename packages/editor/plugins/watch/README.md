@@ -1,8 +1,8 @@
 # Watch Plugin
 
 `@8f4e/editor-plugin-watch` owns the `watch` directive's arguments, layout, derived data, and rendering.
-The default and minimal editors load it lazily for `@watch` or `@w` in the current project level;
-editor-core installs no plugins automatically.
+For lazy installation, match `@watch` or `@w` in the current project level with `view` scope.
+Editor-core installs no plugins automatically.
 
 ```ts
 import { createWatchPlugin } from '@8f4e/editor-plugin-watch';
@@ -18,14 +18,18 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ; @watch <memoryExpression>
 ```
 
-Watch also accepts `@w`; inline directives can infer the memory declaration on the same line.
+Watch also accepts `@w`. With no target name, an inline watch reads the compiled memory declaration on its source line,
+including anonymous declarations. Format and access modifiers such as `0x` or `*[1]` can be used without a name.
 The plugin parses `0b`/`0x` display prefixes and the trailing `&` end-address form before asking core to resolve
 the memory reference. Formatting choices remain private to watch.
+
+Dereferenced watches such as `; @watch *pointer` follow the current pointer target and its value on every rendered frame,
+without requiring a selection change. Indexed and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
-The block drawer runs before tooltip overlays, including when the plugin loads after tooltips.
+The block drawer runs in registration order with other code-block drawers, including plugins installed lazily.
 
 ```sh
 npx nx run @8f4e/editor-plugin-watch:build

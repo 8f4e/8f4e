@@ -54,6 +54,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
+			loading: store.loading,
 			drawers: createEditorDrawerRegistry(),
 		})
 	);
@@ -90,8 +91,11 @@ describe('project Open/Save composition', () => {
 		await test.openMenu();
 		const openIndex = test.state.contextMenu.items.findIndex(item => item.action === 'importProject');
 		expect(openIndex).toBeGreaterThanOrEqual(0);
-		test.state.contextMenu.highlightedItem = openIndex;
-		await test.events.dispatchAsync('mousedown', { x: 800, y: 400, stopPropagation: false });
+		await test.events.dispatchAsync('activateContextMenuItem', {
+			x: 800,
+			y: 400,
+			index: openIndex,
+		});
 		await vi.waitFor(() => expect(test.handle.getFile).toHaveBeenCalledOnce());
 		await test.events.dispatchAsync('exportProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();

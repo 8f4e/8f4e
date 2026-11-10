@@ -24,7 +24,6 @@ export function createCompilationContext<TContext extends CompilationContext = C
 			prototypeShapeIds: [],
 		},
 		locals: {},
-		byteCode: [],
 		stack: [],
 		...createBlockState(),
 		memoryPlan: createEmptyMemoryPlan(),

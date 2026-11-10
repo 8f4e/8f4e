@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { gapCalculator } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -12,7 +12,7 @@ const source = ['module controls', 'int[] notes 4', 'int count 0', '; @piano &no
 
 async function setup(code = source, installed = true, name = 'controls') {
 	const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -42,6 +42,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		: () => {};
@@ -60,7 +61,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const point = (key = 0, sourceLineIndex = 3) => {
@@ -72,7 +73,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
 	const click = (key = 0, line = 3) => {
-		events.dispatch('mousedown', {
+		events.dispatch('pointerdown', {
 			...point(key, line),
 			movementX: 0,
 			movementY: 0,
@@ -82,7 +83,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 			canvasHeight: 600,
 			stopPropagation: false,
 		});
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 	};
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
@@ -124,8 +125,8 @@ describe('piano plugin', () => {
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 64);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 16, PALETTE_INDICES.lightBase, 16, 80);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(16, 16, PALETTE_INDICES.darkBase, 16, 48);
-		expect(test.draw.drawText).toHaveBeenCalledWith(0, 0, 'C', PALETTE_INDICES.inkBase);
-		expect(vi.mocked(test.draw.drawText).mock.calls.filter(call => call[2] !== ';;')).toHaveLength(24);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(0, 0, textToGlyphIds('C'), PALETTE_INDICES.inkBase);
+		expect(vi.mocked(test.draw.drawGlyphs).mock.calls.filter(call => call[2][0] !== 59)).toHaveLength(24);
 	});
 	it('toggles notes from real pointer events and draws current runtime highlights', async () => {
 		const test = await setup([...source.slice(0, -1), '; @pos 40 20', 'moduleEnd']);
@@ -135,7 +136,7 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		test.press(2);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
@@ -154,7 +155,7 @@ describe('piano plugin', () => {
 		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
 		test.render();
 		for (const x of [32, 64]) {
-			expect(test.draw.drawText).toHaveBeenCalledWith(x, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
+			expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		}
 
 		test.click(2);
@@ -185,7 +186,7 @@ describe('piano plugin', () => {
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
-		expect(test.draw.drawText).not.toHaveBeenCalled();
+		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 		expect(test.write).not.toHaveBeenCalled();
 		expect(test.memoryViews.int32).toEqual(originalMemory);
 		expect(test.codeBlock.code).toEqual(originalCode);
@@ -216,11 +217,11 @@ describe('piano plugin', () => {
 	it('updates source positions and clears data and minimum width when a directive is removed', async () => {
 		const test = await setup();
 		test.codeBlock.code.splice(3, 0, '; note');
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
 		test.codeBlock.code = test.codeBlock.code.filter(line => !line.includes('@piano'));
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
@@ -276,10 +277,12 @@ describe('piano plugin', () => {
 		test.press(2);
 		const item = (await test.menuItems())[0];
 		test.state.contextMenu.items = [item];
-		test.state.contextMenu.highlightedItem = 0;
 		test.state.contextMenu.open = true;
+		test.events.on('contextMenuPointerDown', () =>
+			test.events.dispatch('activateContextMenuItem', { index: 0, x: 0, y: 0 })
+		);
 		const click = { ...test.point(), buttons: 1, altKey: false, stopPropagation: false };
-		test.events.dispatch('mousedown', click);
+		test.events.dispatch('pointerdown', click);
 		expect(click.stopPropagation).toBe(true);
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.codeBlock.code).toContain('int[] notes 4 50');
@@ -321,7 +324,7 @@ describe('piano plugin', () => {
 		test.press(2);
 		test.press(4);
 		test.render();
-		expect(test.draw.drawText).toHaveBeenCalledWith(32, 16, ';;', PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'
@@ -341,7 +344,7 @@ describe('piano plugin', () => {
 		bare.render();
 		bare.press(2);
 		expect(second.write).not.toHaveBeenCalled();
-		expect(vi.mocked(second.draw.drawText).mock.calls.some(call => call[2] === ';;')).toBe(false);
+		expect(vi.mocked(second.draw.drawGlyphs).mock.calls.some(call => call[2][0] === 59)).toBe(false);
 		expect(bare.draw.drawFill).not.toHaveBeenCalled();
 		expect(bare.write).not.toHaveBeenCalled();
 		expect(bare.codeBlock.minGridWidth).toBeUndefined();
@@ -358,7 +361,7 @@ describe('piano plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.codeBlock);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
 	});

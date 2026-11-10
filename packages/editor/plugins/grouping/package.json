@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-grouping",
-  "version": "0.1.17",
+  "version": "0.1.35",
   "private": true,
   "description": "Editor block grouping, group actions, dragging, and paste handling",
   "type": "module",
@@ -25,8 +25,8 @@
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.7",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "vitest": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12"
   }
 }

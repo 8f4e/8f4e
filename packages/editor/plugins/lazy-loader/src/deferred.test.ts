@@ -25,6 +25,7 @@ describe('deferred plugin loader', () => {
 		const editor = install(load);
 		try {
 			expect(load).not.toHaveBeenCalled();
+			expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 			await Promise.resolve();
 			expect(load).not.toHaveBeenCalled();
 			editor.events.dispatch('init');
@@ -33,7 +34,11 @@ describe('deferred plugin loader', () => {
 			editor.events.dispatch('ready');
 			editor.events.dispatch('ready');
 			expect(load).toHaveBeenCalledOnce();
+			expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+				{ id: 'editor-plugins', message: 'Loading editor plugins...', status: 'loading' },
+			]);
 			await vi.waitFor(() => expect(setupPlugin).toHaveBeenCalledOnce());
+			expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 			expect(setupPlugin.mock.calls[0][0].store.getState().viewport.x).toBe(123);
 		} finally {
 			editor.dispose();
@@ -48,6 +53,7 @@ describe('deferred plugin loader', () => {
 		const editor = install(load);
 		if (when === 'during import') editor.events.dispatch('ready');
 		editor.dispose();
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		if (when === 'before readiness') editor.events.dispatch('ready');
 		pending.resolve({ id: 'optional', setup: setupPlugin });
 		await Promise.resolve();
@@ -67,6 +73,7 @@ describe('deferred plugin loader', () => {
 		});
 		editor.events.dispatch('ready');
 		await vi.waitFor(() => expect(editor.state.console.logs.at(-1)?.message).toContain(error.message));
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		editor.dispose();
 	});
 });

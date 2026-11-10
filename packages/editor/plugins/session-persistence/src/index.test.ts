@@ -2,6 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import {
 	applyCodeBlockSourceEdits,
 	createEditorEditingHandle,
+	deleteCodeBlocks,
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
 } from '@8f4e/editor-state';
@@ -88,7 +89,7 @@ describe('session persistence plugin', () => {
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -106,9 +107,9 @@ describe('session persistence plugin', () => {
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		test.events.dispatch('redo');
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 3');
-		test.events.dispatch('deleteCodeBlock', {
-			codeBlock: test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!,
-		});
+		deleteCodeBlocks(test.store, [
+			test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!,
+		]);
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))).toEqual([]);
 	});
 
@@ -142,7 +143,7 @@ describe('session persistence plugin', () => {
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
 		applyCodeBlockSourceEdits(
-			test.store,
+			test,
 			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
 			{ affectsCompilation: true }
 		);
@@ -152,7 +153,7 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		applyCodeBlockSourceEdits(test.store, [{ codeBlock: restored, code: [...restored.code] }], {
+		applyCodeBlockSourceEdits(test, [{ codeBlock: restored, code: [...restored.code] }], {
 			affectsCompilation: true,
 		});
 		await vi.advanceTimersByTimeAsync(2000);
@@ -255,12 +256,12 @@ describe('session persistence plugin', () => {
 		const compilerRevision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
 		test.storage.setItem.mockClear();
-		test.events.dispatch('mousedown', { x: block.x + 8, y: block.y + 8 });
-		test.events.dispatch('mousemove', {
+		test.events.dispatch('pointerdown', { x: block.x + 8, y: block.y + 8 });
+		test.events.dispatch('pointermove', {
 			movementX: test.state.viewport.vGrid * 2,
 			movementY: test.state.viewport.hGrid * 2,
 		});
-		test.events.dispatch('mouseup');
+		test.events.dispatch('pointerup');
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit' });
 		expect(editing.handle.getRevision()).not.toBe(token);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);

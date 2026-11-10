@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-texture-runtime",
-  "version": "0.3.10",
+  "version": "0.3.28",
   "private": true,
   "description": "Editor-frame WebAssembly runtime and inline framebuffer textures",
   "type": "module",
@@ -25,9 +25,9 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
-    "vitest": "4.1.7",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7",
+    "vitest": "4.1.12",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12",
     "glugglugglug": "*",
     "@8f4e/sprite-generator": "*",
     "@8f4e/editor-palette": "*"

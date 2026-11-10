@@ -3,6 +3,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { CP437_CHARACTERS } from '../src/characterSet.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -97,7 +98,7 @@ function placeGlyphOnCanvas(bitmapRows, glyphBbx, canvasWidth, canvasHeight, fon
 }
 
 function parseBdfGlyphs(source) {
-	const lines = source.split(/\r?\n/);
+	const lines = source.split(/\r?\n/).map(line => line.trimEnd());
 	const globalBbx = parseGlobalBbx(lines);
 	const verticalMetrics = parseFontVerticalMetrics(lines);
 	const glyphs = new Map();
@@ -129,7 +130,7 @@ function parseBdfGlyphs(source) {
 			} else if (line === 'BITMAP') {
 				bitmapStart = j + 1;
 			} else if (line === 'ENDCHAR') {
-				if (encoding !== null && encoding >= 0 && encoding <= 127 && bbx && bitmapStart !== -1) {
+				if (encoding !== null && encoding >= 0 && bbx && bitmapStart !== -1) {
 					const rawBitmapRows = lines.slice(bitmapStart, bitmapStart + bbx.height);
 					const bitmapRows = rawBitmapRows.map(row => hexRowToBinaryString(row, bbx.width));
 					glyphs.set(
@@ -147,6 +148,9 @@ function parseBdfGlyphs(source) {
 		width: globalBbx.width,
 		height: globalBbx.height,
 		glyphs,
+		isCp437:
+			lines.some(line => /^CHARSET_REGISTRY\s+"?ibm"?$/i.test(line)) &&
+			lines.some(line => /^CHARSET_ENCODING\s+"?437"?$/.test(line)),
 	};
 }
 
@@ -157,18 +161,19 @@ function formatGlyphArray(glyphs) {
 function main() {
 	const { bdfPath, fontName } = parseArgs(process.argv.slice(2));
 	const bdfSource = readFileSync(bdfPath, 'utf-8');
-	const { width, height, glyphs } = parseBdfGlyphs(bdfSource);
-	const asciiGlyphs = Array.from(
-		{ length: 128 },
-		(_, code) => glyphs.get(code) || Array.from({ length: height }, () => ' '.repeat(width))
+	const { width, height, glyphs, isCp437 } = parseBdfGlyphs(bdfSource);
+	const cp437Glyphs = [...CP437_CHARACTERS].map(
+		(character, code) =>
+			(code !== 0 && glyphs.get(isCp437 ? code : character.charCodeAt(0))) ||
+			Array.from({ length: height }, () => ' '.repeat(width))
 	);
 
 	const outputDir = join(projectRoot, 'src', 'fonts', fontName);
 	mkdirSync(outputDir, { recursive: true });
-	writeFileSync(join(outputDir, 'ascii.ts'), formatGlyphArray(asciiGlyphs), 'utf-8');
+	writeFileSync(join(outputDir, 'ascii.ts'), formatGlyphArray(cp437Glyphs), 'utf-8');
 
 	console.log(`Created ${fontName} font sources in ${outputDir}`);
-	console.log(`ASCII glyphs: 128 from ${bdfPath}`);
+	console.log(`CP437 glyphs: ${cp437Glyphs.length} from ${bdfPath}`);
 	console.log(`Dimensions: ${width}x${height}`);
 }
 

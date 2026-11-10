@@ -1,11 +1,14 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
+
+const PRESSED_OVERLAY = textToGlyphIds('░░');
 
 function drawPressedKey(engine: DrawContext, key: PianoKeyboardKey): void {
 	const color = key.kind === 'black' ? PALETTE_INDICES.primaryOverlay : PALETTE_INDICES.darkOverlaySoft;
 	for (const y of key.pressedOverlayRows) {
-		engine.drawText(key.x, y, ';;', color);
+		engine.drawGlyphs(key.x, y, PRESSED_OVERLAY, color);
 	}
 }
 
@@ -73,7 +76,7 @@ export function drawPianoKeyboards(engine: DrawContext, keyboards: PianoKeyboard
 			if (key.offset % 2 === 1) {
 				engine.drawFill(key.x, 0, PALETTE_INDICES.primarySoft, keyWidth, keyY);
 			}
-			engine.drawText(key.x, 0, key.label, PALETTE_INDICES.inkBase);
+			engine.drawGlyphs(key.x, 0, key.glyphs, PALETTE_INDICES.inkBase);
 		}
 		engine.endGroup();
 	}

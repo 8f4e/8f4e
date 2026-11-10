@@ -17,6 +17,9 @@ hides Open From Disk when false; it defaults to true. Open and Save can each be 
 
 Opening reads and parses the selected file before loading the project and recording its handle. Cancellation and
 failed imports retain the current project and destination. A pending Open cannot load a project after disposal.
+After file selection, the plugin contributes ID `project-file` and message `Loading project...` while reading,
+parsing, and installing source. Success/failure settle its status; disposal cancels pending work. Results remain
+in state independently of presentation. Waiting in the file picker does not show an indicator.
 Browsers without an Open picker use a file input; uploaded files have no writable association. Errors appear in
 the editor console. The Save plugin reuses an opened handle for subsequent saves and owns all serialization and writing.
 

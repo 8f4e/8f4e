@@ -1,7 +1,7 @@
+import { EventEmitter } from 'node:events';
 import { BASE_COLORS, resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import type { EditorConfigEntry } from '@8f4e/editor-state-types';
+import type { EditorConfigEntry, EventDispatcher } from '@8f4e/editor-state-types';
 import { DEFAULT_FONT, FONT_NAMES } from '@8f4e/sprite-generator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getConfiguredFont, getConfiguredPalette, registerWebUiConfig } from './config';
@@ -12,8 +12,11 @@ function entry(path: string, value: string): EditorConfigEntry {
 
 describe('web-ui configuration', () => {
 	let store: ReturnType<typeof initState>;
+	let events: EventDispatcher;
 	beforeEach(() => {
-		store = initState(createMockEventDispatcher(), { callbacks: {} });
+		const emitter = new EventEmitter();
+		events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+		store = initState(events, { callbacks: {} });
 		registerWebUiConfig(store);
 	});
 	afterEach(() => store.dispose());
@@ -58,20 +61,25 @@ describe('web-ui configuration', () => {
 		const state = store.getState();
 		store.set('initialProjectState', {
 			...EMPTY_DEFAULT_PROJECT,
-			notes: [{ id: 0, code: ['note settings', '; @config font 6x10', '; @config color.primary #123456', 'noteEnd'] }],
+			notes: [
+				{
+					id: 0,
+					code: ['note settings', '; @config font x11miscfixed6x10', '; @config color.primary #123456', 'noteEnd'],
+				},
+			],
 		});
-		expect(state.editorConfig).toEqual({ font: '6x10', color: { primary: '#123456' } });
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.editorConfig).toEqual({ font: 'x11miscfixed6x10', color: { primary: '#123456' } });
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock, code: ['note settings', '; @config font tiny', '; @config color.primary ???', 'noteEnd'] }],
 			{ affectsCompilation: false }
 		);
 		expect(state.editorConfig).toEqual({});
-		expect(state.codeErrors.editorDirectiveErrors.map(error => error.lineNumber)).toEqual([1, 2]);
+		expect(state.codeErrors['editor-directives'].map(error => error.lineNumber)).toEqual([1, 2]);
 		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
 		expect(state.editorConfig).toEqual({});
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
 });

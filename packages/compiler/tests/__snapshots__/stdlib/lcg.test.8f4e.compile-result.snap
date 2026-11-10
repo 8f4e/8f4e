@@ -472,7 +472,7 @@
           "default": 69420,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "seed",
+          "id": 0,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

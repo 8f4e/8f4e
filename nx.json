@@ -112,6 +112,9 @@
     "projects": [
       "*",
       "!@8f4e/release",
+      "!@8f4e/runtime-daisy",
+      "!@8f4e/runtime-linux",
+      "!@8f4e/runtime-command",
       "!glugglugglug"
     ],
     "projectsRelationship": "independent",

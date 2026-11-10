@@ -1,16 +1,24 @@
 # Connectors plugin
 
-`@8f4e/editor-plugin-connectors` owns input/output connectors and the complete wire renderer. Both default and minimal
-editor compositions install `connectorsPlugin` in their fixed plugin set. Omitting it leaves the editor without
-connector widgets, wire drawing, or line GPU allocations; compilation and memory resolution continue independently.
+`@8f4e/editor-plugin-connectors` owns input/output connectors, expanded declaration labels, and the complete wire
+renderer. The exported `connectorsPlugin` can load through a deferred registry after the first render. Omitting it
+leaves the editor without connectors, expanded labels/rows, wire drawing, or line GPU allocations; compilation and
+memory resolution continue independently.
+
+The plugin expands compiler-reported `shape` declarations and `paramShape` function parameters for display, reserving
+rows through the generic layout contribution API. Labels stay private and draw with connectors through the ordered
+block drawer registry. Inherited declaration labels and connector endpoints use the same ordered memory rows. Hidden source and
+disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
+the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
 
 The plugin derives pointer inputs and public non-pointer outputs from the compiler memory plan, including inherited
 shape declarations and exposed memory on nested project groups. One derivation pass produces both connector lists.
 Module connectors belong only to the block selected by the compiler's `projectBlockId`, so overridden definitions do
 not add duplicate endpoints and selecting a same-named block cannot redirect wires.
-Layout subscriptions keep geometry private in a per-editor WeakMap. After each completed layout batch, the plugin
-rebuilds its byte-address index from the current
-project slice. Runtime pointer values are read on every frame, so wires follow live memory without recompilation.
+Layout subscriptions keep geometry private in a per-editor WeakMap. After a completed layout batch whose `project`
+is the current `ProjectLevel`, the plugin rebuilds its byte-address index from that group's blocks. Batches in other
+groups leave the active index unchanged. Runtime pointer values are read on every frame, so wires follow live memory
+without recompilation.
 Fixed reference slots such as `float& input &source:output` also produce input connectors, positioned at their
 declaration rows. Their wires use the target byte address retained in `compiledModules[id].referenceSlots`, without
 reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no

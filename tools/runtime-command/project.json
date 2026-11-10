@@ -1,0 +1,19 @@
+{
+	"name": "@8f4e/runtime-command",
+	"projectType": "application",
+	"sourceRoot": "tools/runtime-command/src",
+	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [{ "command": "node --test tests/*.test.mjs", "forwardAllArgs": false }],
+				"cwd": "{projectRoot}"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": { "command": "biome check --write tools/runtime-command", "cwd": "{workspaceRoot}" }
+		}
+	},
+	"tags": ["type:tooling", "scope:runtime"]
+}

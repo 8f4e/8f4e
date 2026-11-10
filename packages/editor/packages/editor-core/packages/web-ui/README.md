@@ -4,7 +4,7 @@ This package provides the browser renderer for the editor. It owns font and colo
 and palette updates. Drawing reads editor state and memory views; font changes update the shared layout grid.
 It is designed to be replaceable by renderers for other platforms.
 
-Rendering is backed by `glugglugglug`. Glyph IDs are ASCII character codes 0–127 and fill is 128, so
+Rendering is backed by `glugglugglug`. Glyph IDs are CP437 slots 0–255 and fill is 256, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
 
 The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
@@ -21,8 +21,28 @@ owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer v
 
 ## API
 
-`createEditorDrawerRegistry()` creates the per-editor registry for code-block content drawers, drawers, overlays, and canvas-wide
-render layers. Pass that registry through `options.drawers` when initializing the renderer.
+`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, background/ordinary canvas drawers, and canvas/modal overlay
+hooks and GPU render-layer registration. Pass that registry through `options.drawers` when initializing the renderer.
+
+### `registerCanvasBackgroundDrawer(drawer)`
+
+Registers viewport-coordinate drawing below code blocks and above the procedural background, independently of
+`canvasOverlays`. Callbacks receive `{ draw, state, memoryViews }` and run in registration order. Registration returns an
+unregister function. The entry-outlines plugin draws borders and labels from core entry bounds through this hook. It uses the shared
+`CanvasDrawer` and `CanvasDrawerContext` types.
+
+### `registerCanvasDrawer(drawer)`
+
+Registers viewport-coordinate drawing after code blocks and before canvas/modal overlays, independently of
+`canvasOverlays`. Registrations draw in order and return unregister functions. The context-menu plugin uses this
+hook; web-ui contains no menu-specific drawing. The shared types are `CanvasDrawer` and `CanvasDrawerContext`.
+
+### `registerModalOverlay(drawer)`
+
+Registers a viewport-coordinate sprite drawer after menus and ordinary canvas overlays. This stage runs even
+when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, memoryViews }` and registration
+returns an unregister function. `@8f4e/editor-plugin-dialogs` owns dialog layout and drawing through this hook;
+web-ui contains no dialog-specific rendering.
 
 ### `registerWebUiConfig(store)`
 
@@ -30,9 +50,9 @@ Registers schema-backed validators for `; @config font <name>` and `; @config co
 configuration registry. Editor-core calls this before installing plugins and loading the initial project.
 Editor-state parses and resolves configuration generically; web-ui owns supported fonts, color validation, and defaults.
 
-### `init(store, events, canvas, memoryViews, options?)`
+### `init(store, events, canvas, memoryViews, options)`
 
-Initializes the web UI renderer.
+Initializes the web UI renderer without drawing or scheduling frames. Editor-core owns the frame loop.
 
 **Parameters:**
 
@@ -40,13 +60,17 @@ Initializes the web UI renderer.
 - `events: EventDispatcher` - Announces layout grid size changes
 - `canvas: HTMLCanvasElement` - The canvas element to render to
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
+- `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. It is preloaded alongside project preparation and remains the default for later configuration changes.
+- `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
 
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
-- `renderFrame()` - Draw one frame on demand
+- `renderFrame()` - Restore released GPU resources as needed and draw one frame from the supplied state
+- `releaseRenderingResources()` - Release reloadable GPU resources and the canvas drawing buffer
+- `resetRenderStats()` - Restart the elapsed-time and frame-count sample when the host resumes its loop
 - `destroy()` - Unsubscribe from configuration and release renderer and plugin resources
 
 ### `RenderStats`
@@ -76,20 +100,42 @@ interface FontAtlas {
 
 ## State Usage
 
-The web-ui package reads editor state for drawing and writes only font-derived grid dimensions. `@8f4e/editor-plugin-code-rendering` owns code text,
-syntax highlighting, and its private cache of prepared sprite cells. It registers a content drawer through
-`registerCodeBlockContentDrawer()`, which runs after block backgrounds and highlights, before the cursor,
-shape declarations, diagnostics, ordinary block drawers, and overlays. Without a content plugin, blocks retain
-their backgrounds and editing affordances while no source text is drawn.
+The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
+Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
+Web-ui retains traversal, culling, and block-relative coordinates. A single replaceable
+`registerOffscreenCodeBlockDrawer(drawer)` callback handles offscreen blocks in the same traversal using world
+coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
+`canvasOverlays` controls these decorations. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow geometry and drawing.
+`@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
+and is installed before code rendering.
+`@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
+Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
+there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
+Without a background plugin, web-ui draws no block surface.
+
+Editor-state stores viewport animation targets and exposes the synchronous
+`advanceViewportAnimation(state, frameTime, events)` helper. Editor-core calls it before web-ui's `renderFrame()`
+from both its scheduled and on-demand frame paths. Each step updates the shared viewport
+through `updateViewport()` and emits `viewportChanged` events, so blocks enter and leave the
+visible area throughout the pan. Web-ui's draw path uses those supplied coordinates without advancing the animation.
+Hosts for other platforms advance animations with their own frame clock. Editor-state needs no frame scheduler or
+cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
-`DrawContext.drawFill()` uses the shared fill mask, `drawText()` uses fixed ASCII glyph IDs,
-and both accept an explicit palette index. The renderer prepares up to 256 palette colors as premultiplied float32
+`DrawContext.drawFill()` uses the shared fill mask, and `drawGlyphs()` draws prepared CP437 glyph IDs.
+Use the pure `textToGlyphIds()` helper during state/layout preparation and keep its result in the owning plugin.
+Fixed symbols can be prepared once, and their IDs remain valid across font changes. `drawResolvedText()` consumes
+prepared glyph/color cells. `drawNumericText()` trusts formatted live readouts to contain ASCII numeric text and
+uses their character codes directly, without validation or Unicode mapping. All drawing methods accept explicit
+palette indices. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
 `gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without
 knowing about fonts or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
+Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
+Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
+The startup rendering sequence and initial font readiness remain unchanged.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 

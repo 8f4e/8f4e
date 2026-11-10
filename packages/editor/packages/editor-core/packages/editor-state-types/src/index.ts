@@ -7,16 +7,16 @@ import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
 import type {
-	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
 	CodeBlockRendering,
 	CodeBlockType,
+	EntryBounds,
 	MemoryIdentifier,
 	ParsedDirectiveRecord,
 	ProjectLevel,
 	TypedValueKind,
 } from './features/code-blocks/types';
-import type { DialogButton, DialogButtonState, DialogContent, DialogState } from './features/dialog/types';
+import type { ActivateDialogButtonEvent, DialogButton, DialogContent } from './features/dialog/types';
 import type {
 	EditorConfig,
 	EditorConfigSchemaContributionRegistry,
@@ -25,15 +25,23 @@ import type {
 } from './features/editor-config/types';
 import type { ResolvedGlobalEditorDirectives } from './features/global-editor-directives/types';
 import type { ConsoleState, LogMessage } from './features/logger/types';
-import type { ContextMenu, ContextMenuItem, MenuGenerator, MenuStackEntry } from './features/menu/types';
+import type {
+	ActivateContextMenuItemEvent,
+	ContextMenu,
+	ContextMenuItem,
+	MenuGenerator,
+	MenuStackEntry,
+} from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
 import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
 import type {
+	CodeBlockPointerDownEvent,
 	CodeError,
 	EventDispatcher,
+	EventDispatchOptions,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InternalMouseEvent,
+	InternalPointerEvent,
 	Position,
 	Size,
 } from './shared/types';
@@ -50,9 +58,11 @@ import type {
 // Re-export navigation types
 // Re-export project types
 export type {
+	ActivateContextMenuItemEvent,
+	ActivateDialogButtonEvent,
 	AssertionResult,
-	CodeBlockEntryOutline,
 	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
 	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
@@ -62,13 +72,13 @@ export type {
 	ContextMenu,
 	ContextMenuItem,
 	DialogButton,
-	DialogButtonState,
 	DialogContent,
-	DialogState,
+	EntryBounds,
 	EventDispatcher,
+	EventDispatchOptions,
 	EventSubscriptionOptions,
 	GridCoordinates,
-	InternalMouseEvent,
+	InternalPointerEvent,
 	JSONSchemaLike,
 	LogMessage,
 	MemoryIdentifier,
@@ -102,14 +112,11 @@ export interface FeatureFlags {
 	/** Enable/disable panning/scrolling of the editor viewport */
 	viewportDragging: boolean;
 
-	/** Enable/disable plugin canvas overlays */
+	/** Enable/disable plugin canvas overlays and offscreen block decorations */
 	canvasOverlays: boolean;
 
 	/** Enable/disable history tracking for undo/redo functionality */
 	historyTracking?: boolean;
-
-	/** Enable/disable arrows that point toward off-screen code blocks */
-	offscreenBlockArrows: boolean;
 
 	/** Enable/disable the menu action that creates a new project */
 	projectCreation: boolean;
@@ -123,21 +130,10 @@ export type FeatureFlagsConfig = Partial<FeatureFlags>;
 
 export type EditorMode = 'view' | 'edit';
 
-// Core-provided memory and animation callbacks.
+// Core-provided memory callbacks.
 export interface Callbacks {
 	// Memory manipulation callback
 	getWordFromMemory?: (allocationUnitAddress: number) => number;
-
-	/**
-	 * Schedules a frame callback for editor-state driven animations.
-	 * Hosts can provide `window.requestAnimationFrame` or an equivalent scheduler.
-	 */
-	requestAnimationFrame?: (callback: (time: number) => void) => number;
-
-	/**
-	 * Cancels a previously scheduled animation frame callback.
-	 */
-	cancelAnimationFrame?: (id: number) => void;
 }
 
 // Options interface for editor initialization (top-level public API)
@@ -159,6 +155,29 @@ export interface Options {
 export interface ProjectChange {
 	revision: number;
 	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
+}
+
+/** One contributed operation, retained after completion independently of presentation. */
+export interface LoadingIndicator {
+	id: string;
+	message: string;
+	status: 'loading' | 'done' | 'failed' | 'cancelled';
+	/** Milliseconds since the Unix epoch, recorded when the contribution is added. */
+	startedAt: number;
+	/** Milliseconds since the Unix epoch, or null while the operation is loading. */
+	finishedAt: number | null;
+}
+
+/** The first terminal result wins; later calls have no effect. */
+export interface LoadingIndicatorHandle {
+	done: () => void;
+	fail: () => void;
+	cancel: () => void;
+}
+
+/** Per-editor contributions to the unified loading list. Producers own their terminal result. */
+export interface EditorLoadingRegistry {
+	add: (indicator: Pick<LoadingIndicator, 'id' | 'message'>) => LoadingIndicatorHandle;
 }
 
 // State interface - complete editor state tree (top-level public API)
@@ -189,11 +208,11 @@ export interface State {
 	assertionResults: AssertionResult[];
 	/** Resolved global editor directives from `; @<name>` comments */
 	globalEditorDirectives: ResolvedGlobalEditorDirectives;
-	codeErrors: {
-		compilationErrors: CodeError[];
-		editorDirectiveErrors: CodeError[];
-	};
-	dialog: DialogState;
+	/** Raw source errors keyed by contributor. Each contributor replaces its own list. */
+	codeErrors: Record<string, CodeError[]>;
+	/** Contributed operations and their retained results, in insertion order. */
+	loadingIndicators: LoadingIndicator[];
+	dialog: DialogContent;
 	dialogStack: DialogContent[];
 	viewport: Viewport;
 	viewportAnimation: ViewportAnimation;
@@ -218,4 +237,6 @@ export type * from './features/menu/types';
 export type * from './features/program-compiler/types';
 export type * from './features/viewport/blockAlignment';
 export type * from './features/viewport/types';
+export type * from './shared/events';
+export { INPUT_LAYERS } from './shared/inputLayers';
 export type * from './shared/types';

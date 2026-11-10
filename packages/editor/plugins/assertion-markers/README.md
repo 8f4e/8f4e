@@ -9,8 +9,8 @@ project path, and block type, and uses the source-to-display row mapping and gap
 hidden lines, disabled blocks, and compiling projects have no markers. The plugin owns no core widget fields or
 subscriptions; disposal unregisters its drawer.
 
-Runtimes continue publishing assertion results to core state. Inline assertion failure messages remain part of
-core's diagnostic display and work without this plugin.
+Test-runtime publishes assertion results and raw errors to core state. `editor-plugin-error-messages` owns inline
+assertion failure messages independently of these markers.
 
 Verify with `npx nx run @8f4e/editor-plugin-assertion-markers:build|test|typecheck` and
 `npx nx run @8f4e/editor-plugin-assertion-markers:test:screenshot`.

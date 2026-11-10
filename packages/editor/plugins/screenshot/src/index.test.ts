@@ -35,6 +35,7 @@ function setup(installed = true, mode: 'edit' | 'view' = 'edit') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
@@ -78,21 +79,22 @@ describe('screenshot plugin', () => {
 		test.renderFrame.mockImplementation(() => {
 			expect(test.state.contextMenu.open).toBe(false);
 			expect(test.state.featureFlags.canvasOverlays).toBe(false);
-			expect(test.state.featureFlags.offscreenBlockArrows).toBe(false);
 		});
 		await test.openMainMenu();
 		const index = test.state.contextMenu.items.findIndex(item => item.action === 'exportCanvasScreenshot');
 		expect(index).toBeGreaterThanOrEqual(0);
 		expect(test.state.contextMenu.items[index].disabled).toBeUndefined();
-		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('mousedown', { x: 80, y: 80, stopPropagation: false });
+		test.events.dispatch('activateContextMenuItem', {
+			x: 80,
+			y: 80,
+			index,
+		});
 		expect(test.renderFrame).toHaveBeenCalledOnce();
 		expect(test.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
 		expect(test.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(test.toBlob.mock.invocationCallOrder[0]);
 		await vi.waitFor(() => expect(test.state.featureFlags.canvasOverlays).toBe(true));
 		expect(test.writable.write).toHaveBeenCalledWith(test.blob);
 		expect(test.writable.close).toHaveBeenCalledOnce();
-		expect(test.state.featureFlags.offscreenBlockArrows).toBe(true);
 	});
 
 	it.each([
@@ -139,24 +141,26 @@ describe('screenshot plugin', () => {
 		expect(test.revokeObjectURL).toHaveBeenCalledWith('blob:screenshot');
 	});
 
-	it.each(['encoding', 'saving', 'rendering'] as const)('restores the previous flags after %s fails', async stage => {
-		const test = setup();
-		test.store.set('featureFlags.offscreenBlockArrows', false);
-		const error = new Error('Screenshot failed');
-		const report = vi.spyOn(console, 'error').mockImplementation(() => {});
-		if (stage === 'encoding') test.toBlob.mockImplementation(callback => callback(null));
-		if (stage === 'saving') test.writable.write.mockRejectedValueOnce(error);
-		if (stage === 'rendering')
-			test.renderFrame.mockImplementationOnce(() => {
-				throw error;
-			});
-		test.takeScreenshot();
-		await vi.waitFor(() =>
-			expect(report).toHaveBeenCalledWith('Failed to export canvas screenshot:', expect.any(Error))
-		);
-		expect(test.state.featureFlags.canvasOverlays).toBe(true);
-		expect(test.state.featureFlags.offscreenBlockArrows).toBe(false);
-	});
+	it.each(['encoding', 'saving', 'rendering'] as const)(
+		'restores the previous overlay flag after %s fails',
+		async stage => {
+			const test = setup();
+			test.store.set('featureFlags.canvasOverlays', false);
+			const error = new Error('Screenshot failed');
+			const report = vi.spyOn(console, 'error').mockImplementation(() => {});
+			if (stage === 'encoding') test.toBlob.mockImplementation(callback => callback(null));
+			if (stage === 'saving') test.writable.write.mockRejectedValueOnce(error);
+			if (stage === 'rendering')
+				test.renderFrame.mockImplementationOnce(() => {
+					throw error;
+				});
+			test.takeScreenshot();
+			await vi.waitFor(() =>
+				expect(report).toHaveBeenCalledWith('Failed to export canvas screenshot:', expect.any(Error))
+			);
+			expect(test.state.featureFlags.canvasOverlays).toBe(false);
+		}
+	);
 
 	it('contributes nothing when omitted and removes its menu and handler on disposal', async () => {
 		const omitted = setup(false);

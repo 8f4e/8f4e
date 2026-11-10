@@ -1,8 +1,7 @@
-# Source Collection Plugin
+# Source Collection Guidelines
 
-- This package provides reusable Vite tooling. Keep stdlib, compiler, editor, and gallery knowledge in consumers.
-- `sourceFiles` exposes `virtual:8f4e-sources/<name>` as a lazy text-loader map. Keep one output contract.
-- Source IDs are paths relative to the configured root, with the final extension removed and `/` separators.
-- Run `npx nx run @8f4e/vite-plugin-sources:build|test|typecheck` after changing this package.
-- Use small synthetic source trees for integration tests. Exercise real Vite builds and development/watch behavior.
-- Keep package exports, the client declaration, and README usage examples aligned with the public API.
+- Keep source discovery generic. Consumers own compiler, editor and gallery policies.
+- Keep `virtual:8f4e-sources/<name>` a lazy text-loader map with slash-separated IDs relative to the source root
+  and no final extension. Align exports, client types and README usage with this contract.
+- Test with synthetic source trees and real Vite build/watch flows. Wait for native watcher registration before
+  mutating files in watch tests.

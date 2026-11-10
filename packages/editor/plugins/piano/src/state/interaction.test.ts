@@ -1,5 +1,7 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { PianoKeyboard } from '../types';
 import { registerPianoInteraction } from './interaction';
@@ -62,7 +64,7 @@ describe('piano interaction', () => {
 				keys: Array.from({ length: 24 }, (_, offset) => ({
 					offset,
 					x: offset * 10,
-					label: 'C',
+					glyphs: textToGlyphIds('C'),
 					kind: 'white',
 					pressedOverlayRows: [],
 				})),
@@ -98,7 +100,10 @@ describe('piano interaction', () => {
 	it('registers event listeners on initialization', () => {
 		const cleanup = registerPianoInteraction(mockState, mockEvents, keyboardsByBlock, writeMemory);
 
-		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function));
+		expect(mockEvents.on).toHaveBeenCalledWith('codeBlockPointerDown', expect.any(Function), {
+			capture: true,
+			layer: INPUT_LAYERS.codeBlock,
+		});
 
 		cleanup();
 	});

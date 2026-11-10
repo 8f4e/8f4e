@@ -1,3 +1,11 @@
 [submodule "packages/editor/packages/glugglugglug"]
 	path = packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug
 	url = https://github.com/andorthehood/glugglugglug.git
+[submodule "packages/runtime-daisy/third_party/libdaisy"]
+	path = packages/runtime-daisy/third_party/libdaisy
+	url = https://github.com/daisyaudio/libDaisy.git
+	update = none
+[submodule "packages/runtime-daisy/third_party/wamr"]
+	path = packages/runtime-daisy/third_party/wamr
+	url = https://github.com/wasm-micro-runtime/wasm-micro-runtime.git
+	update = none

@@ -1,4 +1,11 @@
-import type { CodeBlockGraphicData, EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { Crossfade } from '../types';
 
 interface ActiveCrossfade {
@@ -29,7 +36,8 @@ export function registerCrossfadeInteraction(
 		writeMemory(crossfade.rightWordAddress, rightValue, false);
 	};
 
-	const onCodeBlockPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
+		const { x, y, codeBlock } = event;
 		const crossfade = crossfadesByBlock
 			.get(codeBlock)
 			?.find(
@@ -44,12 +52,12 @@ export function registerCrossfadeInteraction(
 			return;
 		}
 
+		event.stopPropagation = true;
 		activeCrossfade = { crossfade, codeBlock };
-		state.codeBlockRendering.draggedCodeBlock = undefined;
 		updateCrossfadeValue(activeCrossfade, x);
 	};
 
-	const onMouseMove = (event: InternalMouseEvent) => {
+	const onPointerMove = (event: InternalPointerEvent) => {
 		if (!activeCrossfade) {
 			return;
 		}
@@ -58,17 +66,17 @@ export function registerCrossfadeInteraction(
 		event.stopPropagation = true;
 	};
 
-	const onMouseUp = () => {
+	const onPointerUp = () => {
 		activeCrossfade = null;
 	};
 
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('mousemove', onMouseMove, { capture: true });
-	events.on('mouseup', onMouseUp);
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerMove', onPointerMove, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerUp', onPointerUp, { layer: INPUT_LAYERS.codeBlock });
 
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
-		events.off('mousemove', onMouseMove);
-		events.off('mouseup', onMouseUp);
+		events.off('codeBlockPointerMove', onPointerMove);
+		events.off('codeBlockPointerUp', onPointerUp);
 	};
 }

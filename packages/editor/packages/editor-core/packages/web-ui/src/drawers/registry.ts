@@ -13,42 +13,51 @@ export interface CodeBlockDrawerContext {
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
-export interface CanvasOverlayDrawerContext {
+/** Draw one offscreen block's decoration using world coordinates. */
+export type OffscreenCodeBlockDrawer = (draw: DrawContext, codeBlock: CodeBlockGraphicData, state: State) => void;
+
+export interface CanvasDrawerContext {
 	/** Drawing coordinates are relative to the viewport's top-left corner. */
 	draw: DrawContext;
 	state: State;
 	memoryViews: MemoryViews;
 }
 
-export type CanvasOverlayDrawer = (context: CanvasOverlayDrawerContext) => void;
+export type CanvasDrawer = (context: CanvasDrawerContext) => void;
 
 /** Registrations exposed to editor plugins. */
 export interface EditorDrawerRegistry {
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
-	/** Draw inside the block after its background/highlights and before foreground drawings and diagnostics. */
-	registerCodeBlockContentDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw above content and shapes, before the selection outline and diagnostics. */
-	registerCodeBlockForegroundDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after foreground drawings, the selection outline, and diagnostics. */
+	/** Draw inside each visible block, in registration order. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw after block drawers, inside the same block group. */
-	registerCodeBlockOverlay: (drawer: CodeBlockDrawer) => () => void;
-	/** Draw over editor content and menus, before dialogs, using viewport coordinates. */
-	registerCanvasOverlay: (drawer: CanvasOverlayDrawer) => () => void;
+	/** Replace the offscreen drawer. Disposal clears the slot if this registration still owns it. */
+	registerOffscreenCodeBlockDrawer: (drawer: OffscreenCodeBlockDrawer) => () => void;
+	/** Draw below code blocks, using viewport coordinates. */
+	registerCanvasBackgroundDrawer: (drawer: CanvasDrawer) => () => void;
+	/** Draw above code blocks and below overlays, using viewport coordinates. */
+	registerCanvasDrawer: (drawer: CanvasDrawer) => () => void;
+	/** Draw over ordinary canvas contents, before modal overlays, using viewport coordinates. */
+	registerCanvasOverlay: (drawer: CanvasDrawer) => () => void;
+	/** Draw context menus above ordinary overlays and below dialogs, independently of canvasOverlays. */
+	registerContextMenuOverlay: (drawer: CanvasDrawer) => () => void;
+	/** Draw above ordinary canvas overlays, independently of the canvasOverlays flag. */
+	registerModalOverlay: (drawer: CanvasDrawer) => () => void;
 }
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
 export interface EditorDrawerHost extends EditorDrawerRegistry {
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
-	drawCodeBlockContent: CodeBlockDrawer;
-	drawCodeBlockForeground: CodeBlockDrawer;
 	drawCodeBlock: CodeBlockDrawer;
-	drawCodeBlockOverlay: CodeBlockDrawer;
-	drawCanvasOverlays: CanvasOverlayDrawer;
+	drawOffscreenCodeBlock: OffscreenCodeBlockDrawer;
+	drawCanvasBackground: CanvasDrawer;
+	drawCanvas: CanvasDrawer;
+	drawCanvasOverlays: CanvasDrawer;
+	drawContextMenuOverlays: CanvasDrawer;
+	drawModalOverlays: CanvasDrawer;
 }
 
-function createDrawerSlot<Context>() {
+function createOrderedDrawerRegistry<Context>() {
 	const registrations = new Set<{ drawer: (context: Context) => void }>();
 	return {
 		register: (drawer: (context: Context) => void) => {
@@ -65,22 +74,33 @@ function createDrawerSlot<Context>() {
 }
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
-	const content = createDrawerSlot<CodeBlockDrawerContext>();
-	const foreground = createDrawerSlot<CodeBlockDrawerContext>();
-	const widgets = createDrawerSlot<CodeBlockDrawerContext>();
-	const overlays = createDrawerSlot<CodeBlockDrawerContext>();
-	const canvasOverlays = createDrawerSlot<CanvasOverlayDrawerContext>();
+	let offscreenDrawer: OffscreenCodeBlockDrawer | undefined;
+	const blockDrawers = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
+	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const canvas = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const canvasOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const contextMenuOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
+	const modalOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
-		registerCodeBlockContentDrawer: content.register,
-		registerCodeBlockForegroundDrawer: foreground.register,
-		registerCodeBlockDrawer: widgets.register,
-		registerCodeBlockOverlay: overlays.register,
+		registerCodeBlockDrawer: blockDrawers.register,
+		registerOffscreenCodeBlockDrawer: drawer => {
+			offscreenDrawer = drawer;
+			return () => {
+				if (offscreenDrawer === drawer) offscreenDrawer = undefined;
+			};
+		},
+		registerCanvasBackgroundDrawer: canvasBackground.register,
+		registerCanvasDrawer: canvas.register,
 		registerCanvasOverlay: canvasOverlays.register,
-		drawCodeBlockContent: content.draw,
-		drawCodeBlockForeground: foreground.draw,
-		drawCodeBlock: widgets.draw,
-		drawCodeBlockOverlay: overlays.draw,
+		registerContextMenuOverlay: contextMenuOverlays.register,
+		registerModalOverlay: modalOverlays.register,
+		drawCodeBlock: blockDrawers.draw,
+		drawOffscreenCodeBlock: (draw, codeBlock, state) => offscreenDrawer?.(draw, codeBlock, state),
+		drawCanvasBackground: canvasBackground.draw,
+		drawCanvas: canvas.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
+		drawContextMenuOverlays: contextMenuOverlays.draw,
+		drawModalOverlays: modalOverlays.draw,
 	};
 }

@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`push instruction compiler > float64 memory push > pushes a float64 memory identifier using f64.load 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    {
+      "alignment": 3,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 43,
+    },
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a f64 literal value emitting f64.const 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "f64.const",
+      "value": 3.14,
+    },
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a literal value 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 5,
+    },
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a resolved f64 literal emitting f64.const 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "f64.const",
+      "value": 3.141592653589793,
+    },
+  ],
+}
+`;
+
+exports[`push instruction compiler > pushes a resolved literal value 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 42,
+    },
+  ],
+}
+`;

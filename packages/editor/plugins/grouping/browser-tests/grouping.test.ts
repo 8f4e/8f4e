@@ -1,0 +1,87 @@
+import { parseProjectSource } from '@8f4e/compiler';
+import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { expect, test, vi } from 'vitest';
+import { createGroupingPlugin } from '../src/index';
+
+test('contributes group menus and drag behavior through the real editor', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 768;
+	canvas.height = 512;
+	canvas.style.width = '768px';
+	canvas.style.height = '512px';
+	document.body.appendChild(canvas);
+	let editor: Editor | undefined;
+	let events!: EventDispatcher;
+	const plugin = createGroupingPlugin({ writeClipboardText: async () => {} });
+	try {
+		editor = await initEditor(canvas, {
+			plugins: [
+				{
+					...plugin,
+					setup: context => {
+						events = context.events;
+						return plugin.setup(context);
+					},
+				},
+			],
+			initialProject: parseProjectSource(`8f4e/v1
+constants env
+; @pos 120 60
+constantsEnd
+entry main
+module source
+; @pos 4 3
+; @group audio
+int value 1
+moduleEnd
+module destination
+; @pos 40 14
+; @group audio
+int value 2
+moduleEnd
+entryEnd`),
+		});
+		editor.state.editorMode = 'edit';
+		editor.pauseRendering();
+		const state = editor.state;
+		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
+		const pointer = (type: string, x: number, y: number, movementX = 0) => {
+			events.dispatch(type, {
+				x,
+				y,
+				movementX,
+				movementY: 0,
+				altKey: false,
+				buttons: type === 'pointerup' ? 0 : 1,
+				stopPropagation: false,
+				canvasWidth: canvas.width,
+				canvasHeight: canvas.height,
+			});
+		};
+		const x = first.x - state.viewport.x + 8;
+		const y = first.y - state.viewport.y + 8;
+		const secondX = second.x;
+		pointer('pointerdown', x, y);
+		pointer('pointermove', x + state.viewport.vGrid, y, state.viewport.vGrid);
+		pointer('pointerup', x + state.viewport.vGrid, y);
+		expect(second.x).toBe(secondX + state.viewport.vGrid);
+		pointer('contextmenu', first.x - state.viewport.x + 8, first.y - state.viewport.y + 8);
+		await expect.poll(() => state.contextMenu.items.some(item => item.action === 'setGroupNonstick')).toBe(true);
+		const index = state.contextMenu.items.findIndex(item => item.action === 'setGroupNonstick');
+		events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
+		expect(first.code).toContain('; @group audio nonstick');
+		expect(second.code).toContain('; @group audio nonstick');
+		const before = second.x;
+		const nextX = first.x - state.viewport.x + 8;
+		const nextY = first.y - state.viewport.y + 8;
+		pointer('pointerdown', nextX, nextY);
+		pointer('pointermove', nextX + state.viewport.vGrid, nextY, state.viewport.vGrid);
+		pointer('pointerup', nextX + state.viewport.vGrid, nextY);
+		expect(second.x).toBe(before);
+	} finally {
+		vi.restoreAllMocks();
+		editor?.dispose();
+		canvas.remove();
+	}
+});

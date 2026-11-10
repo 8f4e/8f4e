@@ -1,0 +1,124 @@
+---
+name: Linux runtime / Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-runtime-linux
+  cancel-in-progress: false
+
+env:
+  NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD || 'true' }}
+
+jobs:
+  build:
+    name: Build and test (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: debian:bookworm
+      options: --shm-size=256m
+    defaults:
+      run:
+        shell: bash
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+    steps:
+      - name: Validate branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Linux runtime releases must run from main."
+          exit 1
+
+      - name: Install native dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config libjack-jackd2-dev jackd2 jack-tools ca-certificates git
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build native runtime
+        run: npx nx run @8f4e/runtime-linux:build
+
+      - name: Test native runtime and command tool
+        run: npx nx run @8f4e/runtime-linux:test
+
+      - name: Package native runtime
+        id: package
+        env:
+          RUNTIME_ARCH: ${{ matrix.arch }}
+        run: |
+          version="$(node -p "require('./packages/runtime-linux/package.json').version")"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          existing_tag="$(git ls-remote --tags origin "refs/tags/@8f4e/runtime-linux@${version}")"
+          if [[ -n "$existing_tag" ]]; then
+            echo "Native runtime tag already exists; update the package version before releasing."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          package="8f4e-runtime-${version}-linux-${RUNTIME_ARCH}"
+          mkdir -p "$RUNNER_TEMP/$package"
+          strip packages/runtime-linux/dist/8f4e-runtime
+          cp packages/runtime-linux/dist/8f4e-runtime packages/runtime-linux/README.md LICENSE "$RUNNER_TEMP/$package/"
+          cp packages/runtime-linux/dist/build/_deps/wasmtime_distribution-src/LICENSE "$RUNNER_TEMP/$package/LICENSE.wasmtime"
+          tar -C "$RUNNER_TEMP" -czf "${package}.tar.gz" "$package"
+          mkdir -p "$RUNNER_TEMP/package-smoke"
+          tar -C "$RUNNER_TEMP/package-smoke" -xzf "${package}.tar.gz"
+          "$RUNNER_TEMP/package-smoke/$package/8f4e-runtime" --help
+
+      - name: Upload native runtime archive
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: runtime-linux-${{ matrix.arch }}
+          path: 8f4e-runtime-*-linux-*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Publish native runtime
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download native runtime archives
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: runtime-linux-*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Create native runtime release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUNTIME_VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release create "@8f4e/runtime-linux@${RUNTIME_VERSION}" release-assets/*.tar.gz \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "8f4e Linux runtime ${RUNTIME_VERSION}" --latest=false \
+            --notes "Standalone JACK audio/MIDI runtime for Linux x86-64 and ARM64, built from ${GITHUB_SHA}."

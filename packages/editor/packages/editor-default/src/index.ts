@@ -1,10 +1,13 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
+import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
@@ -13,6 +16,7 @@ export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => Com
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
+	defaultFont?: EditorOptions['defaultFont'];
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
@@ -21,6 +25,8 @@ export function createDefaultEditorPlugins(options: {
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
+	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
 	includeKeyboardModeSwitching?: boolean;
 	getMemory: () => WebAssembly.Memory | null;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
@@ -42,7 +48,9 @@ export function createDefaultEditorPlugins(options: {
 			storageKey: options.storageKey,
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
+		codeBlockBackgroundPlugin,
 		codeRenderingPlugin,
+		loadingIndicatorsPlugin,
 		createDeferredPluginLoaderPlugin({
 			load: () =>
 				import('./deferred-plugins').then(module => module.createDeferredEditorPlugin({ ...options, fileSession })),
@@ -57,6 +65,12 @@ export interface DefaultEditorMountOptions {
 	sharedAudioContext?: AudioContext;
 	/** Capture wheel gestures for viewport panning. Disable this for editors embedded in scrolling pages. */
 	captureWheel?: boolean;
+	/** Configure one-finger touch panning; defaults to both directions. */
+	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
+	/** Observe updates to a page-owned service worker through the editor's update-dialog plugin. */
+	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
+	/** Font for projects without a font directive; PixelCode on coarse pointers, IBM VGA otherwise. */
+	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
 	/** Initial source is installed; compilation and asset loading continue independently. */
@@ -77,6 +91,11 @@ export async function mountDefaultEditor(
 		plugins,
 		sharedAudioContext,
 		captureWheel,
+		touchNavigation,
+		pwaUpdates,
+		defaultFont = canvas.ownerDocument.defaultView!.matchMedia('(pointer: coarse)').matches
+			? 'pixelcode6x12'
+			: undefined,
 		featureFlags,
 		initialProjectUrl,
 		onInitialProjectLoaded,
@@ -95,6 +114,7 @@ export async function mountDefaultEditor(
 			...(plugins ??
 				createDefaultEditorPlugins({
 					canvas,
+					defaultFont,
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
@@ -103,6 +123,8 @@ export async function mountDefaultEditor(
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
 					captureWheel,
+					touchNavigation,
+					pwaUpdates,
 					includeKeyboardModeSwitching,
 					getMemory: compiler.getMemory,
 					writeMemory: compiler.writeMemory,
@@ -111,6 +133,7 @@ export async function mountDefaultEditor(
 					sharedAudioContext,
 				})),
 		],
+		defaultFont,
 		featureFlags,
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();

@@ -21,7 +21,7 @@ int on 1
 ; @switch &on
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const listeners = new Map<string, Set<(event: unknown) => void>>();
 	const events: EventDispatcher = {
 		on: (name, callback) => {
@@ -32,7 +32,7 @@ entryEnd`);
 		off: (name, callback) => {
 			listeners.get(name)?.delete(callback as (event: unknown) => void);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			for (const callback of listeners.get(name) ?? []) callback(event);
 		},
 	};
@@ -47,6 +47,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();
@@ -79,14 +80,14 @@ entryEnd`);
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
-	renderer.pauseRendering();
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[
 				{
 					codeBlock,

@@ -20,117 +20,18 @@
             "elementByteLength": 4,
             "endByteAddress": 516,
             "endAddressSafeByteLength": 4,
-            "id": "defaultFreq",
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq"
           }
         }
       },
       "id": "phaseAccumulator",
       "executionEntryName": "main",
-      "cycleFunction": [
-        97,
-        1,
-        1,
-        125,
-        65,
-        136,
-        4,
-        65,
-        136,
-        4,
-        42,
-        2,
-        0,
-        67,
-        219,
-        15,
-        201,
-        64,
-        65,
-        132,
-        4,
-        42,
-        2,
-        0,
-        148,
-        65,
-        128,
-        247,
-        2,
-        178,
-        33,
-        0,
-        32,
-        0,
-        67,
-        0,
-        0,
-        0,
-        0,
-        91,
-        4,
-        64,
-        67,
-        0,
-        0,
-        128,
-        63,
-        33,
-        0,
-        11,
-        32,
-        0,
-        149,
-        146,
-        56,
-        2,
-        0,
-        65,
-        136,
-        4,
-        42,
-        2,
-        0,
-        67,
-        219,
-        15,
-        73,
-        64,
-        94,
-        4,
-        64,
-        65,
-        136,
-        4,
-        67,
-        219,
-        15,
-        73,
-        192,
-        56,
-        2,
-        0,
-        11,
-        65,
-        140,
-        4,
-        65,
-        136,
-        4,
-        42,
-        2,
-        0,
-        16,
-        3,
-        56,
-        2,
-        0,
-        11
-      ],
       "ast": {
         "type": "module",
         "id": "phaseAccumulator",
@@ -492,111 +393,18 @@
             "elementByteLength": 4,
             "endByteAddress": 524,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out"
           }
         }
       },
       "id": "audioout",
       "executionEntryName": "main",
-      "cycleFunction": [
-        91,
-        2,
-        1,
-        127,
-        1,
-        125,
-        65,
-        128,
-        4,
-        40,
-        2,
-        0,
-        65,
-        140,
-        4,
-        42,
-        2,
-        0,
-        67,
-        0,
-        0,
-        0,
-        63,
-        148,
-        33,
-        1,
-        33,
-        0,
-        32,
-        0,
-        63,
-        0,
-        65,
-        1,
-        107,
-        65,
-        16,
-        116,
-        65,
-        252,
-        255,
-        3,
-        106,
-        77,
-        4,
-        64,
-        32,
-        0,
-        32,
-        1,
-        56,
-        2,
-        0,
-        5,
-        11,
-        65,
-        128,
-        4,
-        65,
-        128,
-        4,
-        40,
-        2,
-        0,
-        65,
-        4,
-        106,
-        54,
-        2,
-        0,
-        65,
-        128,
-        4,
-        40,
-        2,
-        0,
-        65,
-        252,
-        3,
-        74,
-        4,
-        64,
-        65,
-        128,
-        4,
-        65,
-        0,
-        54,
-        2,
-        0,
-        11,
-        11
-      ],
       "ast": {
         "type": "module",
         "id": "audioout",
@@ -908,7 +716,6 @@
             "allocationUnitCount": 128,
             "allocatedByteLength": 512,
             "allocationUnitAddress": 0,
-            "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 0,
             "elementByteLength": 512,
@@ -917,7 +724,9 @@
             "isInteger": false,
             "pointerDepth": 0,
             "type": "float",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "pointer": {
             "numberOfElements": 1,
@@ -929,12 +738,13 @@
             "elementByteLength": 4,
             "endByteAddress": 512,
             "endAddressSafeByteLength": 4,
-            "id": "pointer",
             "lineNumber": 9,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer"
           }
         },
         "declarations": [
@@ -944,7 +754,6 @@
             "allocationUnitCount": 128,
             "allocatedByteLength": 512,
             "allocationUnitAddress": 0,
-            "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 0,
             "elementByteLength": 512,
@@ -953,7 +762,9 @@
             "isInteger": false,
             "pointerDepth": 0,
             "type": "float",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -965,12 +776,13 @@
             "elementByteLength": 4,
             "endByteAddress": 512,
             "endAddressSafeByteLength": 4,
-            "id": "pointer",
             "lineNumber": 9,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer"
           }
         ],
         "declarationSources": [
@@ -1038,12 +850,13 @@
             "elementByteLength": 4,
             "endByteAddress": 516,
             "endAddressSafeByteLength": 4,
-            "id": "defaultFreq",
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq"
           },
           "phase": {
             "numberOfElements": 1,
@@ -1055,12 +868,13 @@
             "elementByteLength": 4,
             "endByteAddress": 520,
             "endAddressSafeByteLength": 4,
-            "id": "phase",
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase"
           },
           "out": {
             "numberOfElements": 1,
@@ -1072,12 +886,13 @@
             "elementByteLength": 4,
             "endByteAddress": 524,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out"
           }
         },
         "declarations": [
@@ -1091,12 +906,13 @@
             "elementByteLength": 4,
             "endByteAddress": 516,
             "endAddressSafeByteLength": 4,
-            "id": "defaultFreq",
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq"
           },
           {
             "numberOfElements": 1,
@@ -1108,12 +924,13 @@
             "elementByteLength": 4,
             "endByteAddress": 520,
             "endAddressSafeByteLength": 4,
-            "id": "phase",
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase"
           },
           {
             "numberOfElements": 1,
@@ -1125,12 +942,13 @@
             "elementByteLength": 4,
             "endByteAddress": 524,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -1203,7 +1021,6 @@
             "allocationUnitCount": 128,
             "allocatedByteLength": 512,
             "allocationUnitAddress": 0,
-            "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 0,
             "elementByteLength": 512,
@@ -1212,7 +1029,9 @@
             "isInteger": false,
             "pointerDepth": 0,
             "type": "float",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           "pointer": {
             "numberOfElements": 1,
@@ -1224,12 +1043,13 @@
             "elementByteLength": 4,
             "endByteAddress": 512,
             "endAddressSafeByteLength": 4,
-            "id": "pointer",
             "lineNumber": 9,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer"
           }
         },
         "declarations": [
@@ -1239,7 +1059,6 @@
             "allocationUnitCount": 128,
             "allocatedByteLength": 512,
             "allocationUnitAddress": 0,
-            "id": "buffer",
             "lineNumber": 8,
             "byteAddress": 0,
             "elementByteLength": 512,
@@ -1248,7 +1067,9 @@
             "isInteger": false,
             "pointerDepth": 0,
             "type": "float",
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer"
           },
           {
             "numberOfElements": 1,
@@ -1260,12 +1081,13 @@
             "elementByteLength": 4,
             "endByteAddress": 512,
             "endAddressSafeByteLength": 4,
-            "id": "pointer",
             "lineNumber": 9,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer"
           }
         ],
         "declarationSources": [
@@ -1333,12 +1155,13 @@
             "elementByteLength": 4,
             "endByteAddress": 516,
             "endAddressSafeByteLength": 4,
-            "id": "defaultFreq",
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq"
           },
           "phase": {
             "numberOfElements": 1,
@@ -1350,12 +1173,13 @@
             "elementByteLength": 4,
             "endByteAddress": 520,
             "endAddressSafeByteLength": 4,
-            "id": "phase",
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase"
           },
           "out": {
             "numberOfElements": 1,
@@ -1367,12 +1191,13 @@
             "elementByteLength": 4,
             "endByteAddress": 524,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out"
           }
         },
         "declarations": [
@@ -1386,12 +1211,13 @@
             "elementByteLength": 4,
             "endByteAddress": 516,
             "endAddressSafeByteLength": 4,
-            "id": "defaultFreq",
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq"
           },
           {
             "numberOfElements": 1,
@@ -1403,12 +1229,13 @@
             "elementByteLength": 4,
             "endByteAddress": 520,
             "endAddressSafeByteLength": 4,
-            "id": "phase",
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase"
           },
           {
             "numberOfElements": 1,
@@ -1420,12 +1247,13 @@
             "elementByteLength": 4,
             "endByteAddress": 524,
             "endAddressSafeByteLength": 4,
-            "id": "out",
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
-            "isUnsigned": false
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out"
           }
         ],
         "declarationSources": [
@@ -1485,29 +1313,29 @@
   },
   "memoryDefaultsByModuleId": {
     "audioout": {
-      "buffer": {
+      "0": {
         "value": {},
         "hasExplicitDefault": false,
         "isInherited": false
       },
-      "pointer": {
+      "1": {
         "value": 0,
         "hasExplicitDefault": true,
         "isInherited": false
       }
     },
     "phaseAccumulator": {
-      "defaultFreq": {
+      "0": {
         "value": 440,
         "hasExplicitDefault": true,
         "isInherited": false
       },
-      "phase": {
+      "1": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
       },
-      "out": {
+      "2": {
         "value": 0,
         "hasExplicitDefault": false,
         "isInherited": false
@@ -1518,6 +1346,6 @@
     "audioout": {},
     "phaseAccumulator": {}
   },
-  "compiledWasm": "AGFzbQEAAAABFwVgAABgAX8Bf2ACf38Bf2AAAGABfQF9AhEBBGhvc3QGbWVtb3J5AgMBAQMHBgAAAwQAAAcgAwxpbml0RGVmYXVsdHMAAARtYWluAAEGYnVmZmVyAAIMAQEK6AIGFwBBAEEAQZAE/AsAQYAEQQBBCPwIAAALBgAQBBAFCyQBAX9BACEAAkADQCAAQYABTgRADAILIABBAWohABABDAALCwtkAQF9IABD2w/JP14EQEPbD0lAIACTIQALIABD2w/JP0MAAIC/lF0EQEPbD0lAQwAAgL+UIACTIQALIAAgAJQhASABQ9EMULmUQ4iICDySIAGUQ6uqKr6SIAGUQwAAgD+SIACUC2EBAX1BiARBiAQqAgBD2w/JQEGEBCoCAJRBgPcCsiEAIABDAAAAAFsEQEMAAIA/IQALIACVkjgCAEGIBCoCAEPbD0lAXgRAQYgEQ9sPScA4AgALQYwEQYgEKgIAEAM4AgALWwIBfwF9QYAEKAIAQYwEKgIAQwAAAD+UIQEhACAAPwBBAWtBEHRB/P8Dak0EQCAAIAE4AgAFC0GABEGABCgCAEEEajYCAEGABCgCAEH8A0oEQEGABEEANgIACwsLCwEBCAAAAAAAANxD",
+  "compiledWasm": "AGFzbQEAAAABBAFgAAACEQEEaG9zdAZtZW1vcnkCAwEBAwQDAAAAByADDGluaXREZWZhdWx0cwAABG1haW4AAQZidWZmZXIAAgwBAQrlAgMXAEEAQQBBkAT8CwBBgARBAEEI/AgAAAulAgUBfQF/AX0BfQF9QYgEQYgEKgIAQ9sPyUBBhAQqAgCUQYD3ArIhACAAQwAAAABbBEBDAACAPyEACyAAlZI4AgBBiAQqAgBD2w9JQF4EQEGIBEPbD0nAOAIAC0GMBEGIBCoCACEDQwAAAAAhBCADQ9sPyT9eBEBD2w9JQCADkyEDCyADQ9sPyT9DAACAv5RdBEBD2w9JQEMAAIC/lCADkyEDCyADIAOUIQQgBEPRDFC5lEOIiAg8kiAElEOrqiq+kiAElEMAAIA/kiADlDgCAEGABCgCAEGMBCoCAEMAAAA/lCECIQEgAT8AQQFrQRB0Qfz/A2pNBEAgASACOAIABQtBgARBgAQoAgBBBGo2AgBBgAQoAgBB/ANKBEBBgARBADYCAAsLJAEBf0EAIQACQANAIABBgAFOBEAMAgsgAEEBaiEAEAEMAAsLCwsLAQEIAAAAAAAA3EM=",
   "requiredMemoryBytes": 528
 }

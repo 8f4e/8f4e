@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-compiler",
-  "version": "0.1.18",
+  "version": "0.1.36",
   "private": true,
   "description": "Event-driven compiler integration for the 8f4e editor",
   "type": "module",
@@ -22,13 +22,13 @@
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-types": "*",
     "@8f4e/language-spec": "*",
-    "@8f4e/state-manager": "*",
     "@8f4e/test-runner": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
-    "vitest": "4.1.7",
+    "@8f4e/state-manager": "*",
+    "vitest": "4.1.12",
     "vite": "7.3.7",
     "@types/node": "24.13.2"
   }

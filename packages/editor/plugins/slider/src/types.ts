@@ -5,7 +5,7 @@ export interface Slider {
 	height: number;
 	x: number;
 	y: number;
-	id: string;
+	memoryName: string;
 	allocationUnitAddress: number;
 	byteAddress: number;
 	isInteger: boolean;

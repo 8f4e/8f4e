@@ -36,6 +36,7 @@ function setup({
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: undefined;
@@ -58,15 +59,15 @@ it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode',
 	await test.openMenu();
 	const index = test.state.contextMenu.items.findIndex(item => item.action === 'importProject');
 	expect(index).toBeGreaterThanOrEqual(0);
-	test.state.contextMenu.highlightedItem = index;
 	const original = test.state.initialProjectState;
-	await test.events.dispatchAsync('mousedown', { x: 800, y: 400, stopPropagation: false });
+	await test.events.dispatchAsync('activateContextMenuItem', { index, x: 800, y: 400 });
 	await vi.waitFor(() => expect(test.fileSession.handle).toBe(test.handle));
 	expect(test.state.initialProjectState).not.toBe(original);
 	expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
 		'int value 1'
 	);
 	expect(test.state.contextMenu.open).toBe(false);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });
 
 it('hides the menu item without removing the import action', async () => {
@@ -108,6 +109,7 @@ it.each(['change', 'cancel'])('handles file input %s when the picker is unavaila
 	const pending = test.events.dispatchAsync('importProject');
 	expect(test.document.createElement).toHaveBeenCalledWith('input');
 	expect(test.input.click).toHaveBeenCalledOnce();
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	test.input.dispatchEvent(new Event(action));
 	await pending;
 	expect(test.fileSession.handle).toBe(action === 'change' ? undefined : test.handle);
@@ -117,17 +119,26 @@ it.each(['change', 'cancel'])('handles file input %s when the picker is unavaila
 
 it('ignores an open that finishes after disposal', async () => {
 	const test = setup();
-	let finish!: (handles: Array<typeof test.handle>) => void;
-	test.browserWindow.showOpenFilePicker.mockReturnValueOnce(
+	let finish!: (source: string) => void;
+	const file = new File([source], 'test.8f4e');
+	vi.spyOn(file, 'text').mockReturnValueOnce(
 		new Promise(resolve => {
 			finish = resolve;
 		})
 	);
+	test.handle.getFile.mockResolvedValueOnce(file);
 	const original = test.state.initialProjectState;
 	const pending = test.events.dispatchAsync('importProject');
+	await vi.waitFor(() =>
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'project-file', message: 'Loading project...', status: 'loading' },
+		])
+	);
 	test.disposePlugin();
-	finish([test.handle]);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
+	finish(source);
 	await pending;
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	expect(test.state.initialProjectState).toBe(original);
 	expect(test.fileSession.handle).toBeUndefined();
 });

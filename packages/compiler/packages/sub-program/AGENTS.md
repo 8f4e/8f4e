@@ -1,23 +1,7 @@
-# Sub-program Package Guidelines
+# Sub-program Guidelines
 
-This file extends the root and `packages/compiler/AGENTS.md` guidance for
-`packages/compiler/packages/sub-program`.
-
-## Package Scope
-
-- Package name: `@8f4e/sub-program`.
-- Owns private orchestration of the global semantic, allocation, analysis, and code-generation passes that compile one
-  composed validated-AST program into `CompiledSubProgram`.
-- This package is an internal compiler stage. Consumers use `parseProjectSource` and `compileProject` from
-  `@8f4e/compiler`; do not expose a parallel source input contract from this package.
-- The input already contains all recursively composed source units. This package plans them together as one namespace and
-  memory layout.
-- Keep recursive traversal, source parsing, and symbol qualification in `@8f4e/program-composer`.
-- Pass packages used exclusively by this pipeline live under `packages/`.
-
-## Commands
-
-- From the repository root, prefer Nx:
-  - `npx nx run @8f4e/sub-program:build`
-  - `npx nx run @8f4e/sub-program:typecheck`
-  - `npx nx run @8f4e/sub-program:lint`
+- Compile one composed validated-AST program as a single namespace and memory layout. Keep traversal, parsing
+  and qualification upstream in program-composer.
+- Keep passes used only by this pipeline in its nested `packages/`.
+- Plan assertions and lower the complete module before optimization. Assemble the compiler result from the emitted
+  binary and the source metadata and stack analysis collected alongside the IR.

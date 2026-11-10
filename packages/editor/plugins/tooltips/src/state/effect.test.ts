@@ -41,7 +41,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 				? `8f4e/v1\nentry main\nmodule sample\n${body}\nmoduleEnd\nentryEnd`
 				: `8f4e/v1\nentry main\nmodule caller\ncall sample\nmoduleEnd\nentryEnd\nfunction sample\n${body}\nfunctionEnd`
 		);
-		const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
 		const store = initState(events, { callbacks: {} });
 		const tooltip = createTooltip(store, events);
@@ -73,7 +73,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 2,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -158,7 +157,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 3,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -260,7 +258,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -268,7 +265,7 @@ describe('tooltip effect', () => {
 			compiler: {
 				result: {
 					compiledModules: { [moduleId]: { id: moduleId, ast: { projectBlockId: 0, lines: [] } } },
-					memoryDefaultsByModuleId: { [moduleId]: { value: { value: 0 } } },
+					memoryDefaultsByModuleId: { [moduleId]: { 0: { value: 0 } } },
 					memoryPlan: {
 						modules: {
 							[moduleId]: {
@@ -281,7 +278,8 @@ describe('tooltip effect', () => {
 								endAddressSafeByteLength: 0,
 								memory: {
 									value: {
-										id: 'value',
+										id: 0,
+										name: 'value',
 										numberOfElements: 1,
 										byteAddress: 4,
 										allocationUnitAddress: 1,
@@ -342,7 +340,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -377,7 +374,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -415,7 +411,6 @@ describe('tooltip effect', () => {
 			cursor: {
 				row: 0,
 				col: 0,
-				x: 0,
 				y: 0,
 			},
 		});
@@ -525,14 +520,13 @@ function identity
 param int value
 push value
 functionEnd int`;
-		const compile = (text: string) =>
-			compileProject(parseProjectSource(text), { disableSharedMemory: true, includeStackAnalysis: true });
+		const compile = (text: string) => compileProject(parseProjectSource(text), { includeStackAnalysis: true });
 		const first = await compile(source);
 		const block = createMockCodeBlock({
 			name: 'caller',
 			creationIndex: first.compiledModules.caller.ast.projectBlockId,
 			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
-			cursor: { row: 1, col: 0, x: 0, y: 0 },
+			cursor: { row: 1, col: 0, y: 0 },
 		});
 		const state = createMockState({ compiler: { result: first }, codeBlockRendering: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
@@ -567,7 +561,7 @@ push 2
 drop
 moduleEnd
 entryEnd`);
-		const compile = () => compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+		const compile = () => compileProject(project, { includeStackAnalysis: true });
 		const compiled = await compile();
 		const [first, second] = project.execution;
 		const inactive = createMockCodeBlock({
@@ -575,14 +569,14 @@ entryEnd`);
 			creationIndex: first.id,
 			code: first.code,
 			blockType: 'module',
-			cursor: { row: 2, col: 0, x: 0, y: 0 },
+			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const active = createMockCodeBlock({
 			name: 'voice',
 			creationIndex: second.id,
 			code: second.code,
 			blockType: 'module',
-			cursor: { row: 2, col: 0, x: 0, y: 0 },
+			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const state = createMockState({
 			compiler: { result: compiled },

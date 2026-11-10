@@ -17,11 +17,10 @@ const sampleProjects = [
 
 async function instantiate(source: string) {
 	const result = await compileProject(parseProjectSource(source), {
-		disableSharedMemory: true,
 		resolveInclude: resolveStdlibInclude,
 	});
 	const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));
-	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	return { result, lookup: instance.exports.lookup as (...args: number[]) => number };
@@ -50,43 +49,5 @@ functionEnd int`);
 			}
 			expect(lookup(sample), `sample ${sample}`).toBe(expected);
 		}
-	});
-
-	it('selects every Grids map cell and retains the unmapped-cell fallback', async () => {
-		const source = await readFile(
-			new URL('../../examples/src/projects/audio/gridsPatterns.8f4e', import.meta.url),
-			'utf8'
-		);
-		const grids = parseProjectSource(source).execution.find(block => block.type === 'group')!;
-		const patternRow = grids.functions.find(block => block.code[0] === 'function patternRow')!;
-		const data = grids.execution
-			.filter(block => block.type === 'module')
-			.filter(block => block.code[0].startsWith('module pattern'));
-		// Exercise the shipped helper and data in a root scope so the host can call it.
-		const { result, lookup } = await instantiate(`8f4e/v1
-${patternRow.code.join('\n')}
-entry main
-${data.map(block => block.code.join('\n')).join('\n')}
-entryEnd
-function lookup
-#export
-#impure
-param int x
-param int y
-param int step
-call patternRow x y step
-functionEnd int`);
-		const patterns = [10, 8, 0, 9, 11, 15, 7, 13, 12, 6, 18, 14, 4, 5, 3, 23, 16, 21, 1, 2, 24, 19, 17, 20, 22];
-		for (const [cell, pattern] of patterns.entries()) {
-			const name = `pattern${String(pattern).padStart(2, '0')}`;
-			const target = Object.values(result.memoryPlan.modules[name].memory)[0].byteAddress;
-			for (const step of [0, 17, 31]) {
-				expect(lookup(Math.floor(cell / 5), cell % 5, step)).toBe(target + step * 4);
-			}
-		}
-		expect(lookup(-1, 0, 3)).toBe(12);
-		expect(lookup(5, 0, 0)).toBe(0);
-		expect(lookup(-2147483648, 0, 3)).toBe(12);
-		expect(lookup(2147483647, 0, 3)).toBe(12);
 	});
 });

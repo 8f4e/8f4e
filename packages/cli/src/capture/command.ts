@@ -122,11 +122,7 @@ export async function runCaptureCommand(args: string[]): Promise<void> {
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
 
-	const compileResult = await compileProject(project, {
-		compilerOptions: {
-			disableSharedMemory: true,
-		},
-	});
+	const compileResult = await compileProject(project);
 
 	const runner = await createRuntimeRunner({
 		compiledWasmBase64: compileResult.compiledWasm,

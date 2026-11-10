@@ -29,7 +29,7 @@ int pressed
 moduleEnd
 entryEnd`
 	);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const memory = new Int32Array(65536 / 4);
 	const events = createMockEventDispatcher();
 	const writeMemory = vi.fn((address: number, value: number) => {
@@ -52,6 +52,7 @@ entryEnd`
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	const prefix = exposed ? 'keyboard' : 'keys';
@@ -159,7 +160,7 @@ entryEnd`);
 			keyCodeMemory: 'keys:code',
 			keyPressedMemory: 'keys:pressed',
 		});
-		expect(editor.store.getState().codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.store.getState().codeErrors['editor-directives']).toEqual([]);
 		editor.dispose();
 	});
 });

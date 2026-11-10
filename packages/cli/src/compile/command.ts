@@ -1,21 +1,76 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import type { CompileOptions } from '@8f4e/language-spec';
 import { promises as fs } from 'fs';
 import path from 'path';
+import type { RuntimeMemoryInfo } from '../shared/types';
 import { compileProject } from './compileProject';
+import { applyEnvOverrides } from './envOverrides';
 
 interface CompileCommandArgs {
 	inputPath?: string;
 	wasmOutputPath?: string;
+	memoryOutputPath?: string;
+	compilerOptions: CompileOptions;
+	envOverrides: Map<string, string>;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let inputPath: string | undefined;
 	let wasmOutputPath: string | undefined;
+	let memoryOutputPath: string | undefined;
+	const compilerOptions: CompileOptions = { enableFunctionInlining: false };
+	const envOverrides = new Map<string, string>();
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
-		if (arg === '--wasm-output') {
-			wasmOutputPath = args[i + 1];
+		if (arg === '--wasm-output' || arg === '--memory-output') {
+			const value = args[i + 1];
+			if (!value || value.startsWith('--')) {
+				throw new Error(`Missing path for ${arg}`);
+			}
+			if (arg === '--wasm-output') {
+				wasmOutputPath = value;
+			} else {
+				memoryOutputPath = value;
+			}
+			i += 1;
+			continue;
+		}
+		if (arg === '--no-wasm-pruning') {
+			compilerOptions.enableWasmPruning = false;
+			continue;
+		}
+		if (arg === '--no-memory-guards') {
+			compilerOptions.enableMemoryGuards = false;
+			continue;
+		}
+		if (arg === '--inline-functions') {
+			compilerOptions.enableFunctionInlining = true;
+			continue;
+		}
+		if (arg === '--simplify-wasm-locals') {
+			compilerOptions.enableWasmLocalSimplification = true;
+			continue;
+		}
+		if (arg === '--env') {
+			const assignment = args[i + 1] ?? '';
+			const separator = assignment.indexOf('=');
+			if (separator < 1) throw new Error('--env expects NAME=VALUE');
+			envOverrides.set(assignment.slice(0, separator), assignment.slice(separator + 1));
+			i += 1;
+			continue;
+		}
+		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
+			const value = args[i + 1];
+			if (!value || value.startsWith('--')) {
+				throw new Error(`Missing value for ${arg}`);
+			}
+			const limit = Number(value);
+			if (!/^\d+$/.test(value) || !Number.isSafeInteger(limit)) {
+				throw new Error(`${arg} expects a non-negative integer`);
+			}
+			const key = arg === '--max-inline-expansion-operations' ? 'maxExpansionOperations' : 'maxCallerGrowth';
+			(compilerOptions.functionInlining ??= {})[key] = limit;
 			i += 1;
 			continue;
 		}
@@ -26,15 +81,20 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		throw new Error(`Unknown compile argument: ${arg}`);
 	}
 
-	return { inputPath, wasmOutputPath };
+	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides };
 }
 
 export function getCompileUsage(): string {
-	return 'Usage: cli compile <input.8f4e> --wasm-output <output.wasm>';
+	return [
+		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
+		'    [--env NAME=VALUE] (repeatable)',
+		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions] [--simplify-wasm-locals]',
+		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
+	].join('\n');
 }
 
 export async function runCompileCommand(args: string[]): Promise<void> {
-	const { inputPath, wasmOutputPath } = parseCompileArgs(args);
+	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides } = parseCompileArgs(args);
 
 	if (!inputPath) {
 		throw new Error(getCompileUsage());
@@ -46,6 +106,13 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 
 	const resolvedInput = path.resolve(process.cwd(), inputPath);
 	const resolvedWasmOutput = path.resolve(process.cwd(), wasmOutputPath);
+	const resolvedMemoryOutput = memoryOutputPath ? path.resolve(process.cwd(), memoryOutputPath) : undefined;
+	if (resolvedMemoryOutput === resolvedWasmOutput) {
+		throw new Error('WASM and memory output paths must be different');
+	}
+	if (resolvedInput === resolvedWasmOutput || resolvedInput === resolvedMemoryOutput) {
+		throw new Error('Output paths must not overwrite the input project');
+	}
 
 	if (path.extname(resolvedInput) !== '.8f4e') {
 		throw new Error('Invalid input file: expected a .8f4e project file');
@@ -53,9 +120,17 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
+	if (envOverrides.size > 0) {
+		applyEnvOverrides(project, envOverrides);
+	}
 
-	const { compiledWasm } = await compileProject(project);
+	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, { compilerOptions });
 
 	await fs.mkdir(path.dirname(resolvedWasmOutput), { recursive: true });
 	await fs.writeFile(resolvedWasmOutput, Buffer.from(compiledWasm, 'base64'));
+	if (resolvedMemoryOutput) {
+		const memoryInfo: RuntimeMemoryInfo = { requiredMemoryBytes, memoryPlan };
+		await fs.mkdir(path.dirname(resolvedMemoryOutput), { recursive: true });
+		await fs.writeFile(resolvedMemoryOutput, JSON.stringify(memoryInfo, null, 2) + '\n');
+	}
 }

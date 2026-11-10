@@ -6,7 +6,6 @@ import type {
 	FunctionAST,
 	FunctionMetadata,
 	FunctionRegistry,
-	FunctionTypeRegistry,
 	FunctionValueType,
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
@@ -75,7 +74,6 @@ export interface ResolveSemanticReferencesInput<
 	};
 	memoryReferences: MemoryReferenceResolutionReport;
 	functions: FunctionRegistry;
-	functionTypeRegistry: FunctionTypeRegistry;
 	prototypeShapes: Readonly<Record<string, TPrototype>>;
 }
 
@@ -188,17 +186,11 @@ function getPlannedMemoryDeclaration(
 	return module?.memory[memoryId];
 }
 
-function bindLocal(
-	context: ReferenceResolutionContext,
-	name: string,
-	type: FunctionValueType,
-	parameterIndex?: number
-): void {
+function bindLocal(context: ReferenceResolutionContext, name: string, type: FunctionValueType): void {
 	const binding: SourceLocalBinding = {
 		id: context.bindings.length,
 		name,
 		type,
-		...(parameterIndex !== undefined ? { parameterIndex } : {}),
 	};
 	context.bindings.push(binding);
 	context.bindingsByName[name] = binding;
@@ -214,7 +206,7 @@ function registerFunctionParameter(
 	if (context.locals[paramName] !== undefined) {
 		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, context);
 	}
-	bindLocal(context, paramName, paramType, context.bindings.length);
+	bindLocal(context, paramName, paramType);
 }
 
 function applyParamShapeLine(line: CompilerASTLine, context: ReferenceResolutionContext): void {
@@ -339,7 +331,6 @@ function createModuleContext(
 		locals: {},
 		bindings: [],
 		bindingsByName: {},
-		byteCode: [],
 		stack: [],
 		blockStack: [],
 		memoryPlan: input.memoryPlan,
@@ -347,7 +338,6 @@ function createModuleContext(
 		currentPlannedModule: plannedModule,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
-		functionTypeRegistry: input.functionTypeRegistry,
 		prototypeShapes: input.prototypeShapes,
 		projectBlockId: ast.projectBlockId,
 		source: ast.source,
@@ -369,7 +359,6 @@ function createFunctionContext(
 		locals: {},
 		bindings: [],
 		bindingsByName: {},
-		byteCode: [],
 		stack: [],
 		blockStack: [],
 		memoryPlan: input.memoryPlan,
@@ -383,7 +372,6 @@ function createFunctionContext(
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 		codeBlockId: functionMetadata.name,
-		functionTypeRegistry: input.functionTypeRegistry,
 		prototypeShapes: input.prototypeShapes,
 	});
 }

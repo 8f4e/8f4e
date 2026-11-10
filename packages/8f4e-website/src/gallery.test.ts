@@ -1,10 +1,12 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
+import { type GalleryEditorInstance, mountGalleryEditor } from '@8f4e/editor-gallery';
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
+import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
+import { cdp } from 'vitest/browser';
 import { mountGallery } from './gallery';
 
-vi.mock('@8f4e/editor-minimal', { spy: true });
+vi.mock('@8f4e/editor-gallery', { spy: true });
 
 const source = '8f4e/v1\nentry main\nmodule galleryExample ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -51,13 +53,13 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	});
 	const panel = (id = ids[0]) => gallery.querySelector<HTMLElement>(`#panel-${id}`)!;
 	const started = async (index = 0) => {
-		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledTimes(index + 1));
+		await vi.waitFor(() => expect(mountGalleryEditor).toHaveBeenCalledTimes(index + 1));
 	};
-	const mounted = async (index = 0): Promise<MinimalEditorInstance> => {
+	const mounted = async (index = 0): Promise<GalleryEditorInstance> => {
 		await started(index);
-		return await vi.mocked(mountMinimalEditor).mock.results[index].value;
+		return await vi.mocked(mountGalleryEditor).mock.results[index].value;
 	};
-	return { gallery, panel, started, mounted };
+	return { gallery, panel, started, mounted, dispose };
 }
 
 test('keeps the loading canvas while mounting waits for the project and reveals it on completion', async () => {
@@ -87,7 +89,49 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
-test('keeps live editing and project export available in the minimal editor', async () => {
+test('one-finger gallery drags pan horizontally while vertical swipes scroll the page', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
+	const originalMinHeight = document.body.style.minHeight;
+	document.body.style.minHeight = '2000px';
+	window.scrollTo(0, 0);
+	try {
+		const view = setup({ touch: async () => new Response(source) });
+		const editor = await view.mounted();
+		editor.pauseRendering();
+		const canvas = view.panel().querySelector('canvas')!;
+		canvas.style.width = '640px';
+		canvas.style.height = '400px';
+		await expect.poll(() => editor.state.viewport.width).toBe(640);
+		await expect.poll(() => canvas.style.touchAction).toBe('pan-y');
+		const rect = canvas.getBoundingClientRect();
+		const frame = window.frameElement!.getBoundingClientRect();
+		const point = (x: number, y: number) => ({ x: frame.left + rect.left + x, y: frame.top + rect.top + y, id: 1 });
+		const { x, y } = editor.state.viewport;
+		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(300, 200)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(320, 202)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(340, 204)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(window.scrollY).toBe(0);
+		const scrollStart = point(400, 300);
+		await input.send('Input.synthesizeScrollGesture', {
+			x: scrollStart.x,
+			y: scrollStart.y,
+			yDistance: -130,
+			gestureSourceType: 'touch',
+			preventFling: true,
+		});
+		await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+	} finally {
+		document.body.style.minHeight = originalMinHeight;
+		window.scrollTo(0, 0);
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
+});
+
+test('keeps live editing and project export available in the gallery editor', async () => {
 	const writable = {
 		write: vi.fn().mockResolvedValue(undefined),
 		close: vi.fn().mockResolvedValue(undefined),
@@ -97,7 +141,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	const showSaveFilePicker = vi.fn().mockResolvedValue({ createWritable: async () => writable, requestPermission });
 	vi.stubGlobal('showSaveFilePicker', showSaveFilePicker);
 	const view = setup({
-		minimal: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
+		gallery: async () => new Response(source.replace('int value 1', '; @pos 4 10\n; @favorite\nint value 1')),
 	});
 	const editor = await view.mounted();
 	const canvas = view.panel().querySelector('canvas')!;
@@ -118,11 +162,9 @@ test('keeps live editing and project export available in the minimal editor', as
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
+	expect(menu.some(item => item.action === 'pasteCodeBlocks')).toBe(true);
 	expect(menu.some(item => item.title === 'Add Built-in Block')).toBe(false);
 	expect(menu.some(item => item.payload?.menu === 'favoritesMenu')).toBe(false);
-	editor.pauseRendering();
-	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('minimal-project-menu');
 	const exportIndex = menu.findIndex(item => item.action === 'exportProject');
 	const x = rect.x + editor.state.contextMenu.x - editor.state.viewport.x + 8;
 	const y =
@@ -143,7 +185,7 @@ test('keeps live editing and project export available in the minimal editor', as
 	expect(showSaveFilePicker).toHaveBeenCalledOnce();
 });
 
-test('loads and runs worker and test runtime plugins together through the minimal composition', async () => {
+test('loads and runs worker and test runtime plugins together through the gallery composition', async () => {
 	const view = setup({
 		runtimes: async () =>
 			new Response(`8f4e/v1
@@ -177,8 +219,8 @@ entryEnd`),
 	);
 	const memory = editor.state.compiler.result.memoryPlan.modules.counter.memory.count;
 	await vi.waitFor(() => expect(editor.getMemoryViews().int32[memory.allocationUnitAddress]).toBeGreaterThan(2));
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	expect(editor.state.envConstantContributions.workerRuntime).toEqual(['const CONTROL_RATE 50']);
 });
 
@@ -193,8 +235,8 @@ test('compiles a loaded project through the compiler plugin and refreshes editor
 			),
 		{ timeout: 10000 }
 	);
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	expect(editor.state.editorConfig.recompileDebounceDelay).toBe(10);
 	expect(editor.state.compiler.isCompiling).toBe(false);
 	expect(editor.state.info.compiler?.wasmByteCodeBytes).toBeGreaterThan(0);
@@ -238,7 +280,7 @@ entryEnd`),
 		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
 		{ timeout: 10000 }
 	);
-	expect(state.codeErrors.compilationErrors).toEqual([]);
+	expect(state.codeErrors.compiler).toEqual([]);
 	const canvas = view.panel().querySelector('canvas')!;
 	const address = state.compiler.result.memoryPlan.modules.controls.memory.value.allocationUnitAddress;
 	const press = (row: number) => {
@@ -284,15 +326,71 @@ test('reports a failed request immediately and loads the project when retried', 
 
 test('disposes an editor when loading fails before its mount promise resolves', async () => {
 	const dispose = vi.fn();
-	vi.mocked(mountMinimalEditor).mockImplementationOnce(async (_canvas, options) => {
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(async (_canvas, options) => {
 		options?.onInitialProjectLoadError?.(new Error('Offline'));
-		return { dispose } as unknown as MinimalEditorInstance;
+		return { dispose } as unknown as GalleryEditorInstance;
 	});
 	const view = setup({ early: async () => new Response(source) });
 	await view.mounted();
 	await vi.waitFor(() => expect(dispose).toHaveBeenCalledOnce());
 	expect(view.panel().querySelector('canvas')).toBeNull();
 	expect(view.panel().querySelector('[role="status"]')?.textContent).toContain('This project could not be loaded.');
+});
+
+test('disposes a pending selection and ignores callbacks after the gallery is disposed', async () => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const disposeEditor = vi.fn();
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ pending: async () => new Response(source) });
+	await view.started();
+	const canvas = view.panel().querySelector('canvas')!;
+	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	view.dispose();
+	expect(canvas.isConnected).toBe(false);
+
+	options.onInitialProjectLoaded?.();
+	options.onInitialProjectLoadError?.(new Error('Late failure'));
+	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
+	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	expect(status.textContent).toBe('Loading project…');
+	expect(status.hidden).toBe(false);
+});
+
+test('retries a timed-out selection without reviving its late mount', async () => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const disposeEditor = vi.fn();
+	const timeouts = vi.spyOn(window, 'setTimeout');
+	const clearTimeout = vi.spyOn(window, 'clearTimeout');
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ timeout: async () => new Response(source) });
+	await view.started();
+	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
+	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
+	const timeout = timeouts.mock.calls[timeoutIndex][0] as () => void;
+	timeout();
+	expect(clearTimeout).toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
+	expect(view.panel().querySelector('canvas')).toBeNull();
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	expect(status.textContent).toContain('This project could not be loaded.');
+	status.querySelector<HTMLButtonElement>('button')!.click();
+	await view.mounted(1);
+	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
+
+	options.onInitialProjectLoadError?.(new Error('Late failure'));
+	options.onInitialProjectLoaded?.();
+	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
+	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	expect(status.hidden).toBe(true);
+	expect(view.panel().querySelector('button')).toBeNull();
+	expect(view.panel().querySelectorAll('canvas')).toHaveLength(1);
 });
 
 test('switches examples without waiting for the previous fetch and ignores its late completion', async () => {
@@ -310,7 +408,7 @@ test('switches examples without waiting for the previous fetch and ignores its l
 	);
 	expect(firstCanvas.isConnected).toBe(false);
 	finish(new Response(source));
-	await vi.mocked(mountMinimalEditor).mock.results[0].value;
+	await vi.mocked(mountGalleryEditor).mock.results[0].value;
 	expect(view.panel('second').querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 	expect(view.panel('second').querySelector('canvas')?.classList.contains('editor-ready')).toBe(true);
 	expect(view.panel('first').querySelector('canvas')).toBeNull();
@@ -474,10 +572,10 @@ entryEnd`;
 	view.gallery.querySelector<HTMLButtonElement>('#example-templates')!.click();
 	const reopened = await view.mounted(2);
 	await vi.waitFor(
-		() => expect(reopened.state.compiler.result.memoryDefaultsByModuleId['left/counter']?.value.value).toBe(1),
+		() => expect(reopened.state.compiler.result.memoryDefaultsByModuleId['left/counter']?.[0].value).toBe(1),
 		{ timeout: 10000 }
 	);
-	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'].value.value).toBe(1);
-	expect(reopened.state.codeErrors.compilationErrors).toEqual([]);
-	expect(reopened.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'][0].value).toBe(1);
+	expect(reopened.state.codeErrors.compiler).toEqual([]);
+	expect(reopened.state.codeErrors['editor-directives']).toEqual([]);
 });

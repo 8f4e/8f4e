@@ -4,7 +4,6 @@ import type {
 	CompilerASTLine,
 	FunctionCompilationContext,
 	FunctionRegistry,
-	FunctionTypeRegistry,
 	MemoryLayoutPlan,
 	MemoryPointerMetadataMap,
 	ModuleCompilationContext,
@@ -37,7 +36,6 @@ export interface AnalyzeStackSubProgramInput {
 	memoryPlan: MemoryLayoutPlan;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 	functions: FunctionRegistry;
-	functionTypeRegistry: FunctionTypeRegistry;
 }
 
 export interface StackAnalyzedModule {
@@ -51,7 +49,6 @@ export interface StackAnalyzedFunction {
 	operationFacts: StackAnalysisLineFacts[];
 	stackAnalysis: CompiledStackAnalysisLine[];
 	finalStack: Stack;
-	used?: boolean;
 }
 
 export interface StackAnalysisSubProgramReport {
@@ -264,7 +261,6 @@ function createModuleContext(
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
 		),
-		byteCode: [],
 		stack: [],
 		blockStack: [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		memoryPlan: input.memoryPlan,
@@ -273,7 +269,6 @@ function createModuleContext(
 		mode: 'module',
 		codeBlockId: ast.id,
 		codeBlockType: 'module',
-		functionTypeRegistry: input.functionTypeRegistry,
 		projectBlockId: ast.projectBlockId,
 		source: ast.source,
 	});
@@ -302,7 +297,6 @@ function createFunctionContext(
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
 		),
-		byteCode: [],
 		stack: [],
 		blockStack: [{ blockType: BlockType.FUNCTION, expectedResultTypes: [] }],
 		memoryPlan: input.memoryPlan,
@@ -315,8 +309,6 @@ function createFunctionContext(
 		currentFunctionId: functionMetadata.id,
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
-
-		functionTypeRegistry: input.functionTypeRegistry,
 	});
 }
 
@@ -335,7 +327,7 @@ function analyzeFunction(
 }
 
 export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisSubProgramReport {
-	const functionReports = Object.fromEntries(
+	const functions = Object.fromEntries(
 		Object.values(input.semanticReferences.functions).map(resolved => {
 			const report = analyzeFunction(input, resolved);
 			return [report.functionId, report];
@@ -344,33 +336,5 @@ export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisS
 	const modules = Object.fromEntries(
 		Object.values(input.semanticReferences.modules).map(resolved => [resolved.ast.id, analyzeModule(input, resolved)])
 	);
-	const usedFunctionIdSet = new Set<string>();
-	for (const functionReport of Object.values(functionReports)) {
-		if (input.semanticReferences.functions[functionReport.functionId].metadata.exportName) {
-			usedFunctionIdSet.add(functionReport.functionId);
-		}
-		for (const facts of functionReport.operationFacts) {
-			if (facts?.targetFunctionId) {
-				usedFunctionIdSet.add(facts.targetFunctionId);
-			}
-		}
-	}
-	for (const moduleReport of Object.values(modules)) {
-		for (const facts of moduleReport.operationFacts) {
-			if (facts?.targetFunctionId) {
-				usedFunctionIdSet.add(facts.targetFunctionId);
-			}
-		}
-	}
-	const functions = Object.fromEntries(
-		Object.values(functionReports).map(functionReport => [
-			functionReport.functionId,
-			{
-				...functionReport,
-				...(usedFunctionIdSet.has(functionReport.functionId) ? { used: true } : {}),
-			},
-		])
-	);
-
 	return { modules, functions };
 }

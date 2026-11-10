@@ -3,34 +3,19 @@
 exports[`resolveMemoryDefaults integration > resolves sub-program-level memory defaults from pass-shaped fixtures 1`] = `
 {
   "audio": {
-    "samples": {
+    "0": {
       "hasExplicitDefault": false,
       "isInherited": false,
       "value": {},
     },
   },
   "main": {
-    "copiedCount": {
-      "hasExplicitDefault": true,
-      "isInherited": false,
-      "value": 6,
-    },
-    "gain": {
-      "hasExplicitDefault": true,
-      "isInherited": false,
-      "value": 1.75,
-    },
-    "inheritedCounter": {
+    "0": {
       "hasExplicitDefault": true,
       "isInherited": true,
       "value": 7,
     },
-    "ptr": {
-      "hasExplicitDefault": true,
-      "isInherited": false,
-      "value": 8,
-    },
-    "values": {
+    "1": {
       "hasExplicitDefault": true,
       "isInherited": false,
       "value": {
@@ -38,6 +23,21 @@ exports[`resolveMemoryDefaults integration > resolves sub-program-level memory d
         "1": 2,
         "2": 3,
       },
+    },
+    "2": {
+      "hasExplicitDefault": true,
+      "isInherited": false,
+      "value": 8,
+    },
+    "3": {
+      "hasExplicitDefault": true,
+      "isInherited": false,
+      "value": 6,
+    },
+    "4": {
+      "hasExplicitDefault": true,
+      "isInherited": false,
+      "value": 1.75,
     },
   },
 }

@@ -20,7 +20,7 @@ add
 drop
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
@@ -34,6 +34,7 @@ entryEnd`);
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		: () => {};
@@ -60,7 +61,7 @@ entryEnd`);
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		drawers.drawCodeBlockOverlay({ draw, state, codeBlock, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	return { store, state, events, draw, render, dispose };
 }

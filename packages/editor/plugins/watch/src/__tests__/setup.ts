@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
@@ -30,9 +30,9 @@ export async function setup(
 	const text =
 		source[0] === '8f4e/v1' ? source.join('\n') : ['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n');
 	const project = parseProjectSource(text);
-	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
-	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const memoryViews: MemoryViews = {
@@ -53,7 +53,15 @@ export async function setup(
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const dispose = installed
-		? plugin.setup({ store, events, menus: store.menus, directives: store.directives, layout: store.layout, drawers })
+		? plugin.setup({
+				store,
+				events,
+				menus: store.menus,
+				directives: store.directives,
+				layout: store.layout,
+				loading: store.loading,
+				drawers,
+			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();
@@ -71,15 +79,13 @@ export async function setup(
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
-		vi.mocked(draw.drawCharacter).mockClear();
+		vi.mocked(draw.drawNumericText).mockClear();
+		vi.mocked(draw.drawSprite).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
-		drawers.drawCodeBlockOverlay({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', block);
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit.code', code);
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 	};
 	return {
 		store,
@@ -91,6 +97,7 @@ export async function setup(
 		update,
 		memoryViews,
 		compiled,
+		run: () => (instance.exports.main as CallableFunction)(),
 		dispose,
 	};
 }

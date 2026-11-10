@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { FONT_NAMES } from '@8f4e/sprite-generator';
+import { FONT_NAMES, type Font } from '@8f4e/sprite-generator';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 import { createFontPreviewPlugin } from '../index';
@@ -18,7 +18,7 @@ export function project(font = FONT_NAMES[0]) {
 	};
 }
 
-export function setup() {
+export function setup(defaultFont?: Font) {
 	const inputTarget = new EventTarget() as HTMLElement;
 	const emitter = new EventEmitter();
 	const events: EventDispatcher = {
@@ -35,13 +35,14 @@ export function setup() {
 		editorConfigSchemaContributions: { font: { root: 'font', schema: { type: 'string' } } },
 	});
 	events.dispatch('loadProject', { project: project() });
-	const disposePlugin = createFontPreviewPlugin({ inputTarget }).setup({
+	const disposePlugin = createFontPreviewPlugin({ inputTarget, defaultFont }).setup({
 		store,
 		events,
 		drawers: createEditorDrawerRegistry(),
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}, prevented = false) => {

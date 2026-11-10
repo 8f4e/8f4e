@@ -59,7 +59,7 @@ describe('compile prototype validation', () => {
 						],
 					},
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -81,7 +81,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [] },
 					prototypes: [{ code: ['prototype', 'prototypeEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -110,7 +110,7 @@ describe('compile prototype validation', () => {
 						],
 					},
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -133,10 +133,10 @@ describe('compile prototype validation', () => {
 				},
 				prototypes: [{ code: ['prototype state', 'int value 7', 'prototypeEnd'] }],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
-		expect(result.memoryDefaultsByModuleId.main!.value?.value).toBe(7);
+		expect(result.memoryDefaultsByModuleId.main![result.memoryPlan.modules.main.memory.value.id]?.value).toBe(7);
 	});
 
 	it('marks shape-expanded declarations as inherited at the shape line', () => {
@@ -159,19 +159,19 @@ describe('compile prototype validation', () => {
 					},
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const memory = result.memoryPlan.modules.filterA!.memory;
 		const memoryDefaults = result.memoryDefaultsByModuleId.filterA!;
 		expect(memory.input).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults.input).toMatchObject({ isInherited: true });
+		expect(memoryDefaults[memory.input.id]).toMatchObject({ isInherited: true });
 		expect(memory.resonance).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults.resonance).toMatchObject({ isInherited: true });
+		expect(memoryDefaults[memory.resonance.id]).toMatchObject({ isInherited: true });
 		expect(memory.output).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults.output).toMatchObject({ isInherited: true });
+		expect(memoryDefaults[memory.output.id]).toMatchObject({ isInherited: true });
 		expect(memory.cutoff).toMatchObject({ lineNumber: 2 });
-		expect(memoryDefaults.cutoff).toMatchObject({ isInherited: false });
+		expect(memoryDefaults[memory.cutoff.id]).toMatchObject({ isInherited: false });
 	});
 
 	it('rejects function ids that collide with generated entry function ids during semantic metadata collection', () => {
@@ -184,7 +184,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
 					functions: [{ code: ['function main', 'functionEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -205,7 +205,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function double', 'param int value', 'push value', 'push value', 'add', 'functionEnd int'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const functionId = createFunctionId('double', ['int']);
@@ -241,7 +241,7 @@ describe('compile prototype validation', () => {
 					},
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const functionId = createFunctionId('addOffset', ['int']);
@@ -260,7 +260,7 @@ describe('compile prototype validation', () => {
 					{ code: ['function convert', 'param float value', 'push value', 'functionEnd float'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
 		const intOverloadId = createFunctionId('convert', ['int']);
@@ -292,7 +292,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function convert', 'param int input', 'push input', 'functionEnd int'] },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -327,7 +327,7 @@ describe('compile prototype validation', () => {
 						},
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -352,7 +352,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function tick', 'param int value', 'push value', 'functionEnd int'] },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -376,14 +376,14 @@ describe('compile prototype validation', () => {
 					{ code: ['function consume', 'param float value', 'functionEnd'] },
 				],
 			},
-			{ disableSharedMemory: true }
+			{ includeStackAnalysis: true }
 		);
 
-		const intOverloadId = createFunctionId('consume', ['int']);
-		const floatOverloadId = createFunctionId('consume', ['float']);
-		expect(result.compiledFunctions![intOverloadId].wasmIndex).not.toBe(
-			result.compiledFunctions![floatOverloadId].wasmIndex
-		);
+		const calls = result.compiledModules.main.stackAnalysis!.filter(line => line.instruction === 'call');
+		expect(calls.map(line => line.resolvedCall?.targetFunctionId)).toEqual([
+			createFunctionId('consume', ['int']),
+			createFunctionId('consume', ['float']),
+		]);
 	});
 
 	it('rejects duplicate function export names during semantic metadata collection', () => {
@@ -399,7 +399,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function second', '#export shared', 'functionEnd'], projectBlockId: 21 },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -425,7 +425,7 @@ describe('compile prototype validation', () => {
 						{ code: ['function convert', 'param float value', 'functionEnd'], projectBlockId: 21 },
 					],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -448,7 +448,7 @@ describe('compile prototype validation', () => {
 					entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
 					functions: [{ code: ['function entryAlias', '#export main', 'functionEnd'] }],
 				},
-				{ disableSharedMemory: true }
+				{}
 			);
 		} catch (error) {
 			thrownError = error;
@@ -460,16 +460,21 @@ describe('compile prototype validation', () => {
 		});
 	});
 
-	it('marks exported functions as used roots during metadata collection', () => {
+	it('can call an exported function without an internal caller', async () => {
 		const result = compile(
 			{
 				...emptyProjectFixture,
 				entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
-				functions: [{ code: ['function externallyCallable', '#export externallyCallable', 'functionEnd'] }],
+				functions: [
+					{ code: ['function externallyCallable', '#export externallyCallable', 'push 42', 'functionEnd int'] },
+				],
 			},
-			{ disableSharedMemory: true }
+			{}
 		);
 
-		expect(result.compiledFunctions![createFunctionId('externallyCallable', [])].used).toBe(true);
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+		const externallyCallable = instance.exports.externallyCallable as () => number;
+		expect(externallyCallable()).toBe(42);
 	});
 });

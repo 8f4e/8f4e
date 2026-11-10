@@ -52,7 +52,7 @@ describe('analyzeStack integration', () => {
 			endAddressSafeByteLength: 4,
 			lineNumber: 2,
 			isInteger: true,
-			id: 'buffer',
+			id: 0,
 			pointerDepth: 0,
 			type: 'int',
 			isUnsigned: false,
@@ -62,7 +62,7 @@ describe('analyzeStack integration', () => {
 			byteAddress: 4,
 			safeByteLength: 16,
 			moduleId: 'main',
-			memoryId: 'buffer',
+			memoryId: 0,
 		} as const;
 		const ast = {
 			modules: [
@@ -222,12 +222,7 @@ describe('analyzeStack integration', () => {
 				increment: 1,
 			},
 		} as const;
-		const functionTypeRegistry = {
-			types: [],
-			signatures: [],
-			baseTypeIndex: 3,
-		} as const;
-		const valueBinding: SourceLocalBinding = { id: 0, name: 'value', type: 'int', parameterIndex: 0 };
+		const valueBinding: SourceLocalBinding = { id: 0, name: 'value', type: 'int' };
 		const tempBinding: SourceLocalBinding = { id: 1, name: 'temp', type: 'int' };
 		const semanticReferences = {
 			modules: {
@@ -282,7 +277,6 @@ describe('analyzeStack integration', () => {
 				memoryPlan,
 				pointerMetadataByModuleId,
 				functions,
-				functionTypeRegistry,
 			} satisfies StackAnalyzerIntegrationInput)
 		).toMatchSnapshot();
 	});

@@ -1,5 +1,5 @@
 import { createMockState } from '@8f4e/editor-state-testing';
-import type { EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,9 +10,9 @@ describe('codeBlockDragger', () => {
 	let state: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let events: EventDispatcher;
-	let mousedownHandlers: Array<(event: InternalMouseEvent) => void>;
-	let mousemoveHandlers: Array<(event: InternalMouseEvent) => void>;
-	let mouseupHandlers: Array<() => void>;
+	let pointerdownHandlers: Array<(event: InternalPointerEvent) => void>;
+	let pointermoveHandlers: Array<(event: InternalPointerEvent) => void>;
+	let pointerupHandlers: Array<() => void>;
 
 	beforeEach(() => {
 		// Initialize state
@@ -23,14 +23,11 @@ describe('codeBlockDragger', () => {
 			},
 			codeBlockRendering: {
 				currentProject: { entries: [], path: '', blocks: [] },
-				viewportAnchoredCodeBlocks: [],
 				draggedCodeBlock: undefined,
 				selectedCodeBlock: undefined,
 				nextCodeBlockCreationIndex: 0,
 			},
 			contextMenu: {
-				highlightedItem: 0,
-				itemWidth: 200,
 				items: [],
 				open: false,
 				x: 0,
@@ -50,15 +47,15 @@ describe('codeBlockDragger', () => {
 
 		store = createStateManager(state);
 
-		mousedownHandlers = [];
-		mousemoveHandlers = [];
-		mouseupHandlers = [];
+		pointerdownHandlers = [];
+		pointermoveHandlers = [];
+		pointerupHandlers = [];
 
 		events = {
-			on: vi.fn((eventName: string, callback: (event: InternalMouseEvent | void) => void) => {
-				if (eventName === 'mousedown') mousedownHandlers.push(callback as (event: InternalMouseEvent) => void);
-				if (eventName === 'mousemove') mousemoveHandlers.push(callback as (event: InternalMouseEvent) => void);
-				if (eventName === 'mouseup') mouseupHandlers.push(callback as () => void);
+			on: vi.fn((eventName: string, callback: (event: InternalPointerEvent | void) => void) => {
+				if (eventName === 'pointerdown') pointerdownHandlers.push(callback as (event: InternalPointerEvent) => void);
+				if (eventName === 'pointermove') pointermoveHandlers.push(callback as (event: InternalPointerEvent) => void);
+				if (eventName === 'pointerup') pointerupHandlers.push(callback as () => void);
 			}),
 			off: vi.fn(),
 			dispatch: vi.fn(),
@@ -82,7 +79,7 @@ describe('codeBlockDragger', () => {
 			codeBlockDragger(store, events);
 
 			// Mousedown without Alt key
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -97,7 +94,7 @@ describe('codeBlockDragger', () => {
 			expect(state.codeBlockRendering.draggedCodeBlock).toBe(block1);
 
 			// Mousemove
-			mousemoveHandlers[0]({
+			pointermoveHandlers[0]({
 				x: 60,
 				y: 110,
 				movementX: 10,
@@ -113,7 +110,7 @@ describe('codeBlockDragger', () => {
 			expect(block1.y).toBe(110);
 
 			// Mouseup
-			mouseupHandlers[0]();
+			pointerupHandlers[0]();
 
 			expect(block1.gridX).toBe(6); // Math.round(60 / 10)
 			expect(block1.gridY).toBe(6); // Math.round(110 / 20)
@@ -157,9 +154,9 @@ describe('codeBlockDragger', () => {
 			canvasWidth: 800,
 			canvasHeight: 600,
 		};
-		mousedownHandlers[0](pointer);
-		mousemoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
-		mouseupHandlers[0]();
+		pointerdownHandlers[0](pointer);
+		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		pointerupHandlers[0]();
 		expect(first.code).toContain('; @pos 6 6');
 		expect(second.code).toContain('; @pos 21 11');
 		expect(state.projectChange.revision).toBe(1);
@@ -183,7 +180,7 @@ describe('codeBlockDragger', () => {
 			codeBlockDragger(store, events);
 
 			// Mousedown
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -207,7 +204,7 @@ describe('codeBlockDragger', () => {
 				canvasHeight: 600,
 				altKey: false,
 			};
-			mousemoveHandlers[0](moveEvent);
+			pointermoveHandlers[0](moveEvent);
 
 			expect(moveEvent.stopPropagation).toBe(true);
 		});
@@ -232,7 +229,7 @@ describe('codeBlockDragger', () => {
 			codeBlockDragger(store, events);
 
 			// Mousedown
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -247,7 +244,7 @@ describe('codeBlockDragger', () => {
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		});
 
-		it('should dispatch clicks without dragging when editing is disabled', () => {
+		it('selects without dragging when editing is disabled', () => {
 			state.editorMode = 'view';
 
 			const blockBehind = createCodeBlockGraphicData({
@@ -273,7 +270,7 @@ describe('codeBlockDragger', () => {
 
 			codeBlockDragger(store, events);
 
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -285,7 +282,7 @@ describe('codeBlockDragger', () => {
 				altKey: false,
 			});
 
-			mousemoveHandlers[0]({
+			pointermoveHandlers[0]({
 				x: 60,
 				y: 110,
 				movementX: 10,
@@ -296,12 +293,9 @@ describe('codeBlockDragger', () => {
 				canvasHeight: 600,
 				altKey: false,
 			});
-			mouseupHandlers[0]();
+			pointerupHandlers[0]();
 
-			expect(events.dispatch).toHaveBeenCalledWith(
-				'codeBlockPointerDown',
-				expect.objectContaining({ codeBlock: block1 })
-			);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(block1);
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 			expect(block1.x).toBe(50);
 			expect(block1.y).toBe(100);
@@ -310,7 +304,7 @@ describe('codeBlockDragger', () => {
 	});
 
 	describe('selected code block', () => {
-		it('should set selected code block on mousedown', () => {
+		it('should set selected code block on pointerdown', () => {
 			const block1 = createCodeBlockGraphicData({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
@@ -326,7 +320,7 @@ describe('codeBlockDragger', () => {
 			codeBlockDragger(store, events);
 
 			// Mousedown
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -358,7 +352,7 @@ describe('codeBlockDragger', () => {
 
 			codeBlockDragger(store, events);
 
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -370,7 +364,7 @@ describe('codeBlockDragger', () => {
 				altKey: false,
 			});
 
-			mouseupHandlers[0]();
+			pointerupHandlers[0]();
 
 			expect(block1.lastUpdated).toBe(1234);
 			expect(block1.code).toEqual(originalCode);
@@ -396,7 +390,7 @@ describe('codeBlockDragger', () => {
 			codeBlockDragger(store, events);
 
 			// Mousedown outside any block
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 400,
 				y: 400,
 				movementX: 0,
@@ -459,7 +453,7 @@ describe('codeBlockDragger', () => {
 
 			codeBlockDragger(store, events);
 
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 50,
 				y: 100,
 				movementX: 0,
@@ -519,7 +513,7 @@ describe('codeBlockDragger', () => {
 
 			codeBlockDragger(store, events);
 
-			mousedownHandlers[0]({
+			pointerdownHandlers[0]({
 				x: 250,
 				y: 100,
 				movementX: 0,

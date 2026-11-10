@@ -127,11 +127,7 @@ function alignTargetBlockCursorForVerticalNavigation(
  * @param direction - The direction to navigate
  * @returns {boolean} true if navigation to a different block occurred, false if no block is selected or the target is the same as the current block
  */
-export function navigateToCodeBlockInDirection(
-	store: StateManager<State>,
-	direction: Direction,
-	events: EventDispatcher
-): boolean {
+export function navigateToCodeBlockInDirection(store: StateManager<State>, direction: Direction): boolean {
 	const state = store.getState();
 	// Only proceed if a code block is currently selected
 	if (!state.codeBlockRendering.selectedCodeBlock) {
@@ -148,7 +144,7 @@ export function navigateToCodeBlockInDirection(
 		moveSelectionToCurrentBlockVerticalEdge(store, currentBlock, direction)
 	) {
 		const { x, y } = centerViewportOnCodeBlockCursor(state.viewport, currentBlock);
-		animateViewport(state, x, y, events);
+		animateViewport(state, x, y);
 		return true;
 	}
 
@@ -165,7 +161,7 @@ export function navigateToCodeBlockInDirection(
 		}
 
 		const { x, y } = centerViewportOnCodeBlockCursor(state.viewport, targetBlock);
-		animateViewport(state, x, y, events);
+		animateViewport(state, x, y);
 		return true;
 	}
 
@@ -182,11 +178,7 @@ export function navigateToCodeBlockInDirection(
  * @param creationIndex - The stable runtime identifier of the target block
  * @returns {boolean} true if the block was found and jumped to, false otherwise
  */
-export function jumpToCodeBlock(
-	store: Pick<StateManager<State>, 'getState' | 'set'>,
-	creationIndex: number,
-	events: EventDispatcher
-): boolean {
+export function jumpToCodeBlock(store: Pick<StateManager<State>, 'getState' | 'set'>, creationIndex: number): boolean {
 	const state = store.getState();
 	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
 
@@ -196,7 +188,7 @@ export function jumpToCodeBlock(
 	if (targetBlock) {
 		store.set('codeBlockRendering.selectedCodeBlock', targetBlock);
 		const { x, y } = centerViewportOnCodeBlockCursor(state.viewport, targetBlock);
-		animateViewport(state, x, y, events);
+		animateViewport(state, x, y);
 		return true;
 	}
 
@@ -212,7 +204,7 @@ export function jumpToCodeBlock(
  *
  * @param store - The editor state manager
  */
-export function goHome(store: StateManager<State>, events: EventDispatcher): void {
+export function goHome(store: StateManager<State>): void {
 	const state = store.getState();
 	const homeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.isHome);
 
@@ -221,9 +213,9 @@ export function goHome(store: StateManager<State>, events: EventDispatcher): voi
 		const { x, y } = centerViewportOnCodeBlock(state.viewport, homeBlock, {
 			alignment: homeBlock.homeAlignment,
 		});
-		animateViewport(state, x, y, events);
+		animateViewport(state, x, y);
 	} else {
-		animateViewport(state, 0, 0, events);
+		animateViewport(state, 0, 0);
 	}
 }
 
@@ -244,14 +236,14 @@ export function goHome(store: StateManager<State>, events: EventDispatcher): voi
  */
 export default function codeBlockNavigation(store: StateManager<State>, events: EventDispatcher): void {
 	const onNavigateCodeBlock = (event: NavigateCodeBlockEvent) => {
-		navigateToCodeBlockInDirection(store, event.direction, events);
+		navigateToCodeBlockInDirection(store, event.direction);
 	};
 
 	const onGoHome = () => {
-		goHome(store, events);
+		goHome(store);
 	};
 
 	// Register the abstract navigation event handler
-	events.on<NavigateCodeBlockEvent>('navigateCodeBlock', onNavigateCodeBlock);
+	events.on('navigateCodeBlock', onNavigateCodeBlock);
 	events.on('goHome', onGoHome);
 }

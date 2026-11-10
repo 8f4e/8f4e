@@ -50,7 +50,6 @@ function getArrayPointeeBaseType(instruction: ArrayDeclarationInstruction): Poin
  * @returns The planned declaration and updated local allocation-unit offset.
  */
 export function planScalarDeclarationLayout(input: {
-	id: string;
 	lineNumber: number;
 	startingByteAddress: number;
 	localAllocationUnitOffset: number;
@@ -83,7 +82,6 @@ export function planScalarDeclarationLayout(input: {
 				elementByteLength: numberOfElements * elementWordSize,
 				endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
 				endAddressSafeByteLength: getEndAddressSafeByteLength(allocationUnitCount),
-				id: input.id,
 				lineNumber: input.lineNumber,
 				type: input.instruction,
 				...flags,
@@ -117,7 +115,6 @@ export function planScalarDeclarationLayout(input: {
 			elementByteLength: numberOfElements * nonPointerElementWordSize,
 			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
 			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
-			id: input.id,
 			lineNumber: input.lineNumber,
 			type: input.instruction,
 			...flags,
@@ -133,7 +130,6 @@ export function planScalarDeclarationLayout(input: {
  * @returns The planned declaration and updated local allocation-unit offset.
  */
 export function planArrayDeclarationLayout(input: {
-	id: string;
 	lineNumber: number;
 	startingByteAddress: number;
 	localAllocationUnitOffset: number;
@@ -163,7 +159,6 @@ export function planArrayDeclarationLayout(input: {
 			allocationUnitCount,
 			allocatedByteLength: getAllocatedByteLength(occupiedAllocationUnitCount),
 			allocationUnitAddress: alignedAbsoluteAllocationUnitOffset,
-			id: input.id,
 			lineNumber: input.lineNumber,
 			byteAddress,
 			elementByteLength: input.numberOfElements * elementWordSize,

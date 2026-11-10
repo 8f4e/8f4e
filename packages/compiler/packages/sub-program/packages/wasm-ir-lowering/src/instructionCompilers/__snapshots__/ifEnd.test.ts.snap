@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ifEnd instruction compiler > ends a conditional block with multiple results 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    11,
+  ],
+}
+`;
+
+exports[`ifEnd instruction compiler > ends a conditional block with result 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    11,
+  ],
+}
+`;

@@ -5,7 +5,7 @@
 import type { State } from '../../index';
 import type { Position } from '../../shared/types';
 
-interface ContextMenuButton {
+export interface ContextMenuItem {
 	action?: string;
 	selector?: string;
 	value?: unknown;
@@ -16,13 +16,6 @@ interface ContextMenuButton {
 	title?: string;
 	isSectionTitle?: boolean;
 }
-
-interface MenuItemDivider extends ContextMenuButton {
-	divider: true;
-	title: never;
-}
-
-export type ContextMenuItem = ContextMenuButton | MenuItemDivider;
 
 /** Generates a complete menu from current state and its caller-owned payload. */
 export type MenuGenerator<Payload = unknown> = (
@@ -39,9 +32,12 @@ export interface MenuStackEntry {
  * Context menu position is stored in editor/world coordinates so it tracks viewport movement.
  */
 export interface ContextMenu extends Position {
-	highlightedItem: number;
-	itemWidth: number;
 	items: ContextMenuItem[];
 	open: boolean;
 	menuStack: MenuStackEntry[];
+}
+
+/** Activate a raw item using an index resolved by a menu presentation. Coordinates are viewport-relative. */
+export interface ActivateContextMenuItemEvent extends Position {
+	index: number;
 }

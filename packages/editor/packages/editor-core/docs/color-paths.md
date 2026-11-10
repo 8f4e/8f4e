@@ -95,7 +95,9 @@ choose contrasting pairs for other shades. This does not replace a complete cont
 
 `PALETTE_INDICES` exposes stable numeric indices for every shade, opacity variant, and shared material. Drawers choose
 these indices directly: `draw.drawFill(x, y, PALETTE_INDICES.primaryDark2, width, height)` and
-`draw.drawText(x, y, text, PALETTE_INDICES.inkOn)` reuse the same fill mask and fixed glyph IDs across unrelated controls.
+`draw.drawGlyphs(x, y, glyphs, PALETTE_INDICES.inkOn)` reuse the same fill mask and prepared glyph IDs across unrelated controls.
+Prepare static text with `textToGlyphIds()` outside drawing; formatted live numbers use the trusted ASCII-only
+`drawNumericText()` path without validation or Unicode mapping.
 Local visual choices belong to drawers rather than theme configuration. Controls use `accentSurface` fills and
 `lightBase` handles with `darkBase` labels; disabled panels use `surfaceSubdued`. Equal resolved colors keep separate indices
 so a theme change can make them diverge without rebuilding projections.
@@ -104,7 +106,7 @@ Connector icons are composed at runtime: a `surfaceOverlay` fill sits behind inp
 brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`, `primaryDark1`, `primaryBase`,
 `warningBase`, or `negativeBase` from the calibrated value. There are no dedicated input or feedback-scale atlas entries.
 
-The sprite atlas contains color-independent R8 binary visibility masks: 128 glyphs and one fully covered fill cell,
+The sprite atlas contains color-independent R8 binary visibility masks: 256 CP437 glyphs and one fully covered fill cell,
 all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
 coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
 text, including `Alpha30/60/90` variants. Web-ui renders the

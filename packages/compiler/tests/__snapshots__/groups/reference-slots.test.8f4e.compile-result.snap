@@ -282,7 +282,7 @@
           "default": 41,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
-          "id": "value",
+          "id": 0,
           "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,

@@ -36,7 +36,7 @@ engine.renderFrame(() => {
 		);
 	}
 
-	for (const [index, character] of [...'sprite-generator atlas'].entries()) {
+	for (const [index, character] of [...'Çüé αΩ ┌─┬─┐ ░▒▓ █'].entries()) {
 		engine.drawSprite(
 			48 + index * characterWidth,
 			144,

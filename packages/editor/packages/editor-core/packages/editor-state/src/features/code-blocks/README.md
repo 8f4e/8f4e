@@ -10,10 +10,18 @@ Manages the lifecycle of code blocks in the editor: creation, selection, drag op
 - **Selection**: Tracks which block is currently selected for editing
 - **Drag Operations**: Handles repositioning blocks in the viewport
 - **Graphics Derivation**: Computes visual properties (position, size, color) from block data
-- **Block Widgets**: Derives inline error messages and shape declarations
+- **Layout Contributions**: Applies plugin requests for additional rows and minimum width
+
+`@8f4e/editor-plugin-error-messages` owns inline message wrapping, row reservations, and drawing. Core stores raw
+errors in contributor-owned `state.codeErrors` lists and applies generic layout contributions.
+
+Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-rendering`, including its tolerant parser,
+background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
 
 Input/output connector geometry, private widget data, wire lookup, and the complete GPU line renderer belong to
-`@8f4e/editor-plugin-connectors`. Both editor compositions install it through the generic layout and drawing hooks.
+`@8f4e/editor-plugin-connectors`. The plugin uses the generic layout and drawing hooks.
+It also owns expanded `shape`/`paramShape` labels and their row reservations, sharing inherited row ordering with
+connector endpoints. Core retains no widget presentation data; language semantics stay in the compiler.
 
 Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
 `@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
@@ -46,28 +54,41 @@ Block types are automatically detected and updated based on code content.
 
 This feature contains several subfeatures under `features/` that handle specific aspects:
 
-- `blockHighlights` - Visual highlighting for selected/hovered blocks
-- `codeBlockCreator` - Block creation logic
+- `codeBlockActions` - Generic source insertion and enable/disable action bindings
 - `codeBlockDragger` - Drag and drop operations
 - `codeBlockNavigation` - Keyboard navigation between blocks
 - `codeBlockRendering` - Visual properties computation
-- `inputs` - Audio input routing
-- `outputs` - Audio output routing
+
+New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
+Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
 Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
 coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
 invalid position directive retains the existing block position. Interactive and programmatic edits use this same
-path; ordinary layout invalidations do not reparse source.
+path; ordinary layout invalidations do not reparse source. `layout/coordinator.ts` tracks each block's owning
+`ProjectLevel` and maintains that group's viewport-anchored subset. Ownership is registered on project loading and
+block-collection changes, independently of source edits and layout notifications. Renaming a group retains its
+runtime identity while updating its source path.
+
+The coordinator queues changed blocks by owning group, settles nested plugin contributions, and finalizes grid and
+viewport-anchored positions before publishing completion for each affected group. Inactive groups use their
+remembered viewport. Viewport movement and resizing reposition only the active group's anchored subset without
+recalculating source/display layout. Other blocks can still be in the middle of a source update and must not be read
+as part of a completion notification.
 
 ## Events & Callbacks
 
 ### Key Events
 
-- `createCodeBlock({ x, y, blockType })`: create a template of the requested type
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal contribution invalidation; rederives affected visible blocks
-- `codeBlockLayoutsChanged()`: announces completed layout calculations to rendering and viewport anchoring
+- `codeBlockSourcesChanged({ codeBlocks })`: refresh source metadata, configuration, and layouts for an edited batch
+  before publishing compiler/project revisions, independently of user selection
+- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
+  group, or the current group when no block is supplied
+- `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,
+  contributions, and positions. Rendering prepares only the listed blocks; active-view consumers compare `project`
+  with `currentProject`. Empty groups still publish a completion when navigation replaces the visible slice.
 - Block deletion and selection events
 - Drag start/update/end events
 - Block type update events
@@ -77,13 +98,21 @@ path; ordinary layout invalidations do not reparse source.
 - `state.codeBlockRendering.rootProject` - Recursive root project level
 - `state.codeBlockRendering.currentProject` - Direct reference to the project level currently rendered
 - `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
-- Block-specific properties: position, size, color, blockType, code, cursor, widgets (inputs/outputs)
+- Block-specific properties: position, size, blockType, code, cursor, display rows, and gaps
 
 Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
 `childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered
 `viewport`, and `selectedBlock`.
 `rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
 resolve levels and parents by path, without recovering identity from block arrays.
+
+`reconstructProject.ts` builds graphical project trees and reconciles remembered views, selections, and existing
+positions for same-project edits. The block effect installs the result and owns selection reset, layout/source
+refresh coordination, viewport updates, and compiler-input notifications.
+
+Core retains the selected source row/column, pointer-to-source mapping, and shared vertical coordinates for line
+highlighting, tooltips, viewport centering, and navigation. The keyboard-editing plugin owns caret movement and
+presentation, including horizontal placement derived from shared tab/source geometry.
 
 **Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
 remembered position and selected block. If the group block was selected before entry, returning reselects it.
@@ -100,10 +129,10 @@ active viewport animations; navigating to the current level leaves its view and 
 It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
 contains no marker rectangles.
 
-Failed assertions use the inline error-message widget independently of the marker plugin. The runtime can provide a formatted `message` with
-expected and received values; outcomes without a message display `Assertion failed`. One message is shown per
-source site, using its first failed invocation. Messages match compiler block IDs and project paths,
-clear with results or compilation start, and contribute space below the assertion through the existing error layout.
+Test-runtime publishes the first failed invocation of each source assertion as a raw error under
+`codeErrors.test-runtime`, including expected and received values. It excludes included/unowned sites and disabled
+blocks, and clears its errors when execution restarts. Error-messages displays those errors independently of the
+marker plugin through the same contribution path as other source errors.
 
 ## Integration Points
 

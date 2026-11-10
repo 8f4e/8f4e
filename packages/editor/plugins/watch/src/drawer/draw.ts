@@ -1,7 +1,10 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import type { WatchValue } from '../types';
 import formatWatchValue from './formatWatchValue';
+
+const [LEFT_BRACKET, RIGHT_BRACKET] = textToGlyphIds('[]');
 
 const BRACKET_ANIMATION_DURATION_MS = 2200;
 const MAX_BRACKET_OFFSET_IN_CELLS = 0.375;
@@ -36,9 +39,9 @@ function drawBracketedValue(
 	const rightBracketX = rightBracketBaseX + bracketOffset + (vGrid - bracketWidth) / 2;
 	const color = PALETTE_INDICES.inkBase;
 
-	engine.drawCharacter(leftBracketX, bracketY, 91, color, bracketWidth, bracketHeight);
-	engine.drawText(x + vGrid, y, value, PALETTE_INDICES.secondaryBase);
-	engine.drawCharacter(rightBracketX, bracketY, 93, color, bracketWidth, bracketHeight);
+	engine.drawSprite(leftBracketX, bracketY, LEFT_BRACKET, color, bracketWidth, bracketHeight);
+	engine.drawNumericText(x + vGrid, y, value, PALETTE_INDICES.secondaryBase);
+	engine.drawSprite(rightBracketX, bracketY, RIGHT_BRACKET, color, bracketWidth, bracketHeight);
 }
 
 export default function drawWatch(
@@ -54,7 +57,10 @@ export default function drawWatch(
 		return;
 	}
 
-	for (const { x, y, memory, showAddress, showEndAddress, displayFormat, bufferPointer } of values) {
+	for (const { x, y, resolveMemory, showEndAddress, displayFormat } of values) {
+		const resolved = resolveMemory();
+		if (!resolved) continue;
+		const { memory, showAddress, bufferPointer } = resolved;
 		if (showAddress) {
 			// Elements are `elementWordSize` bytes wide, so narrow and float64 arrays do not step by 4.
 			const byteAddress = memory.byteAddress + bufferPointer * memory.elementWordSize;

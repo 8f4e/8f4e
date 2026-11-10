@@ -10,22 +10,25 @@ that consume their events. Other platform renderers can replace web-ui.
 - Initialize the editor-state store and event dispatcher for the web runtime.
 - Make the canvas focusable for installed input plugins.
 - Initialize the UI renderer with state and memory views, and forward resize events.
+- Own the single animation-frame loop, advancing viewport animation before asking web-ui to draw each frame.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension
   points.
 
 `@8f4e/editor-plugin-mouse-input` forwards DOM mouse and wheel input to core events. Pass `captureWheel: false`
-to its factory to leave wheel scrolling to the page. The default and minimal compositions expose that option
-and install the mouse plugin on both fine- and coarse-pointer devices.
-`@8f4e/editor-plugin-touch-viewport-navigation` adds one-finger viewport dragging on coarse-pointer devices.
+to its factory to leave wheel scrolling to the page. The plugin supports fine- and coarse-pointer devices.
+`@8f4e/editor-plugin-touch-input` translates touches and adds configurable viewport gestures on coarse-pointer devices.
+Panning uses one finger on both axes by default; hosts can restrict the movement axis to preserve native page scrolling.
 Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
 resources and applies any canvas resize that happened while they were released.
-`renderFrame()` immediately renders the current state, including while the animation loop is paused.
+`renderFrame()` immediately advances viewport animation and renders the current state, including while the loop is
+paused. Core coordinates these steps; web-ui draws the supplied viewport without advancing navigation state.
 
-The editor supports view and edit modes. Selected code blocks have a continuously animated outline in both modes.
+The editor supports view and edit modes. `@8f4e/editor-plugin-selection-animation` supplies the continuously circling
+segment around selected code blocks in both modes.
 Keyboard navigation, text editing, and mode switching are supplied by independent plugins composed by the host.
 Core retains project editing APIs, history, generic mode actions, and shared text/pointer geometry. The editing plugin
 owns edit-mode caret movement and drawing. Core installs no keyboard listeners.
@@ -47,21 +50,33 @@ const editor = await initEditor(canvas, {
 });
 ```
 
-A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, drawers })` function.
+A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, layout, loading, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
 Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
 passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
-loads the default ibmvga font atlas in parallel. The renderer waits for both and loads any different font selected by
+loads the per-editor default font atlas in parallel. The renderer waits for both and loads any different font selected by
 the project before drawing. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
 after this sequence. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
+
+Core lifecycle notifications use the `EditorLifecycleEvents` map from `@8f4e/editor-state-types`. Event names infer
+their payloads for subscriptions and synchronous/asynchronous dispatch. Required payloads, such as the completed
+block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
+handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
 and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
 If setup throws, that plugin must unwind its partial allocations; the host disposes previously completed plugins.
 Initialization failures later in startup also dispose installed plugins.
+
+Plugins publish operations with `loading.add({ id, message })`, receiving `done()`, `fail()`, and `cancel()` methods.
+The first terminal call records a finish timestamp and retains the result in the unified `state.loadingIndicators`
+list. A repeated ID replaces its entry without allowing old handles to update it. State records epoch-millisecond
+start/finish times. The loading-indicators plugin draws prepared elapsed-time/status rows and tracks visibility
+privately: done results hide after one second, failed/cancelled after five, oldest eligible finish first at 25 ms
+intervals. Contributions stay in state independently of presentation; same-ID replacements become visible again.
 
 Keep browser dependencies in plugin factories rather than the shared setup context. A browser host can create
 `createScreenshotPlugin({ canvas, renderFrame: () => editor.renderFrame() })` before initializing the editor; the
@@ -72,6 +87,12 @@ Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+Menu items stay raw in `state.contextMenu`: `open`, requested world anchor `x`/`y`, `items`, and `menuStack`.
+`@8f4e/editor-plugin-context-menu` owns decorated labels, geometry, and hovered rows privately. Core forwards
+`contextMenuPointerMove` and completed `contextMenuPointerDown` events while blocking input below an open menu.
+Presentations request `activateContextMenuItem { index, x, y }` with viewport coordinates; core applies the item's
+close behavior and dispatches its action or selector. `closeContextMenu` closes without activation.
+
 Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
 contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
 menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
@@ -85,8 +106,10 @@ The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', 
 
 Use explicit block actions through `events.dispatch`:
 
-- `createCodeBlock` receives `{ x, y, blockType }` and creates a module, function, prototype, or note template.
 - `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
+
+`@8f4e/editor-plugin-block-authoring` supplies New/Delete menu commands and source templates. Generic insertion
+and deletion remain available independently of that plugin.
 
 Coordinates are viewport pixels. Core applies entry assignment, grid positioning, and persistence; declaration names remain unchanged.
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
@@ -128,23 +151,66 @@ Subscribe and dispose explicitly. Unsubscribe before disposing a contribution so
 Contribution changes preserve source, selection, project revision, and compiler input revision. Hidden project slices
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
-Register foreground drawings with `drawers.registerCodeBlockForegroundDrawer(drawer)`. They run above content and
-shapes, before the selection outline and diagnostics, in block coordinates. The editing plugin uses this stage for
-its caret; core owns no caret glyph or keyboard direction policy.
+Register block drawing with `drawers.registerCodeBlockDrawer(drawer)`. Each callback receives
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame, in registration order. Coordinates are
+relative to the block; web-ui owns the single traversal, visibility checks, and viewport translation. Later
+registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
+background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
-Register drawers with `drawers.registerCodeBlockDrawer(drawer)`. The drawer receives
-`{ draw, state, codeBlock, memoryViews }` once per visible block per frame. Coordinates are relative to that block;
-the host applies viewport translation and visibility checks. Drawers run in registration order after foreground
-drawings, the selected-block outline, and diagnostics. Register overlays with
-`drawers.registerCodeBlockOverlay(drawer)` to draw after ordinary block drawers, using the same context and coordinates.
-Each slot preserves registration order. Use the drawing surface's text/fill primitives and shared numeric palette indices.
-`@8f4e/web-ui` exports the drawing types. Registration returns an unregister function; call it from the plugin's
-disposer. Each plugin owns its widget types and uses the drawing surface's sprite and text primitives.
+Install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
+normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
+draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
+For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, codeBlock, state) => ...)` replaces a single
+callback in the same traversal. Coordinates are world coordinates. The latest registration wins; disposal clears
+its slot only if that callback is still registered, without restoring a previous callback. `canvasOverlays` hides
+these decorations during screenshot capture. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow placement and drawing.
+
+Use the drawing surface's text/fill primitives and shared numeric palette indices. `@8f4e/web-ui` exports drawing
+types. Plugins own their prepared data and disposal; core stores no widget presentation fields.
+
+Raw source errors live in `state.codeErrors: Record<string, CodeError[]>`. Contributors replace their own lists through
+`store.set('codeErrors.my-plugin', errors)` and clear or remove them on disposal. `CodeError` carries a zero-based
+source line, a message, and the target block identity or project-group scope. Compiler and directive errors use
+`compiler` and `editor-directives`; test-runtime publishes failed source assertions under `test-runtime`.
+`@8f4e/editor-plugin-error-messages` owns wrapping, reserved rows, colors, and drawing coordinates through the existing
+layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
+
+Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
+Callbacks receive `{ draw, state, memoryViews }` above the procedural background and independently of `canvasOverlays`.
+`@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
+world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
+Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
+bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
+
+Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
+`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`.
+Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
-`{ draw, state, memoryViews }` after menus and before dialogs, with coordinates relative to the viewport's top-left.
+`{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
+
+Register context-menu overlays with `drawers.registerContextMenuOverlay(drawer)`. This stage runs above ordinary
+canvas overlays and below modal dialogs, independently of `canvasOverlays`. `@8f4e/editor-plugin-context-menu` uses
+this hook for menu presentation. Every drawing stage retains registration order, including late plugin registrations;
+rendering does not sort callbacks by input layer numbers.
+
+Register modal sprite overlays with `drawers.registerModalOverlay(drawer)`. This uses the same viewport context
+as canvas overlays and runs after context-menu overlays, independently of `featureFlags.canvasOverlays`.
+`@8f4e/editor-plugin-dialogs` uses it for dialog drawing and keeps calculated geometry private.
+
+The editor owns dialog content and lifecycle. Plugins dispatch `addDialog` with `DialogContent`
+(`{ id, title, text, buttons }`), `removeDialog` with an ID or `{ id }`, and `clearDialogs` to empty the stack.
+Adding an existing ID replaces it at the top. `state.dialogStack` keeps original content and `state.dialog` exposes
+the visible dialog's content. Buttons specify `title`, optional `action`/`payload`, and optional `close: false`.
+The editor closes a dialog before dispatching its button action by default.
+
+Modal input is blocked by the editor even without a drawing plugin. The editor forwards completed presses through
+`dialogPointerDown`. The dialogs plugin resolves its private button geometry and requests `activateDialogButton`
+with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the button action. Capture-only input
+probes do not activate dialogs. Default and gallery compositions
+install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
@@ -153,15 +219,39 @@ Palette changes and memory release are forwarded to the layer. Registration may 
 arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
-`@8f4e/editor-plugin-connectors` owns input/output widgets and the complete wire renderer through these hooks.
+`@8f4e/editor-plugin-connectors` owns input/output connectors, expanded `shape`/`paramShape` declaration labels,
+their row reservations, and the complete wire renderer through these hooks. Prepared labels and endpoint data stay
+private to the plugin; core has no widget presentation fields. Compiler semantics remain independent of this plugin.
 Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
 `@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and block-bound `@texture` framebuffer views through the same overlay hook.
 
-Interaction handlers can subscribe to `codeBlockPointerDown` for the start of a block press and `mouseup` for release.
-Use `events.on('mousemove', handler, { capture: true })` when a plugin must consume a drag before ordinary listeners,
-such as viewport panning. Capture listeners run first in registration order. Setting `event.stopPropagation = true`
-stops the remaining capture and ordinary listeners. Unregister with the same `events.off` call as other listeners.
-Core registers menu movement in capture before plugins, so an open menu retains priority over plugin drags.
+Both input adapters emit normalized `pointerdown`, `pointermove`, `pointerup`, and `pointercancel` events.
+`InternalPointerEvent` and `CodeBlockPointerDownEvent` are shared contracts in `@8f4e/editor-state-types`.
+Core routes both adapters through the same block lookup and interaction phases, independently of module dragging.
+
+Controls subscribe to `codeBlockPointerDown` in capture, set `stopPropagation` when claiming the press, handle
+`codeBlockPointerMove` for drags, and release on `codeBlockPointerUp`. Ordinary block press listeners run after
+default selection. UI handlers opt into an input layer through `events.on(name, handler, { layer, capture })`.
+The `layer` is a plain number, chosen by the plugin's composition when applicable. `INPUT_LAYERS` from
+`@8f4e/editor-state-types` names the matching stages: code block, ordinary canvas, canvas overlay, context menu,
+and modal overlay. Higher layers receive input first. Within a layer, capture runs before normal, and each phase
+runs in reverse registration order. A late plugin therefore receives input before earlier registrations in its stage.
+The first handler setting `stopPropagation` prevents remaining handlers and lower layers from receiving the event.
+
+Unlayered listeners retain their existing capture/normal registration order after UI handling. Keep notifications,
+startup, disposal, and default state effects unlayered. Code-block controls use `INPUT_LAYERS.codeBlock` on the
+forwarded block events; core already targets the foremost block using the reverse of block drawing order.
+
+Event dispatch can select only the capture or normal phase with `{ phase: 'capture' | 'normal' }`. Touch input uses
+capture-only probes before starting a viewport gesture. Modal/menu activation waits for a completed press; probing
+controls must respect visible modal/menu state. Claimed movement, release, and cancellation use the same input layer.
+Unregister with the same `events.off` call as other listeners. Layer groups are prepared when listeners are added or
+removed; dispatch traverses those snapshots without sorting or filtering registrations.
+
+Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
+contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
+`createCodeErrorBlockLookup(rootProject)` indexes document identities and project scopes once for a batch of errors,
+retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.
@@ -203,7 +293,7 @@ owns its configuration schema and cleanup. MIDI also owns its WASM instance and 
 environment-plugin manager in core.
 
 The binary-assets plugin owns `bin` configuration, browser fetching and caching, private asset bytes/metadata,
-memory loading, the loading dialog, and generated asset-size constants. Its factory receives a getter for current
+memory copies, download-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
 Plugins can contribute source to the generated `env` constants block with
@@ -230,9 +320,10 @@ API revisions, history, and session persistence share `state.projectChange`, a r
 editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `applyCodeBlockSourceEdits(store, edits, { affectsCompilation })` from
+Source-mutating plugin actions use `applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation })` from
 `@8f4e/editor-state`. Each edit supplies `{ codeBlock, code }` with the replacement source array. The helper skips
-unchanged source, refreshes changed blocks, and publishes one project change after the whole batch. Set
+unchanged source, emits `codeBlockSourcesChanged { codeBlocks }` for the changed batch, and publishes one project change
+after core has refreshed its derived metadata and layout. Source changes do not modify the selected block. Set
 `affectsCompilation: false` for metadata such as positions, favorites, and grouping; use `true` for compiler inputs.
 `deleteCodeBlocks(store, blocks)` removes blocks from the visible project slice in place, clears references to
 deleted blocks, and publishes one project and compiler-input change. Both helpers return whether anything changed.
@@ -299,6 +390,11 @@ Example color overrides:
 
 ## Font
 
+`EditorOptions.defaultFont` selects the font used when project configuration has no font directive. It defaults
+to `ibmvga8x16` in core. Pass any sprite-generator font name, such as `pixelcode6x12`; web-ui uses it during startup
+and after a directive is removed or a project is replaced. This preference does not enter project configuration,
+history, or serialized source. Browser compositions choose their device-specific defaults before initializing core.
+
 Select the editor font with a global editor directive. Web-ui owns supported fonts, defaults, atlas loading, and
 configuration subscriptions. State uses the resulting grid dimensions for layout and hit testing:
 
@@ -308,7 +404,7 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 
 The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default desktop editor, the independent
 font-preview plugin uses F18/F19 to cycle through that catalog temporarily. Previewing does not change source or saved
-files; loading a project restores its configured font. The minimal editor omits this plugin.
+files; loading a project restores its configured font. The gallery editor omits this plugin.
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Shared `state.info` records remain available as data; updates do not invalidate code-block layout or text render data. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 

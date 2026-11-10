@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`drop instruction compiler > drops the top stack value 1`] = `
+{
+  "instructions": [
+    26,
+  ],
+}
+`;

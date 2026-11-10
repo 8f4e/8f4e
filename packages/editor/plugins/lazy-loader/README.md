@@ -17,10 +17,11 @@ const loader = createLazyPluginLoaderPlugin([
 ]);
 ```
 
-Pass the loader alongside fixed plugins when constructing the editor. Both default and minimal editors use `view`
-scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Their registries supply the editor's
-live memory writer to control factories after their implementations load. MIDI input, binary assets, and
+Pass the loader alongside fixed plugins when constructing the editor. Use `view`
+scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Supply the editor's
+live memory writer to control factories after their implementations load. Keyboard-to-memory input, MIDI input, binary assets, and
 audio/worker/test/texture runtime plugins use `project` scope. The texture runtime matches both `@texture` and its config root.
+Keyboard-to-memory input matches raw `@config keyboard.*` directives before its schema is installed.
 Watch matches `@watch`/`@w`; stack matches `@stack`/`@s`.
 
 Each `LazyEditorPlugin` entry contains `id`, required `scope: 'view' | 'project'`, `matches(directives)`, and
@@ -53,6 +54,10 @@ if the project or current group changes while its import is pending, and remains
 Removing a signal or leaving a group does not unload it. Entries install in import-completion order; keep
 order-dependent plugins in the fixed list.
 
+Each import/setup contributes ID `plugin:<entry.id>` and message `Loading <entry.id>...`. Successful setup marks
+it done, import/setup errors mark it failed, and disposal cancels pending work. Retrying replaces the same ID.
+Results remain in state independently of presentation; contributions work without the presentation plugin.
+
 Modules may be shared by JavaScript's import cache; setup and cleanup remain separate for every editor. The loader
 calls each plugin's ordinary `setup(context)` and owns its returned disposer. Editor disposal prevents queued scans
 and pending imports from installing plugins and releases installed plugins in reverse installation order. Import
@@ -66,10 +71,12 @@ chunks. Their directive-based loader is part of that deferred set, so its import
 earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
 input plugins. Entries load independently and have no keyboard-specific loading stage.
 
-`load()` resolves to one ordinary editor plugin. Both compositions return their lazy-loader plugin, which owns the
+`load()` resolves to one ordinary editor plugin. It can return a lazy-loader plugin that owns
 individual optional feature imports. The deferred loader installs it against current state and calls its disposer
 when the editor closes. Disposal removes the readiness listener and ignores pending imports. Load or setup failures
 are logged. Optional features must initialize from current state without relying on startup events being replayed.
+The deferred import uses ID `editor-plugins` and message `Loading editor plugins...`, with the same terminal
+outcomes for completion, failure, and disposal.
 
 Verify from the workspace root:
 

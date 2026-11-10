@@ -6,7 +6,6 @@ The browser host supplies its canvas; the shared plugin context remains browser 
 Own edit-mode caret movement and drawing, typing, Tab, newline, backspace, and edit-only undo/redo shortcuts. The entry point buffers keyboard input while its mode-triggered implementation import is pending.
 
 Each installation owns its listener and cleanup. This plugin does not install or depend on another keyboard plugin.
-Default and minimal import its factory only for browsers whose primary pointer is not coarse.
 
 Verify with `npx nx run @8f4e/editor-plugin-keyboard-editing:build|test|typecheck`.
 
@@ -18,8 +17,19 @@ mode before processing keys. Core history remains available to programmatic edit
 
 The loaded implementation handles all unmodified arrow keys, preserving visual columns across tabs on vertical
 movement. Mutations calculate their resulting caret position directly. Shared source positions and tab geometry
-remain core services. The caret draws through `registerCodeBlockForegroundDrawer`, above content and shapes and
-before outlines and diagnostics. The input bridge owns this registration and removes it on disposal; it draws only
+remain core services. Each installation prepares the caret's horizontal position from the source column, tab stops,
+line-number gutter, and grid width when its editing implementation loads and after `codeBlockLayoutsChanged`
+identifies the current project group and selected block.
+The drawer reads that private coordinate and core's shared vertical source position for folds and contributed gaps;
+it performs no source parsing or coordinate calculation. Core stores no caret-only horizontal coordinate.
+The caret draws through `registerCodeBlockDrawer`, with layering determined by registration order. Install code rendering before the input plugins to preserve that layering. The input bridge owns this registration
+and removes it together with the presentation layout listener on disposal; it draws only
 once the implementation has loaded and only for the selected block in edit mode.
 
 The loaded implementation handles native `paste` events using `clipboardData` plain text. `insertText` splices single- or multiline text at the caret, preserving the current line prefix/suffix and placing the caret at the inserted text's end. Paste submits one source-edit batch, using the same history and compiler notifications as typing. Paste events are not buffered during loading.
+
+## Loading indicators
+
+The first implementation import contributes ID `text-editing` and message `Loading text editing...`. Loading and
+setup report done/failed; disposal cancels pending work. Results remain in state independently of presentation. The implementation
+is reused across later mode changes.

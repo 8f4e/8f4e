@@ -25,6 +25,7 @@ function setup(
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
@@ -63,7 +64,6 @@ describe('remove memory connections plugin', () => {
 		test.events.dispatch('removeConnections', { codeBlock: test.block });
 		expect(test.block.code).toEqual(['module target', 'float value', 'moduleEnd']);
 		expect(test.block.lastUpdated).toBeGreaterThan(0);
-		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(test.block);
 		expect(test.state.compilerInputRevision).toBe(revision + 1);
 		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
 		expect(sources).toEqual([test.block.code]);
@@ -86,8 +86,11 @@ describe('remove memory connections plugin', () => {
 			payload: { codeBlock: test.block },
 			disabled: false,
 		});
-		test.state.contextMenu.highlightedItem = index;
-		test.events.dispatch('mousedown', { x: test.block.x + 8, y: test.block.y + 8, stopPropagation: false });
+		test.events.dispatch('activateContextMenuItem', {
+			x: test.block.x + 8,
+			y: test.block.y + 8,
+			index,
+		});
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.block.code[1]).toBe('float value');
 		expect(other.code).toEqual(originalOtherCode);

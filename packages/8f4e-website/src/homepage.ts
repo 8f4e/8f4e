@@ -1,6 +1,5 @@
-import { type MinimalEditorInstance, mountMinimalEditor } from '@8f4e/editor-minimal';
-import { getExampleProjectUrl } from './example-projects';
-import { sharedAudioContext } from './shared-audio-context';
+import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
+import { getHomepageProjectUrl } from './homepage-projects';
 
 export function mountHomepageEditors(): () => void {
 	const canvases = Array.from(document.querySelectorAll<HTMLCanvasElement>('.editor-row canvas'));
@@ -9,8 +8,8 @@ export function mountHomepageEditors(): () => void {
 	}
 
 	const renderingReleaseDelayMs = 2_000;
-	const editorByCanvas = new Map<HTMLCanvasElement, MinimalEditorInstance>();
-	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<MinimalEditorInstance>>();
+	const editorByCanvas = new Map<HTMLCanvasElement, LandingEditorInstance>();
+	const editorMountPromiseByCanvas = new Map<HTMLCanvasElement, Promise<LandingEditorInstance>>();
 	const renderingReleaseTimeoutByCanvas = new Map<HTMLCanvasElement, number>();
 	const revealAnimationFrameByCanvas = new Map<HTMLCanvasElement, number>();
 	let disposed = false;
@@ -58,17 +57,16 @@ export function mountHomepageEditors(): () => void {
 		}
 	});
 
-	function mountEditor(canvas: HTMLCanvasElement): Promise<MinimalEditorInstance> {
+	function mountEditor(canvas: HTMLCanvasElement): Promise<LandingEditorInstance> {
 		const pendingMount = editorMountPromiseByCanvas.get(canvas);
 		if (pendingMount) {
 			return pendingMount;
 		}
 
-		const mountPromise = mountMinimalEditor(canvas, {
-			sharedAudioContext,
+		const mountPromise = mountLandingEditor(canvas, {
 			captureWheel: false,
-			includeKeyboardModeSwitching: false,
-			initialProjectUrl: canvas.dataset.projectPath ? getExampleProjectUrl(canvas.dataset.projectPath) : undefined,
+			touchNavigation: { axis: 'horizontal' },
+			initialProjectUrl: canvas.dataset.projectPath ? getHomepageProjectUrl(canvas.dataset.projectPath) : undefined,
 			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
 			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),
 		})

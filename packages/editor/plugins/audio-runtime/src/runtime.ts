@@ -3,6 +3,7 @@ import type {
 	EditorConfigSchemaContribution,
 	EditorPluginContext,
 	EventDispatcher,
+	LoadingIndicatorHandle,
 	State,
 } from '@8f4e/editor-core';
 import { resolveSchemaConfigRoot } from '@8f4e/editor-core';
@@ -121,6 +122,7 @@ export function startAudioRuntime(
 	events: EventDispatcher,
 	getCodeBuffer: () => Uint8Array,
 	getMemory: () => WebAssembly.Memory | null,
+	loading: EditorPluginContext['loading'],
 	sharedAudioContext?: AudioContext
 ) {
 	const state = store.getState();
@@ -129,6 +131,15 @@ export function startAudioRuntime(
 	let mediaStream: MediaStream | null = null;
 	let mediaStreamSource: MediaStreamAudioSourceNode | null = null;
 	let disposed = false;
+	let initializationId = 0;
+	let workletLoading: LoadingIndicatorHandle | undefined;
+	let programLoading: LoadingIndicatorHandle | undefined;
+	function finishProgram(status: 'done' | 'failed' | 'cancelled') {
+		if (status === 'done') programLoading?.done();
+		else if (status === 'failed') programLoading?.fail();
+		else programLoading?.cancel();
+		programLoading = undefined;
+	}
 	/**
 	 * Identifies the current audio initialization attempt. Incremented when initialization
 	 * starts and when the audio setup is torn down. After each await, initialization checks
@@ -177,14 +188,22 @@ export function startAudioRuntime(
 		}
 
 		const config = getAudioWorkletRuntimeConfig(state);
-		audioWorklet.port.postMessage({
-			type: 'init',
-			memoryRef: memory,
-			codeBuffer: getCodeBuffer(),
-			bufferExportName: config.entry,
-			audioOutputBuffers: getAudioOutputBuffers(config),
-			audioInputBuffers: getAudioInputBuffers(config),
-		});
+		finishProgram('cancelled');
+		programLoading = loading.add({ id: 'audio-runtime', message: 'Starting audio runtime...' });
+		try {
+			audioWorklet.port.postMessage({
+				type: 'init',
+				requestId: ++initializationId,
+				memoryRef: memory,
+				codeBuffer: getCodeBuffer(),
+				bufferExportName: config.entry,
+				audioOutputBuffers: getAudioOutputBuffers(config),
+				audioInputBuffers: getAudioInputBuffers(config),
+			});
+		} catch (error) {
+			finishProgram('failed');
+			throw error;
+		}
 	}
 
 	async function syncAudioInputSource() {
@@ -236,6 +255,8 @@ export function startAudioRuntime(
 		}
 		hideAudioPermissionDialog();
 		const currentGeneration = ++generation;
+		const indicator = loading.add({ id: 'audio-worklet', message: 'Loading audio worklet...' });
+		workletLoading = indicator;
 
 		try {
 			audioContext = getSharedAudioContext() ?? null;
@@ -265,14 +286,24 @@ export function startAudioRuntime(
 			audioWorklet.port.onmessage = ({ data }: { data: AudioWorkletRuntimeMessage }) => {
 				switch (data.type) {
 					case 'initialized':
+						if (data.requestId !== initializationId) return;
+						finishProgram('done');
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						events.dispatch('memoryValuesChanged');
 						break;
 					case 'runtimeValues':
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
 						break;
+					case 'initializationError':
+						if (data.requestId !== initializationId) return;
+						finishProgram('failed');
+						console.error('Error initializing audio:', data.payload.message);
+						break;
 				}
 			};
+			audioWorklet.onprocessorerror = () => finishProgram('failed');
+			indicator.done();
+			if (workletLoading === indicator) workletLoading = undefined;
 
 			await syncAudioInputSource();
 			if (disposed || currentGeneration !== generation) {
@@ -286,9 +317,13 @@ export function startAudioRuntime(
 			if (disposed || currentGeneration !== generation) {
 				return;
 			}
+			indicator.fail();
 			tearDownAudioContext();
 			console.error('Error starting audio:', error);
 			showAudioPermissionDialog('Audio could not start. Select Allow to try again.');
+		} finally {
+			indicator.cancel();
+			if (workletLoading === indicator) workletLoading = undefined;
 		}
 	}
 
@@ -298,6 +333,10 @@ export function startAudioRuntime(
 	sharedAudioContext?.addEventListener('statechange', onSharedContextStateChanged);
 
 	function tearDownAudioContext() {
+		workletLoading?.cancel();
+		workletLoading = undefined;
+		finishProgram('cancelled');
+		++initializationId;
 		++generation;
 		++inputRevision;
 		if (mediaStreamSource) {
@@ -311,6 +350,7 @@ export function startAudioRuntime(
 		}
 
 		if (audioWorklet) {
+			audioWorklet.onprocessorerror = null;
 			audioWorklet.port.postMessage({ type: 'dispose' });
 			audioWorklet.port.onmessage = null;
 			audioWorklet.port.close();

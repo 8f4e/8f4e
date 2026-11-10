@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-save",
-  "version": "0.2.11",
+  "version": "0.2.29",
   "private": true,
   "description": "Project Save and Export plugin for the 8f4e editor",
   "type": "module",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/web-ui": "*"
   }

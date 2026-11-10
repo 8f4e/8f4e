@@ -1,8 +1,8 @@
 # Stack Plugin
 
 `@8f4e/editor-plugin-stack` owns the `stack` directive's arguments, layout, derived data, and rendering.
-The default and minimal editors load it lazily for `@stack` or `@s` in the current project level;
-editor-core installs no plugins automatically.
+For lazy installation, match `@stack` or `@s` in the current project level with `view` scope.
+Editor-core installs no plugins automatically.
 
 ```ts
 import { createStackPlugin } from '@8f4e/editor-plugin-stack';
@@ -24,7 +24,7 @@ Only the active source definition of a module receives stack labels; overridden 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
 Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
-The block drawer runs before tooltip overlays, including when the plugin loads after tooltips.
+The block drawer runs in registration order with other code-block drawers, including plugins installed lazily.
 
 ```sh
 npx nx run @8f4e/editor-plugin-stack:build

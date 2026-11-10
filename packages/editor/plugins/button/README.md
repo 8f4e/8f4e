@@ -9,11 +9,11 @@ import { createButtonPlugin } from '@8f4e/editor-plugin-button';
 const editor = await initEditor(canvas, { ...options, plugins: [createButtonPlugin({ writeMemory })] });
 ```
 
-The default editor includes this plugin. It owns argument handling, memory resolution, geometry, drawing, and
+It owns argument handling, memory resolution, geometry, drawing, and
 press/release listeners. Each installation stores its buttons in a private `buttonsByBlock` map and tracks its
 pressed button. Core provides generic directive parsing, block layout, memory resolution, and drawer registration.
 The plugin uses `layout.subscribe` for geometry updates; its button data stays private. Press and release
-handlers subscribe to `codeBlockPointerDown` and `mouseup`.
+handlers subscribe to `codeBlockPointerDown` and `codeBlockPointerUp`.
 
 Memory references can point to module declarations or exposed group memory through the existing public memory API.
 Integer and float values are drawn from their respective memory views. Disposal releases a held button and removes

@@ -9,7 +9,6 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 200,
     "y": 75,
   },
   "disabled": false,
@@ -30,11 +29,6 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 200,
   "x": 100,
   "y": 200,
@@ -50,7 +44,6 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
   "cursor": {
     "col": 5,
     "row": 3,
-    "x": 999,
     "y": 999,
   },
   "disabled": false,
@@ -71,11 +64,6 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": 100,
   "y": 200,
@@ -91,7 +79,6 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 200,
     "y": 110,
   },
   "disabled": false,
@@ -112,11 +99,6 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 200,
   "x": 100,
   "y": 200,
@@ -132,7 +114,6 @@ exports[`createMockCodeBlock > default values > should create a block with defau
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,
@@ -153,11 +134,6 @@ exports[`createMockCodeBlock > default values > should create a block with defau
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": 0,
   "y": 0,
@@ -173,7 +149,6 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": -50,
     "y": 50,
   },
   "disabled": false,
@@ -194,11 +169,6 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": -100,
   "y": -200,
@@ -214,7 +184,6 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 0,
     "y": 0,
   },
   "disabled": false,
@@ -235,11 +204,6 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 0,
   "x": 0,
   "y": 0,
@@ -255,7 +219,6 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 150,
     "y": 50,
   },
   "disabled": false,
@@ -277,11 +240,6 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": 100,
   "y": 200,
@@ -300,7 +258,6 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,
@@ -336,11 +293,6 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": 0,
   "y": 0,
@@ -356,7 +308,6 @@ exports[`createMockCodeBlock > override behavior > should override position and 
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 300,
     "y": 75,
   },
   "disabled": false,
@@ -377,11 +328,6 @@ exports[`createMockCodeBlock > override behavior > should override position and 
   "name": "test-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 200,
   "x": 200,
   "y": 300,
@@ -397,7 +343,6 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
   "cursor": {
     "col": 0,
     "row": 0,
-    "x": 50,
     "y": 50,
   },
   "disabled": false,
@@ -418,11 +363,6 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
   "name": "custom-block",
   "parsedDirectives": [],
   "projectPath": "",
-  "widgets": {
-    "blockHighlights": [],
-    "errorMessages": [],
-    "shapeDeclarations": [],
-  },
   "width": 100,
   "x": 0,
   "y": 0,

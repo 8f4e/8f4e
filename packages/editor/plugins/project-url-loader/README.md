@@ -18,9 +18,15 @@ when that source is an empty project. `onError(error)` receives the original fet
 fallback is installed; a failure does not call `onLoaded`. With no URL, neither callback runs. Disposal suppresses both
 notifications for pending requests. Callback errors are not treated as fetch or parser failures.
 
+The plugin contributes ID `project-url` and message `Loading project...` while fetching, parsing, and installing
+source. Success/failure settle its status; disposal cancels pending work. Results remain in state independently of presentation.
+No URL means no indicator.
+Initial URL loading still completes before the first canvas frame; its retained terminal result can be shown
+once rendering starts.
+
 Completion means source installation. Compilation, runtime startup, and binary assets have their own lifecycle.
 
-The default editor gives an explicit initial URL priority by disabling the session plugin's restoration. The URL
+When composing with session persistence, the host can give an explicit initial URL priority by disabling session restoration. The URL
 loader does not know about session storage, and the session plugin does not know about URLs. Both use the same project
 replacement path, which also clears file associations appropriately. Disposal unregisters listeners and prevents a
 pending request from replacing the project after the editor closes.

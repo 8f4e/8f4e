@@ -1,9 +1,6 @@
-# Code rendering plugin
+# Code Rendering Plugin
 
-- Own code/notes highlighting, visible text preparation, line-number drawing, glyph resolution, and cached rows here.
-- Export `codeRenderingPlugin`; default and minimal compositions install it eagerly.
-- Keep source/display geometry, tab parsing/advance rules, gaps, cursor placement, and hit testing in editor-state.
-- Use the content drawer hook, before foreground drawings/diagnostics. Keep generic sprite packing and drawing in web-ui.
-- Prepare cells after `codeBlockLayoutsChanged`, outside the frame loop. Keep the cache private per installation.
-- Dispose the event listener, drawer, and cache explicitly. Add no core-owned text snapshots or compatibility aliases.
-- Run the build, test, typecheck, and test:screenshot Nx targets for this package.
+- Own code/note text, syntax highlights, nested block backgrounds, line numbers and selected-line fill.
+  Editor-state owns source/display geometry and hit testing. Web-ui owns generic sprite drawing.
+- Prepare private cells and rectangles outside the frame loop for the settled blocks in
+  `codeBlockLayoutsChanged`. Draw highlights and selected-line fill below text in the same block drawer.

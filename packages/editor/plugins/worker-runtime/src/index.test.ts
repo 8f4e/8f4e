@@ -42,6 +42,7 @@ function setup(config = ['enabled true'], ready = true) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	const cleanup = () => {
@@ -70,7 +71,9 @@ function setup(config = ['enabled true'], ready = true) {
 		getCodeBuffer,
 		cleanup,
 		configure: (settings: string[]) =>
-			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(settings) }], { affectsCompilation: true }),
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(settings) }], {
+				affectsCompilation: true,
+			}),
 		compile: () => {
 			store.set('compiler.isCompiling', true);
 			memory = new WebAssembly.Memory({ initial: 1 });
@@ -84,9 +87,10 @@ it.each([
 	[['entry alternate'], 'alternate'],
 ])('initializes the worker with configured entry %s', (settings, entry) => {
 	const test = setup(['enabled true', 'sampleRate 25', ...settings]);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 	expect(test.workers[0].postMessage).toHaveBeenCalledExactlyOnceWith({
 		type: 'init',
+		requestId: expect.any(Number),
 		payload: {
 			memoryRef: expect.any(WebAssembly.Memory),
 			entry,
@@ -104,11 +108,17 @@ it('handles initialized and stats messages through its fixed info namespace', ()
 		timerDriftMs: 0.5,
 		timerExpectedIntervalTimeMs: 20,
 	};
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+		{ id: 'worker-runtime', message: 'Starting worker runtime...', status: 'loading' },
+	]);
 	test.events.dispatch.mockClear();
-	test.workers[0].onMessage({ data: { type: 'initialized', payload: {} } });
+	test.workers[0].onMessage({
+		data: { type: 'initialized', requestId: test.workers[0].postMessage.mock.calls.at(-1)![0].requestId, payload: {} },
+	});
 	test.workers[0].onMessage({ data: { type: 'stats', payload: stats } });
 	expect(test.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 	expect(test.state.info.workerRuntime).toEqual(stats);
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });
 
 it('waits for compiler memory, then resends updated artifacts without creating another worker', () => {
@@ -167,5 +177,5 @@ it('configures and replaces its contributed constant name', () => {
 	expect(test.workers[0].postMessage).toHaveBeenLastCalledWith(
 		expect.objectContaining({ payload: expect.objectContaining({ sampleRate: 25 }) })
 	);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 });

@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
@@ -7,92 +8,17 @@ import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/
 import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
-import entryOutlines from './features/entryOutlines/effect';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
 
-describe('code block rendering error mapping', () => {
-	it('maps project-scope compiler errors by canonical group path', () => {
-		const rootScope = createMockCodeBlock({
-			code: ['pass env'],
-			isProjectScope: true,
-			projectPath: '',
-			creationIndex: 7,
-		});
-		const group = createMockCodeBlock({
-			name: 'audio',
-			code: ['group audio', 'pass env', 'groupEnd'],
-			projectPath: '',
-			childProject: { entries: [], path: '', blocks: [] },
-			creationIndex: 8,
-		});
-		const state = createMockState({
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [rootScope, group] } },
-			codeErrors: {
-				compilationErrors: [
-					{ lineNumber: 0, codeBlockId: -1, projectGroupPath: '', message: 'Undefined root constant' },
-					{ lineNumber: 1, codeBlockId: -1, projectGroupPath: 'audio', message: 'Undefined child constant' },
-				],
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		codeBlockRenderingEffect(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-
-		expect(rootScope.widgets.errorMessages[0]?.message.join('')).toContain('Undefined root constant');
-		expect(group.widgets.errorMessages[0]?.message.join('')).toContain('Undefined child constant');
-	});
-
-	it('maps compiler errors by creationIndex', () => {
-		const functionBlock = createMockCodeBlock({
-			name: 'helper',
-			creationIndex: 7,
-			code: ['function helper', 'push 1', 'functionEnd'],
-			blockType: 'function',
-		});
-		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [functionBlock] },
-			},
-			codeErrors: {
-				compilationErrors: [
-					{
-						lineNumber: 2,
-						codeBlockId: 7,
-						message: 'Memory access is not allowed in pure functions. (19)',
-					},
-				],
-			},
-		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-
-		codeBlockRenderingEffect(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-
-		expect(functionBlock.widgets.errorMessages).toHaveLength(1);
-		expect(functionBlock.widgets.errorMessages[0].lineNumber).toBe(2);
-		expect(functionBlock.widgets.errorMessages[0].message).toContain(' Error:');
-	});
-});
-
 describe('code block rendering cursor selection', () => {
-	it('updates the selected code block cursor through the store when a line is clicked', () => {
+	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
 		const selectedBlock = createMockCodeBlock({
-			code: ['zero', 'one', 'two'],
+			code: ['; @tab 4', '\tvalue', 'two'],
 			lineNumberColumnWidth: 1,
 		});
 		const state = createMockState({
+			editorMode,
 			featureFlags: {
 				codeLineSelection: true,
 			},
@@ -122,13 +48,43 @@ describe('code block rendering cursor selection', () => {
 		)?.[1] as ((event: { relativeX: number; relativeY: number; codeBlock: typeof selectedBlock }) => void) | undefined;
 
 		codeBlockPointerDownHandler?.({
-			relativeX: 0,
+			relativeX: 8 * 8,
 			relativeY: state.viewport.hGrid,
 			codeBlock: selectedBlock,
 		});
 
-		expect(selectedBlock.cursor.row).toBe(1);
+		expect(selectedBlock.cursor).toEqual({ row: 1, col: 2, y: 16 });
 		expect(onSelectedRowChanged).toHaveBeenCalledWith(1);
+	});
+	it('keeps folded source selection and gap geometry available without an editing plugin', () => {
+		const block = createMockCodeBlock({ code: ['note test', '; @hide', '; @tab 4', '\tvalue', 'noteEnd'] });
+		const state = createMockState({
+			editorMode: 'view',
+			codeBlockRendering: { currentProject: { path: '', entries: [], blocks: [block] } },
+		});
+		const store = createStateManager(state);
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		const layout = createLayoutRegistry(codeBlock =>
+			events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
+		);
+		codeBlockRenderingEffect(store, events, directiveDefinitions, layout);
+		expect(block.isCollapsed).toBe(true);
+		const contribution = layout.createContribution();
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }] });
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		expect(block.isCollapsed).toBe(false);
+		Object.assign(state.viewport, { vGrid: 12, hGrid: 24 });
+		events.dispatch('gridSizeChanged');
+		events.dispatch('codeBlockPointerDown', { codeBlock: block, relativeX: 96, relativeY: 132 });
+		expect(block.cursor).toEqual({ row: 3, col: 2, y: 120 });
+		expect(state.editorMode).toBe('view');
+		contribution.dispose();
+		store.dispose();
 	});
 });
 
@@ -242,7 +198,7 @@ describe('code block rendering home directive', () => {
 		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'voice')).toBe(false);
 	});
 
-	it('outlines imported group entries in the root and nested project views', () => {
+	it('retains imported entry membership in root and nested project views', () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
 group audio
@@ -276,39 +232,32 @@ entryEnd`);
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		entryOutlines(store);
 		projectGroupNavigation(store, events);
 		store.set('initialProjectState', project);
 
 		const root = state.codeBlockRendering.rootProject.blocks;
 		const audio = root.find(block => block.name === 'audio')!;
 		expect(audio.entry).toBe('main');
-		expect(state.codeBlockRendering.entryOutlines.map(outline => outline.entryName)).toEqual(['main', 'test']);
-		expect(state.codeBlockRendering.entryOutlines[0]).toMatchObject({ topLeft: { x: 16, y: 256 } });
+		expect(state.codeBlockRendering.currentProject.entries).toEqual(['main', 'test']);
+		expect(root.find(block => block.name === 'checks')!.entry).toBe('test');
 
 		const openGroup = vi.mocked(events.on).mock.calls.find(([name]) => name === 'openProjectGroup')![1];
 		const goBack = vi.mocked(events.on).mock.calls.find(([name]) => name === 'goToParentProjectGroup')![1];
 		openGroup({ codeBlock: audio });
 		const voices = state.codeBlockRendering.currentProject.blocks[0];
 		expect(voices.name).toBe('voices');
-		expect(state.codeBlockRendering.entryOutlines).toHaveLength(1);
-		expect(state.codeBlockRendering.entryOutlines[0]).toMatchObject({
-			entryName: 'main',
-			topLeft: { x: 176, y: 576 },
-		});
+		expect(state.codeBlockRendering.currentProject.entries).toEqual(['main']);
+		expect(state.codeBlockRendering.currentProject.blocks[0].entry).toBe('main');
 
 		openGroup({ codeBlock: voices });
 		expect(state.codeBlockRendering.currentProject.blocks[0].name).toBe('voice');
-		expect(state.codeBlockRendering.entryOutlines).toHaveLength(1);
-		expect(state.codeBlockRendering.entryOutlines[0]).toMatchObject({
-			entryName: 'main',
-			topLeft: { x: 336, y: 896 },
-		});
+		expect(state.codeBlockRendering.currentProject.entries).toEqual(['main']);
+		expect(state.codeBlockRendering.currentProject.blocks[0].entry).toBe('main');
 
 		goBack(undefined);
 		goBack(undefined);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(root);
-		expect(state.codeBlockRendering.entryOutlines.map(outline => outline.entryName)).toEqual(['main', 'test']);
+		expect(state.codeBlockRendering.currentProject.entries).toEqual(['main', 'test']);
 		store.dispose();
 	});
 

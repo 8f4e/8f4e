@@ -1,6 +1,14 @@
 /*
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin
+
+/
+  Link: <https://cdn.polgarand.org/fonts/DepartureMono14-Regular.woff2>; rel=preload; as=font; type="font/woff2"; crossorigin
+
+/examples/
+  Link: <https://cdn.polgarand.org/fonts/DepartureMono14-Regular.woff2>; rel=preload; as=font; type="font/woff2"; crossorigin
+
+/tests/
   Link: <https://cdn.polgarand.org/fonts/DepartureMono14-Regular.woff2>; rel=preload; as=font; type="font/woff2"; crossorigin
 
 /assets/*.8f4e

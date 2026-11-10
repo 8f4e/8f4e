@@ -13,7 +13,7 @@ export function createEvents(): EventDispatcher {
 				(listeners.get(name) ?? []).filter(item => item.callback !== callback)
 			);
 		},
-		dispatch: (name, event) => {
+		dispatch: (name, ...[event]) => {
 			for (const capture of [true, false]) {
 				for (const item of listeners.get(name) ?? []) {
 					if (item.capture !== capture) continue;

@@ -78,13 +78,16 @@ describe('default editor plugins', () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage, captureWheel: false });
+		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBeUndefined();
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
 			'project-file-session',
 			'project-url-loader',
 			'session-persistence',
+			'code-block-background',
 			'code-rendering',
+			'loading-indicators',
 			'deferred-loader',
 		]);
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
@@ -93,7 +96,8 @@ describe('default editor plugins', () => {
 		expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds).toContain('mouse-input');
-		expect(pluginIds).not.toContain('touch-viewport-navigation');
+		expect(pluginIds).not.toContain('selection-animation');
+		expect(pluginIds).not.toContain('touch-input');
 		expect(pluginIds[0]).toBe('compiler');
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
@@ -101,8 +105,17 @@ describe('default editor plugins', () => {
 				'keyboard-navigation',
 				'keyboard-editing',
 				'font-preview',
+				'code-block-background',
 				'code-rendering',
 				'connectors',
+				'error-messages',
+				'jump-to-error',
+				'loading-indicators',
+				'dialogs',
+				'context-menu',
+				'block-authoring',
+				'entry-outlines',
+				'offscreen-block-arrows',
 				'tooltips',
 				'favorites',
 				'project-file-session',
@@ -110,6 +123,7 @@ describe('default editor plugins', () => {
 		);
 		expect(pluginIds).not.toContain('watch');
 		expect(pluginIds).not.toContain('stack');
+		expect(pluginIds).not.toContain('pwa-updates');
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
@@ -122,7 +136,7 @@ describe('default editor plugins', () => {
 			restoreOnStartup: true,
 		});
 		expect(createExampleModulesPlugin).toHaveBeenCalledWith({ sources: exampleModuleSources });
-		expect(createKeyboardMemoryPlugin).toHaveBeenCalledWith({ inputTarget: canvas, writeMemory });
+		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
 		const { fileSession } = vi.mocked(createProjectOpenPlugin).mock.calls[0][0];
@@ -138,6 +152,18 @@ describe('default editor plugins', () => {
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
 		editor.dispose();
+	});
+
+	it('defers the PWA update plugin when the host supplies a service worker', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		await mountDefaultEditor(canvas, {
+			storage: {} as Storage,
+			pwaUpdates: { ready: new Promise<ServiceWorkerRegistration>(() => {}) },
+		});
+		expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
+		const plugins = await loadDeferredPlugins();
+		expect(plugins.map(plugin => plugin.id)).toContain('pwa-updates');
 	});
 
 	it('gives an explicit initial URL priority over session restoration', async () => {
@@ -250,13 +276,22 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
 			storage: {} as Storage,
 		});
+		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 		const plugins = await loadDeferredPlugins();
-		expect(plugins.map(plugin => plugin.id)).toEqual(
-			expect.arrayContaining(['mouse-input', 'touch-viewport-navigation'])
-		);
+		expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
 			expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	} finally {
 		vi.unstubAllGlobals();
 	}
+});
+
+it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {
+	const browserWindow = { matchMedia: () => ({ matches: coarse }) };
+	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
+	await mountDefaultEditor({ ownerDocument: { defaultView: browserWindow } } as unknown as HTMLCanvasElement, {
+		defaultFont: 'scientifica5x11',
+		storage: {} as Storage,
+	});
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('scientifica5x11');
 });

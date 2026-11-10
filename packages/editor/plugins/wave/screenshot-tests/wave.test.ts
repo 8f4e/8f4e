@@ -22,7 +22,7 @@ float* playhead &samples
 ; @wave4 &samples count(samples) playhead
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
@@ -35,6 +35,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();
@@ -63,9 +64,9 @@ entryEnd`);
 	memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
-	renderer.pauseRendering();
 
 	try {
 		renderer.renderFrame();

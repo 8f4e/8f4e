@@ -1,6 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
 import type { Slider } from '../types';
@@ -12,7 +13,7 @@ const slider: Slider = {
 	y: 20,
 	width: 32,
 	height: 32,
-	id: 'gain',
+	memoryName: 'gain',
 	allocationUnitAddress: 0,
 	byteAddress: 0,
 	isInteger: false,
@@ -34,7 +35,7 @@ function createMemoryViews(value: number): MemoryViews {
 }
 
 describe('drawSliders', () => {
-	it('draws a vertical bar on each row of the slider handle', () => {
+	it('draws light shade on each row of the slider handle', () => {
 		const engine = createDrawContextMock();
 		const state = createMockState({
 			viewport: { vGrid: 8, hGrid: 16 },
@@ -43,15 +44,15 @@ describe('drawSliders', () => {
 		drawSliders(engine, state, [slider], createMemoryViews(0.5));
 
 		const drawSprite = vi.mocked(engine.drawFill);
-		const drawText = vi.mocked(engine.drawText);
+		const drawGlyphs = vi.mocked(engine.drawGlyphs);
 		expect(drawSprite.mock.calls).toEqual([
 			[0, 0, PALETTE_INDICES.surfaceRaised2, 32, 32],
 			[0, 0, PALETTE_INDICES.accentSurface, 20, 32],
 			[12, 0, PALETTE_INDICES.lightBase, 8, 32],
 		]);
-		expect(drawText.mock.calls).toEqual([
-			[12, 0, '|', PALETTE_INDICES.darkBase],
-			[12, 16, '|', PALETTE_INDICES.darkBase],
+		expect(drawGlyphs.mock.calls).toEqual([
+			[12, 0, textToGlyphIds('░'), PALETTE_INDICES.darkBase],
+			[12, 16, textToGlyphIds('░'), PALETTE_INDICES.darkBase],
 		]);
 	});
 });

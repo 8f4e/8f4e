@@ -33,6 +33,7 @@ function setup(installed = true, mode: 'view' | 'edit' = 'edit') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: () => {};
@@ -66,10 +67,12 @@ describe('WebAssembly export plugin', () => {
 			expect(test.state.contextMenu.open).toBe(false);
 			return test.handle;
 		});
-		test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(
-			item => item.action === 'exportWasm'
-		);
-		test.events.dispatch('mousedown', { x: 80, y: 80, stopPropagation: false });
+		const menuItemIndex = test.state.contextMenu.items.findIndex(item => item.action === 'exportWasm');
+		test.events.dispatch('activateContextMenuItem', {
+			x: 80,
+			y: 80,
+			index: menuItemIndex,
+		});
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledWith({
 			suggestedName: 'project.wasm',
 			types: [{ description: 'WebAssembly Binary', accept: { 'application/wasm': ['.wasm'] } }],

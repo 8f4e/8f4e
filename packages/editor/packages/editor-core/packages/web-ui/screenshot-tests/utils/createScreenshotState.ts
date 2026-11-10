@@ -10,7 +10,6 @@ export default function createScreenshotState(overrides: Partial<State> = {}): S
 			codeLineSelection: true,
 			viewportDragging: false,
 			canvasOverlays: true,
-			offscreenBlockArrows: true,
 		},
 		editorMode: 'view',
 		...overrides,

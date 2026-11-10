@@ -1,16 +1,15 @@
-import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DrawContext as Engine } from '../../drawContext';
+import { describe, expect, it, vi } from 'vitest';
+import type { DrawContext } from '../../drawContext';
 import type { MemoryViews } from '../../types';
 import { createEditorDrawerRegistry } from '../registry';
-import drawModules from './index';
+import drawCodeBlocks from './index';
 
-function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryViews {
+function createMemoryViews(): MemoryViews {
 	return {
 		int8: new Int8Array(0),
 		int16: new Int16Array(0),
-		int32: new Int32Array(int32),
+		int32: new Int32Array(0),
 		uint8: new Uint8Array(0),
 		uint16: new Uint16Array(0),
 		float32: new Float32Array(0),
@@ -18,193 +17,92 @@ function createMemoryViews({ int32 = [] }: { int32?: number[] } = {}): MemoryVie
 	};
 }
 
-function createMockEngine(): Engine {
+function createDrawContext(): DrawContext {
 	return {
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),
-		drawSprite: vi.fn(),
-		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
-		drawText: vi.fn(),
-		drawResolvedText: vi.fn(),
-	} as unknown as Engine;
+	} as unknown as DrawContext;
 }
 
-describe('drawModules', () => {
-	it('runs plugin drawers inside each visible block group in registration order', () => {
+describe('drawCodeBlocks', () => {
+	it('runs the ordered registry once inside each visible block and removes only the requested drawer', () => {
 		const visible = createMockCodeBlock({ width: 96, height: 64, x: 16, y: 16 });
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
 		});
-		const engine = createMockEngine();
+		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
-		const unregisterContent = drawers.registerCodeBlockContentDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
-			calls.push('content');
-		});
-		const unregisterForeground = drawers.registerCodeBlockForegroundDrawer(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			calls.push('foreground');
-		});
-		const first = vi.fn(context => {
-			expect(context).toEqual({ draw: engine, state, codeBlock: visible, memoryViews });
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
+		drawers.registerCodeBlockDrawer(context => {
+			expect(context).toEqual({ draw, state, codeBlock: visible, memoryViews });
+			expect(draw.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
 			calls.push('first');
 		});
-		const unregister = drawers.registerCodeBlockDrawer(first);
-		drawers.registerCodeBlockDrawer(() => calls.push('second'));
-		const unregisterOverlay = drawers.registerCodeBlockOverlay(context => {
-			expect(context.codeBlock).toBe(visible);
-			expect(engine.startGroup).toHaveBeenLastCalledWith(visible.x, visible.y);
-			calls.push('overlay');
-		});
-		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay']);
-		unregisterContent();
-		unregisterForeground();
-		unregister();
-		unregisterOverlay();
-		drawModules(engine, state, memoryViews, drawers);
-		expect(calls).toEqual(['content', 'foreground', 'first', 'second', 'overlay', 'second']);
-		expect(first).toHaveBeenCalledOnce();
+		const removeSecond = drawers.registerCodeBlockDrawer(() => calls.push('second'));
+		drawers.registerCodeBlockDrawer(() => calls.push('third'));
+		drawCodeBlocks(draw, state, memoryViews, drawers);
+		expect(calls).toEqual(['first', 'second', 'third']);
+		removeSecond();
+		drawCodeBlocks(draw, state, memoryViews, drawers);
+		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
 	});
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
-
-	it.each(['view', 'edit'] as const)('draws an animated outline only for the selected block in %s mode', editorMode => {
-		const selectedBlock = createMockCodeBlock({ creationIndex: 0, width: 96, height: 64 });
-		const otherBlock = createMockCodeBlock({ creationIndex: 1, x: 160, width: 96, height: 64 });
+	it('calls visible and offscreen drawers in the same block traversal', () => {
+		const offscreen = createMockCodeBlock({ x: 1200 });
+		const visible = createMockCodeBlock({ creationIndex: 1, x: 24, y: 32 });
 		const state = createMockState({
-			editorMode,
 			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [selectedBlock, otherBlock] },
-				selectedCodeBlock: selectedBlock,
+				currentProject: { entries: [], path: '', blocks: [offscreen, visible, offscreen] },
 			},
 		});
-		const engine = createMockEngine();
-		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-		const outlineCalls = () => vi.mocked(engine.drawText).mock.calls.filter(call => call[2] !== '+');
-
-		drawModules(engine, state, createMemoryViews());
-		const initialOutline = outlineCalls();
-		expect(initialOutline).toHaveLength(4);
-
-		vi.mocked(engine.drawText).mockClear();
-		now.mockReturnValue(80);
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(4);
-		expect(outlineCalls()).not.toEqual(initialOutline);
-
-		vi.mocked(engine.drawText).mockClear();
-		state.codeBlockRendering.selectedCodeBlock = otherBlock;
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(4);
-
-		vi.mocked(engine.drawText).mockClear();
-		state.codeBlockRendering.selectedCodeBlock = undefined;
-		drawModules(engine, state, createMemoryViews());
-		expect(outlineCalls()).toHaveLength(0);
-	});
-
-	it('draws content above highlights and below foreground drawings and diagnostics', () => {
-		const block = createMockCodeBlock({
-			width: 96,
-			height: 64,
-			widgets: {
-				blockHighlights: [],
-				shapeDeclarations: [],
-				errorMessages: [{ x: 8, y: 32, message: ['Diagnostic'] }],
-			},
-		});
-		const state = createMockState({
-			editorMode: 'edit',
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [block] }, selectedCodeBlock: block },
-		});
-		const engine = createMockEngine();
+		const draw = createDrawContext();
 		const drawers = createEditorDrawerRegistry();
-		const content = vi.fn(() => engine.drawText(8, 0, 'Content', PALETTE_INDICES.inkBase));
-		drawers.registerCodeBlockContentDrawer(content);
-		drawers.registerCodeBlockForegroundDrawer(() => engine.drawText(8, 0, 'Foreground', PALETTE_INDICES.inkBase));
-		drawModules(engine, state, createMemoryViews(), drawers);
-		const text = vi.mocked(engine.drawText).mock.calls.map(([, , text]) => text);
-		expect(text.indexOf('Content')).toBeLessThan(text.indexOf('Foreground'));
-		expect(text.indexOf('Foreground')).toBeLessThan(text.findIndex(text => text.includes('Diagnostic')));
-		expect(vi.mocked(engine.drawFill).mock.invocationCallOrder[1]).toBeLessThan(content.mock.invocationCallOrder[0]);
+		const calls: string[] = [];
+		drawers.registerOffscreenCodeBlockDrawer((context, codeBlock, currentState) => {
+			expect([context, codeBlock, currentState]).toEqual([draw, offscreen, state]);
+			calls.push('offscreen');
+		});
+		drawers.registerCodeBlockDrawer(() => calls.push('visible'));
+		drawCodeBlocks(draw, state, createMemoryViews(), drawers);
+		expect(calls).toEqual(['offscreen', 'visible', 'offscreen']);
+		expect(draw.startGroup).toHaveBeenNthCalledWith(1, -state.viewport.x, -state.viewport.y);
+		expect(draw.startGroup).toHaveBeenCalledTimes(2);
+
+		state.featureFlags.canvasOverlays = false;
+		calls.length = 0;
+		drawCodeBlocks(draw, state, createMemoryViews(), drawers);
+		expect(calls).toEqual(['visible']);
 	});
 
-	it('draws precomputed entry outlines before rendering code blocks', () => {
-		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [] },
-				entryOutlines: [
-					{
-						entryName: 'main',
-						topLeft: { x: 8, y: 16 },
-						topRight: { x: 104, y: 16 },
-						bottomRight: { x: 104, y: 96 },
-						bottomLeft: { x: 8, y: 96 },
-					},
-				],
-			},
-			viewport: {
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const engine = createMockEngine();
-
-		drawModules(engine, state, createMemoryViews());
-
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(1, 8, 16, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(2, 8, 95, PALETTE_INDICES.strokeBase, 96, 1);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(3, 8, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect(vi.mocked(engine.drawFill)).toHaveBeenNthCalledWith(4, 103, 16, PALETTE_INDICES.strokeBase, 1, 80);
-		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).toHaveBeenCalledWith(
-			16,
-			16,
-			'main',
-			PALETTE_INDICES.inkStrong
-		);
+	it('replaces the offscreen drawer and clears only the current registration on disposal', () => {
+		const drawers = createEditorDrawerRegistry();
+		const draw = createDrawContext();
+		const state = createMockState();
+		const block = createMockCodeBlock({ x: 10000 });
+		const first = vi.fn();
+		const second = vi.fn();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		const removeFirst = drawers.registerOffscreenCodeBlockDrawer(first);
+		const removeSecond = drawers.registerOffscreenCodeBlockDrawer(second);
+		removeFirst();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		expect(first).not.toHaveBeenCalled();
+		expect(second).toHaveBeenCalledExactlyOnceWith(draw, block, state);
+		removeSecond();
+		drawers.drawOffscreenCodeBlock(draw, block, state);
+		expect(first).not.toHaveBeenCalled();
+		expect(second).toHaveBeenCalledOnce();
 	});
 
-	it('can skip off-screen arrow indicators', () => {
-		const offscreenBlock = createMockCodeBlock({
-			x: 1200,
-			y: 384,
-			width: 100,
-			height: 80,
-		});
-		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [offscreenBlock] },
-			},
-			viewport: {
-				width: 1024,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-				center: { x: 512, y: 384 },
-				borderLineCoordinates: {
-					top: { startX: 0, startY: 0, endX: 1024, endY: 0 },
-					right: { startX: 1024, startY: 0, endX: 1024, endY: 768 },
-					bottom: { startX: 0, startY: 768, endX: 1024, endY: 768 },
-					left: { startX: 0, startY: 0, endX: 0, endY: 768 },
-				},
-			},
-			featureFlags: {
-				offscreenBlockArrows: false,
-			},
-		});
-		const engine = createMockEngine();
-
-		drawModules(engine, state, createMemoryViews());
-
-		expect((engine as unknown as { drawText: ReturnType<typeof vi.fn> }).drawText).not.toHaveBeenCalled();
+	it('does not restore an overwritten offscreen drawer', () => {
+		const drawers = createEditorDrawerRegistry();
+		const first = vi.fn();
+		drawers.registerOffscreenCodeBlockDrawer(first);
+		const removeCurrent = drawers.registerOffscreenCodeBlockDrawer(vi.fn());
+		removeCurrent();
+		drawers.drawOffscreenCodeBlock(createDrawContext(), createMockCodeBlock(), createMockState());
+		expect(first).not.toHaveBeenCalled();
 	});
 });

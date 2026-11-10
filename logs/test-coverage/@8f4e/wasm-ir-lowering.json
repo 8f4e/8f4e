@@ -1,0 +1,132 @@
+[
+	{
+		"commit": "d95510d3fc815518b5cb913a089b06e092a335d3",
+		"recordedAt": "2026-11-09T14:27:34.724Z",
+		"coverage": {
+			"statements": {
+				"covered": 380,
+				"total": 392,
+				"percentage": 96.93
+			},
+			"branches": {
+				"covered": 135,
+				"total": 148,
+				"percentage": 91.21
+			},
+			"functions": {
+				"covered": 96,
+				"total": 99,
+				"percentage": 96.96
+			},
+			"lines": {
+				"covered": 368,
+				"total": 380,
+				"percentage": 96.84
+			}
+		}
+	},
+	{
+		"commit": "1c816a428e1dc5281ec9b457ff5d9bc6e1af11cc",
+		"recordedAt": "2026-11-09T16:45:28.420Z",
+		"coverage": {
+			"statements": {
+				"covered": 380,
+				"total": 392,
+				"percentage": 96.93
+			},
+			"branches": {
+				"covered": 135,
+				"total": 148,
+				"percentage": 91.21
+			},
+			"functions": {
+				"covered": 96,
+				"total": 99,
+				"percentage": 96.96
+			},
+			"lines": {
+				"covered": 368,
+				"total": 380,
+				"percentage": 96.84
+			}
+		}
+	},
+	{
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"recordedAt": "2026-11-10T10:51:42.096Z",
+		"coverage": {
+			"statements": {
+				"covered": 515,
+				"total": 527,
+				"percentage": 97.72
+			},
+			"branches": {
+				"covered": 203,
+				"total": 218,
+				"percentage": 93.11
+			},
+			"functions": {
+				"covered": 130,
+				"total": 133,
+				"percentage": 97.74
+			},
+			"lines": {
+				"covered": 494,
+				"total": 506,
+				"percentage": 97.62
+			}
+		}
+	},
+	{
+		"commit": "cdcc6f18f60b21f6992047ea66e9cfbda0c1e639",
+		"recordedAt": "2026-11-10T13:15:06.485Z",
+		"coverage": {
+			"statements": {
+				"covered": 517,
+				"total": 529,
+				"percentage": 97.73
+			},
+			"branches": {
+				"covered": 214,
+				"total": 230,
+				"percentage": 93.04
+			},
+			"functions": {
+				"covered": 130,
+				"total": 133,
+				"percentage": 97.74
+			},
+			"lines": {
+				"covered": 495,
+				"total": 507,
+				"percentage": 97.63
+			}
+		}
+	},
+	{
+		"commit": "bcc0ac9fa9285ffd00c19eb0d9c2d268813c56ea",
+		"recordedAt": "2026-11-10T18:02:17.539Z",
+		"coverage": {
+			"statements": {
+				"covered": 517,
+				"total": 529,
+				"percentage": 97.73
+			},
+			"branches": {
+				"covered": 214,
+				"total": 230,
+				"percentage": 93.04
+			},
+			"functions": {
+				"covered": 130,
+				"total": 133,
+				"percentage": 97.74
+			},
+			"lines": {
+				"covered": 495,
+				"total": 507,
+				"percentage": 97.63
+			}
+		}
+	}
+]

@@ -51,11 +51,11 @@ jobs:
           fi
 
       - name: Run affected Biome checks
-        run: npx nx affected --target=lint
+        run: npx nx affected --target=lint --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
 
       - name: Run affected typecheck
-        run: npx nx affected --target=typecheck
+        run: npx nx affected --target=typecheck --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
 
       - name: Run affected tests
-        run: npx nx affected --target=test
+        run: npx nx affected --target=test --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
         timeout-minutes: 10

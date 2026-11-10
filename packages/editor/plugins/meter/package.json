@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-meter",
-  "version": "0.1.20",
+  "version": "0.1.38",
   "private": true,
   "description": "Meter directive plugin for the 8f4e editor",
   "type": "module",
@@ -20,17 +20,15 @@
     "@8f4e/editor-palette": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-types": "*",
-    "@8f4e/web-ui": "*",
-    "@8f4e/language-spec": "*",
-    "@8f4e/tokenizer": "*"
+    "@8f4e/web-ui": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/compiler": "*",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12",
     "@8f4e/sprite-generator": "*"
   }
 }

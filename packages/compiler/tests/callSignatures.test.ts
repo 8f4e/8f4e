@@ -57,7 +57,7 @@ call convert 2
 drop
 functionEnd
 `),
-			{ disableSharedMemory: true, includeStackAnalysis: true }
+			{ includeStackAnalysis: true }
 		);
 		const calls = result.compiledModules.caller.stackAnalysis!.filter(line => line.instruction === 'call');
 		expect(calls.map(line => line.resolvedCall)).toEqual([

@@ -11,18 +11,19 @@ import type {
 	Stack,
 } from '@8f4e/language-spec';
 import { ArgumentType, BASE_TYPE_METADATA, getMemoryBaseType, getPointerDepthFromMetadata } from '@8f4e/language-spec';
-import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import { kindToStackItem, resolveArgumentValueKind, resolveMemoryValueKind } from '../utils/pushValueKind';
 import { createStackValue, produce } from './stack';
 
 function getAddressMemoryItem(context: CompilationContext, address: AddressMetadata) {
 	const range = address.safeRange ?? address.clampRange;
-	const memoryId = range?.memoryId;
-	if (!memoryId) {
+	if (range?.memoryId === undefined) {
 		return undefined;
 	}
 
-	return getResolvedMemoryDeclaration(context, memoryId, range.moduleId);
+	const moduleId = range.moduleId ?? context.namespace.moduleName;
+	const currentModule = context.currentPlannedModule;
+	const module = !moduleId || moduleId === currentModule?.id ? currentModule : context.memoryPlan.modules[moduleId];
+	return module?.declarations[range.memoryId];
 }
 
 function getAddressPointeeMetadata(context: CompilationContext, address: AddressMetadata) {

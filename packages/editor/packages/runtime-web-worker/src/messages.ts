@@ -3,6 +3,7 @@
 /** Messages posted by the host to the worker. */
 export type WebWorkerHostMessage = {
 	type: 'init';
+	requestId: number;
 	payload: {
 		memoryRef: WebAssembly.Memory;
 		entry: string;
@@ -20,6 +21,6 @@ export interface WebWorkerStats {
 
 /** Messages posted by the worker to the host. */
 export type WebWorkerRuntimeMessage =
-	| { type: 'initialized'; payload: Record<string, never> }
+	| { type: 'initialized'; requestId: number; payload: Record<string, never> }
 	| { type: 'stats'; payload: WebWorkerStats }
-	| { type: 'compilationError'; payload: unknown };
+	| { type: 'compilationError'; requestId: number; payload: unknown };

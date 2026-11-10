@@ -1,251 +1,106 @@
-import type { InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { DialogContent, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it, type MockInstance } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import dialog from './effect';
 
-describe('dialog effect', () => {
-	function setup(state: State) {
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+const content: DialogContent = {
+	id: 'confirmation',
+	title: 'Confirm',
+	text: 'Continue?',
+	buttons: [{ title: 'Cancel' }, { title: 'Allow', action: 'confirmAction', payload: { id: 42 } }],
+};
 
-		dialog(store, events);
+function setup(state: State = createMockState()) {
+	const store = createStateManager(state);
+	const events = createMockEventDispatcherWithVitest();
+	const dispose = dialog(store, events);
+	cleanups.push(() => {
+		dispose();
+		store.dispose();
+	});
+	const emit = <T>(name: string, event?: T) => {
+		const callback = vi.mocked(events.on).mock.calls.find(call => call[0] === name)?.[1];
+		if (!callback) throw new Error(`Missing listener: ${name}`);
+		callback(event);
+	};
+	return { state, store, events, emit, dispose };
+}
 
-		const onResize = (events.on as unknown as MockInstance).mock.calls.find(
-			call => call[0] === 'resize'
-		)![1] as () => void;
-
-		function emit<T>(eventName: string, event?: T) {
-			const callback = (events.on as unknown as MockInstance).mock.calls.find(call => call[0] === eventName)![1] as (
-				event?: T
-			) => void;
-			callback(event);
-		}
-
-		return { emit, events, onResize };
-	}
-
-	it('uses the minimum dialog width when half the viewport is too narrow', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'test-dialog',
-					text: 'Short text',
-					title: 'Test Dialog',
-					buttons: [],
-				},
-			],
-			viewport: {
-				width: 640,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const { onResize } = setup(state);
-
-		onResize();
-
-		expect(state.dialog.width).toBe(512);
-		expect(state.dialog.height).toBe(96);
-		expect(state.dialog.x).toBe(64);
-		expect(state.dialog.y).toBe(336);
+describe('dialog lifecycle', () => {
+	it('keeps content available without a presentation plugin and restores the previous dialog', () => {
+		const { state, emit } = setup();
+		emit('addDialog', content);
+		expect(state.dialog).toEqual(content);
+		emit('addDialog', { ...content, id: 'second', title: 'Second' });
+		expect(state.dialog.id).toBe('second');
+		emit('removeDialog', { id: 'second' });
+		expect(state.dialog).toEqual(content);
+		emit('removeDialog', content.id);
+		expect(state.dialogStack).toEqual([]);
+		expect(state.dialog).toEqual({ id: '', title: '', text: '', buttons: [] });
 	});
 
-	it('sizes the dialog to half the viewport between the minimum and maximum width', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'test-dialog',
-					text: 'Short text',
-					title: 'Test Dialog',
-					buttons: [],
-				},
-			],
-			viewport: {
-				width: 1280,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const { onResize } = setup(state);
-
-		onResize();
-
-		expect(state.dialog.width).toBe(640);
-		expect(state.dialog.height).toBe(96);
-		expect(state.dialog.x).toBe(320);
-		expect(state.dialog.y).toBe(336);
-	});
-
-	it('caps the dialog width at 96 grid cells', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'test-dialog',
-					text: 'a'.repeat(300),
-					title: 'Test Dialog',
-					buttons: [],
-				},
-			],
-			viewport: {
-				width: 5200,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const { onResize } = setup(state);
-
-		onResize();
-
-		expect(state.dialog.width).toBe(768);
-		expect(state.dialog.height).toBe(144);
-		expect(state.dialog.x).toBe(2216);
-		expect(state.dialog.y).toBe(320);
-		expect(state.dialog.wrappedText[0]).toHaveLength(94);
-	});
-
-	it('renders only the top dialog from the stack', () => {
-		const state = createMockState({
-			viewport: {
-				width: 1280,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const { emit } = setup(state);
-
-		emit('addDialog', {
-			id: 'first-dialog',
-			text: 'First',
-			title: 'First Dialog',
-			buttons: [],
-		});
-
-		expect(state.dialog.id).toBe('first-dialog');
-		expect(state.dialog.title).toBe('First Dialog');
-
-		emit('addDialog', {
-			id: 'second-dialog',
-			text: 'Second',
-			title: 'Second Dialog',
-			buttons: [],
-		});
-
-		expect(state.dialog.id).toBe('second-dialog');
-		expect(state.dialog.title).toBe('Second Dialog');
-
-		emit('removeDialog', { id: 'second-dialog' });
-
-		expect(state.dialog.id).toBe('first-dialog');
-		expect(state.dialog.title).toBe('First Dialog');
-
-		emit('removeDialog', 'first-dialog');
-
+	it('replaces an existing ID at the top of the stack and clears all dialogs', () => {
+		const { state, emit } = setup(createMockState({ dialogStack: [content] }));
+		expect(state.dialog).toEqual(content);
+		emit('addDialog', { ...content, id: 'other' });
+		emit('addDialog', { ...content, title: 'Updated' });
+		expect(state.dialogStack.map(dialog => dialog.id)).toEqual(['other', content.id]);
+		expect(state.dialog.title).toBe('Updated');
+		emit('clearDialogs');
 		expect(state.dialogStack).toEqual([]);
 		expect(state.dialog.id).toBe('');
 	});
 
-	it('lays out and activates dialog buttons while blocking pointer propagation', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'confirmation',
-					text: 'Continue?',
-					title: 'Confirm',
-					buttons: [{ title: 'Cancel' }, { title: 'Allow', action: 'confirmAction', payload: { id: 42 } }],
-				},
-			],
-			viewport: {
-				width: 1280,
-				height: 768,
-				vGrid: 8,
-				hGrid: 16,
-			},
-		});
-		const { emit, events } = setup(state);
-
-		expect(state.dialog.height).toBe(144);
-		expect(state.dialog.buttons).toEqual([
-			{ title: 'Cancel', x: 408, y: 80, width: 112, height: 48 },
-			{ title: 'Allow', action: 'confirmAction', payload: { id: 42 }, x: 528, y: 80, width: 104, height: 48 },
-		]);
-
-		const pointerEvent: InternalMouseEvent = {
-			x: state.dialog.x + state.dialog.buttons[1].x + 1,
-			y: state.dialog.y + state.dialog.buttons[1].y + 1,
-			movementX: 0,
-			movementY: 0,
-			buttons: 1,
-			stopPropagation: false,
-			canvasWidth: 1280,
-			canvasHeight: 768,
-			altKey: false,
-		};
-
-		emit('mousemove', pointerEvent);
-		expect(state.dialog.highlightedButton).toBe(1);
-		expect(pointerEvent.stopPropagation).toBe(true);
-
-		pointerEvent.stopPropagation = false;
-		emit('mousedown', pointerEvent);
-
-		expect(pointerEvent.stopPropagation).toBe(true);
+	it('closes the top dialog before dispatching its button action and payload', () => {
+		const { state, emit, events } = setup(createMockState({ dialogStack: [content] }));
+		emit('activateDialogButton', { id: content.id, buttonIndex: 1 });
 		expect(state.dialogStack).toEqual([]);
 		expect(events.dispatch).toHaveBeenCalledWith('confirmAction', { id: 42 });
 	});
 
-	it('blocks clicks outside dialog buttons without closing the dialog', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'loading',
-					text: 'Please wait',
-					title: 'Loading',
-					buttons: [],
-				},
-			],
-		});
-		const { emit, events } = setup(state);
-		const pointerEvent = {
-			x: 0,
-			y: 0,
-			stopPropagation: false,
-		} as InternalMouseEvent;
+	it('keeps a dialog open when the activated button opts out of closing', () => {
+		const keepOpen = { ...content, buttons: [{ title: 'Retry', action: 'retryAction', close: false }] };
+		const { state, emit, events } = setup(createMockState({ dialogStack: [keepOpen] }));
+		emit('activateDialogButton', { id: content.id, buttonIndex: 0 });
+		expect(state.dialogStack).toEqual([keepOpen]);
+		expect(events.dispatch).toHaveBeenCalledWith('retryAction', undefined);
+	});
 
-		emit('mousedown', pointerEvent);
-
-		expect(pointerEvent.stopPropagation).toBe(true);
-		expect(state.dialogStack).toHaveLength(1);
+	it('closes buttons without actions', () => {
+		const { state, emit, events } = setup(createMockState({ dialogStack: [content] }));
+		emit('activateDialogButton', { id: content.id, buttonIndex: 0 });
+		expect(state.dialogStack).toEqual([]);
 		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
-	it('keeps the dialog open when a button opts out of closing it', () => {
-		const state = createMockState({
-			dialogStack: [
-				{
-					id: 'retry-dialog',
-					text: 'Try again?',
-					title: 'Retry',
-					buttons: [{ title: 'Retry', action: 'retryAction', close: false }],
-				},
-			],
-		});
-		const { emit, events } = setup(state);
-		const button = state.dialog.buttons[0];
-		const pointerEvent = {
-			x: state.dialog.x + button.x + 1,
-			y: state.dialog.y + button.y + 1,
-			stopPropagation: false,
-		} as InternalMouseEvent;
+	it.each(['pointerdown', 'pointermove', 'pointerup', 'contextmenu'])(
+		'blocks %s even without a presentation plugin',
+		name => {
+			const { state, emit, events } = setup(createMockState({ dialogStack: [content] }));
+			const event = { x: 0, y: 0, stopPropagation: false } as InternalPointerEvent;
+			emit(name, event);
+			expect(event.stopPropagation).toBe(true);
+			expect(state.dialogStack).toHaveLength(1);
+			if (name === 'pointerdown') expect(events.dispatch).toHaveBeenCalledWith('dialogPointerDown', event);
+			else expect(events.dispatch).not.toHaveBeenCalled();
+		}
+	);
 
-		emit('mousedown', pointerEvent);
-
-		expect(state.dialogStack).toHaveLength(1);
-		expect(events.dispatch).toHaveBeenCalledWith('retryAction', undefined);
+	it('leaves pointer input alone when the stack is empty and removes its listeners on disposal', () => {
+		const { emit, events, dispose } = setup();
+		const event = { stopPropagation: false };
+		emit('pointerdown', event);
+		expect(event.stopPropagation).toBe(false);
+		expect(events.dispatch).not.toHaveBeenCalled();
+		dispose();
+		for (const [name, handler] of vi.mocked(events.on).mock.calls)
+			expect(events.off).toHaveBeenCalledWith(name, handler);
 	});
 });

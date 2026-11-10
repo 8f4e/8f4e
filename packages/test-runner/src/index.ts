@@ -28,7 +28,7 @@ export function hasTestEntry(project: ProjectObjectModel): boolean {
 
 function createMemory(requiredMemoryBytes: number): WebAssembly.Memory {
 	const pages = Math.max(1, Math.ceil(requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE));
-	return new WebAssembly.Memory({ initial: pages, maximum: pages });
+	return new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 }
 
 function getExportedFunction(instance: WebAssembly.Instance, name: string): CallableFunction {

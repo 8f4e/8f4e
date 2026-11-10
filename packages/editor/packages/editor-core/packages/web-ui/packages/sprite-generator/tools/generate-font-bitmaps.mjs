@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { GLYPH_COUNT } from '../src/characterSet.ts';
 import { FONTS } from '../src/fonts/catalog.ts';
 
 const output = new URL('../src/generated/', import.meta.url);
@@ -16,8 +17,8 @@ for (const [name, { width, height }] of Object.entries(FONTS)) {
 			return bits;
 		})
 	);
-	if (glyphs.length !== 128 || glyphs.some(glyph => glyph.length !== height)) {
-		throw new Error(`${name} must contain 128 glyphs of height ${height}`);
+	if (glyphs.length !== GLYPH_COUNT || glyphs.some(glyph => glyph.length !== height)) {
+		throw new Error(`${name} must contain ${GLYPH_COUNT} glyphs of height ${height}`);
 	}
 	const packed = width > 8 ? new Uint16Array(rows) : new Uint8Array(rows);
 	const base64 = Buffer.from(packed.buffer).toString('base64');

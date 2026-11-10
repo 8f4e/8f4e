@@ -13,7 +13,7 @@ describe('explicit memory scopes', () => {
 	const rootScope: MemoryScope = { kind: 'project', groupPath: '' };
 
 	beforeAll(async () => {
-		const compiled = await compileProject(parseProjectSource(source), { disableSharedMemory: true });
+		const compiled = await compileProject(parseProjectSource(source));
 		state = createMockState();
 		state.compiler.result.memoryPlan = compiled.memoryPlan;
 		state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;

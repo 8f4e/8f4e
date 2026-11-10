@@ -1,0 +1,223 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loop instruction compiler > compiles a smaller resolved cap 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [],
+    },
+    {
+      "kind": "block",
+      "opcode": 3,
+      "results": [],
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 10,
+    },
+    78,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+    {
+      "depth": 2,
+      "kind": "branch",
+      "opcode": 12,
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;
+
+exports[`loop instruction compiler > compiles the loop segment with default cap 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [],
+    },
+    {
+      "kind": "block",
+      "opcode": 3,
+      "results": [],
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1000,
+    },
+    78,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+    {
+      "depth": 2,
+      "kind": "branch",
+      "opcode": 12,
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;
+
+exports[`loop instruction compiler > compiles the loop segment with explicit cap argument 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 1,
+      "expectedResultTypes": [],
+      "loopCounterIndex": 0,
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [],
+    },
+    {
+      "kind": "block",
+      "opcode": 3,
+      "results": [],
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 32,
+    },
+    78,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+    {
+      "depth": 2,
+      "kind": "branch",
+      "opcode": 12,
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    106,
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

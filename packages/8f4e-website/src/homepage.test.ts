@@ -1,9 +1,9 @@
-import { mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountLandingEditor } from '@8f4e/editor-landing';
 import { afterEach, expect, test, vi } from 'vitest';
-import { getExampleProjectUrl } from './example-projects';
 import { mountHomepageEditors } from './homepage';
+import { getHomepageProjectUrl } from './homepage-projects';
 
-vi.mock('@8f4e/editor-minimal', { spy: true });
+vi.mock('@8f4e/editor-landing', { spy: true });
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -25,7 +25,7 @@ function setup(response?: () => Promise<Response>) {
 	if (response) {
 		const path = 'misc/landingPageDemo1.8f4e';
 		canvas.dataset.projectPath = path;
-		const url = getExampleProjectUrl(path);
+		const url = getHomepageProjectUrl(path);
 		const fetch = globalThis.fetch.bind(globalThis);
 		vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) =>
 			input === url ? response() : fetch(input, options)
@@ -40,11 +40,11 @@ function setup(response?: () => Promise<Response>) {
 		row.remove();
 	});
 	const started = async () => {
-		await vi.waitFor(() => expect(mountMinimalEditor).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(mountLandingEditor).toHaveBeenCalledOnce());
 	};
 	const mounted = async () => {
 		await started();
-		return await vi.mocked(mountMinimalEditor).mock.results[0].value;
+		return await vi.mocked(mountLandingEditor).mock.results[0].value;
 	};
 	return { canvas, frame, started, mounted };
 }
@@ -82,4 +82,52 @@ test('reveals an initialized empty editor when no project URL is supplied', asyn
 	view.canvas.dispatchEvent(enterEdit);
 	expect(enterEdit.defaultPrevented).toBe(false);
 	expect(editor.state.editorMode).toBe('view');
+});
+
+test('runs landing-page projects without opening an invisible context menu', async () => {
+	const view = setup(
+		async () =>
+			new Response(`8f4e/v1
+note settings ; @mode edit
+; @config recompileDebounceDelay 10
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRate 50
+noteEnd
+entry main
+module counter
+; @pos 2 2
+int value 0 ; @watch
+push &value
+push value
+push 1
+add
+store
+moduleEnd
+entryEnd`)
+	);
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
+	await vi.waitFor(
+		() => {
+			const value = editor.state.compiler.result.memoryPlan.modules.counter.memory.value;
+			expect(editor.getMemoryViews().int32[value.allocationUnitAddress]).toBeGreaterThan(0);
+		},
+		{ timeout: 10000 }
+	);
+	await vi.dynamicImportSettled();
+	expect(editor.state.editorMode).toBe('edit');
+	const leaveEdit = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+	view.canvas.dispatchEvent(leaveEdit);
+	expect(leaveEdit.defaultPrevented).toBe(false);
+	expect(editor.state.editorMode).toBe('edit');
+	const contextMenu = new MouseEvent('contextmenu', { clientX: 30, clientY: 30, cancelable: true });
+	view.canvas.dispatchEvent(contextMenu);
+	expect(contextMenu.defaultPrevented).toBe(true);
+	expect(editor.state.contextMenu.open).toBe(false);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
+		const save = new KeyboardEvent('keydown', { key: 's', ...modifier, cancelable: true });
+		view.canvas.dispatchEvent(save);
+		expect(save.defaultPrevented).toBe(false);
+	}
 });

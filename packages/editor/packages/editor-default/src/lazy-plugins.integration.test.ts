@@ -42,6 +42,7 @@ function restoreSession(directive: string, nested = false) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({
@@ -50,6 +51,7 @@ function restoreSession(directive: string, nested = false) {
 		restoreOnStartup: true,
 	}).setup(context);
 	const entries = createLazyPluginRegistry({
+		inputTarget: new EventTarget() as HTMLElement,
 		prefersReducedMotion: () => true,
 		navigator: {} as Navigator,
 		writeMemory: () => {},
@@ -99,8 +101,16 @@ it('loads MIDI from restored raw configuration and registers its schema', async 
 	);
 	await vi.waitFor(() => expect(state.info.midi).toEqual({}));
 	expect(state.editorConfig.midi).toEqual({ inputs: { keys: { port: 0, callback: 'onMidi' } } });
-	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(state.codeErrors['editor-directives']).toEqual([]);
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['midi-input']);
+});
+
+it.each([false, true])('loads keyboard input from restored raw configuration in unopened groups=%s', async nested => {
+	const { state, entries } = restoreSession('config keyboard.keyCodeMemory audio:value', nested);
+	await vi.waitFor(() => expect(state.editorConfigSchemaContributions.keyboard).toBeDefined());
+	expect(state.editorConfig.keyboard).toEqual({ keyCodeMemory: 'audio:value' });
+	expect(state.codeErrors['editor-directives']).toEqual([]);
+	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['keyboard-memory']);
 });
 
 it('loads MIDI from unopened groups while deferring plot until its project level is visited', async () => {
@@ -137,8 +147,8 @@ it('loads binary assets from a restored session and announces their size as comp
 		)
 	);
 	expect(state.compilerInputRevision).toBeGreaterThan(revision);
-	expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
-	expect(fetch).toHaveBeenCalledExactlyOnceWith('https://example.com/lazy.pcm');
+	expect(state.codeErrors['editor-directives']).toEqual([]);
+	expect(fetch).toHaveBeenCalledExactlyOnceWith('https://example.com/lazy.pcm', { signal: expect.any(AbortSignal) });
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['binary-assets']);
 });
 
@@ -150,7 +160,7 @@ it.each([
 	const { state, entries } = restoreSession(directive, true);
 	await vi.waitFor(() => {
 		expect(state.editorConfigSchemaContributions.textureRuntime).toBeDefined();
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
 	expect(entries.find(entry => entry.id === 'texture-runtime')!.load).toHaveBeenCalledOnce();
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['texture-runtime']);

@@ -3,7 +3,9 @@
  * These types do not belong to any single feature and are used by multiple subsystems.
  */
 
-import type { CompilerSourceBlockType, ProjectGroupPath } from '@8f4e/language-spec';
+import type { ProjectGroupPath } from '@8f4e/language-spec';
+import type { CodeBlockGraphicData } from '../features/code-blocks/types';
+import type { EditorEventArguments, EditorEventPayload } from './events';
 
 /**
  * Generic size dimensions used across features.
@@ -31,8 +33,12 @@ export interface GridCoordinates {
 }
 
 export interface EventSubscriptionOptions {
-	/** Run before ordinary listeners, in capture registration order. */
+	/** Run in the capture phase of this layer, or before unlayered normal listeners. */
 	capture?: boolean;
+	/** UI handlers run from higher layers to lower layers, newest registration first within each phase.
+	 * Unlayered listeners retain capture/normal registration order after the UI layers.
+	 */
+	layer?: number;
 }
 
 /**
@@ -40,15 +46,30 @@ export interface EventSubscriptionOptions {
  * Used throughout the editor for decoupled communication between features.
  */
 export interface EventDispatcher {
-	on: <T>(eventName: string, callback: (event: T) => void, options?: EventSubscriptionOptions) => void;
-	off: <T>(eventName: string, callback: (event: T) => void) => void;
-	dispatch: <T>(eventName: string, eventObject?: T) => void;
+	on: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		callback: (event: EditorEventPayload<Name, Payload>) => void,
+		options?: EventSubscriptionOptions
+	) => void;
+	off: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		callback: (event: EditorEventPayload<Name, Payload>) => void
+	) => void;
+	dispatch: <Name extends string, Payload = unknown>(
+		eventName: Name,
+		...args: EditorEventArguments<Name, Payload, EventDispatchOptions>
+	) => void;
+}
+
+export interface EventDispatchOptions {
+	/** Deliver one phase only; omitted means capture followed by ordinary listeners. */
+	phase?: 'capture' | 'normal';
 }
 
 /**
- * Internal mouse event payload for editor mouse interactions.
+ * Device-independent pointer input translated by browser input adapters.
  */
-export interface InternalMouseEvent {
+export interface InternalPointerEvent {
 	x: number;
 	y: number;
 	movementX: number;
@@ -61,17 +82,24 @@ export interface InternalMouseEvent {
 	altKey: boolean;
 }
 
+export interface CodeBlockPointerDownEvent {
+	x: number;
+	y: number;
+	relativeX: number;
+	relativeY: number;
+	codeBlock: CodeBlockGraphicData;
+	/** A control sets this when it takes ownership of the pointer. */
+	stopPropagation: boolean;
+}
+
 /**
- * Shared code error shape used across compiler, directive, and config validation flows.
+ * A raw source error contributed to shared editor state.
  */
 export interface CodeError {
 	lineNumber: number;
 	message: string;
 	/** Creation index of the code block that owns the error. */
 	codeBlockId: number;
-	codeBlockType?: CompilerSourceBlockType;
 	/** Project scope that owns an error not associated with a document block id. */
 	projectGroupPath?: ProjectGroupPath;
-	/** Optional producer id for shared error buckets that contain errors from multiple owners. */
-	ownerId?: string;
 }

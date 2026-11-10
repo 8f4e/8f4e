@@ -23,7 +23,7 @@ float maximum 1.0
 ; @slider &maximum 0 1
 moduleEnd
 entryEnd`);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
@@ -36,6 +36,7 @@ entryEnd`);
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();
@@ -64,9 +65,9 @@ entryEnd`);
 	memoryViews.float32[memory.maximum.allocationUnitAddress] = 1;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
-	renderer.pauseRendering();
 
 	try {
 		renderer.renderFrame();

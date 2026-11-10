@@ -7,6 +7,7 @@ export default defineConfig(() => ({
 		viteStaticCopy({
 			targets: [
 				{ src: '_headers', dest: '' },
+				{ src: '404.html', dest: '' },
 				{ src: 'robots.txt', dest: '' },
 			],
 		}),

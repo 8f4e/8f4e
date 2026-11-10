@@ -2698,5 +2698,275 @@
 			"gzip": 63109,
 			"brotli": 54739
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T14:30:16.694Z",
+		"commit": "00b0300fdb569954889b9839b1c25fae77752cb2",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.1.11",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.1.11",
+		"bytes": {
+			"raw": 208094,
+			"gzip": 61706,
+			"brotli": 53568
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T15:49:41.028Z",
+		"commit": "2a9e771f2ad1f48c85205ea1db04ff54018ae972",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.0",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.0",
+		"bytes": {
+			"raw": 207677,
+			"gzip": 61462,
+			"brotli": 53265
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T17:28:31.938Z",
+		"commit": "be8e647bd219d1b896748dd73e4adac10902454e",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.1",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.1",
+		"bytes": {
+			"raw": 204830,
+			"gzip": 60689,
+			"brotli": 52681
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T21:32:02.328Z",
+		"commit": "fbeee891026b53addb46c605df6d4bd6cb7fced9",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.2",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.2",
+		"bytes": {
+			"raw": 204830,
+			"gzip": 60690,
+			"brotli": 52661
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-04T13:20:56.344Z",
+		"commit": "5768fbd6fcf5b9f465d7a56e9e5ca79ab3c371b4",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.3",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.3",
+		"bytes": {
+			"raw": 203306,
+			"gzip": 60251,
+			"brotli": 52234
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T09:50:55.920Z",
+		"commit": "53f6821f4adf341f0e933d5d591d951a238aba11",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.4",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.4",
+		"bytes": {
+			"raw": 197190,
+			"gzip": 58353,
+			"brotli": 50627
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T10:53:02.966Z",
+		"commit": "0fe68ea07d1c1cf018d5d91c08d09a9cbd0d211a",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.5",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.5",
+		"bytes": {
+			"raw": 197283,
+			"gzip": 58327,
+			"brotli": 50615
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T14:25:12.770Z",
+		"commit": "a78d1c7a260e488b815b340ac9a124aa39133104",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.6",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.6",
+		"bytes": {
+			"raw": 201197,
+			"gzip": 59708,
+			"brotli": 51888
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T10:44:26.162Z",
+		"commit": "f051ad536d2a4682766e1a4e41c7781cc261ffd5",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.7",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.7",
+		"bytes": {
+			"raw": 202579,
+			"gzip": 60115,
+			"brotli": 52157
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T15:19:14.172Z",
+		"commit": "c134e8b0d7f1735ea8513c31b5dd401afc02371f",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.8",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.8",
+		"bytes": {
+			"raw": 203569,
+			"gzip": 61027,
+			"brotli": 52597
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T16:10:56.831Z",
+		"commit": "93bd16bb70a13128061edebecf7d51aad5bd6c13",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.9",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.9",
+		"bytes": {
+			"raw": 203531,
+			"gzip": 61305,
+			"brotli": 52930
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T16:54:54.329Z",
+		"commit": "61b73127550a70fe8ba94f3ae6c3e0bfee2f9528",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.10",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.10",
+		"bytes": {
+			"raw": 204101,
+			"gzip": 61482,
+			"brotli": 52998
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T20:43:13.326Z",
+		"commit": "7eb75ba7db1b0a329562c88d43ebba764c4e41f1",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.11",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.11",
+		"bytes": {
+			"raw": 204303,
+			"gzip": 61568,
+			"brotli": 53180
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-09T14:27:36.092Z",
+		"commit": "d95510d3fc815518b5cb913a089b06e092a335d3",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.2.12",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.2.12",
+		"bytes": {
+			"raw": 204678,
+			"gzip": 61682,
+			"brotli": 53245
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-09T16:45:33.724Z",
+		"commit": "1c816a428e1dc5281ec9b457ff5d9bc6e1af11cc",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.3.0",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.3.0",
+		"bytes": {
+			"raw": 205439,
+			"gzip": 61903,
+			"brotli": 53393
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T10:51:44.076Z",
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.3.1",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.3.1",
+		"bytes": {
+			"raw": 205599,
+			"gzip": 61933,
+			"brotli": 53396
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T13:15:08.231Z",
+		"commit": "cdcc6f18f60b21f6992047ea66e9cfbda0c1e639",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.3.2",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.3.2",
+		"bytes": {
+			"raw": 205766,
+			"gzip": 61968,
+			"brotli": 53460
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T18:02:19.438Z",
+		"commit": "bcc0ac9fa9285ffd00c19eb0d9c2d268813c56ea",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-website@5.4.0",
+		"packageName": "@8f4e/editor-website",
+		"projectName": "@8f4e/editor-website",
+		"version": "5.4.0",
+		"bytes": {
+			"raw": 205766,
+			"gzip": 61968,
+			"brotli": 53460
+		}
 	}
 ]

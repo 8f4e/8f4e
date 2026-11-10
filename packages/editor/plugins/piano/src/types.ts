@@ -1,4 +1,5 @@
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import type { GlyphIds } from '@8f4e/web-ui';
 
 export interface PianoKeyboard {
 	x: number;
@@ -26,7 +27,7 @@ export interface PianoKeyboard {
 export interface PianoKeyboardKey {
 	offset: number;
 	x: number;
-	label: string;
+	glyphs: GlyphIds;
 	kind: 'white' | 'black';
 	pressedOverlayRows: number[];
 }

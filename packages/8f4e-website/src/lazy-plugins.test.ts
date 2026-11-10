@@ -1,5 +1,5 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
-import { mountMinimalEditor } from '@8f4e/editor-minimal';
+import { mountGalleryEditor } from '@8f4e/editor-gallery';
 import { afterEach, expect, test, vi } from 'vitest';
 
 const cleanups: Array<() => void> = [];
@@ -23,13 +23,64 @@ async function setup(source: string, assets: Record<string, () => Promise<Respon
 	canvas.style.height = '512px';
 	document.body.append(canvas);
 	cleanups.push(() => canvas.remove());
-	const editor = await mountMinimalEditor(canvas, { initialProjectUrl: projectUrl });
+	const editor = await mountGalleryEditor(canvas, { initialProjectUrl: projectUrl });
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
-	await vi.waitFor(() => expect(editor.state.editorConfigSchemaContributions.keyboard).toBeDefined());
 	await vi.dynamicImportSettled();
 	return { canvas, editor };
 }
+
+test.each([false, true])(
+	'gallery editor loads keyboard-to-memory with initial configuration=%s',
+	async initialConfig => {
+		const { canvas, editor } = await setup(
+			`8f4e/v1
+note settings ; @mode edit
+; @config recompileDebounceDelay 10
+${initialConfig ? '; @config keyboard.keyCodeMemory keys:code\n; @config keyboard.keyPressedMemory keys:pressed' : ''}
+noteEnd
+entry main
+module keys
+int code
+int pressed
+moduleEnd
+entryEnd`
+		);
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
+		if (!initialConfig) {
+			expect(editor.state.editorConfigSchemaContributions.keyboard).toBeUndefined();
+			const config = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+			editor.editing.applyEdits({
+				expectedRevision: editor.editing.getRevision(),
+				edits: [
+					{
+						type: 'update',
+						blockId: getEditorBlockId(config),
+						code: [
+							...config.code.slice(0, -1),
+							'; @config keyboard.keyCodeMemory keys:code',
+							'; @config keyboard.keyPressedMemory keys:pressed',
+							'noteEnd',
+						],
+					},
+				],
+			});
+		}
+		await vi.waitFor(() => expect(editor.state.editorConfigSchemaContributions.keyboard).toBeDefined());
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+		const memory = editor.getMemoryViews().int32;
+		const targets = editor.state.compiler.result.memoryPlan.modules.keys.memory;
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }));
+		expect(memory[targets.code.allocationUnitAddress]).toBe(4);
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(1);
+		canvas.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA' }));
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(0);
+		editor.dispose();
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyB' }));
+		expect(memory[targets.code.allocationUnitAddress]).toBe(4);
+		expect(memory[targets.pressed.allocationUnitAddress]).toBe(0);
+	}
+);
 
 test('loads watch and stack with their aliases after entering a group', async () => {
 	const { canvas, editor } = await setup(`8f4e/v1
@@ -57,10 +108,23 @@ entryEnd`);
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
+	// Keep startup indicators out of this watch/stack snapshot without mutating their state.
+	await expect
+		.poll(
+			() =>
+				editor.state.loadingIndicators.every(
+					indicator =>
+						indicator.finishedAt !== null &&
+						Date.now() - indicator.finishedAt >
+							(indicator.status === 'done' ? 3000 : 5000) + 25 * editor.state.loadingIndicators.length
+				),
+			{ timeout: 10000 }
+		)
+		.toBe(true);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 });
 
 test('recompiles with asset size constants after a lazy asset fetch completes', async () => {
@@ -86,10 +150,12 @@ entryEnd`,
 		{ [assetUrl]: fetchAsset }
 	);
 	await vi.waitFor(() => expect(fetchAsset).toHaveBeenCalledOnce());
-	await vi.waitFor(() => expect(editor.state.codeErrors.compilationErrors.length).toBeGreaterThan(0), {
+	await vi.waitFor(() => expect(editor.state.codeErrors.compiler.length).toBeGreaterThan(0), {
 		timeout: 10000,
 	});
-	expect(editor.state.dialogStack.some(dialog => dialog.id === 'binary-assets-loading')).toBe(true);
+	expect(editor.state.loadingIndicators).toContainEqual(
+		expect.objectContaining({ id: 'asset:sound', message: 'Loading sound...', status: 'loading' })
+	);
 	finish(new Response(new Uint8Array([1, 2, 3, 4, 5, 6])));
 	await vi.waitFor(
 		() => expect(editor.state.compiler.result.memoryPlan.modules.player?.memory.buffer.numberOfElements).toBe(6),
@@ -100,8 +166,9 @@ entryEnd`,
 	expect([...editor.getMemoryViews().uint8.slice(memory.byteAddress, memory.byteAddress + 6)]).toEqual([
 		1, 2, 3, 4, 5, 6,
 	]);
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
-	expect(editor.state.codeErrors.compilationErrors).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
+	expect(editor.state.codeErrors.compiler).toEqual([]);
+	expect(editor.state.loadingIndicators).toContainEqual(expect.objectContaining({ id: 'asset:sound', status: 'done' }));
 	expect(editor.state.dialogStack).toEqual([]);
 });
 
@@ -218,7 +285,7 @@ functionEnd`);
 	);
 	expect(requestAccess).toHaveBeenCalledOnce();
 	expect(editor.state.info.midi).toEqual({ '0': 'Keys (in)' });
-	expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	const memory = editor.getMemoryViews().int32;
 	const address = editor.state.compiler.result.memoryPlan.modules.received.memory.status.allocationUnitAddress;
 	editor.dispose();

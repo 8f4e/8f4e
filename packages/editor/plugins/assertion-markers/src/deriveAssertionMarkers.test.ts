@@ -63,7 +63,6 @@ describe('assertion marker derivation', () => {
 			),
 			{
 				enableAssertions: true,
-				disableSharedMemory: true,
 			}
 		);
 		const result = await runTests(compiled);

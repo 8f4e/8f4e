@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
 /** The input bridge is small; text editing loads on the first entry into edit mode. */
@@ -8,10 +8,10 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 		setup: context => {
 			const { store } = context;
 			let editing: typeof import('./editing') | undefined;
-			const removeCaret = context.drawers.registerCodeBlockForegroundDrawer(drawContext =>
-				editing?.drawCaret(drawContext)
-			);
+			let caret: ReturnType<typeof import('./editing')['createCaretPresentation']> | undefined;
+			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
 			let loading = false;
+			let indicator: LoadingIndicatorHandle | undefined;
 			let disposed = false;
 			let replaying = false;
 			const queued: Array<KeyboardEvent | FocusEvent> = [];
@@ -35,17 +35,23 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			const load = async () => {
 				if (loading || editing) return;
 				loading = true;
+				indicator = context.loading.add({ id: 'text-editing', message: 'Loading text editing...' });
 				try {
 					const module = await import('./editing');
 					if (disposed) return;
+					caret = module.createCaretPresentation(store.getState(), context.events);
 					editing = module;
 					// Replay through the input target so independent navigation and mode bindings retain their order.
 					for (const event of queued.splice(0)) replay(event);
+					indicator.done();
 				} catch (error) {
+					indicator.fail();
 					discardInput();
 					if (!disposed) logError(store.getState(), `Failed to load keyboard editing: ${String(error)}`);
 				} finally {
 					loading = false;
+					indicator.cancel();
+					indicator = undefined;
 				}
 			};
 			const onModeChanged = () => {
@@ -80,8 +86,10 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			onModeChanged();
 			return () => {
 				disposed = true;
+				indicator?.cancel();
 				discardInput();
 				removeCaret();
+				caret?.dispose();
 				inputTarget.removeEventListener('keydown', onKeydown, { capture: true });
 				inputTarget.removeEventListener('paste', onPaste);
 				inputTarget.removeEventListener('keyup', onPendingRelease, { capture: true });

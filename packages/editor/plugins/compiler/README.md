@@ -29,13 +29,18 @@ plugin receives its worker and include dependencies directly.
 
 Core emits `compilationInputChanged` after `compilerInputRevision` advances. Source edits, project loading and
 undo/redo, block insertion/removal, execution changes, regenerated environment constants, and saved control defaults
-advance that revision after their derived state is updated. Visual edits and navigation do not advance it.
+advance that revision after their derived state is updated. Visual edits that preserve compilation inputs and
+navigation leave the revision unchanged.
 
 The plugin listens to that event, debounces it, and serializes the latest root code-block tree, including nested
 projects. The default delay is 500ms; projects can set `; @config recompileDebounceDelay 120`. The plugin contributes an integer schema with a minimum of zero through
-`editorConfigSchemaContributions.compiler`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
+`editorConfigSchemaContributions.compilerDebounce`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
 root project declares a `test` entry or an enabled function exported as `test`. Group entries named `test` remain
 local; groups placed inside the root test entry run their own `main` as part of that test.
+
+Each active compilation contributes `{ id: 'compiler', message: 'Compiling...' }` through `loading.add` after
+debounce. Success and failure report their respective terminal status; superseded attempts and disposal cancel
+pending work. Sequential attempts replace the same ID. Results and finish timestamps remain in state independently of presentation.
 
 For an accepted result, the plugin first updates its artifact handles and emits `compilationSucceeded` with the
 `ProgramArtifacts` needed for rendering: `memoryRef`. Core consumes that event to refresh memory views; bytecode stays
@@ -51,11 +56,37 @@ during compilation coalesce into the latest snapshot once its debounce interval 
 successes and failures cannot replace handles, rendering artifacts, compiler metadata, or diagnostics. Failed current
 compilations retain the previous memory and bytecode and publish the diagnostic instead.
 
+The plugin replaces its raw errors through `codeErrors.compiler` and removes that contribution on disposal.
+Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
+Inline message layout and drawing belong to `editor-plugin-error-messages`.
+
+## Wasm optimization
+
+Memory access guards are enabled by default. Use `; @config compiler.memoryGuards.enabled false` to emit direct
+memory accesses for the project. With guards disabled, out-of-bounds accesses trap in Wasm.
+
+Pruning removes unreachable functions and unused local slots by default. Use
+`; @config compiler.wasmPruning.enabled false` to disable it independently of inlining.
+
+The editor inlines eligible functions by default. Use `; @config compiler.functionInlining.enabled false` to disable
+inlining for the project, or set it to `true` to enable it explicitly. Changes to these settings trigger compilation.
+
+```8f4e
+; @config compiler.functionInlining.maxExpansionOperations 24
+; @config compiler.functionInlining.maxCallerGrowth 64
+```
+
+Both limits accept non-negative integers, including zero. `maxExpansionOperations` caps each replacement, including
+argument stores and local initialization. `maxCallerGrowth` caps the total additional operations from inlining in
+each caller. Both limits count lowered Wasm operations. The default caller budget allows 128 extra operations
+from duplicating bodies. An explicit caller-growth limit applies to all expansions. Each replacement has no size
+limit unless configured.
+
 ## Lifecycle
 
 Editor initialization installs plugins before loading initial content. On editor disposal, core sends `dispose` to
 dispose execution plugins before releasing compiler resources. Plugins are released in reverse installation order, so dependent
-feature plugins shut down before the compiler. Compiler cleanup removes its event listener and configuration schema,
+feature plugins shut down before the compiler. Compiler cleanup removes its event listener and configuration schemas,
 cancels the debounce, ignores late results, rejects pending worker requests, and terminates its worker. Cleanup also
 runs after initialization failures and when another plugin's disposer throws.
 

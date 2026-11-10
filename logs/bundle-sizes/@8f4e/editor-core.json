@@ -2473,5 +2473,275 @@
 			"gzip": 2301,
 			"brotli": 2003
 		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T14:30:16.706Z",
+		"commit": "00b0300fdb569954889b9839b1c25fae77752cb2",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.9",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.9",
+		"bytes": {
+			"raw": 5893,
+			"gzip": 2243,
+			"brotli": 1950
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T15:49:41.039Z",
+		"commit": "2a9e771f2ad1f48c85205ea1db04ff54018ae972",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.10",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.10",
+		"bytes": {
+			"raw": 5893,
+			"gzip": 2243,
+			"brotli": 1950
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T17:28:31.949Z",
+		"commit": "be8e647bd219d1b896748dd73e4adac10902454e",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.11",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.11",
+		"bytes": {
+			"raw": 6226,
+			"gzip": 2386,
+			"brotli": 2075
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-03T21:32:02.340Z",
+		"commit": "fbeee891026b53addb46c605df6d4bd6cb7fced9",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.12",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.12",
+		"bytes": {
+			"raw": 6226,
+			"gzip": 2386,
+			"brotli": 2075
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-04T13:20:56.352Z",
+		"commit": "5768fbd6fcf5b9f465d7a56e9e5ca79ab3c371b4",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.13",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.13",
+		"bytes": {
+			"raw": 6226,
+			"gzip": 2386,
+			"brotli": 2075
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T09:50:55.930Z",
+		"commit": "53f6821f4adf341f0e933d5d591d951a238aba11",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.14",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.14",
+		"bytes": {
+			"raw": 6226,
+			"gzip": 2386,
+			"brotli": 2075
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T10:53:02.977Z",
+		"commit": "0fe68ea07d1c1cf018d5d91c08d09a9cbd0d211a",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.15",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.15",
+		"bytes": {
+			"raw": 6226,
+			"gzip": 2386,
+			"brotli": 2075
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-05T14:25:12.782Z",
+		"commit": "a78d1c7a260e488b815b340ac9a124aa39133104",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.1.16",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.1.16",
+		"bytes": {
+			"raw": 6280,
+			"gzip": 2397,
+			"brotli": 2086
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T10:44:26.175Z",
+		"commit": "f051ad536d2a4682766e1a4e41c7781cc261ffd5",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.0",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.0",
+		"bytes": {
+			"raw": 7195,
+			"gzip": 2700,
+			"brotli": 2362
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T15:19:14.183Z",
+		"commit": "c134e8b0d7f1735ea8513c31b5dd401afc02371f",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.1",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.1",
+		"bytes": {
+			"raw": 7195,
+			"gzip": 2700,
+			"brotli": 2362
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T16:10:56.841Z",
+		"commit": "93bd16bb70a13128061edebecf7d51aad5bd6c13",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.2",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.2",
+		"bytes": {
+			"raw": 7205,
+			"gzip": 2717,
+			"brotli": 2377
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T16:54:54.342Z",
+		"commit": "61b73127550a70fe8ba94f3ae6c3e0bfee2f9528",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.3",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.3",
+		"bytes": {
+			"raw": 7205,
+			"gzip": 2717,
+			"brotli": 2377
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-06T20:43:13.336Z",
+		"commit": "7eb75ba7db1b0a329562c88d43ebba764c4e41f1",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.4",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.4",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-09T14:27:36.101Z",
+		"commit": "d95510d3fc815518b5cb913a089b06e092a335d3",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.2.5",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.2.5",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-09T16:45:33.737Z",
+		"commit": "1c816a428e1dc5281ec9b457ff5d9bc6e1af11cc",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.3.0",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.3.0",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T10:51:44.090Z",
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.3.1",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.3.1",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T13:15:08.245Z",
+		"commit": "cdcc6f18f60b21f6992047ea66e9cfbda0c1e639",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.3.2",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.3.2",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
+	},
+	{
+		"schemaVersion": 1,
+		"recordedAt": "2026-11-10T18:02:19.449Z",
+		"commit": "bcc0ac9fa9285ffd00c19eb0d9c2d268813c56ea",
+		"branch": "",
+		"releaseTag": "@8f4e/editor-core@13.4.0",
+		"packageName": "@8f4e/editor-core",
+		"projectName": "@8f4e/editor-core",
+		"version": "13.4.0",
+		"bytes": {
+			"raw": 7239,
+			"gzip": 2724,
+			"brotli": 2390
+		}
 	}
 ]

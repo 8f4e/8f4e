@@ -1,7 +1,13 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { registerSwitchLayout, type SwitchWidget } from './layout';
+
+const ON_LABEL = textToGlyphIds('[ |]');
+const OFF_LABEL = textToGlyphIds('[| ]');
+const INVALID_LABEL = textToGlyphIds('[__]');
 
 export function createSwitchPlugin({
 	writeMemory,
@@ -22,13 +28,14 @@ export function createSwitchPlugin({
 						const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
 						draw.drawFill(control.x, control.y, PALETTE_INDICES.accentSurface, control.width, control.height);
 						draw.drawFill(knobX, control.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, control.height);
-						draw.drawText(control.x, control.y, isOn ? '[ |]' : '[| ]', PALETTE_INDICES.darkBase);
+						draw.drawGlyphs(control.x, control.y, isOn ? ON_LABEL : OFF_LABEL, PALETTE_INDICES.darkBase);
 					} else {
-						draw.drawText(control.x, control.y, '[__]', PALETTE_INDICES.secondaryBase);
+						draw.drawGlyphs(control.x, control.y, INVALID_LABEL, PALETTE_INDICES.secondaryBase);
 					}
 				}
 			});
-			const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+			const onPointerDown = (event: CodeBlockPointerDownEvent) => {
+				const { x, y, codeBlock } = event;
 				const control = widgets
 					.get(codeBlock)
 					?.find(
@@ -39,6 +46,7 @@ export function createSwitchPlugin({
 							y <= codeBlock.y + control.y + control.height - state.viewport.y
 					);
 				if (!control) return;
+				event.stopPropagation = true;
 				const value = state.callbacks.getWordFromMemory?.(control.allocationUnitAddress);
 				writeMemory(
 					control.allocationUnitAddress,
@@ -46,7 +54,7 @@ export function createSwitchPlugin({
 					control.isInteger
 				);
 			};
-			events.on('codeBlockPointerDown', onPointerDown);
+			events.on('codeBlockPointerDown', onPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();

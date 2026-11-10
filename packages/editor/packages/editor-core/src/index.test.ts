@@ -1,5 +1,5 @@
-import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock } from '@8f4e/editor-state';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProgramArtifacts } from './index';
 import type { EditorPluginContext } from './plugins';
 
@@ -16,17 +16,20 @@ const storeState: {
 	editorConfig: Record<string, unknown>;
 	info: Record<string, unknown>;
 	viewport: { hGrid: number; vGrid: number };
+	viewportAnimation: { active: boolean };
 } = {
 	globalEditorDirectives: {},
 	editorConfig: {},
 	info: {},
 	viewport: { hGrid: 16, vGrid: 8 },
+	viewportAnimation: { active: false },
 };
 
 const store = {
 	menus: { registerItem: vi.fn(() => () => {}), registerMenu: vi.fn(() => () => {}) },
 	directives: { register: vi.fn(() => () => {}) },
 	layout: { createContribution: vi.fn(), subscribe: vi.fn(() => () => {}) },
+	loading: { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) },
 	getState: vi.fn(() => storeState),
 	set: vi.fn((path: string, value: unknown) => {
 		if (path === 'info.graphics') {
@@ -43,12 +46,14 @@ const store = {
 
 const view = {
 	resize: vi.fn(() => true),
-	pauseRendering: vi.fn(),
 	releaseRenderingResources: vi.fn(),
-	resumeRendering: vi.fn(),
+	resetRenderStats: vi.fn(),
 	renderFrame: vi.fn(),
 	destroy: vi.fn(),
 };
+
+const requestFrame = vi.fn((_callback: FrameRequestCallback) => 23);
+const cancelFrame = vi.fn();
 
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
@@ -67,6 +72,7 @@ vi.mock('./events', () => ({
 }));
 
 describe('editor init', () => {
+	afterEach(() => vi.unstubAllGlobals());
 	it('announces runtime shutdown before disposing plugin resources', async () => {
 		const { default: init } = await import('./index');
 		const releaseCompiler = vi.fn();
@@ -132,6 +138,7 @@ describe('editor init', () => {
 		];
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
 			plugins,
+			defaultFont: 'pixelcode6x12',
 		});
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
@@ -139,6 +146,7 @@ describe('editor init', () => {
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
+			loading: store.loading,
 			drawers: expect.objectContaining({ registerCodeBlockDrawer: expect.any(Function) }),
 		});
 		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(
@@ -154,6 +162,7 @@ describe('editor init', () => {
 			events.dispatch.mock.invocationCallOrder[initialized]
 		);
 		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
+		expect(vi.mocked(initView).mock.calls.at(-1)![4]!.defaultFont).toBe('pixelcode6x12');
 		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
 		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
 		rendererDrawers.drawCodeBlock(drawContext);
@@ -175,9 +184,12 @@ describe('editor init', () => {
 		store.unsubscribe.mockClear();
 		store.dispose.mockClear();
 		view.resize.mockClear();
-		view.pauseRendering.mockClear();
 		view.releaseRenderingResources.mockClear();
-		view.resumeRendering.mockClear();
+		view.resetRenderStats.mockClear();
+		requestFrame.mockClear();
+		cancelFrame.mockClear();
+		vi.stubGlobal('requestAnimationFrame', requestFrame);
+		vi.stubGlobal('cancelAnimationFrame', cancelFrame);
 		view.renderFrame.mockClear();
 		view.destroy.mockClear();
 		storeState.editorConfig = {};
@@ -266,7 +278,7 @@ describe('editor init', () => {
 		finishProject();
 		await vi.waitFor(() => expect(projectInstalled).toHaveBeenCalledOnce());
 		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
-		expect(loadedState.initialProjectState.notes).toEqual(project.notes);
+		expect(loadedState.initialProjectState!.notes).toEqual(project.notes);
 		expect(loadedState.editorConfig.font).toBe('spleen5x8');
 		expect(view.renderFrame).not.toHaveBeenCalled();
 		expect(ready).not.toHaveBeenCalled();
@@ -282,13 +294,20 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {});
 
+		expect(requestFrame).toHaveBeenCalledOnce();
 		editor.pauseRendering();
+		editor.pauseRendering();
+		expect(cancelFrame).toHaveBeenCalledExactlyOnceWith(23);
 		editor.releaseRenderingResources();
-		editor.resumeRendering();
-
-		expect(view.pauseRendering).toHaveBeenCalledOnce();
 		expect(view.releaseRenderingResources).toHaveBeenCalledOnce();
-		expect(view.resumeRendering).toHaveBeenCalledOnce();
+		editor.resumeRendering();
+		editor.resumeRendering();
+		expect(view.resetRenderStats).toHaveBeenCalledTimes(2);
+		expect(view.renderFrame).toHaveBeenCalledTimes(2);
+		expect(requestFrame).toHaveBeenCalledTimes(2);
+		editor.dispose();
+		expect(cancelFrame).toHaveBeenCalledTimes(2);
+		expect(cancelFrame.mock.invocationCallOrder.at(-1)).toBeLessThan(view.destroy.mock.invocationCallOrder[0]);
 	});
 
 	it('defers drawing when the view cannot apply a resize while rendering resources are released', async () => {
@@ -303,6 +322,96 @@ describe('editor init', () => {
 		expect(events.dispatch).toHaveBeenCalledWith('resize', { canvasWidth: 800, canvasHeight: 600 });
 		expect(view.resize).toHaveBeenLastCalledWith(800, 600);
 		expect(view.renderFrame).not.toHaveBeenCalled();
+		editor.dispose();
+	});
+
+	it('advances viewport state before scheduled and on-demand rendering', async () => {
+		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
+		const { default: initEvents } = await import('./events');
+		const actualState = await vi.importActual<typeof import('@8f4e/editor-state')>('@8f4e/editor-state');
+		const actualEvents = await vi.importActual<typeof import('./events')>('./events');
+		vi.mocked(initState).mockImplementationOnce(actualState.default);
+		vi.mocked(initEvents).mockReturnValueOnce(actualEvents.default());
+		let context!: EditorPluginContext;
+		const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			initialProject: {
+				...EMPTY_DEFAULT_PROJECT,
+				notes: [{ id: 0, code: ['note target', '; @pos 140 20', 'noteEnd'] }],
+			},
+			plugins: [
+				{
+					id: 'frame-test',
+					setup: services => {
+						context = services;
+						return () => {};
+					},
+				},
+			],
+		});
+		try {
+			const state = editor.state;
+			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+			const viewportChanged = vi.fn();
+			context.events.on('viewportChanged', viewportChanged);
+			jumpToCodeBlock(context.store, block.creationIndex);
+			const { targetX, targetY } = state.viewportAnimation;
+			expect(state.viewport).toMatchObject({ x: 0, y: 0 });
+			requestFrame.mock.calls[0][0](1000);
+			view.renderFrame.mockImplementationOnce(() => {
+				expect(state.viewport).toMatchObject({ x: Math.round(targetX / 2), y: Math.round(targetY / 2) });
+				expect(viewportChanged).toHaveBeenCalledOnce();
+			});
+			requestFrame.mock.calls[1][0](1250);
+			expect(state.viewportAnimation.active).toBe(true);
+			expect(requestFrame).toHaveBeenCalledTimes(3);
+
+			editor.pauseRendering();
+			now.mockReturnValue(1500);
+			expect(state.viewportAnimation.active).toBe(true);
+			editor.renderFrame();
+			expect(state.viewport).toMatchObject({ x: targetX, y: targetY });
+			expect(state.viewportAnimation.active).toBe(false);
+			expect(requestFrame).toHaveBeenCalledTimes(3);
+		} finally {
+			editor.dispose();
+			now.mockRestore();
+		}
+	});
+
+	it('cancels the frame loop before releasing renderer resources', async () => {
+		const { default: init } = await import('./index');
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		editor.releaseRenderingResources();
+		expect(cancelFrame).toHaveBeenCalledExactlyOnceWith(23);
+		expect(cancelFrame.mock.invocationCallOrder[0]).toBeLessThan(
+			view.releaseRenderingResources.mock.invocationCallOrder[0]
+		);
+		const frames = view.renderFrame.mock.calls.length;
+		requestFrame.mock.calls[0][0](1000);
+		expect(view.renderFrame).toHaveBeenCalledTimes(frames);
+		expect(requestFrame).toHaveBeenCalledOnce();
+		editor.dispose();
+	});
+
+	it('cleans up when the first frame fails and stops scheduling after a later frame fails', async () => {
+		const { default: init } = await import('./index');
+		const error = new Error('drawing failed');
+		view.renderFrame.mockImplementationOnce(() => {
+			throw error;
+		});
+		await expect(init({ width: 640, height: 480 } as HTMLCanvasElement, {})).rejects.toBe(error);
+		expect(view.destroy).toHaveBeenCalledOnce();
+		expect(requestFrame).not.toHaveBeenCalled();
+
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		view.renderFrame.mockImplementationOnce(() => {
+			throw error;
+		});
+		expect(() => requestFrame.mock.calls[0][0](1000)).toThrow(error);
+		expect(requestFrame).toHaveBeenCalledOnce();
+		editor.dispose();
 	});
 
 	it('adapts to the canvas display size and stops observing when disposed', async () => {

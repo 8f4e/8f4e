@@ -34,7 +34,7 @@ groupEnd
 module alternateRoot
 moduleEnd
 entryEnd`);
-		const first = await compileProject(project, { disableSharedMemory: true });
+		const first = await compileProject(project);
 		const order = (result: typeof first) =>
 			Object.values(result.compiledModules)
 				.sort((a, b) => a.index - b.index)
@@ -49,7 +49,7 @@ entryEnd`);
 		]);
 		const [rootA, synth, rootB, ...alternate] = project.execution;
 		project.execution = [rootA!, rootB!, synth!, ...alternate];
-		const second = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		const second = await compileProject(project, { cache: first.cache });
 		expect(order(second)).toEqual([
 			['rootA', 'main'],
 			['rootB', 'main'],
@@ -63,52 +63,76 @@ entryEnd`);
 	it('re-resolves scalar initializers and restores declaration defaults when removed', async () => {
 		const project = await readProject('./groups/scalar-initializers.test.8f4e');
 		const group = getProjectGroups(project)[0]!;
-		const first = await compileProject(project, { disableSharedMemory: true });
+		const first = await compileProject(project);
 		const previousHits = first.cache.ast.stats.hits;
 		const initializerRow = group.code.findIndex(line => line.startsWith('init &foo '));
 		group.code[initializerRow] = 'init &foo 22';
 
-		const second = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		const second = await compileProject(project, { cache: first.cache });
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(first.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(11);
-		expect(second.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(22);
+		expect(
+			first.memoryDefaultsByModuleId['values/processor']![first.memoryPlan.modules['values/processor'].memory.foo.id]!
+				.value
+		).toBe(11);
+		expect(
+			second.memoryDefaultsByModuleId['values/processor']![second.memoryPlan.modules['values/processor'].memory.foo.id]!
+				.value
+		).toBe(22);
 		expect(getProjectModules(group)[0]!.code).toContain('int foo 3');
 
 		group.code.splice(initializerRow, 1);
-		const restored = await compileProject(project, { disableSharedMemory: true, cache: second.cache });
-		expect(restored.memoryDefaultsByModuleId['values/processor']!.foo!.value).toBe(3);
+		const restored = await compileProject(project, { cache: second.cache });
+		expect(
+			restored.memoryDefaultsByModuleId['values/processor']![
+				restored.memoryPlan.modules['values/processor'].memory.foo.id
+			]!.value
+		).toBe(3);
 	});
 
 	it('re-resolves group initializers without changing cached declaration source', async () => {
 		const project = await readProject('./groups/pointer-initializers.test.8f4e');
 		const group = getProjectGroups(project)[0]!;
-		const first = await compileProject(project, { disableSharedMemory: true });
+		const first = await compileProject(project);
 		const previousHits = first.cache.ast.stats.hits;
 		const initializerRow = group.code.findIndex(line => line.startsWith('init '));
 		group.code[initializerRow] = 'init &input &source:alternate';
 
-		const second = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		const second = await compileProject(project, { cache: first.cache });
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(second.memoryDefaultsByModuleId['synth/processor']!.input!.value).toBe(
-			second.memoryPlan.modules.source!.memory.alternate!.byteAddress
-		);
-		expect(first.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(3);
-		expect(second.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(2);
+		expect(
+			second.memoryDefaultsByModuleId['synth/processor']![second.memoryPlan.modules['synth/processor'].memory.input.id]!
+				.value
+		).toBe(second.memoryPlan.modules.source!.memory.alternate!.byteAddress);
+		expect(
+			first.pointerMetadataByModuleId['synth/processor']![first.memoryPlan.modules['synth/processor'].memory.input.id]!
+				.pointeeElementCount
+		).toBe(3);
+		expect(
+			second.pointerMetadataByModuleId['synth/processor']![
+				second.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.pointeeElementCount
+		).toBe(2);
 		expect(getProjectModules(group).find(module => module.code[0] === 'module processor')!.code).toContain(
 			'int* input &fallback'
 		);
 
 		group.code.splice(initializerRow, 1);
-		const restored = await compileProject(project, { disableSharedMemory: true, cache: second.cache });
-		expect(restored.memoryDefaultsByModuleId['synth/processor']!.input!.value).toBe(
-			restored.memoryPlan.modules['synth/processor']!.memory.fallback!.byteAddress
-		);
-		expect(restored.pointerMetadataByModuleId['synth/processor']!.input!.pointeeElementCount).toBe(2);
+		const restored = await compileProject(project, { cache: second.cache });
+		expect(
+			restored.memoryDefaultsByModuleId['synth/processor']![
+				restored.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.value
+		).toBe(restored.memoryPlan.modules['synth/processor']!.memory.fallback!.byteAddress);
+		expect(
+			restored.pointerMetadataByModuleId['synth/processor']![
+				restored.memoryPlan.modules['synth/processor'].memory.input.id
+			]!.pointeeElementCount
+		).toBe(2);
 	});
 
 	it('re-resolves passed namespaces when cached child ASTs are unchanged', async () => {
 		const project = await readProject('./groups/constant-namespace-passes.test.8f4e');
-		const first = await compileProject(project, { disableSharedMemory: true });
+		const first = await compileProject(project);
 		const previousHits = first.cache.ast.stats.hits;
 		project.constants[0]!.code = [
 			'constants env',
@@ -117,11 +141,17 @@ entryEnd`);
 			'constantsEnd',
 		];
 
-		const second = await compileProject(project, { disableSharedMemory: true, cache: first.cache });
+		const second = await compileProject(project, { cache: first.cache });
 
 		expect(second.cache.ast.stats.hits).toBeGreaterThan(previousHits);
-		expect(second.memoryDefaultsByModuleId['audio/voice']!.rate!.value).toBe(96_000);
-		expect(second.memoryDefaultsByModuleId['audio/nested/nestedVoice']!.blockSize!.value).toBe(96);
+		expect(
+			second.memoryDefaultsByModuleId['audio/voice']![second.memoryPlan.modules['audio/voice'].memory.rate.id]!.value
+		).toBe(96_000);
+		expect(
+			second.memoryDefaultsByModuleId['audio/nested/nestedVoice']![
+				second.memoryPlan.modules['audio/nested/nestedVoice'].memory.blockSize.id
+			]!.value
+		).toBe(96);
 	});
 
 	it('indexes recursively owned group blocks by their canonical paths', async () => {
@@ -130,7 +160,7 @@ entryEnd`);
 		const group = getProjectGroups(project)[0]!;
 		expect(group).toMatchObject({ name: 'synth', entry: 'test' });
 
-		const result = await compileProject(project, { disableSharedMemory: true });
+		const result = await compileProject(project);
 		const compiledModules = Object.values(result.compiledModules).sort((left, right) => left.index - right.index);
 		expect(compiledModules.map(module => module.id)).toEqual([
 			'rootA',
@@ -152,7 +182,7 @@ entryEnd`);
 
 	it('resolves exposure metadata to the backing declaration without allocating alias memory', async () => {
 		const project = await readProject('./groups/memory-exposures.test.8f4e');
-		const result = await compileProject(project, { disableSharedMemory: true });
+		const result = await compileProject(project);
 		const exposure = result.projectMemoryExposuresByGroupPath['processing/audio'][0]!;
 		const targetMemory = result.memoryPlan.modules['processing/audio/source']!.memory.value!;
 
@@ -171,7 +201,7 @@ entryEnd`);
 		{ fixture: 'missing-exposure-memory', targetModuleId: 'audio/source', targetMemoryId: 'missing' },
 	])('reports invalid unused group exposure targets without an AST line: $fixture', async testCase => {
 		const project = await readProject(`./errors/groups/${testCase.fixture}.error.8f4e`);
-		const compilation = compileProject(project, { disableSharedMemory: true });
+		const compilation = compileProject(project);
 
 		await expect(compilation).rejects.toMatchObject({
 			code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,

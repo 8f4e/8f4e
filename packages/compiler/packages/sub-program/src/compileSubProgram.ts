@@ -1,22 +1,17 @@
 import { ConstantResolverError, type ResolveConstantsSubProgramAST, resolveConstants } from '@8f4e/constant-resolver';
+import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
-	AssertionSite,
 	CompiledFunction,
 	CompiledModule,
 	CompileOptions,
-	CompilerCache,
-	ComposedEntry,
+	CompileResult,
 	ComposedPrototypeAST,
 	FunctionMetadata,
 	FunctionMetadataLookup,
 	FunctionRegistry,
-	FunctionTypeRegistry,
-	MemoryDefaults,
 	MemoryLayoutPlan,
-	MemoryPointerMetadataMap,
 	ProjectMemoryExposuresByGroupPath,
 	ValidatedAST,
-	WasmFunctionLayout,
 } from '@8f4e/language-spec';
 import {
 	ALLOCATION_UNIT_BYTE_SIZE,
@@ -31,23 +26,12 @@ import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
 import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
-import { compileFunction, compileModules, planFunctionLayout } from '@8f4e/wasm-codegen';
+import { emitWasmProgram } from '@8f4e/wasm-codegen';
+import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
+import { pruneWasmIR } from '@8f4e/wasm-ir-pruner';
+import { simplifyWasmLocals } from '@8f4e/wasm-ir-simplifier';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
-
-interface CompiledSubProgram {
-	functionLayout: WasmFunctionLayout;
-	assertionSites?: AssertionSite[];
-	entries: ComposedEntry[];
-	compiledModules: CompiledModule[];
-	compiledFunctions: CompiledFunction[];
-	functionTypeRegistry: FunctionTypeRegistry;
-	memoryPlan: MemoryLayoutPlan;
-	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
-	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
-	projectMemoryExposuresByGroupPath: ProjectMemoryExposuresByGroupPath;
-	cache: CompilerCache;
-}
 
 const DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS = 1;
 
@@ -198,7 +182,7 @@ function wrapMemoryPlannerError(error: unknown, subProgramAst: ResolveConstantsS
  * @param options - Compiler options for this compilation pass.
  * @returns The compiled sub-program artifacts.
  */
-export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompiledSubProgram {
+export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompileResult {
 	const { ast: subProgramAst, entries, cache } = program;
 	const entryNames = entries.map(entry => entry.id);
 	let constantResolution: ReturnType<typeof resolveConstants>;
@@ -255,11 +239,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	});
 	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
 
-	const functionTypeRegistry: FunctionTypeRegistry = {
-		types: [],
-		signatures: [],
-		baseTypeIndex: 3,
-	};
 	const semanticReferences = resolveSemanticReferences({
 		ast: subProgramAst,
 		registeredFunctions: registration.declarations,
@@ -269,7 +248,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		constantReferences: constantResolution.references,
 		memoryReferences: memoryReferenceResolution.references,
 		functions: functionRegistry,
-		functionTypeRegistry,
 		prototypeShapes: prototypeShapesById,
 	}).references;
 	const stackReport = analyzeStack({
@@ -277,47 +255,65 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		memoryPlan,
 		pointerMetadataByModuleId,
 		functions: functionRegistry,
-		functionTypeRegistry,
 	});
-
 	const assertionPlan = options.enableAssertions ? planAssertions(semanticReferences, stackReport) : undefined;
-	const functionLayout = planFunctionLayout(
-		semanticReferences,
-		entryNames,
-		assertionPlan?.imports ?? [],
-		functionTypeRegistry
+	const requiredMemoryBytes = memoryPlan.moduleList.reduce(
+		(maximum, module) => Math.max(maximum, module.byteAddress + module.allocatedByteLength),
+		0
 	);
-
-	const compiledFunctions = Object.values(semanticReferences.functions).map(resolved =>
-		compileFunction(
-			resolved,
-			functionTypeRegistry,
-			functionLayout,
-			stackReport.functions[resolved.metadata.id],
-			options,
-			assertionPlan?.calls.get(resolved.ast)
-		)
-	);
-	const compiledModules = compileModules(
-		Object.values(semanticReferences.modules),
-		options,
+	const lowered = lowerToWasmIR({
+		references: semanticReferences,
 		stackReport,
-		functionLayout,
-		functionTypeRegistry,
-		assertionPlan?.calls
-	);
-
-	return {
-		functionLayout,
-		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
 		entries,
+		memoryPlan,
+		memoryDefaultsByModuleId,
+		requiredMemoryBytes,
+		enableMemoryGuards: options.enableMemoryGuards ?? true,
+		assertionCalls: assertionPlan?.calls,
+		assertionImports: assertionPlan?.imports,
+	});
+	const pruneFunctions = options.enableWasmPruning !== false;
+	const pruned = pruneFunctions ? pruneWasmIR(lowered) : lowered;
+	const wasmIR =
+		options.enableFunctionInlining === false
+			? pruned
+			: inlineFunctions(pruned, { ...options.functionInlining, pruneFunctions });
+	const simplified = options.enableWasmLocalSimplification ? simplifyWasmLocals(wasmIR) : wasmIR;
+	const codeBuffer = emitWasmProgram(simplified);
+	const compiledFunctions = Object.fromEntries(
+		Object.entries(semanticReferences.functions).map(([id, { ast, metadata }]) => {
+			const functionResult: CompiledFunction = {
+				...metadata,
+				ast,
+				...(options.includeStackAnalysis ? { stackAnalysis: stackReport.functions[id].stackAnalysis } : {}),
+			};
+			return [id, functionResult];
+		})
+	);
+	const compiledModules = Object.fromEntries(
+		Object.values(semanticReferences.modules).map(({ ast, referenceSlots, skipExecutionInCycle }, index) => {
+			const module: CompiledModule = {
+				referenceSlots,
+				id: ast.id,
+				executionEntryName: ast.executionEntryName,
+				ast,
+				index,
+				...(skipExecutionInCycle ? { skipExecutionInCycle: true } : {}),
+				...(options.includeStackAnalysis ? { stackAnalysis: stackReport.modules[ast.id].stackAnalysis } : {}),
+			};
+			return [ast.id, module];
+		})
+	);
+	return {
+		codeBuffer,
+		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
 		compiledModules,
 		compiledFunctions,
-		functionTypeRegistry,
 		memoryPlan,
 		memoryDefaultsByModuleId,
 		pointerMetadataByModuleId,
 		projectMemoryExposuresByGroupPath,
+		requiredMemoryBytes,
 		cache,
 	};
 }

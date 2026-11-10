@@ -7,7 +7,10 @@ let createKeyboardEditingPlugin: typeof import('./index')['createKeyboardEditing
 
 let finish: () => void;
 let importEditing: ReturnType<typeof vi.fn<() => void>>;
-let drawCaret: ReturnType<typeof vi.fn<typeof import('./editing')['drawCaret']>>;
+type CaretPresentation = ReturnType<typeof import('./editing')['createCaretPresentation']>;
+let drawCaret: ReturnType<typeof vi.fn<CaretPresentation['drawCaret']>>;
+let disposeCaret: ReturnType<typeof vi.fn<CaretPresentation['dispose']>>;
+let createCaretPresentation: ReturnType<typeof vi.fn<typeof import('./editing')['createCaretPresentation']>>;
 let handlePaste: ReturnType<typeof vi.fn<typeof import('./editing')['handlePaste']>>;
 let handleKeydown: ReturnType<typeof vi.fn<typeof import('./editing')['handleKeydown']>>;
 beforeEach(async () => {
@@ -16,13 +19,15 @@ beforeEach(async () => {
 	handleKeydown = vi.fn();
 	handlePaste = vi.fn();
 	drawCaret = vi.fn();
+	disposeCaret = vi.fn();
+	createCaretPresentation = vi.fn(() => ({ drawCaret, dispose: disposeCaret }));
 	const pending = new Promise<void>(resolve => {
 		finish = resolve;
 	});
 	vi.doMock('./editing', async () => {
 		importEditing();
 		await pending;
-		return { handleKeydown, handlePaste, drawCaret };
+		return { handleKeydown, handlePaste, createCaretPresentation };
 	});
 	({ createKeyboardEditingPlugin } = await import('./index'));
 });
@@ -44,7 +49,11 @@ describe('lazy keyboard editing input bridge', () => {
 		await Promise.resolve();
 		expect(importEditing).not.toHaveBeenCalled();
 		test.events.dispatch('enterEditMode');
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'text-editing', message: 'Loading text editing...', status: 'loading' },
+		]);
 		await finishLoading();
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	});
 	it('loads when installed in edit mode', async () => {
 		setup(createKeyboardEditingPlugin);
@@ -116,17 +125,20 @@ describe('lazy keyboard editing input bridge', () => {
 		await finishLoading();
 		expect(handleKeydown.mock.calls.map(([event]) => event.key)).toEqual(['b']);
 	});
-	it('draws through its foreground registration only after loading and unregisters on disposal', async () => {
+	it('draws through its block registration only after loading and unregisters on disposal', async () => {
 		const test = setup(createKeyboardEditingPlugin);
 		const { context } = createDrawingContext(test.state, test.block);
-		test.drawForeground(context);
+		test.drawCodeBlock(context);
 		expect(drawCaret).not.toHaveBeenCalled();
+		expect(createCaretPresentation).not.toHaveBeenCalled();
 		await finishLoading();
-		test.drawForeground(context);
+		expect(createCaretPresentation).toHaveBeenCalledOnce();
+		test.drawCodeBlock(context);
 		expect(drawCaret).toHaveBeenCalledWith(context);
 		test.disposePlugin();
-		test.drawForeground(context);
+		test.drawCodeBlock(context);
 		expect(drawCaret).toHaveBeenCalledOnce();
+		expect(disposeCaret).toHaveBeenCalledOnce();
 	});
 	it('forwards native paste to loaded editing and removes its listener on disposal', async () => {
 		const test = setup(createKeyboardEditingPlugin);

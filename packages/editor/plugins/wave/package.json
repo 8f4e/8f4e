@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wave",
-  "version": "0.1.26",
+  "version": "0.1.44",
   "private": true,
   "description": "Waveform directive plugin for the 8f4e editor",
   "type": "module",
@@ -26,9 +26,9 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/compiler": "*",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12"
   }
 }

@@ -1,6 +1,7 @@
 import { hasConfig, hasDirective, type LazyEditorPlugin } from '@8f4e/editor-plugin-lazy-loader';
 
 export function createLazyPluginRegistry({
+	inputTarget,
 	prefersReducedMotion,
 	navigator,
 	writeMemory,
@@ -9,6 +10,7 @@ export function createLazyPluginRegistry({
 	getAssertionSites,
 	sharedAudioContext,
 }: {
+	inputTarget: HTMLElement;
 	prefersReducedMotion: () => boolean;
 	navigator: Navigator;
 	writeMemory: (address: number, value: number, isInteger: boolean) => void;
@@ -87,6 +89,15 @@ export function createLazyPluginRegistry({
 			load: () => import('@8f4e/editor-plugin-crossfade').then(module => module.createCrossfadePlugin({ writeMemory })),
 		},
 
+		{
+			id: 'keyboard-memory',
+			scope: 'project',
+			matches: directives => hasConfig(directives, 'keyboard'),
+			load: () =>
+				import('@8f4e/editor-plugin-keyboard-memory').then(module =>
+					module.createKeyboardMemoryPlugin({ inputTarget, writeMemory })
+				),
+		},
 		{
 			id: 'midi-input',
 			scope: 'project',

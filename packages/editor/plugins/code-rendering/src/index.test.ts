@@ -28,6 +28,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	cleanups.push(() => {
 		disposePlugin();
@@ -35,6 +36,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	});
 	const draw = new DrawContext({ drawSprite: vi.fn() }, 8);
 	const drawRows = vi.spyOn(draw, 'drawResolvedText');
+	const drawFills = vi.spyOn(draw, 'drawFill');
 	const memoryViews = {
 		int8: new Int8Array(0),
 		int16: new Int16Array(0),
@@ -46,11 +48,81 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	};
 	const render = (codeBlock: CodeBlockGraphicData = block) => {
 		drawRows.mockClear();
-		drawers.drawCodeBlockContent({ draw, state, codeBlock, memoryViews });
+		drawFills.mockClear();
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 		return drawRows.mock.calls.map(([, , cells]) => cells);
 	};
-	return { store, events, emitter, state, block, render, drawRows };
+	return { store, events, emitter, state, block, render, drawRows, drawFills };
 }
+
+it('refreshes nested block highlights after edits, layout contributions, and grid changes', () => {
+	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledExactlyOnceWith(
+		24,
+		32,
+		PALETTE_INDICES.surfaceRaised1,
+		test.block.width - 24,
+		16
+	);
+	const contribution = test.store.layout.createContribution();
+	cleanups.push(contribution.dispose);
+	contribution.update(test.block, {
+		verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }],
+		minGridWidth: 40,
+	});
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledExactlyOnceWith(24, 64, PALETTE_INDICES.surfaceRaised1, 296, 16);
+	test.state.viewport.vGrid = 10;
+	test.state.viewport.hGrid = 20;
+	test.events.dispatch('gridSizeChanged');
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledExactlyOnceWith(30, 80, PALETTE_INDICES.surfaceRaised1, 370, 20);
+	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: ['module audio', 'push 1', 'moduleEnd'] }], {
+		affectsCompilation: true,
+	});
+	test.render();
+	expect(test.drawFills).not.toHaveBeenCalled();
+});
+
+it('draws line selection after nested highlights and before source text', () => {
+	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
+	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.block.cursor.y = 32;
+	test.render();
+	expect(test.drawFills).toHaveBeenLastCalledWith(0, 32, PALETTE_INDICES.primarySoft, test.block.width, 16);
+	expect(test.drawFills.mock.invocationCallOrder[0]).toBeLessThan(test.drawFills.mock.invocationCallOrder[1]);
+	expect(test.drawFills.mock.invocationCallOrder[1]).toBeLessThan(test.drawRows.mock.invocationCallOrder[0]);
+	test.state.featureFlags.codeLineSelection = false;
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledOnce();
+});
+
+it('clips folded block highlights and restores them when selected for editing', () => {
+	const test = setup(['module audio', 'if', 'push 1', '; @hide', 'push 2', 'ifEnd', 'moduleEnd']);
+	test.render();
+	expect(test.block.displayModel.isCollapsed).toBe(true);
+	expect(test.drawFills.mock.calls[0]).toEqual([24, 32, PALETTE_INDICES.surfaceRaised1, test.block.width - 24, 32]);
+	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.render();
+	expect(test.block.displayModel.isCollapsed).toBe(false);
+	expect(test.drawFills.mock.calls[0]?.[4]).toBe(48);
+	test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+	test.render();
+	expect(test.drawFills.mock.calls[0]?.[4]).toBe(32);
+});
+
+it('suppresses disabled highlights and restores them after enabling the block', () => {
+	const code = ['module audio', '; @disabled', 'if', 'push 1', 'ifEnd', 'moduleEnd'];
+	const test = setup(code);
+	test.render();
+	expect(test.drawFills).not.toHaveBeenCalled();
+	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: code.filter(line => line !== '; @disabled') }], {
+		affectsCompilation: true,
+	});
+	test.render();
+	expect(test.drawFills).toHaveBeenCalledOnce();
+});
 
 it('draws existing blocks when installed after loading and reuses prepared cells between frames', () => {
 	const test = setup();
@@ -85,24 +157,21 @@ it('refreshes text and reserved rows after source edits and late layout contribu
 	const before = test.render();
 	expect(before).toHaveLength(5);
 	expect(before.slice(2, 4)).toEqual([[], []]);
-	applyCodeBlockSourceEdits(
-		test.store,
-		[{ codeBlock: test.block, code: ['module audio', 'int value 1', 'moduleEnd'] }],
-		{ affectsCompilation: true }
-	);
+	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: ['module audio', 'int value 1', 'moduleEnd'] }], {
+		affectsCompilation: true,
+	});
 	const after = test.render();
 	expect(after).toHaveLength(5);
 	expect(after[1].at(-1)! & 0xffff).toBe('1'.charCodeAt(0));
 	expect(after).not.toEqual(before);
 });
 
-it('draws the completed diagnostic layout before notifying other layout listeners', () => {
+it('draws contributed rows before notifying other layout listeners', () => {
 	const test = setup();
 	const completed: ReturnType<typeof test.render>[] = [];
 	test.events.on('codeBlockLayoutsChanged', () => completed.push(test.render()));
-	test.store.set('codeErrors.compilationErrors', [
-		{ codeBlockId: test.block.creationIndex, lineNumber: 1, message: 'Example' },
-	]);
+	const contribution = test.store.layout.createContribution();
+	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 	expect(completed).toHaveLength(1);
 	expect(completed[0]).toHaveLength(5);
 	expect(test.render()[0]).toBe(completed[0][0]);
@@ -125,10 +194,44 @@ it('retains prepared cells during info and dragging updates', () => {
 	expect(test.render()[0]).toBe(before[0]);
 });
 
+it('refreshes only the completed blocks and retains prepared text for unrelated blocks', () => {
+	const test = setup();
+	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const envRows = test.render(env);
+	const before = test.render();
+	const contribution = test.store.layout.createContribution();
+	cleanups.push(contribution.dispose);
+	contribution.update(env, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 2 }] });
+	const after = test.render(env);
+	expect(after).toHaveLength(envRows.length + 2);
+	expect(after[0]).not.toBe(envRows[0]);
+	expect(test.render()[0]).toBe(before[0]);
+});
+
+it('does not inspect a block whose source replacement has not completed', () => {
+	const test = setup();
+	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const original = env.code;
+	const before = test.render(env);
+	// Another block can complete while generated source is being replaced in this block.
+	env.code = ['constants env', 'constantsEnd'];
+	try {
+		expect(() =>
+			test.events.dispatch('codeBlockLayoutsChanged', {
+				project: test.state.codeBlockRendering.currentProject,
+				codeBlocks: [test.block],
+			})
+		).not.toThrow();
+		expect(test.render(env)[0]).toBe(before[0]);
+	} finally {
+		env.code = original;
+	}
+});
+
 it('refreshes disabled colors and folded placeholder rows from completed layouts', () => {
 	const test = setup();
 	applyCodeBlockSourceEdits(
-		test.store,
+		test,
 		[{ codeBlock: test.block, code: ['module audio', '; @disabled', '; @hide', 'int value 1', 'moduleEnd'] }],
 		{ affectsCompilation: true }
 	);
@@ -152,7 +255,9 @@ it('refreshes visible text when entering and leaving project groups', () => {
 					code: ['group audio', 'groupEnd'],
 					entry: 'main',
 					exposures: [],
-					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module child', 'int value 2', 'moduleEnd'] }],
+					execution: [
+						{ type: 'module', id: 1, entry: 'main', code: ['module child', 'if', 'int value 2', 'ifEnd', 'moduleEnd'] },
+					],
 				},
 			],
 		},
@@ -161,18 +266,24 @@ it('refreshes visible text when entering and leaving project groups', () => {
 	const before = test.render(group);
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	const child = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'child')!;
-	expect(test.render(child)[1].at(-1)! & 0xffff).toBe('2'.charCodeAt(0));
+	expect(test.render(child)[2].at(-1)! & 0xffff).toBe('2'.charCodeAt(0));
+	expect(test.drawFills).toHaveBeenCalledOnce();
 	test.events.dispatch('goToParentProjectGroup');
 	expect(test.render(group)).toEqual(before);
+	expect(test.drawFills).not.toHaveBeenCalled();
 });
 
-it('keeps prepared cells isolated between editor instances and removes its listener and drawer on disposal', () => {
-	const first = setup();
-	const second = setup(['module audio', 'int value 9', 'moduleEnd']);
-	expect(first.render()[1]).not.toEqual(second.render()[1]);
+it('isolates prepared text and highlights between editors and unregisters drawing on disposal', () => {
+	const first = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
+	const second = setup(['module audio', 'if', 'push 9', 'push 2', 'ifEnd', 'moduleEnd']);
+	expect(first.render()[2]).not.toEqual(second.render()[2]);
+	expect(first.drawFills.mock.calls[0]?.[4]).toBe(16);
+	expect(second.drawFills.mock.calls[0]?.[4]).toBe(32);
 	const listeners = second.emitter.listenerCount('codeBlockLayoutsChanged');
 	cleanups.pop()!();
 	expect(second.emitter.listenerCount('codeBlockLayoutsChanged')).toBeLessThan(listeners);
 	expect(second.render()).toEqual([]);
-	expect(first.render()).toHaveLength(3);
+	expect(second.drawFills).not.toHaveBeenCalled();
+	expect(first.render()).toHaveLength(5);
+	expect(first.drawFills).toHaveBeenCalledOnce();
 });

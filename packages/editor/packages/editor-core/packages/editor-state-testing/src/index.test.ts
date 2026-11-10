@@ -14,7 +14,7 @@ describe('editor-state testing utilities', () => {
 
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
-		expect(block.cursor).toEqual({ col: 0, row: 0, x: 56, y: 20 });
+		expect(block.cursor).toEqual({ col: 0, row: 0, y: 20 });
 		expect(block.parsedDirectives).toEqual([]);
 	});
 

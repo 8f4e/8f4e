@@ -40,8 +40,8 @@ store
 moduleEnd
 entryEnd`
 	);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const compiled = await compileProject(project);
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	return { project, compiled, memory };
@@ -106,6 +106,7 @@ async function setup({
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 	});
 	events.dispatch('loadProject', { project: current.project });
 	const gl = createFakeWebGl();
@@ -145,6 +146,7 @@ async function setup({
 		block,
 		events,
 		frame,
+		releaseMemory: layers.releaseMemory,
 		settle,
 		dispose,
 		instantiate,
@@ -158,12 +160,12 @@ async function setup({
 		editTextures: (directives: string) => {
 			const code = block.code.filter(line => !line.includes('@texture'));
 			code.splice(2, 0, ...directives.split('\n').filter(Boolean));
-			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: false });
 		},
 		editConfig: (source: string) => {
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'config')!;
 			applyCodeBlockSourceEdits(
-				store,
+				{ store, events },
 				[{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }],
 				{ affectsCompilation: false }
 			);
@@ -262,6 +264,35 @@ it('reuses the current instance for texture edits and releases removed or offscr
 	expect(test.gl.deleteTexture).toHaveBeenCalledTimes(2);
 });
 
+it('executes the entry without allocating GPU resources when there are no texture views', async () => {
+	const test = await setup();
+	test.editTextures('');
+	await test.settle();
+	test.frame();
+	test.frame();
+	expect(test.frameCount()).toBe(2);
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.createProgram).not.toHaveBeenCalled();
+	expect(test.gl.createTexture).not.toHaveBeenCalled();
+});
+
+it('recreates released texture storage while reusing the runtime instance and GPU program', async () => {
+	const test = await setup();
+	await test.settle();
+	test.frame();
+	test.releaseMemory();
+	expect(test.gl.deleteTexture).toHaveBeenCalledOnce();
+	expect(test.gl.deleteProgram).not.toHaveBeenCalled();
+	test.frame();
+	expect(test.frameCount()).toBe(2);
+	expect(test.instantiate).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).toHaveBeenCalledTimes(2);
+	expect(test.gl.createProgram).toHaveBeenCalledOnce();
+	test.dispose();
+	expect(test.gl.deleteTexture).toHaveBeenCalledTimes(2);
+	expect(test.gl.deleteProgram).toHaveBeenCalledOnce();
+});
+
 it('bounds uploads against current WASM memory', async () => {
 	const test = await setup();
 	test.editTextures('; @textureUpload &rgba rgba 65536 1\n; @texture &rgba 1 1 1');
@@ -274,10 +305,14 @@ it('bounds uploads against current WASM memory', async () => {
 
 it('keeps a pending instance through texture edits, and applies the current entry', async () => {
 	const test = await setup({ hold: true });
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+		{ id: 'texture-runtime', message: 'Starting texture runtime...', status: 'loading' },
+	]);
 	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @texture &rgba 16 1 1');
 	test.editConfig(settings + '\n; @config textureRuntime.entry missing');
 	await test.release();
 	await test.settle();
+	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	test.frame();
 	expect(test.frameCount()).toBe(0);
 	test.editConfig(settings);

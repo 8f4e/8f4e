@@ -34,6 +34,62 @@ describe('binary asset fetching and caching', () => {
 		expect((await fetchBinaryAsset('../sounds/kick.pcm?version=1')).fileName).toBe('kick.pcm');
 	});
 
+	it.each(['opening', 'matching', 'reading', 'writing'])('loads network bytes when %s the cache fails', async stage => {
+		const error = new DOMException('Storage unavailable', 'QuotaExceededError');
+		const cached = new Response(new Uint8Array([9]));
+		if (stage === 'reading') vi.spyOn(cached, 'arrayBuffer').mockRejectedValue(error);
+		const match = vi.fn().mockResolvedValue(stage === 'reading' ? cached : undefined);
+		const put = vi.fn().mockResolvedValue(undefined);
+		const open = vi.fn().mockResolvedValue({ match, put });
+		if (stage === 'opening') open.mockRejectedValue(error);
+		if (stage === 'matching') match.mockRejectedValue(error);
+		if (stage === 'writing') put.mockRejectedValue(error);
+		const fetchMock = vi.fn().mockResolvedValue(new Response(new Uint8Array([3, 4])));
+		vi.stubGlobal('caches', { open });
+		vi.stubGlobal('fetch', fetchMock);
+		const asset = await fetchBinaryAsset('https://example.com/sample.pcm');
+		expect([...new Uint8Array(asset.data)]).toEqual([3, 4]);
+		expect(fetchMock).toHaveBeenCalledOnce();
+	});
+
+	it('preserves network failures when the cache is unavailable', async () => {
+		const error = new Error('offline');
+		vi.stubGlobal('caches', { open: vi.fn().mockRejectedValue(new Error('Storage unavailable')) });
+		vi.stubGlobal('fetch', vi.fn().mockRejectedValue(error));
+		await expect(fetchBinaryAsset('https://example.com/sample.pcm')).rejects.toBe(error);
+	});
+
+	it('does not start a network request if cancelled during a cache lookup', async () => {
+		let finish!: (response: Response | undefined) => void;
+		const match = vi.fn(() => new Promise<Response | undefined>(resolve => (finish = resolve)));
+		const fetchMock = vi.fn();
+		vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue({ match }) });
+		vi.stubGlobal('fetch', fetchMock);
+		const controller = new AbortController();
+		const result = fetchBinaryAsset('https://example.com/sample.pcm', controller.signal);
+		await vi.waitFor(() => expect(match).toHaveBeenCalledOnce());
+		controller.abort();
+		finish(undefined);
+		await expect(result).rejects.toMatchObject({ name: 'AbortError' });
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('passes cancellation to fetch and rejects bytes read after cancellation', async () => {
+		let finish!: (data: ArrayBuffer) => void;
+		const response = new Response();
+		const read = vi.spyOn(response, 'arrayBuffer').mockImplementation(() => new Promise(resolve => (finish = resolve)));
+		const fetchMock = vi.fn().mockResolvedValue(response);
+		vi.stubGlobal('caches', undefined);
+		vi.stubGlobal('fetch', fetchMock);
+		const controller = new AbortController();
+		const result = fetchBinaryAsset('https://example.com/sample.pcm', controller.signal);
+		await vi.waitFor(() => expect(read).toHaveBeenCalledOnce());
+		expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://example.com/sample.pcm', { signal: controller.signal });
+		controller.abort();
+		finish(new ArrayBuffer(2));
+		await expect(result).rejects.toMatchObject({ name: 'AbortError' });
+	});
+
 	it('rejects unsuccessful HTTP responses without caching them', async () => {
 		const put = vi.fn();
 		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));

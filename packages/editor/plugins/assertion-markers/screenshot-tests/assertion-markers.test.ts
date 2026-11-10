@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { serializeToProject } from '@8f4e/editor-state';
-import { formatAssertionExpectation, runTests } from '@8f4e/test-runner';
+import { runTests } from '@8f4e/test-runner';
 import { afterEach, expect, test, vi } from 'vitest';
 import { assertionMarkersPlugin } from '../src/index';
 
@@ -41,16 +41,11 @@ async function setup(source: string) {
 	editor.pauseRendering();
 	const compiled = await compileProject(serializeToProject(editor.state), {
 		enableAssertions: true,
-		disableSharedMemory: true,
 	});
 	const result = await runTests(compiled);
 	store.set(
 		'assertionResults',
-		result.assertions.map(assertion => ({
-			site: assertion.site,
-			passed: assertion.passed,
-			...(!assertion.passed ? { message: `Assertion failed: ${formatAssertionExpectation(assertion)}` } : {}),
-		}))
+		result.assertions.map(({ site, passed }) => ({ site, passed }))
 	);
 	editor.state.viewport.x = 0;
 	editor.state.viewport.y = 0;
@@ -89,7 +84,7 @@ entryEnd`);
 	await expect(canvas).toMatchScreenshot('assertion-line-numbers');
 });
 
-test('renders markers beside inline assertion failure messages and clears them during compilation', async () => {
+test('renders failed assertion markers and clears them during compilation', async () => {
 	const { editor, canvas, store } = await setup(`8f4e/v1
 constants env
 ; @pos 4 60
@@ -106,7 +101,7 @@ push 0
 assert
 moduleEnd
 entryEnd`);
-	await expect(canvas).toMatchScreenshot('assertion-failure-messages');
+	await expect(canvas).toMatchScreenshot('assertion-failures');
 	store.set('compiler.isCompiling', true);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot('assertion-recompiling');

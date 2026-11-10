@@ -39,7 +39,7 @@
         "command": "vite build",
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["typecheck", "^build"]
+      "dependsOn": ["typecheck:production", "^build"]
     },
     "serve": {
       "executor": "nx:run-commands",
@@ -56,6 +56,24 @@
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["^build"]
+    },
+    "typecheck:production": {
+      "executor": "nx:run-commands",
+      "inputs": ["production", "^production"],
+      "cache": true,
+      "options": {
+        "command": "tsc --noEmit --project tsconfig.production.json",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["^build"]
+    },
+    "test:browser": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "playwright test",
+        "cwd": "{projectRoot}"
+      }
     },
     "kill-dev": {
       "executor": "nx:run-commands",

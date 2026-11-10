@@ -6,7 +6,8 @@ import deriveConnectors from './deriveConnectors';
 
 function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
 	return {
-		id: 'value',
+		id: 0,
+		name: 'value',
 		type: 'int',
 		numberOfElements: 1,
 		elementWordSize: 4,
@@ -25,12 +26,15 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 	};
 }
 
-function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedIds: string[] = []) {
+function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedNames: string[] = []) {
 	state.compiler.result.compiledModules['test-block'] = {
 		referenceSlots: Object.create(null),
 		id: 'test-block',
 		ast: { projectBlockId: 0 },
 	} as CompiledModule;
+	memories.forEach((memory, index) => {
+		memory.id = index;
+	});
 	const module = {
 		id: 'test-block',
 		lineNumber: 0,
@@ -39,13 +43,13 @@ function setMemories(state: State, memories: PlannedMemoryDeclaration[], inherit
 		allocatedByteLength: 4,
 		endByteAddress: 4,
 		endAddressSafeByteLength: 4,
-		memory: Object.fromEntries(memories.map(memory => [memory.id, memory])),
+		memory: Object.fromEntries(memories.flatMap(memory => (memory.name === undefined ? [] : [[memory.name, memory]]))),
 		declarations: memories,
 		declarationSources: [],
 	};
 	state.compiler.result.memoryPlan = { modules: { 'test-block': module }, moduleList: [module] };
 	state.compiler.result.memoryDefaultsByModuleId['test-block'] = Object.fromEntries(
-		memories.map(memory => [memory.id, { value: 0, isInherited: inheritedIds.includes(memory.id) }])
+		memories.map(memory => [memory.id, { value: 0, isInherited: inheritedNames.includes(memory.name!) }])
 	);
 }
 
@@ -53,7 +57,7 @@ describe('deriveConnectors', () => {
 	it('places fixed references on their source rows alongside runtime pointer inputs', () => {
 		const state = createMockState();
 		const block = createMockCodeBlock({ gaps: new Map([[1, { size: 2 }]]) });
-		setMemories(state, [createMemory({ id: 'dynamic', type: 'int*', pointerDepth: 1, lineNumber: 4 })]);
+		setMemories(state, [createMemory({ name: 'dynamic', type: 'int*', pointerDepth: 1, lineNumber: 4 })]);
 		state.compiler.result.compiledModules['test-block'].referenceSlots = {
 			fixed: {
 				id: 'fixed',
@@ -73,14 +77,14 @@ describe('deriveConnectors', () => {
 	it('partitions scalar and array declarations into ordered inputs and outputs', () => {
 		const state = createMockState();
 		const block = createMockCodeBlock({ name: 'test-block', width: 100, gaps: new Map([[1, { size: 1 }]]) });
-		const output = createMemory({ id: 'output', lineNumber: 3 });
-		const buffer = createMemory({ id: 'buffer', lineNumber: 5, numberOfElements: 4, allocationUnitCount: 4 });
+		const output = createMemory({ name: 'output', lineNumber: 3 });
+		const buffer = createMemory({ name: 'buffer', lineNumber: 5, numberOfElements: 4, allocationUnitCount: 4 });
 		setMemories(state, [
 			output,
-			createMemory({ id: 'input', type: 'int*', pointerDepth: 1, allocationUnitAddress: 1 }),
+			createMemory({ name: 'input', type: 'int*', pointerDepth: 1, allocationUnitAddress: 1 }),
 			buffer,
 			createMemory({
-				id: '_arrayInput',
+				name: '_arrayInput',
 				type: 'float*',
 				pointerDepth: 1,
 				lineNumber: 4,
@@ -107,11 +111,11 @@ describe('deriveConnectors', () => {
 
 	it.each([
 		['_private', 0],
-		['__anonymous__1', 1],
+		[undefined, 1],
 		['value', 1],
-	] as const)('derives %s with %i public outputs', (id, count) => {
+	] as const)('derives %s with %i public outputs', (name, count) => {
 		const state = createMockState();
-		setMemories(state, [createMemory({ id })]);
+		setMemories(state, [createMemory({ name })]);
 		expect(deriveConnectors(createMockCodeBlock(), state).outputs).toHaveLength(count);
 	});
 
@@ -127,7 +131,7 @@ describe('deriveConnectors', () => {
 		const block = createMockCodeBlock({ gaps: new Map([[1, { size: 2 }]]) });
 		setMemories(
 			state,
-			[createMemory({ id: 'input', type: 'int*', pointerDepth: 1 }), createMemory({ id: 'output' })],
+			[createMemory({ name: 'input', type: 'int*', pointerDepth: 1 }), createMemory({ name: 'output' })],
 			['input', 'output']
 		);
 
@@ -139,7 +143,10 @@ describe('deriveConnectors', () => {
 
 	it('rounds wire anchors to whole pixels for odd font dimensions', () => {
 		const state = createMockState({ viewport: { vGrid: 9, hGrid: 17 } });
-		setMemories(state, [createMemory({ id: 'input', type: 'int*', pointerDepth: 1 }), createMemory({ id: 'output' })]);
+		setMemories(state, [
+			createMemory({ name: 'input', type: 'int*', pointerDepth: 1 }),
+			createMemory({ name: 'output' }),
+		]);
 		const widgets = deriveConnectors(createMockCodeBlock({ width: 90 }), state);
 
 		expect(widgets.inputs[0]).toMatchObject({ wireX: 14, wireY: 26 });
@@ -148,8 +155,8 @@ describe('deriveConnectors', () => {
 
 	it('resolves public group aliases to their original backing metadata and source rows', () => {
 		const state = createMockState();
-		const input = createMemory({ id: '_input', type: 'int*', pointerDepth: 1, allocationUnitAddress: 9 });
-		const output = createMemory({ id: '_privateValue', byteAddress: 44, allocationUnitAddress: 11 });
+		const input = createMemory({ name: '_input', type: 'int*', pointerDepth: 1, allocationUnitAddress: 9 });
+		const output = createMemory({ name: '_privateValue', byteAddress: 44, allocationUnitAddress: 11 });
 		const block = createMockCodeBlock({
 			name: 'audio',
 			width: 100,

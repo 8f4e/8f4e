@@ -11,8 +11,8 @@ const plugin = createExampleModulesPlugin({ sources });
 
 `sources` is a `ReadonlyMap<string, () => Promise<string>>`. Keys are module-relative paths without `.8f4em`, such
 as `audio/effects/gain`. The final path segment is the module slug; preceding segments form its category. Slugs must
-be unique across the catalog. Titles and categories are derived without loading source text. The default editor
-supplies this map through `@8f4e/vite-plugin-sources`.
+be unique across the catalog. Titles and categories are derived without loading source text. The host can
+build this map with `@8f4e/vite-plugin-sources`.
 
 The `./catalog` subpath exports `createModuleCatalog`, and `./public-block` exports the default `extractPublicBlockFromModuleSource` helper. Other consumers, including the WebMCP package's content build, can reuse these pure operations without installing the editor plugin.
 
@@ -33,5 +33,11 @@ blocks. Failed dependency chunks are reported to the browser console while other
 npx nx run @8f4e/editor-plugin-example-modules:build
 npx nx run @8f4e/editor-plugin-example-modules:test
 npx nx run @8f4e/editor-plugin-example-modules:typecheck
-npx nx run @8f4e/editor-plugin-example-modules:test:screenshot
+npx nx run @8f4e/editor-plugin-example-modules:test:browser
 ```
+
+## Loading indicators
+
+Every requested module source and dependency contributes ID `module:<slug>` and message `Loading module <slug>...`.
+Source availability or failure settles its status; disposal cancels pending reads. Repeated requests replace the
+same ID, and results remain in state independently of presentation. Source caching and insertion order are unchanged.

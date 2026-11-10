@@ -1,8 +1,10 @@
 import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
+
+const loading = { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) };
 
 const mocks = vi.hoisted(() => {
 	const engine = {
@@ -18,7 +20,6 @@ const mocks = vi.hoisted(() => {
 		setSpriteAtlas: vi.fn(),
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
 		renderFrame: vi.fn((drawFrame: () => void) => {
 			for (const hook of engine.hooks.preDraw) hook();
 			drawFrame();
@@ -30,14 +31,10 @@ const mocks = vi.hoisted(() => {
 		destroy: vi.fn(),
 	};
 	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
-	const requestAnimationFrame = vi.fn(() => 23);
-	const cancelAnimationFrame = vi.fn();
 
 	return {
 		engine,
 		background,
-		requestAnimationFrame,
-		cancelAnimationFrame,
 		// biome-ignore lint/complexity/useArrowFunction: Engine is constructed with new in the code under test.
 		Engine: vi.fn(function () {
 			engine.hooks.preDraw.length = 0;
@@ -49,8 +46,6 @@ const mocks = vi.hoisted(() => {
 			return background;
 		}),
 		drawCodeBlocks: vi.fn(),
-		drawContextMenu: vi.fn(),
-		drawDialog: vi.fn(),
 	};
 });
 
@@ -66,14 +61,6 @@ vi.mock('./drawers/codeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
 }));
 
-vi.mock('./drawers/contextMenu', () => ({
-	default: mocks.drawContextMenu,
-}));
-
-vi.mock('./drawers/dialog', () => ({
-	default: mocks.drawDialog,
-}));
-
 vi.mock('@8f4e/sprite-generator', async original => ({
 	...(await original<typeof import('@8f4e/sprite-generator')>()),
 	default: vi.fn(async () => createFontAtlas()),
@@ -83,10 +70,10 @@ function createFontAtlas(characterWidth = 8, characterHeight = 16) {
 	return {
 		image: {
 			width: characterWidth * 16,
-			height: characterHeight * 9,
-			data: new Uint8Array(characterWidth * 16 * characterHeight * 9),
+			height: characterHeight * 17,
+			data: new Uint8Array(characterWidth * 16 * characterHeight * 17),
 		},
-		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 129 },
+		grid: { cellWidth: characterWidth, cellHeight: characterHeight, columns: 16, cellCount: 257 },
 	};
 }
 
@@ -105,15 +92,12 @@ function createMemoryViews() {
 describe('web-ui init', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubGlobal('requestAnimationFrame', mocks.requestAnimationFrame);
-		vi.stubGlobal('cancelAnimationFrame', mocks.cancelAnimationFrame);
 	});
-	afterEach(() => vi.unstubAllGlobals());
 
 	it('loads the configured font and installs its grid before initializing render layers', async () => {
 		const { default: init } = await import('./index');
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-		const state = createMockState({ editorConfig: { font: '6x10' } });
+		const state = createMockState({ editorConfig: { font: 'x11miscfixed6x10' } });
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
 		const drawers = createEditorDrawerRegistry();
 		const factory = vi.fn(() => {
@@ -121,15 +105,46 @@ describe('web-ui init', () => {
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
 		drawers.registerRenderLayer(factory);
-		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas()).mockResolvedValueOnce(createFontAtlas(6, 10));
+		vi.mocked(loadFontAtlas)
+			.mockResolvedValueOnce(createFontAtlas(6, 12))
+			.mockResolvedValueOnce(createFontAtlas(6, 10));
 		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
 			drawers,
+			defaultFont: 'pixelcode6x12',
 		});
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'ibmvga8x16');
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, '6x10');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'pixelcode6x12');
+		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, 'x11miscfixed6x10');
 		expect(factory).toHaveBeenCalledOnce();
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
 		view.destroy();
+	});
+
+	it('uses an instance default initially and restores it when project configuration is removed', async () => {
+		const { default: init } = await import('./index');
+		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
+		const state = createMockState();
+		const store = createStateManager(state);
+		const atlas = createFontAtlas(6, 12);
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
+			defaultFont: 'pixelcode6x12',
+		});
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('pixelcode6x12');
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(state.editorConfig).toEqual({});
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(8, 16)).mockResolvedValueOnce(atlas);
+		store.set('editorConfig', { font: 'ibmvga8x16' });
+		await Promise.resolve();
+		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+		store.set('editorConfig', {});
+		await Promise.resolve();
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(state.editorConfig).toEqual({});
+		expect(mocks.background.setFont).toHaveBeenLastCalledWith('pixelcode6x12', atlas.grid);
+		view.destroy();
+		store.dispose();
 	});
 
 	it('does not acquire GPU resources when the initial font fails to load', async () => {
@@ -142,7 +157,8 @@ describe('web-ui init', () => {
 				createStateManager(createMockState()),
 				createMockEventDispatcher(),
 				{} as HTMLCanvasElement,
-				createMemoryViews()
+				createMemoryViews(),
+				{ loading }
 			)
 		).rejects.toBe(error);
 		expect(mocks.Engine).not.toHaveBeenCalled();
@@ -168,7 +184,7 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			createMemoryViews(),
-			{ initialProjectReady }
+			{ loading, initialProjectReady }
 		);
 		expect(loadFontAtlas).toHaveBeenCalledOnce();
 		expect(mocks.Engine).not.toHaveBeenCalled();
@@ -179,6 +195,8 @@ describe('web-ui init', () => {
 		if (first === 'project') finishFont(atlas);
 		else finishProject();
 		const view = await mounting;
+		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
+		view.renderFrame();
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		view.destroy();
 	});
@@ -203,6 +221,7 @@ describe('web-ui init', () => {
 					})
 			);
 		const mounting = init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
 			initialProjectReady,
 		});
 		store.set('editorConfig.font', 'spleen5x8');
@@ -217,40 +236,75 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
-	it('renders viewport overlays after menus and before dialogs with the current frame state', async () => {
+	it('renders canvas backgrounds, blocks, canvas drawers, and overlays in order with the current frame state', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 
 		const drawers = createEditorDrawerRegistry();
+		const background = vi.fn();
+		const removeBackground = drawers.registerCanvasBackgroundDrawer(background);
+		const canvas = vi.fn();
+		const removeCanvas = drawers.registerCanvasDrawer(canvas);
 		const overlay = vi.fn();
 		const removeOverlay = drawers.registerCanvasOverlay(overlay);
+		const modal = vi.fn();
+		const removeModal = drawers.registerModalOverlay(modal);
+		// Late registrations stay within their drawing stage, even when higher stages registered first.
+		const menu = vi.fn();
+		const removeMenu = drawers.registerContextMenuOverlay(menu);
+		const lastOverlay = vi.fn();
+		const removeLastOverlay = drawers.registerCanvasOverlay(lastOverlay);
 		const view = await init(
 			createStateManager(state),
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			{ drawers }
+			{ loading, drawers }
 		);
 
 		overlay.mockClear();
-		mocks.drawContextMenu.mockClear();
-		mocks.drawDialog.mockClear();
+		background.mockClear();
+		canvas.mockClear();
+		modal.mockClear();
+		menu.mockClear();
+		lastOverlay.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
 
 		expect(frameState).toBe(state);
+		expect(background).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
+		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
-		expect(mocks.drawContextMenu.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
-		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawDialog.mock.invocationCallOrder[0]);
+		expect(canvas.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
+		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(lastOverlay.mock.invocationCallOrder[0]);
+		expect(lastOverlay.mock.invocationCallOrder[0]).toBeLessThan(menu.mock.invocationCallOrder[0]);
+		expect(menu.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
 		state.featureFlags.canvasOverlays = false;
 		view.renderFrame();
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(lastOverlay).toHaveBeenCalledOnce();
+		expect(menu).toHaveBeenCalledTimes(2);
+		expect(canvas).toHaveBeenCalledTimes(2);
+		expect(background).toHaveBeenCalledTimes(2);
+		expect(modal).toHaveBeenCalledTimes(2);
 		state.featureFlags.canvasOverlays = true;
+		removeBackground();
+		removeCanvas();
 		removeOverlay();
+		removeModal();
+		removeMenu();
+		removeLastOverlay();
 		view.renderFrame();
+		expect(canvas).toHaveBeenCalledTimes(2);
+		expect(background).toHaveBeenCalledTimes(2);
 		expect(overlay).toHaveBeenCalledOnce();
+		expect(lastOverlay).toHaveBeenCalledOnce();
+		expect(menu).toHaveBeenCalledTimes(2);
+		expect(modal).toHaveBeenCalledTimes(2);
 		view.destroy();
 	});
 
@@ -263,66 +317,67 @@ describe('web-ui init', () => {
 		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
 		const drawTopLayer = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
-		await init(createStateManager(state), createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, {
-			drawers,
-		});
-
-		expect(drawLayer).toHaveBeenCalledOnce();
-		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
-		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
-	});
-
-	it('pauses and resumes its animation frame loop idempotently', async () => {
-		const { default: init } = await import('./index');
-		const state = createMockState();
-		const memoryViews = createMemoryViews();
 		const view = await init(
 			createStateManager(state),
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
-			memoryViews
+			memoryViews,
+			{ loading, drawers }
 		);
-		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
-		expect(mocks.requestAnimationFrame).toHaveBeenCalledOnce();
+		view.renderFrame();
 
-		view.pauseRendering();
-		view.pauseRendering();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledWith(23);
-
-		view.resumeRendering();
-		view.resumeRendering();
-		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
-		expect(mocks.requestAnimationFrame).toHaveBeenCalledTimes(2);
-
+		expect(drawLayer).toHaveBeenCalledOnce();
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
+		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 		view.destroy();
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledTimes(2);
-		expect(mocks.background.destroy).toHaveBeenCalledOnce();
-		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
-	it('releases rendering resources and applies the latest deferred size when resumed', async () => {
+	it('draws supplied viewport state without advancing navigation', async () => {
+		const { default: init } = await import('./index');
+		const state = createMockState({
+			viewport: { x: 24, y: 32 },
+			viewportAnimation: { active: true, startX: 0, startY: 0, targetX: 100, targetY: 200 },
+		});
+		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
+		const view = await init(createStateManager(state), events, {} as HTMLCanvasElement, createMemoryViews(), {
+			loading,
+		});
+		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
+		const viewport = structuredClone(state.viewport);
+		const animation = { ...state.viewportAnimation };
+		events.dispatch.mockClear();
+		view.renderFrame();
+		view.renderFrame();
+		expect(mocks.drawCodeBlocks).toHaveBeenCalledTimes(2);
+		expect(mocks.drawCodeBlocks.mock.calls.at(-1)?.[1]).toBe(state);
+		expect(state.viewport).toEqual(viewport);
+		expect(state.viewportAnimation).toEqual(animation);
+		expect(events.dispatch).not.toHaveBeenCalled();
+		view.destroy();
+	});
+
+	it('releases rendering resources and restores the latest deferred size before drawing', async () => {
 		const { default: init } = await import('./index');
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const view = await init(createStateManager(state), createMockEventDispatcher(), canvas, memoryViews);
+		const view = await init(createStateManager(state), createMockEventDispatcher(), canvas, memoryViews, { loading });
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
 
-		expect(mocks.cancelAnimationFrame).toHaveBeenCalledOnce();
 		expect(mocks.engine.releaseRenderingMemory).toHaveBeenCalledOnce();
 		expect(canvas).toEqual(expect.objectContaining({ width: 1, height: 1 }));
 		expect(view.resize(800, 600)).toBe(false);
 		expect(mocks.engine.resize).not.toHaveBeenCalled();
 
-		view.resumeRendering();
+		view.renderFrame();
 
 		expect(mocks.engine.restoreRenderingMemory).toHaveBeenCalledOnce();
 		expect(mocks.engine.resize).toHaveBeenCalledOnce();
 		expect(mocks.engine.resize).toHaveBeenCalledWith(800, 600);
-		expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(2);
+		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+		view.destroy();
 	});
 
 	it('updates palette independently of font atlas replacement', async () => {
@@ -333,7 +388,10 @@ describe('web-ui init', () => {
 		const drawers = createEditorDrawerRegistry();
 		const loadPalette = vi.fn();
 		drawers.registerRenderLayer(() => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
-		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { drawers });
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, {
+			loading,
+			drawers,
+		});
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
@@ -360,7 +418,7 @@ describe('web-ui init', () => {
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
 
-		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews);
+		const view = await init(store, createMockEventDispatcher(), {} as HTMLCanvasElement, memoryViews, { loading });
 
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(10, 18));
 		store.set('editorConfig.font', 'terminus10x18');
@@ -376,11 +434,37 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
+	it('restarts FPS sampling when the host resumes after a pause without drawing', async () => {
+		let now = 0;
+		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
+		const { default: init } = await import('./index');
+		const onRenderStats = vi.fn();
+		const view = await init(
+			createStateManager(createMockState()),
+			createMockEventDispatcher(),
+			{} as HTMLCanvasElement,
+			createMemoryViews(),
+			{ loading, onRenderStats, renderStatsIntervalFrames: 2 }
+		);
+		try {
+			view.renderFrame();
+			now = 1000;
+			view.resetRenderStats();
+			expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+			now = 1010;
+			view.renderFrame();
+			expect(onRenderStats).toHaveBeenCalledWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
+		} finally {
+			view.destroy();
+			performanceNow.mockRestore();
+		}
+	});
+
 	it('emits render stats at the configured frame interval', async () => {
 		let now = 0;
-		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => {
+		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
+		mocks.drawCodeBlocks.mockImplementationOnce(() => {
 			now += 10;
-			return now;
 		});
 		const { default: init } = await import('./index');
 		const state = createMockState();
@@ -392,13 +476,15 @@ describe('web-ui init', () => {
 			createMockEventDispatcher(),
 			{} as HTMLCanvasElement,
 			memoryViews,
-			{
-				onRenderStats,
-				renderStatsIntervalFrames: 2,
-			}
+			{ loading, onRenderStats, renderStatsIntervalFrames: 2 }
 		);
+		view.renderFrame();
 		expect(onRenderStats).not.toHaveBeenCalled();
 
+		now = 40;
+		mocks.drawCodeBlocks.mockImplementationOnce(() => {
+			now += 10;
+		});
 		view.renderFrame();
 		expect(onRenderStats).toHaveBeenCalledTimes(1);
 		expect(onRenderStats).toHaveBeenCalledWith({
@@ -413,6 +499,7 @@ describe('web-ui init', () => {
 
 		view.renderFrame();
 		expect(onRenderStats).toHaveBeenCalledTimes(1);
+		view.destroy();
 		performanceNow.mockRestore();
 	});
 });

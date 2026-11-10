@@ -10,6 +10,11 @@ int he 2
 int bar 3
 prototypeEnd
 
+prototype anonymousFields
+int 42
+int 7
+prototypeEnd
+
 entry test
 module tau
 shape baryon
@@ -39,6 +44,14 @@ assertEqual 10
 ; once
 push bar
 assertEqual 16
+
+; Indexed reads of shadowed allocations retain the winning named defaults.
+push &tau:1
+load
+assertEqual 10
+push &tau:2
+load
+assertEqual 16
 moduleEnd
 
 module boson
@@ -62,5 +75,18 @@ assertEqual 16
 ; overrides a shape field
 push *test3
 assertEqual 10
+moduleEnd
+
+module anonymousStorage
+shape anonymousFields
+int __anonymous__1 19
+push &anonymousStorage:0
+load
+assertEqual 42
+push &anonymousStorage:1
+load
+assertEqual 7
+push __anonymous__1
+assertEqual 19
 moduleEnd
 entryEnd

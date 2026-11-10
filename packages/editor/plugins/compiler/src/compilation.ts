@@ -1,4 +1,4 @@
-import type { EditorPluginContext } from '@8f4e/editor-core';
+import type { EditorPluginContext, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logMessage, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
 import type { CompilerDiagnostic } from '@8f4e/language-spec';
@@ -6,7 +6,12 @@ import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { hasTestEntry } from '@8f4e/test-runner';
 import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
-import { compilerEditorConfigSchemaContribution, getRecompileDebounceDelay } from './editor-config';
+import {
+	compilerEditorConfigSchemaContribution,
+	getCompilerOptimizationOptions,
+	getRecompileDebounceDelay,
+	recompileDebounceSchemaContribution,
+} from './editor-config';
 
 export interface CompilerDiagnostics {
 	inputRevision: number;
@@ -17,17 +22,23 @@ export interface CompilerDiagnostics {
 }
 
 export default function installCompilation(
-	{ store, events }: Pick<EditorPluginContext, 'store' | 'events'>,
+	{ store, events, loading }: Pick<EditorPluginContext, 'store' | 'events' | 'loading'>,
 	compileCode: CompilerService['compileCode']
 ) {
 	const state = store.getState();
-	store.set('editorConfigSchemaContributions.compiler', compilerEditorConfigSchemaContribution);
+	store.set('codeErrors.compiler', []);
+	store.set('editorConfigSchemaContributions', {
+		...state.editorConfigSchemaContributions,
+		compiler: compilerEditorConfigSchemaContribution,
+		compilerDebounce: recompileDebounceSchemaContribution,
+	});
 	let disposed = false;
 	let inputGeneration = 0;
 	let compiling = false;
 	let compileQueued = false;
 	let completedRevision: number | null = null;
 	let diagnosticsCurrent = false;
+	let compilationLoading: LoadingIndicatorHandle | undefined;
 
 	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
 
@@ -48,8 +59,10 @@ export default function installCompilation(
 			return;
 		}
 		compiling = true;
+		const indicator = loading.add({ id: 'compiler', message: 'Compiling...' });
+		compilationLoading = indicator;
 
-		store.set('codeErrors.compilationErrors', []);
+		store.set('codeErrors.compiler', []);
 
 		const generation = inputGeneration;
 		const revision = state.compilerInputRevision;
@@ -65,6 +78,7 @@ export default function installCompilation(
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: hasTestEntry(project),
+				...getCompilerOptimizationOptions(state.editorConfig),
 			};
 			const result = await compileCode(project, compilerOptions, isCurrent);
 			if (!isCurrent()) {
@@ -100,7 +114,7 @@ export default function installCompilation(
 				astCacheMisses: result.astCacheStats.misses,
 				memoryReinitialized,
 			});
-			store.set('codeErrors.compilationErrors', []);
+			store.set('codeErrors.compiler', []);
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 
@@ -111,22 +125,23 @@ export default function installCompilation(
 
 			logMessage(state, 'Compilation succeeded in ' + compilationTimeMs.toFixed(2) + 'ms', 'Compiler');
 			console.log('[Compiler] Compilation succeeded with config:', compilerOptions);
+			indicator.done();
 		} catch (error) {
 			if (!isCurrent()) {
 				return;
 			}
 
 			logMessage(state, 'Compilation failed', 'Compiler');
+			indicator.fail();
 
 			store.set('compiler.isCompiling', false);
 			setCompilerInfo({ isCompiling: false });
 			const diagnostic = error as CompilerDiagnostic;
 
-			store.set('codeErrors.compilationErrors', [
+			store.set('codeErrors.compiler', [
 				{
 					lineNumber: diagnostic?.line?.lineNumber ?? 0,
 					codeBlockId: diagnostic?.context?.projectBlockId ?? -1,
-					codeBlockType: diagnostic?.context?.codeBlockType,
 					...(diagnostic?.context?.projectGroupPath !== undefined
 						? { projectGroupPath: diagnostic?.context?.projectGroupPath }
 						: {}),
@@ -136,6 +151,8 @@ export default function installCompilation(
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 		} finally {
+			indicator.cancel();
+			compilationLoading = undefined;
 			compiling = false;
 			if (compileQueued && !disposed) {
 				compileQueued = false;
@@ -147,6 +164,7 @@ export default function installCompilation(
 	function onInputChanged(): void {
 		if (disposed) return;
 		++inputGeneration;
+		compilationLoading?.cancel();
 		diagnosticsCurrent = false;
 		compileQueued = false;
 		scheduleRecompile();
@@ -157,11 +175,17 @@ export default function installCompilation(
 	const dispose = () => {
 		if (disposed) return;
 		disposed = true;
+		compilationLoading?.cancel();
+		compilationLoading = undefined;
 		scheduleRecompile.cancel();
 		events.off('compilationInputChanged', onInputChanged);
 		const schemas = { ...state.editorConfigSchemaContributions };
 		delete schemas.compiler;
+		delete schemas.compilerDebounce;
 		store.set('editorConfigSchemaContributions', schemas);
+		const errors = { ...state.codeErrors };
+		delete errors.compiler;
+		store.set('codeErrors', errors);
 	};
 	const getDiagnostics = (): CompilerDiagnostics => ({
 		inputRevision: state.compilerInputRevision,
@@ -174,10 +198,10 @@ export default function installCompilation(
 					? 'ready'
 					: 'pending',
 		compilationErrors:
-			diagnosticsCurrent && completedRevision === state.compilerInputRevision
-				? structuredClone(state.codeErrors.compilationErrors)
+			!disposed && diagnosticsCurrent && completedRevision === state.compilerInputRevision
+				? structuredClone(state.codeErrors.compiler)
 				: [],
-		editorDirectiveErrors: structuredClone(state.codeErrors.editorDirectiveErrors),
+		editorDirectiveErrors: structuredClone(state.codeErrors['editor-directives'] ?? []),
 	});
 	return { dispose, getDiagnostics };
 }

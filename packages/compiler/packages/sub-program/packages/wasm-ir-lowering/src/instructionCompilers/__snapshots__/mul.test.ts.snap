@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mul instruction compiler > emits F32_MUL for float32 operands 1`] = `
+{
+  "instructions": [
+    148,
+  ],
+}
+`;
+
+exports[`mul instruction compiler > emits F64_MUL for float64 operands 1`] = `
+{
+  "instructions": [
+    162,
+  ],
+}
+`;
+
+exports[`mul instruction compiler > emits I32_MUL for integer operands 1`] = `
+{
+  "instructions": [
+    108,
+  ],
+}
+`;

@@ -59,14 +59,14 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 				},
 			],
 		});
-		await expect.poll(() => editor!.state.editorConfigSchemaContributions.keyboard).toBeDefined();
 		await vi.dynamicImportSettled();
 		editor.pauseRendering();
+		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('view-mode-hint');
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
 		context.store.set('codeBlockRendering.selectedCodeBlock', block);
-		block.cursor = { row: 3, col: 0, x: 0, y: 0 };
+		block.cursor = { row: 3, col: 0, y: 0 };
 		const key = (key: string, modifiers: KeyboardEventInit = {}) => {
 			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true, ...modifiers });
 			canvas.dispatchEvent(event);
@@ -103,13 +103,9 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 5);
 		expect(editor.state.editorMode).toBe('edit');
-		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-		try {
-			editor.renderFrame();
-			await expect(canvas).toMatchScreenshot('edit-mode-caret');
-		} finally {
-			now.mockRestore();
-		}
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('edit-mode-caret');
 		editor.dispose();
 		editor = undefined;
 		expect(key('e').defaultPrevented).toBe(false);

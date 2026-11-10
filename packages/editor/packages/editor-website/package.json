@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-website",
-  "version": "5.1.10",
+  "version": "5.4.0",
   "private": true,
   "description": "8f4e editor website",
   "type": "module",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "vite": "7.3.7",
+    "vite-plugin-pwa": "1.3.0",
     "vite-plugin-static-copy": "4.1.1"
   }
 }

@@ -20,7 +20,6 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 		current.selectedBlock = state.codeBlockRendering.selectedCodeBlock;
 		stopViewportAnimation(state);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
-		store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', undefined);
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		store.set('codeBlockRendering.currentProject', project);
 		if (project.selectedBlock && !project.blocks.includes(project.selectedBlock)) project.selectedBlock = undefined;
@@ -40,7 +39,7 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 	}
 
 	const onGoToRoot = () => showProject(state.codeBlockRendering.rootProject);
-	events.on<OpenProjectGroupEvent>('openProjectGroup', onOpenProjectGroup);
+	events.on('openProjectGroup', onOpenProjectGroup);
 	events.on('goToParentProjectGroup', onGoToParentProjectGroup);
 	events.on('goToRootProjectGroup', onGoToRoot);
 	return () => {

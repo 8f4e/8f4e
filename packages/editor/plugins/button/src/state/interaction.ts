@@ -1,4 +1,11 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockPointerDownEvent,
+	EventDispatcher,
+	InternalPointerEvent,
+	State,
+} from '@8f4e/editor-state-types';
+import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { ButtonWidget } from '../types';
 
 export function registerButtonInteraction(
@@ -14,7 +21,8 @@ export function registerButtonInteraction(
 		pressedButton = undefined;
 		writeMemory(button.allocationUnitAddress, button.offValue, button.isInteger);
 	};
-	const onPointerDown = ({ x, y, codeBlock }: { x: number; y: number; codeBlock: CodeBlockGraphicData }) => {
+	const onPointerDown = (event: CodeBlockPointerDownEvent) => {
+		const { x, y, codeBlock } = event;
 		pressedButton = buttonsByBlock
 			.get(codeBlock)
 			?.find(
@@ -25,13 +33,14 @@ export function registerButtonInteraction(
 					y <= codeBlock.y + button.y + button.height - state.viewport.y
 			);
 		if (!pressedButton) return;
+		event.stopPropagation = true;
 		writeMemory(pressedButton.allocationUnitAddress, pressedButton.onValue, pressedButton.isInteger);
 	};
-	events.on('codeBlockPointerDown', onPointerDown);
-	events.on('mouseup', release);
+	events.on('codeBlockPointerDown', onPointerDown, { capture: true, layer: INPUT_LAYERS.codeBlock });
+	events.on('codeBlockPointerUp', release, { layer: INPUT_LAYERS.codeBlock });
 	return () => {
 		events.off('codeBlockPointerDown', onPointerDown);
-		events.off('mouseup', release);
+		events.off('codeBlockPointerUp', release);
 		release();
 	};
 }

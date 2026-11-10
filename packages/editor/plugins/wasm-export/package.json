@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wasm-export",
-  "version": "0.1.20",
+  "version": "0.1.38",
   "private": true,
   "description": "WebAssembly Export plugin for the 8f4e editor",
   "type": "module",
@@ -22,6 +22,6 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.7"
+    "vitest": "4.1.12"
   }
 }

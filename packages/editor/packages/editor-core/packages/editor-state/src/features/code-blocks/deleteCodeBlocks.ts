@@ -17,9 +17,6 @@ export function deleteCodeBlocks(
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 	}
 	if (rendering.draggedCodeBlock && removed.has(rendering.draggedCodeBlock)) rendering.draggedCodeBlock = undefined;
-	if (rendering.selectedCodeBlockForProgrammaticEdit && removed.has(rendering.selectedCodeBlockForProgrammaticEdit)) {
-		rendering.selectedCodeBlockForProgrammaticEdit = undefined;
-	}
 	replaceCodeBlocksInPlace(rendering.currentProject.blocks, remaining);
 	store.set('codeBlockRendering.currentProject.blocks', rendering.currentProject.blocks);
 	incrementCompilerInputRevision(store);

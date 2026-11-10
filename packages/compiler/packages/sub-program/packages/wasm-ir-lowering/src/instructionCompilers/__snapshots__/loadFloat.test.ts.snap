@@ -1,0 +1,192 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loadFloat instruction compiler > loads float64 with +0 proven bytes and guarded=true 1`] = `
+[
+  {
+    "binding": 0,
+    "kind": "local.set",
+  },
+  {
+    "binding": 0,
+    "kind": "local.get",
+  },
+  {
+    "kind": "memory.size",
+  },
+  {
+    "kind": "i32.const",
+    "value": 1,
+  },
+  107,
+  {
+    "kind": "i32.const",
+    "value": 16,
+  },
+  116,
+  {
+    "kind": "i32.const",
+    "value": 65528,
+  },
+  106,
+  77,
+  {
+    "kind": "block",
+    "opcode": 4,
+    "results": [
+      124,
+    ],
+  },
+  {
+    "binding": 0,
+    "kind": "local.get",
+  },
+  {
+    "alignment": 3,
+    "kind": "memoryAccess",
+    "offset": 0,
+    "opcode": 43,
+  },
+  5,
+  {
+    "kind": "f64.const",
+    "value": 0,
+  },
+  11,
+]
+`;
+
+exports[`loadFloat instruction compiler > loads float64 with 4 proven bytes and guarded=true 1`] = `
+[
+  {
+    "binding": 0,
+    "kind": "local.set",
+  },
+  {
+    "binding": 0,
+    "kind": "local.get",
+  },
+  {
+    "kind": "memory.size",
+  },
+  {
+    "kind": "i32.const",
+    "value": 1,
+  },
+  107,
+  {
+    "kind": "i32.const",
+    "value": 16,
+  },
+  116,
+  {
+    "kind": "i32.const",
+    "value": 65528,
+  },
+  106,
+  77,
+  {
+    "kind": "block",
+    "opcode": 4,
+    "results": [
+      124,
+    ],
+  },
+  {
+    "binding": 0,
+    "kind": "local.get",
+  },
+  {
+    "alignment": 3,
+    "kind": "memoryAccess",
+    "offset": 0,
+    "opcode": 43,
+  },
+  5,
+  {
+    "kind": "f64.const",
+    "value": 0,
+  },
+  11,
+]
+`;
+
+exports[`loadFloat instruction compiler > loads float64 with 8 proven bytes and guarded=false 1`] = `
+[
+  {
+    "alignment": 3,
+    "kind": "memoryAccess",
+    "offset": 0,
+    "opcode": 43,
+  },
+]
+`;
+
+exports[`loadFloat instruction compiler > loads from a safe memory address 1`] = `
+{
+  "instructions": [
+    {
+      "alignment": 2,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 42,
+    },
+  ],
+}
+`;
+
+exports[`loadFloat instruction compiler > loads from an unsafe memory address with a bounds guard 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "memory.size",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    107,
+    {
+      "kind": "i32.const",
+      "value": 16,
+    },
+    116,
+    {
+      "kind": "i32.const",
+      "value": 65532,
+    },
+    106,
+    77,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        125,
+      ],
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "alignment": 2,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 42,
+    },
+    5,
+    {
+      "kind": "f32.const",
+      "value": 0,
+    },
+    11,
+  ],
+}
+`;

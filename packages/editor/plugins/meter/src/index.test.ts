@@ -6,6 +6,18 @@ import { meterPlugin } from './index';
 
 const source = ['module audio', 'float level 0.5 ; @meter', 'moduleEnd'];
 describe('meter plugin', () => {
+	it('uses the compiled declaration for an anonymous inline meter', async () => {
+		const test = await setup(meterPlugin, ['module audio', 'float 0.5 ; @meter', 'moduleEnd']);
+		test.render();
+		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+		expect(test.draw.drawFill).toHaveBeenCalledWith(
+			0,
+			0,
+			PALETTE_INDICES.positiveBase,
+			Math.round(width / 2),
+			test.state.viewport.hGrid
+		);
+	});
 	it.each([
 		{ type: 'int8', declaration: 'int8[] level 1 -64', range: '-128 128' },
 		{ type: 'int8u', declaration: 'int8u[] level 1 200', range: '0 400' },
@@ -82,6 +94,18 @@ describe('meter plugin', () => {
 		test.update(source);
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalled();
+	});
+	it('reserves space for an inline declaration while waiting for compilation', async () => {
+		const test = await setup(meterPlugin, source);
+		test.update(['module audio', '; @meter', 'moduleEnd']);
+		test.render();
+		expect(test.block.gaps.size).toBe(0);
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
+
+		test.update(['module audio', 'float renamed 0.5 ; @meter', 'moduleEnd']);
+		test.render();
+		expect(test.block.gaps.get(1)?.size).toBe(1);
+		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});
 	it('is optional, disposes its contributions, and isolates editors', async () => {
 		const omitted = await setup(meterPlugin, source, { installed: false });

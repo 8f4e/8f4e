@@ -55,35 +55,31 @@ noteEnd`);
 			).toBe(true)
 		);
 		editor.pauseRendering();
-		const mouse = (type: string, x: number, y: number) => {
+		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,
 				y,
 				movementX: 0,
 				movementY: 0,
 				altKey: false,
-				buttons: type === 'mouseup' ? 0 : 1,
+				buttons: type === 'pointerup' ? 0 : 1,
 				stopPropagation: false,
 				canvasWidth: canvas.width,
 				canvasHeight: canvas.height,
 			});
 		};
 		editor.renderFrame();
-		mouse('contextmenu', 520, 16);
+		pointer('contextmenu', 520, 16);
 		await vi.waitFor(() =>
 			expect(editor.state.contextMenu.items.some(item => item.action === 'exportCanvasScreenshot')).toBe(true)
 		);
 		editor.renderFrame();
 		const menu = editor.state.contextMenu;
 		const screenshotIndex = menu.items.findIndex(item => item.action === 'exportCanvasScreenshot');
-		const x = menu.x - editor.state.viewport.x + 8;
-		const y = menu.y - editor.state.viewport.y + screenshotIndex * editor.state.viewport.hGrid + 8;
-		mouse('mousemove', x, y);
-		mouse('mousedown', x, y);
+		events.dispatch('activateContextMenuItem', { index: screenshotIndex, x: 520, y: 16 });
 		await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
 		expect(editor.state.contextMenu.open).toBe(false);
 		expect(editor.state.featureFlags.canvasOverlays).toBe(true);
-		expect(editor.state.featureFlags.offscreenBlockArrows).toBe(true);
 		expect(showSaveFilePicker).toHaveBeenCalledWith(expect.objectContaining({ suggestedName: 'project.png' }));
 		expect(exportedBlob.type).toBe('image/png');
 		const bitmap = await createImageBitmap(exportedBlob);

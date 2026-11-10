@@ -191,7 +191,7 @@ describe('call stack analysis', () => {
 								source: 'memory-start',
 								byteAddress: 0,
 								safeByteLength: 4,
-								memoryId: 'previousTrigger',
+								memoryId: 0,
 							},
 						},
 					},

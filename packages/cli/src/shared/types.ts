@@ -31,4 +31,10 @@ export interface CompileProjectResult {
 	requiredMemoryBytes: number;
 }
 
+/** Compiler memory layout exported alongside a WebAssembly binary for standalone hosts. */
+export interface RuntimeMemoryInfo {
+	requiredMemoryBytes: number;
+	memoryPlan: MemoryLayoutPlan;
+}
+
 export type BlockTypeValue = DocumentBlockType | 'unknown';

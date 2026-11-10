@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`load instruction compiler > loads from a safe memory address 1`] = `
+{
+  "instructions": [
+    {
+      "alignment": 2,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 40,
+    },
+  ],
+}
+`;
+
+exports[`load instruction compiler > loads from an unsafe memory address with a bounds guard 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "memory.size",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    107,
+    {
+      "kind": "i32.const",
+      "value": 16,
+    },
+    116,
+    {
+      "kind": "i32.const",
+      "value": 65535,
+    },
+    106,
+    77,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "alignment": 0,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 45,
+    },
+    5,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    11,
+  ],
+}
+`;

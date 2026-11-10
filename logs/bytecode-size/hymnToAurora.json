@@ -928,5 +928,89 @@
 		"version": "8.3.4",
 		"benchmark": "hymnToAurora.8f4e",
 		"emittedBytes": 5690
+	},
+	{
+		"commit": "00b0300fdb569954889b9839b1c25fae77752cb2",
+		"version": "8.3.5",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "2a9e771f2ad1f48c85205ea1db04ff54018ae972",
+		"version": "8.3.6",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "be8e647bd219d1b896748dd73e4adac10902454e",
+		"version": "8.3.7",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "5768fbd6fcf5b9f465d7a56e9e5ca79ab3c371b4",
+		"version": "8.3.8",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "53f6821f4adf341f0e933d5d591d951a238aba11",
+		"version": "8.3.9",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "0fe68ea07d1c1cf018d5d91c08d09a9cbd0d211a",
+		"version": "8.3.10",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "a78d1c7a260e488b815b340ac9a124aa39133104",
+		"version": "8.3.11",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "f051ad536d2a4682766e1a4e41c7781cc261ffd5",
+		"version": "8.3.12",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "c134e8b0d7f1735ea8513c31b5dd401afc02371f",
+		"version": "8.3.13",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "7eb75ba7db1b0a329562c88d43ebba764c4e41f1",
+		"version": "8.3.14",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5690
+	},
+	{
+		"commit": "d95510d3fc815518b5cb913a089b06e092a335d3",
+		"version": "9.0.0",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 6202
+	},
+	{
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"version": "10.0.0",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5506
+	},
+	{
+		"commit": "cdcc6f18f60b21f6992047ea66e9cfbda0c1e639",
+		"version": "10.1.0",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5506
+	},
+	{
+		"commit": "bcc0ac9fa9285ffd00c19eb0d9c2d268813c56ea",
+		"version": "10.2.0",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5506
 	}
 ]

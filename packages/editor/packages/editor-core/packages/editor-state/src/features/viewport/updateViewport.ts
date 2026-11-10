@@ -1,12 +1,4 @@
 import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import calculateBorderLineCoordinates from './calculateBorderLineCoordinates';
-
-export interface ViewportChangedEvent {
-	previousX: number;
-	previousY: number;
-	x: number;
-	y: number;
-}
 
 /**
  * Applies viewport position updates through a single commit path.
@@ -19,18 +11,17 @@ export default function updateViewport(state: State, x: number, y: number, event
 
 	state.viewport.x = nextX;
 	state.viewport.y = nextY;
-	calculateBorderLineCoordinates(state);
 
 	const changed = state.viewport.x !== previousX || state.viewport.y !== previousY;
 
 	if (changed) {
-		const event: ViewportChangedEvent = {
+		const event = {
 			previousX,
 			previousY,
 			x: state.viewport.x,
 			y: state.viewport.y,
 		};
-		events.dispatch<ViewportChangedEvent>('viewportChanged', event);
+		events.dispatch('viewportChanged', event);
 	}
 
 	return changed;

@@ -39,7 +39,7 @@ describe('project initial mode', () => {
 			expect(state.editorMode).toBe('edit');
 			load(`8f4e/v1\nnote mode\n${declaration}\nnoteEnd`);
 			expect(state.editorMode).toBe('view');
-			expect(state.codeErrors.editorDirectiveErrors).toHaveLength(declaration ? 1 : 0);
+			expect(state.codeErrors['editor-directives']).toHaveLength(declaration ? 1 : 0);
 			events.dispatch('enterEditMode');
 			events.dispatch('new');
 			expect(state.initialProjectState).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });
@@ -74,9 +74,13 @@ describe('project initial mode', () => {
 		expect(state.editorMode).toBe('view');
 		expect(state.projectChange.revision).toBe(revision);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }], {
-			affectsCompilation: false,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }],
+			{
+				affectsCompilation: false,
+			}
+		);
 		store.set('editorConfigSchemaContributions', {});
 		expect(state.globalEditorDirectives.mode).toBe('view');
 		expect(state.editorMode).toBe('view');

@@ -44,9 +44,11 @@ describe('compileSubProgram', () => {
 		};
 		const program = composeProgram(project);
 		program.ast.modules.reverse();
-		const compiled = compileSubProgram(program, { disableSharedMemory: true });
+		const compiled = compileSubProgram(program, {});
 
-		expect(compiled.compiledModules.map(({ id, executionEntryName }) => [id, executionEntryName])).toEqual([
+		expect(
+			Object.values(compiled.compiledModules).map(({ id, executionEntryName }) => [id, executionEntryName])
+		).toEqual([
 			['rootLast', 'alternate'],
 			['synth/calculate', 'synth/gate'],
 			['synth/voice', 'synth/main'],
@@ -54,13 +56,19 @@ describe('compileSubProgram', () => {
 		]);
 	});
 
-	it('compiles one closed source unit into emission-ready artifacts', () => {
-		const compiled = compileSubProgram(composeProgram(emptyProject), { disableSharedMemory: true });
+	it('emits the host memory import and default exports for an empty source unit', () => {
+		const compiled = compileSubProgram(composeProgram(emptyProject), {});
+		const wasm = new WebAssembly.Module(new Uint8Array(compiled.codeBuffer));
 
-		expect(compiled.entries).toEqual([{ id: 'main', exportName: 'main', steps: [] }]);
-		expect(compiled.compiledModules).toEqual([]);
-		expect(compiled.compiledFunctions).toEqual([]);
+		expect(WebAssembly.Module.imports(wasm)).toEqual([{ module: 'host', name: 'memory', kind: 'memory' }]);
+		expect(WebAssembly.Module.exports(wasm)).toEqual(
+			expect.arrayContaining([
+				{ name: 'initDefaults', kind: 'function' },
+				{ name: 'main', kind: 'function' },
+			])
+		);
+		expect(compiled.compiledModules).toEqual({});
+		expect(compiled.compiledFunctions).toEqual({});
 		expect(compiled.memoryPlan.moduleList).toEqual([]);
-		expect(compiled.functionLayout.imports).toEqual([]);
 	});
 });

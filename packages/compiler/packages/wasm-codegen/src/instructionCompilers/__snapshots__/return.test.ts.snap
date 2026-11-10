@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`return instruction compiler > emits WASM return opcode 1`] = `
-{
-  "byteCode": [
-    15,
-  ],
-}
-`;

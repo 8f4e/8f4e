@@ -1,7 +1,13 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { InternalMouseEvent } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 
 const WHEEL_SCROLL_END_DELAY_MS = 120;
+const POINTER_EVENTS = {
+	mousedown: 'pointerdown',
+	mousemove: 'pointermove',
+	mouseup: 'pointerup',
+	contextmenu: 'contextmenu',
+} as const;
 
 export function createMouseInputPlugin({
 	inputTarget,
@@ -28,11 +34,12 @@ export function createMouseInputPlugin({
 				previousX = event.offsetX;
 				previousY = event.offsetY;
 
-				const { offsetX, offsetY, type, buttons, altKey } = event;
+				const { offsetX, offsetY, buttons, altKey } = event;
+				const type = POINTER_EVENTS[event.type as keyof typeof POINTER_EVENTS];
 
 				event.preventDefault();
 
-				const eventObject = {
+				const eventObject: InternalPointerEvent = {
 					x: offsetX,
 					y: offsetY,
 					movementX,
@@ -44,7 +51,7 @@ export function createMouseInputPlugin({
 					altKey,
 				};
 
-				events.dispatch<InternalMouseEvent>(type, eventObject);
+				events.dispatch(type, eventObject);
 			}
 
 			function onWheelEvent(event: WheelEvent) {
@@ -53,8 +60,6 @@ export function createMouseInputPlugin({
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
 
-				// Do not fake a pressed mousemove: that re-enters block-drag handlers
-				// while a button is held. Viewport panning has its own event (#1378).
 				events.dispatch('viewportscroll', { movementX, movementY });
 
 				if (wheelScrollEndTimeout) {

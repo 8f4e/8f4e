@@ -42,19 +42,35 @@ Stack analysis consumes executable bodies and returns operation-indexed executio
 identity, without WebAssembly indexes. It validates returns against registered signatures and never reconstructs
 imports, exports, parameters, or module execution metadata.
 
-Function symbols contain no WebAssembly indices. After stack and assertion analysis, backend layout planning collects
-user and native callback imports into one ordered list and assigns indices for imports, initialization, entry
-dispatchers, defined functions, and module bodies. Codegen and binary emission consume this same layout rather than
-adjusting symbol metadata or independently calculating offsets. Function signature types are registered during layout
-planning; body codegen can add block signature types.
-
-Codegen owns WebAssembly local indexes and generated temporary locals. It allocates source binding storage before
-emitting a body. Original ASTs remain attached for source diagnostics and tooling; downstream stages do not replay
-declarations from them. Composition produces `ComposedAST` types with required original source identity, and semantic
-reference reports preserve that input type through their output.
-
 Source-only function structure rules, including parameter ordering, duplicate directives, and imported function bodies,
 are checked during tokenization. Duplicate symbols and resolved signature limits remain semantic checks.
+
+## Wasm Module Lowering and Optimization
+
+After stack analysis and assertion planning, `@8f4e/wasm-ir-lowering` produces one symbolic Wasm module. Each defined
+function has a signature, locals, and instructions. Lowering represents scheduled module cycles, entry dispatchers,
+and the memory initializer as ordinary functions. Calls and exports refer to symbolic function IDs. The module also
+carries the shared memory import and passive data segments, which `memory.init` references by ID.
+
+Lowering guards dynamic memory accesses by default. Set `enableMemoryGuards: false` to emit direct accesses
+and let Wasm trap on out-of-bounds addresses. Explicit address-clamping instructions retain their behavior.
+
+`@8f4e/wasm-ir-pruner` starts from the exported functions, keeps their transitive callees and compacts unreferenced
+local slots in the retained bodies. Parameters keep their original slots. Pruning runs by default and can be disabled
+with `enableWasmPruning: false`.
+
+`@8f4e/function-inliner` analyzes the lowered call graph. It folds private functions with one call site and scalar leaves,
+keeps recursive calls, and reapplies function reachability after each successful round when pruning is enabled.
+It remaps locals, restores zero values where callee locals may be read before assignment, and redirects returns
+through a typed exit block. The 50,000-slot limit includes parameters, locals, and lowering temporaries.
+
+`functionInlining.maxExpansionOperations` limits each expansion in lowered Wasm operations, including argument stores
+and local initialization. By default, each caller can grow by up to 128 operations from inlining bodies that are
+exported or have multiple call sites. Set `functionInlining.maxCallerGrowth` to apply an explicit per-caller limit to
+all expansions across rounds. Set `enableFunctionInlining: false` to retain ordinary calls throughout the module.
+
+`@8f4e/wasm-codegen` assigns function, type, and data indices and encodes the module. Source ASTs and stack reports are
+assembled separately as compiler metadata, including for source functions that the optimizer eliminates.
 
 ## Design Rule
 
@@ -128,8 +144,8 @@ Do not add per-array or per-range zero-fill logic unless a measured optimization
 
 Native assertions are recognized and stack-checked in either flag mode. Semantic resolution resolves the required
 `assertEqual` expected argument as a push; stack analysis checks it against the actual stack operand. With
-`enableAssertions: false`, codegen drops the actual value without emitting the expected push. With the flag enabled,
-codegen emits that push before the callback, and sub-program orchestration plans typed host imports and static assertion sites
+`enableAssertions: false`, lowering drops the actual value without emitting the expected push. With the flag enabled,
+lowering adds that push before the callback, and sub-program orchestration plans typed host imports and static assertion sites
 from resolved executable bodies and stack facts. These are signature requests, without numeric function/type indices.
 Backend layout planning then includes them with user imports and assigns final function indices once.
 

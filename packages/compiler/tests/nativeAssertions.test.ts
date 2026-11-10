@@ -1,9 +1,11 @@
 import { type CompileResult, ErrorCode, getProjectModules } from '@8f4e/language-spec';
+import { composeProgram } from '@8f4e/program-composer/internal';
+import { compileSubProgram } from '@8f4e/sub-program/internal';
 import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
 async function instantiate(result: CompileResult, callbacks: Record<string, CallableFunction> = {}) {
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
 		host: { memory, ...callbacks },
 	});
@@ -11,7 +13,7 @@ async function instantiate(result: CompileResult, callbacks: Record<string, Call
 }
 
 function compile(source: string, enableAssertions?: boolean) {
-	return compileProject(parseProjectSource(`8f4e/v1\n${source}`), { disableSharedMemory: true, enableAssertions });
+	return compileProject(parseProjectSource(`8f4e/v1\n${source}`), { enableAssertions });
 }
 
 function imports(result: CompileResult) {
@@ -21,6 +23,34 @@ function imports(result: CompileResult) {
 }
 
 describe('native compiler assertions', () => {
+	it.each([
+		['module', 'entry main\nmodule checks', 'moduleEnd\nentryEnd', 'main'],
+		['function', 'function checks\n#export', 'functionEnd', 'checks'],
+	] as const)(
+		'keeps typed callbacks distinct for %s assertions on the same source line',
+		async (type, start, end, entry) => {
+			const program = composeProgram(
+				parseProjectSource(`8f4e/v1\n${start}\npush 7\nassertEqual 7\npush 0.5\nassertEqual 0.5\n${end}`)
+			);
+			const [block] = type === 'module' ? program.ast.modules : program.ast.functions;
+			const [first, second] = block.lines.filter(line => line.instruction === 'assertEqual');
+			// Simulate two generated operations sharing a source location.
+			second.lineNumber = first.lineNumber;
+
+			const result = compileSubProgram(program, { enableAssertions: true });
+			expect(result.assertionSites?.map(({ siteId, lineNumber }) => [siteId, lineNumber])).toEqual([
+				[0, first.lineNumber],
+				[1, first.lineNumber],
+			]);
+			const assertEqualI32 = vi.fn();
+			const assertEqualF32 = vi.fn();
+			const runtime = await instantiate(result, { assertEqualI32, assertEqualF32 });
+			runtime.exports[entry]();
+			expect(assertEqualI32.mock.calls).toEqual([[7, 7, 0]]);
+			expect(assertEqualF32.mock.calls).toEqual([[0.5, 0.5, 1]]);
+		}
+	);
+
 	it('resolves inline constants, expressions, locals, memory values, and pointer reads', async () => {
 		const result = await compile(
 			`entry main
@@ -154,7 +184,7 @@ assertEqual &first
 moduleEnd
 entryEnd`);
 		const original = structuredClone(project);
-		const result = await compileProject(project, { enableAssertions: true, disableSharedMemory: true });
+		const result = await compileProject(project, { enableAssertions: true });
 		expect(project).toEqual(original);
 		expect(imports(result)).toEqual(['assertCondition', 'assertEqualI32', 'assertEqualF32', 'assertEqualF64']);
 		const events: Array<{ siteId: number; received: number; expected?: number; passed: boolean }> = [];
@@ -334,7 +364,7 @@ moduleEnd
 entryEnd
 groupEnd
 entryEnd`);
-		const options = { enableAssertions: true, disableSharedMemory: true };
+		const options = { enableAssertions: true };
 		const result = await compileProject(project, options);
 		const cached = await compileProject(project, { ...options, cache: result.cache });
 		expect(cached.codeBuffer).toEqual(result.codeBuffer);
@@ -370,7 +400,6 @@ groupEnd
 entryEnd`);
 		const result = await compileProject(project, {
 			enableAssertions: true,
-			disableSharedMemory: true,
 			resolveInclude: () => `function originalCheck
 #export includedCheck
 ; Source identity survives renaming and group qualification.
@@ -441,7 +470,7 @@ functionEnd`,
 		expect(result.assertionSites![0].functionId).toBe(Object.keys(result.compiledFunctions!)[0]);
 	});
 
-	it('supports the default shared-memory compilation mode', async () => {
+	it('supports shared-memory programs with assertions', async () => {
 		const result = await compileProject(
 			parseProjectSource(`8f4e/v1
 entry main

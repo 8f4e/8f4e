@@ -4,7 +4,7 @@ import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/
 import updateViewport from './updateViewport';
 
 describe('updateViewport', () => {
-	it('recomputes viewport geometry and dispatches viewportChanged', () => {
+	it('updates the viewport position and dispatches viewportChanged', () => {
 		const state = createMockState({
 			viewport: {
 				x: 0,
@@ -16,9 +16,7 @@ describe('updateViewport', () => {
 		const events = createMockEventDispatcherWithVitest();
 
 		updateViewport(state, 24, 40, events);
-
-		expect(state.viewport.borderLineCoordinates.left.startX).toBe(24);
-		expect(state.viewport.borderLineCoordinates.top.startY).toBe(40);
+		expect(state.viewport).toMatchObject({ x: 24, y: 40 });
 		expect(events.dispatch).toHaveBeenCalledWith('viewportChanged', {
 			previousX: 0,
 			previousY: 0,

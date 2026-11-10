@@ -40,7 +40,7 @@ export function getResolvedMemoryDeclaration(
 	}
 
 	const resolvedModuleId = moduleId ?? context.currentPlannedModule?.id;
-	const metadata = resolvedModuleId ? context.pointerMetadataByModuleId[resolvedModuleId]?.[memoryId] : undefined;
+	const metadata = resolvedModuleId ? context.pointerMetadataByModuleId[resolvedModuleId]?.[declaration.id] : undefined;
 	return {
 		...declaration,
 		...(metadata?.pointeeElementCount !== undefined ? { pointeeElementCount: metadata.pointeeElementCount } : {}),

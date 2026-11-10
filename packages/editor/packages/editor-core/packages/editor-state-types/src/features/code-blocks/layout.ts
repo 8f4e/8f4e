@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '../../index';
+import type { CodeBlockGraphicData, ProjectLevel, State } from '../../index';
 
 export interface VerticalSpaceAfterSourceLine {
 	sourceLineIndex: number;
@@ -19,6 +19,12 @@ export interface EditorLayoutContribution {
 export interface CodeBlockLayoutContext {
 	codeBlock: CodeBlockGraphicData;
 	state: State;
+}
+
+/** These blocks in one owning group have settled source/display rows, contributions, and positions. */
+export interface CodeBlockLayoutsChangedEvent {
+	project: ProjectLevel;
+	codeBlocks: readonly CodeBlockGraphicData[];
 }
 
 export interface EditorLayoutRegistry {

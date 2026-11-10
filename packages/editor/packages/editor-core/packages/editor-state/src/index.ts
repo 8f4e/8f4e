@@ -1,6 +1,7 @@
 import type {
 	EditorDirectiveRegistry,
 	EditorLayoutRegistry,
+	EditorLoadingRegistry,
 	EditorMenuRegistry,
 	EventDispatcher,
 	Options,
@@ -9,12 +10,11 @@ import type {
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import codeBlockRendering from './features/code-blocks/effect';
 import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from './features/code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from './features/code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
-import viewportDirectiveEffect from './features/code-blocks/features/directives/viewport/effect';
-import entryOutlines from './features/code-blocks/features/entryOutlines/effect';
+import entryBounds from './features/code-blocks/features/entryBounds/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
 import dialog from './features/dialog/effect';
@@ -22,8 +22,10 @@ import historyTracking from './features/edit-history/effect';
 import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './features/editor-config/schemaContributions';
 import editorMode from './features/editor-mode/effect';
+import { createLoadingRegistry } from './features/loading-indicators';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
+import pointerInput from './features/pointer-input/effect';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import projectLoading from './features/project-loading/effect';
 import projectOperations from './features/project-operations/effect';
@@ -56,6 +58,7 @@ export default function init(
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;
 	layout: EditorLayoutRegistry;
+	loading: EditorLoadingRegistry;
 } {
 	const menus = createMenuRegistry();
 	const directives = createDirectiveRegistry();
@@ -91,15 +94,15 @@ export default function init(
 	registerEffect(editorMode(store, events));
 	registerEffect(projectLoading(store, events));
 	registerEffect(codeBlockDragger(store, events));
+	registerEffect(pointerInput(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
-	registerEffect(codeBlockCreator(store, events));
+	registerEffect(codeBlockActions(store, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(autoEnvConstants(store)); // Must run after codeBlockCreator to ensure env block is created
+	registerEffect(autoEnvConstants(store, events));
 	registerEffect(publishCompilationInputChanges(store, events));
 	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
-	registerEffect(viewportDirectiveEffect(store, events));
-	registerEffect(entryOutlines(store));
+	registerEffect(entryBounds(store, events));
 	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));
 
@@ -119,6 +122,7 @@ export default function init(
 		menus,
 		directives,
 		layout,
+		loading: createLoadingRegistry(store),
 		dispose,
 	};
 }
@@ -166,16 +170,16 @@ export {
 	getVisualColumnForRawIndex,
 	getVisualLineWidth,
 } from './features/text-geometry/tabLayout';
-export { stopViewportAnimation } from './features/viewport/animateViewport';
+export { advanceViewportAnimation, stopViewportAnimation } from './features/viewport/animateViewport';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
 export { default as snapToGrid } from './features/viewport/snapToGrid';
 export { default as updateViewport } from './features/viewport/updateViewport';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
+export { createCodeErrorBlockLookup, default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';
 export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModuleId';
 // Export project serialization helpers
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
-export { getMemoryDeclarationRows, type MemoryDeclarationRow } from './pureHelpers/getMemoryDeclarationRows';
 export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
 export {

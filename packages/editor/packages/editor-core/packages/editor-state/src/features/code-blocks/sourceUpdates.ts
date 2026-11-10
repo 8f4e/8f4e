@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
@@ -47,11 +47,12 @@ export function updateBlockSource(block: CodeBlockGraphicData): void {
 /** One source-update path: metadata, generated environment source, global configuration, then layout. */
 export function refreshBlockSources(
 	store: StateManager<State>,
+	events: EventDispatcher,
 	blocks: readonly CodeBlockGraphicData[],
 	refreshLayouts: () => void
 ): void {
 	for (const block of blocks) updateBlockSource(block);
-	updateEnvConstantsBlock(store);
+	updateEnvConstantsBlock(store, events);
 	resolveEditorConfig(store);
 	refreshLayouts();
 }

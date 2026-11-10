@@ -1,0 +1,126 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ensureNonZero instruction compiler > ensures float operand is non-zero with literal default 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "f32.const",
+      "value": 0,
+    },
+    91,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+    {
+      "kind": "f32.const",
+      "value": 2.5,
+    },
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": false,
+    },
+  ],
+}
+`;
+
+exports[`ensureNonZero instruction compiler > ensures float64 operand is non-zero with float64 default 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "f64.const",
+      "value": 0,
+    },
+    97,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+    {
+      "kind": "f64.const",
+      "value": 2.5,
+    },
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    11,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isFloat64": true,
+      "isInteger": false,
+    },
+  ],
+}
+`;
+
+exports[`ensureNonZero instruction compiler > ensures integer operand is non-zero 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    69,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    5,
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    11,
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

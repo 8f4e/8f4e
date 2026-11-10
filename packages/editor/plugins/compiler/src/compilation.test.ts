@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { State } from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { createSuccessMessage } from './__tests__/helpers';
@@ -14,10 +14,12 @@ describe('compilation scheduling and publication', () => {
 	let mockCompileCode: Mock<CompilerService['compileCode']>;
 	let events: { on: EventEmitter['on']; off: EventEmitter['off']; dispatch: EventEmitter['emit'] };
 	let cleanup: () => void;
+	let loading: EditorLoadingRegistry;
 
 	beforeEach(() => {
 		vi.useFakeTimers();
 		cleanup = () => {};
+		loading = { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) };
 
 		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
 			message: 'Memory access is not allowed in pure functions. (19)',
@@ -53,7 +55,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
@@ -61,13 +63,13 @@ describe('compilation scheduling and publication', () => {
 	it('listens for compilation input changes without subscribing to editing state', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
 		const on = vi.spyOn(events, 'on');
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		expect(subscribeSpy).not.toHaveBeenCalled();
 		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(300);
 		const block = mockState.codeBlockRendering.rootProject.blocks[0];
@@ -160,19 +162,6 @@ describe('compilation scheduling and publication', () => {
 		);
 	});
 
-	it('stores code block type for compiler errors', async () => {
-		await triggerCompile();
-
-		expect(mockState.codeErrors.compilationErrors).toEqual([
-			{
-				lineNumber: 2,
-				codeBlockId: 0,
-				codeBlockType: 'function',
-				message: 'Memory access is not allowed in pure functions. (19)',
-			},
-		]);
-	});
-
 	it('reads line number from syntax errors that expose line directly (no longer defaults to 0)', async () => {
 		mockCompileCode.mockRejectedValue({
 			message: 'Too many arguments for if.',
@@ -182,11 +171,10 @@ describe('compilation scheduling and publication', () => {
 
 		await triggerCompile();
 
-		expect(mockState.codeErrors.compilationErrors).toEqual([
+		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 3,
 				codeBlockId: 0,
-				codeBlockType: undefined,
 				message: 'Too many arguments for if.',
 			},
 		]);
@@ -201,11 +189,10 @@ describe('compilation scheduling and publication', () => {
 
 		await triggerCompile();
 
-		expect(mockState.codeErrors.compilationErrors).toEqual([
+		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 1,
 				codeBlockId: -1,
-				codeBlockType: undefined,
 				projectGroupPath: 'audio',
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
@@ -269,6 +256,7 @@ describe('compilation scheduling and publication', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
+				enableMemoryGuards: true,
 			},
 			expect.any(Function)
 		);
@@ -316,19 +304,20 @@ describe('compilation scheduling and publication', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
+				enableMemoryGuards: true,
 			},
 			expect.any(Function)
 		);
 	});
 
 	it('contributes the compiler config schema', () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 
 		expect(mockState.editorConfigSchemaContributions.compiler).toBe(compilerEditorConfigSchemaContribution);
 	});
 
 	it('cancels a scheduled compilation when disposed', async () => {
-		const dispose = compilerEffect({ store, events }, mockCompileCode).dispose;
+		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		dispose();
 		events.dispatch('compilationInputChanged');
@@ -340,7 +329,7 @@ describe('compilation scheduling and publication', () => {
 	it('reports worker startup failures without requiring a structured compiler diagnostic', async () => {
 		mockCompileCode.mockRejectedValue(new Error('Worker unavailable'));
 		await triggerCompile();
-		expect(mockState.codeErrors.compilationErrors).toEqual([
+		expect(mockState.codeErrors.compiler).toEqual([
 			expect.objectContaining({ lineNumber: 0, codeBlockId: -1, message: 'Worker unavailable' }),
 		]);
 		expect(mockState.compiler.isCompiling).toBe(false);
@@ -354,7 +343,7 @@ describe('compilation scheduling and publication', () => {
 					rejectCompilation = reject;
 				})
 		);
-		const dispose = compilerEffect({ store, events }, mockCompileCode).dispose;
+		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
@@ -406,7 +395,7 @@ describe('compilation scheduling and publication', () => {
 
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
@@ -416,7 +405,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
-		cleanup = compilerEffect({ store, events }, mockCompileCode).dispose;
+		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 		events.dispatch('compilationInputChanged');
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();

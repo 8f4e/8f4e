@@ -34,12 +34,10 @@ export function createMockCodeBlock(
 	const defaultHGrid = 16;
 	const gridX = overrides.gridX ?? Math.round(x / defaultVGrid);
 	const gridY = overrides.gridY ?? Math.round(y / defaultHGrid);
-	const cursorX = x + width / 2;
 	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {
 		col: 0,
 		row: 0,
-		x: cursorX,
 		y: cursorYValue,
 	};
 	const displayModel = {
@@ -71,11 +69,6 @@ export function createMockCodeBlock(
 		isHome: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
-		widgets: {
-			blockHighlights: [],
-			shapeDeclarations: [],
-			errorMessages: [],
-		},
 	};
 
 	return { ...defaults, ...overrides };
@@ -91,13 +84,6 @@ export function createMockViewport(x = 0, y = 0, width = 800, height = 600): Vie
 		roundedHeight: height,
 		vGrid: 8,
 		hGrid: 16,
-		borderLineCoordinates: {
-			top: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			right: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			bottom: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			left: { startX: 0, startY: 0, endX: 0, endY: 0 },
-		},
-		center: { x: 0, y: 0 },
 	};
 }
 
@@ -131,13 +117,10 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		codeBlockRendering: {
 			rootProject,
 			currentProject: rootProject,
-			entryOutlines: [],
-			viewportAnchoredCodeBlocks: [],
+			entryBounds: [],
 			nextCodeBlockCreationIndex: 0,
 		},
 		contextMenu: {
-			highlightedItem: 0,
-			itemWidth: 200,
 			items: [],
 			open: false,
 			x: 0,
@@ -164,7 +147,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			codeLineSelection: true,
 			viewportDragging: true,
 			canvasOverlays: true,
-			offscreenBlockArrows: true,
 			projectCreation: true,
 		},
 		editorMode: 'edit',
@@ -174,28 +156,15 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		historyStack: [],
 		redoStack: [],
 		envConstantContributions: {},
-		codeErrors: {
-			compilationErrors: [],
-			editorDirectiveErrors: [],
-		},
+		codeErrors: {},
+		loadingIndicators: [],
 		console: {
 			logs: [],
 			maxLogs: 100,
 		},
 		assertionResults: [],
 		globalEditorDirectives: {},
-		dialog: {
-			id: '',
-			text: '',
-			wrappedText: [''],
-			title: '',
-			buttons: [],
-			highlightedButton: Infinity,
-			width: 0,
-			height: 0,
-			x: 0,
-			y: 0,
-		},
+		dialog: { id: '', text: '', title: '', buttons: [] },
 		dialogStack: [],
 		viewport: {
 			x: 0,
@@ -206,13 +175,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			roundedHeight: 768,
 			vGrid: 8,
 			hGrid: 16,
-			borderLineCoordinates: {
-				top: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				right: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				bottom: { startX: 0, startY: 0, endX: 0, endY: 0 },
-				left: { startX: 0, startY: 0, endX: 0, endY: 0 },
-			},
-			center: { x: 0, y: 0 },
 		},
 		viewportAnimation: {
 			startX: 0,

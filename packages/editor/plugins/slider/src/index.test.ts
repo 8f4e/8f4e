@@ -12,7 +12,7 @@ const source = ['module controls', 'float gain 0.25', '; @slider &gain 0 1 0.01'
 
 async function setup(code = source, installed = true, name = 'controls') {
 	const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -42,6 +42,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		: () => {};
@@ -61,7 +62,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		vi.mocked(draw.drawText).mockClear();
+		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
@@ -85,10 +86,10 @@ async function setup(code = source, installed = true, name = 'controls') {
 			altKey: false,
 			stopPropagation: false,
 		};
-		events.dispatch('mousemove', event);
+		events.dispatch('codeBlockPointerMove', event);
 		return event;
 	};
-	const release = () => events.dispatch('mouseup');
+	const release = () => events.dispatch('codeBlockPointerUp');
 	const menuItems = async () => {
 		events.dispatch('openSubMenu', { menu: 'moduleMenu', payload: { codeBlock: block } });
 		await Promise.resolve();
@@ -130,7 +131,7 @@ describe('slider plugin', () => {
 		const x = (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
 		expect(test.draw.startGroup).toHaveBeenCalledWith(x, 48);
 		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, test.block.width - x, 32);
-		expect(vi.mocked(test.draw.drawText).mock.calls.map(call => call[1])).toEqual([0, 16]);
+		expect(vi.mocked(test.draw.drawGlyphs).mock.calls.map(call => call[1])).toEqual([0, 16]);
 	});
 	it.each([true, false])(
 		'drags through pointer events without moving blocks or viewport, editing=%s',
@@ -140,7 +141,7 @@ describe('slider plugin', () => {
 			const original = [...test.block.code];
 			const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 			const blockPosition = { x: test.block.x, y: test.block.y };
-			test.events.dispatch('mousedown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
+			test.events.dispatch('pointerdown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
 			expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 			expect(test.move(0.75).stopPropagation).toBe(true);
 			expect(test.write).toHaveBeenLastCalledWith(
@@ -200,7 +201,7 @@ describe('slider plugin', () => {
 	});
 	it('gives an open context menu pointer movement before an active slider drag', async () => {
 		const test = await setup();
-		test.events.dispatch('mousedown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
+		test.events.dispatch('pointerdown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
 		test.events.dispatch('contextmenu', { ...test.point(0.25), buttons: 3, stopPropagation: false });
 		await Promise.resolve();
 		await Promise.resolve();
@@ -215,8 +216,7 @@ describe('slider plugin', () => {
 			altKey: false,
 			stopPropagation: false,
 		};
-		test.events.dispatch('mousemove', move);
-		expect(test.state.contextMenu.highlightedItem).toBe(1);
+		test.events.dispatch('pointermove', move);
 		expect(move.stopPropagation).toBe(true);
 		expect(test.write).not.toHaveBeenCalled();
 	});
@@ -242,7 +242,7 @@ describe('slider plugin', () => {
 		test.press(1, 4);
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 2, false);
 		test.block.code = test.block.code.filter(line => !line.includes('@slider'));
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.block.gaps.size).toBe(0);
@@ -411,7 +411,7 @@ describe('slider plugin', () => {
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', test.block);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
 		expect(test.block.gaps.size).toBe(0);
 	});
 });

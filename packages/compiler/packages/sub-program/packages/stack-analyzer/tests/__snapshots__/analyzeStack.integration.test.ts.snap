@@ -317,7 +317,6 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
       ],
-      "used": true,
     },
   },
   "modules": {
@@ -332,14 +331,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -360,14 +359,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -391,7 +390,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
             "accessByteWidth": 4,
             "range": {
               "byteAddress": 4,
-              "memoryId": "buffer",
+              "memoryId": 0,
               "moduleId": "main",
               "safeByteLength": 16,
               "source": "memory-start",
@@ -403,14 +402,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -431,7 +430,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -453,7 +452,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -475,14 +474,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -507,7 +506,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -531,7 +530,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -635,14 +634,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -663,14 +662,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -698,14 +697,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -726,7 +725,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -748,7 +747,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -770,14 +769,14 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
                   },
                   "safeRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -804,7 +803,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",
@@ -828,7 +827,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
                 "address": {
                   "clampRange": {
                     "byteAddress": 4,
-                    "memoryId": "buffer",
+                    "memoryId": 0,
                     "moduleId": "main",
                     "safeByteLength": 16,
                     "source": "memory-start",

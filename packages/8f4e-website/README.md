@@ -1,14 +1,20 @@
 # 8f4e Website
 
-`@8f4e/8f4e-website` contains a product homepage, an examples gallery, and a compiler test gallery using
-[`@8f4e/editor-minimal`](../editor/packages/editor-minimal/README.md). The embedded composition keeps live editing,
-controls, visualizations, runtimes, and URL loading. Each mount starts fresh, with no browser session persistence,
-file/export/screenshot menus, built-in module browser, or optional authoring-action plugins. The website
+`@8f4e/8f4e-website` contains a product homepage using
+[`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples and compiler test galleries using
+[`@8f4e/editor-gallery`](../editor/packages/editor-gallery/README.md). Both embedded compositions keep live editing,
+controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, and slider;
+its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
+piano, assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary
+assets, MIDI, keyboard-to-memory input, bars, meter, wave, and crossfade. It also omits entry outlines, offscreen block
+arrows, context menus, project saving/export, file-session tracking, and block copy/paste. Plain-text paste remains available
+through keyboard editing. Each mount starts fresh, with no browser session persistence,
+WASM export, screenshots, built-in module browser, or optional authoring-action plugins. The website
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode
-with mode switching disabled.
+without a mode-switching plugin. Audio contexts are supplied only to gallery editors.
 
 `src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
-`src/main.ts` mounts it. The homepage reveals canvases through the minimal editor's initial-project completion callback
+`src/main.ts` mounts it. The homepage reveals canvases through the landing editor's initial-project completion callback
 and displays a reload message when URL loading fails.
 
 From the workspace root:
@@ -24,8 +30,11 @@ npx nx run @8f4e/8f4e-website:serve
 The development server runs at `http://localhost:3001` so it can run alongside `@8f4e/editor-website`.
 
 Set the canvas's `data-project-path` attribute in `src/index.html` to a path relative to
-`packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/example-projects.ts`
-uses a Vite glob to emit the original `.8f4e` sources as downloadable assets shared by the homepage and examples gallery.
+`packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/homepage-projects.ts`
+imports only the four homepage demo URLs; update its explicit imports when changing the homepage's project selection.
+The full project and preview URL catalogs in `src/example-projects.ts` are used only by the examples gallery.
+The homepage fetches each demo's source when its editor becomes visible. Featured preview GIFs use `?no-inline`
+to remain external assets with native lazy loading, including images below Vite's default inline-size limit.
 The npm command refreshes the committed 64×64 GIF previews in `src/project-previews/` after gallery projects or
 their `@home` blocks change. The compiler gallery reuses one shared preview generated from a representative fixture.
 
@@ -51,8 +60,10 @@ updates the address and page title; Back and Forward restore selections. Direct 
 accordion and scroll it into view. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back
 to the default desktop selection or the collapsed mobile list.
 
-Selecting a different example creates a fresh editor and disposes the previous instance. Mounts are serialized to
-handle rapid selections. Returning to an example reloads its source; edits remain only for that editor's lifetime.
+Selecting a different example creates a fresh editor and disposes the previous selection. Each selection owns its
+editor, WebMCP bridge, canvas, loading timeout, and reveal callback through `src/gallery-editor-session.ts`. Pending
+mounts finish independently; a disposed selection releases any editor that arrives later and ignores late callbacks.
+Returning to an example reloads its source; edits remain only for that editor's lifetime.
 The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
 A link opens the example in the full editor.
 The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
@@ -61,7 +72,7 @@ or fetching. Switching examples disposes the previous editor without waiting for
 project contents or poll editor state to infer completion.
 
 Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
-callbacks, and switching examples while a fetch is pending. The minimal project-menu canvas baseline lives under
+callbacks, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
 `src/__screenshots__/gallery.test.ts/` and is shared across platforms because editor glyphs use bitmap masks.
 
 The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source

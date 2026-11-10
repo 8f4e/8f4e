@@ -37,6 +37,7 @@ function setup({
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers: createEditorDrawerRegistry(),
 			})
 		: undefined;
@@ -71,10 +72,8 @@ describe('example modules plugin', () => {
 			expect(test.state.contextMenu.items.some(item => item.title?.includes('Add Built-in Block'))).toBe(true)
 		);
 		const click = (title: string) => {
-			test.state.contextMenu.highlightedItem = test.state.contextMenu.items.findIndex(item =>
-				item.title?.includes(title)
-			);
-			test.events.dispatch('mousedown', { x: 100, y: 112 });
+			const menuItemIndex = test.state.contextMenu.items.findIndex(item => item.title?.includes(title));
+			test.events.dispatch('activateContextMenuItem', { x: 100, y: 112, index: menuItemIndex });
 		};
 		click('Add Built-in Block');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
@@ -82,13 +81,13 @@ describe('example modules plugin', () => {
 		await vi.waitFor(() =>
 			expect(test.state.contextMenu.items.some(item => item.action === ADD_EXAMPLE_MODULE)).toBe(true)
 		);
-		click('< Back');
+		click('Back');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
 		click('Audio');
 		await vi.waitFor(() =>
 			expect(test.state.contextMenu.items.some(item => item.action === ADD_EXAMPLE_MODULE)).toBe(true)
 		);
-		click('< Back');
+		click('Back');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
 		click('Audio');
 		await vi.waitFor(() =>
@@ -203,9 +202,7 @@ describe('example modules plugin', () => {
 			const test = setup({ installed });
 			if (installed) test.disposePlugin();
 			test.events.dispatch('contextmenu', { x: 100, y: 112 });
-			await vi.waitFor(() =>
-				expect(test.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
-			);
+			await Promise.resolve();
 			expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 			test.events.dispatch(ADD_EXAMPLE_MODULE, { slug: 'target', x: 100, y: 112 });
 			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
@@ -219,7 +216,11 @@ describe('example modules plugin', () => {
 		});
 		const test = setup({ sources: new Map([['audio/target', () => pending]]) });
 		const insertion = test.addModule();
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'module:target', message: 'Loading module target...', status: 'loading' },
+		]);
 		test.disposePlugin();
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		finish(publicSource(mainCode));
 		await insertion;
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
@@ -239,7 +240,11 @@ describe('example modules plugin', () => {
 		});
 		const insertion = test.addModule();
 		await vi.waitFor(() => expect(loadDependency).toHaveBeenCalledOnce());
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'module:dep', message: 'Loading module dep...', status: 'loading' },
+		]);
 		test.disposePlugin();
+		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		finish(publicSource(dependencyCode, 'constants'));
 		await insertion;
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);

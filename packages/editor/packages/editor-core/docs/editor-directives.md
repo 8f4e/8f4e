@@ -128,6 +128,11 @@ Supported paths:
 - `font` - editor font used for rendering code blocks and UI text. Font changes refresh block layouts without
   recentering the viewport.
 - `audioRuntime.<field>` / `workerRuntime.<field>` / `testRuntime.<field>` - independently enabled execution runtimes.
+- `compiler.functionInlining.enabled` / `compiler.functionInlining.maxExpansionOperations` /
+  `compiler.functionInlining.maxCallerGrowth` -
+  [compiler inlining settings](../../../plugins/compiler/README.md#wasm-optimization).
+- `compiler.wasmPruning.enabled` - [Wasm pruning setting](../../../plugins/compiler/README.md#wasm-optimization).
+- `compiler.memoryGuards.enabled` - [Memory access guards](../../../plugins/compiler/README.md#wasm-optimization).
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
@@ -175,7 +180,7 @@ Supported `font` values:
 - `ibmvga8x16`
 - `terminus8x16`
 - `terminus8x16bold`
-- `6x10`
+- `x11miscfixed6x10`
 - `terminus10x18`
 - `kana12x13`
 - `terminus12x24`
@@ -185,6 +190,10 @@ Supported `font` values:
 - `spleen8x16`
 - `templeos8x8`
 - `spleen16x32`
+
+All fonts use Code page 437 glyph slots. Enter characters as ordinary Unicode text, including accents, Greek letters,
+box drawing, and the graphical CP437 symbols. A character unavailable in the selected font appears blank;
+Unicode characters outside CP437 appear as question marks.
 
 ### `@watch`
 
@@ -343,7 +352,7 @@ Notes:
 ### `@wave`
 
 Provided by `@8f4e/editor-plugin-wave`, which also provides `@wave2` and `@wave4` and is included in
-`@8f4e/editor-default`. Hosts composing the minimal editor must include this plugin to enable these directives.
+`@8f4e/editor-default`. Hosts composing the gallery editor must include this plugin to enable these directives.
 
 Draw a waveform over a typed absolute pointer range. The first argument provides the start pointer and element size metadata, the second argument is the element count, and the optional third argument is an absolute pointer in the same address space.
 
@@ -971,7 +980,7 @@ Audio and worker runtimes contribute a sample-rate constant named `SAMPLE_RATE` 
 `sampleRateConstantName` settings
 when running them together. Audio also contributes `AUDIO_BUFFER_SIZE`, configurable through
 `audioRuntime.bufferSizeConstantName`. Info namespaces are fixed: `audioRuntime`, `workerRuntime`, and `testRuntime`.
-The default and minimal editors automatically import these plugins when their configuration roots appear, including
+The default and gallery editors automatically import these plugins when their configuration roots appear, including
 after editing. Runtime signals are checked across the complete project tree, including unopened groups, using cached
 parsed directives. Each plugin stays installed until editor disposal and owns its schema and cleanup.
 

@@ -1,10 +1,12 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import init, { createEditorDrawerRegistry, registerWebUiConfig } from '@8f4e/web-ui';
+import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
+
+const SAMPLE_TEXT = textToGlyphIds('Sample text');
 
 test('applies project appearance settings and restores defaults after project replacement', async () => {
 	const handlers = new Map<string, Set<(event: unknown) => void>>();
@@ -17,7 +19,7 @@ test('applies project appearance settings and restores defaults after project re
 		off: (name, callback) => {
 			handlers.get(name)?.delete(callback as (event: unknown) => void);
 		},
-		dispatch: (name, payload) => {
+		dispatch: (name, ...[payload]) => {
 			for (const callback of handlers.get(name) ?? []) callback(payload);
 		},
 	};
@@ -28,11 +30,10 @@ test('applies project appearance settings and restores defaults after project re
 	// Use the same registration order as editor-core, before renderer and project initialization.
 	registerWebUiConfig(store);
 	const drawers = createEditorDrawerRegistry();
-	const removeDrawer = drawers.registerCodeBlockContentDrawer(({ draw, state }) => {
-		draw.drawText(state.viewport.vGrid, state.viewport.hGrid, 'Sample text', PALETTE_INDICES.inkBase);
+	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
+		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
 	});
-	const renderer = await init(store, events, canvas, createMockMemoryViews(), { drawers });
-	renderer.pauseRendering();
+	const renderer = await init(store, events, canvas, createMockMemoryViews(), { loading: store.loading, drawers });
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: canvas.width, canvasHeight: canvas.height });
 	const module = {
@@ -49,23 +50,31 @@ test('applies project appearance settings and restores defaults after project re
 			notes: [
 				{
 					id: 1,
-					code: ['note settings', '; @pos 4 10', '; @config font 6x10', '; @config color.canvas #361845', 'noteEnd'],
+					code: [
+						'note settings',
+						'; @pos 4 10',
+						'; @config font x11miscfixed6x10',
+						'; @config color.canvas #361845',
+						'noteEnd',
+					],
 				},
 			],
 		});
 		await expect.poll(() => state.viewport.vGrid).toBe(6);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'sample')!;
 		expect({ x: block.x, y: block.y }).toEqual({ x: 24, y: 20 });
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(state.codeErrors['editor-directives']).toEqual([]);
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('configured-appearance');
 		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[
 				{
 					codeBlock: settings,
-					code: settings.code.map(line => line.replace('6x10', 'terminus10x18').replace('#361845', '#102432')),
+					code: settings.code.map(line =>
+						line.replace('x11miscfixed6x10', 'terminus10x18').replace('#361845', '#102432')
+					),
 				},
 			],
 			{ affectsCompilation: false }

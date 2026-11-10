@@ -29,8 +29,10 @@ test('bars plugin renders its directive', async () => {
 	for (let index = 0; index < 64; index++)
 		test.memoryViews.float32[memory.allocationUnitAddress + index] = (Math.sin((index * Math.PI) / 16) + 1) / 2;
 
-	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, { drawers });
-	renderer.pauseRendering();
+	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, {
+		loading: test.store.loading,
+		drawers,
+	});
 
 	try {
 		renderer.renderFrame();

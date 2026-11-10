@@ -6,7 +6,7 @@ import insertNewLine from './insertNewLine';
 import insertText from './insertText';
 import { moveCaret } from './moveCaret';
 
-export { default as drawCaret } from './drawCaret';
+export { default as createCaretPresentation } from './drawCaret';
 
 const directions: Record<string, Direction> = {
 	ArrowLeft: 'left',
@@ -47,10 +47,10 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	event.preventDefault();
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
-	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
+	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
 }
 
-export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContext): void {
+export function handlePaste(event: ClipboardEvent, { store, events }: EditorPluginContext): void {
 	const state = store.getState();
 	if (event.defaultPrevented || state.editorMode !== 'edit') return;
 	const block = state.codeBlockRendering.selectedCodeBlock;
@@ -61,5 +61,5 @@ export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContex
 	const edit = insertText(block.code, block.cursor.row, block.cursor.col, text);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
-	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
+	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
 }

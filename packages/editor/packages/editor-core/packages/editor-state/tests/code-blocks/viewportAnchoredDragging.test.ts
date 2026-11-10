@@ -1,4 +1,4 @@
-import type { EventDispatcher, InternalMouseEvent, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import codeBlockDragger from '../../src/features/code-blocks/features/codeBlockDragger/effect';
@@ -9,8 +9,8 @@ describe('viewport-anchored dragging', () => {
 	let state: State;
 	let store: ReturnType<typeof createStateManager<State>>;
 	let events: EventDispatcher;
-	let mousedownHandlers: Array<(event: InternalMouseEvent) => void>;
-	let mousemoveHandlers: Array<(event: InternalMouseEvent) => void>;
+	let mousedownHandlers: Array<(event: InternalPointerEvent) => void>;
+	let mousemoveHandlers: Array<(event: InternalPointerEvent) => void>;
 	let mouseupHandlers: Array<() => void>;
 
 	beforeEach(() => {
@@ -26,10 +26,10 @@ describe('viewport-anchored dragging', () => {
 		mouseupHandlers = [];
 
 		events = {
-			on: vi.fn((eventName: string, callback: (event: InternalMouseEvent | void) => void) => {
-				if (eventName === 'mousedown') mousedownHandlers.push(callback as (event: InternalMouseEvent) => void);
-				if (eventName === 'mousemove') mousemoveHandlers.push(callback as (event: InternalMouseEvent) => void);
-				if (eventName === 'mouseup') mouseupHandlers.push(callback as () => void);
+			on: vi.fn((eventName: string, callback: (event: InternalPointerEvent | void) => void) => {
+				if (eventName === 'pointerdown') mousedownHandlers.push(callback as (event: InternalPointerEvent) => void);
+				if (eventName === 'pointermove') mousemoveHandlers.push(callback as (event: InternalPointerEvent) => void);
+				if (eventName === 'pointerup') mouseupHandlers.push(callback as () => void);
 			}),
 			off: vi.fn(),
 			dispatch: vi.fn(),

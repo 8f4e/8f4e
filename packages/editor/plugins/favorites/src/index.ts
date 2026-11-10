@@ -20,11 +20,11 @@ export const favoritesPlugin: EditorPlugin = {
 				const headerIndex = codeBlock.code.findIndex(line => getProjectOpenerKeyword(line.trim()) !== null);
 				code.splice(headerIndex + 1, 0, '; @favorite');
 			}
-			applyCodeBlockSourceEdits(store, [{ codeBlock, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: false });
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);
-		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex, events);
+		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex);
 		events.on('jumpToFavoriteCodeBlock', onJump);
 		const unregisterBlockMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit') return;

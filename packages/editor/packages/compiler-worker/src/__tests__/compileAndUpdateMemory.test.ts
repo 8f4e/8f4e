@@ -135,7 +135,7 @@ moduleEnd`.split('\n'),
 });
 
 describe('compileAndUpdateMemory live code updates', () => {
-	it('preserves live memory when reordering replacements with different code lengths', async () => {
+	it('preserves live memory when reordering module replacements', async () => {
 		const project = createInput([
 			{ code: 'module voice\nint out\npush &out\npush out\nadd 1\nstore\nmoduleEnd'.split('\n') },
 			{ code: 'module sentinel\nint value 7\nmoduleEnd'.split('\n') },
@@ -158,9 +158,6 @@ describe('compileAndUpdateMemory live code updates', () => {
 
 		project.execution.reverse();
 		const second = await compileAndUpdateMemory(project, compilerOptions);
-		expect(second.compiledModules.voice.cycleFunction.length).not.toBe(
-			first.compiledModules.voice.cycleFunction.length
-		);
 		expect(second.memoryAction).toEqual({ action: 'reused' });
 		expect(second.memoryRef).toBe(first.memoryRef);
 		expect(memory[out]).toBe(247);
@@ -191,6 +188,27 @@ describe('compileAndUpdateMemory live code updates', () => {
 		expect(Array.from(new Int32Array(second.memoryRef.buffer, state.byteAddress, state.numberOfElements))).toEqual([
 			0, 0,
 		]);
+	});
+
+	it('keeps anonymous declaration IDs and live memory when source lines move', async () => {
+		const project = createInput([{ code: ['module voice', 'int 42', 'int 7', 'moduleEnd'] }]);
+		const first = await compileAndUpdateMemory(project, compilerOptions);
+		const firstDeclarations = first.memoryPlan.modules.voice!.declarations;
+		const [firstCell, secondCell] = firstDeclarations;
+		const memory = new Int32Array(first.memoryRef.buffer);
+		expect(memory[firstCell.allocationUnitAddress]).toBe(42);
+		memory[firstCell.allocationUnitAddress] = 99;
+
+		getProjectModules(project)[0].code = ['module voice', '', 'int 42', 'int 8', 'moduleEnd'];
+		const second = await compileAndUpdateMemory(project, compilerOptions);
+		const secondDeclarations = second.memoryPlan.modules.voice!.declarations;
+		expect(secondDeclarations.map(({ id, byteAddress }) => ({ id, byteAddress }))).toEqual(
+			firstDeclarations.map(({ id, byteAddress }) => ({ id, byteAddress }))
+		);
+		expect(secondDeclarations.map(({ lineNumber }) => lineNumber)).toEqual([2, 3]);
+		expect(second.memoryAction).toEqual({ action: 'reused' });
+		expect(memory[firstCell.allocationUnitAddress]).toBe(99);
+		expect(memory[secondCell.allocationUnitAddress]).toBe(8);
 	});
 });
 

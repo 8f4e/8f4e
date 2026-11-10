@@ -34,6 +34,18 @@ note right
 ; @config export.fileName right
 noteEnd`;
 
+it('replaces only its own error contribution when source directives change', () => {
+	const test = setup('8f4e/v1\nnote valid\nnoteEnd');
+	const errors = [{ codeBlockId: 0, lineNumber: 0, message: 'Plugin error' }];
+	test.store.set('codeErrors.custom', errors);
+	test.load('8f4e/v1\nnote invalid\n; @config unknown.path value\nnoteEnd');
+	expect(test.state.codeErrors['editor-directives'].length).toBeGreaterThan(0);
+	expect(test.state.codeErrors.custom).toBe(errors);
+	test.load('8f4e/v1\nnote valid\nnoteEnd');
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
+	expect(test.state.codeErrors.custom).toBe(errors);
+});
+
 describe('spatial configuration precedence', () => {
 	it.each([
 		{ name: 'horizontal position before vertical position', first: '20 -10', second: '0 10', winner: 'first' },
@@ -92,7 +104,7 @@ note left
 noteEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('last');
 		expect(state.editorConfig.testSetting).toBe('sample');
-		expect(state.codeErrors.editorDirectiveErrors).toEqual([
+		expect(state.codeErrors['editor-directives']).toEqual([
 			expect.objectContaining({ lineNumber: 4, message: expect.stringContaining("invalid value 'invalid'") }),
 		]);
 	});
@@ -102,7 +114,7 @@ noteEnd`);
 		const left = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 0 0', '@pos 100 0')) }],
 			{
 				affectsCompilation: false,
@@ -112,7 +124,7 @@ noteEnd`);
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 0', '@pos 100 -')) }],
 			{ affectsCompilation: false }
 		);
@@ -120,7 +132,7 @@ noteEnd`);
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) }],
 			{ affectsCompilation: false }
 		);
@@ -144,14 +156,14 @@ noteEnd`);
 			canvasHeight: 600,
 			altKey: false,
 		};
-		events.dispatch('mousedown', pointer);
+		events.dispatch('pointerdown', pointer);
 		expect(state.codeBlockRendering.rootProject.blocks.at(-1)).toBe(left);
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		events.dispatch('mouseup');
-		events.dispatch('mousedown', pointer);
-		events.dispatch('mousemove', { ...pointer, movementX: 100 * state.viewport.vGrid });
+		events.dispatch('pointerup');
+		events.dispatch('pointerdown', pointer);
+		events.dispatch('pointermove', { ...pointer, movementX: 100 * state.viewport.vGrid });
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 		expect(left.gridX).toBe(100);
 		expect(state.editorConfig.export?.fileName).toBe('left');
 		load(serializeToProject(state));
@@ -189,7 +201,7 @@ entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('rootRight');
 		const outer = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'outer')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: outer, code: outer.code.map(line => line.replace('@pos 10 0', '@pos 30 0')) }],
 			{
 				affectsCompilation: false,
@@ -200,7 +212,7 @@ entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('childRight');
 		const childRight = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'childRight')!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock: childRight, code: childRight.code.map(line => line.replace('@pos 1000 0', '@pos -10 0')) }],
 			{
 				affectsCompilation: false,

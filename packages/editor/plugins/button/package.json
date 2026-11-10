@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-button",
-  "version": "0.1.26",
+  "version": "0.1.44",
   "private": true,
   "description": "Momentary button widget plugin for the 8f4e editor",
   "type": "module",
@@ -25,10 +25,10 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@8f4e/compiler": "*",
     "@8f4e/sprite-generator": "*",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/browser": "4.1.7"
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/browser": "4.1.12"
   }
 }

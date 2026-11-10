@@ -93,6 +93,7 @@ describe('AudioWorklet context lifetime', () => {
 			menus: store.menus,
 			directives: store.directives,
 			layout: store.layout,
+			loading: store.loading,
 			drawers: createEditorDrawerRegistry(),
 		});
 		const cleanup = () => {
@@ -120,7 +121,9 @@ describe('AudioWorklet context lifetime', () => {
 			events,
 			project,
 			configure: (config: string[]) =>
-				applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(config) }], { affectsCompilation: true }),
+				applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(config) }], {
+					affectsCompilation: true,
+				}),
 			allow: () => emitter.listeners('grantAudioPermission')[0]() as Promise<void>,
 		};
 	}
@@ -260,9 +263,19 @@ describe('AudioWorklet context lifetime', () => {
 		await editor.allow();
 		const port = worklets[0].port as unknown as { onmessage: (event: { data: unknown }) => void };
 
-		port.onmessage({ data: { type: 'initialized', payload: { sampleRate: 48000 } } });
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
+			{ id: 'audio-runtime', message: 'Starting audio runtime...', status: 'loading' },
+		]);
+		port.onmessage({
+			data: {
+				type: 'initialized',
+				requestId: worklets[0].port.postMessage.mock.calls.at(-1)![0].requestId,
+				payload: { sampleRate: 48000 },
+			},
+		});
 		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
 
+		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(editor.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		expect(editor.store.getState().info.audioRuntime).toEqual({ audioBufferSize: 128, sampleRate: 48000 });
 	});
@@ -332,7 +345,7 @@ describe('AudioWorklet context lifetime', () => {
 			'const AUDIO_RATE 44100',
 			'const BUFFER_LENGTH 128',
 		]);
-		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 	});
 
 	it('sends stereo output and mono input routes resolved from project configuration', async () => {
@@ -357,7 +370,7 @@ describe('AudioWorklet context lifetime', () => {
 			projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
 		});
 		await editor.allow();
-		expect(editor.state.codeErrors.editorDirectiveErrors).toEqual([]);
+		expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 		expect(worklets[0].port.postMessage).toHaveBeenCalledWith(
 			expect.objectContaining({
 				type: 'init',

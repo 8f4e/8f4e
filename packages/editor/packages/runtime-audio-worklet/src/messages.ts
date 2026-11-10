@@ -17,6 +17,7 @@ export interface AudioInputBufferRoute {
 export type AudioWorkletHostMessage =
 	| {
 			type: 'init';
+			requestId: number;
 			memoryRef: WebAssembly.Memory;
 			codeBuffer: Uint8Array;
 			bufferExportName: string;
@@ -27,5 +28,6 @@ export type AudioWorkletHostMessage =
 
 /** Messages posted by the AudioWorklet processor to the host. */
 export type AudioWorkletRuntimeMessage =
-	| { type: 'initialized'; payload: { sampleRate: number } }
+	| { type: 'initialized'; requestId: number; payload: { sampleRate: number } }
+	| { type: 'initializationError'; requestId: number; payload: { message: string } }
 	| { type: 'runtimeValues'; payload: { audioBufferSize: number } };

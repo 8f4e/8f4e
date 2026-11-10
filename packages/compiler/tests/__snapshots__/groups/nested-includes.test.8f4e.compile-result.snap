@@ -507,7 +507,7 @@
           "byteAddress": 4,
           "default": 0,
           "elementWordSize": 4,
-          "id": "output",
+          "id": 0,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import createDefaultState from '../../pureHelpers/state/createDefaultState';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
 import autoEnvConstants from '../code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from '../code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
@@ -48,7 +49,7 @@ describe('project revision', () => {
 			name: 'main',
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
 			blockType: 'module',
-			cursor: { row: 1, col: 6, x: 0, y: 16 },
+			cursor: { row: 1, col: 6, y: 16 },
 		});
 		state.codeBlockRendering.rootProject.blocks.push(block);
 		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
@@ -68,9 +69,9 @@ describe('project revision', () => {
 
 	it('announces changed source batches and ignores identical source', () => {
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.projectChange.revision).toBe(1);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
 		expect(state.projectChange.revision).toBe(1);
 	});
 
@@ -85,10 +86,10 @@ describe('project revision', () => {
 		codeBlockNavigation(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
 		state.codeBlockRendering.currentProject.blocks.push(target);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mouseup');
-		dispatch('mousedown', { x: 32, y: 24 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointerup');
+		dispatch('pointerdown', { x: 32, y: 24 });
+		dispatch('pointerup');
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		dispatch('navigateCodeBlock', { direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
@@ -105,25 +106,25 @@ describe('project revision', () => {
 		);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mousemove', { movementX: 16, movementY: 32 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointermove', { movementX: 16, movementY: 32 });
+		dispatch('pointerup');
 		expect(block.code).toContain('; @pos 2 2');
 		expect(state.projectChange.revision).toBe(1);
 		expect(state.compilerInputRevision).toBe(0);
 	});
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
-		codeBlockCreator(store, events);
+		codeBlockActions(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(state.projectChange.revision).toBe(2);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
 		expect(state.projectChange.revision).toBe(3);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.projectChange.revision).toBe(4);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.projectChange.revision).toBe(4);
 	});
 
@@ -140,7 +141,7 @@ describe('project revision', () => {
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.currentProject.blocks.push(env);
 		store.set('envConstantContributions', { assets: ['const SOUND_SIZE 100'] });
@@ -156,9 +157,13 @@ describe('project revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.projectChange.revision).toBe(0);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.projectChange.revision).toBe(1);

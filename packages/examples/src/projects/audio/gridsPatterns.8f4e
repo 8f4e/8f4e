@@ -104,6 +104,13 @@ expose bd &outputs:bd
 expose sd &outputs:sd
 expose hh &outputs:hh
 
+expose bank &mapReader:bank
+; @slider &bank 0 5 1
+; @watch bank
+; 0 Original    3 Jazz/Latin
+; 1 Club        4 Electronic
+; 2 Groove      5 Breakbeat
+
 expose x &mapReader:x
 ; @slider &x 0 255 1
 expose y &mapReader:y
@@ -121,11 +128,11 @@ expose accentHH &outputs:accentHH
 
 
 includes
-; @pos -242 0
+; @pos -244 0
 include std/events/risingEdge
 includesEnd
 function mapBalance
-; @pos -204 0
+; @pos -286 0
 ; Converts a coordinate
 ; to a cell blend weight.
 param int coordinate
@@ -137,7 +144,7 @@ push 2
 shiftLeft
 functionEnd int
 function accentHit
-; @pos -204 14
+; @pos -286 14
 ; Flags hits whose level
 ; is greater than 192.
 param int hit
@@ -149,58 +156,12 @@ push 192
 greaterThan
 and
 functionEnd int
-function patternRow
-#impure
-; @pos -204 29
-; Finds the step address
-; for a chosen map cell.
-param int cellX
-param int cellY
-param int step
-
-push cellX
-push 5
-mul
-push cellY
-add
-mapBegin int
-map 0 &pattern10:0
-map 1 &pattern08:0
-map 2 &pattern00:0
-map 3 &pattern09:0
-map 4 &pattern11:0
-map 5 &pattern15:0
-map 6 &pattern07:0
-map 7 &pattern13:0
-map 8 &pattern12:0
-map 9 &pattern06:0
-map 10 &pattern18:0
-map 11 &pattern14:0
-map 12 &pattern04:0
-map 13 &pattern05:0
-map 14 &pattern03:0
-map 15 &pattern23:0
-map 16 &pattern16:0
-map 17 &pattern21:0
-map 18 &pattern01:0
-map 19 &pattern02:0
-map 20 &pattern24:0
-map 21 &pattern19:0
-map 22 &pattern17:0
-map 23 &pattern20:0
-map 24 &pattern22:0
-mapEnd int
-
-push step
-push 4
-mul
-add
-functionEnd int
 function selectRows
-; @pos -204 77
-; Sets four row pointers
-; from X/Y and step.
+; @pos -286 29
+; Resolves four corners in the
+; selected bank's lookup table.
 #impure
+param int** bankPointer
 param int x
 param int y
 param int step
@@ -208,56 +169,56 @@ param int** rowA
 param int** rowB
 param int** rowC
 param int** rowD
-local int cellX
-local int cellY
+local int** cell
+local int stepOffset
 
+; A table index is X * 5 + Y.
 push x
-push 6
-shiftRightUnsigned
-localSet cellX
+shiftRightUnsigned 6
+mul 5
 push y
-push 6
-shiftRightUnsigned
-localSet cellY
+shiftRightUnsigned 6
+add
+mul 4
+push bankPointer
+add
+localSet cell
 
-push rowA
-push cellX
-push cellY
 push step
-call patternRow
+mul 4
+localSet stepOffset
+
+; Each entry points to a pattern.
+; X advances five entries, Y one.
+push rowA
+push cell
+load
+add stepOffset
 store
 
 push rowB
-push cellX
-push 1
-add
-push cellY
-push step
-call patternRow
+push cell
+add 5*4
+load
+add stepOffset
 store
 
 push rowC
-push cellX
-push cellY
-push 1
-add
-push step
-call patternRow
+push cell
+add 4
+load
+add stepOffset
 store
 
 push rowD
-push cellX
-push 1
-add
-push cellY
-push 1
-add
-push step
-call patternRow
+push cell
+add 6*4
+load
+add stepOffset
 store
 functionEnd
 function readPattern
-; @pos -170 0
+; @pos -244 6
 ; Reads one drum channel
 ; from a packed step row.
 #impure
@@ -272,7 +233,7 @@ push 255
 and
 functionEnd int
 function mixByte
-; @pos -170 19
+; @pos -243 23
 ; Blends two byte values
 ; using integer weights.
 param int startValue
@@ -292,7 +253,7 @@ push 8
 shiftRightUnsigned
 functionEnd int
 function densityHit
-; @pos -170 40
+; @pos -243 45
 ; Tests whether a level
 ; passes a density limit.
 param int level
@@ -305,7 +266,7 @@ sub
 greaterThan
 functionEnd int
 function readMap
-; @pos -170 58
+; @pos -243 60
 ; Blends one drum channel
 ; from four pattern rows.
 #impure
@@ -343,7 +304,7 @@ push balanceY
 call mixByte
 functionEnd int
 note attribution
-; @pos -42 -16
+; @pos -44 -14
 The algorithm is based on the
 original source of the Mutable
 Instruments Grids firmware.
@@ -351,7 +312,7 @@ Instruments Grids firmware.
 Converted to 8f4e by Andor Polgar.
 noteEnd
 note license
-; @pos 0 -21
+; @pos 1 -21
 Copyright 2009, 2011, 2012 Emilie Gillet.
 
 This program is free software: you can redistribute it and/or modify
@@ -366,38 +327,57 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 noteEnd
 note patterns
-; @pos 78 -36
+; @pos 83 -38
 Mutable Instruments Grids patterns
 
-25 patterns with 32 steps each.
-One row per step; columns are
-bass drum (BD), snare drum (SD),
-and hi-hat / percussion (HH).
-Values are rhythmic importance
-levels in the range 0 to 255.
+Each bank has 25 patterns with
+32 steps each. The Bank slider
+takes effect on the next clock
+step and keeps the playhead in place.
 
-Each patternNN matches node_N
-in the original source.
-Modules follow the original
-X/Y map: X increases right,
-and Y increases downward.
+Each pattern block has one row
+per step, with kick (BD), snare (SD)
+and hi-hat (HH) levels. The number
+in its name matches the source node.
 
-X and Y blend nearby patterns
-using the original drum map.
-All five controls range from
-0 to 255. Density zero mutes
-that channel; higher values
-include weaker rhythmic steps.
-Gate calculations run only on rising clock edges.
+The bank pointer selects a table
+of 25 pattern addresses in X/Y order.
+Each bank has its own data entry.
+X and Y blend nearby patterns in
+the selected bank. X increases
+right and Y increases downward.
+
+X, Y and density range from 0 to 255.
+Density zero mutes that channel.
+Higher values include weaker hits.
+
+Gate calculations run on rising clock edges.
 The BD, SD and HH outputs pulse
 once per triggered step.
 The accent outputs pulse on
 hits with a level above 192.
 Step numbers run from 0 to 31.
 noteEnd
+note sources
+; @pos 149 -23
+Imported bank sources
+
+Club, Groove and Jazz/Latin by David Baghurst (Sorrow).
+The one-bar Grids tables use the Groove MIDI Dataset by Google LLC (CC BY 4.0).
+https://magenta.tensorflow.org/datasets/groove
+https://creativecommons.org/licenses/by/4.0/
+https://github.com/Eight4aWish/eurorack_daisy_patch_init/tree/22aa3f66ddf98df03e16be5a750c50a5c5e7580b/daisy_grids/tools/grids_firmware
+
+Electronic and Breakbeat by Dylan Bolink (Truchets).
+https://github.com/Dylan-Bolink/eurorack/tree/fb3622424b671ea8b3b3159bd6a5a8de89963381/grids
+
+Bank tables are GPL-3.0-or-later.
+Converted to 8f4e pattern blocks on 2026-11-10.
+Each bank lookup table uses the source map, indexed by X * 5 + Y.
+noteEnd
 entry main
 module sequencer
-; @pos -128 0
+; @pos -163 0
 
 int& outputsBd &outputs:bd
 int& outputsSd &outputs:sd
@@ -463,9 +443,16 @@ moduleEnd
 entryEnd
 entry gate
 module mapReader
-; @pos -68 0
+; @pos -96 0
 ; @home left
 int& step &sequencer:step
+int bank 0
+int** bankPointer &original:cells
+int**[] bankTables 6
+- &original:cells &club:cells
+- &groove:cells &jazzLatin:cells
+- &electronic:cells
+- &breakbeat:cells
 int x 128
 int y 128
 ; Corners: A B
@@ -481,6 +468,15 @@ int levelHH
 local int balanceX
 local int balanceY
 
+push &bankPointer
+push &bankTables
+push bank
+mul 4
+add
+load
+store
+
+push bankPointer
 push x
 push y
 push *step
@@ -531,7 +527,7 @@ call readMap
 store
 moduleEnd
 module outputs
-; @pos -34 0
+; @pos -53 0
 
 int& levelBD
 - &mapReader:levelBD
@@ -585,6 +581,8 @@ push *levelHH
 call accentHit
 store
 moduleEnd
+entryEnd
+entry original
 module pattern10
 ; @pos 0 0
 
@@ -770,6 +768,213 @@ int   0 170 109
 int 145 127 109
 int 109  85   0
 moduleEnd
+module original
+; @pos 0 193
+int*[] cells 25
+- &pattern10:0 &pattern08:0 &pattern00:0 &pattern09:0 &pattern11:0
+- &pattern15:0 &pattern07:0 &pattern13:0 &pattern12:0 &pattern06:0
+- &pattern18:0 &pattern14:0 &pattern04:0 &pattern05:0 &pattern03:0
+- &pattern23:0 &pattern16:0 &pattern21:0 &pattern01:0 &pattern02:0
+- &pattern24:0 &pattern19:0 &pattern17:0 &pattern20:0 &pattern22:0
+moduleEnd
+entryEnd
+entry jazzLatin
+module jazzLatinPattern10
+; @pos 0 230
+
+;   BD  SD  HH
+int 255 229 204
+int   0   0   0
+int 113  51 153
+int   0   0   0
+int  56   0 255
+int   0   0   0
+int 141 153 102
+int   0   0   0
+int   0  76 204
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int 170 178 153
+int   0   0   0
+int   0 127  51
+int   0   0   0
+int 226   0 204
+int   0   0   0
+int   0 255 102
+int   0   0   0
+int  28 204 255
+int   0   0   0
+int 198   8   0
+int   0   0   0
+int   0 102 153
+int   0   0   0
+int  85  25  51
+int   0   0   0
+int 255  51 204
+int   0   0   0
+int   0 204   0
+int   0   0   0
+moduleEnd
+module jazzLatinPattern08
+; @pos 0 268
+
+;   BD  SD  HH
+int 223   0  31
+int   0   0   0
+int  31   0  63
+int   0   0   0
+int 255   0 223
+int   0   0   0
+int  63   0  31
+int   0   0   0
+int  31 182 255
+int   0   0   0
+int  31  36 127
+int   0   0   0
+int 191 145 159
+int   0   0   0
+int  95   0 159
+int   0   0   0
+int  95   0 159
+int   0   0   0
+int  63 255  95
+int   0   0   0
+int 159   0 159
+int   0   0   0
+int  63   0 191
+int   0   0   0
+int  31 218 127
+int   0   0   0
+int 127   0 255
+int   0   0   0
+int  63  72 159
+int   0   0   0
+int  63  36 159
+int   0   0   0
+moduleEnd
+module jazzLatinPattern00
+; @pos 0 306
+
+;   BD  SD  HH
+int   0  85 170
+int   0   0   0
+int 223  56 233
+int   0   0   0
+int  31   0   8
+int   0   0   0
+int  95   0  85
+int   0   0   0
+int   0 255 170
+int   0   0   0
+int  63   0  42
+int   0   0   0
+int 159   0 255
+int   0   0   0
+int   0  28 148
+int   0   0   0
+int   0 141 127
+int   0   0   0
+int 255   0 212
+int   0   0   0
+int   0   0  21
+int   0   0   0
+int   0   0 106
+int   0   0   0
+int  95 198 191
+int   0   0   0
+int 191   0  63
+int   0   0   0
+int 127   0 191
+int   0   0   0
+int   0   0 148
+int   0   0   0
+moduleEnd
+module jazzLatinPattern09
+; @pos 0 344
+
+;   BD  SD  HH
+int   0   0  51
+int   0   0   0
+int   0  85  25
+int   0   0   0
+int   0   8 255
+int   0   0   0
+int 145   0  76
+int   0   0   0
+int   0 255 127
+int   0   0   0
+int   8   0  76
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  36   0 127
+int   0   0   0
+int   0   0 102
+int   0   0   0
+int 218  42  76
+int   0   0   0
+int   0 212 102
+int   0   0   0
+int   0 170 229
+int   0   0   0
+int 255  42  51
+int   0   0   0
+int  72  85 204
+int   0   0   0
+int 182 127 153
+int   0   0   0
+int 109   8 178
+int   0   0   0
+moduleEnd
+module jazzLatinPattern11
+; @pos 0 382
+
+;   BD  SD  HH
+int  31   0  72
+int   0   0   0
+int  95   0 255
+int   0   0   0
+int 127 191   8
+int   0   0   0
+int   0 223  36
+int   0   0   0
+int  95 255  36
+int   0   0   0
+int 191   0 255
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int   0  31 145
+int   0   0   0
+int   0  31   0
+int   0   0   0
+int 255   0 218
+int   0   0   0
+int   8 127   0
+int   0   0   0
+int  63  95 182
+int   0   0   0
+int 223   0   0
+int   0   0   0
+int   0 159 218
+int   0   0   0
+int   0  63  72
+int   0   0   0
+int 159   0 109
+int   0   0   0
+moduleEnd
+module jazzLatin
+; @pos 0 423
+int*[] cells 25
+- &jazzLatinPattern10:0 &jazzLatinPattern08:0 &jazzLatinPattern00:0 &jazzLatinPattern09:0 &jazzLatinPattern11:0
+- &jazzLatinPattern15:0 &jazzLatinPattern07:0 &jazzLatinPattern13:0 &jazzLatinPattern12:0 &jazzLatinPattern06:0
+- &jazzLatinPattern18:0 &jazzLatinPattern14:0 &jazzLatinPattern04:0 &jazzLatinPattern05:0 &jazzLatinPattern03:0
+- &jazzLatinPattern23:0 &jazzLatinPattern16:0 &jazzLatinPattern21:0 &jazzLatinPattern01:0 &jazzLatinPattern02:0
+- &jazzLatinPattern24:0 &jazzLatinPattern19:0 &jazzLatinPattern17:0 &jazzLatinPattern20:0 &jazzLatinPattern22:0
+moduleEnd
+entryEnd
+entry original
 module pattern15
 ; @pos 34 0
 
@@ -955,6 +1160,195 @@ int   0   0   0
 int   0  25  56
 int   0   0   0
 moduleEnd
+entryEnd
+entry jazzLatin
+module jazzLatinPattern15
+; @pos 34 230
+
+;   BD  SD  HH
+int  36 255 185
+int   0   0   0
+int   0   0  46
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int 145 191 185
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int   0   0 139
+int   0   0   0
+int 218  63  92
+int   0   0   0
+int   0 127 162
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int 109  31  69
+int   0   0   0
+int   0 223 255
+int   0   0   0
+int 182   0  23
+int   0   0   0
+int  72 159 208
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int 255  95 115
+int   0   0   0
+int  72   0 162
+int   0   0   0
+moduleEnd
+module jazzLatinPattern07
+; @pos 34 268
+
+;   BD  SD  HH
+int 204 127  21
+int   0   0   0
+int   0   0  85
+int   0   0   0
+int   0   8 170
+int   0   0   0
+int 153 159 106
+int   0   0   0
+int   0  31  85
+int   0   0   0
+int  51   8  42
+int   0   0   0
+int   0 255 191
+int   0   0   0
+int   0  63  85
+int   0   0   0
+int 255  95 255
+int   0   0   0
+int 102 223 170
+int   0   0   0
+int   0 191  63
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int  51 255 233
+int   0   0   0
+int   0   0  85
+int   0   0   0
+int   0  63 148
+int   0   0   0
+moduleEnd
+module jazzLatinPattern13
+; @pos 34 306
+
+;   BD  SD  HH
+int 182   0 255
+int   0   0   0
+int 109   0 109
+int   0   0   0
+int  36   0 145
+int   0   0   0
+int 218   0  72
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int   0   0  36
+int   0   0   0
+int 145   0 182
+int   0   0   0
+int   0 255  72
+int   0   0   0
+int   0 191 109
+int   0   0   0
+int 145   0 182
+int   0   0   0
+int   0   0 145
+int   0   0   0
+int  36   0 255
+int   0   0   0
+int 255   0 218
+int   0   0   0
+int   0 127 218
+int   0   0   0
+int  72  63 109
+int   0   0   0
+int 109   0  72
+int   0   0   0
+moduleEnd
+module jazzLatinPattern12
+; @pos 34 344
+
+;   BD  SD  HH
+int 255   0 178
+int   0   0   0
+int   0 226  51
+int   0   0   0
+int 255  28 102
+int   0   0   0
+int 182 113  51
+int   0   0   0
+int   0 170 153
+int   0   0   0
+int   0   0  76
+int   0   0   0
+int   0   0 204
+int   0   0   0
+int   0  85 255
+int   0   0   0
+int   0   0  51
+int   0   0   0
+int  72   0 229
+int   0   0   0
+int   0   0 153
+int   0   0   0
+int 218  56 127
+int   0   0   0
+int   0  85 102
+int   0   0   0
+int   0 255  76
+int   0   0   0
+int   0 198 127
+int   0   0   0
+int 145 141  25
+int   0   0   0
+moduleEnd
+module jazzLatinPattern06
+; @pos 34 382
+
+;   BD  SD  HH
+int  31   0 127
+int   0   0   0
+int  95  42   0
+int   0   0   0
+int  63 127  85
+int   0   0   0
+int 191 127 212
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 159   0 170
+int   0   0   0
+int  31 212   8
+int   0   0   0
+int 223 170 255
+int   0   0   0
+int   0   0  42
+int   0   0   0
+int 127   0   0
+int   0   0   0
+int   0 212 127
+int   0   0   0
+int 223 255 170
+int   0   0   0
+int  31  42   8
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 255   0   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry original
 module pattern18
 ; @pos 68 0
 
@@ -1140,6 +1534,195 @@ int   0   0   0
 int  42  56  46
 int   0   0   0
 moduleEnd
+entryEnd
+entry jazzLatin
+module jazzLatinPattern18
+; @pos 68 230
+
+;   BD  SD  HH
+int 255 255 231
+int   0   0   0
+int   0  85  92
+int   0   0   0
+int 109  56 139
+int   0   0   0
+int  36 198 255
+int   0   0   0
+int 182   0  69
+int   0   0   0
+int   0  28 115
+int   0   0   0
+int 145 170 115
+int   0   0   0
+int   0   0 208
+int   0   0   0
+int 218 113 255
+int   0   0   0
+int   0 113  46
+int   0   0   0
+int   0  56 139
+int   0   0   0
+int   0 226  23
+int   0   0   0
+int 218   0 162
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int  36 141 115
+int   0   0   0
+int  72  28 185
+int   0   0   0
+moduleEnd
+module jazzLatinPattern14
+; @pos 68 268
+
+;   BD  SD  HH
+int   0  72 182
+int   0   0   0
+int   0 255   0
+int   0   0   0
+int  72   8   0
+int   0   0   0
+int   0  36 182
+int   0   0   0
+int 255  36 109
+int   0   0   0
+int   0   0 145
+int   0   0   0
+int 182   8 109
+int   0   0   0
+int 145  72  72
+int   0   0   0
+int 109 145 218
+int   0   0   0
+int 109 109   0
+int   0   0   0
+int  36 218  36
+int   0   0   0
+int   0 182  72
+int   0   0   0
+int   0 182 255
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 218   0 182
+int   0   0   0
+moduleEnd
+module jazzLatinPattern04
+; @pos 68 306
+
+;   BD  SD  HH
+int 255 226 226
+int   0   0   0
+int  76   0   0
+int   0   0   0
+int  25   0   0
+int   0   0   0
+int  25 113  85
+int   0   0   0
+int 229 141 198
+int   0   0   0
+int  51   0  56
+int   0   0   0
+int  25   0   0
+int   0   0   0
+int 153 255   0
+int   0   0   0
+int   8  28 170
+int   0   0   0
+int 102  56 141
+int   0   0   0
+int 178 198   0
+int   0   0   0
+int  25  56 113
+int   0   0   0
+int  25  56 255
+int   0   0   0
+int 204 170   0
+int   0   0   0
+int   8  28   0
+int   0   0   0
+int 127  85   0
+int   0   0   0
+moduleEnd
+module jazzLatinPattern05
+; @pos 68 344
+
+;   BD  SD  HH
+int 145   0 255
+int   0   0   0
+int   0  36   0
+int   0   0   0
+int   0   0  72
+int   0   0   0
+int 218   0 182
+int   0   0   0
+int   0 182 145
+int   0   0   0
+int 182   8  72
+int   0   0   0
+int  36 182  36
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int  72 255   0
+int   0   0   0
+int   0 145 109
+int   0   0   0
+int   0  72  72
+int   0   0   0
+int 218   8 218
+int   0   0   0
+int   0   8 109
+int   0   0   0
+int   0 218  72
+int   0   0   0
+int 255   0  36
+int   0   0   0
+int 109 109   0
+int   0   0   0
+moduleEnd
+module jazzLatinPattern03
+; @pos 68 382
+
+;   BD  SD  HH
+int 255 109 141
+int   0   0   0
+int  56   0 170
+int   0   0   0
+int  28  36  56
+int   0   0   0
+int 113 255 255
+int   0   0   0
+int  28   0   0
+int   0   0   0
+int 141   0 226
+int   0   0   0
+int   8 109 113
+int   0   0   0
+int  85   0 198
+int   0   0   0
+int 198   0   0
+int   0   0   0
+int   8 145  85
+int   0   0   0
+int 170 255   0
+int   0   0   0
+int   8  72   0
+int   0   0   0
+int 226 182   0
+int   0   0   0
+int  28  72   0
+int   0   0   0
+int 198 218   0
+int   0   0   0
+int  28   0  28
+int   0   0   0
+moduleEnd
+entryEnd
+entry original
 module pattern23
 ; @pos 102 0
 
@@ -1325,6 +1908,195 @@ int   0   0   0
 int  25 159  21
 int   0   0   0
 moduleEnd
+entryEnd
+entry jazzLatin
+module jazzLatinPattern23
+; @pos 102 230
+
+;   BD  SD  HH
+int 145   0 170
+int   0   0   0
+int   0  72 127
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  72 109   0
+int   0   0   0
+int 182   0   0
+int   0   0   0
+int   0 145  85
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int   0 218   0
+int   0   0   0
+int 218   0   0
+int   0   0   0
+int   0 255   0
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int   0 182 127
+int   0   0   0
+int 255  36  42
+int   0   0   0
+int 109   0   0
+int   0   0   0
+int   0  36 255
+int   0   0   0
+int  36   8   0
+int   0   0   0
+moduleEnd
+module jazzLatinPattern16
+; @pos 102 268
+
+;   BD  SD  HH
+int 178   0 198
+int   0   0   0
+int   0  63 113
+int   0   0   0
+int 102   8 113
+int   0   0   0
+int   0   0 141
+int   0   0   0
+int 204 223 226
+int   0   0   0
+int 153   0 170
+int   0   0   0
+int 127  95  85
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int 255 127 198
+int   0   0   0
+int  51   0 170
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int  25   0  56
+int   0   0   0
+int 229 255 255
+int   0   0   0
+int  76   0 113
+int   0   0   0
+int   0   0  28
+int   0   0   0
+int   0 191  56
+int   0   0   0
+moduleEnd
+module jazzLatinPattern21
+; @pos 102 306
+
+;   BD  SD  HH
+int 255 127 226
+int   0   0   0
+int   0  95  28
+int   0   0   0
+int   0 191 255
+int   0   0   0
+int 204  31  56
+int   0   0   0
+int 127   8 170
+int   0   0   0
+int   8 159  85
+int   0   0   0
+int   0 255 198
+int   0   0   0
+int 178   8 113
+int   0   0   0
+int 102 223 141
+int   0   0   0
+int   0  63  56
+int   0   0   0
+int 153  31 255
+int   0   0   0
+int   0   8  56
+int   0   0   0
+int  51 255 255
+int   0   0   0
+int 229   8  28
+int   0   0   0
+int  76   8 170
+int   0   0   0
+int  25 127  28
+int   0   0   0
+moduleEnd
+module jazzLatinPattern01
+; @pos 102 344
+
+;   BD  SD  HH
+int  56  36  92
+int   0   0   0
+int   0   0 185
+int   0   0   0
+int   0 145 255
+int   0   0   0
+int   0  72  46
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int 141  72 115
+int   0   0   0
+int   0  72  92
+int   0   0   0
+int 170   0 208
+int   0   0   0
+int   0 255 208
+int   0   0   0
+int   0 109  46
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int   0   0  69
+int   0   0   0
+int   0   8  46
+int   0   0   0
+int 198   0  23
+int   0   0   0
+int   0 218 139
+int   0   0   0
+int   0 182 162
+int   0   0   0
+moduleEnd
+module jazzLatinPattern02
+; @pos 102 382
+
+;   BD  SD  HH
+int 233 153 145
+int   0   0   0
+int   0  25 109
+int   0   0   0
+int 212 178   0
+int   0   0   0
+int  21   0  36
+int   0   0   0
+int 106   0 182
+int   0   0   0
+int 191 229 182
+int   0   0   0
+int   0   0 218
+int   0   0   0
+int 255 102  72
+int   0   0   0
+int   0  51 218
+int   0   0   0
+int 148 204   0
+int   0   0   0
+int  21   0 255
+int   0   0   0
+int  85  76 255
+int   0   0   0
+int 170 127   0
+int   0   0   0
+int  63  76  36
+int   0   0   0
+int 127 255   0
+int   0   0   0
+int  42   0  36
+int   0   0   0
+moduleEnd
+entryEnd
+entry original
 module pattern24
 ; @pos 136 0
 
@@ -1508,6 +2280,3969 @@ int   0   0   0
 int 127   0 198
 int   0   0   0
 int   8 113  28
+int   0   0   0
+moduleEnd
+entryEnd
+entry jazzLatin
+module jazzLatinPattern24
+; @pos 136 230
+
+;   BD  SD  HH
+int 212 127  56
+int   0   0   0
+int   0 159 226
+int   0   0   0
+int   8 159  28
+int   0   0   0
+int   8  63  28
+int   0   0   0
+int 212 127   8
+int   0   0   0
+int  42   8   8
+int   0   0   0
+int   0 191 198
+int   0   0   0
+int   0  63  28
+int   0   0   0
+int 212 255 113
+int   0   0   0
+int   8  95 255
+int   0   0   0
+int 170   8   0
+int   0   0   0
+int   0  95 141
+int   0   0   0
+int 255 223   0
+int   0   0   0
+int 127   0  85
+int   0   0   0
+int   0  31 170
+int   0   0   0
+int  85  31   8
+int   0   0   0
+moduleEnd
+module jazzLatinPattern19
+; @pos 136 268
+
+;   BD  SD  HH
+int 223   0   0
+int   0   0   0
+int   0  76  85
+int   0   0   0
+int 255 255 198
+int   0   0   0
+int   0 127  28
+int   0   0   0
+int 191 204 226
+int   0   0   0
+int   8 153 113
+int   0   0   0
+int  95  25 170
+int   0   0   0
+int  63   0  56
+int   0   0   0
+int 223 229 141
+int   0   0   0
+int   0  51   0
+int   0   0   0
+int 127  25  28
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int 255 178 255
+int   0   0   0
+int   0 204   0
+int   0   0   0
+int 159   0   0
+int   0   0   0
+int  31 102  85
+int   0   0   0
+moduleEnd
+module jazzLatinPattern17
+; @pos 136 306
+
+;   BD  SD  HH
+int 204   0   0
+int   0   0   0
+int 178   0  28
+int   0   0   0
+int  51 218 170
+int   0   0   0
+int 127   0 255
+int   0   0   0
+int 229   0  28
+int   0   0   0
+int   0 145  85
+int   0   0   0
+int 178   0   0
+int   0   0   0
+int 255   0  28
+int   0   0   0
+int  51 255 141
+int   0   0   0
+int 102  36 226
+int   0   0   0
+int 204  72 113
+int   0   0   0
+int   0 255   0
+int   0   0   0
+int 153   8   0
+int   0   0   0
+int 178   8  56
+int   0   0   0
+int   0 182 198
+int   0   0   0
+int  76 109  56
+int   0   0   0
+moduleEnd
+module jazzLatinPattern20
+; @pos 136 344
+
+;   BD  SD  HH
+int 255  28 127
+int   0   0   0
+int  63  28  63
+int   0   0   0
+int  63 113 159
+int   0   0   0
+int 127  56  63
+int   0   0   0
+int   0  28 191
+int   0   0   0
+int  95  85  31
+int   0   0   0
+int 255  28  31
+int   0   0   0
+int  63  85  95
+int   0   0   0
+int   0 198 255
+int   0   0   0
+int 159  28  63
+int   0   0   0
+int   0 255 223
+int   0   0   0
+int   0 141  31
+int   0   0   0
+int 191  28 223
+int   0   0   0
+int  31  56  31
+int   0   0   0
+int 223 226 191
+int   0   0   0
+int  95 170  31
+int   0   0   0
+moduleEnd
+module jazzLatinPattern22
+; @pos 136 382
+
+;   BD  SD  HH
+int 255 223 127
+int   0   0   0
+int 113  31   0
+int   0   0   0
+int 198 255   0
+int   0   0   0
+int  28  31   0
+int   0   0   0
+int  85  31 255
+int   0   0   0
+int  56  31  95
+int   0   0   0
+int 255 255   0
+int   0   0   0
+int 141  63   0
+int   0   0   0
+int 170 159   0
+int   0   0   0
+int  28   0   0
+int   0   0   0
+int   8   0 159
+int   0   0   0
+int  85   8   0
+int   0   0   0
+int 226 191   0
+int   0   0   0
+int 113  95   0
+int   0   0   0
+int 141 127   0
+int   0   0   0
+int  56   0   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry club
+module clubPattern10
+; @pos 208 0
+
+;   BD  SD  HH
+int 255  36   0
+int   0   0   0
+int  56   0  56
+int   0   0   0
+int 198   0  28
+int   0   0   0
+int  28   0 141
+int   0   0   0
+int 113 255 170
+int   0   0   0
+int  85   0   0
+int   0   0   0
+int 255  36 113
+int   0   0   0
+int 141   0   0
+int   0   0   0
+int   8   8 226
+int   0   0   0
+int  28 145  85
+int   0   0   0
+int 170   0   0
+int   0   0   0
+int 141   0   0
+int   0   0   0
+int  56 182 198
+int   0   0   0
+int 113  72 255
+int   0   0   0
+int 226 109   0
+int   0   0   0
+int  85 218   0
+int   0   0   0
+moduleEnd
+module clubPattern08
+; @pos 208 38
+
+;   BD  SD  HH
+int 223  85 255
+int   0   0   0
+int  63 141 109
+int   0   0   0
+int  95   0  72
+int   0   0   0
+int 159   0 145
+int   0   0   0
+int  31 198 255
+int   0   0   0
+int  31   0  72
+int   0   0   0
+int  31   0 109
+int   0   0   0
+int  95  56 182
+int   0   0   0
+int 255   0 218
+int   0   0   0
+int  63   0 109
+int   0   0   0
+int  63   0  36
+int   0   0   0
+int 191   0 145
+int   0   0   0
+int  63 255 218
+int   0   0   0
+int  31   0 109
+int   0   0   0
+int  63  28  72
+int   0   0   0
+int 127   0 182
+int   0   0   0
+moduleEnd
+module clubPattern00
+; @pos 208 76
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int  31 127  25
+int   0   0   0
+int  95  42 178
+int   0   0   0
+int   0   0  76
+int   0   0   0
+int 191 170 204
+int   0   0   0
+int  63   8 102
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int 127 212  51
+int   0   0   0
+int 223   0 255
+int   0   0   0
+int  63  85  76
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int 159  42 102
+int   0   0   0
+int 255  85 229
+int   0   0   0
+int   0   0  51
+int   0   0   0
+int  63   8 153
+int   0   0   0
+int  95 255  76
+int   0   0   0
+moduleEnd
+module clubPattern09
+; @pos 208 114
+
+;   BD  SD  HH
+int 255   0  63
+int   0   0   0
+int   0   0 191
+int   0   0   0
+int   0   0 191
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int 218 255 148
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int   0   0  85
+int   0   0   0
+int  72   0  42
+int   0   0   0
+int 182   0 127
+int   0   0   0
+int   0 127 255
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int 145   0 233
+int   0   0   0
+int 255 191   8
+int   0   0   0
+int   0   0 148
+int   0   0   0
+int   0   0  21
+int   0   0   0
+int   0  63 106
+int   0   0   0
+moduleEnd
+module clubPattern11
+; @pos 208 152
+
+;   BD  SD  HH
+int 113   0   0
+int   0   0   0
+int  56   0  28
+int   0   0   0
+int  85 255 141
+int   0   0   0
+int   0  51  28
+int   0   0   0
+int 255 153 113
+int   0   0   0
+int   0 127  85
+int   0   0   0
+int 141   8 170
+int   0   0   0
+int   0 204  28
+int   0   0   0
+int 226  76 198
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int 255  51 226
+int   0   0   0
+int   0 204   0
+int   0   0   0
+int 198 178 255
+int   0   0   0
+int  28 102  56
+int   0   0   0
+int 170  25   0
+int   0   0   0
+int   0 229  56
+int   0   0   0
+moduleEnd
+module club
+; @pos 208 193
+int*[] cells 25
+- &clubPattern10:0 &clubPattern08:0 &clubPattern00:0 &clubPattern09:0 &clubPattern11:0
+- &clubPattern15:0 &clubPattern07:0 &clubPattern13:0 &clubPattern12:0 &clubPattern06:0
+- &clubPattern18:0 &clubPattern14:0 &clubPattern04:0 &clubPattern05:0 &clubPattern03:0
+- &clubPattern23:0 &clubPattern16:0 &clubPattern21:0 &clubPattern01:0 &clubPattern02:0
+- &clubPattern24:0 &clubPattern19:0 &clubPattern17:0 &clubPattern20:0 &clubPattern22:0
+moduleEnd
+entryEnd
+entry electronic
+module electronicPattern39
+; @pos 208 230
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  25  50  56
+int   0   0   0
+int  36  36 218
+int   0   0   0
+int  72  72  85
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  36   0  85
+int   0   0   0
+int  50 109 218
+int   0   0   0
+int  25 102  56
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  25  72  56
+int   0   0   0
+int  36  50 218
+int   0   0   0
+int  50  25  85
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  36  25 113
+int   0   0   0
+int  72 145 218
+int   0   0   0
+int 120 109 120
+int   0   0   0
+moduleEnd
+module electronicPattern26
+; @pos 208 268
+
+;   BD  SD  HH
+int 255  25 170
+int   0   0   0
+int  25  50  85
+int   0   0   0
+int   0   0 200
+int   0   0   0
+int 145  36 113
+int   0   0   0
+int 255 255 170
+int   0   0   0
+int  36   0 102
+int   0   0  28
+int  72  72 220
+int   0   0   0
+int  50 109  85
+int   0   0   0
+int 255  36 170
+int   0   0   0
+int  25  72  85
+int   0   0   0
+int 109   0 200
+int   0   0   0
+int  36 102 113
+int   0   0   0
+int 255 255 170
+int   0   0   0
+int  36  25 102
+int   0   0  36
+int   0  50 220
+int   0   0   0
+int 120  36 141
+int   0   0   0
+moduleEnd
+module electronicPattern25
+; @pos 208 306
+
+;   BD  SD  HH
+int 255  36 170
+int   0   0   0
+int  36  72  56
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  72  25  85
+int   0   0   0
+int 255 255 170
+int   0   0   0
+int  25   0  85
+int   0   0   0
+int   0 109 255
+int   0   0   0
+int  36  72  56
+int   0   0   0
+int 255  36 170
+int   0   0   0
+int  36 109  56
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  50  25  85
+int   0   0   0
+int 255 255 170
+int   0   0   0
+int  25   0 113
+int   0   0   0
+int   0  72 255
+int   0   0   0
+int 109 145 141
+int   0   0   0
+moduleEnd
+module electronicPattern29
+; @pos 208 344
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  36  72  85
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  72  25 113
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  50   0 113
+int   0   0  28
+int 109 109 255
+int   0   0   0
+int  36 145  85
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  25 102  85
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  72  72 113
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  50  25 141
+int   0   0  56
+int 145 182 255
+int   0   0   0
+int  36 109 141
+int   0   0   0
+moduleEnd
+module electronicPattern33
+; @pos 208 382
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  36  72 182
+int   0   0  56
+int  50  50 230
+int   0   0   0
+int 170  25 200
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  25  25 182
+int   0   0  56
+int  72 109 230
+int   0   0   0
+int 200  72 200
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  50  72 182
+int   0   0  56
+int  36  36 230
+int   0   0   0
+int 145  25 200
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  25  36 200
+int   0   0  85
+int  72 109 230
+int   0   0   0
+int 218 102 218
+int   0   0   0
+moduleEnd
+module electronic
+; @pos 208 423
+int*[] cells 25
+- &electronicPattern39:0 &electronicPattern26:0 &electronicPattern25:0 &electronicPattern29:0 &electronicPattern33:0
+- &electronicPattern30:0 &electronicPattern31:0 &electronicPattern27:0 &electronicPattern28:0 &electronicPattern34:0
+- &electronicPattern38:0 &electronicPattern40:0 &electronicPattern35:0 &electronicPattern46:0 &electronicPattern32:0
+- &electronicPattern45:0 &electronicPattern36:0 &electronicPattern43:0 &electronicPattern42:0 &electronicPattern48:0
+- &electronicPattern44:0 &electronicPattern37:0 &electronicPattern47:0 &electronicPattern41:0 &electronicPattern49:0
+moduleEnd
+entryEnd
+entry club
+module clubPattern15
+; @pos 242 0
+
+;   BD  SD  HH
+int 191  28  72
+int   0   0   0
+int   0  28 218
+int   0   0   0
+int 255 141   0
+int   0   0   0
+int  21  28   0
+int   0   0   0
+int  63 198 218
+int   0   0   0
+int  21  85 182
+int   0   0   0
+int 127 113 145
+int   0   0   0
+int 106  28  36
+int   0   0   0
+int 212  56 255
+int   0   0   0
+int  85  56 182
+int   0   0   0
+int 233 170 109
+int   0   0   0
+int  42  85  36
+int   0   0   0
+int   0 226 255
+int   0   0   0
+int 148 255  36
+int   0   0   0
+int   0  28   0
+int   0   0   0
+int 170  28   0
+int   0   0   0
+moduleEnd
+module clubPattern07
+; @pos 242 38
+
+;   BD  SD  HH
+int 223   0 231
+int   0   0   0
+int  31  95  46
+int   0   0   0
+int  95  63 208
+int   0   0   0
+int 159   8  23
+int   0   0   0
+int  63 223 231
+int   0   0   0
+int   0   0 139
+int   0   0   0
+int   0 127 185
+int   0   0   0
+int   0 255 115
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int  95   0 162
+int   0   0   0
+int 255   0 162
+int   0   0   0
+int   8   0  69
+int   0   0   0
+int   0 191 255
+int   0   0   0
+int 191   0  92
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int 127   0 185
+int   0   0   0
+moduleEnd
+module clubPattern13
+; @pos 242 76
+
+;   BD  SD  HH
+int 223   0  25
+int   0   0   0
+int  31 145  76
+int   0   0   0
+int 255   8 127
+int   0   0   0
+int   0  72  76
+int   0   0   0
+int   0 218 178
+int   0   0   0
+int 127  72 102
+int   0   0   0
+int  31   0 255
+int   0   0   0
+int 159 182 153
+int   0   0   0
+int 191   0  51
+int   0   0   0
+int  95 109  51
+int   0   0   0
+int 223   0 229
+int   0   0   0
+int  31  72 127
+int   0   0   0
+int   0 255 153
+int   0   0   0
+int   0   0 102
+int   0   0   0
+int   0   0 204
+int   0   0   0
+int  63  36  51
+int   0   0   0
+moduleEnd
+module clubPattern12
+; @pos 242 114
+
+;   BD  SD  HH
+int 255   0 162
+int   0   0   0
+int   0  63  92
+int   0   0   0
+int 145   0 185
+int   0   0   0
+int   0   0 115
+int   0   0   0
+int   0 223  46
+int   0   0   0
+int 182   0 255
+int   0   0   0
+int   0  31 208
+int   0   0   0
+int 109   0 231
+int   0   0   0
+int  36   0 208
+int   0   0   0
+int  72 127  46
+int   0   0   0
+int 218   0 139
+int   0   0   0
+int   0   0  69
+int   0   0   0
+int   0 255  92
+int   0   0   0
+int   0  95  46
+int   0   0   0
+int 109 159 255
+int   0   0   0
+int   0 191  23
+int   0   0   0
+moduleEnd
+module clubPattern06
+; @pos 242 152
+
+;   BD  SD  HH
+int   8   0 255
+int   0   0   0
+int 113  63   0
+int   0   0   0
+int 255  31 127
+int   0   0   0
+int 141  31   0
+int   0   0   0
+int 226  31  85
+int   0   0   0
+int  28  31 170
+int   0   0   0
+int   8 255 212
+int   0   0   0
+int  56 191  42
+int   0   0   0
+int  28 159 127
+int   0   0   0
+int   8 223   0
+int   0   0   0
+int 198   0 170
+int   0   0   0
+int  28   8   8
+int   0   0   0
+int 198   0   8
+int   0   0   0
+int  28  95   8
+int   0   0   0
+int 170 127   8
+int   0   0   0
+int  85 255   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry electronic
+module electronicPattern30
+; @pos 242 230
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  25  50  56
+int   0   0   0
+int  36   0 198
+int   0   0   0
+int  72  36  85
+int   0   0   0
+int  50 218 255
+int   0   0   0
+int   0   0  85
+int   0   0   0
+int  25 102 198
+int   0   0   0
+int  36  72  56
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  25  72  56
+int   0   0   0
+int  72  25 198
+int   0   0   0
+int  36  50  85
+int   0   0   0
+int 109 218 255
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int  50  50 198
+int   0   0   0
+int  25 109 141
+int   0   0   0
+moduleEnd
+module electronicPattern31
+; @pos 242 268
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  72  36 200
+int   0   0   0
+int  50  50 102
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int 218 102 200
+int   0   0   0
+int  36  72 113
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  50 200
+int   0   0   0
+int  72  25 102
+int   0   0   0
+int 145 255 255
+int   0   0   0
+int  25  36 113
+int   0   0  56
+int 200  72 200
+int   0   0   0
+int  50 109 141
+int   0   0   0
+moduleEnd
+module electronicPattern27
+; @pos 242 306
+
+;   BD  SD  HH
+int 255  36 200
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50 109 255
+int   0   0   0
+int 120  25 141
+int   0   0   0
+int 255 255 200
+int   0   0   0
+int  25  25 120
+int   0   0  36
+int 145  50 255
+int   0   0   0
+int  36 145 102
+int   0   0   0
+int 255  50 200
+int   0   0   0
+int  50  72 102
+int   0   0  28
+int   0 160 255
+int   0   0   0
+int  72  36 141
+int   0   0   0
+int 255 255 200
+int   0   0   0
+int  36  25 120
+int   0   0  36
+int 180  72 255
+int   0   0   0
+int  50 109 170
+int   0   0   0
+moduleEnd
+module electronicPattern28
+; @pos 242 344
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  50  72 141
+int   0   0  28
+int  72  36 220
+int   0   0   0
+int 200  50 170
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  25 141
+int   0   0  36
+int 218 109 220
+int   0   0   0
+int  50  72 170
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  72 102 141
+int   0   0  28
+int  36  50 220
+int   0   0   0
+int 170  25 170
+int   0   0   0
+int 109 255 255
+int   0   0   0
+int  25  36 170
+int   0   0  56
+int 218  72 220
+int   0   0   0
+int  50 145 198
+int   0   0   0
+moduleEnd
+module electronicPattern34
+; @pos 242 382
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  50  72 218
+int   0   0  56
+int 200  50 255
+int   0   0   0
+int  72  25 218
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  36  36 218
+int   0   0  56
+int 218 120 255
+int   0   0   0
+int  50  72 218
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  50  72 218
+int   0   0  56
+int 200  36 255
+int   0   0   0
+int  72  25 218
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  36  36 226
+int   0   0  85
+int 230 170 255
+int   0   0   0
+int  50 109 233
+int   0   0   0
+moduleEnd
+entryEnd
+entry club
+module clubPattern18
+; @pos 276 0
+
+;   BD  SD  HH
+int 204  56  72
+int   0   0   0
+int 178  56   0
+int   0   0   0
+int  51 226 145
+int   0   0   0
+int 127 113 255
+int   0   0   0
+int 229   0   0
+int   0   0   0
+int   0 141  72
+int   0   0   0
+int 178  28  36
+int   0   0   0
+int 255  28   0
+int   0   0   0
+int  51 255 109
+int   0   0   0
+int 102   0 218
+int   0   0   0
+int 204 113  36
+int   0   0   0
+int   0 170  72
+int   0   0   0
+int 153   0  72
+int   0   0   0
+int 178   0 109
+int   0   0   0
+int   0 198 182
+int   0   0   0
+int  76  85   0
+int   0   0   0
+moduleEnd
+module clubPattern14
+; @pos 276 38
+
+;   BD  SD  HH
+int 212 159 162
+int   0   0   0
+int   0 127 115
+int   0   0   0
+int   8   8 255
+int   0   0   0
+int   8 255 115
+int   0   0   0
+int 212   8 208
+int   0   0   0
+int  42   8 231
+int   0   0   0
+int   0 191 139
+int   0   0   0
+int   0   8 139
+int   0   0   0
+int 212 255 255
+int   0   0   0
+int   8 127  69
+int   0   0   0
+int 170  31 185
+int   0   0   0
+int   0 223  23
+int   0   0   0
+int 255  63 231
+int   0   0   0
+int 127  31  92
+int   0   0   0
+int   0   8 115
+int   0   0   0
+int  85  95  46
+int   0   0   0
+moduleEnd
+module clubPattern04
+; @pos 276 76
+
+;   BD  SD  HH
+int 218  25  56
+int   0   0   0
+int   0  51  28
+int   0   0   0
+int 109 229 198
+int   0   0   0
+int 255   0  85
+int   0   0   0
+int   0 204 170
+int   0   0   0
+int   0 127 113
+int   0   0   0
+int 145  25 255
+int   0   0   0
+int 218   0 141
+int   0   0   0
+int   0 204 170
+int   0   0   0
+int   0 102  56
+int   0   0   0
+int   0 255 226
+int   0   0   0
+int 182   0  56
+int   0   0   0
+int  72 153 255
+int   0   0   0
+int   0 178  28
+int   0   0   0
+int  36  25 255
+int   0   0   0
+int  36  76  28
+int   0   0   0
+moduleEnd
+module clubPattern05
+; @pos 276 114
+
+;   BD  SD  HH
+int 255   8 223
+int   0   0   0
+int   0   0  31
+int   0   0   0
+int  51 255 159
+int   0   0   0
+int   0   0 159
+int   0   0   0
+int 102   0 159
+int   0   0   0
+int  76   8  95
+int   0   0   0
+int 178 255 255
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int 127 109 159
+int   0   0   0
+int   0  72  31
+int   0   0   0
+int 153 218 255
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int 229  36 159
+int   0   0   0
+int  25 145  63
+int   0   0   0
+int 204   0 159
+int   0   0   0
+int   0 182 191
+int   0   0   0
+moduleEnd
+module clubPattern03
+; @pos 276 152
+
+;   BD  SD  HH
+int 127 159 145
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   8 182
+int   0   0   0
+int  95 255 182
+int   0   0   0
+int 191   0 109
+int   0   0   0
+int  63   8 109
+int   0   0   0
+int 223 191 255
+int   0   0   0
+int   0   0  36
+int   0   0   0
+int   0  63 109
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 255 223 218
+int   0   0   0
+int   0  31   0
+int   0   0   0
+int 159  95  72
+int   0   0   0
+int  31 255  72
+int   0   0   0
+int  95 127 182
+int   0   0   0
+int   0  63   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry electronic
+module electronicPattern38
+; @pos 276 230
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  72  36 200
+int   0   0   0
+int  50  50 113
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25 102
+int   0   0  36
+int 109 109 200
+int   0   0   0
+int  36  72 113
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  36 200
+int   0   0   0
+int 120  25 113
+int   0   0   0
+int  72 218 255
+int   0   0   0
+int  25  36 113
+int   0   0  56
+int 109 102 200
+int   0   0   0
+int  50 109 141
+int   0   0   0
+moduleEnd
+module electronicPattern40
+; @pos 276 268
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  50  72  56
+int   0   0  28
+int  72  50 226
+int   0   0   0
+int  36  36  85
+int   0   0   0
+int  36 255 198
+int   0   0   0
+int  25  36  56
+int   0   0  36
+int 109 102 226
+int   0   0   0
+int  50  72  85
+int   0   0   0
+int 120  50 255
+int   0   0   0
+int  36  72  56
+int   0   0  28
+int  72 160 212
+int   0   0   0
+int 218  36  85
+int   0   0   0
+int  50 255 198
+int   0   0   0
+int  25  25  85
+int   0   0  56
+int  72  72 255
+int   0   0   0
+int  36 109 120
+int   0   0   0
+moduleEnd
+module electronicPattern35
+; @pos 276 306
+
+;   BD  SD  HH
+int 255  25 200
+int   0   0   0
+int  36  72  72
+int   0   0  28
+int  72  36 182
+int   0   0   0
+int  50  50 141
+int   0   0   0
+int  36 255  85
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int 230 102 226
+int   0   0   0
+int  50  72 120
+int   0   0   0
+int  72  50 200
+int   0   0   0
+int  36  72  72
+int   0   0  28
+int  50  36 182
+int   0   0   0
+int 218 109 141
+int   0   0   0
+int 109 255  85
+int   0   0   0
+int  25  36  72
+int   0   0  56
+int 200  72 226
+int   0   0   0
+int  36 102 170
+int   0   0   0
+moduleEnd
+module electronicPattern46
+; @pos 276 344
+
+;   BD  SD  HH
+int 255  36 226
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  72  50 198
+int   0   0   0
+int 145  25 102
+int   0   0   0
+int  50 218 160
+int   0   0   0
+int  25  25  56
+int   0   0  36
+int 200 102 212
+int   0   0   0
+int  36  72  85
+int   0   0   0
+int  72  50 226
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  36 198
+int   0   0   0
+int 200 109 102
+int   0   0   0
+int 120 255 160
+int   0   0   0
+int  25  36  85
+int   0   0  56
+int  72  72 212
+int   0   0   0
+int  50 145 120
+int   0   0   0
+moduleEnd
+module electronicPattern32
+; @pos 276 382
+
+;   BD  SD  HH
+int 255  50 255
+int   0   0   0
+int  50  72 170
+int   0   0  56
+int 170  36 220
+int   0   0   0
+int  72 102 198
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int  36  25 170
+int   0   0  56
+int  72 145 220
+int   0   0   0
+int 200  72 198
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  50 120 170
+int   0   0  56
+int 145  36 220
+int   0   0   0
+int  36  72 198
+int   0   0   0
+int  72 255 255
+int   0   0   0
+int  25  36 198
+int   0   0  85
+int 230  72 220
+int   0   0   0
+int  50 170 218
+int   0   0   0
+moduleEnd
+entryEnd
+entry club
+module clubPattern23
+; @pos 310 0
+
+;   BD  SD  HH
+int   0   0   0
+int   0   0   0
+int 191  72  85
+int   0   0   0
+int   0 109 198
+int   0   0   0
+int   0 255  28
+int   0   0   0
+int 223   0   0
+int   0   0   0
+int 127 255 255
+int   0   0   0
+int  95   0  56
+int   0   0   0
+int 255   0  85
+int   0   0   0
+int   0 218 141
+int   0   0   0
+int 223   0   0
+int   0   0   0
+int  63 109  28
+int   0   0   0
+int   0 182 170
+int   0   0   0
+int 159   0   0
+int   0   0   0
+int  31 145 226
+int   0   0   0
+int   8  72   0
+int   0   0   0
+int 255  36 113
+int   0   0   0
+moduleEnd
+module clubPattern16
+; @pos 310 38
+
+;   BD  SD  HH
+int   0   0  42
+int   0   0   0
+int   0 255 255
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int 145 182  85
+int   0   0   0
+int 182   8  85
+int   0   0   0
+int   8  72 233
+int   0   0   0
+int 255  36  21
+int   0   0   0
+int  36   0 191
+int   0   0   0
+int   0 218 148
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int   0   8 170
+int   0   0   0
+int   0 145  85
+int   0   0   0
+int 218   8 212
+int   0   0   0
+int  72 109 106
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int 109 182  85
+int   0   0   0
+moduleEnd
+module clubPattern21
+; @pos 310 76
+
+;   BD  SD  HH
+int  25   0 204
+int   0   0   0
+int 229 127 153
+int   0   0   0
+int  25 212 153
+int   0   0   0
+int 102   0 102
+int   0   0   0
+int 153   0 204
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int  25   0 255
+int   0   0   0
+int 204  42  51
+int   0   0   0
+int   8 212 204
+int   0   0   0
+int 127   0 102
+int   0   0   0
+int  51   0 204
+int   0   0   0
+int  25 255   0
+int   0   0   0
+int  25 127 153
+int   0   0   0
+int 178   0  51
+int   0   0   0
+int   8 170 255
+int   0   0   0
+int  76  42   0
+int   0   0   0
+moduleEnd
+module clubPattern01
+; @pos 310 114
+
+;   BD  SD  HH
+int 141   0 113
+int   0   0   0
+int   0  31  28
+int   0   0   0
+int   0 255 170
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int   0   0 141
+int   0   0   0
+int 170 159  56
+int   0   0   0
+int  56  31 170
+int   0   0   0
+int 198  63  85
+int   0   0   0
+int   0  95 170
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int   0   0 198
+int   0   0   0
+int   0 191 113
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int   0 127  56
+int   0   0   0
+int   0 223 226
+int   0   0   0
+int   0   0 198
+int   0   0   0
+moduleEnd
+module clubPattern02
+; @pos 310 152
+
+;   BD  SD  HH
+int  72 145   0
+int   0   0   0
+int 109   0 127
+int   0   0   0
+int 255   0 212
+int   0   0   0
+int   0  72   0
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int 145  36  85
+int   0   0   0
+int 145  36 170
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int  36 182 212
+int   0   0   0
+int 182   0   0
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int  36 255 127
+int   0   0   0
+int 218   0  42
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 109 218   0
+int   0   0   0
+int   0   0   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry electronic
+module electronicPattern45
+; @pos 310 230
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50  56
+int   0   0   0
+int  50  36 182
+int   0   0   0
+int  72  72  85
+int   0   0   0
+int  36  50 212
+int   0   0   0
+int  25  72  56
+int   0   0   0
+int  72 102 182
+int   0   0   0
+int  36  36  85
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25  56
+int   0   0   0
+int  36  72 182
+int   0   0   0
+int  72  50  85
+int   0   0   0
+int 109  36 212
+int   0   0   0
+int  36  72  85
+int   0   0   0
+int  50  50 182
+int   0   0   0
+int  25 120 113
+int   0   0   0
+moduleEnd
+module electronicPattern36
+; @pos 310 268
+
+;   BD  SD  HH
+int 255  25 226
+int   0   0   0
+int  36  72  72
+int   0   0  28
+int  50  36 160
+int   0   0   0
+int  72  50 182
+int   0   0   0
+int  36 255  36
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int 218  72 218
+int   0   0   0
+int  50 109 109
+int   0   0   0
+int  72  36 226
+int   0   0   0
+int  25 102  72
+int   0   0  28
+int  36  50 160
+int   0   0   0
+int 109  72 182
+int   0   0   0
+int 120 255  36
+int   0   0   0
+int  36  36 102
+int   0   0  56
+int 230  72 218
+int   0   0   0
+int  50 145 145
+int   0   0   0
+moduleEnd
+module electronicPattern43
+; @pos 310 306
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50  72
+int   0   0  28
+int  50  36 182
+int   0   0   0
+int  72  72  85
+int   0   0   0
+int  36  36 212
+int   0   0   0
+int  25  72  72
+int   0   0  36
+int 120 102 182
+int   0   0   0
+int  36  50 102
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  36  72
+int   0   0  28
+int  36  50 182
+int   0   0   0
+int  72  25  85
+int   0   0   0
+int 160  50 212
+int   0   0   0
+int  36  72  85
+int   0   0  56
+int  50  36 182
+int   0   0   0
+int  25 109 120
+int   0   0   0
+moduleEnd
+module electronicPattern42
+; @pos 310 344
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  50 212
+int   0   0   0
+int  72  36 102
+int   0   0   0
+int  50  50 255
+int   0   0   0
+int  25  36  85
+int   0   0  36
+int 109 255 212
+int   0   0   0
+int  36  72 120
+int   0   0   0
+int 160  36 255
+int   0   0   0
+int  50  72  85
+int   0   0  28
+int  36  50 212
+int   0   0   0
+int 200 109 102
+int   0   0   0
+int  36  50 255
+int   0   0   0
+int  25  25 102
+int   0   0  56
+int  72 230 212
+int   0   0   0
+int  50 120 145
+int   0   0   0
+moduleEnd
+module electronicPattern48
+; @pos 310 382
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  50  72 198
+int   0   0  56
+int  72  50 226
+int   0   0   0
+int 218  25 218
+int   0   0   0
+int  36  50 255
+int   0   0   0
+int 200  72 182
+int   0   0  56
+int  50 109 226
+int   0   0   0
+int  72  36 200
+int   0   0   0
+int 255 255 255
+int   0   0   0
+int  36  36 198
+int   0   0  56
+int  72  72 226
+int   0   0   0
+int 200  50 218
+int   0   0   0
+int  50  50 255
+int   0   0   0
+int 218  72 218
+int   0   0  85
+int  36 160 226
+int   0   0   0
+int  72  25 233
+int   0   0   0
+moduleEnd
+entryEnd
+entry club
+module clubPattern24
+; @pos 344 0
+
+;   BD  SD  HH
+int   0 204 159
+int   0   0   0
+int 229  76   0
+int   0   0   0
+int  51   0   0
+int   0   0   0
+int   0 178   0
+int   0   0   0
+int 127  25 255
+int   0   0   0
+int 204  51 127
+int   0   0   0
+int   0 229   0
+int   0   0   0
+int   8 127   0
+int   0   0   0
+int 102 255   0
+int   0   0   0
+int   0 153   0
+int   0   0   0
+int  25   0   0
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int 153  76  95
+int   0   0   0
+int  76 102   0
+int   0   0   0
+int 178   0   0
+int   0   0   0
+moduleEnd
+module clubPattern19
+; @pos 344 38
+
+;   BD  SD  HH
+int   0 198 223
+int   0   0   0
+int   0  85  63
+int   0   0   0
+int   0  28  31
+int   0   0   0
+int  51   0  31
+int   0   0   0
+int 255   0  95
+int   0   0   0
+int 102  56 191
+int   0   0   0
+int   0  56  31
+int   0   0   0
+int   0 170 127
+int   0   0   0
+int 153 113  31
+int   0   0   0
+int   0   0 223
+int   0   0   0
+int   0 226  31
+int   0   0   0
+int   0  56 159
+int   0   0   0
+int 204  28  63
+int   0   0   0
+int  51 255 255
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int   0 141 191
+int   0   0   0
+moduleEnd
+module clubPattern17
+; @pos 344 76
+
+;   BD  SD  HH
+int 218  72 109
+int   0   0   0
+int   0  72  72
+int   0   0   0
+int   0 182 145
+int   0   0   0
+int 182   8   0
+int   0   0   0
+int  72  36 109
+int   0   0   0
+int 255   0   8
+int   0   0   0
+int   0 145 255
+int   0   0   0
+int 109   8   0
+int   0   0   0
+int   0 109 218
+int   0   0   0
+int   0 218  36
+int   0   0   0
+int   0 182 255
+int   0   0   0
+int   0 255 182
+int   0   0   0
+int   0  36   0
+int   0   0   0
+int  36   0 218
+int   0   0   0
+int   0   0  36
+int   0   0   0
+int 145   0  72
+int   0   0   0
+moduleEnd
+module clubPattern20
+; @pos 344 114
+
+;   BD  SD  HH
+int 255 159 170
+int   0   0   0
+int   0   8   0
+int   0   0   0
+int   0  95 198
+int   0   0   0
+int 182 127   0
+int   0   0   0
+int 218  63   0
+int   0   0   0
+int  36  95   0
+int   0   0   0
+int   0 191 141
+int   0   0   0
+int 109  31   0
+int   0   0   0
+int 255  31   0
+int   0   0   0
+int   0 127  85
+int   0   0   0
+int   0 159 255
+int   0   0   0
+int 218   0  56
+int   0   0   0
+int   0 223 113
+int   0   0   0
+int  72   8   0
+int   0   0   0
+int   0 255 226
+int   0   0   0
+int 145  63   0
+int   0   0   0
+moduleEnd
+module clubPattern22
+; @pos 344 152
+
+;   BD  SD  HH
+int 218 113 255
+int   0   0   0
+int   0   0  56
+int   0   0   0
+int   0  56   8
+int   0   0   0
+int 255  85   8
+int   0   0   0
+int   0   0 226
+int   0   0   0
+int   0  28   0
+int   0   0   0
+int  36  85 141
+int   0   0   0
+int   0   0  28
+int   0   0   0
+int 182 141 198
+int   0   0   0
+int 145   0 113
+int   0   0   0
+int   0 226   0
+int   0   0   0
+int 109 170  85
+int   0   0   0
+int  72   0 170
+int   0   0   0
+int   0 198  28
+int   0   0   0
+int   0 255  28
+int   0   0   0
+int  72   0   8
+int   0   0   0
+moduleEnd
+entryEnd
+entry electronic
+module electronicPattern44
+; @pos 344 230
+
+;   BD  SD  HH
+int 255  36 198
+int   0   0   0
+int  50  72 120
+int   0   0  36
+int  72 182 141
+int   0   0   0
+int 145  50 182
+int   0   0   0
+int  36 218 102
+int   0   0   0
+int  25  36 160
+int   0   0  56
+int 109 102 212
+int   0   0   0
+int 200  72  85
+int   0   0   0
+int 120  50 182
+int   0   0   0
+int  50 200 102
+int   0   0  28
+int 200  72 198
+int   0   0   0
+int  72  36 120
+int   0   0   0
+int  50 145 141
+int   0   0   0
+int  36  25 182
+int   0   0  56
+int 160  50 160
+int   0   0   0
+int  25 218 102
+int   0   0   0
+moduleEnd
+module electronicPattern37
+; @pos 344 268
+
+;   BD  SD  HH
+int 255  25 198
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  72  36 212
+int   0   0   0
+int 182  50 141
+int   0   0   0
+int  50  50 160
+int   0   0   0
+int  25 200 102
+int   0   0  36
+int 200  72 226
+int   0   0   0
+int  36 102  85
+int   0   0   0
+int 145 255 198
+int   0   0   0
+int  50  36 120
+int   0   0  28
+int  36  72 212
+int   0   0   0
+int  72  50 102
+int   0   0   0
+int 109  50 160
+int   0   0   0
+int  25 109  85
+int   0   0  56
+int 218  36 226
+int   0   0   0
+int  50 218 145
+int   0   0   0
+moduleEnd
+module electronicPattern47
+; @pos 344 306
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  36 198
+int   0   0   0
+int 200  50 160
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25 102
+int   0   0  36
+int 218 109 226
+int   0   0   0
+int  36  72 120
+int   0   0   0
+int 255  36 212
+int   0   0   0
+int  50  72 102
+int   0   0  28
+int  72  50 198
+int   0   0   0
+int 160 102 160
+int   0   0   0
+int  36 255 212
+int   0   0   0
+int  25  36 120
+int   0   0  56
+int 200  72 226
+int   0   0   0
+int  50 120 170
+int   0   0   0
+moduleEnd
+module electronicPattern41
+; @pos 344 344
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  50  72 120
+int   0   0  36
+int  72  50 212
+int   0   0   0
+int  36  25 141
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  36 102
+int   0   0  28
+int 200  72 212
+int   0   0   0
+int  50 145 170
+int   0   0   0
+int  72  50 255
+int   0   0   0
+int  36  72 120
+int   0   0  36
+int  50 182 212
+int   0   0   0
+int 230  36 141
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25 141
+int   0   0  56
+int 145  72 212
+int   0   0   0
+int  36 200 198
+int   0   0   0
+moduleEnd
+module electronicPattern49
+; @pos 344 382
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  50  72 218
+int   0   0  56
+int 160  50 233
+int   0   0   0
+int  72  25 218
+int   0   0   0
+int 200 255 255
+int   0   0   0
+int  36  36 200
+int   0   0  56
+int  72 109 233
+int   0   0   0
+int 200  72 218
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  50  72 218
+int   0   0  56
+int  72  36 233
+int   0   0   0
+int  36 102 218
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int  36  36 226
+int   0   0  85
+int 160  72 233
+int   0   0   0
+int 200 109 233
+int   0   0   0
+moduleEnd
+entryEnd
+entry groove
+module groovePattern10
+; @pos 416 0
+
+;   BD  SD  HH
+int   8   0  72
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int  56  36 182
+int   0   0   0
+int 113 255 109
+int   0   0   0
+int 226   0   0
+int   0   0   0
+int   8 218 255
+int   0   0   0
+int   8   0  36
+int   0   0   0
+int 170   0   0
+int   0   0   0
+int  28 182 109
+int   0   0   0
+int 141  72  72
+int   0   0   0
+int  28   0  72
+int   0   0   0
+int  28 145 145
+int   0   0   0
+int 198  72  72
+int   0   0   0
+int  28 109 218
+int   0   0   0
+int  85   8  36
+int   0   0   0
+int 198  72   0
+int   0   0   0
+moduleEnd
+module groovePattern08
+; @pos 416 38
+
+;   BD  SD  HH
+int 198   0  28
+int   0   0   0
+int 141   0  56
+int   0   0   0
+int  28 191 170
+int   0   0   0
+int 113  63 255
+int   0   0   0
+int 255   0   8
+int   0   0   0
+int  28 127   8
+int   0   0   0
+int 141  95 113
+int   0   0   0
+int 255   0  28
+int   0   0   0
+int   8 255 141
+int   0   0   0
+int  85   0 226
+int   0   0   0
+int 226   0   0
+int   0   0   0
+int  56 159  85
+int   0   0   0
+int 113  31   0
+int   0   0   0
+int 170  31  28
+int   0   0   0
+int  56 223 198
+int   0   0   0
+int  85   0   8
+int   0   0   0
+moduleEnd
+module groovePattern00
+; @pos 416 76
+
+;   BD  SD  HH
+int 191 127   0
+int   0   0   0
+int  63   0 127
+int   0   0   0
+int 255 191 127
+int   0   0   0
+int   0  31   0
+int   0   0   0
+int   0  63 170
+int   0   0   0
+int 255 255  85
+int   0   0   0
+int  31   8 212
+int   0   0   0
+int 223  95   0
+int   0   0   0
+int  63   0 212
+int   0   0   0
+int 127 255   0
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int   0  63 255
+int   0   0   0
+int 159 223  42
+int   0   0   0
+int  63   0   0
+int   0   0   0
+int  95 159   0
+int   0   0   0
+int  95   8   0
+int   0   0   0
+moduleEnd
+module groovePattern09
+; @pos 416 114
+
+;   BD  SD  HH
+int 204 127 127
+int   0   0   0
+int   0 255   0
+int   0   0   0
+int   0  95 170
+int   0   0   0
+int  51 191   0
+int   0   0   0
+int   0   0  42
+int   0   0   0
+int  51   8 127
+int   0   0   0
+int   0  63 212
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 153   0  85
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int   0   0   8
+int   0   0   0
+int 102   0   8
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int 255   0   8
+int   0   0   0
+int   0 223   0
+int   0   0   0
+moduleEnd
+module groovePattern11
+; @pos 416 152
+
+;   BD  SD  HH
+int 255 255 139
+int   0   0   0
+int   0   8  92
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int  72 218 255
+int   0   0   0
+int 182  36  69
+int   0   0   0
+int   0   0 185
+int   0   0   0
+int   0 182 139
+int   0   0   0
+int   0   0 115
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int   0  72  46
+int   0   0   0
+int   0   0 162
+int   0   0   0
+int 145 145  23
+int   0   0   0
+int 255   0 208
+int   0   0   0
+int   0   0 231
+int   0   0   0
+int   0 109 115
+int   0   0   0
+int   0   8 115
+int   0   0   0
+moduleEnd
+module groove
+; @pos 416 193
+int*[] cells 25
+- &groovePattern10:0 &groovePattern08:0 &groovePattern00:0 &groovePattern09:0 &groovePattern11:0
+- &groovePattern15:0 &groovePattern07:0 &groovePattern13:0 &groovePattern12:0 &groovePattern06:0
+- &groovePattern18:0 &groovePattern14:0 &groovePattern04:0 &groovePattern05:0 &groovePattern03:0
+- &groovePattern23:0 &groovePattern16:0 &groovePattern21:0 &groovePattern01:0 &groovePattern02:0
+- &groovePattern24:0 &groovePattern19:0 &groovePattern17:0 &groovePattern20:0 &groovePattern22:0
+moduleEnd
+entryEnd
+entry breakbeat
+module breakbeatPattern73
+; @pos 416 230
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50  85
+int   0  25  28
+int  36 102 160
+int   0   0   0
+int  72  72 120
+int   0   0   0
+int  36 230 198
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int  50  72 182
+int   0   0   0
+int 182 120 102
+int   0   0   0
+int  50  36 212
+int   0   0   0
+int  25  72  85
+int   0  36  28
+int 200 102 160
+int   0   0   0
+int  72  50 120
+int   0   0   0
+int  72 230 198
+int   0   0   0
+int  36  25  85
+int   0   0  56
+int  50  72 182
+int   0   0   0
+int 145 120 120
+int   0   0   0
+moduleEnd
+module breakbeatPattern52
+; @pos 416 268
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50  72
+int   0   0  28
+int  36  36 160
+int   0  25   0
+int  72  72 120
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int  72 102 182
+int   0   0   0
+int 182  72 102
+int   0   0   0
+int  36  50 212
+int   0   0   0
+int  25  72  72
+int   0  36  28
+int  50 120 160
+int   0   0   0
+int  72  36 120
+int   0   0   0
+int 200 255 212
+int   0   0   0
+int  36  25  85
+int   0   0  56
+int  72  72 182
+int   0   0   0
+int  50 102 120
+int   0   0   0
+moduleEnd
+module breakbeatPattern72
+; @pos 416 306
+
+;   BD  SD  HH
+int 255  25 226
+int   0   0   0
+int  25  50  72
+int   0  25  28
+int  36  36 182
+int   0   0   0
+int  72  72 102
+int   0   0   0
+int  36 255 226
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int  72 102 198
+int   0   0   0
+int 145 109  85
+int   0   0   0
+int 230  36 226
+int   0   0   0
+int  25  72  72
+int   0  36  28
+int  50  50 182
+int   0   0   0
+int  72 102 102
+int   0   0   0
+int  50 255 226
+int   0   0   0
+int  25  25  85
+int   0   0  56
+int  72  72 198
+int   0   0   0
+int 109  50 102
+int   0   0   0
+moduleEnd
+module breakbeatPattern70
+; @pos 416 344
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72 102
+int   0  25  28
+int  72  36 212
+int   0   0   0
+int  50  50 141
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  36 102
+int   0   0  36
+int 218 109 212
+int   0   0   0
+int  36 120 120
+int   0   0   0
+int  72  50 255
+int   0   0   0
+int  36 102 102
+int   0  36  28
+int 145  72 212
+int   0   0   0
+int  50  25 141
+int   0   0   0
+int 200 255 255
+int   0   0   0
+int  25  25 120
+int   0   0  56
+int  72  72 212
+int   0   0   0
+int  36 145 170
+int   0   0   0
+moduleEnd
+module breakbeatPattern71
+; @pos 416 382
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  36 212
+int   0   0   0
+int  72  50 102
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int 200 102 226
+int   0   0   0
+int  36  72  85
+int   0   0   0
+int  72  50 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50 182 212
+int   0   0   0
+int 218  36 102
+int   0   0   0
+int  36 255 212
+int   0   0   0
+int  25  25 102
+int   0   0  56
+int 120  72 226
+int   0   0   0
+int  50 145 120
+int   0   0   0
+moduleEnd
+module breakbeat
+; @pos 416 423
+int*[] cells 25
+- &breakbeatPattern73:0 &breakbeatPattern52:0 &breakbeatPattern72:0 &breakbeatPattern70:0 &breakbeatPattern71:0
+- &breakbeatPattern53:0 &breakbeatPattern50:0 &breakbeatPattern51:0 &breakbeatPattern54:0 &breakbeatPattern74:0
+- &breakbeatPattern55:0 &breakbeatPattern59:0 &breakbeatPattern56:0 &breakbeatPattern57:0 &breakbeatPattern58:0
+- &breakbeatPattern64:0 &breakbeatPattern60:0 &breakbeatPattern61:0 &breakbeatPattern62:0 &breakbeatPattern63:0
+- &breakbeatPattern68:0 &breakbeatPattern69:0 &breakbeatPattern67:0 &breakbeatPattern65:0 &breakbeatPattern66:0
+moduleEnd
+entryEnd
+entry groove
+module groovePattern15
+; @pos 450 0
+
+;   BD  SD  HH
+int 255  28  51
+int   0   0   0
+int   0  85   0
+int   0   0   0
+int   0 113 204
+int   0   0   0
+int 109  28 153
+int   0   0   0
+int   0 255 153
+int   0   0   0
+int   0 170 204
+int   0   0   0
+int 182  28 102
+int   0   0   0
+int  72  56 255
+int   0   0   0
+int  36  56 204
+int   0   0   0
+int 145  28 102
+int   0   0   0
+int   0 226 153
+int   0   0   0
+int   0 198 255
+int   0   0   0
+int 218  28  51
+int   0   0   0
+int   0  85 204
+int   0   0   0
+int   0 141   0
+int   0   0   0
+int 109  28   0
+int   0   0   0
+moduleEnd
+module groovePattern07
+; @pos 450 38
+
+;   BD  SD  HH
+int  76   0 198
+int   0   0   0
+int 153  85   0
+int   0   0   0
+int  25   8 170
+int   0   0   0
+int 127   0  85
+int   0   0   0
+int  25 212   0
+int   0   0   0
+int  51  85  56
+int   0   0   0
+int 178   0   0
+int   0   0   0
+int  25 170   0
+int   0   0   0
+int   8   0 255
+int   0   0   0
+int 204  42 141
+int   0   0   0
+int  25 255   0
+int   0   0   0
+int  25 127 113
+int   0   0   0
+int 255  42   0
+int   0   0   0
+int 229   0   0
+int   0   0   0
+int   8   0 226
+int   0   0   0
+int 102   8   0
+int   0   0   0
+moduleEnd
+module groovePattern13
+; @pos 450 76
+
+;   BD  SD  HH
+int   0   0 145
+int   0   0   0
+int   0 127   0
+int   0   0   0
+int 255   8 255
+int   0   0   0
+int   0  63 109
+int   0   0   0
+int 218 159 182
+int   0   0   0
+int  72 159 109
+int   0   0   0
+int 109  31 109
+int   0   0   0
+int   0  63  72
+int   0   0   0
+int 218 223 218
+int   0   0   0
+int   0 127   0
+int   0   0   0
+int 145  31  36
+int   0   0   0
+int   0  95 182
+int   0   0   0
+int 255  95  72
+int   0   0   0
+int 182   8 182
+int   0   0   0
+int  36 191   0
+int   0   0   0
+int   0 255   0
+int   0   0   0
+moduleEnd
+module groovePattern12
+; @pos 450 114
+
+;   BD  SD  HH
+int 255   0 255
+int   0   0   0
+int   0 127  72
+int   0   0   0
+int 159   0 182
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 223 159 218
+int   0   0   0
+int  31   0 145
+int   0   0   0
+int   0 255  36
+int   0   0   0
+int 127  31   0
+int   0   0   0
+int 223 223 218
+int   0   0   0
+int  31  63  36
+int   0   0   0
+int  63 191 109
+int   0   0   0
+int   0   0   0
+int   0   0   0
+int 191   0 255
+int   0   0   0
+int   0   0 109
+int   0   0   0
+int  95  95   8
+int   0   0   0
+int  31   0  72
+int   0   0   0
+moduleEnd
+module groovePattern06
+; @pos 450 152
+
+;   BD  SD  HH
+int 204 255  95
+int   0   0   0
+int 178 153   0
+int   0   0   0
+int 204   8   0
+int   0   0   0
+int   0 178   0
+int   0   0   0
+int 153  76 127
+int   0   0   0
+int 102   0   0
+int   0   0   0
+int  51  51   0
+int   0   0   0
+int 178 127   0
+int   0   0   0
+int 255 204   0
+int   0   0   0
+int  76  51   0
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int 127 102   0
+int   0   0   0
+int 229 204 255
+int   0   0   0
+int 178 229 159
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int  51   0   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry breakbeat
+module breakbeatPattern53
+; @pos 450 230
+
+;   BD  SD  HH
+int 255  25 198
+int   0   0   0
+int  25  50  72
+int   0  25  28
+int  36  36 145
+int   0   0   0
+int  72  72 102
+int   0   0   0
+int  36 230 198
+int   0   0   0
+int  25  25  72
+int   0   0  36
+int  50  72 170
+int   0   0   0
+int 160 102  85
+int   0   0   0
+int  50  36 198
+int   0   0   0
+int  25  72  72
+int   0  36  28
+int  36  50 145
+int   0   0   0
+int  72 109 102
+int   0   0   0
+int 200 230 198
+int   0   0   0
+int  36  25  85
+int   0   0  56
+int  50  72 170
+int   0   0   0
+int 120  50 102
+int   0   0   0
+moduleEnd
+module breakbeatPattern50
+; @pos 450 268
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72  56
+int   0   0  28
+int  50  36 198
+int   0   0   0
+int  72  50  85
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int 109 109 198
+int   0   0   0
+int  50  72  56
+int   0   0   0
+int 145  36 255
+int   0   0   0
+int  36  72  56
+int   0   0  28
+int  72  50 198
+int   0   0   0
+int 230  25  85
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  36 113
+int   0   0  56
+int  72 102 198
+int   0   0   0
+int  36  72 113
+int   0   0   0
+moduleEnd
+module breakbeatPattern51
+; @pos 450 306
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72  85
+int   0  25  28
+int  50  36 212
+int   0   0   0
+int  72  50 102
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  36  85
+int   0   0  36
+int 200 102 212
+int   0   0   0
+int  36 109 102
+int   0   0   0
+int 120  50 255
+int   0   0   0
+int  50  72  85
+int   0  36  28
+int  72  50 212
+int   0   0   0
+int 218  25 102
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  36 102
+int   0   0  56
+int 145  72 212
+int   0   0   0
+int  50 145 120
+int   0   0   0
+moduleEnd
+module breakbeatPattern54
+; @pos 450 344
+
+;   BD  SD  HH
+int 255  36 212
+int   0   0   0
+int  50  72 102
+int   0  25  36
+int  72  50 160
+int   0   0   0
+int 160 102 141
+int   0   0   0
+int  36 218  85
+int   0   0   0
+int  25  36 120
+int   0   0  56
+int 109  72 198
+int   0   0   0
+int 218 109  72
+int   0   0   0
+int 102  50 212
+int   0   0   0
+int  36 102  85
+int   0  36  28
+int 200  72 182
+int   0   0   0
+int  72 200 102
+int   0   0   0
+int  50  36 141
+int   0   0   0
+int  25 218 120
+int   0   0  56
+int  72  50 198
+int   0   0   0
+int 145  72  85
+int   0   0   0
+moduleEnd
+module breakbeatPattern74
+; @pos 450 382
+
+;   BD  SD  HH
+int 255  36 255
+int   0   0   0
+int  50  72 200
+int   0   0  56
+int 200  50 226
+int   0   0   0
+int  72  25 218
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int  36  36 182
+int   0   0  56
+int  72 109 226
+int   0   0   0
+int 218  72 218
+int   0   0   0
+int 255  50 255
+int   0   0   0
+int  50  72 200
+int   0   0  56
+int 182  36 226
+int   0   0   0
+int  72 102 218
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int  36  36 218
+int   0   0  85
+int 200 160 233
+int   0   0   0
+int 218  72 233
+int   0   0   0
+moduleEnd
+entryEnd
+entry groove
+module groovePattern18
+; @pos 484 0
+
+;   BD  SD  HH
+int   0   0  51
+int   0   0   0
+int   0  31  25
+int   0   0   0
+int   0  31 255
+int   0   0   0
+int   0 255  76
+int   0   0   0
+int  56  63 127
+int   0   0   0
+int 141  31 102
+int   0   0   0
+int   0 223  76
+int   0   0   0
+int   0 127  51
+int   0   0   0
+int   0   0 178
+int   0   0   0
+int   0 159 229
+int   0   0   0
+int   0   8 255
+int   0   0   0
+int 170 191 127
+int   0   0   0
+int   0   0 204
+int   0   0   0
+int   0 255 153
+int   0   0   0
+int   0  95 102
+int   0   0   0
+int 198  31  76
+int   0   0   0
+moduleEnd
+module groovePattern14
+; @pos 484 38
+
+;   BD  SD  HH
+int   0 218  85
+int   0   0   0
+int 145   0 170
+int   0   0   0
+int   0   0 198
+int   0   0   0
+int 109  72  56
+int   0   0   0
+int   0 255 113
+int   0   0   0
+int 182   0 255
+int   0   0   0
+int   0  36 141
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int   0   0 113
+int   0   0   0
+int 255  36 170
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int  72 145  56
+int   0   0   0
+int  72 182 170
+int   0   0   0
+int 218   0 226
+int   0   0   0
+int   0   0 198
+int   0   0   0
+int  36   0  28
+int   0   0   0
+moduleEnd
+module groovePattern04
+; @pos 484 76
+
+;   BD  SD  HH
+int   0 218 223
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int 218   0  31
+int   0   0   0
+int 109   0  63
+int   0   0   0
+int   0 255 127
+int   0   0   0
+int   0   8  31
+int   0   0   0
+int 145  36  31
+int   0   0   0
+int   8   0 191
+int   0   0   0
+int   0 145  31
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int 182   0  31
+int   0   0   0
+int   0   0 191
+int   0   0   0
+int  72 182  95
+int   0   0   0
+int 255  36 223
+int   0   0   0
+int   0 109 255
+int   0   0   0
+int  36  72 159
+int   0   0   0
+moduleEnd
+module groovePattern05
+; @pos 484 114
+
+;   BD  SD  HH
+int 255  56 191
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int 223  28 159
+int   0   0   0
+int   0   0  31
+int   0   0   0
+int  31 226 255
+int   0   0   0
+int   8  28  95
+int   0   0   0
+int 255 170 223
+int   0   0   0
+int 159 141 255
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int  95  85 159
+int   0   0   0
+int 223 198 159
+int   0   0   0
+int   0  56  31
+int   0   0   0
+int 191 255 159
+int   0   0   0
+int 127 113 159
+int   0   0   0
+int   0   0 159
+int   0   0   0
+int  63  56 127
+int   0   0   0
+moduleEnd
+module groovePattern03
+; @pos 484 152
+
+;   BD  SD  HH
+int 170 153 141
+int   0   0   0
+int   0  51  56
+int   0   0   0
+int 148  76 226
+int   0   0   0
+int  21  76   0
+int   0   0   0
+int 106 204 255
+int   0   0   0
+int  21 102  85
+int   0   0   0
+int 212 178 198
+int   0   0   0
+int  85 127  28
+int   0   0   0
+int 191   0 113
+int   0   0   0
+int  63   0   0
+int   0   0   0
+int 233   0  28
+int   0   0   0
+int 127 255   0
+int   0   0   0
+int   0 229 170
+int   0   0   0
+int 255   0   0
+int   0   0   0
+int   0  25   0
+int   0   0   0
+int  42   0  85
+int   0   0   0
+moduleEnd
+entryEnd
+entry breakbeat
+module breakbeatPattern55
+; @pos 484 230
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  25  50  85
+int   0   0  28
+int  36  36 212
+int   0   0   0
+int  72  72  85
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25   0  85
+int   0   0  36
+int  72 109 212
+int   0   0   0
+int  36 102  85
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  50 212
+int   0   0   0
+int  72  25  85
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  25 102
+int   0   0  56
+int  72 145 212
+int   0   0   0
+int 120 109 102
+int   0   0   0
+moduleEnd
+module breakbeatPattern59
+; @pos 484 268
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50  56
+int   0   0  28
+int  36  36 170
+int   0   0   0
+int  72  72  85
+int   0   0   0
+int  36 255 212
+int   0   0   0
+int  25  25  56
+int   0   0  36
+int  50 102 170
+int   0   0   0
+int  36 120  56
+int   0   0   0
+int 218  36 212
+int   0   0   0
+int  25  72  56
+int   0   0  28
+int  36  50 170
+int   0   0   0
+int  72  25  85
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25  85
+int   0   0  56
+int  72 102 170
+int   0   0   0
+int 109 120 102
+int   0   0   0
+moduleEnd
+module breakbeatPattern56
+; @pos 484 306
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72 120
+int   0   0  28
+int  50  36 226
+int   0   0   0
+int 182  50 141
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25 102
+int   0   0  36
+int 200 109 226
+int   0   0   0
+int  36  72 120
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  50  72 120
+int   0   0  28
+int  72  50 226
+int   0   0   0
+int 160 102 141
+int   0   0   0
+int 120 255 255
+int   0   0   0
+int  25  36 141
+int   0   0  56
+int 200  72 226
+int   0   0   0
+int  50 120 170
+int   0   0   0
+moduleEnd
+module breakbeatPattern57
+; @pos 484 344
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  50 212
+int   0   0   0
+int  72  36 120
+int   0   0   0
+int  36 255 255
+int   0   0   0
+int  25  36 102
+int   0   0  36
+int 230 102 212
+int   0   0   0
+int  50 160 141
+int   0   0   0
+int  72  50 255
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  36 212
+int   0   0   0
+int  72 109 120
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  36 120
+int   0   0  56
+int 218 102 212
+int   0   0   0
+int  36 182 170
+int   0   0   0
+moduleEnd
+module breakbeatPattern58
+; @pos 484 382
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  72 141
+int   0   0  28
+int  50  50 226
+int   0   0   0
+int  72  36 170
+int   0   0   0
+int 218 255 255
+int   0   0   0
+int  25  25 141
+int   0   0  36
+int  72 109 226
+int   0   0   0
+int  36  72 170
+int   0   0   0
+int 255  36 255
+int   0   0   0
+int  50  72 141
+int   0   0  28
+int  36  50 226
+int   0   0   0
+int 182 102 170
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  36 170
+int   0   0  56
+int 200  72 226
+int   0   0   0
+int  36 160 198
+int   0   0   0
+moduleEnd
+entryEnd
+entry groove
+module groovePattern23
+; @pos 518 0
+
+;   BD  SD  HH
+int  31   0 148
+int   0   0   0
+int  95   0 170
+int   0   0   0
+int 127   0 233
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int 223 255 106
+int   0   0   0
+int   0   0  63
+int   0   0   0
+int   0   0 191
+int   0   0   0
+int  95   0  21
+int   0   0   0
+int   0   0 127
+int   0   0   0
+int   0 127 148
+int   0   0   0
+int 191   0 255
+int   0   0   0
+int  63   0 191
+int   0   0   0
+int 255 191   8
+int   0   0   0
+int   8   0  85
+int   0   0   0
+int   0   0 212
+int   0   0   0
+int 159  63  42
+int   0   0   0
+moduleEnd
+module groovePattern16
+; @pos 518 38
+
+;   BD  SD  HH
+int   0 170 229
+int   0   0   0
+int 127  42  51
+int   0   0   0
+int  25   0 153
+int   0   0   0
+int 229   0  51
+int   0   0   0
+int   0 212 204
+int   0   0   0
+int  51 127  76
+int   0   0   0
+int  76   0 127
+int   0   0   0
+int 153  42 102
+int   0   0   0
+int   0 212 178
+int   0   0   0
+int 178   0  25
+int   0   0   0
+int   0   0 153
+int   0   0   0
+int 255   0 102
+int   0   0   0
+int   0 255 255
+int   0   0   0
+int   0 127  76
+int   0   0   0
+int 102   0 127
+int   0   0   0
+int 204   0  51
+int   0   0   0
+moduleEnd
+module groovePattern21
+; @pos 518 76
+
+;   BD  SD  HH
+int  72  72 109
+int   0   0   0
+int   0 109 109
+int   0   0   0
+int  36   8 218
+int   0   0   0
+int 109  36 145
+int   0   0   0
+int   0 255 255
+int   0   0   0
+int 255   0  36
+int   0   0   0
+int  36 218 255
+int   0   0   0
+int   0  72  72
+int   0   0   0
+int 182  36 182
+int   0   0   0
+int   0 182 109
+int   0   0   0
+int 218   0 182
+int   0   0   0
+int 145   0 109
+int   0   0   0
+int   0 145 218
+int   0   0   0
+int 218   0  72
+int   0   0   0
+int   0   8 145
+int   0   0   0
+int   0 182  72
+int   0   0   0
+moduleEnd
+module groovePattern01
+; @pos 518 114
+
+;   BD  SD  HH
+int 255  56 255
+int   0   0   0
+int   0  28  28
+int   0   0   0
+int   0 226 198
+int   0   0   0
+int 212 113  56
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int   8 255  56
+int   0   0   0
+int 127   0 170
+int   0   0   0
+int   0 198  85
+int   0   0   0
+int 212  28 113
+int   0   0   0
+int   0 170  56
+int   0   0   0
+int  85 113 226
+int   0   0   0
+int 170  85 141
+int   0   0   0
+int   8   0 255
+int   0   0   0
+int  42 141  28
+int   0   0   0
+int 212   0 170
+int   0   0   0
+int   8  56  28
+int   0   0   0
+moduleEnd
+module groovePattern02
+; @pos 518 152
+
+;   BD  SD  HH
+int 159  25 255
+int   0   0   0
+int  31 102  36
+int   0   0   0
+int  63 255 182
+int   0   0   0
+int 127 127   0
+int   0   0   0
+int  31   0 255
+int   0   0   0
+int  31  76  72
+int   0   0   0
+int 223 204 145
+int   0   0   0
+int  63   0  36
+int   0   0   0
+int  95 229 182
+int   0   0   0
+int  95 153   0
+int   0   0   0
+int  63  25 218
+int   0   0   0
+int  63  51  36
+int   0   0   0
+int 255 178 109
+int   0   0   0
+int 191 204   0
+int   0   0   0
+int  31   0 218
+int   0   0   0
+int  63  25   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry breakbeat
+module breakbeatPattern64
+; @pos 518 230
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  50 102
+int   0   0  28
+int  36  36 182
+int   0   0   0
+int  72  72 141
+int   0   0   0
+int  36  36 212
+int   0   0   0
+int  25  72  85
+int   0   0  36
+int  50 102 198
+int   0   0   0
+int 182  50 120
+int   0   0   0
+int  50 230 212
+int   0   0   0
+int  25  25 102
+int   0   0  28
+int  36  72 182
+int   0   0   0
+int  72  36 141
+int   0   0   0
+int 200  50 212
+int   0   0   0
+int  36  72 120
+int   0   0  56
+int  72  50 198
+int   0   0   0
+int 145 109 170
+int   0   0   0
+moduleEnd
+module breakbeatPattern60
+; @pos 518 268
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  25  50 141
+int   0   0  36
+int  36  36 212
+int   0   0   0
+int  72  72 182
+int   0   0   0
+int  36  36 255
+int   0   0   0
+int  25  72 120
+int   0   0  56
+int  50 102 212
+int   0   0   0
+int  36  50 200
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25 160
+int   0   0  36
+int  36  72 226
+int   0   0   0
+int  72  36 200
+int   0   0   0
+int 218  50 255
+int   0   0   0
+int  36  72 200
+int   0   0  85
+int  50  36 226
+int   0   0   0
+int 200 120 218
+int   0   0   0
+moduleEnd
+module breakbeatPattern61
+; @pos 518 306
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  25  50 160
+int   0   0  56
+int  36  36 226
+int   0   0   0
+int  72  72 200
+int   0   0   0
+int  36  50 255
+int   0   0   0
+int  25  72 141
+int   0   0  56
+int  72 102 226
+int   0   0   0
+int 218  50 218
+int   0   0   0
+int  50 255 255
+int   0   0   0
+int  25  25 182
+int   0   0  85
+int  36  72 233
+int   0   0   0
+int  72  36 218
+int   0   0   0
+int 200  50 255
+int   0   0   0
+int  36  72 218
+int   0   0 109
+int  50  50 233
+int   0   0   0
+int  36 160 233
+int   0   0   0
+moduleEnd
+module breakbeatPattern62
+; @pos 518 344
+
+;   BD  SD  HH
+int 255  25 255
+int   0   0   0
+int  36  50 182
+int   0   0  56
+int  50  36 212
+int   0   0   0
+int 145  72 200
+int   0   0   0
+int  50  50 255
+int   0   0   0
+int  25  72 160
+int   0   0  56
+int  72 102 226
+int   0   0   0
+int 218  50 218
+int   0   0   0
+int  72 255 255
+int   0   0   0
+int  25  36 200
+int   0   0  85
+int  36  72 226
+int   0   0   0
+int  50 120 218
+int   0   0   0
+int 200  50 255
+int   0   0   0
+int  36  72 218
+int   0   0 109
+int  72  50 233
+int   0   0   0
+int  50 182 233
+int   0   0   0
+moduleEnd
+module breakbeatPattern63
+; @pos 518 382
+
+;   BD  SD  HH
+int 255  25 226
+int   0   0   0
+int  25  72 102
+int   0   0  28
+int  36  36 198
+int   0   0   0
+int  72  50 160
+int   0   0   0
+int  50 218 226
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int  72 102 212
+int   0   0   0
+int 200  72 141
+int   0   0   0
+int  36 255 226
+int   0   0   0
+int  25  36 120
+int   0   0  56
+int 200  72 212
+int   0   0   0
+int  50 109 182
+int   0   0   0
+int  72  50 226
+int   0   0   0
+int  36  72 141
+int   0   0  56
+int  50 200 212
+int   0   0   0
+int  72  36 182
+int   0   0   0
+moduleEnd
+entryEnd
+entry groove
+module groovePattern24
+; @pos 552 0
+
+;   BD  SD  HH
+int 182 109 198
+int   0   0   0
+int  36  36 141
+int   0   0   0
+int   0   0  28
+int   0   0   0
+int 145 145 226
+int   0   0   0
+int   0  72   0
+int   0   0   0
+int 109   8 113
+int   0   0   0
+int   0 182   0
+int   0   0   0
+int 109   0 170
+int   0   0   0
+int 255   8   0
+int   0   0   0
+int   0 182  28
+int   0   0   0
+int 218   0  85
+int   0   0   0
+int 145   8 255
+int   0   0   0
+int  72 255   0
+int   0   0   0
+int   0   0  56
+int   0   0   0
+int  36 218  28
+int   0   0   0
+int   0   0  56
+int   0   0   0
+moduleEnd
+module groovePattern19
+; @pos 552 38
+
+;   BD  SD  HH
+int 255  85 185
+int   0   0   0
+int   0 141 162
+int   0   0   0
+int   8   0  92
+int   0   0   0
+int 178   0 162
+int   0   0   0
+int 102 198 185
+int   0   0   0
+int  25   0 162
+int   0   0   0
+int   0   0  23
+int   0   0   0
+int 153  56 255
+int   0   0   0
+int 229   0 231
+int   0   0   0
+int   0   0 139
+int   0   0   0
+int   0   0  69
+int   0   0   0
+int 204   0 208
+int   0   0   0
+int  76 255 231
+int   0   0   0
+int   0   0 115
+int   0   0   0
+int 127  28  46
+int   0   0   0
+int  51   0 162
+int   0   0   0
+moduleEnd
+module groovePattern17
+; @pos 552 76
+
+;   BD  SD  HH
+int 255   0 127
+int   0   0   0
+int   0   0 255
+int   0   0   0
+int   0  28 212
+int   0   0   0
+int 182   0 191
+int   0   0   0
+int  72 255  85
+int   0   0   0
+int   0   0 170
+int   0   0   0
+int   0   0 233
+int   0   0   0
+int 109  56 148
+int   0   0   0
+int 218   0 170
+int   0   0   0
+int   0 141  42
+int   0   0   0
+int   0  85  63
+int   0   0   0
+int   0  85  85
+int   0   0   0
+int   0 113  85
+int   0   0   0
+int  36 170  21
+int   0   0   0
+int   0 198  85
+int   0   0   0
+int 145 226 106
+int   0   0   0
+moduleEnd
+module groovePattern20
+; @pos 552 114
+
+;   BD  SD  HH
+int   0   0  69
+int   0   0   0
+int   0   0  92
+int   0   0   0
+int   0 255 208
+int   0   0   0
+int  95  36 115
+int   0   0   0
+int  95   0  46
+int   0   0   0
+int  63  72  46
+int   0   0   0
+int 159   0 139
+int   0   0   0
+int   0 218 185
+int   0   0   0
+int 223   0  92
+int   0   0   0
+int   0 109  46
+int   0   0   0
+int 191  72 162
+int   0   0   0
+int   0 182 208
+int   0   0   0
+int 127 109 255
+int   0   0   0
+int  31 145  23
+int   0   0   0
+int 255   0 231
+int   0   0   0
+int   0 255 255
+int   0   0   0
+moduleEnd
+module groovePattern22
+; @pos 552 152
+
+;   BD  SD  HH
+int 141   8 226
+int   0   0   0
+int  56   8 170
+int   0   0   0
+int 113 223  56
+int   0   0   0
+int   0 255 141
+int   0   0   0
+int 170   8 255
+int   0   0   0
+int   0   8 198
+int   0   0   0
+int  85 159 113
+int   0   0   0
+int   0 191  28
+int   0   0   0
+int 198   8   0
+int   0   0   0
+int   0  31  85
+int   0   0   0
+int 255 255   0
+int   0   0   0
+int   0  95   0
+int   0   0   0
+int 255 127   0
+int   0   0   0
+int  28  63   0
+int   0   0   0
+int 226 127   0
+int   0   0   0
+int   0  31   0
+int   0   0   0
+moduleEnd
+entryEnd
+entry breakbeat
+module breakbeatPattern68
+; @pos 552 230
+
+;   BD  SD  HH
+int 255  25 182
+int   0   0   0
+int  25  50  85
+int   0   0  28
+int  36  36 212
+int   0   0   0
+int  72  72 102
+int   0   0   0
+int  36 200  85
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int  50 109 226
+int   0   0   0
+int 200  72  85
+int   0   0   0
+int  50  36 182
+int   0   0   0
+int  25  72  85
+int   0   0  28
+int  36  50 212
+int   0   0   0
+int  72 120 102
+int   0   0   0
+int 200 218  85
+int   0   0   0
+int  36  25 102
+int   0   0  56
+int  72  72 226
+int   0   0   0
+int  50  50 102
+int   0   0   0
+moduleEnd
+module breakbeatPattern69
+; @pos 552 268
+
+;   BD  SD  HH
+int  72  25  85
+int   0   0   0
+int  25  72  56
+int   0   0  28
+int  36  36 226
+int   0   0   0
+int  50  50  56
+int   0   0   0
+int  36 218  85
+int   0   0   0
+int  25  25  56
+int   0   0  36
+int  72 109 226
+int   0   0   0
+int  50  72  56
+int   0   0   0
+int 255  36  85
+int   0   0   0
+int  36  72  56
+int   0   0  28
+int  50  50 226
+int   0   0   0
+int  72 102  56
+int   0   0   0
+int  50 255  85
+int   0   0   0
+int  25  25  85
+int   0   0  56
+int  72  72 226
+int   0   0   0
+int 145 109 113
+int   0   0   0
+moduleEnd
+module breakbeatPattern67
+; @pos 552 306
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  36 182
+int   0   0   0
+int  72  50 120
+int   0   0   0
+int  50 218 198
+int   0   0   0
+int  25  25 102
+int   0   0  36
+int 218 102 212
+int   0   0   0
+int  36  72 102
+int   0   0   0
+int  72  36 212
+int   0   0   0
+int  36  72 102
+int   0   0  28
+int  50  50 182
+int   0   0   0
+int 200 109 120
+int   0   0   0
+int 145 255 198
+int   0   0   0
+int  25  36 120
+int   0   0  56
+int  72 160 212
+int   0   0   0
+int  50  72 120
+int   0   0   0
+moduleEnd
+module breakbeatPattern65
+; @pos 552 344
+
+;   BD  SD  HH
+int 255  25 212
+int   0   0   0
+int  25  72  56
+int   0   0  28
+int  36  36 182
+int   0   0   0
+int  72  50 102
+int   0   0   0
+int  50 255 212
+int   0   0   0
+int  25  25  56
+int   0   0  36
+int 230 109 198
+int   0   0   0
+int  36 102  56
+int   0   0   0
+int  72  36 212
+int   0   0   0
+int  25  72  56
+int   0   0  28
+int  50  50 182
+int   0   0   0
+int  72  25 102
+int   0   0   0
+int  36 255 212
+int   0   0   0
+int  25  36  85
+int   0   0  56
+int 218 102 198
+int   0   0   0
+int  50  72  85
+int   0   0   0
+moduleEnd
+module breakbeatPattern66
+; @pos 552 382
+
+;   BD  SD  HH
+int 255  25 226
+int   0   0   0
+int  36  72  85
+int   0   0  28
+int  50  36 198
+int   0   0   0
+int 145  50 141
+int   0   0   0
+int  50 255 226
+int   0   0   0
+int  25  25  85
+int   0   0  36
+int 230 109 212
+int   0   0   0
+int  36 120 102
+int   0   0   0
+int 160  36 226
+int   0   0   0
+int  25  72  85
+int   0   0  28
+int  72  50 198
+int   0   0   0
+int  50 102 141
+int   0   0   0
+int  36 255 226
+int   0   0   0
+int  25  36 102
+int   0   0  56
+int 230  72 212
+int   0   0   0
+int  72 145 141
 int   0   0   0
 moduleEnd
 entryEnd

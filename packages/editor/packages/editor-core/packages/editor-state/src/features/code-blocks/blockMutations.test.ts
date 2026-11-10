@@ -1,5 +1,6 @@
+import { EventEmitter } from 'node:events';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { State } from '@8f4e/editor-state-types';
+import type { EditorLifecycleEvents, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { deleteCodeBlocks } from './deleteCodeBlocks';
@@ -14,8 +15,10 @@ function setup() {
 	state.codeBlockRendering.rootProject.blocks.push(first, second, untouched);
 	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
 	const store = createStateManager<State>(state);
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	cleanups.push(store.dispose);
-	return { store, state, first, second, untouched };
+	return { store, events, state, first, second, untouched };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -25,7 +28,8 @@ describe('block source edits', () => {
 	it.each([false, true])(
 		'refreshes changed blocks before publishing the whole batch: affectsCompilation=%s',
 		affectsCompilation => {
-			const { store, state, first, second, untouched } = setup();
+			const { store, events, state, first, second, untouched } = setup();
+			state.codeBlockRendering.selectedCodeBlock = untouched;
 			const firstCode = ['module first', 'int value 1', 'moduleEnd'];
 			const secondCode = ['module second', 'int value 2', 'moduleEnd'];
 			const untouchedCode = untouched.code;
@@ -38,14 +42,17 @@ describe('block source edits', () => {
 				expect(refreshed).toEqual([first, second]);
 				expect(state.compilerInputRevision).toBe(affectsCompilation ? 1 : 0);
 			});
-			store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', () => {
-				refreshed.push(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit);
+			const onSourcesChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockSourcesChanged']) => {
+				refreshed.push(...codeBlocks);
+				expect(first.code).toEqual(firstCode);
+				expect(second.code).toEqual(secondCode);
 			});
+			events.on('codeBlockSourcesChanged', onSourcesChanged);
 			store.subscribe('compilerInputRevision', onCompilerChange);
 			store.subscribe('projectChange', onProjectChange);
 			expect(
 				applyCodeBlockSourceEdits(
-					store,
+					{ store, events },
 					[
 						{ codeBlock: first, code: firstCode },
 						{ codeBlock: untouched, code: [...untouchedCode] },
@@ -58,19 +65,23 @@ describe('block source edits', () => {
 			expect(second.lastUpdated).toBeGreaterThan(1);
 			expect(untouched.lastUpdated).toBe(1);
 			expect(untouched.code).toBe(untouchedCode);
+			expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [first, second] });
 			expect(onCompilerChange).toHaveBeenCalledTimes(affectsCompilation ? 1 : 0);
 			expect(onProjectChange).toHaveBeenCalledTimes(1);
 			expect(state.projectChange.revision).toBe(1);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(untouched);
 		}
 	);
 
 	it('does not refresh or publish empty and unchanged batches', () => {
-		const { store, state, first } = setup();
+		const { store, events, state, first } = setup();
 		const onRefresh = vi.fn();
-		store.subscribe('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', onRefresh);
-		expect(applyCodeBlockSourceEdits(store, [], { affectsCompilation: true })).toBe(false);
+		events.on('codeBlockSourcesChanged', onRefresh);
+		expect(applyCodeBlockSourceEdits({ store, events }, [], { affectsCompilation: true })).toBe(false);
 		expect(
-			applyCodeBlockSourceEdits(store, [{ codeBlock: first, code: [...first.code] }], { affectsCompilation: true })
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: first, code: [...first.code] }], {
+				affectsCompilation: true,
+			})
 		).toBe(false);
 		expect(first.lastUpdated).toBe(1);
 		expect(onRefresh).not.toHaveBeenCalled();
@@ -89,12 +100,10 @@ describe('block deletion', () => {
 		state.codeBlockRendering.currentProject = owner.childProject!;
 		state.codeBlockRendering.selectedCodeBlock = first;
 		state.codeBlockRendering.draggedCodeBlock = second;
-		state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = first;
 		const onProjectChange = vi.fn(() => {
 			expect(nested).toEqual([untouched]);
 			expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-			expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 			expect(state.compilerInputRevision).toBe(1);
 		});
 		store.subscribe('projectChange', onProjectChange);
@@ -110,11 +119,9 @@ describe('block deletion', () => {
 		const { store, state, first, second } = setup();
 		state.codeBlockRendering.selectedCodeBlock = second;
 		state.codeBlockRendering.draggedCodeBlock = second;
-		state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = second;
 		expect(deleteCodeBlocks(store, [first])).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(second);
 		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
-		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(second);
 		expect(deleteCodeBlocks(store, [first])).toBe(false);
 		expect(deleteCodeBlocks(store, [])).toBe(false);
 		expect(state.projectChange.revision).toBe(1);

@@ -55,13 +55,7 @@ describe('grouping plugin', () => {
 		const items = await test.openMenu();
 		const index = items.findIndex(item => item.action === 'copyGroupBlocks');
 		expect(index).toBeGreaterThanOrEqual(0);
-		const pointer = {
-			x: test.state.contextMenu.x - test.state.viewport.x + 8,
-			y: test.state.contextMenu.y - test.state.viewport.y + index * test.state.viewport.hGrid + 8,
-		};
-		test.events.dispatch('mousemove', { ...pointer });
-		test.events.dispatch('mousedown', { ...pointer });
-		test.events.dispatch('mouseup', { ...pointer });
+		test.events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
 		expect(test.state.contextMenu.open).toBe(false);
 		const copied = JSON.parse(test.writeClipboardText.mock.calls[0][0]);
 		expect(copied.map((block: { code: string[] }) => block.code[0])).toEqual(['module first', 'module second']);
@@ -88,7 +82,7 @@ describe('grouping plugin', () => {
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
 		first.code = upsertDirective(first.code, 'group', ['audio']);
-		test.store.set('codeBlockRendering.selectedCodeBlockForProgrammaticEdit', first);
+		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [first] });
 		test.drag(first);
 		expect(second.x).toBe(originalSecondX + test.state.viewport.vGrid);
 	});
@@ -142,8 +136,8 @@ describe('grouping plugin', () => {
 		const test = setup({ installed });
 		if (installed) test.disposePlugin();
 		expect((await test.openMenu()).some(item => item.action === 'copyGroupBlocks')).toBe(false);
-		test.events.dispatch('mousemove', { x: -1, y: -1 });
-		test.events.dispatch('mousedown', { x: -1, y: -1 });
+		test.events.dispatch('pointermove', { x: -1, y: -1 });
+		test.events.dispatch('pointerdown', { x: -1, y: -1 });
 		const first = test.block('first');
 		const secondX = test.block('second').x;
 		test.drag(first);
@@ -182,7 +176,6 @@ describe('grouping plugin', () => {
 		const first = test.block('first');
 		test.state.codeBlockRendering.selectedCodeBlock = first;
 		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
-		test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit = first;
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });
@@ -191,7 +184,6 @@ describe('grouping plugin', () => {
 		expect(test.block('other')).toBeDefined();
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBeUndefined();
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('deleteGroup', { codeBlock: first });

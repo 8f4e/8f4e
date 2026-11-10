@@ -1,5 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } from '@8f4e/editor-core';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { gapCalculator } from '@8f4e/editor-state';
+import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, test } from 'vitest';
 import { connectorsPlugin } from '../src/index';
 
@@ -30,8 +33,8 @@ afterEach(() => {
 
 async function setup(text = source) {
 	const project = parseProjectSource(text);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const compiled = await compileProject(project);
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const canvas = document.createElement('canvas');
@@ -41,14 +44,18 @@ async function setup(text = source) {
 	canvas.style.height = '400px';
 	document.body.appendChild(canvas);
 	let editorEvents: EditorPluginContext['events'];
+	let context!: EditorPluginContext;
 	const installArtifacts: EditorPlugin = {
 		id: 'test-artifacts',
-		setup: ({ store, events }) => {
+		setup: services => {
+			context = services;
+			const { store, events } = services;
 			editorEvents = events;
 			Object.assign(store.getState().compiler.result, {
 				memoryPlan: compiled.memoryPlan,
 				memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
 				compiledModules: compiled.compiledModules,
+				compiledFunctions: compiled.compiledFunctions,
 				projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
 			});
 			events.dispatch('compilationSucceeded', { memoryRef: memory });
@@ -57,7 +64,6 @@ async function setup(text = source) {
 	};
 	const editor: Editor = await initEditor(canvas, {
 		initialProject: project,
-		featureFlags: { offscreenBlockArrows: false },
 		plugins: [connectorsPlugin, installArtifacts],
 	});
 	cleanups.push(() => {
@@ -71,8 +77,56 @@ async function setup(text = source) {
 		editor.renderFrame();
 	};
 	render();
-	return { editor, canvas, render, events: editorEvents! };
+	return { editor, canvas, render, events: editorEvents!, context, memory };
 }
+
+test('renders expanded shape and paramShape declarations with aligned connectors', async () => {
+	const { editor, canvas, render, context, memory } = await setup(`8f4e/v1
+constants env
+; @pos 100 100
+constantsEnd
+prototype voiceState
+; @pos 100 100
+int* input
+int output
+prototypeEnd
+function process
+; @pos 48 12
+paramShape voiceState
+functionEnd
+entry main
+module source
+; @pos 48 2
+int output 1
+moduleEnd
+module sink
+; @pos 2 2
+shape voiceState
+moduleEnd
+entryEnd`);
+	const plan = editor.state.compiler.result.memoryPlan.modules;
+	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
+	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+	const removePreparation = context.layout.subscribe(({ codeBlock }) => {
+		glyphsByBlock.set(
+			codeBlock,
+			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+		);
+	});
+	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+		codeBlock.displayModel.lines.forEach((line, row) =>
+			draw.drawGlyphs(
+				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+				glyphsByBlock.get(codeBlock)![row],
+				PALETTE_INDICES.inkBase
+			)
+		);
+	});
+	cleanups.push(removeText, removePreparation);
+	render();
+	await expect(canvas).toMatchScreenshot('expanded-declarations');
+});
 
 test('renders connectors and wires through the editor and restores them after GPU memory release', async () => {
 	const { editor, canvas, render } = await setup();
@@ -125,7 +179,7 @@ entryEnd`);
 	const oscillators = blocks.filter(block => block.name === 'oscillator');
 	const speaker = blocks.find(block => block.name === 'speaker')!;
 	for (const block of [...oscillators, speaker]) {
-		events.dispatch('mousedown', {
+		events.dispatch('pointerdown', {
 			x: block.x - editor.state.viewport.x + 1,
 			y: block.y - editor.state.viewport.y + 1,
 			movementX: 0,
@@ -136,7 +190,7 @@ entryEnd`);
 			canvasHeight: 400,
 			altKey: false,
 		});
-		events.dispatch('mouseup');
+		events.dispatch('pointerup');
 	}
 	// Keep the reference independent of the animated selection border.
 	editor.state.codeBlockRendering.selectedCodeBlock = undefined;

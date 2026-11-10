@@ -7,8 +7,12 @@ import { WASM_ELSE, WASM_END, WASM_IF } from '../wasmInstruction';
  * @param resultType - The result type of the if-else expression
  * @param trueBranch - Instructions to execute if condition is true
  * @param falseBranch - Instructions to execute if condition is false (defaults to empty)
- * @returns Byte array representing the if-else-end structure
+ * @returns Instruction sequence representing the if-else-end structure
  */
-export default function ifelse(resultType: WasmTypeValue, trueBranch: number[], falseBranch: number[] = []): number[] {
+export default function ifelse<T>(
+	resultType: WasmTypeValue,
+	trueBranch: readonly T[],
+	falseBranch: readonly T[] = []
+): (number | T)[] {
 	return [WASM_IF, resultType, ...trueBranch, WASM_ELSE, ...falseBranch, WASM_END];
 }

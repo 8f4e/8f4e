@@ -4,8 +4,8 @@ import createStateManager from '@8f4e/state-manager';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
@@ -71,7 +71,7 @@ describe('history tracking with real project mutations', () => {
 	function replaceLine(row: number, line: string) {
 		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
 		applyCodeBlockSourceEdits(
-			store,
+			{ store, events },
 			[{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) }],
 			{ affectsCompilation: true }
 		);
@@ -92,7 +92,7 @@ describe('history tracking with real project mutations', () => {
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
 			blockType: 'module',
 			entry: 'main',
-			cursor: { row: 1, col: 6, x: 0, y: 16 },
+			cursor: { row: 1, col: 6, y: 16 },
 		});
 		state.codeBlockRendering.rootProject.blocks.push(block);
 		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
@@ -158,7 +158,7 @@ describe('history tracking with real project mutations', () => {
 
 		const restored = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = restored;
-		restored.cursor = { row: 1, col: 6, x: 0, y: 16 };
+		restored.cursor = { row: 1, col: 6, y: 16 };
 		replaceLine(1, 'push 13');
 
 		// The redo stack is gone before the debounce timer fires.
@@ -207,7 +207,7 @@ describe('history tracking with real project mutations', () => {
 		// The next edit is measured against the loaded project as its baseline.
 		const loaded = state.codeBlockRendering.currentProject.blocks[0];
 		state.codeBlockRendering.selectedCodeBlock = loaded;
-		loaded.cursor = { row: 0, col: 11, x: 0, y: 0 };
+		loaded.cursor = { row: 0, col: 11, y: 0 };
 		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
@@ -246,9 +246,9 @@ describe('history tracking with real project mutations', () => {
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 		const compilerRevisionAfterLoad = state.compilerInputRevision;
 
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mousemove', { movementX: 16, movementY: 32 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointermove', { movementX: 16, movementY: 32 });
+		dispatch('pointerup');
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(loaded.code).toContain('; @pos 2 2');
@@ -272,9 +272,8 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records nothing when deleting a block that is not in the project', async () => {
-		codeBlockCreator(store, events);
 		const stranger = createMockCodeBlock({ code: ['module stranger', 'moduleEnd'], blockType: 'module' });
-		dispatch('deleteCodeBlock', { codeBlock: stranger });
+		deleteCodeBlocks(store, [stranger]);
 		await vi.advanceTimersByTimeAsync(2000);
 
 		expect(state.projectChange.revision).toBe(0);

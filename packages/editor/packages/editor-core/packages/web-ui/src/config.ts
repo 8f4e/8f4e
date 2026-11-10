@@ -30,8 +30,8 @@ export function registerWebUiConfig(store: StateManager<State>): void {
 	store.set('editorConfigValidators.color', colorEditorConfigValidator);
 }
 
-export function getConfiguredFont(config: EditorConfig): Font {
-	return (config.font as Font | undefined) ?? DEFAULT_FONT;
+export function getConfiguredFont(config: EditorConfig, defaultFont: Font = DEFAULT_FONT): Font {
+	return (config.font as Font | undefined) ?? defaultFont;
 }
 
 export function getConfiguredPalette(config: EditorConfig) {

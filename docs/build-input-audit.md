@@ -11,7 +11,7 @@ To repeat the key checks, use Nx's built-in input and task-graph commands from t
 ```sh
 npx nx show target inputs @8f4e/sprite-generator:build --json > /tmp/8f4e-sprite-build-inputs.json
 npx nx show target inputs @8f4e/sprite-generator:test --json > /tmp/8f4e-sprite-test-inputs.json
-npx nx show target inputs @8f4e/editor-minimal:build --json > /tmp/8f4e-minimal-build-inputs.json
+npx nx show target inputs @8f4e/editor-gallery:build --json > /tmp/8f4e-gallery-build-inputs.json
 npx nx show target inputs @8f4e/editor-webmcp:generate-content --json > /tmp/8f4e-catalog-inputs.json
 npx nx show target inputs @8f4e/8f4e-website:build --json > /tmp/8f4e-website-inputs.json
 npx nx run @8f4e/8f4e-website:build --graph=/tmp/8f4e-website-build-tasks.json
@@ -20,7 +20,7 @@ npx nx run @8f4e/8f4e-website:build --graph=/tmp/8f4e-website-build-tasks.json
 Inspect the `files` arrays and task graph against these expected boundaries:
 
 - Local sprite palette fixtures appear in sprite test inputs and stay out of production builds.
-- Example sources stay out of sprite and minimal-editor builds, while WebMCP catalogs and the product website retain them.
+- Example sources stay out of sprite and gallery-editor builds, while WebMCP catalogs and the product website retain them.
 - The product website includes shipped compiler `.test.8f4e` fixtures; the compiler build excludes them and its test target retains them.
 - Stdlib, compiler worker, runtime worker, audio worklet, font source and catalog documentation inputs remain included in their production consumers.
 - Production prerequisite graphs build packages and generate content without executing test targets.
@@ -32,7 +32,7 @@ Review the relevant input list after changing a source collection or fixture con
 | Case | Affected targets and consumers | Correction |
 | --- | --- | --- |
 | `default` / `^default` hash test code, fixtures, snapshots, screenshot baselines and test configuration | Every production build and its transitive consumers | Builds use `production` / `^production`. Known test paths are excluded; all other source, docs, configuration and assets remain included. Tests retain their own `default`; tests and type checks consume dependency `production` inputs. |
-| Sprite palette tests and screenshot previews import example programs and modules | `sprite-generator:build`, `editor-core`, `editor-minimal`, `editor-default`, WebMCP and both websites; the sprite prerequisite graph included CLI and compiler builds through `examples` | Replace the cross-package example sources with local fixtures containing only the 12 palettes' color directives. Remove `@8f4e/examples` from the sprite manifest and lockfile. Keep palette implementation imports and all assertions/screenshots. The sprite build task graph falls from 23 tasks to 5; editor-minimal from 62 to 60. |
+| Sprite palette tests and screenshot previews import example programs and modules | `sprite-generator:build`, `editor-core`, `editor-gallery`, `editor-default`, WebMCP and both websites; the sprite prerequisite graph included CLI and compiler builds through `examples` | Replace the cross-package example sources with local fixtures containing only the 12 palettes' color directives. Remove `@8f4e/examples` from the sprite manifest and lockfile. Keep palette implementation imports and all assertions/screenshots. The sprite build task graph falls from 23 tasks to 5; editor-gallery from 62 to 60. |
 | `generate-fonts` had broad implicit inputs; WebMCP `generate-content` explicitly used `default` / `^default` | Font generation under editor builds; catalog generation under website builds | Font generation uses its own production inputs; content generation uses production inputs and dependency production inputs. Compiler/editor docs and bundled examples remain catalog inputs. |
 | Product website build runs a type check including browser tests | `8f4e-website:build` and its build prerequisites | Add `typecheck:production` and `tsconfig.production.json`; retain the existing full `typecheck` for CI/test checks. |
 | Render-projection's `src/syntax-highlighting/testUtils.ts` is only a test helper outside recognized test directories | Render-projection and all editor consumers | Move it under `__tests__`, update test imports and the declaration build's exclusion. |
@@ -43,7 +43,9 @@ A smaller task graph is not the sole success criterion. The product website stil
 
 ## Preserved production relationships
 
-- Default editor source collections consume stdlib `.8f4e` files and bundled example `.8f4em` modules. The minimal editor consumes stdlib sources. Their package/build relationships remain intact.
+- Default editor source collections consume stdlib `.8f4e` files and bundled example `.8f4em` modules. The gallery editor consumes stdlib sources. Their package/build relationships remain intact.
+- The landing composition has no standard-library source collection or include resolver. Its self-contained homepage
+  demos still reach the product website through its example-project source assets.
 - The product gallery consumes example project sources and its preview images. WebMCP consumes example modules, example projects, and compiler/editor Markdown; generator imports of the compiler, example-module helpers and source-discovery plugin are production tooling, even when declared as dev dependencies.
 - Compiler workers, audio worklets, worker runtimes and their emitted assets remain production prerequisites. The audit verified representative source inclusion and prerequisite tasks for each.
 - `@8f4e/config` ships shared TypeScript, Vite and Vitest helpers. Its `src/vitest/` code is a real package output and remains included.
@@ -66,7 +68,7 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | --- | --- | --- |
 | Compiler stages, compiler test runner and stdlib resolver | Compiler, CLI, examples, compiler-worker, editor compositions, WebMCP and both websites | Separate the compiler fixture/test harness from stage builds; keep real tokenizer/parser/compiler API tests. |
 | Editor state/core/rendering testing helpers | Core, rendering libraries, editor plugins, both editor compositions, WebMCP and websites | Give shared test harnesses their own target boundary; keep built implementation exports for integration tests. |
-| Editor plugin unit/browser harnesses and composition integration tests | Owning plugin/composition, default/minimal editors where composed, WebMCP and corresponding websites | Move real-editor browser harness dependencies out of production graph paths; prefer small local fixture data where only sample input is needed. |
+| Editor plugin unit/browser harnesses and composition integration tests | Owning plugin/composition, default/gallery editors where composed, WebMCP and corresponding websites | Move real-editor browser harness dependencies out of production graph paths; prefer small local fixture data where only sample input is needed. |
 | WebMCP real-editor browser harness | WebMCP and both websites | Isolate `editor-default`, editor-state and editor-state-testing test consumers while retaining compiler/example-module/source-plugin catalog-generation dependencies. |
 | Sprite palette implementation tests | Sprite-generator, core and editor consumers | Palette resolution is an implementation dependency, unlike the now-local example fixture data. Isolate the rendering test harness if further production dependency pruning is needed. |
 
@@ -76,7 +78,7 @@ The chosen follow-up for these implementation dependencies is to isolate test ha
 | `@8f4e/compiler` | `@8f4e/stdlib` (tests/stdlibResolver.ts); `@8f4e/test-runner` (tests/testRunner.test.ts) |
 | `@8f4e/editor-core` | `@8f4e/editor-state-testing` (src/events/keyboardEvents.test.ts) |
 | `@8f4e/editor-default` | `@8f4e/editor-state` (src/lazy-plugins.integration.test.ts); `@8f4e/web-ui` (src/lazy-plugins.integration.test.ts); `@8f4e/compiler` (src/lazy-plugins.integration.test.ts) |
-| `@8f4e/editor-minimal` | `@8f4e/compiler` (src/stdlib-resolver.test.ts) |
+| `@8f4e/editor-gallery` | `@8f4e/compiler` (src/stdlib-resolver.test.ts) |
 | `@8f4e/editor-plugin-assertion-markers` | `@8f4e/test-runner` (screenshot-tests/assertion-markers.test.ts); `@8f4e/compiler` (screenshot-tests/assertion-markers.test.ts); `@8f4e/editor-state-testing` (src/deriveAssertionMarkers.test.ts); `@8f4e/web-ui` (src/index.test.ts) |
 | `@8f4e/editor-plugin-audio-runtime` | `@8f4e/editor-state` (src/index.test.ts); `@8f4e/web-ui` (src/index.test.ts); `@8f4e/compiler` (src/index.test.ts) |
 | `@8f4e/editor-plugin-bars` | `@8f4e/sprite-generator` (screenshot-tests/bars.test.ts); `@8f4e/compiler` (src/__tests__/setup.ts) |
@@ -146,8 +148,8 @@ The other reviewed projects have no workspace-name references confined to tests 
 
 | Edited input | Observed hash changes |
 | --- | --- |
-| Local palette fixture | Sprite unit and screenshot tests only; sprite/font/core/minimal/default/catalog/website builds unchanged |
-| Example project or bundled module | Default editor, WebMCP build/catalog and product website; sprite and minimal editor builds unchanged |
+| Local palette fixture | Sprite unit and screenshot tests only; sprite/font/core/gallery/default/catalog/website builds unchanged |
+| Example project or bundled module | Default editor, WebMCP build/catalog and product website; sprite and gallery editor builds unchanged |
 | Sprite production source | Sprite build/tests/font generation and every sampled editor/catalog/website consumer |
 | Shipped compiler `.test.8f4e` fixture | Compiler tests and product website only; compiler and editor builds unchanged |
 | Stdlib source | Both editor compositions and website/catalog consumers remain invalidated; existing compiler test-only graph paths also remain, as recorded above |

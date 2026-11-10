@@ -1,9 +1,10 @@
-import { gapCalculator, getMemoryDeclarationRows, getModuleCompilationForCodeBlock } from '@8f4e/editor-state';
+import { gapCalculator, getModuleCompilationForCodeBlock } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { ConnectorWidgets } from '../types';
 import { isInputMemoryDeclaration, isOutputMemoryDeclaration } from './connectors/memoryDeclarations';
 import { getProjectMemoryExposureConnectors } from './connectors/projectMemoryExposures';
+import { getMemoryDeclarationRows } from './getMemoryDeclarationRows';
 
 /** Derive both connector lists from one ordered traversal of the block's memory declarations. */
 export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state: State): ConnectorWidgets {

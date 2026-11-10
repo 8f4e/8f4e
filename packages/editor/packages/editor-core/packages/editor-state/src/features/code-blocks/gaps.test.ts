@@ -49,34 +49,6 @@ describe('gaps', () => {
 		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
 	});
 
-	it('adds error gaps to requested vertical space on the same display row', async () => {
-		const blockLayout: BlockLayoutDraft = {
-			displayModel: {
-				lines: [
-					{ sourceLineIndex: 0, text: 'module foo' },
-					{ sourceLineIndex: 1, text: 'shape sharedState' },
-					{ sourceLineIndex: 2, text: 'moduleEnd' },
-				],
-				displayRowToSourceLineIndex: [0, 1, 2],
-				sourceLineIndexToDisplayRow: [0, 1, 2],
-				isCollapsed: false,
-			},
-			verticalSpaceAfterSourceLine: [],
-		};
-		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
-		const graphicData = createCodeBlockGraphicData({
-			code: ['module foo', 'shape sharedState', 'moduleEnd'],
-			widgets: {
-				blockHighlights: [],
-				errorMessages: [{ message: ['Error', 'detail', 'more'], x: 0, y: 0, lineNumber: 1 }],
-			},
-		});
-
-		gaps(graphicData, blockLayout);
-
-		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
-	});
-
 	it('skips gaps for source lines hidden from the display model', async () => {
 		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
@@ -93,10 +65,6 @@ describe('gaps', () => {
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
 		const graphicData = createCodeBlockGraphicData({
 			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
-			widgets: {
-				blockHighlights: [],
-				errorMessages: [{ message: ['Error'], x: 0, y: 0, lineNumber: 2 }],
-			},
 		});
 
 		gaps(graphicData, blockLayout);

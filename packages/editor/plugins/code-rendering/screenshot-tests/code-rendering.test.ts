@@ -1,31 +1,30 @@
 import initEditor from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import { codeRenderingPlugin } from '../src/index';
 
-test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', async () => {
-	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
+test('renders code, notes, tabs, disabled blocks, folds, and contributed gaps', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 960;
 	canvas.height = 480;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
-		featureFlags: { offscreenBlockArrows: false },
 		plugins: [
 			codeRenderingPlugin,
 			{
-				id: 'test-diagnostics',
-				setup: ({ store, events }) => {
-					const onInit = () => {
-						const block = store
-							.getState()
-							.codeBlockRendering.currentProject.blocks.find(block => block.name === 'syntax')!;
-						store.set('codeErrors.compilationErrors', [
-							{ codeBlockId: block.creationIndex, lineNumber: 5, message: 'Example diagnostic' },
-						]);
+				id: 'fixture-layout',
+				setup: ({ layout }) => {
+					const contribution = layout.createContribution();
+					const unsubscribe = layout.subscribe(({ codeBlock }) => {
+						if (codeBlock.name === 'syntax')
+							contribution.update(codeBlock, {
+								verticalSpaceAfterSourceLine: [{ sourceLineIndex: 5, heightInRows: 2 }],
+							});
+					});
+					return () => {
+						unsubscribe();
+						contribution.dispose();
 					};
-					events.on('init', onInit);
-					return () => events.off('init', onInit);
 				},
 			},
 		],
@@ -65,7 +64,14 @@ test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', a
 			notes: [
 				{
 					id: 3,
-					code: ['note explanation', '; @pos 4 18', '# Code rendering', 'Text and *emphasis* with 123.', 'noteEnd'],
+					code: [
+						'note explanation',
+						'; @pos 4 18',
+						'# Code rendering',
+						'Text and *emphasis* with 123.',
+						'éΩ ┌─┐ │░▒▓│ └─┘',
+						'noteEnd',
+					],
 				},
 			],
 		},
@@ -77,6 +83,5 @@ test('renders code, notes, tabs, disabled blocks, folds, and diagnostic gaps', a
 	} finally {
 		editor.dispose();
 		canvas.remove();
-		now.mockRestore();
 	}
 });

@@ -37,11 +37,11 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockG
 
 async function setup() {
 	const project = parseProjectSource(source);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
+	const compiled = await compileProject(project);
 	const state = createMockState();
 	state.compiler.result.memoryPlan = compiled.memoryPlan;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 	(instance.exports.initDefaults as CallableFunction)();
 	const int32 = new Int32Array(memory.buffer);

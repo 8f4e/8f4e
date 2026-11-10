@@ -8,8 +8,7 @@ export function createDrawContextMock(): DrawContext {
 		endGroup: vi.fn(),
 		drawSprite: vi.fn(),
 		drawFill: vi.fn(),
-		drawCharacter: vi.fn(),
-		drawText: vi.fn(),
+		drawGlyphs: vi.fn(),
 		drawResolvedText: vi.fn(),
 	} as unknown as DrawContext;
 }

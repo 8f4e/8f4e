@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { composite, contrast, parseColor, rgb, toOklab } from './color';
+import { composite, contrast, normalizeColor, parseColor, rgb, toOklab } from './color';
 import {
 	BASE_COLORS,
 	defaultPalette,
@@ -12,6 +12,16 @@ import {
 } from './index';
 
 describe('editor palette', () => {
+	it('normalizes RGB channels numerically, clamps them, and preserves alpha without mutating input', () => {
+		const source = [-0.1, 0.5, 1.2, 0.37] as const;
+		const original = [...source];
+		const normalized = normalizeColor(source);
+
+		expect(normalized).toEqual([0, 128 / 255, 1, 0.37]);
+		expect(normalized).not.toBe(source);
+		expect(source).toEqual(original);
+		expect(normalizeColor([0.1, 0, 0, 1])[0]).toBe(26 / 255);
+	});
 	it('uses the selected Catppuccin Mocha palette with subtly separated black surfaces by default', () => {
 		const palette = resolvePalette();
 		expect(Object.fromEntries(BASE_COLORS.map(base => [base, palette.colors[`${base}Base`]]))).toEqual({

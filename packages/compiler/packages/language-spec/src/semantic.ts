@@ -1,4 +1,3 @@
-import type { WASMInstructionCode, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type {
 	ArgumentCompileTimeExpression,
 	ArgumentIdentifier,
@@ -6,7 +5,7 @@ import type {
 	ArgumentStringLiteral,
 	MemoryPointerIdentifier,
 } from './arguments';
-import type { AssertionCodegenSites } from './assertions';
+import type { AssertionCodegenSite } from './assertions';
 import type {
 	ArrayMemoryDeclarationLine,
 	AssertEqualLine,
@@ -22,9 +21,8 @@ import type {
 	PushLine,
 	PushShapeLine,
 } from './ast';
-import type { FunctionMetadata, FunctionRegistry, FunctionTypeRegistry, SourceMetadata } from './compiled';
+import type { FunctionMetadata, FunctionRegistry, SourceMetadata } from './compiled';
 import type { CompilerDiagnosticContext } from './diagnostics';
-import type { WasmFunctionLayout } from './functionLayout';
 import type { FunctionValueType } from './functionTypes';
 import type { CodegenInstructionName, CompilerSourceBlockType, CompilerSourceCompilationMode } from './instructions';
 import type {
@@ -37,6 +35,7 @@ import type {
 } from './memory';
 import type { ProjectMemoryAliasLookup } from './project';
 import type { ReferenceSlotMap, ResolvedReferenceSlot } from './referenceSlots';
+import type { WasmIRInstruction } from './wasmIR';
 
 /** Proven byte range associated with an address expression or memory boundary. */
 export interface MemoryAddressRange {
@@ -44,7 +43,7 @@ export interface MemoryAddressRange {
 	byteAddress: number;
 	safeByteLength: number;
 	moduleId?: string;
-	memoryId?: string;
+	memoryId?: number;
 }
 
 /** Compiler metadata carried alongside values known to represent memory addresses. */
@@ -98,17 +97,11 @@ export interface PointerLocalMetadata {
 export type LocalValueMetadata = ScalarLocalMetadata | PointerLocalMetadata;
 export type LocalMap = Record<string, LocalValueMetadata>;
 
-export type ScalarLocalBinding = ScalarLocalMetadata & { index: number };
-export type PointerLocalBinding = PointerLocalMetadata & { index: number };
-export type LocalBinding = ScalarLocalBinding | PointerLocalBinding;
-export type LocalStorageMap = Record<string, LocalBinding>;
-
 /** One resolved source declaration; its identity remains stable across later stages. */
 export interface SourceLocalBinding {
 	id: number;
 	name: string;
 	type: FunctionValueType;
-	parameterIndex?: number;
 }
 
 /** Mutable namespace state available while compiling modules, constants, and functions. */
@@ -129,7 +122,6 @@ export interface CompilationContext extends BlockState {
 	memoryAliases: ProjectMemoryAliasLookup;
 	currentPlannedModule?: PlannedMemoryModule;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
-	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
 	mode: CompilationMode;
 	codeBlockId?: string;
 	codeBlockType?: CompilerSourceBlockType;
@@ -138,7 +130,6 @@ export interface CompilationContext extends BlockState {
 	currentFunctionId?: string;
 	currentFunctionName?: string;
 	currentFunctionMetadata?: FunctionMetadata;
-	functionTypeRegistry?: FunctionTypeRegistry;
 	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
 
@@ -154,7 +145,6 @@ export interface FunctionCompilationContext extends CompilationContext {
 	currentFunctionId: string;
 	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
-	functionTypeRegistry: FunctionTypeRegistry;
 }
 
 export type StackValueType = 'int' | 'float' | 'float64';
@@ -254,15 +244,11 @@ export interface MemoryReferenceResolutionReport {
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 }
 
-/** Bytecode emission state, independent of semantic analysis and memory planning. */
+/** Mutable state for lowering one resolved body to Wasm IR. */
 export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
-	/** Planned native assertion calls keyed by physical source line; absent when disabled. */
-	assertionCalls?: AssertionCodegenSites;
-	byteCode: Array<WASMInstructionCode | WasmTypeValue | number>;
-	locals: LocalStorageMap;
-	nextLocalIndex: number;
-	functionLayout: WasmFunctionLayout;
-	functionTypeRegistry?: FunctionTypeRegistry;
+	instructions: WasmIRInstruction[];
+	locals: LocalValueMetadata[];
+	enableMemoryGuards: boolean;
 }
 
 export type ResolvedMapValueArgument = ResolvedArgumentLiteral | ArgumentStringLiteral;
@@ -462,7 +448,7 @@ export interface LoopBlockStackFrame extends BlockStackFrameBase {
 
 /** Backend loop frame with its generated WebAssembly counter slot. */
 export interface CodegenLoopBlockStackFrame extends LoopBlockStackFrame {
-	loopCounterLocal: LocalBinding;
+	loopCounterIndex: number;
 }
 
 /** Block stack frame for an open map block and its accumulated rows. */
@@ -492,4 +478,4 @@ export interface BlockState<TLoop extends LoopBlockStackFrame = LoopBlockStackFr
 export type InstructionCompiler<
 	TLine extends CompilerASTLine = CompilerASTLine,
 	TContext extends CodegenContext = CodegenContext,
-> = (line: TLine, context: TContext, facts: StackAnalysisLineFacts) => TContext;
+> = (line: TLine, context: TContext, facts: StackAnalysisLineFacts, assertionSite?: AssertionCodegenSite) => TContext;

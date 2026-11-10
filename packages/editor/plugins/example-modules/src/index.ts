@@ -1,4 +1,4 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { getBlockType, getCodeBlockGridWidth, getCodeBlockNameFromSource } from '@8f4e/editor-state';
 import { createModuleCatalog } from './catalog';
 import { ADD_EXAMPLE_MODULE, buildCategoryTree, EXAMPLE_MODULES_MENU, getCategoryMenuItems } from './categoryMenu';
@@ -12,11 +12,26 @@ export function createExampleModulesPlugin({
 }): EditorPlugin {
 	return {
 		id: 'example-modules',
-		setup: ({ store, events, menus }) => {
+		setup: ({ store, events, menus, loading }) => {
 			const state = store.getState();
 			const catalog = createModuleCatalog(sources);
 			const categories = buildCategoryTree(catalog.modules);
 			let disposed = false;
+			const pendingLoads = new Set<LoadingIndicatorHandle>();
+			const loadSource = async (slug: string) => {
+				const indicator = loading.add({ id: `module:${slug}`, message: `Loading module ${slug}...` });
+				pendingLoads.add(indicator);
+				try {
+					const source = await catalog.getModule(slug);
+					indicator.done();
+					return source;
+				} catch (error) {
+					indicator.fail();
+					throw error;
+				} finally {
+					pendingLoads.delete(indicator);
+				}
+			};
 			const unregisterMenu = menus.registerMenu(EXAMPLE_MODULES_MENU, (_state, { path }: { path: string[] }) =>
 				getCategoryMenuItems(categories, path)
 			);
@@ -32,8 +47,8 @@ export function createExampleModulesPlugin({
 			);
 
 			const addModule = async ({ slug, x, y }: { slug: string; x: number; y: number }) => {
-				if (state.editorMode !== 'edit') return;
-				const source = await catalog.getModule(slug);
+				if (disposed || state.editorMode !== 'edit') return;
+				const source = await loadSource(slug);
 				if (disposed || state.editorMode !== 'edit') return;
 				const code = extractPublicBlockFromModuleSource(source);
 				events.dispatch('insertCodeBlock', { code, x, y });
@@ -41,9 +56,10 @@ export function createExampleModulesPlugin({
 				const vGrid = state.viewport.vGrid;
 				let gridX = Math.round((state.viewport.x + x) / vGrid) + getCodeBlockGridWidth(code) + gap;
 				for (const dependency of catalog.getDependenciesFromSource(slug, source)) {
+					if (disposed || state.editorMode !== 'edit') return;
 					let dependencySource: string;
 					try {
-						dependencySource = await catalog.getModule(dependency);
+						dependencySource = await loadSource(dependency);
 					} catch (error) {
 						console.warn(`Failed to load dependency: ${dependency}`, error);
 						continue;
@@ -69,6 +85,8 @@ export function createExampleModulesPlugin({
 			events.on(ADD_EXAMPLE_MODULE, addModule);
 			return () => {
 				disposed = true;
+				for (const indicator of pendingLoads) indicator.cancel();
+				pendingLoads.clear();
 				events.off(ADD_EXAMPLE_MODULE, addModule);
 				unregisterItem();
 				unregisterMenu();

@@ -18,7 +18,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 				if (event.defaultPrevented || !direction) return;
 				if (event.metaKey || event.ctrlKey) {
 					event.preventDefault();
-					events.dispatch<NavigateCodeBlockEvent>('navigateCodeBlock', { direction });
+					events.dispatch('navigateCodeBlock', { direction } satisfies NavigateCodeBlockEvent);
 					return;
 				}
 				const state = store.getState();

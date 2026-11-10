@@ -13,14 +13,6 @@ function addGap(graphicData: CodeBlockGraphicData, displayRow: number, size: num
 export default function gaps(graphicData: CodeBlockGraphicData, blockLayout: BlockLayoutDraft) {
 	graphicData.gaps.clear();
 
-	// Error messages share the same source-line to display-row mapping as contributed space.
-	graphicData.widgets.errorMessages.forEach(error => {
-		const displayRow = getDisplayRow(error.lineNumber, blockLayout);
-		if (displayRow !== undefined) {
-			addGap(graphicData, displayRow, error.message.length);
-		}
-	});
-
 	blockLayout.verticalSpaceAfterSourceLine.forEach(space => {
 		const displayRow = getDisplayRow(space.sourceLineIndex, blockLayout);
 		if (displayRow !== undefined) {

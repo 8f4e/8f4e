@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`branch instruction compiler > emits br bytecode 1`] = `
+{
+  "instructions": [
+    {
+      "depth": 0,
+      "kind": "branch",
+      "opcode": 12,
+    },
+  ],
+}
+`;

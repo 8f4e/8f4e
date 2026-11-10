@@ -23,7 +23,7 @@ function parseSourceLine(line: string, lineNumber: number): CompilerASTLine | un
 	}
 }
 
-function getMemoryDeclarationId(line: string, lineNumber: number, isArray = false): string | undefined {
+function getMemoryDeclarationName(line: string, lineNumber: number, isArray = false): string | undefined {
 	const parsedLine = parseSourceLine(line, lineNumber);
 	if (
 		!parsedLine ||
@@ -45,13 +45,13 @@ function getMemoryDeclarationId(line: string, lineNumber: number, isArray = fals
 
 function replaceMemoryDeclarationDefault(
 	line: string,
-	memoryId: string,
+	memoryName: string,
 	value: string,
 	isArray = false
 ): string | undefined {
 	const [body = '', comment] = line.split(/;(.*)/s);
 	const pattern = new RegExp(
-		`^(?<prefix>\\s*\\S+\\s+${escapeRegExp(memoryId)}${isArray ? '\\s+\\S+' : ''})(?<defaults>(?:\\s+\\S+)*)?(?<trailingWhitespace>\\s*)$`
+		`^(?<prefix>\\s*\\S+\\s+${escapeRegExp(memoryName)}${isArray ? '\\s+\\S+' : ''})(?<defaults>(?:\\s+\\S+)*)?(?<trailingWhitespace>\\s*)$`
 	);
 	const groups = pattern.exec(body)?.groups;
 	if (!groups?.prefix) {
@@ -63,7 +63,7 @@ function replaceMemoryDeclarationDefault(
 
 export interface MemoryDefaultValue {
 	moduleId: string;
-	memoryId: string;
+	memoryName: string;
 	value: string;
 	isArray: boolean;
 }
@@ -91,10 +91,10 @@ export function getMemoryDefaultEdits(state: State, groups: MemoryDefaultValue[]
 			if (!owner) return;
 			const code = updates.get(owner) ?? owner.code;
 			const row = code.findIndex(
-				(line, index) => getMemoryDeclarationId(line, index + 1, edit.isArray) === edit.memoryId
+				(line, index) => getMemoryDeclarationName(line, index + 1, edit.isArray) === edit.memoryName
 			);
 			if (row === -1) return;
-			const line = replaceMemoryDeclarationDefault(code[row], edit.memoryId, edit.value, edit.isArray);
+			const line = replaceMemoryDeclarationDefault(code[row], edit.memoryName, edit.value, edit.isArray);
 			return line === undefined ? undefined : { owner, row, line };
 		});
 		// Save a group only when all of its declarations can be updated, including across different owners.

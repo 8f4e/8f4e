@@ -24,7 +24,9 @@ The returned plan contains:
 
 - `moduleList`: planned modules in layout order.
 - `modules`: planned modules keyed by id.
-- `declarationSources`: effective declaration source lines for each planned module, including inherited `shape` declarations.
+- Each module's `declarations` lists every allocation in expanded order. Its zero-based index is the declaration ID.
+- Each module's `memory` looks up effective named declarations by source name. Anonymous declarations have no name.
+- Each module's `declarationSources` lists the corresponding source lines in declaration ID order, including inherited `shape` fields.
 
 ## Ownership
 

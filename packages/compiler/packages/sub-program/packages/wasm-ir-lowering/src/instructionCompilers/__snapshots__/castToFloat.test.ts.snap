@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`castToFloat instruction compiler > converts int operand to float 1`] = `
+{
+  "instructions": [
+    178,
+  ],
+}
+`;

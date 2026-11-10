@@ -1,0 +1,35 @@
+{
+	"name": "@8f4e/runtime-linux",
+	"projectType": "application",
+	"sourceRoot": "packages/runtime-linux/src",
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"dependsOn": [],
+			"inputs": ["production"],
+			"outputs": ["{projectRoot}/dist"],
+			"options": {
+				"command": "rm -rf dist && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF && cmake --build dist/build --parallel 2",
+				"cwd": "{projectRoot}"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"cache": false,
+			"dependsOn": [
+				{ "projects": ["@8f4e/cli"], "target": "build", "params": "ignore" },
+				{ "projects": ["@8f4e/runtime-command"], "target": "test", "params": "ignore" }
+			],
+			"inputs": ["default", "^production", { "projects": ["@8f4e/cli"], "input": "production" }],
+			"options": {
+				"commands": [{
+					"command": "node ../cli/bin/cli.js compile tests/instrument.8f4e --wasm-output dist/tests/instrument.wasm --memory-output dist/tests/instrument.json && node tests/prepare-commands.mjs && cmake -S . -B dist/build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && cmake --build dist/build --parallel 2 && ctest --test-dir dist/build --output-on-failure",
+					"forwardAllArgs": false
+				}],
+				"cwd": "{projectRoot}"
+			}
+		}
+	},
+	"tags": ["type:app", "scope:runtime"]
+}

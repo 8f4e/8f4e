@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`notZero instruction compiler > emits F64_NE against zero for float64 operands 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "f64.const",
+      "value": 0,
+    },
+    98,
+  ],
+}
+`;
+
+exports[`notZero instruction compiler > emits I32_NE against zero for integer operands 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+    71,
+  ],
+}
+`;
+
+exports[`notZero instruction compiler > emits float comparison segment 1`] = `
+{
+  "instructions": [
+    {
+      "kind": "f32.const",
+      "value": 0,
+    },
+    92,
+  ],
+}
+`;

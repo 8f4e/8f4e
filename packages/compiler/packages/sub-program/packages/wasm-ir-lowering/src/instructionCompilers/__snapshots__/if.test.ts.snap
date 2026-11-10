@@ -1,0 +1,125 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`if instruction compiler > emits a float if block 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "float",
+      ],
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        125,
+      ],
+    },
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits a void if block when given no arguments 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits a void if block when the matching ifEnd declares no result 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
+  ],
+}
+`;
+
+exports[`if instruction compiler > emits an int if block 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "int",
+      ],
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
+  ],
+}
+`;
+
+exports[`if instruction compiler > lowers a multi-result if with a symbolic block type 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+    {
+      "blockType": 2,
+      "expectedResultTypes": [
+        "int",
+        "float",
+      ],
+    },
+  ],
+  "instructions": [
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+        125,
+      ],
+    },
+  ],
+}
+`;

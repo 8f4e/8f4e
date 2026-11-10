@@ -1,53 +1,17 @@
 # Menu Feature
 
-## Purpose
+Core owns raw menu contents, contributions, requested world-coordinate anchors, the navigation stack, and action
+or selector dispatch. Context-menu presentation belongs to `@8f4e/editor-plugin-context-menu`, including label
+formatting, dimensions, clamping, hover state, hit testing, and drawing.
 
-Manages context menu interactions in the editor: opening menus, highlighting options, and dispatching actions. Provides the event flow for contextual actions on code blocks and editor elements.
+`contextmenu` opens the main or clicked-block menu and resets the stack. `openSubMenu { menu, payload }` pushes a
+request; `menuBack` rebuilds its parent. Generators receive current state and caller-owned payloads and may return
+items synchronously or asynchronously. Providers and generators unregister their own contributions.
 
-## Key Behaviors
+Core forwards `contextMenuPointerMove` and completed `contextMenuPointerDown` events while an open menu consumes
+pointer input before blocks or viewport dragging. The presenter sends `activateContextMenuItem { index, x, y }`,
+using viewport coordinates, or `closeContextMenu` for an outside press. Core applies item close behavior before
+running its action/selector. Disabled items and dividers do not activate.
 
-- **Menu Opening**: Displays context menus at specified screen positions
-- **Option Highlighting**: Tracks which menu option is highlighted by pointer movement
-- **Action Dispatch**: Executes menu actions when options are selected
-- **Pointer Handling**: An open menu consumes mouse presses and movement before code blocks or the viewport can react,
-  including the click that closes the menu.
-- **State Management**: Maintains menu state (open/closed, position, highlighted option)
-
-## Events & Callbacks
-
-### Events Listened To
-
-- `contextmenu`: open the main or clicked-block menu
-- `openSubMenu`: push a menu ID and payload onto the navigation stack
-- `menuBack`: return to the previous request
-- `mousemove` and `mousedown`: highlight and activate menu items
-
-### State Touched
-
-- `state.contextMenu.open`: whether the menu is displayed
-- `state.contextMenu.x` and `.y`: world coordinates for menu placement
-- `state.contextMenu.highlightedItem`: the highlighted item index
-- `state.contextMenu.items` and `.itemWidth`: decorated menu items and measured width
-- `state.contextMenu.menuStack`: the root request and its open submenus
-
-## Integration Points
-
-- **Code Blocks**: Context menus for block operations (duplicate, delete, etc.)
-- **Viewport**: Menu positioning relative to viewport coordinates
-- **UI Layer**: Menu rendering and interaction handling
-
-## Menu Contents
-
-Menu contents and available actions are built dynamically based on context. Built-in menu generators and plugin
-submenus use the same `registerMenu(id, generator)` registry. A generator receives current state and its caller's
-payload and may return items synchronously or asynchronously. The `openSubMenu` event carries `{ menu, payload }`;
-core stores that request for Back navigation and renders the returned items. Plugins unregister their own menus.
-The example-modules plugin owns module categories and loading. Core has no catalog callbacks or category-tree logic.
-
-See `menus/` subdirectory for menu construction logic.
-
-## Notes & Limitations
-
-- Menu state is ephemeral (not persisted)
-- Menu contents depend on context (selected block, viewport state, etc.)
-- Position coordinates are in world/pixel space and translated by the viewport when drawn or hit-tested
+`state.contextMenu` contains `open`, requested world coordinates `x`/`y`, raw `items`, and `menuStack`. It contains
+no decorated labels or presentation geometry. Menu state is ephemeral and is not persisted.

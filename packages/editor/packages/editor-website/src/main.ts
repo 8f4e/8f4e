@@ -20,8 +20,14 @@ async function startEditor(canvas: HTMLCanvasElement) {
 		initialProjectUrl,
 		storage: window.localStorage,
 		storageNamespace: 'editor',
+		pwaUpdates: import.meta.env.PROD ? navigator.serviceWorker : undefined,
 	});
 	Object.assign(window, { state: editor.state });
+	if (import.meta.env.PROD) {
+		void import('./pwa')
+			.then(({ registerEditorPwa }) => registerEditorPwa())
+			.catch(error => console.error('Failed to load offline support:', error));
+	}
 	let bridge: EditorWebMcpBridge | undefined;
 	let disposed = false;
 

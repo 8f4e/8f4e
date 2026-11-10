@@ -1,4 +1,9 @@
-import type { CodeBlockGraphicData, EditorPlugin, ParsedDirectiveRecord } from '@8f4e/editor-core';
+import type {
+	CodeBlockGraphicData,
+	EditorPlugin,
+	LoadingIndicatorHandle,
+	ParsedDirectiveRecord,
+} from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
 export { createDeferredPluginLoaderPlugin } from './deferred';
@@ -23,26 +28,33 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 	return {
 		id: 'lazy-loader',
 		setup: context => {
-			const { store } = context;
+			const { store, loading } = context;
 			const installed = new Map<string, () => void>();
-			const pending = new Set<string>();
+			const pending = new Map<string, LoadingIndicatorHandle>();
 			let disposed = false;
 			let scanQueued = false;
 
 			const activate = async (entry: LazyEditorPlugin) => {
-				pending.add(entry.id);
+				const indicator = loading.add({ id: `plugin:${entry.id}`, message: `Loading ${entry.id}...` });
+				pending.set(entry.id, indicator);
 				try {
 					let plugin: EditorPlugin;
 					try {
 						plugin = await entry.load();
 					} catch (error) {
+						indicator.fail();
 						if (!disposed) logError(store.getState(), `Failed to load plugin ${entry.id}: ${String(error)}`);
 						return;
 					}
 					if (disposed) return;
 					installed.set(entry.id, plugin.setup(context));
+					indicator.done();
+				} catch (error) {
+					indicator.fail();
+					throw error;
 				} finally {
 					pending.delete(entry.id);
+					indicator.cancel();
 				}
 			};
 			const scan = () => {
@@ -74,6 +86,8 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				disposed = true;
 				store.unsubscribe('projectChange', scheduleScan);
 				store.unsubscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
+				for (const indicator of pending.values()) indicator.cancel();
+				pending.clear();
 				const errors: unknown[] = [];
 				for (const cleanup of [...installed.values()].reverse()) {
 					try {

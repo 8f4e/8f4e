@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-code-block-copy-paste",
-  "version": "0.0.1",
+  "version": "0.0.19",
   "private": true,
   "description": "Code-block copy and paste actions for the 8f4e editor",
   "type": "module",
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@types/node": "24.13.2"
   }
 }

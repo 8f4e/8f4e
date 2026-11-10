@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sub-program",
-  "version": "0.2.29",
+  "version": "0.2.43",
   "private": true,
   "description": "Compilation pipeline for one closed 8f4e sub-program",
   "type": "module",
@@ -24,6 +24,7 @@
   "dependencies": {
     "@8f4e/compiler-wasm-utils": "*",
     "@8f4e/constant-resolver": "*",
+    "@8f4e/function-inliner": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/memory-default-resolver": "*",
     "@8f4e/memory-planner": "*",
@@ -31,7 +32,10 @@
     "@8f4e/program-composer": "*",
     "@8f4e/semantic-reference-resolver": "*",
     "@8f4e/stack-analyzer": "*",
-    "@8f4e/wasm-codegen": "*"
+    "@8f4e/wasm-codegen": "*",
+    "@8f4e/wasm-ir-lowering": "*",
+    "@8f4e/wasm-ir-pruner": "*",
+    "@8f4e/wasm-ir-simplifier": "*"
   },
   "devDependencies": {
     "@types/node": "24.13.2"

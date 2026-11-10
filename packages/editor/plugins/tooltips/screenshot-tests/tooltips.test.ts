@@ -44,7 +44,7 @@ drop
 moduleEnd
 entryEnd`
 	);
-	const compiled = await compileProject(project, { disableSharedMemory: true, includeStackAnalysis: true });
+	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
@@ -57,6 +57,7 @@ entryEnd`
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers,
 	});
 	const state = store.getState();
@@ -85,9 +86,9 @@ entryEnd`
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
+		loading: store.loading,
 		drawers,
 	});
-	renderer.pauseRendering();
 
 	now.mockReturnValue(1000);
 	try {

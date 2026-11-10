@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-keyboard-editing",
-  "version": "0.0.3",
+  "version": "0.0.21",
   "private": true,
   "description": "Keyboard editing for the 8f4e editor",
   "type": "module",
@@ -19,12 +19,12 @@
     "@8f4e/editor-core": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/editor-palette": "*",
-    "@8f4e/editor-state-types": "*"
+    "@8f4e/editor-state-types": "*",
+    "@8f4e/web-ui": "*"
   },
   "devDependencies": {
     "@8f4e/config": "*",
-    "@8f4e/web-ui": "*",
-    "vitest": "4.1.7",
+    "vitest": "4.1.12",
     "@types/node": "24.13.2",
     "@8f4e/editor-state-testing": "*"
   }

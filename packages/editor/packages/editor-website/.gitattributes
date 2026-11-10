@@ -1,0 +1,2 @@
+# Installation icons are tiny shipped assets; deployments must not require Git LFS to resolve them.
+public/icons/*.png -filter -diff -merge -text

@@ -2,9 +2,16 @@ import { FONT_NAMES } from '@8f4e/sprite-generator';
 import { describe, expect, it } from 'vitest';
 import { BACKGROUND_DOTS } from './dot-settings';
 
-// Pixel bounds captured from the former DOT bitmaps, including their off-center placement.
+// Explicit font-specific dot bounds, including deliberate off-center placement.
 const backgrounds = [
-	['6x10', 6, 10, 1, 4, 2],
+	['x11miscfixed6x10', 6, 10, 1, 4, 2],
+	['startrek25th8x9', 8, 9, 3, 3, 2],
+	['dilithiumpixels7x10', 7, 10, 2, 4, 2],
+	['departuremono7x14', 7, 14, 2, 6, 2],
+	['pixelcode6x12', 6, 12, 2, 5, 2],
+	['eaglespcgaalt38x8', 8, 8, 3, 3, 2],
+	['sergamon8x16', 8, 16, 3, 7, 2],
+	['scientifica5x11', 5, 11, 1, 4, 2],
 	['olivettithin8x16', 8, 16, 3, 7, 2],
 	['spleen5x8', 5, 8, 1, 4, 2],
 	['spleen6x12', 6, 12, 1, 5, 2],

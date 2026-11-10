@@ -1,16 +1,23 @@
 import initState, {
+	advanceViewportAnimation,
 	createEditorEditingHandle,
 	type EditorEditingHandle,
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
 } from '@8f4e/editor-state';
-import type { EditorConfigSchemaContributionRegistry, InfoRecord, State } from '@8f4e/editor-state-types';
+import type {
+	EditorConfigSchemaContributionRegistry,
+	InfoRecord,
+	ProgramArtifacts,
+	State,
+} from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import initView, {
 	createEditorDrawerRegistry,
 	type MemoryViews,
 	type RenderStats,
 	registerWebUiConfig,
+	type WebUiOptions,
 } from '@8f4e/web-ui';
 
 import { disposeAll } from './disposeAll';
@@ -41,6 +48,7 @@ export type {
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
+	EditorLoadingRegistry,
 	EditorMenuItemContext,
 	EditorMenuItemProvider,
 	EditorMenuItemSlot,
@@ -49,27 +57,26 @@ export type {
 	FeatureFlags,
 	FeatureFlagsConfig,
 	JSONSchemaLike,
+	LoadingIndicator,
+	LoadingIndicatorHandle,
 	MenuGenerator,
 	Options,
 	ParsedDirectiveRecord,
+	ProgramArtifacts,
 	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
 export type {
-	CanvasOverlayDrawer,
-	CanvasOverlayDrawerContext,
+	CanvasDrawer,
+	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
+	OffscreenCodeBlockDrawer,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
-
-/** Accepted compiler memory used by generic editor views. */
-export interface ProgramArtifacts {
-	memoryRef: WebAssembly.Memory;
-}
 
 export interface Editor {
 	editing: EditorEditingHandle;
@@ -89,6 +96,8 @@ export interface Editor {
 export interface EditorOptions {
 	/** Initial project content; defaults to an empty project. */
 	initialProject?: ProjectObjectModel;
+	/** Font used when the project does not select one. Defaults to ibmvga8x16. */
+	defaultFont?: WebUiOptions['defaultFont'];
 	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
 	featureFlags?: Partial<State['featureFlags']>;
@@ -162,8 +171,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				getWordFromMemory: (allocationUnitAddress: number) => {
 					return memoryViews.int32[allocationUnitAddress] || 0;
 				},
-				requestAnimationFrame: callback => window.requestAnimationFrame(callback),
-				cancelAnimationFrame: id => window.cancelAnimationFrame(id),
 			},
 		});
 		cleanups.push(() => store.dispose());
@@ -178,6 +185,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				menus: store.menus,
 				directives: store.directives,
 				layout: store.layout,
+				loading: store.loading,
 				drawers,
 			})
 		);
@@ -192,6 +200,8 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		const initialProjectReady = events.dispatchAsync('init');
 
 		view = await initView(store, events, canvas, memoryViews, {
+			loading: store.loading,
+			defaultFont: options.defaultFont,
 			initialProjectReady,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
@@ -201,13 +211,47 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		});
 		cleanups.push(() => view.destroy());
 
+		let rendering = false;
+		let animationFrameRequest: number | null = null;
+		const renderFrame = (frameTime = performance.now()) => {
+			advanceViewportAnimation(state, frameTime, events);
+			view.renderFrame();
+		};
+		const pauseRendering = () => {
+			rendering = false;
+			if (animationFrameRequest !== null) {
+				cancelAnimationFrame(animationFrameRequest);
+				animationFrameRequest = null;
+			}
+		};
+		cleanups.push(pauseRendering);
+		const renderNextFrame = (frameTime: number) => {
+			animationFrameRequest = null;
+			if (!rendering) return;
+
+			try {
+				renderFrame(frameTime);
+			} catch (error) {
+				rendering = false;
+				throw error;
+			}
+
+			if (rendering) animationFrameRequest = requestAnimationFrame(renderNextFrame);
+		};
+		const resumeRendering = () => {
+			if (rendering) return;
+			view.resetRenderStats();
+			rendering = true;
+			renderNextFrame(performance.now());
+		};
+
 		let currentCanvasSize: CanvasSize = initialCanvasSize;
 		const resize = (width: number, height: number) => {
 			events.dispatch('resize', { canvasWidth: width, canvasHeight: height });
 			const resized = view.resize(width, height);
 			currentCanvasSize = { width, height };
 			if (resized) {
-				view.renderFrame();
+				renderFrame();
 			}
 		};
 		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
@@ -224,7 +268,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		if (resizeObserver) cleanups.push(() => resizeObserver.disconnect());
 
 		view.resize(initialCanvasSize.width, initialCanvasSize.height);
-		view.renderFrame();
+		resumeRendering();
 		resizeObserver?.observe(canvas);
 		// The project is installed, its font atlas is ready, and the renderer has drawn.
 		events.dispatch('ready');
@@ -233,10 +277,13 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 			editing: editing.handle,
 			navigation: editing.navigation,
 			resize,
-			renderFrame: () => view.renderFrame(),
-			pauseRendering: () => view.pauseRendering(),
-			releaseRenderingResources: () => view.releaseRenderingResources(),
-			resumeRendering: () => view.resumeRendering(),
+			renderFrame: () => renderFrame(),
+			pauseRendering,
+			releaseRenderingResources: () => {
+				pauseRendering();
+				view.releaseRenderingResources();
+			},
+			resumeRendering,
 			getMemoryViews: () => memoryViews,
 			dispose,
 			state,

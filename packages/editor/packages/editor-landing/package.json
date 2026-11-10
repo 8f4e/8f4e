@@ -1,0 +1,52 @@
+{
+  "name": "@8f4e/editor-landing",
+  "version": "0.1.12",
+  "private": true,
+  "description": "8f4e editor composition for landing-page demos",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/8f4e/8f4e.git"
+  },
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/8f4e/8f4e/issues"
+  },
+  "homepage": "https://github.com/8f4e/8f4e#readme",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-plugin-code-block-background": "*",
+    "@8f4e/editor-plugin-code-rendering": "*",
+    "@8f4e/editor-plugin-compiler": "*",
+    "@8f4e/editor-plugin-connectors": "*",
+    "@8f4e/editor-plugin-error-messages": "*",
+    "@8f4e/editor-plugin-keyboard-editing": "*",
+    "@8f4e/editor-plugin-keyboard-navigation": "*",
+    "@8f4e/editor-plugin-lazy-loader": "*",
+    "@8f4e/editor-plugin-mouse-input": "*",
+    "@8f4e/editor-plugin-plot": "*",
+    "@8f4e/editor-plugin-project-url-loader": "*",
+    "@8f4e/editor-plugin-slider": "*",
+    "@8f4e/editor-plugin-stack": "*",
+    "@8f4e/editor-plugin-tooltips": "*",
+    "@8f4e/editor-plugin-touch-input": "*",
+    "@8f4e/editor-plugin-watch": "*",
+    "@8f4e/editor-plugin-worker-runtime": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@types/node": "24.13.2",
+    "vite": "7.3.7",
+    "vitest": "4.1.12"
+  }
+}

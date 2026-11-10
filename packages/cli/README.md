@@ -8,6 +8,12 @@ CLI for compiling `.8f4e` project files into WebAssembly artifacts and runtime i
 cli compile path/to/project.8f4e --wasm-output path/to/module.wasm
 ```
 
+For a standalone host, also export the compiler memory layout:
+
+```bash
+cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --memory-output path/to/memory.json
+```
+
 ```bash
 cli run path/to/project.8f4e --cycles 16 --dump main:counter
 ```
@@ -24,9 +30,50 @@ cli format path/to/module.8f4em --comment-width 32 --write
 cli test path/to/project.8f4e 'path/to/tests/*.8f4em'
 ```
 
+### Wasm optimization
+
+Use `--no-memory-guards` with `cli compile` to omit compiler-generated bounds guards for memory accesses.
+With guards disabled, an out-of-bounds access traps in Wasm. Guards are enabled by default.
+
+Pruning removes unreachable functions and unused local slots by default. Use `--no-wasm-pruning` to disable it
+independently of inlining.
+
+Function inlining is off by default in `cli compile`. Use `--inline-functions` to inline eligible functions.
+
+- `--max-inline-expansion-operations <n>` caps the size of each replacement, including argument stores and local initialization.
+- `--max-inline-caller-growth <n>` caps the total additional operations from inlining in each caller.
+
+Both limits count lowered Wasm operations and accept non-negative integers, including zero. They apply when
+`--inline-functions` is set. The default caller budget allows 128 extra operations from duplicating bodies.
+An explicit caller-growth limit applies to all expansions. Each replacement has no size limit unless configured.
+
+```bash
+cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-functions \
+  --max-inline-expansion-operations 24 --max-inline-caller-growth 64
+```
+
+Use `--simplify-wasm-locals` to fuse an adjacent `local.set` and `local.get` on the same slot into `local.tee`.
+This opt-in pass runs after optional inlining and preserves shared memory accesses.
+
+Use `--env NAME=VALUE` to replace an existing constant's value in the root
+`constants env` block before compilation. The CLI inserts the replacement as
+written and fails if the declaration is missing. Repeat the flag to replace
+more than one constant.
+
+```bash
+cli compile instrument.8f4e --env SAMPLE_RATE=32000 --wasm-output instrument.wasm \
+  --memory-output memory.json
+```
+
 ## Output
 
 When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.wasm`) file.
+
+`--memory-output` writes JSON containing `requiredMemoryBytes` and the complete `memoryPlan` from the same
+compilation. The plan includes qualified module ids, byte addresses, types and element counts. It can be consumed
+by the [runtime command generator](../../tools/runtime-command/README.md) to print numeric launch arguments for the
+[Linux audio/MIDI runtime](../runtime-linux/README.md). Compiled programs always import shared memory. Output paths
+must differ from each other and from the source project.
 
 When `format` is used, the CLI wraps long semicolon comments to the requested `--comment-width` or the default width
 of 32. It writes to stdout by default, writes to a separate file with `--out`, or updates the input file with `--write`.

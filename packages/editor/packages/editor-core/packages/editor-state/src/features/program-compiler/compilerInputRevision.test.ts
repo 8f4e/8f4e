@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import createDefaultState from '../../pureHelpers/state/createDefaultState';
+import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
 import rendering from '../code-blocks/effect';
 import autoEnvConstants from '../code-blocks/features/auto-env-constants/effect';
-import codeBlockCreator from '../code-blocks/features/codeBlockCreator/effect';
+import codeBlockActions from '../code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from '../code-blocks/features/codeBlockNavigation/effect';
 import { directiveDefinitions } from '../code-blocks/features/directives/registry';
@@ -55,7 +56,7 @@ describe('compiler input revision', () => {
 			name: 'main',
 			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
 			blockType: 'module',
-			cursor: { row: 1, col: 6, x: 0, y: 16 },
+			cursor: { row: 1, col: 6, y: 16 },
 		});
 		state.codeBlockRendering.rootProject.blocks.push(block);
 		state.codeBlockRendering.selectedCodeBlock = block;
@@ -76,10 +77,10 @@ describe('compiler input revision', () => {
 		const sources: string[][] = [];
 		store.subscribe('compilerInputRevision', () => sources.push([...block.code]));
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
 		expect(state.compilerInputRevision).toBe(1);
 		expect(sources).toEqual([code]);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
@@ -94,10 +95,10 @@ describe('compiler input revision', () => {
 		codeBlockNavigation(store, events);
 		const target = createMockCodeBlock({ code: ['module target', 'moduleEnd'], x: 400, blockType: 'module' });
 		state.codeBlockRendering.currentProject.blocks.push(target);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mouseup');
-		dispatch('mousedown', { x: 32, y: 24 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointerup');
+		dispatch('pointerdown', { x: 32, y: 24 });
+		dispatch('pointerup');
 		expect(block.cursor.row).toBe(1);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		dispatch('navigateCodeBlock', { direction: 'right' });
@@ -105,9 +106,13 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 		expect(onInputChanged).not.toHaveBeenCalled();
 
-		applyCodeBlockSourceEdits(store, [{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
@@ -125,11 +130,10 @@ describe('compiler input revision', () => {
 		);
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
-		dispatch('mousedown', { x: 32, y: 8 });
-		dispatch('mousemove', { movementX: 16, movementY: 32 });
-		dispatch('mouseup');
+		dispatch('pointerdown', { x: 32, y: 8 });
+		dispatch('pointermove', { movementX: 16, movementY: 32 });
+		dispatch('pointerup');
 		expect(block.code).toContain('; @pos 2 2');
-		expect(state.codeBlockRendering.selectedCodeBlockForProgrammaticEdit).toBe(block);
 		expect(block.parsedDirectives).toContainEqual(expect.objectContaining({ name: 'pos', args: ['2', '2'] }));
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
@@ -139,8 +143,8 @@ describe('compiler input revision', () => {
 	});
 
 	it('announces changes after adding, disabling, enabling, and deleting a block', async () => {
-		codeBlockCreator(store, events);
-		await dispatchAsync('createCodeBlock', { x: 100, y: 100, blockType: 'module' });
+		codeBlockActions(store, events);
+		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.compilerInputRevision).toBe(1);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		dispatch('toggleCodeBlockDisabled', { codeBlock: block });
@@ -151,10 +155,10 @@ describe('compiler input revision', () => {
 		expect(block.disabled).toBe(false);
 		expect(state.compilerInputRevision).toBe(3);
 		expect(onInputChanged).toHaveBeenCalledTimes(3);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.compilerInputRevision).toBe(4);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
-		dispatch('deleteCodeBlock', { codeBlock: block });
+		deleteCodeBlocks(store, [block]);
 		expect(state.compilerInputRevision).toBe(4);
 		expect(onInputChanged).toHaveBeenCalledTimes(4);
 	});
@@ -172,7 +176,7 @@ describe('compiler input revision', () => {
 	});
 
 	it('advances for regenerated environment constants and ignores identical regeneration', () => {
-		autoEnvConstants(store);
+		autoEnvConstants(store, events);
 		const env = createMockCodeBlock({ name: 'env', blockType: 'constants', code: ['constants env', 'constantsEnd'] });
 		state.codeBlockRendering.currentProject.blocks.push(env);
 		store.set('envConstantContributions.test', ['const CONTRIBUTED_VALUE 100']);
@@ -189,9 +193,13 @@ describe('compiler input revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.compilerInputRevision).toBe(0);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
+			{
+				affectsCompilation: true,
+			}
+		);
 		expect(state.compilerInputRevision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);

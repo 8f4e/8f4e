@@ -1,4 +1,3 @@
-import type { PaletteToken } from '@8f4e/editor-palette';
 /**
  * Types for code-blocks feature - manages code block entities, rendering, and interactions.
  */
@@ -30,12 +29,6 @@ export interface MemoryIdentifier {
 }
 
 export type TypedValueKind = 'int8' | 'uint8' | 'int16' | 'uint16' | 'int32' | 'float32' | 'float64';
-
-export interface ShapeDeclaration {
-	x: number;
-	y: number;
-	text: string;
-}
 
 /**
  * A single parsed directive record found in a code block's raw lines.
@@ -76,12 +69,10 @@ export interface CodeBlockGraphicData {
 	/** Optional minimum grid width contributed before block layout. */
 	minGridWidth?: number;
 	cursor: {
-		/** The column of the cursor */
+		/** Raw source column shared by editing and selection. */
 		col: number;
-		/** The row of the cursor */
+		/** Source line shared by editing and selection. */
 		row: number;
-		/** The x position of the cursor calculated considering the grid and the line numbers. */
-		x: number;
 		/** The y position of the cursor calculated considering the grid and the gaps between lines. */
 		y: number;
 	};
@@ -95,22 +86,6 @@ export interface CodeBlockGraphicData {
 	x: number;
 	/** Pixel-space Y coordinate, computed from gridY * hGrid (where hGrid = characterHeight) */
 	y: number;
-	widgets: {
-		blockHighlights: Array<{
-			x: number;
-			y: number;
-			height: number;
-			width: number;
-			color: PaletteToken;
-		}>;
-		shapeDeclarations: ShapeDeclaration[];
-		errorMessages: Array<{
-			message: string[];
-			x: number;
-			y: number;
-			lineNumber: number;
-		}>;
-	};
 	lastUpdated: number;
 	/**
 	 * True when the block is currently rendered in a collapsed form.
@@ -173,12 +148,13 @@ export interface CodeBlockGraphicData {
 	alwaysOnTop: boolean;
 }
 
-export interface CodeBlockEntryOutline {
+/** World-space entry regions used for insertion and shared with presentation plugins. */
+export interface EntryBounds {
 	entryName: string;
-	topLeft: { x: number; y: number };
-	topRight: { x: number; y: number };
-	bottomRight: { x: number; y: number };
-	bottomLeft: { x: number; y: number };
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
@@ -199,18 +175,8 @@ export type CodeBlockRendering = {
 	rootProject: ProjectLevel;
 	/** Direct reference to the project level currently rendered by the editor. */
 	currentProject: ProjectLevel;
-	/**
-	 * Derived outline corners for execution entries containing visible module or project-group blocks.
-	 * Maintained from code block geometry so renderers can draw entry grouping without
-	 * recomputing relationships every frame.
-	 */
-	entryOutlines: CodeBlockEntryOutline[];
-	/**
-	 * Subset of codeBlocks that have a `@viewport` directive.
-	 * Maintained in sync with codeBlocks so that viewport move/resize handlers
-	 * only iterate this smaller list instead of the full block array.
-	 */
-	viewportAnchoredCodeBlocks: CodeBlockGraphicData[];
+	/** Padded bounds of entries containing modules or project groups in the current level. */
+	entryBounds: EntryBounds[];
 	/**
 	 * Monotonically increasing counter for assigning creationIndex to new code blocks.
 	 * Incremented each time a new code block is created.
@@ -219,9 +185,4 @@ export type CodeBlockRendering = {
 	nextCodeBlockCreationIndex: number;
 	draggedCodeBlock?: CodeBlockGraphicData;
 	selectedCodeBlock?: CodeBlockGraphicData;
-	/**
-	 * Target for refreshing and saving a block after a programmatic update, including editor metadata.
-	 * Compiler input changes separately advance compilerInputRevision.
-	 */
-	selectedCodeBlockForProgrammaticEdit?: CodeBlockGraphicData;
 };

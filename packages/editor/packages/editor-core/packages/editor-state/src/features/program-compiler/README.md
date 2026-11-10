@@ -9,14 +9,17 @@ Core has no compilation callback or built-in compilation effect.
 `state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
 toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
 Dragging advances it once on drop when the canonical left-to-right, top-to-bottom order of non-note blocks changes,
-including constants precedence and execution order inside nested project groups.
+including constants precedence and execution order inside nested project groups. It also advances when a drop changes
+resolved compiler configuration, including when moving a note changes which config directive wins.
 Group operations and multi-block paste advance it once after updating their inputs. The revision is monotonic across
 project loads and is not stored in project files.
 
-Selection, caret movement, block/project navigation, dragging that preserves block order, note-only movement, favorites,
-and visual grouping metadata do not advance the revision. Call `incrementCompilerInputRevision(store)` after updating
-compiler inputs and their derived state.
-`selectedCodeBlockForProgrammaticEdit` refreshes programmatic edits independently of compilation scheduling.
+Selection, caret movement, navigation, favorites, and layout changes that preserve compiler inputs leave the revision
+unchanged. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
+
+Config schema contributions can set `affectsCompilation: true` to mark their resolved root as a compiler input.
+`applyCodeBlockSourceEdits` emits `codeBlockSourcesChanged { codeBlocks }` to refresh source-derived state and directive
+diagnostics, then advances the revision once if either the source edit or a marked config root changed compiler inputs.
 
 Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
 without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the
@@ -29,12 +32,12 @@ plugin is installed.
 - `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
 - `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
-- `state.codeErrors.compilationErrors` contains diagnostics mapped to project blocks and source lines.
+- `state.codeErrors.compiler` contains diagnostics mapped to project blocks and source lines.
 
 Source-specific views use `getCompiledModuleForCodeBlock` to match the selected definition's `projectBlockId` to the
 editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that module, its memory plan, and its defaults
 together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
-`getMemoryDeclarationRows` provides the shared declaration ordering and inherited-row offsets for shape labels and connectors.
+The connectors plugin owns inherited declaration ordering, shape/paramShape labels, and connector presentation.
 
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays

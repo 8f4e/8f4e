@@ -1,8 +1,9 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import type { AssertionSite } from '@8f4e/language-spec';
 import type { TestRunResult } from '@8f4e/runtime-test-runner/types';
 import WorkerConstructor from '@8f4e/runtime-test-runner?worker';
-import { formatAssertionExpectation, formatTestFailures } from '@8f4e/test-runner';
+import { formatTestFailures, type TestAssertionResult } from '@8f4e/test-runner';
+import assertionErrors from './assertionErrors';
 
 export function createTestRuntimePlugin({
 	getCodeBuffer,
@@ -15,12 +16,17 @@ export function createTestRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'test-runtime',
-		setup: ({ store, events }) => {
+		setup: ({ store, events, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
+			let runLoading: LoadingIndicatorHandle | undefined;
+			let assertions: TestAssertionResult[] = [];
+			const publishErrors = () =>
+				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.codeBlockRendering.rootProject));
 
 			function publish(result: TestRunResult | { status: 'idle' | 'running' }) {
 				const completed = result.status === 'passed' || result.status === 'failed';
+				assertions = completed ? result.assertions : [];
 				store.set(
 					'info.testRuntime',
 					completed
@@ -33,17 +39,14 @@ export function createTestRuntimePlugin({
 				);
 				store.set(
 					'assertionResults',
-					completed
-						? result.assertions.map(assertion => ({
-								site: assertion.site,
-								passed: assertion.passed,
-								...(!assertion.passed ? { message: `Assertion failed: ${formatAssertionExpectation(assertion)}` } : {}),
-							}))
-						: []
+					assertions.map(({ site, passed }) => ({ site, passed }))
 				);
+				publishErrors();
 			}
 
 			function stopWorker() {
+				runLoading?.cancel();
+				runLoading = undefined;
 				worker?.terminate();
 				worker = undefined;
 			}
@@ -65,22 +68,31 @@ export function createTestRuntimePlugin({
 					return;
 				}
 				stopWorker();
-				const currentWorker = new WorkerConstructor();
-				worker = currentWorker;
-				publish({ status: 'running' });
+				runLoading = loading.add({ id: 'test-runtime', message: 'Running tests...' });
+				try {
+					const currentWorker = new WorkerConstructor();
+					worker = currentWorker;
+					publish({ status: 'running' });
 
-				const finish = (data: TestRunResult) => {
-					if (worker !== currentWorker) return;
+					const finish = (data: TestRunResult) => {
+						if (worker !== currentWorker) return;
+						if (data.status === 'passed') runLoading?.done();
+						else runLoading?.fail();
+						stopWorker();
+						publish(data);
+						if (data.status === 'error') console.error('[TestRuntime]', data.error);
+						else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
+						else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
+						events.dispatch('memoryValuesChanged');
+					};
+					currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
+					currentWorker.onerror = event => finish({ status: 'error', error: event.message });
+					currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
+				} catch (error) {
+					runLoading?.fail();
 					stopWorker();
-					publish(data);
-					if (data.status === 'error') console.error('[TestRuntime]', data.error);
-					else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
-					else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
-					events.dispatch('memoryValuesChanged');
-				};
-				currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
-				currentWorker.onerror = event => finish({ status: 'error', error: event.message });
-				currentWorker.postMessage({ codeBuffer: getCodeBuffer(), memory, assertionSites });
+					throw error;
+				}
 			}
 
 			store.set('editorConfigSchemaContributions.testRuntime', {
@@ -90,14 +102,19 @@ export function createTestRuntimePlugin({
 			});
 			store.subscribe('compiler.isCompiling', syncCompilation);
 			store.subscribe('editorConfig.testRuntime', syncCompilation);
+			events.on('compilationInputChanged', publishErrors);
 
 			syncCompilation();
 
 			return () => {
 				store.unsubscribe('compiler.isCompiling', syncCompilation);
 				store.unsubscribe('editorConfig.testRuntime', syncCompilation);
+				events.off('compilationInputChanged', publishErrors);
 				stopWorker();
 				publish({ status: 'idle' });
+				const errors = { ...state.codeErrors };
+				delete errors['test-runtime'];
+				store.set('codeErrors', errors);
 				const schemas = { ...state.editorConfigSchemaContributions };
 				delete schemas.testRuntime;
 				store.set('editorConfigSchemaContributions', schemas);

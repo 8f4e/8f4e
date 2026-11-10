@@ -26,9 +26,9 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						.replace('moduleEnd\nentryEnd', 'moduleEnd\nentryEnd\ngroupEnd\nentryEnd')
 				: source
 		);
-		const compiled = await compileProject(project, { disableSharedMemory: true });
+		const compiled = await compileProject(project);
 		const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
-		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages });
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
 		const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
 		(instance.exports.initDefaults as CallableFunction)();
 		const load = vi.fn(() => import('@8f4e/editor-plugin-plot').then(module => module.plotPlugin));
@@ -40,7 +40,6 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 		document.body.append(canvas);
 		let editor: Editor | undefined;
 		let context!: EditorPluginContext;
-		let restoreOutlineClock: (() => void) | undefined;
 		try {
 			editor = await initEditor(canvas, {
 				initialProject:
@@ -75,10 +74,8 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.state.editorMode = 'edit';
 			editor.pauseRendering();
 			if (trigger === 'group navigation') {
-				const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-				restoreOutlineClock = () => now.mockRestore();
 				expect(load).not.toHaveBeenCalled();
-				context.events.dispatch('mousemove', { buttons: 1, movementX: 64, movementY: 96 });
+				context.events.dispatch('pointermove', { buttons: 1, movementX: 64, movementY: 96 });
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
 				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
@@ -90,7 +87,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 			if (trigger === 'source edit') {
 				expect(load).not.toHaveBeenCalled();
-				applyCodeBlockSourceEdits(context.store, [{ codeBlock: block, code: project.execution[0].code }], {
+				applyCodeBlockSourceEdits(context, [{ codeBlock: block, code: project.execution[0].code }], {
 					affectsCompilation: true,
 				});
 			}
@@ -99,7 +96,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot(`plot-after-${trigger.replace(' ', '-')}`);
 			if (trigger === 'group navigation') {
-				context.events.dispatch('mousemove', { buttons: 1, movementX: 128, movementY: 160 });
+				context.events.dispatch('pointermove', { buttons: 1, movementX: 128, movementY: 160 });
 				editor.navigation.goToRoot();
 				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
 				editor.renderFrame();
@@ -112,7 +109,6 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 				expect(load).toHaveBeenCalledOnce();
 			}
 		} finally {
-			restoreOutlineClock?.();
 			editor?.dispose();
 			canvas.remove();
 		}

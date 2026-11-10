@@ -53,7 +53,7 @@ function setup() {
 	vi.stubGlobal('AudioContext', class {});
 	vi.stubGlobal('AudioWorkletNode', FakeWorklet);
 	vi.stubGlobal('navigator', {});
-	const context = { store, events } as EditorPluginContext;
+	const context = { store, events, loading: store.loading } as EditorPluginContext;
 	const disposeAudio = createAudioRuntimePlugin({
 		getMemory: () => memory,
 		getCodeBuffer: () => new Uint8Array([1]),
@@ -84,9 +84,13 @@ function setup() {
 	});
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
 	const edit = (from: string, to: string) =>
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: block.code.map(line => line.replace(from, to)) }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: block.code.map(line => line.replace(from, to)) }],
+			{
+				affectsCompilation: true,
+			}
+		);
 	const compile = () => {
 		store.set('compiler.isCompiling', true);
 		memory = new WebAssembly.Memory({ initial: 1 });
@@ -104,7 +108,7 @@ it('starts both runtimes after compilation and keeps their constants and info se
 		'const AUDIO_BUFFER_SIZE 128',
 	]);
 	expect(test.state.envConstantContributions.workerRuntime).toEqual(['const CONTROL_RATE 25']);
-	expect(test.state.codeErrors.editorDirectiveErrors).toEqual([]);
+	expect(test.state.codeErrors['editor-directives']).toEqual([]);
 	test.compile();
 	await vi.waitFor(() => expect(test.worklets).toHaveLength(1));
 	expect(test.workers).toHaveLength(1);

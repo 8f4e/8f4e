@@ -1,0 +1,116 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mapEnd instruction compiler > emits DROP + typed zero for zero rows 1`] = `
+{
+  "blockStack": [
+    {
+      "blockType": 0,
+      "expectedResultTypes": [],
+    },
+  ],
+  "instructions": [
+    26,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
+  ],
+}
+`;
+
+exports[`mapEnd instruction compiler > uses only input and result locals without reordering the source rows 1`] = `
+{
+  "instructions": [
+    {
+      "binding": 0,
+      "kind": "local.set",
+    },
+    {
+      "kind": "i32.const",
+      "value": -7,
+    },
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    {
+      "kind": "i32.const",
+      "value": 30,
+    },
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    {
+      "kind": "i32.const",
+      "value": 20,
+    },
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 2,
+    },
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    {
+      "kind": "i32.const",
+      "value": 10,
+    },
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+    {
+      "binding": 0,
+      "kind": "local.get",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
+    70,
+    27,
+    {
+      "binding": 1,
+      "kind": "local.set",
+    },
+    {
+      "binding": 1,
+      "kind": "local.get",
+    },
+  ],
+  "locals": [
+    {
+      "isInteger": true,
+    },
+    {
+      "isInteger": true,
+    },
+  ],
+}
+`;

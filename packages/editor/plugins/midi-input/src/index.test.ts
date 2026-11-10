@@ -51,8 +51,8 @@ afterEach(() => {
 
 async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture().access), source = SOURCE } = {}) {
 	const project = parseProjectSource(source);
-	const compiled = await compileProject(project, { disableSharedMemory: true });
-	let memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+	const compiled = await compileProject(project);
+	let memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const events = createMockEventDispatcher();
 	const store = initState(events, { callbacks: {} });
 	let newCode = new Uint8Array(compiled.codeBuffer);
@@ -66,6 +66,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
+		loading: store.loading,
 		drawers: createEditorDrawerRegistry(),
 	});
 	cleanups.push(() => {
@@ -84,7 +85,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 			);
 		},
 		replaceMemory: () => {
-			memory = new WebAssembly.Memory({ initial: 1, maximum: 1 });
+			memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 			newCode = new Uint8Array(compiled.codeBuffer);
 		},
 	};
@@ -144,7 +145,7 @@ describe('MIDI input plugin', () => {
 		expect(
 			editor.store
 				.getState()
-				.codeErrors.editorDirectiveErrors.some(error => error.message.includes('midi.inputs.keys.port'))
+				.codeErrors['editor-directives'].some(error => error.message.includes('midi.inputs.keys.port'))
 		).toBe(true);
 	});
 });
