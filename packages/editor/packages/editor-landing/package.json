@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-landing",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": true,
   "description": "8f4e editor composition for landing-page demos",
   "type": "module",
