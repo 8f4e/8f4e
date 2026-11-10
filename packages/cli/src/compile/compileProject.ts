@@ -34,6 +34,7 @@ export async function compileProject(
 	return {
 		outputProject,
 		compilerOptions,
+		envConstants: moduleResult.envConstants,
 		compiledModules: moduleResult.compiledModules,
 		memoryPlan: moduleResult.memoryPlan,
 		memoryDefaultsByModuleId: moduleResult.memoryDefaultsByModuleId,

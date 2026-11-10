@@ -49,6 +49,17 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			compilerOptions.enableWasmLocalSimplification = true;
 			continue;
 		}
+		if (arg === '--env') {
+			const [name, rawValue, extra] = (args[i + 1] ?? '').split('=');
+			const value = Number(rawValue);
+			if (!name || !rawValue?.trim() || extra !== undefined || !Number.isFinite(value)) {
+				throw new Error('--env expects NAME=NUMBER');
+			}
+			const overrides = { ...compilerOptions.envOverrides, [name]: value };
+			compilerOptions.envOverrides = overrides;
+			i += 1;
+			continue;
+		}
 		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
 			const value = args[i + 1];
 			if (!value || value.startsWith('--')) {
@@ -76,6 +87,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
+		'    [--env NAME=NUMBER] (repeatable)',
 		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions] [--simplify-wasm-locals]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
@@ -109,12 +121,14 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
 
-	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, { compilerOptions });
+	const { compiledWasm, envConstants, requiredMemoryBytes, memoryPlan } = await compileProject(project, {
+		compilerOptions,
+	});
 
 	await fs.mkdir(path.dirname(resolvedWasmOutput), { recursive: true });
 	await fs.writeFile(resolvedWasmOutput, Buffer.from(compiledWasm, 'base64'));
 	if (resolvedMemoryOutput) {
-		const memoryInfo: RuntimeMemoryInfo = { requiredMemoryBytes, memoryPlan };
+		const memoryInfo: RuntimeMemoryInfo = { requiredMemoryBytes, memoryPlan, envConstants };
 		await fs.mkdir(path.dirname(resolvedMemoryOutput), { recursive: true });
 		await fs.writeFile(resolvedMemoryOutput, JSON.stringify(memoryInfo, null, 2) + '\n');
 	}

@@ -266,6 +266,43 @@ entryEnd
 		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
 	});
 
+	it('writes effective env overrides and their layout into memory metadata', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'env.8f4e');
+		const outputWasm = path.join(tmpDir, 'env.wasm');
+		const outputMemory = path.join(tmpDir, 'env.json');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+constants env
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+constantsEnd
+entry main
+module audioout
+use env
+float[] buffer AUDIO_BUFFER_SIZE
+moduleEnd
+entryEnd
+`
+		);
+		await execCli([
+			'compile',
+			input,
+			'--env',
+			'SAMPLE_RATE=32000',
+			'--env',
+			'AUDIO_BUFFER_SIZE=64',
+			'--wasm-output',
+			outputWasm,
+			'--memory-output',
+			outputMemory,
+		]);
+		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
+		expect(info.envConstants).toEqual({ SAMPLE_RATE: 32000, AUDIO_BUFFER_SIZE: 64 });
+		expect(info.memoryPlan.modules.audioout.memory.buffer.numberOfElements).toBe(64);
+	});
+
 	it('rejects missing output paths and output collisions', async () => {
 		await expect(execCli(['compile', fixturePath, '--wasm-output', '--memory-output'])).rejects.toMatchObject({
 			stderr: expect.stringContaining('Missing path for --wasm-output'),

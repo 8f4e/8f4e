@@ -7,6 +7,7 @@ struct PatchConfig {
     std::uint32_t left;
     std::uint32_t right;
     std::uint32_t frames;
+    std::uint32_t sampleRate;
 };
 
 namespace patch_config {
@@ -36,7 +37,11 @@ inline bool parse(const char* text, std::size_t size, PatchConfig& config) {
         !readValue(cursor, end, "right=", config.right) || !readNewline(cursor, end) ||
         !readValue(cursor, end, "frames=", config.frames)) return false;
     if (cursor != end && !readNewline(cursor, end)) return false;
+    config.sampleRate = 48000;
+    if (cursor != end && !readValue(cursor, end, "sample_rate=", config.sampleRate)) return false;
+    if (cursor != end && !readNewline(cursor, end)) return false;
     return cursor == end && config.left % 4 == 0 && config.right % 4 == 0 &&
-           config.frames >= 1 && config.frames <= 256;
+           config.frames >= 1 && config.frames <= 256 &&
+           (config.sampleRate == 32000 || config.sampleRate == 48000);
 }
 } // namespace patch_config

@@ -55,15 +55,26 @@ cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-func
 Use `--simplify-wasm-locals` to fuse an adjacent `local.set` and `local.get` on the same slot into `local.tee`.
 This opt-in pass runs after optional inlining and preserves shared memory accesses.
 
+Use `--env NAME=NUMBER` to override a numeric constant declared in the root
+`constants env` block. Repeat the flag to override more than one constant.
+The override preserves the constant's type and applies before memory layout
+and code generation. The source file keeps its default values.
+
+```bash
+cli compile instrument.8f4e --env SAMPLE_RATE=32000 --wasm-output instrument.wasm \
+  --memory-output memory.json
+```
+
 ## Output
 
 When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.wasm`) file.
 
 `--memory-output` writes JSON containing `requiredMemoryBytes` and the complete `memoryPlan` from the same
-compilation. The plan includes qualified module ids, byte addresses, types and element counts. It can be consumed
-by the [runtime command generator](../../tools/runtime-command/README.md) to print numeric launch arguments for the
-[Linux audio/MIDI runtime](../runtime-linux/README.md). Compiled programs always import shared memory. Output paths
-must differ from each other and from the source project.
+compilation. When the root `constants env` block declares values, `envConstants`
+contains their effective values. The plan includes qualified module ids, byte addresses, types and element counts.
+The [runtime command generator](../../tools/runtime-command/README.md) uses it to print numeric launch arguments
+for the [Linux audio/MIDI runtime](../runtime-linux/README.md). Compiled programs always import shared memory.
+Output paths must differ from each other and from the source project.
 
 When `format` is used, the CLI wraps long semicolon comments to the requested `--comment-width` or the default width
 of 32. It writes to stdout by default, writes to a separate file with `--out`, or updates the input file with `--write`.

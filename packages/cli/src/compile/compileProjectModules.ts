@@ -18,6 +18,7 @@ interface CompileProjectModulesOptions {
 }
 
 interface CompileProjectModulesResult {
+	envConstants?: Readonly<Record<string, number>>;
 	compiledModules: CompiledModuleLookup;
 	compiledFunctions?: CompiledFunctionLookup;
 	memoryPlan: MemoryLayoutPlan;
@@ -39,7 +40,7 @@ export default async function compileProjectModules(
 	project: ProjectObjectModel,
 	options: CompileProjectModulesOptions
 ): Promise<CompileProjectModulesResult> {
-	if (!hasCompilableProgramBlocks(project)) {
+	if (!hasCompilableProgramBlocks(project) && Object.keys(options.compilerOptions.envOverrides ?? {}).length === 0) {
 		return {
 			compiledModules: {},
 			memoryPlan: { modules: {}, moduleList: [] },
@@ -57,6 +58,7 @@ export default async function compileProjectModules(
 	});
 
 	return {
+		envConstants: result.envConstants,
 		compiledModules: result.compiledModules,
 		compiledFunctions: result.compiledFunctions,
 		memoryPlan: result.memoryPlan,

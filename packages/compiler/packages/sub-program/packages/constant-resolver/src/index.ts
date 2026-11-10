@@ -1,6 +1,7 @@
 import type {
 	Argument,
 	ArgumentLiteral,
+	CompileOptions,
 	CompilerASTLine,
 	CompileTimeOperand,
 	Const,
@@ -19,6 +20,7 @@ import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
 
 type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST | ValidatedPrototypeAST;
 type ConstantNamespaceAST = ValidatedModuleAST | ValidatedConstantsAST;
+const ENV_NAMESPACE = 'env';
 export type ConstantEnvironment = Readonly<Record<string, Const>>;
 export type ConstantNamespaceMap = Readonly<Record<string, ConstantEnvironment>>;
 
@@ -54,10 +56,12 @@ export interface ConstantResolutionReport {
 export interface ResolveConstantsResult {
 	namespaces: ConstantNamespaceMap;
 	references: ConstantResolutionReport;
+	envConstants?: Readonly<Record<string, number>>;
 }
 
 export const ConstantResolverErrorCode = {
 	DUPLICATE_NAMESPACE: 'DUPLICATE_NAMESPACE',
+	INVALID_ENV_OVERRIDE: 'INVALID_ENV_OVERRIDE',
 	UNRESOLVED_PASSED_NAMESPACE: 'UNRESOLVED_PASSED_NAMESPACE',
 	UNRESOLVED_CONSTANT_VALUE: 'UNRESOLVED_CONSTANT_VALUE',
 	UNRESOLVED_NAMESPACE: 'UNRESOLVED_NAMESPACE',
@@ -85,6 +89,7 @@ export class ConstantResolverError extends Error {
 
 export interface ResolveConstantsOptions {
 	readonly namespaces?: ConstantNamespaceMap;
+	readonly envOverrides?: CompileOptions['envOverrides'];
 }
 
 function literalToConst(argument: ArgumentLiteral): Const {
@@ -167,17 +172,34 @@ function resolveConstantOperandReference(
 	return resolved ? constToLiteral(resolved) : operand;
 }
 
-function resolveConstLine(line: ConstLine, constants: Record<string, Const>): Const {
+function resolveConstLine(
+	line: ConstLine,
+	constants: Record<string, Const>,
+	overrides?: ResolveConstantsOptions['envOverrides']
+): Const {
+	const name = line.arguments[0].value;
 	const resolved = resolveConstantArgument(line.arguments[1], constants);
 	if (!resolved) {
 		throw new ConstantResolverError(
 			ConstantResolverErrorCode.UNRESOLVED_CONSTANT_VALUE,
-			`Unable to resolve constant ${line.arguments[0].value}`,
+			`Unable to resolve constant ${name}`,
 			line
 		);
 	}
 
-	constants[line.arguments[0].value] = resolved;
+	if (overrides && Object.hasOwn(overrides, name)) {
+		const value = overrides[name];
+		if (!Number.isFinite(value) || (resolved.isInteger && !Number.isSafeInteger(value))) {
+			throw new ConstantResolverError(
+				ConstantResolverErrorCode.INVALID_ENV_OVERRIDE,
+				`Override for env:${name} must be ${resolved.isInteger ? 'a safe integer' : 'a finite number'}`,
+				line
+			);
+		}
+		constants[name] = { ...resolved, value };
+		return constants[name];
+	}
+	constants[name] = resolved;
 	return resolved;
 }
 
@@ -204,7 +226,8 @@ function importConstants(
 function tryCollectConstants(
 	asts: readonly ConstantNamespaceAST[],
 	namespaces: ConstantNamespaceMap,
-	namespaceAliases: ConstantNamespaceAliases
+	namespaceAliases: ConstantNamespaceAliases,
+	overrides?: ResolveConstantsOptions['envOverrides']
 ) {
 	const constants: Record<string, Const> = {};
 
@@ -214,7 +237,7 @@ function tryCollectConstants(
 				return undefined;
 			}
 			if (line.instruction === 'const') {
-				resolveConstLine(line, constants);
+				resolveConstLine(line, constants, overrides);
 			}
 		}
 	}
@@ -279,12 +302,14 @@ function collectConstantNamespacesFromAsts(
 
 		for (let index = pending.length - 1; index >= 0; index--) {
 			const namespaceAsts = pending[index];
-			const constants = tryCollectConstants(namespaceAsts, namespaces, namespaceAliases);
+			const namespaceId = namespaceAsts[0].id;
+			const overrides = namespaceId === ENV_NAMESPACE ? options.envOverrides : undefined;
+			const constants = tryCollectConstants(namespaceAsts, namespaces, namespaceAliases, overrides);
 			if (!constants) {
 				continue;
 			}
 
-			namespaces[namespaceAsts[0].id] = constants;
+			namespaces[namespaceId] = constants;
 			pending.splice(index, 1);
 			madeProgress = true;
 		}
@@ -404,7 +429,8 @@ function collectLineFacts(
 function resolveConstantsInASTWithNamespaces(
 	ast: ConstantResolvableAST,
 	namespaces: ConstantNamespaceMap,
-	constants: Record<string, Const> = {}
+	constants: Record<string, Const> = {},
+	overrides?: ResolveConstantsOptions['envOverrides']
 ): ConstantResolutionBlockFacts {
 	const lineFacts = ast.lines.map(line => {
 		if (!importConstants(line, constants, namespaces, EMPTY_CONSTANT_NAMESPACE_ALIASES)) {
@@ -416,7 +442,7 @@ function resolveConstantsInASTWithNamespaces(
 		}
 
 		if (line.instruction === 'const') {
-			const resolvedValue = constToLiteral(resolveConstLine(line, constants));
+			const resolvedValue = constToLiteral(resolveConstLine(line, constants, overrides));
 			return collectLineFacts(line, [line.arguments[0], resolvedValue] as CompilerASTLine['arguments']);
 		}
 
@@ -440,17 +466,34 @@ export function resolveConstants<
 	input: ResolveConstantsInput<TPrototype, TModule, TConstants, TFunction>,
 	options: ResolveConstantsOptions = {}
 ): ResolveConstantsResult {
+	const envNames = new Set(
+		input.ast.constants
+			.filter(ast => ast.id === ENV_NAMESPACE)
+			.flatMap(ast => ast.lines.filter(line => line.instruction === 'const').map(line => line.arguments[0].value))
+	);
+	for (const name of Object.keys(options.envOverrides ?? {})) {
+		if (!envNames.has(name)) {
+			throw new ConstantResolverError(
+				ConstantResolverErrorCode.INVALID_ENV_OVERRIDE,
+				`Unknown root env constant ${name}`
+			);
+		}
+	}
 	const namespaces = collectConstantNamespaces(input, options);
 	const constantsByNamespace = new Map<string, Record<string, Const>>();
 	return {
 		namespaces,
+		...(envNames.size > 0
+			? { envConstants: Object.fromEntries([...envNames].map(name => [name, namespaces[ENV_NAMESPACE][name].value])) }
+			: {}),
 		references: {
 			prototypes: input.ast.prototypes.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			modules: input.ast.modules.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			constants: input.ast.constants.map(ast => {
 				const constants = constantsByNamespace.get(ast.id) ?? {};
 				constantsByNamespace.set(ast.id, constants);
-				return resolveConstantsInASTWithNamespaces(ast, namespaces, constants);
+				const overrides = ast.id === ENV_NAMESPACE ? options.envOverrides : undefined;
+				return resolveConstantsInASTWithNamespaces(ast, namespaces, constants, overrides);
 			}),
 			functions: input.ast.functions.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 		},

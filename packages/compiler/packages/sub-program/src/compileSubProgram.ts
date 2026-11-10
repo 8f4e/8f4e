@@ -187,10 +187,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const entryNames = entries.map(entry => entry.id);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
-		constantResolution = resolveConstants({
-			ast: subProgramAst,
-			projectConstantNamespaceScopes: program.projectConstantNamespaceScopes,
-		});
+		constantResolution = resolveConstants(
+			{ ast: subProgramAst, projectConstantNamespaceScopes: program.projectConstantNamespaceScopes },
+			{ envOverrides: options.envOverrides }
+		);
 	} catch (error) {
 		throw wrapConstantResolverError(error, program, subProgramAst);
 	}
@@ -306,6 +306,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	);
 	return {
 		codeBuffer,
+		...(constantResolution.envConstants ? { envConstants: constantResolution.envConstants } : {}),
 		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
 		compiledModules,
 		compiledFunctions,

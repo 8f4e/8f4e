@@ -11,7 +11,6 @@
 using namespace daisy;
 
 namespace {
-constexpr uint32_t sampleRate = 48000;
 constexpr uint32_t queueCapacity = 64;
 
 DaisyField field;
@@ -186,10 +185,11 @@ int main() {
     field.Init(true);
     DaisySeed::StartLog(false);
     startWasm(loadPatch());
-    field.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
+    using SampleRate = SaiHandle::Config::SampleRate;
+    field.SetAudioSampleRate(patch.sampleRate == 32000 ? SampleRate::SAI_32KHZ : SampleRate::SAI_48KHZ);
     field.SetAudioBlockSize(patch.frames);
     const auto tickHz = System::GetTickFreq();
-    deadlineTicks = (static_cast<uint64_t>(tickHz) * patch.frames) / sampleRate;
+    deadlineTicks = (static_cast<uint64_t>(tickHz) * patch.frames) / patch.sampleRate;
     field.midi.StartReceive();
     field.StartAudio(audio);
     field.seed.SetLed(true);

@@ -26,7 +26,11 @@ async function main() {
 	}
 	if (positionals.length !== 2) throw new Error(usage);
 	const [metadataPath, outputPath] = positionals;
-	const { memoryPlan } = JSON.parse(await readFile(metadataPath, 'utf8'));
+	const { memoryPlan, envConstants } = JSON.parse(await readFile(metadataPath, 'utf8'));
+	const sampleRate = envConstants?.SAMPLE_RATE ?? 48000;
+	if (sampleRate !== 32000 && sampleRate !== 48000) {
+		throw new Error('Daisy supports SAMPLE_RATE values of 32000 or 48000 Hz');
+	}
 	const left = values.left ?? 'audioout:buffer';
 	const right = values.right ?? left;
 	const leftBuffer = resolveAudioBuffer(memoryPlan.modules, left);
@@ -46,7 +50,8 @@ async function main() {
 		}
 	}
 
-	await writeFile(outputPath, `left=${offsets[0]}\nright=${offsets[1]}\nframes=${frames}\n`);
+	const rateLine = sampleRate === 48000 ? '' : `sample_rate=${sampleRate}\n`;
+	await writeFile(outputPath, `left=${offsets[0]}\nright=${offsets[1]}\nframes=${frames}\n${rateLine}`);
 }
 
 main().catch(error => {
