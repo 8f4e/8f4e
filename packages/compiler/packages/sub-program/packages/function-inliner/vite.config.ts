@@ -6,7 +6,7 @@ const baseConfig = createLibConfig({
 	outDir: 'dist',
 	formats: ['es'],
 	fileName: () => 'index.js',
-	external: ['@8f4e/compiler-wasm-utils', '@8f4e/language-spec'],
+	external: ['@8f4e/compiler-wasm-utils', '@8f4e/language-spec', '@8f4e/wasm-ir-pruner'],
 });
 
 export default defineConfig({

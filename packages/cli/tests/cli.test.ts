@@ -122,6 +122,32 @@ entryEnd
 		});
 	});
 
+	it('can disable Wasm pruning while leaving inlining enabled', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'pruning.8f4e');
+		const output = path.join(tmpDir, 'pruning.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function unused
+#import unused
+functionEnd
+
+entry main
+module root
+moduleEnd
+entryEnd
+`
+		);
+		const imports = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			return WebAssembly.Module.imports(new WebAssembly.Module(await fs.readFile(output))).map(({ name }) => name);
+		};
+
+		expect(await imports()).toEqual(['memory']);
+		expect(await imports('--inline-functions', '--no-wasm-pruning')).toEqual(['unused', 'memory']);
+	});
+
 	it('exports compiler memory information and executable shared-memory WASM', async () => {
 		const outputWasm = path.join(tmpDir, 'native.wasm');
 		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');

@@ -29,6 +29,7 @@ import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
 import { emitWasmProgram } from '@8f4e/wasm-codegen';
 import { lowerToWasmIR, moduleCycleFunctionId } from '@8f4e/wasm-ir-lowering';
+import { pruneWasmIR } from '@8f4e/wasm-ir-pruner';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 
@@ -270,8 +271,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		assertionCalls: assertionPlan?.calls,
 		assertionImports: assertionPlan?.imports,
 	});
+	const pruneFunctions = options.enableWasmPruning !== false;
+	const pruned = pruneFunctions ? pruneWasmIR(lowered) : lowered;
 	const wasmIR =
-		options.enableFunctionInlining === false ? lowered : inlineFunctions(lowered, options.functionInlining);
+		options.enableFunctionInlining === false
+			? pruned
+			: inlineFunctions(pruned, { ...options.functionInlining, pruneFunctions });
 	const { codeBuffer, functionIndices, typeIndices, bodies } = emitWasmProgram(wasmIR);
 	const compiledFunctions = Object.fromEntries(
 		Object.entries(semanticReferences.functions).map(([id, { ast, metadata }]) => {

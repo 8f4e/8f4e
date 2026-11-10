@@ -18,6 +18,8 @@ export interface CompileOptions {
 	enableAssertions?: boolean;
 	/** Inline eligible functions. Default is true. */
 	enableFunctionInlining?: boolean;
+	/** Remove unreachable Wasm functions and unreferenced local slots. Default is true. */
+	enableWasmPruning?: boolean;
 	/** Size limits to apply when function inlining is enabled. */
 	functionInlining?: FunctionInliningOptions;
 	/** Address in 4-byte allocation units where the first module allocation begins. Defaults to 1 (byte address 4). */

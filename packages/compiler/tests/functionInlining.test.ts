@@ -249,7 +249,7 @@ entryEnd`);
 		const assertEqualI32 = vi.fn();
 		getExportedFunction(await instantiate(result, { assertEqualI32 }), 'main')();
 		expect(assertEqualI32.mock.calls.map(([actual]) => actual)).toEqual([1, 2, 3]);
-		expect(await countCalls(result)).toBe(4); // Three live assertions and the retained skipped body.
+		expect(await countCalls(result)).toBe(3);
 	});
 
 	it('returns from an inlined callee without returning from the caller', async () => {
@@ -303,7 +303,10 @@ functionEnd`);
 		const baseline = await compileProject(project, { enableFunctionInlining: false });
 		expect(WebAssembly.validate(new Uint8Array(baseline.codeBuffer))).toBe(true);
 
-		const result = await compileProject(project, { functionInlining: { maxCallerGrowth: Infinity } });
+		const result = await compileProject(project, {
+			enableWasmPruning: false,
+			functionInlining: { maxCallerGrowth: Infinity },
+		});
 		expect(WebAssembly.validate(new Uint8Array(result.codeBuffer))).toBe(true);
 		expect(await countCalls(result)).toBe(2);
 		const run = result.compiledFunctions![createFunctionId('run', ['int'])];

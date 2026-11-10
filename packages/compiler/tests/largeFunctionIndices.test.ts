@@ -11,7 +11,9 @@ describe('large WebAssembly function indices', () => {
 				'functionEnd int',
 			].join('\n')
 		);
-		const result = await compileProject(parseProjectSource(`8f4e/v1\n${functions.join('\n\n')}`));
+		const result = await compileProject(parseProjectSource(`8f4e/v1\n${functions.join('\n\n')}`), {
+			enableWasmPruning: false,
+		});
 		const selected = Object.values(result.compiledFunctions).find(func => func.exportName === 'selected')!;
 		expect(selected.wasmIndex).toBe(functionIndex);
 
@@ -26,7 +28,7 @@ describe('large WebAssembly function indices', () => {
 			return [`function f${index}`, ...parameters, `push ${index}`, 'functionEnd int'].join('\n');
 		});
 		const source = `8f4e/v1\n${functions.join('\n\n')}\n\nfunction selected\n#export\npush 1234\nfunctionEnd int`;
-		const result = await compileProject(parseProjectSource(source));
+		const result = await compileProject(parseProjectSource(source), { enableWasmPruning: false });
 		expect(Math.max(...Object.values(result.compiledFunctions).map(func => func.typeIndex!))).toBeGreaterThan(255);
 
 		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });

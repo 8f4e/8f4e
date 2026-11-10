@@ -8,7 +8,7 @@ import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
 import {
 	compilerEditorConfigSchemaContribution,
-	getFunctionInliningOptions,
+	getCompilerOptimizationOptions,
 	getRecompileDebounceDelay,
 	recompileDebounceSchemaContribution,
 } from './editor-config';
@@ -78,7 +78,7 @@ export default function installCompilation(
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: hasTestEntry(project),
-				...getFunctionInliningOptions(state.editorConfig),
+				...getCompilerOptimizationOptions(state.editorConfig),
 			};
 			const result = await compileCode(project, compilerOptions, isCurrent);
 			if (!isCurrent()) {

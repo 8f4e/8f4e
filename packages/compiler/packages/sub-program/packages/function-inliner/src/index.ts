@@ -8,6 +8,7 @@ import {
 	WASM_TYPE_F64,
 } from '@8f4e/compiler-wasm-utils';
 import type { FunctionInliningOptions, WasmIR, WasmIRFunction, WasmIRInstruction } from '@8f4e/language-spec';
+import { pruneUnreachableFunctions } from '@8f4e/wasm-ir-pruner';
 import { findRecursiveNodes } from './callGraph';
 
 const MAX_WASM_LOCAL_SLOTS = 50_000;
@@ -95,29 +96,20 @@ function isScalarLeaf(func: WasmIRFunction): boolean {
 	});
 }
 
-/** Drop private bodies whose uses disappeared through inlining, keeping the emitted ABI roots. */
-function removeUnusedExpansions(
-	functions: Map<string, WasmIRFunction>,
-	exports: ReadonlySet<string>,
-	inlined: ReadonlySet<string>
-) {
-	const live = new Set(exports);
-	for (const id of functions.keys()) if (!inlined.has(id)) live.add(id);
-	for (const id of live) for (const target of getCalls(functions.get(id)!)) live.add(target);
-	for (const id of inlined) if (!live.has(id)) functions.delete(id);
-}
-
 /** Inlines direct calls in the complete module before assigning numeric indices. */
 export function inlineFunctions(
 	ir: WasmIR,
-	{ maxExpansionOperations = Infinity, maxCallerGrowth }: FunctionInliningOptions = {}
+	{
+		maxExpansionOperations = Infinity,
+		maxCallerGrowth,
+		pruneFunctions = true,
+	}: FunctionInliningOptions & { pruneFunctions?: boolean } = {}
 ): WasmIR {
 	const callerGrowthLimit = maxCallerGrowth ?? DEFAULT_DUPLICATED_BODY_GROWTH_LIMIT;
 	const functions = new Map(ir.functions);
 	const exports = new Set(ir.exports.values());
 	const recursive = findRecursiveNodes(new Map([...functions].map(([id, func]) => [id, getCalls(func)])));
 	const growth = new Map<string, number>();
-	const inlined = new Set<string>();
 	let changed = false;
 	while (true) {
 		const counts = new Map<string, number>();
@@ -169,7 +161,6 @@ export function inlineFunctions(
 					);
 				}
 				usedGrowth += extra;
-				inlined.add(target!);
 			}
 			if (rewritten) {
 				functions.set(id, { signature: func.signature, body: { instructions: rewritten, locals: expandedLocals! } });
@@ -179,7 +170,7 @@ export function inlineFunctions(
 		}
 		if (!changedThisRound) break;
 		changed = true;
-		removeUnusedExpansions(functions, exports, inlined);
+		if (pruneFunctions) pruneUnreachableFunctions(functions, exports);
 	}
 	return changed ? { ...ir, functions } : ir;
 }

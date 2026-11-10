@@ -52,10 +52,14 @@ function has a signature, locals, and instructions. Lowering represents schedule
 and the memory initializer as ordinary functions. Calls and exports refer to symbolic function IDs. The module also
 carries the shared memory import and passive data segments, which `memory.init` references by ID.
 
+`@8f4e/wasm-ir-pruner` starts from the exported functions, keeps their transitive callees and compacts unreferenced
+local slots in the retained bodies. Parameters keep their original slots. Pruning runs by default and can be disabled
+with `enableWasmPruning: false`.
+
 `@8f4e/function-inliner` analyzes the lowered call graph. It folds private functions with one call site and scalar leaves,
-keeps recursive calls, and removes inlined bodies whose references disappear. It remaps locals, restores zero values
-where callee locals may be read before assignment, and redirects returns through a typed exit block. The 50,000-slot
-limit includes parameters, locals, and lowering temporaries.
+keeps recursive calls, and reapplies function reachability after each successful round when pruning is enabled.
+It remaps locals, restores zero values where callee locals may be read before assignment, and redirects returns
+through a typed exit block. The 50,000-slot limit includes parameters, locals, and lowering temporaries.
 
 `functionInlining.maxExpansionOperations` limits each expansion in lowered Wasm operations, including argument stores
 and local initialization. By default, each caller can grow by up to 128 operations from inlining bodies that are

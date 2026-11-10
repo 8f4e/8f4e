@@ -60,7 +60,10 @@ The plugin replaces its raw errors through `codeErrors.compiler` and removes tha
 Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
 Inline message layout and drawing belong to `editor-plugin-error-messages`.
 
-## Function inlining
+## Wasm optimization
+
+Pruning removes unreachable functions and unused local slots by default. Use
+`; @config compiler.wasmPruning.enabled false` to disable it independently of inlining.
 
 The editor inlines eligible functions by default. Use `; @config compiler.functionInlining.enabled false` to disable
 inlining for the project, or set it to `true` to enable it explicitly. Changes to these settings trigger compilation.
@@ -72,7 +75,9 @@ inlining for the project, or set it to `true` to enable it explicitly. Changes t
 
 Both limits accept non-negative integers, including zero. `maxExpansionOperations` caps each replacement, including
 argument stores and local initialization. `maxCallerGrowth` caps the total additional operations from inlining in
-each caller. Omit a limit to leave that budget uncapped.
+each caller. Both limits count lowered Wasm operations. The default caller budget allows 128 extra operations
+from duplicating bodies. An explicit caller-growth limit applies to all expansions. Each replacement has no size
+limit unless configured.
 
 ## Lifecycle
 
