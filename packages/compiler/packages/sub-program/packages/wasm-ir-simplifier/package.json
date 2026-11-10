@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/wasm-ir-simplifier",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Local instruction simplification for lowered Wasm IR",
   "type": "module",
