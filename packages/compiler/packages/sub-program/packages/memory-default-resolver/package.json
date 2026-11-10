@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/memory-default-resolver",
-  "version": "3.1.19",
+  "version": "3.1.20",
   "private": true,
   "description": "Default value and pointer metadata resolver for 8f4e memory declarations",
   "type": "module",
