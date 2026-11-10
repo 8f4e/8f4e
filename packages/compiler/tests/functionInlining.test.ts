@@ -195,6 +195,31 @@ functionEnd int`);
 		}
 	});
 
+	it('bounds growth when each inlining round exposes more multi-use callees', async () => {
+		const depth = 15;
+		const functions = ['function fold0\npush 1\nfunctionEnd int'];
+		for (let index = 1; index <= depth; index++) {
+			functions.push(`function fold${index}
+call fold${index - 1}
+call fold${index - 1}
+add
+functionEnd int`);
+		}
+		const project = parseProjectSource(`8f4e/v1
+${functions.join('\n\n')}
+
+function run
+#export
+call fold${depth}
+functionEnd int`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		const optimized = await compileProject(project);
+
+		expect(optimized.codeBuffer.length).toBeLessThan(baseline.codeBuffer.length * 4);
+		expect(await countCalls(optimized)).toBeLessThan(await countCalls(baseline));
+		expect(getExportedFunction(await instantiate(optimized), 'run')()).toBe(2 ** depth);
+	});
+
 	it('folds nested dispatchers in execution order and skips disabled cycles', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
@@ -278,7 +303,7 @@ functionEnd`);
 		const baseline = await compileProject(project, { enableFunctionInlining: false });
 		expect(WebAssembly.validate(new Uint8Array(baseline.codeBuffer))).toBe(true);
 
-		const result = await compileProject(project);
+		const result = await compileProject(project, { functionInlining: { maxCallerGrowth: Infinity } });
 		expect(WebAssembly.validate(new Uint8Array(result.codeBuffer))).toBe(true);
 		expect(await countCalls(result)).toBe(2);
 		const run = result.compiledFunctions![createFunctionId('run', ['int'])];

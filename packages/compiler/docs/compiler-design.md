@@ -58,8 +58,9 @@ where callee locals may be read before assignment, and redirects returns through
 limit includes parameters, locals, and lowering temporaries.
 
 `functionInlining.maxExpansionOperations` limits each expansion in lowered Wasm operations, including argument stores
-and local initialization. `functionInlining.maxCallerGrowth` limits total growth per caller across rounds. Both limits
-are optional. Set `enableFunctionInlining: false` to retain ordinary calls throughout the module.
+and local initialization. By default, each caller can grow by up to 128 operations from inlining bodies that are
+exported or have multiple call sites. Set `functionInlining.maxCallerGrowth` to apply an explicit per-caller limit to
+all expansions across rounds. Set `enableFunctionInlining: false` to retain ordinary calls throughout the module.
 
 `@8f4e/wasm-codegen` assigns function, type, and data indices and encodes the module. Source ASTs and stack reports are
 assembled separately as compiler metadata. Functions eliminated by the optimizer retain source metadata, with no emitted

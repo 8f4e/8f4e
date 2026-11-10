@@ -11,6 +11,7 @@ import type { FunctionInliningOptions, WasmIR, WasmIRFunction, WasmIRInstruction
 import { findRecursiveNodes } from './callGraph';
 
 const MAX_WASM_LOCAL_SLOTS = 50_000;
+const DEFAULT_DUPLICATED_BODY_GROWTH_LIMIT = 128;
 
 function getCalls(func: WasmIRFunction): string[] {
 	const calls: string[] = [];
@@ -109,8 +110,9 @@ function removeUnusedExpansions(
 /** Inlines direct calls in the complete module before assigning numeric indices. */
 export function inlineFunctions(
 	ir: WasmIR,
-	{ maxExpansionOperations = Infinity, maxCallerGrowth = Infinity }: FunctionInliningOptions = {}
+	{ maxExpansionOperations = Infinity, maxCallerGrowth }: FunctionInliningOptions = {}
 ): WasmIR {
+	const callerGrowthLimit = maxCallerGrowth ?? DEFAULT_DUPLICATED_BODY_GROWTH_LIMIT;
 	const functions = new Map(ir.functions);
 	const exports = new Set(ir.exports.values());
 	const recursive = findRecursiveNodes(new Map([...functions].map(([id, func]) => [id, getCalls(func)])));
@@ -122,12 +124,15 @@ export function inlineFunctions(
 		for (const func of functions.values()) {
 			for (const target of getCalls(func)) counts.set(target, (counts.get(target) ?? 0) + 1);
 		}
-		const candidates = new Map<string, Expansion>();
+		const candidates = new Map<string, Expansion & { duplicatesBody: boolean }>();
 		for (const [id, func] of functions) {
 			if (!func.body || !counts.has(id) || recursive.has(id)) continue;
-			if (!(counts.get(id) === 1 && !exports.has(id)) && !isScalarLeaf(func)) continue;
+			const duplicatesBody = counts.get(id) !== 1 || exports.has(id);
+			if (duplicatesBody && !isScalarLeaf(func)) continue;
 			const expansion = prepareExpansion(func);
-			if (expansion.instructions.length <= maxExpansionOperations) candidates.set(id, expansion);
+			if (expansion.instructions.length <= maxExpansionOperations) {
+				candidates.set(id, { ...expansion, duplicatesBody });
+			}
 		}
 		let changedThisRound = false;
 		for (const [id, func] of functions) {
@@ -141,10 +146,13 @@ export function inlineFunctions(
 					typeof instruction !== 'number' && instruction.kind === 'call' ? instruction.targetFunctionId : undefined;
 				const candidate = target === undefined ? undefined : candidates.get(target);
 				const offset = expandedLocals?.length ?? locals.length;
-				const extra = candidate ? Math.max(0, candidate.instructions.length - 1) : 0;
+				const extra =
+					candidate && (maxCallerGrowth !== undefined || candidate.duplicatesBody)
+						? Math.max(0, candidate.instructions.length - 1)
+						: 0;
 				if (
 					!candidate ||
-					usedGrowth + extra > maxCallerGrowth ||
+					usedGrowth + extra > callerGrowthLimit ||
 					offset + candidate.locals.length > MAX_WASM_LOCAL_SLOTS
 				) {
 					rewritten?.push(instruction);

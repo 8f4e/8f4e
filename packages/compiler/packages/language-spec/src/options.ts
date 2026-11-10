@@ -5,7 +5,10 @@ import type { ProjectIncludeResolver } from './project';
 export interface FunctionInliningOptions {
 	/** Maximum replacement size, including argument stores and local initialization. Omit for no limit. */
 	maxExpansionOperations?: number;
-	/** Maximum additional operations across all expansions in one caller. Omit for no limit. */
+	/**
+	 * Maximum additional operations across all expansions in one caller.
+	 * By default, only duplicating bodies counts toward the 128-operation limit.
+	 */
 	maxCallerGrowth?: number;
 }
 
