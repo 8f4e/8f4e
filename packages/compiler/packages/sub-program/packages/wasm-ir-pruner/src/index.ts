@@ -15,8 +15,11 @@ export function pruneUnreachableFunctions(functions: Map<string, WasmIRFunction>
 
 function isLocalReference(
 	instruction: WasmIRInstruction
-): instruction is Extract<WasmIRInstruction, { kind: 'local.get' | 'local.set' }> {
-	return typeof instruction !== 'number' && (instruction.kind === 'local.get' || instruction.kind === 'local.set');
+): instruction is Extract<WasmIRInstruction, { kind: 'local.get' | 'local.set' | 'local.tee' }> {
+	return (
+		typeof instruction !== 'number' &&
+		(instruction.kind === 'local.get' || instruction.kind === 'local.set' || instruction.kind === 'local.tee')
+	);
 }
 
 function pruneLocals(func: WasmIRFunction): WasmIRFunction {

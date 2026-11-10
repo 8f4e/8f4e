@@ -6,7 +6,7 @@ import type { FunctionImportMetadata } from './functionTypes';
 export type WasmIRInstruction =
 	| number
 	| { kind: 'i32.const' | 'f32.const' | 'f64.const'; value: number }
-	| { kind: 'local.get' | 'local.set'; binding: number }
+	| { kind: 'local.get' | 'local.set' | 'local.tee'; binding: number }
 	| { kind: 'call'; targetFunctionId: string }
 	| { kind: 'block'; opcode: number; results: WasmTypeValue[] }
 	| { kind: 'branch'; opcode: number; depth: number }

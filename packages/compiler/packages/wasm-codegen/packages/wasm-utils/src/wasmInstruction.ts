@@ -105,6 +105,12 @@ export const WASM_GLOBAL_GET = 0x23;
 export const WASM_LOCAL_SET = 0x21;
 
 /**
+ * Write a local variable and leave the value on the stack.
+ * Type signature: (param t) (result t), where t is the local type.
+ */
+export const WASM_LOCAL_TEE = 0x22;
+
+/**
  * Load a 32-bit integer from memory.
  * Type signature: (param i32) (result i32)
  */
@@ -621,6 +627,7 @@ export type WASMInstructionCode =
 	| typeof WASM_LOCAL_GET
 	| typeof WASM_GLOBAL_GET
 	| typeof WASM_LOCAL_SET
+	| typeof WASM_LOCAL_TEE
 	| typeof WASM_I32_LOAD
 	| typeof WASM_F32_LOAD
 	| typeof WASM_F64_LOAD

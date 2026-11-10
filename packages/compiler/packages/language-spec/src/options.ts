@@ -20,6 +20,8 @@ export interface CompileOptions {
 	enableFunctionInlining?: boolean;
 	/** Remove unreachable Wasm functions and unreferenced local slots. Default is true. */
 	enableWasmPruning?: boolean;
+	/** Fuse adjacent writes and reads of the same Wasm local. Default is false. */
+	enableWasmLocalSimplification?: boolean;
 	/** Guard dynamic memory accesses. Set to false to let Wasm trap on out-of-bounds access. Default is true. */
 	enableMemoryGuards?: boolean;
 	/** Size limits to apply when function inlining is enabled. */

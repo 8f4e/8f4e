@@ -45,6 +45,10 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			compilerOptions.enableFunctionInlining = true;
 			continue;
 		}
+		if (arg === '--simplify-wasm-locals') {
+			compilerOptions.enableWasmLocalSimplification = true;
+			continue;
+		}
 		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
 			const value = args[i + 1];
 			if (!value || value.startsWith('--')) {
@@ -72,7 +76,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
-		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions]',
+		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions] [--simplify-wasm-locals]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
 }
