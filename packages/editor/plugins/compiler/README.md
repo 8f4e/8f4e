@@ -62,6 +62,9 @@ Inline message layout and drawing belong to `editor-plugin-error-messages`.
 
 ## Wasm optimization
 
+Memory access guards are enabled by default. Use `; @config compiler.memoryGuards.enabled false` to emit direct
+memory accesses for the project. With guards disabled, out-of-bounds accesses trap in Wasm.
+
 Pruning removes unreachable functions and unused local slots by default. Use
 `; @config compiler.wasmPruning.enabled false` to disable it independently of inlining.
 

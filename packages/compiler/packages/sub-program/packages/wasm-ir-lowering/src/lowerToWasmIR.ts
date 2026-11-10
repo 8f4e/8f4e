@@ -30,6 +30,7 @@ import { i32const } from './operations';
 function lowerBody(
 	resolved: FunctionSemanticReferences | ModuleSemanticReferences,
 	facts: readonly StackAnalysisLineFacts[],
+	enableMemoryGuards: boolean,
 	assertions?: AssertionCodegenSites
 ): WasmIRBody {
 	const { ast, bindings, body } = resolved;
@@ -41,6 +42,7 @@ function lowerBody(
 			codeBlockId: 'metadata' in resolved ? resolved.metadata.name : resolved.ast.id,
 			projectBlockId: ast.projectBlockId,
 			source: ast.source,
+			enableMemoryGuards,
 		},
 		bindings
 	);
@@ -70,6 +72,7 @@ interface LowerModuleInput {
 	memoryPlan: MemoryLayoutPlan;
 	requiredMemoryBytes: number;
 	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
+	enableMemoryGuards: boolean;
 	assertionCalls?: ReadonlyMap<ComposedAST, AssertionCodegenSites>;
 	assertionImports?: readonly AssertionImport[];
 }
@@ -82,6 +85,7 @@ export function lowerToWasmIR({
 	memoryPlan,
 	memoryDefaultsByModuleId,
 	requiredMemoryBytes,
+	enableMemoryGuards,
 	assertionCalls,
 	assertionImports = [],
 }: LowerModuleInput): WasmIR {
@@ -128,7 +132,15 @@ export function lowerToWasmIR({
 			id,
 			metadata.import
 				? { signature, import: metadata.import }
-				: { signature, body: lowerBody(resolved, stackReport.functions[id].operationFacts, assertionCalls?.get(ast)) }
+				: {
+						signature,
+						body: lowerBody(
+							resolved,
+							stackReport.functions[id].operationFacts,
+							enableMemoryGuards,
+							assertionCalls?.get(ast)
+						),
+					}
 		);
 		if (metadata.exportName) exports.set(metadata.exportName, id);
 	}
@@ -139,7 +151,12 @@ export function lowerToWasmIR({
 	for (const [id, resolved] of Object.entries(references.modules)) {
 		functions.set(moduleCycleFunctionId(id), {
 			signature: voidSignature,
-			body: lowerBody(resolved, stackReport.modules[id].operationFacts, assertionCalls?.get(resolved.ast)),
+			body: lowerBody(
+				resolved,
+				stackReport.modules[id].operationFacts,
+				enableMemoryGuards,
+				assertionCalls?.get(resolved.ast)
+			),
 		});
 	}
 

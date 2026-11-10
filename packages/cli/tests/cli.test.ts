@@ -152,6 +152,49 @@ entryEnd
 		expect(await imports('--inline-functions', '--no-wasm-pruning')).toEqual(['unused', 'memory']);
 	});
 
+	it('can disable compiler-generated memory guards in functions and modules', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'memory-guards.8f4e');
+		const output = path.join(tmpDir, 'memory-guards.wasm');
+		const accessBodies = {
+			readInt: 'param int address\npush address\nload\nfunctionEnd int',
+			readFloat: 'param int address\npush address\nloadFloat\nfunctionEnd float',
+			readPointer: 'param int* address\npush *address\nfunctionEnd int',
+			writeInt: 'param int address\npush address\npush 42\nstore\nfunctionEnd',
+			writeByte: 'param int address\npush 42\npush address\nstoreBytes 1\nfunctionEnd',
+			copyMemory: 'param int address\npush address\npush 0\nmemoryCopy 4\nfunctionEnd',
+		};
+		const functions = Object.entries(accessBodies)
+			.map(([name, body]) => `function ${name}\n#export\n#impure\n${body}\n`)
+			.join('\n');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+${functions}
+entry main
+module guardProbe
+push -1
+load
+drop
+moduleEnd
+entryEnd
+`
+		);
+		const compile = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(await fs.readFile(output), { host: { memory } });
+			return instance.exports;
+		};
+
+		const guarded = await compile();
+		const unguarded = await compile('--no-memory-guards');
+		for (const name of [...Object.keys(accessBodies), 'main']) {
+			expect(() => (guarded[name] as (address: number) => void)(-1)).not.toThrow();
+			expect(() => (unguarded[name] as (address: number) => void)(-1)).toThrow(WebAssembly.RuntimeError);
+		}
+	});
+
 	it('exports compiler memory information and executable shared-memory WASM', async () => {
 		const outputWasm = path.join(tmpDir, 'native.wasm');
 		const outputMemory = path.join(tmpDir, 'native-memory', 'memory.json');

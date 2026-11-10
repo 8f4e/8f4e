@@ -18,7 +18,7 @@ const store: InstructionCompiler<StoreLine> = (line, context, facts) => {
 	const valueIsFloat64 = operand1Value.valueType === 'float64';
 	const instructions = valueIsInteger ? i32store(2, 0) : valueIsFloat64 ? f64store(3, 0) : f32store(2, 0);
 	const accessByteWidth = valueIsFloat64 ? DOUBLE_WORD_MEMORY_ACCESS_WIDTH : WORD_MEMORY_ACCESS_WIDTH;
-	if (isSafeMemoryAccess(operand2Address, accessByteWidth)) {
+	if (!context.enableMemoryGuards || isSafeMemoryAccess(operand2Address, accessByteWidth)) {
 		return saveByteCode(context, instructions);
 	}
 

@@ -20,6 +20,8 @@ export interface CompileOptions {
 	enableFunctionInlining?: boolean;
 	/** Remove unreachable Wasm functions and unreferenced local slots. Default is true. */
 	enableWasmPruning?: boolean;
+	/** Guard dynamic memory accesses. Set to false to let Wasm trap on out-of-bounds access. Default is true. */
+	enableMemoryGuards?: boolean;
 	/** Size limits to apply when function inlining is enabled. */
 	functionInlining?: FunctionInliningOptions;
 	/** Address in 4-byte allocation units where the first module allocation begins. Defaults to 1 (byte address 4). */

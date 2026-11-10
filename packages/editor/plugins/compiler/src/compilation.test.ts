@@ -256,6 +256,7 @@ describe('compilation scheduling and publication', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
+				enableMemoryGuards: true,
 			},
 			expect.any(Function)
 		);
@@ -303,6 +304,7 @@ describe('compilation scheduling and publication', () => {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
 				enableAssertions: false,
+				enableMemoryGuards: true,
 			},
 			expect.any(Function)
 		);

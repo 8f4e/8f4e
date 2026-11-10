@@ -19,7 +19,7 @@ const loadFloat: InstructionCompiler<LoadFloatLine> = (line, context, facts) => 
 	const accessByteWidth = isFloat64 ? DOUBLE_WORD_MEMORY_ACCESS_WIDTH : operation.accessByteWidth;
 
 	const instructions = isFloat64 ? f64load(3, 0) : f32load(2, 0);
-	if (isSafeMemoryAccess(address, accessByteWidth)) {
+	if (!context.enableMemoryGuards || isSafeMemoryAccess(address, accessByteWidth)) {
 		return saveByteCode(context, instructions);
 	}
 

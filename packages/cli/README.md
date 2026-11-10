@@ -32,6 +32,9 @@ cli test path/to/project.8f4e 'path/to/tests/*.8f4em'
 
 ### Wasm optimization
 
+Use `--no-memory-guards` with `cli compile` to omit compiler-generated bounds guards for memory accesses.
+With guards disabled, an out-of-bounds access traps in Wasm. Guards are enabled by default.
+
 Pruning removes unreachable functions and unused local slots by default. Use `--no-wasm-pruning` to disable it
 independently of inlining.
 
