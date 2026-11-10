@@ -306,7 +306,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	);
 	return {
 		codeBuffer,
-		...(constantResolution.envConstants ? { envConstants: constantResolution.envConstants } : {}),
 		...(assertionPlan ? { assertionSites: assertionPlan.sites } : {}),
 		compiledModules,
 		compiledFunctions,

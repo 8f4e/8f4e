@@ -21,7 +21,6 @@ export interface CompileProjectOptions {
 export interface CompileProjectResult {
 	outputProject: Record<string, unknown>;
 	compilerOptions?: CompileOptions;
-	envConstants?: Readonly<Record<string, number>>;
 	compiledModules: CompiledModuleLookup;
 	memoryPlan: MemoryLayoutPlan;
 	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
@@ -34,8 +33,6 @@ export interface CompileProjectResult {
 
 /** Compiler memory layout exported alongside a WebAssembly binary for standalone hosts. */
 export interface RuntimeMemoryInfo {
-	/** Effective numeric values declared in the root `constants env` block. */
-	envConstants?: Readonly<Record<string, number>>;
 	requiredMemoryBytes: number;
 	memoryPlan: MemoryLayoutPlan;
 }

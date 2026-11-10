@@ -41,10 +41,9 @@ node packages/runtime-daisy/tools/write-patch-config.mjs memory.json PATCH.TXT
 ```
 
 For a project that declares `SAMPLE_RATE` in its root `constants env` block,
-pass `--env SAMPLE_RATE=32000` to the compile command to build at 32 kHz.
-The config generator takes the effective value from `memory.json` so the
-firmware runs at the same rate. Older memory maps and projects without that
-constant default to 48 kHz.
+pass `--env SAMPLE_RATE=32000` to the compile command to build at 32 kHz. Pass
+`--sample-rate 32000` to the config generator to run the Field at the same rate.
+The config generator defaults to 48 kHz.
 
 The config generator uses `audioout:buffer` for both channels by default. Pass
 `--left <module:buffer>` and `--right <module:buffer>` for other outputs. The

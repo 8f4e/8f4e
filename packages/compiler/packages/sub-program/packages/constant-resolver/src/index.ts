@@ -19,7 +19,6 @@ import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
 
 type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST | ValidatedPrototypeAST;
 type ConstantNamespaceAST = ValidatedModuleAST | ValidatedConstantsAST;
-const ENV_NAMESPACE = 'env';
 export type ConstantEnvironment = Readonly<Record<string, Const>>;
 export type ConstantNamespaceMap = Readonly<Record<string, ConstantEnvironment>>;
 
@@ -55,7 +54,6 @@ export interface ConstantResolutionReport {
 export interface ResolveConstantsResult {
 	namespaces: ConstantNamespaceMap;
 	references: ConstantResolutionReport;
-	envConstants?: Readonly<Record<string, number>>;
 }
 
 export const ConstantResolverErrorCode = {
@@ -442,18 +440,10 @@ export function resolveConstants<
 	input: ResolveConstantsInput<TPrototype, TModule, TConstants, TFunction>,
 	options: ResolveConstantsOptions = {}
 ): ResolveConstantsResult {
-	const envNames = new Set(
-		input.ast.constants
-			.filter(ast => ast.id === ENV_NAMESPACE)
-			.flatMap(ast => ast.lines.filter(line => line.instruction === 'const').map(line => line.arguments[0].value))
-	);
 	const namespaces = collectConstantNamespaces(input, options);
 	const constantsByNamespace = new Map<string, Record<string, Const>>();
 	return {
 		namespaces,
-		...(envNames.size > 0
-			? { envConstants: Object.fromEntries([...envNames].map(name => [name, namespaces[ENV_NAMESPACE][name].value])) }
-			: {}),
 		references: {
 			prototypes: input.ast.prototypes.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			modules: input.ast.modules.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),

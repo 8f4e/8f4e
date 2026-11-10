@@ -18,7 +18,6 @@ interface CompileProjectModulesOptions {
 }
 
 interface CompileProjectModulesResult {
-	envConstants?: Readonly<Record<string, number>>;
 	compiledModules: CompiledModuleLookup;
 	compiledFunctions?: CompiledFunctionLookup;
 	memoryPlan: MemoryLayoutPlan;
@@ -58,7 +57,6 @@ export default async function compileProjectModules(
 	});
 
 	return {
-		envConstants: result.envConstants,
 		compiledModules: result.compiledModules,
 		compiledFunctions: result.compiledFunctions,
 		memoryPlan: result.memoryPlan,

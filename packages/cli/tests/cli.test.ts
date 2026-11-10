@@ -266,7 +266,7 @@ entryEnd
 		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
 	});
 
-	it('writes effective env overrides and their layout into memory metadata', async () => {
+	it('replaces root env source values before compilation', async () => {
 		await fs.mkdir(tmpDir, { recursive: true });
 		const input = path.join(tmpDir, 'env.8f4e');
 		const outputWasm = path.join(tmpDir, 'env.wasm');
@@ -277,9 +277,8 @@ const SAMPLE_RATE
 - 48000 ; original rate
 ; the output rate is derived from the env value
 const HALF_RATE SAMPLE_RATE/2
-const AUDIO_BUFFER_SIZE 128
-const GAIN 0.5
-const DOUBLE_GAIN 0.5f64
+const AUDIO_BUFFER_SIZE 256/2
+const GAIN 1
 constantsEnd
 entry main
 group voice
@@ -290,7 +289,6 @@ use env
 float[] buffer AUDIO_BUFFER_SIZE
 int rate HALF_RATE
 float gain GAIN
-float64 doubleGain DOUBLE_GAIN
 moduleEnd
 entryEnd
 groupEnd
@@ -312,26 +310,18 @@ entryEnd
 			'compile',
 			input,
 			'--env',
-			'SAMPLE_RATE=32000',
+			'SAMPLE_RATE=64000/2',
 			'--env',
 			'AUDIO_BUFFER_SIZE=64',
 			'--env',
-			'GAIN=2',
-			'--env',
-			'DOUBLE_GAIN=3',
+			'GAIN=2.0',
 			'--wasm-output',
 			outputWasm,
 			'--memory-output',
 			outputMemory,
 		]);
 		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
-		expect(info.envConstants).toEqual({
-			SAMPLE_RATE: 32000,
-			HALF_RATE: 16000,
-			AUDIO_BUFFER_SIZE: 64,
-			GAIN: 2,
-			DOUBLE_GAIN: 3,
-		});
+		expect(Object.keys(info).sort()).toEqual(['memoryPlan', 'requiredMemoryBytes']);
 		const voice = info.memoryPlan.modules['voice/audioout'].memory;
 		const local = info.memoryPlan.modules['local/audioout'].memory;
 		expect(voice.buffer.numberOfElements).toBe(64);
@@ -341,7 +331,6 @@ entryEnd
 		const view = new DataView(memory.buffer);
 		expect(view.getInt32(voice.rate.byteAddress, true)).toBe(16000);
 		expect(view.getFloat32(voice.gain.byteAddress, true)).toBe(2);
-		expect(view.getFloat64(voice.doubleGain.byteAddress, true)).toBe(3);
 		expect(view.getInt32(local.rate.byteAddress, true)).toBe(24000);
 		expect(await fs.readFile(input, 'utf8')).toBe(source);
 	});
@@ -349,24 +338,6 @@ entryEnd
 	it.each([
 		['missing-env', 'constants audio\nconst RATE 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
 		['missing-name', 'constants env\nconst OTHER 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
-		[
-			'expression-default',
-			'constants env\nconst RATE 96000/2\nconstantsEnd',
-			'RATE=32000',
-			'RATE must be defined with a numeric literal',
-		],
-		[
-			'expression-override',
-			'constants env\nconst RATE 48000\nconstantsEnd',
-			'RATE=64000/2',
-			'--env expects NAME=NUMBER with a numeric literal',
-		],
-		[
-			'fractional-override',
-			'constants env\nconst RATE 48000\nconstantsEnd',
-			'RATE=32000.5',
-			'Override for env:RATE must be a safe integer',
-		],
 	])('rejects invalid env overrides (%s)', async (name, body, override, message) => {
 		await fs.mkdir(tmpDir, { recursive: true });
 		const input = path.join(tmpDir, `env-${name}.8f4e`);

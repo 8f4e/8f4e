@@ -105,8 +105,6 @@ export interface CompilerCache {
 }
 
 export type CompileResult = {
-	/** Effective numeric values declared in the root `constants env` namespace, when present. */
-	envConstants?: Readonly<Record<string, number>>;
 	/** Native assertion sites for this compilation, present only when assertions are enabled. */
 	assertionSites?: AssertionSite[];
 	codeBuffer: Uint8Array;

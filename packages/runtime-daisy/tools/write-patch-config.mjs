@@ -16,20 +16,25 @@ function resolveAudioBuffer(modules, reference) {
 async function main() {
 	const { positionals, values } = parseArgs({
 		allowPositionals: true,
-		options: { left: { type: 'string' }, right: { type: 'string' }, help: { type: 'boolean' } },
+		options: {
+			left: { type: 'string' },
+			right: { type: 'string' },
+			'sample-rate': { type: 'string' },
+			help: { type: 'boolean' },
+		},
 	});
 	const usage =
-		'Usage: node tools/write-patch-config.mjs <memory.json> <PATCH.TXT> [--left <symbol>] [--right <symbol>]';
+		'Usage: node tools/write-patch-config.mjs <memory.json> <PATCH.TXT> [--left <symbol>] [--right <symbol>] [--sample-rate <Hz>]';
 	if (values.help) {
 		console.log(usage);
 		return;
 	}
 	if (positionals.length !== 2) throw new Error(usage);
 	const [metadataPath, outputPath] = positionals;
-	const { memoryPlan, envConstants } = JSON.parse(await readFile(metadataPath, 'utf8'));
-	const sampleRate = envConstants?.SAMPLE_RATE ?? 48000;
+	const { memoryPlan } = JSON.parse(await readFile(metadataPath, 'utf8'));
+	const sampleRate = Number(values['sample-rate'] ?? 48000);
 	if (sampleRate !== 32000 && sampleRate !== 48000) {
-		throw new Error('Daisy supports SAMPLE_RATE values of 32000 or 48000 Hz');
+		throw new Error('Daisy supports --sample-rate values of 32000 or 48000 Hz');
 	}
 	const left = values.left ?? 'audioout:buffer';
 	const right = values.right ?? left;

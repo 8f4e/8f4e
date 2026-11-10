@@ -19,14 +19,7 @@ export default defineConfig({
 			fileName: (_format, name) => `${name}.js`,
 		},
 		rollupOptions: {
-			external: [
-				...nodeBuiltins,
-				'@8f4e/compiler',
-				'@8f4e/language-spec',
-				'@8f4e/stdlib',
-				'@8f4e/test-runner',
-				'@8f4e/tokenizer',
-			],
+			external: [...nodeBuiltins, '@8f4e/compiler', '@8f4e/language-spec', '@8f4e/stdlib', '@8f4e/test-runner'],
 		},
 	},
 });

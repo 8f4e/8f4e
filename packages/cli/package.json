@@ -31,8 +31,7 @@
     "@8f4e/compiler": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/stdlib": "*",
-    "@8f4e/test-runner": "*",
-    "@8f4e/tokenizer": "*"
+    "@8f4e/test-runner": "*"
   },
   "devDependencies": {
     "@types/node": "24.13.2",

@@ -1,6 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { CompileOptions } from '@8f4e/language-spec';
-import { parseNumericLiteralToken } from '@8f4e/tokenizer';
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { RuntimeMemoryInfo } from '../shared/types';
@@ -12,7 +11,7 @@ interface CompileCommandArgs {
 	wasmOutputPath?: string;
 	memoryOutputPath?: string;
 	compilerOptions: CompileOptions;
-	envOverrides: Map<string, number>;
+	envOverrides: Map<string, string>;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
@@ -20,7 +19,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
 	const compilerOptions: CompileOptions = { enableFunctionInlining: false };
-	const envOverrides = new Map<string, number>();
+	const envOverrides = new Map<string, string>();
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -54,12 +53,10 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			continue;
 		}
 		if (arg === '--env') {
-			const [name, rawValue, extra] = (args[i + 1] ?? '').split('=');
-			const literal = rawValue && rawValue.trim() === rawValue ? parseNumericLiteralToken(rawValue) : null;
-			if (!name || extra !== undefined || !literal) {
-				throw new Error('--env expects NAME=NUMBER with a numeric literal');
-			}
-			envOverrides.set(name, literal.value);
+			const assignment = args[i + 1] ?? '';
+			const separator = assignment.indexOf('=');
+			if (separator < 1) throw new Error('--env expects NAME=VALUE');
+			envOverrides.set(assignment.slice(0, separator), assignment.slice(separator + 1));
 			i += 1;
 			continue;
 		}
@@ -90,7 +87,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
-		'    [--env NAME=NUMBER] (repeatable)',
+		'    [--env NAME=VALUE] (repeatable)',
 		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions] [--simplify-wasm-locals]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
@@ -127,14 +124,12 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 		applyEnvOverrides(project, envOverrides);
 	}
 
-	const { compiledWasm, envConstants, requiredMemoryBytes, memoryPlan } = await compileProject(project, {
-		compilerOptions,
-	});
+	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, { compilerOptions });
 
 	await fs.mkdir(path.dirname(resolvedWasmOutput), { recursive: true });
 	await fs.writeFile(resolvedWasmOutput, Buffer.from(compiledWasm, 'base64'));
 	if (resolvedMemoryOutput) {
-		const memoryInfo: RuntimeMemoryInfo = { requiredMemoryBytes, memoryPlan, envConstants };
+		const memoryInfo: RuntimeMemoryInfo = { requiredMemoryBytes, memoryPlan };
 		await fs.mkdir(path.dirname(resolvedMemoryOutput), { recursive: true });
 		await fs.writeFile(resolvedMemoryOutput, JSON.stringify(memoryInfo, null, 2) + '\n');
 	}
