@@ -55,6 +55,16 @@ cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-func
 Use `--simplify-wasm-locals` to fuse an adjacent `local.set` and `local.get` on the same slot into `local.tee`.
 This opt-in pass runs after optional inlining and preserves shared memory accesses.
 
+Use `--env NAME=VALUE` to replace an existing constant's value in the root
+`constants env` block before compilation. The CLI inserts the replacement as
+written and fails if the declaration is missing. Repeat the flag to replace
+more than one constant.
+
+```bash
+cli compile instrument.8f4e --env SAMPLE_RATE=32000 --wasm-output instrument.wasm \
+  --memory-output memory.json
+```
+
 ## Output
 
 When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.wasm`) file.

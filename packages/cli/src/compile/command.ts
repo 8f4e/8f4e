@@ -4,12 +4,14 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import type { RuntimeMemoryInfo } from '../shared/types';
 import { compileProject } from './compileProject';
+import { applyEnvOverrides } from './envOverrides';
 
 interface CompileCommandArgs {
 	inputPath?: string;
 	wasmOutputPath?: string;
 	memoryOutputPath?: string;
 	compilerOptions: CompileOptions;
+	envOverrides: Map<string, string>;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
@@ -17,6 +19,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
 	const compilerOptions: CompileOptions = { enableFunctionInlining: false };
+	const envOverrides = new Map<string, string>();
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -49,6 +52,14 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			compilerOptions.enableWasmLocalSimplification = true;
 			continue;
 		}
+		if (arg === '--env') {
+			const assignment = args[i + 1] ?? '';
+			const separator = assignment.indexOf('=');
+			if (separator < 1) throw new Error('--env expects NAME=VALUE');
+			envOverrides.set(assignment.slice(0, separator), assignment.slice(separator + 1));
+			i += 1;
+			continue;
+		}
 		if (arg === '--max-inline-expansion-operations' || arg === '--max-inline-caller-growth') {
 			const value = args[i + 1];
 			if (!value || value.startsWith('--')) {
@@ -70,19 +81,20 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		throw new Error(`Unknown compile argument: ${arg}`);
 	}
 
-	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions };
+	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides };
 }
 
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
+		'    [--env NAME=VALUE] (repeatable)',
 		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions] [--simplify-wasm-locals]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
 }
 
 export async function runCompileCommand(args: string[]): Promise<void> {
-	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions } = parseCompileArgs(args);
+	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides } = parseCompileArgs(args);
 
 	if (!inputPath) {
 		throw new Error(getCompileUsage());
@@ -108,6 +120,9 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
+	if (envOverrides.size > 0) {
+		applyEnvOverrides(project, envOverrides);
+	}
 
 	const { compiledWasm, requiredMemoryBytes, memoryPlan } = await compileProject(project, { compilerOptions });
 

@@ -16,10 +16,15 @@ function resolveAudioBuffer(modules, reference) {
 async function main() {
 	const { positionals, values } = parseArgs({
 		allowPositionals: true,
-		options: { left: { type: 'string' }, right: { type: 'string' }, help: { type: 'boolean' } },
+		options: {
+			left: { type: 'string' },
+			right: { type: 'string' },
+			'sample-rate': { type: 'string' },
+			help: { type: 'boolean' },
+		},
 	});
 	const usage =
-		'Usage: node tools/write-patch-config.mjs <memory.json> <PATCH.TXT> [--left <symbol>] [--right <symbol>]';
+		'Usage: node tools/write-patch-config.mjs <memory.json> <PATCH.TXT> [--left <symbol>] [--right <symbol>] [--sample-rate <Hz>]';
 	if (values.help) {
 		console.log(usage);
 		return;
@@ -27,6 +32,10 @@ async function main() {
 	if (positionals.length !== 2) throw new Error(usage);
 	const [metadataPath, outputPath] = positionals;
 	const { memoryPlan } = JSON.parse(await readFile(metadataPath, 'utf8'));
+	const sampleRate = Number(values['sample-rate'] ?? 48000);
+	if (sampleRate !== 32000 && sampleRate !== 48000) {
+		throw new Error('Daisy supports --sample-rate values of 32000 or 48000 Hz');
+	}
 	const left = values.left ?? 'audioout:buffer';
 	const right = values.right ?? left;
 	const leftBuffer = resolveAudioBuffer(memoryPlan.modules, left);
@@ -46,7 +55,8 @@ async function main() {
 		}
 	}
 
-	await writeFile(outputPath, `left=${offsets[0]}\nright=${offsets[1]}\nframes=${frames}\n`);
+	const rateLine = sampleRate === 48000 ? '' : `sample_rate=${sampleRate}\n`;
+	await writeFile(outputPath, `left=${offsets[0]}\nright=${offsets[1]}\nframes=${frames}\n${rateLine}`);
 }
 
 main().catch(error => {

@@ -266,6 +266,88 @@ entryEnd
 		expect(view.getFloat32(info.memoryPlan.modules.main.memory.gain.byteAddress, true)).toBe(0.5);
 	});
 
+	it('replaces root env source values before compilation', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'env.8f4e');
+		const outputWasm = path.join(tmpDir, 'env.wasm');
+		const outputMemory = path.join(tmpDir, 'env.json');
+		const source = `8f4e/v1
+constants env
+const SAMPLE_RATE
+- 48000 ; original rate
+; the output rate is derived from the env value
+const HALF_RATE SAMPLE_RATE/2
+const AUDIO_BUFFER_SIZE 256/2
+const GAIN 1
+constantsEnd
+entry main
+group voice
+pass env
+entry main
+module audioout
+use env
+float[] buffer AUDIO_BUFFER_SIZE
+int rate HALF_RATE
+float gain GAIN
+moduleEnd
+entryEnd
+groupEnd
+group local
+constants env
+const SAMPLE_RATE 24000
+constantsEnd
+entry main
+module audioout
+use env
+int rate SAMPLE_RATE
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+`;
+		await fs.writeFile(input, source);
+		await execCli([
+			'compile',
+			input,
+			'--env',
+			'SAMPLE_RATE=64000/2',
+			'--env',
+			'AUDIO_BUFFER_SIZE=64',
+			'--env',
+			'GAIN=2.0',
+			'--wasm-output',
+			outputWasm,
+			'--memory-output',
+			outputMemory,
+		]);
+		const info = JSON.parse(await fs.readFile(outputMemory, 'utf8'));
+		expect(Object.keys(info).sort()).toEqual(['memoryPlan', 'requiredMemoryBytes']);
+		const voice = info.memoryPlan.modules['voice/audioout'].memory;
+		const local = info.memoryPlan.modules['local/audioout'].memory;
+		expect(voice.buffer.numberOfElements).toBe(64);
+		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+		const { instance } = await WebAssembly.instantiate(await fs.readFile(outputWasm), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(voice.rate.byteAddress, true)).toBe(16000);
+		expect(view.getFloat32(voice.gain.byteAddress, true)).toBe(2);
+		expect(view.getInt32(local.rate.byteAddress, true)).toBe(24000);
+		expect(await fs.readFile(input, 'utf8')).toBe(source);
+	});
+
+	it.each([
+		['missing-env', 'constants audio\nconst RATE 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
+		['missing-name', 'constants env\nconst OTHER 48000\nconstantsEnd', 'RATE=32000', 'Unknown root env constant: RATE'],
+	])('rejects invalid env overrides (%s)', async (name, body, override, message) => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, `env-${name}.8f4e`);
+		const output = path.join(tmpDir, `env-${name}.wasm`);
+		await fs.writeFile(input, `8f4e/v1\n${body}\n`);
+		await expect(execCli(['compile', input, '--env', override, '--wasm-output', output])).rejects.toMatchObject({
+			stderr: expect.stringContaining(message),
+		});
+	});
+
 	it('rejects missing output paths and output collisions', async () => {
 		await expect(execCli(['compile', fixturePath, '--wasm-output', '--memory-output'])).rejects.toMatchObject({
 			stderr: expect.stringContaining('Missing path for --wasm-output'),
