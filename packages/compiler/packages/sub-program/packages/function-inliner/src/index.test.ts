@@ -1,72 +1,58 @@
-import { WASM_DROP, WASM_I32_CONST } from '@8f4e/compiler-wasm-utils';
-import type { FunctionAnalysisReport } from '@8f4e/function-analyzer';
-import type { WasmIR, WasmIRBody, WasmIRInstruction } from '@8f4e/language-spec';
+import { WASM_DROP } from '@8f4e/compiler-wasm-utils';
+import type { WasmIR, WasmIRFunction, WasmIRInstruction } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { inlineFunctions } from '.';
 
-const call: WasmIRInstruction = { kind: 'call', targetFunctionId: 'leaf' };
-const scalarOperation = [WASM_I32_CONST, 7, WASM_DROP];
-const analysis = { isImported: false, isRecursive: false, hasExplicitReturn: false, hasEarlyReturn: false };
-const scalarTypes = { hasPointerBindings: false, hasPointerReturns: false };
+const call = (targetFunctionId: string): WasmIRInstruction => ({ kind: 'call', targetFunctionId });
+const scalarOperation: WasmIRInstruction[] = [{ kind: 'i32.const', value: 7 }, WASM_DROP];
 
-function createInput(operationPairs: number, callCount: number) {
-	const leaf: WasmIRBody = {
-		instructions: Array.from({ length: operationPairs }, () => scalarOperation).flat(),
-		locals: [],
-		parameterCount: 0,
-		sourceBindingCount: 0,
+function definition(instructions: readonly WasmIRInstruction[]): WasmIRFunction {
+	return { signature: { params: [], results: [] }, body: { instructions, locals: [] } };
+}
+
+function createInput(functions: Array<[string, WasmIRFunction]>): WasmIR {
+	return {
+		functions: new Map(functions),
+		exports: new Map([['run', 'caller']]),
+		memory: { moduleName: 'host', fieldName: 'memory', minPages: 1, maxPages: 1 },
+		dataSegments: new Map(),
 	};
-	const caller: WasmIRBody = {
-		instructions: Array<WasmIRInstruction>(callCount).fill(call),
-		locals: [],
-		parameterCount: 0,
-		sourceBindingCount: 0,
-	};
-	const ir: WasmIR = { modules: {}, functions: { leaf, caller } };
-	const functionAnalysis: FunctionAnalysisReport = {
-		functions: {
-			leaf: {
-				analysis,
-				bodyFacts: {
-					operationCount: operationPairs * 2,
-					instructionKinds: ['push', 'drop'],
-					pushOperandKinds: ['literal'],
-					...scalarTypes,
-				},
-			},
-			caller: {
-				analysis,
-				bodyFacts: {
-					operationCount: callCount,
-					instructionKinds: ['call'],
-					pushOperandKinds: [],
-					...scalarTypes,
-				},
-			},
-		},
-	};
-	return { ir, functionAnalysis };
 }
 
 describe('inlineFunctions', () => {
-	it('bounds caller growth and keeps the input bodies intact', () => {
-		const { ir, functionAnalysis } = createInput(1, 65);
-		const result = inlineFunctions(ir, functionAnalysis, { maxCallerGrowth: 64 });
-		const caller = result.functions.caller;
+	it('bounds caller growth across rounds and preserves a still-referenced body', () => {
+		const leaf = definition(scalarOperation);
+		const caller = definition(Array<WasmIRInstruction>(65).fill(call('leaf')));
+		const ir = createInput([
+			['caller', caller],
+			['leaf', leaf],
+		]);
+		const result = inlineFunctions(ir, { maxCallerGrowth: 64 });
+		const instructions = result.functions.get('caller')!.body!.instructions;
 
-		expect(caller.instructions).toHaveLength(64 * scalarOperation.length + 1);
-		expect(caller.instructions.at(-1)).toBe(call);
-		expect(caller.instructions.slice(0, scalarOperation.length)).toEqual(scalarOperation);
-		expect(ir.functions.caller.instructions).toHaveLength(65);
-		expect(result.functions.leaf).toBe(ir.functions.leaf);
-		expect(inlineFunctions(ir, functionAnalysis).functions.caller.instructions).toHaveLength(
-			65 * scalarOperation.length
-		);
+		expect(instructions).toHaveLength(64 * scalarOperation.length + 1);
+		expect(instructions.at(-1)).toEqual(call('leaf'));
+		expect(instructions.slice(0, scalarOperation.length)).toEqual(scalarOperation);
+		expect(ir.functions.get('caller')).toBe(caller);
+		expect(result.functions.get('leaf')).toBe(leaf);
+		expect(inlineFunctions(ir).functions.has('leaf')).toBe(false);
 	});
 
-	it('applies an expansion limit when configured', () => {
-		const { ir, functionAnalysis } = createInput(7, 1);
-		expect(inlineFunctions(ir, functionAnalysis, { maxExpansionOperations: 12 })).toBe(ir);
-		expect(inlineFunctions(ir, functionAnalysis).functions.caller.instructions).toEqual(ir.functions.leaf.instructions);
+	it('applies an expansion limit to a callee with one call site', () => {
+		const ir = createInput([
+			['caller', definition([call('leaf')])],
+			['leaf', definition(scalarOperation)],
+		]);
+		expect(inlineFunctions(ir, { maxExpansionOperations: 1 })).toBe(ir);
+		expect(inlineFunctions(ir).functions.get('caller')!.body!.instructions).toEqual(scalarOperation);
+	});
+
+	it('retains a call cycle through otherwise single-use bodies', () => {
+		const ir = createInput([
+			['caller', definition([call('a')])],
+			['a', definition([call('b')])],
+			['b', definition([call('caller')])],
+		]);
+		expect(inlineFunctions(ir)).toBe(ir);
 	});
 });

@@ -1,12 +1,12 @@
 import type { WasmTypeValue } from '@8f4e/compiler-wasm-utils';
-import { WASM_TYPE_F32, WASM_TYPE_I32, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
-import type { BlockResultTypes, BlockStack, BlockType, WasmIRInstruction } from '@8f4e/language-spec';
+import { WASM_TYPE_F32, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
+import type { BlockResultTypes, BlockStack, BlockType } from '@8f4e/language-spec';
 
 type ResultBlockType = typeof BlockType.BLOCK | typeof BlockType.CONDITION;
 
 interface ResultBlockState<TBlockType extends ResultBlockType> {
 	blockState: Extract<BlockStack[number], { blockType: TBlockType }>;
-	wasmBlockType: WasmIRInstruction[];
+	wasmBlockType: WasmTypeValue[];
 }
 
 function resultTypeToWasmType(resultType: BlockResultTypes[number]): WasmTypeValue {
@@ -24,41 +24,11 @@ export default function createResultBlockState<TBlockType extends ResultBlockTyp
 	resultTypes: BlockResultTypes,
 	blockType: TBlockType
 ): ResultBlockState<TBlockType> {
-	if (resultTypes.length > 1) {
-		return {
-			blockState: {
-				expectedResultTypes: resultTypes,
-				blockType,
-			} as Extract<BlockStack[number], { blockType: TBlockType }>,
-			wasmBlockType: [{ kind: 'blockType', results: resultTypes.map(resultTypeToWasmType) }],
-		};
-	}
-
-	if (resultTypes[0] === 'float') {
-		return {
-			blockState: {
-				expectedResultTypes: resultTypes,
-				blockType,
-			} as Extract<BlockStack[number], { blockType: TBlockType }>,
-			wasmBlockType: [WASM_TYPE_F32],
-		};
-	}
-
-	if (resultTypes[0] === 'int') {
-		return {
-			blockState: {
-				expectedResultTypes: resultTypes,
-				blockType,
-			} as Extract<BlockStack[number], { blockType: TBlockType }>,
-			wasmBlockType: [WASM_TYPE_I32],
-		};
-	}
-
 	return {
-		blockState: {
-			expectedResultTypes: [],
-			blockType,
-		} as Extract<BlockStack[number], { blockType: TBlockType }>,
-		wasmBlockType: [WASM_TYPE_VOID],
+		blockState: { expectedResultTypes: resultTypes, blockType } as Extract<
+			BlockStack[number],
+			{ blockType: TBlockType }
+		>,
+		wasmBlockType: resultTypes.map(resultTypeToWasmType),
 	};
 }

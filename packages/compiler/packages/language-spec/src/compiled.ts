@@ -2,7 +2,6 @@ import type { FunctionType, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type { AssertionSite } from './assertions';
 import type { ComposedFunctionAST, ComposedModuleAST, FunctionAST, ValidatedAST, ValidatedFunctionAST } from './ast';
 import type { ASTCache } from './cache';
-import type { FunctionAnalysis } from './functionAnalysis';
 import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
@@ -22,11 +21,10 @@ export type CompiledStackAnalysisLine = {
 	resolvedCall?: ResolvedCall;
 };
 
-/** Code generation output and metadata for a compiled executable module. */
+/** Source and semantic metadata for a compiled module. */
 export interface CompiledModule {
 	referenceSlots: ReferenceSlotMap;
 	index: number;
-	cycleFunction: number[];
 	id: string;
 	executionEntryName: string;
 	ast: ComposedModuleAST;
@@ -93,14 +91,8 @@ export interface FunctionRegistry {
 	arityByName: Record<string, number>;
 }
 
-/** Code generation output and metadata for a compiled function. */
+/** Source and semantic metadata for a compiled function. */
 export interface CompiledFunction extends FunctionMetadata {
-	analysis: FunctionAnalysis;
-	wasmIndex: number;
-	body: number[];
-	locals: Array<{ isInteger: boolean; count: number }>;
-	exportName?: string;
-	typeIndex: number;
 	ast: ComposedFunctionAST;
 	stackAnalysis?: CompiledStackAnalysisLine[];
 }

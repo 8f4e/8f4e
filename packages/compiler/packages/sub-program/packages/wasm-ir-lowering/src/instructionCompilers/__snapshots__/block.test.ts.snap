@@ -15,8 +15,13 @@ exports[`block instruction compiler > emits a typed block for float 1`] = `
     },
   ],
   "instructions": [
-    2,
-    125,
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [
+        125,
+      ],
+    },
   ],
 }
 `;
@@ -36,8 +41,13 @@ exports[`block instruction compiler > emits a typed block for int 1`] = `
     },
   ],
   "instructions": [
-    2,
-    127,
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [
+        127,
+      ],
+    },
   ],
 }
 `;
@@ -55,8 +65,11 @@ exports[`block instruction compiler > emits a void block when no result type is 
     },
   ],
   "instructions": [
-    2,
-    64,
+    {
+      "kind": "block",
+      "opcode": 2,
+      "results": [],
+    },
   ],
 }
 `;

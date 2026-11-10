@@ -7,8 +7,8 @@
 - Project-preparser reads project source and prepares includes. Tokenizer validates syntax and builds ASTs.
   Program-composer traverses scopes, qualifies symbols and plans execution order.
 - Sub-program orchestrates global semantic resolution, memory planning, stack analysis and code generation.
-  Function-analyzer reports structural facts. Optimization passes choose policy. Wasm-ir-lowering expands
-  resolved instructions into IR, and wasm-codegen assigns indices and emits the binary.
+  Wasm-ir-lowering builds the complete symbolic module. The inliner analyzes that module, and wasm-codegen
+  assigns indices and emits the binary.
 - Stdlib ships source functions. Include IDs are paths below `std/` without the source extension.
 
 ## Contracts and Tests

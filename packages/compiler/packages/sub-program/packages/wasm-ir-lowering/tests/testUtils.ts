@@ -1,4 +1,4 @@
-import { WASM_IF, WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
+import { WASM_IF } from '@8f4e/compiler-wasm-utils';
 import type {
 	CodegenContext,
 	CompilerASTLine,
@@ -65,34 +65,6 @@ export function compileInstructionForTest<TLine extends CompilerASTLine>(
 }
 
 /**
- * Counts occurrences of a fixed Wasm byte sequence in lowered instructions.
- *
- * @param haystack - Bytecode sequence to search.
- * @param needle - Bytecode subsequence to count.
- * @returns The number of matching subsequences.
- */
-export function countByteCodeSequence(haystack: readonly WasmIRInstruction[], needle: readonly number[]): number {
-	let count = 0;
-	for (let i = 0; i <= haystack.length - needle.length; i++) {
-		if (needle.every((value, index) => haystack[i + index] === value)) {
-			count++;
-		}
-	}
-	return count;
-}
-
-/**
- * Checks for a fixed Wasm byte sequence in lowered instructions.
- *
- * @param haystack - Bytecode sequence to search.
- * @param needle - Bytecode subsequence to find.
- * @returns True when the subsequence occurs at least once.
- */
-export function containsByteCodeSequence(haystack: readonly WasmIRInstruction[], needle: readonly number[]): boolean {
-	return countByteCodeSequence(haystack, needle) > 0;
-}
-
-/**
  * Asserts the lowered instructions for guarded memory dereferences.
  *
  * @param instructions - Lowered instructions to inspect.
@@ -101,10 +73,15 @@ export function containsByteCodeSequence(haystack: readonly WasmIRInstruction[],
  */
 export function expectGuardedDereference(
 	instructions: readonly WasmIRInstruction[],
-	options: { prefix: WasmIRInstruction[]; finalLoad: number[]; guardCount: number; resultType: number }
+	options: { prefix: WasmIRInstruction[]; finalLoad: WasmIRInstruction[]; guardCount: number; resultType: number }
 ): void {
 	expect(instructions.slice(0, options.prefix.length)).toEqual(options.prefix);
-	expect(instructions).toContain(WASM_MEMORY_SIZE);
-	expect(containsByteCodeSequence(instructions, options.finalLoad)).toBe(true);
-	expect(countByteCodeSequence(instructions, [WASM_IF, options.resultType])).toBe(options.guardCount);
+	expect(instructions).toContainEqual({ kind: 'memory.size' });
+	expect(instructions).toEqual(expect.arrayContaining(options.finalLoad));
+	expect(
+		instructions.filter(
+			op =>
+				typeof op !== 'number' && op.kind === 'block' && op.opcode === WASM_IF && op.results[0] === options.resultType
+		)
+	).toHaveLength(options.guardCount);
 }

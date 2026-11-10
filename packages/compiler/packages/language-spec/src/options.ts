@@ -1,11 +1,14 @@
 import type { CompilerCache } from './compiled';
 import type { ProjectIncludeResolver } from './project';
 
-/** Size limits for function inlining, measured in resolved operations. */
+/** Size limits for function inlining, measured in lowered Wasm operations. */
 export interface FunctionInliningOptions {
 	/** Maximum replacement size, including argument stores and local initialization. Omit for no limit. */
 	maxExpansionOperations?: number;
-	/** Maximum additional operations across all expansions in one caller. Omit for no limit. */
+	/**
+	 * Maximum additional operations across all expansions in one caller.
+	 * By default, only duplicating bodies counts toward the 128-operation limit.
+	 */
 	maxCallerGrowth?: number;
 }
 
@@ -15,6 +18,8 @@ export interface CompileOptions {
 	enableAssertions?: boolean;
 	/** Inline eligible functions. Default is true. */
 	enableFunctionInlining?: boolean;
+	/** Remove unreachable Wasm functions and unreferenced local slots. Default is true. */
+	enableWasmPruning?: boolean;
 	/** Size limits to apply when function inlining is enabled. */
 	functionInlining?: FunctionInliningOptions;
 	/** Address in 4-byte allocation units where the first module allocation begins. Defaults to 1 (byte address 4). */

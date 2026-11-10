@@ -1,5 +1,4 @@
 import {
-	i32const,
 	WASM_ELSE,
 	WASM_END,
 	WASM_F32_ABS,
@@ -12,6 +11,7 @@ import {
 import type { InstructionCompiler } from '@8f4e/language-spec';
 import { wasmLocalGet as localGet, wasmLocalSet as localSet } from '@8f4e/language-spec';
 import { allocateLocal } from '../localStorage';
+import { i32const } from '../operations';
 
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -30,8 +30,7 @@ const abs: InstructionCompiler = (_line, context, facts) => {
 			...localGet(valueLocalIndex),
 			...i32const(0),
 			WASM_I32_LT_S,
-			WASM_IF,
-			WASM_TYPE_I32,
+			{ kind: 'block', opcode: WASM_IF, results: [WASM_TYPE_I32] },
 			...i32const(0),
 			...localGet(valueLocalIndex),
 			WASM_I32_SUB,

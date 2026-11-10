@@ -1,9 +1,8 @@
-import { i32const } from '@8f4e/compiler-wasm-utils';
 import type { ArgumentStringLiteral } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-
 import createInstructionCompilerTestContext from '../../../../tests/testUtils';
+import { i32const } from '../../../operations';
 import pushStringLiteral from './pushStringLiteral';
 
 describe('pushStringLiteral', () => {

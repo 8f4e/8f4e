@@ -1,10 +1,6 @@
-import {
-	prefixedInstruction,
-	WASM_MISC,
-	WASM_MISC_I32_TRUNC_SAT_F32_S,
-	WASM_MISC_I32_TRUNC_SAT_F64_S,
-} from '@8f4e/compiler-wasm-utils';
+import { WASM_MISC, WASM_MISC_I32_TRUNC_SAT_F32_S, WASM_MISC_I32_TRUNC_SAT_F64_S } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
+import { prefixedInstruction } from '../operations';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**

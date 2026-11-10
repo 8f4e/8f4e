@@ -3,8 +3,11 @@
 exports[`branch instruction compiler > emits br bytecode 1`] = `
 {
   "instructions": [
-    12,
-    0,
+    {
+      "depth": 0,
+      "kind": "branch",
+      "opcode": 12,
+    },
   ],
 }
 `;

@@ -1,4 +1,3 @@
-import { WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -99,8 +98,8 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(57); // F64_STORE opcode
-		expect(context.instructions).not.toContain(56); // no F32_STORE
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 57 })); // F64_STORE opcode
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 56 })); // no F32_STORE
 		expect(context.instructions).not.toContain(54); // no I32_STORE
 	});
 
@@ -135,8 +134,8 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(56); // F32_STORE opcode
-		expect(context.instructions).not.toContain(57); // no F64_STORE
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 56 })); // F32_STORE opcode
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 57 })); // no F64_STORE
 	});
 
 	it('emits f64.store for float64 value at unsafe address', () => {
@@ -158,8 +157,8 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(57); // F64_STORE opcode
-		expect(context.instructions).not.toContain(56); // no F32_STORE
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 57 })); // F64_STORE opcode
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 56 })); // no F32_STORE
 	});
 
 	it('does not guard when an explicit clamp proves the access width is safe', () => {
@@ -181,6 +180,6 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).not.toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 	});
 });

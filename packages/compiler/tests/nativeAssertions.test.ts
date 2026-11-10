@@ -1,7 +1,6 @@
 import { type CompileResult, ErrorCode, getProjectModules } from '@8f4e/language-spec';
 import { composeProgram } from '@8f4e/program-composer/internal';
 import { compileSubProgram } from '@8f4e/sub-program/internal';
-import { emitWasmProgram } from '@8f4e/wasm-codegen';
 import { describe, expect, it, vi } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
@@ -38,7 +37,7 @@ describe('native compiler assertions', () => {
 			// Simulate two generated operations sharing a source location.
 			second.lineNumber = first.lineNumber;
 
-			const result = emitWasmProgram(compileSubProgram(program, { enableAssertions: true }));
+			const result = compileSubProgram(program, { enableAssertions: true });
 			expect(result.assertionSites?.map(({ siteId, lineNumber }) => [siteId, lineNumber])).toEqual([
 				[0, first.lineNumber],
 				[1, first.lineNumber],

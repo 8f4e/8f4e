@@ -1,7 +1,7 @@
 # @8f4e/wasm-ir-lowering
 
-Lowers resolved 8f4e operations to Wasm IR using the source stack report and planned assertion sites. Instruction
-handlers expand operations and allocate the scratch locals they need.
+Lowers a resolved 8f4e program to one Wasm module using the source stack report, assertion plan, entry schedule, and
+memory plan. It constructs all function bodies, imports, exports, and passive data segments before optimization.
 
-Each lowered body records parameters, source locals, and scratch locals in binding order. Operands that require
-index assignment stay symbolic so later passes can remap bindings before binary emission.
+Bodies describe Wasm operations with explicit operands and locals in binding order. Calls and data references remain
+symbolic until binary emission.

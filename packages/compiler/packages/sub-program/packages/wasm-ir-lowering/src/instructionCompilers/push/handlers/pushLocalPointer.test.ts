@@ -1,11 +1,11 @@
-import { f32load, i32load8u, WASM_TYPE_F32, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
+import { WASM_TYPE_F32, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
 import type { ResolvedLocalPointerPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-
 import createInstructionCompilerTestContext, {
 	expectGuardedDereference,
 	pointerIdentifier,
 } from '../../../../tests/testUtils';
+import { f32load, i32load8u } from '../../../operations';
 import pushLocalPointer from './pushLocalPointer';
 
 describe('pushLocalPointer', () => {
