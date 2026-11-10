@@ -994,5 +994,11 @@
 		"version": "9.0.0",
 		"benchmark": "hymnToAurora.8f4e",
 		"emittedBytes": 6202
+	},
+	{
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"version": "10.0.0",
+		"benchmark": "hymnToAurora.8f4e",
+		"emittedBytes": 5506
 	}
 ]

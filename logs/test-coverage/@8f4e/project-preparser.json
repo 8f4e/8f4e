@@ -2936,5 +2936,31 @@
 				"percentage": 96.32
 			}
 		}
+	},
+	{
+		"commit": "614718cb7a610bad7ccb6c677f76009f1bc29e9f",
+		"recordedAt": "2026-11-10T10:51:42.096Z",
+		"coverage": {
+			"statements": {
+				"covered": 434,
+				"total": 458,
+				"percentage": 94.75
+			},
+			"branches": {
+				"covered": 295,
+				"total": 320,
+				"percentage": 92.18
+			},
+			"functions": {
+				"covered": 94,
+				"total": 97,
+				"percentage": 96.9
+			},
+			"lines": {
+				"covered": 393,
+				"total": 408,
+				"percentage": 96.32
+			}
+		}
 	}
 ]
