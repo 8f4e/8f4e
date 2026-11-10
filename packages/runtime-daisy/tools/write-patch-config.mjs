@@ -9,23 +9,14 @@ async function main() {
 		options: { left: { type: 'string' }, right: { type: 'string' }, help: { type: 'boolean' } },
 	});
 	const usage =
-		'Usage: node tools/pack-patch.mjs <instrument.aot> <memory.json> <PATCH.8FA> [--left <symbol>] [--right <symbol>]';
+		'Usage: node tools/write-patch-config.mjs <memory.json> <PATCH.TXT> [--left <symbol>] [--right <symbol>]';
 	if (values.help) {
 		console.log(usage);
 		return;
 	}
-	if (positionals.length !== 3) throw new Error(usage);
-	const [aotPath, metadataPath, outputPath] = positionals;
-	const [aot, metadata] = await Promise.all([readFile(aotPath), readFile(metadataPath, 'utf8')]);
-	if (
-		aot.length < 64 ||
-		aot.readUInt32LE(0) !== 0x746f6100 ||
-		aot.readUInt32LE(4) !== 5 ||
-		aot.toString('ascii', 48, 57) !== 'thumbv7em'
-	) {
-		throw new Error('Expected a Cortex-M7 AOT file from WAMR 2.4.5');
-	}
-	if (aot.length > 128 * 1024) throw new Error('Daisy patch payload exceeds 128 KiB');
+	if (positionals.length !== 2) throw new Error(usage);
+	const [metadataPath, outputPath] = positionals;
+	const metadata = await readFile(metadataPath, 'utf8');
 
 	const { leftBuffer, rightBuffer } = resolveAudioBuffers(JSON.parse(metadata), values);
 	const frames = leftBuffer.numberOfElements;
@@ -39,14 +30,7 @@ async function main() {
 		}
 	}
 
-	const header = Buffer.alloc(24);
-	header.write('8FA1');
-	header.writeUInt32LE(48000, 4);
-	header.writeUInt32LE(frames, 8);
-	header.writeUInt32LE(offsets[0], 12);
-	header.writeUInt32LE(offsets[1], 16);
-	header.writeUInt32LE(aot.length, 20);
-	await writeFile(outputPath, Buffer.concat([header, aot]));
+	await writeFile(outputPath, `left=${offsets[0]}\nright=${offsets[1]}\nframes=${frames}\n`);
 }
 
 main().catch(error => {

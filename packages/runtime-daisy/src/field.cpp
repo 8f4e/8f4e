@@ -5,6 +5,7 @@
 
 #include "daisy_field.h"
 #include "fatfs.h"
+#include "patch-config.hpp"
 #include "wasm_export.h"
 
 using namespace daisy;
@@ -13,20 +14,10 @@ namespace {
 constexpr uint32_t sampleRate = 48000;
 constexpr uint32_t queueCapacity = 64;
 
-struct PatchHeader {
-    char magic[4];
-    uint32_t rate;
-    uint32_t frames;
-    uint32_t left;
-    uint32_t right;
-    uint32_t aotSize;
-};
-static_assert(sizeof(PatchHeader) == 24, "Unexpected patch header layout");
-
 DaisyField field;
 SdmmcHandler sd;
 FatFSInterface filesystem;
-PatchHeader patch;
+PatchConfig patch;
 alignas(32) uint8_t DSY_SDRAM_BSS patchBytes[128 * 1024];
 alignas(16) uint8_t wasmPool[192 * 1024];
 wasm_module_inst_t instance;
@@ -57,7 +48,7 @@ uint32_t deadlineTicks;
     }
 }
 
-void loadPatch() {
+uint32_t loadPatch() {
     SdmmcHandler::Config sdConfig;
     sdConfig.Defaults();
     sdConfig.speed = SdmmcHandler::Speed::STANDARD;
@@ -71,22 +62,24 @@ void loadPatch() {
     // FatFs reads partial sectors into FIL::buf with SDMMC DMA.
     // The Cortex-M7 stack lives in DTCM, which that DMA cannot access.
     alignas(32) static FIL file;
-    if (f_open(&file, "0:/PATCH.8FA", FA_READ) != FR_OK) fail("Cannot open PATCH.8FA");
+    if (f_open(&file, "0:/PATCH.TXT", FA_READ) != FR_OK) fail("Cannot open PATCH.TXT");
+    char text[64];
     UINT bytesRead = 0;
-    const bool validHeader =
-        f_read(&file, &patch, sizeof(patch), &bytesRead) == FR_OK && bytesRead == sizeof(patch) &&
-        std::memcmp(patch.magic, "8FA1", 4) == 0 && patch.rate == sampleRate &&
-        patch.frames > 0 && patch.frames <= 256 && patch.left % 4 == 0 && patch.right % 4 == 0 &&
-        patch.aotSize > 0 && patch.aotSize <= sizeof(patchBytes) &&
-        f_size(&file) == sizeof(patch) + patch.aotSize;
-    if (!validHeader) {
-        f_close(&file);
-        fail("Invalid PATCH.8FA header");
-    }
-    const bool complete = f_read(&file, patchBytes, patch.aotSize, &bytesRead) == FR_OK &&
-                          bytesRead == patch.aotSize;
+    const auto textSize = f_size(&file);
+    const bool validConfig = textSize <= sizeof(text) &&
+                             f_read(&file, text, textSize, &bytesRead) == FR_OK &&
+                             bytesRead == textSize && patch_config::parse(text, bytesRead, patch);
     f_close(&file);
-    if (!complete) fail("Incomplete AOT payload");
+    if (!validConfig) fail("Invalid PATCH.TXT");
+
+    if (f_open(&file, "0:/PATCH.AOT", FA_READ) != FR_OK) fail("Cannot open PATCH.AOT");
+    const auto aotSize = f_size(&file);
+    const bool complete = aotSize > 0 && aotSize <= sizeof(patchBytes) &&
+                          f_read(&file, patchBytes, aotSize, &bytesRead) == FR_OK &&
+                          bytesRead == aotSize;
+    f_close(&file);
+    if (!complete) fail("Cannot read PATCH.AOT or file exceeds 128 KiB");
+    return aotSize;
 }
 
 wasm_function_inst_t requireFunction(const char* name, uint32_t parameters) {
@@ -96,7 +89,7 @@ wasm_function_inst_t requireFunction(const char* name, uint32_t parameters) {
     return function;
 }
 
-void startWasm() {
+void startWasm(uint32_t aotSize) {
     RuntimeInitArgs config{};
     config.mem_alloc_type = Alloc_With_Pool;
     config.mem_alloc_option.pool.heap_buf = wasmPool;
@@ -104,7 +97,7 @@ void startWasm() {
     if (!wasm_runtime_full_init(&config)) fail("WAMR initialization failed");
 
     char error[160]{};
-    auto module = wasm_runtime_load(patchBytes, patch.aotSize, error, sizeof(error));
+    auto module = wasm_runtime_load(patchBytes, aotSize, error, sizeof(error));
     if (!module) fail(error);
     instance = wasm_runtime_instantiate(module, 16 * 1024, 0, error, sizeof(error));
     if (!instance) fail(error);
@@ -192,8 +185,7 @@ void audio(AudioHandle::InputBuffer, AudioHandle::OutputBuffer output, size_t fr
 int main() {
     field.Init(true);
     DaisySeed::StartLog(false);
-    loadPatch();
-    startWasm();
+    startWasm(loadPatch());
     field.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
     field.SetAudioBlockSize(patch.frames);
     const auto tickHz = System::GetTickFreq();

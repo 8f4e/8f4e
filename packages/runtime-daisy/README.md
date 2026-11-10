@@ -36,22 +36,28 @@ commands below from the repository root after building the 8f4e CLI.
 node packages/cli/bin/cli.js compile instrument.8f4e \
   --wasm-output instrument.wasm --memory-output memory.json
 wamrc --target=thumbv7em --target-abi=eabihf --cpu=cortex-m7 \
-  --bounds-checks=1 --opt-level=3 -o instrument.aot instrument.wasm
-node packages/runtime-daisy/tools/pack-patch.mjs instrument.aot memory.json PATCH.8FA
+  --bounds-checks=1 --opt-level=3 -o PATCH.AOT instrument.wasm
+node packages/runtime-daisy/tools/write-patch-config.mjs memory.json PATCH.TXT
 ```
 
-The packer uses `audioout:buffer` for both channels by default. Pass
+The config generator uses `audioout:buffer` for both channels by default. Pass
 `--left <module:buffer>` and `--right <module:buffer>` for other outputs. The
-right channel defaults to the left. Put `PATCH.8FA` in the root of a FAT32
-microSD card, insert it in the Field, and restart the board to load it.
+right channel defaults to the left. Put `PATCH.AOT` and `PATCH.TXT` in the root
+of a FAT32 microSD card, insert it in the Field, and restart to load the instrument.
+Regenerate the text file after recompiling the instrument.
 
-The package starts with the four ASCII bytes `8FA1`. It then stores the sample
-rate, block size, left and right byte offsets, and AOT payload length as five
-little-endian uint32 values in that order. The remaining bytes are executable
-Cortex-M7 code. Use packages built from projects you trust. The host reads
-the numeric offsets directly and uses fixed shared memory. Its file payload
-limit is 128 KiB, and a separate 128 KiB SRAM arena holds relocated code and
-Wasm linear memory together.
+`PATCH.TXT` contains three lines of ASCII decimal values in this order.
+The offsets are byte addresses within the instrument's shared Wasm memory.
+
+```text
+left=4
+right=4
+frames=128
+```
+
+`PATCH.AOT` is the unmodified Cortex-M7 output from `wamrc`. Use files built
+from projects you trust. The AOT file limit is 128 KiB, and a separate 128 KiB
+SRAM arena holds relocated code and Wasm linear memory together.
 
 The Field logs peak callback time, measured deadline misses, and MIDI queue
 drops once per second over the Seed's USB serial port. At 48 kHz and 128
