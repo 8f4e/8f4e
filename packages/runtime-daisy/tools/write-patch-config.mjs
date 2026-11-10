@@ -1,7 +1,17 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
-import { resolveAudioBuffers } from '../../../tools/runtime-command/src/create-command.mjs';
+function resolveAudioBuffer(modules, reference) {
+	const separator = reference.lastIndexOf(':');
+	const moduleId = reference.slice(0, separator);
+	const name = reference.slice(separator + 1);
+	const buffer = separator > 0 ? modules[moduleId]?.memory?.[name] : undefined;
+	if (!buffer) throw new Error(`Unknown audio buffer: ${reference}`);
+	if (buffer.type !== 'float' || buffer.pointerDepth !== 0) {
+		throw new Error(`Audio buffer must contain float32 samples: ${reference}`);
+	}
+	return buffer;
+}
 
 async function main() {
 	const { positionals, values } = parseArgs({
@@ -16,10 +26,16 @@ async function main() {
 	}
 	if (positionals.length !== 2) throw new Error(usage);
 	const [metadataPath, outputPath] = positionals;
-	const metadata = await readFile(metadataPath, 'utf8');
+	const { memoryPlan } = JSON.parse(await readFile(metadataPath, 'utf8'));
+	const left = values.left ?? 'audioout:buffer';
+	const right = values.right ?? left;
+	const leftBuffer = resolveAudioBuffer(memoryPlan.modules, left);
+	const rightBuffer = resolveAudioBuffer(memoryPlan.modules, right);
 
-	const { leftBuffer, rightBuffer } = resolveAudioBuffers(JSON.parse(metadata), values);
 	const frames = leftBuffer.numberOfElements;
+	if (frames !== rightBuffer.numberOfElements) {
+		throw new Error('Daisy left and right buffers must have the same sample count');
+	}
 	if (!Number.isInteger(frames) || frames < 1 || frames > 256) {
 		throw new Error('Daisy needs an audio block of 1 to 256 samples');
 	}

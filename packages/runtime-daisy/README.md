@@ -27,9 +27,7 @@ to install it.
 
 Use a project configured for 48 kHz that exports `initDefaults()`,
 `buffer()`, and `onMidiEvent(i32, i32, i32)`. Each call to `buffer` should
-write one block of 1 to 256 float32 samples per output buffer. Install
-[`wasm-opt` from Binaryen](https://github.com/WebAssembly/binaryen/releases)
-to optimize the Wasm before AOT compilation. Use `wamrc`
+write one block of 1 to 256 float32 samples per output buffer. Use `wamrc`
 from the [WAMR 2.4.5 release](https://github.com/wasm-micro-runtime/wasm-micro-runtime/releases/tag/WAMR-2.4.5)
 to match the firmware. Run the commands below from the repository root
 after building the 8f4e CLI.
@@ -37,11 +35,8 @@ after building the 8f4e CLI.
 ```sh
 node packages/cli/bin/cli.js compile instrument.8f4e \
   --wasm-output instrument.wasm --memory-output memory.json
-wasm-opt -O3 --enable-threads --enable-bulk-memory \
-  --enable-multivalue --enable-nontrapping-float-to-int --enable-sign-ext \
-  instrument.wasm -o instrument.opt.wasm
 wamrc --target=thumbv7em --target-abi=eabihf --cpu=cortex-m7 \
-  --bounds-checks=1 --opt-level=3 -o PATCH.AOT instrument.opt.wasm
+  --bounds-checks=1 --opt-level=3 -o PATCH.AOT instrument.wasm
 node packages/runtime-daisy/tools/write-patch-config.mjs memory.json PATCH.TXT
 ```
 

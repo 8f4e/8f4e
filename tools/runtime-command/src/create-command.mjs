@@ -15,23 +15,17 @@ function resolveBuffer(info, reference) {
 	return memory;
 }
 
-/** Resolve equally sized float32 output buffers from compiler memory metadata. */
-export function resolveAudioBuffers(info, { left = 'audioout:buffer', right = left } = {}) {
+/** Translate compiler-owned memory metadata into numeric Linux runtime arguments. */
+export function createRuntimeArguments(
+	info,
+	{ wasmPath, runtimePath = '8f4e-runtime', left = 'audioout:buffer', right = left },
+	runtimeArgs = []
+) {
 	const leftBuffer = resolveBuffer(info, left);
 	const rightBuffer = resolveBuffer(info, right);
 	if (leftBuffer.numberOfElements === 0 || leftBuffer.numberOfElements !== rightBuffer.numberOfElements) {
 		throw new Error('Left and right audio buffers must have the same nonzero sample count');
 	}
-	return { leftBuffer, rightBuffer };
-}
-
-/** Translate compiler-owned memory metadata into numeric Linux runtime arguments. */
-export function createRuntimeArguments(
-	info,
-	{ wasmPath, runtimePath = '8f4e-runtime', left, right },
-	runtimeArgs = []
-) {
-	const { leftBuffer, rightBuffer } = resolveAudioBuffers(info, { left, right });
 	return [
 		runtimePath,
 		wasmPath,
