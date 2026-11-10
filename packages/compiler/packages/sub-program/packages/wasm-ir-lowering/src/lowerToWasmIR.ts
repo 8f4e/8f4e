@@ -30,7 +30,7 @@ import { i32const } from './operations';
 function lowerBody(
 	resolved: FunctionSemanticReferences | ModuleSemanticReferences,
 	facts: readonly StackAnalysisLineFacts[],
-	enableMemoryGuards: boolean | undefined,
+	enableMemoryGuards: boolean,
 	assertions?: AssertionCodegenSites
 ): WasmIRBody {
 	const { ast, bindings, body } = resolved;
@@ -72,7 +72,7 @@ interface LowerModuleInput {
 	memoryPlan: MemoryLayoutPlan;
 	requiredMemoryBytes: number;
 	memoryDefaultsByModuleId: Record<string, MemoryDefaults>;
-	enableMemoryGuards?: boolean;
+	enableMemoryGuards: boolean;
 	assertionCalls?: ReadonlyMap<ComposedAST, AssertionCodegenSites>;
 	assertionImports?: readonly AssertionImport[];
 }

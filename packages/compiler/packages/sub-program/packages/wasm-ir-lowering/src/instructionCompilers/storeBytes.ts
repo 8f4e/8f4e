@@ -15,7 +15,7 @@ const storeBytes: InstructionCompiler<StoreBytesLine> = (line, context, facts) =
 	const accessByteWidth = operation.accessByteWidth;
 
 	const address = facts.stackAnalysis.consumedOperands[facts.stackAnalysis.consumedOperands.length - 1];
-	const needsGuard = context.enableMemoryGuards !== false && !isSafeMemoryAccess(address, count);
+	const needsGuard = context.enableMemoryGuards && !isSafeMemoryAccess(address, count);
 
 	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 	const byteLocalIndex = allocateLocal(context, { isInteger: true });

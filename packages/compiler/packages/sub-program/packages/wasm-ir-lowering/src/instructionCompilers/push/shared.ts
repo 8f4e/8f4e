@@ -68,7 +68,7 @@ export function buildPointerDereferenceByteCode(
 	const finalLoad = typedLoad(pointerMetadata.pointeeBaseType!);
 	const pointerLoadCount = isFinalDereference ? dereferenceDepth - 1 : dereferenceDepth;
 
-	if (pointerValueSource === 'pointer-slot' || context.enableMemoryGuards === false) {
+	if (pointerValueSource === 'pointer-slot' || !context.enableMemoryGuards) {
 		const loadCount = pointerLoadCount + (pointerValueSource === 'pointer-slot' ? 1 : 0);
 		const pointerLoads = Array.from({ length: loadCount }, () => i32load(2, 0)).flat();
 

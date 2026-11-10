@@ -12,9 +12,15 @@ export const recompileDebounceSchemaContribution: EditorConfigSchemaContribution
 export const compilerEditorConfigSchemaContribution: EditorConfigSchemaContribution = {
 	root: 'compiler',
 	affectsCompilation: true,
+	defaults: { memoryGuards: { enabled: true } },
 	schema: {
 		type: 'object',
 		properties: {
+			memoryGuards: {
+				type: 'object',
+				properties: { enabled: { type: 'boolean' } },
+				additionalProperties: false,
+			},
 			wasmPruning: {
 				type: 'object',
 				properties: { enabled: { type: 'boolean' } },
@@ -41,13 +47,18 @@ export function getRecompileDebounceDelay(config: EditorConfig): number {
 
 export function getCompilerOptimizationOptions(
 	config: EditorConfig
-): Pick<CompileOptions, 'enableWasmPruning' | 'enableFunctionInlining' | 'functionInlining'> {
-	const { functionInlining, wasmPruning } = resolveSchemaConfigRoot(compilerEditorConfigSchemaContribution, config) as {
+): Pick<CompileOptions, 'enableMemoryGuards' | 'enableWasmPruning' | 'enableFunctionInlining' | 'functionInlining'> {
+	const { functionInlining, memoryGuards, wasmPruning } = resolveSchemaConfigRoot(
+		compilerEditorConfigSchemaContribution,
+		config
+	) as {
+		memoryGuards: { enabled: boolean };
 		wasmPruning?: { enabled?: boolean };
 		functionInlining?: FunctionInliningOptions & { enabled?: boolean };
 	};
 	const { enabled, ...limits } = functionInlining ?? {};
 	return {
+		enableMemoryGuards: memoryGuards.enabled,
 		...(wasmPruning?.enabled !== undefined ? { enableWasmPruning: wasmPruning.enabled } : {}),
 		...(enabled !== undefined ? { enableFunctionInlining: enabled } : {}),
 		...(Object.keys(limits).length > 0 ? { functionInlining: limits } : {}),

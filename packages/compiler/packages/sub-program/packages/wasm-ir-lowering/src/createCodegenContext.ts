@@ -11,6 +11,7 @@ export function createCodegenContext(
 	const context: CodegenContext = {
 		instructions: [],
 		locals: [],
+		enableMemoryGuards: true,
 		...overrides,
 		...createBlockState(overrides.blockStack),
 	};

@@ -32,7 +32,7 @@ const load: InstructionCompiler<LoadLine> = (line, context, facts) => {
 	const operation = getInstructionSpec(line.instruction).effects.memory;
 	const instructions = loadVariantByteCode[operation.loadVariant];
 	const accessByteWidth = operation.accessByteWidth;
-	if (context.enableMemoryGuards === false || isSafeMemoryAccess(address, accessByteWidth)) {
+	if (!context.enableMemoryGuards || isSafeMemoryAccess(address, accessByteWidth)) {
 		return saveByteCode(context, instructions);
 	}
 

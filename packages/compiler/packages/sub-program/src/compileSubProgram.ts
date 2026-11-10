@@ -267,7 +267,7 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		memoryPlan,
 		memoryDefaultsByModuleId,
 		requiredMemoryBytes,
-		enableMemoryGuards: options.enableMemoryGuards,
+		enableMemoryGuards: options.enableMemoryGuards ?? true,
 		assertionCalls: assertionPlan?.calls,
 		assertionImports: assertionPlan?.imports,
 	});

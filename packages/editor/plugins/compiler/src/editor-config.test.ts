@@ -96,6 +96,7 @@ describe('compiler configuration directives', () => {
 		load(
 			'0',
 			'; @config compiler.functionInlining.enabled false',
+			'; @config compiler.memoryGuards.enabled false',
 			'; @config compiler.wasmPruning.enabled false',
 			'; @config compiler.functionInlining.maxExpansionOperations 12',
 			'; @config compiler.functionInlining.maxCallerGrowth 0'
@@ -107,9 +108,11 @@ describe('compiler configuration directives', () => {
 			startingMemoryAllocationUnitAddress: 0,
 			includeStackAnalysis: true,
 			enableAssertions: false,
+			enableMemoryGuards: true,
 		};
 		expect(worker.postedMessages[0]).toHaveProperty('payload.compilerOptions', {
 			...defaultOptions,
+			enableMemoryGuards: false,
 			enableFunctionInlining: false,
 			enableWasmPruning: false,
 			functionInlining: { maxExpansionOperations: 12, maxCallerGrowth: 0 },
