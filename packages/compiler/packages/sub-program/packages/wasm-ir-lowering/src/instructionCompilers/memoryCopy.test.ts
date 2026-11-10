@@ -1,4 +1,3 @@
-import { WASM_MEMORY_SIZE, WASM_MISC_MEMORY_COPY } from '@8f4e/compiler-wasm-utils';
 import type { ResolvedMemoryCopyLine } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
@@ -55,7 +54,7 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toStrictEqual([0x41, 0x14, 0xfc, WASM_MISC_MEMORY_COPY, 0x00, 0x00]);
+		expect(context.instructions).toStrictEqual([{ kind: 'i32.const', value: 20 }, { kind: 'memory.copy' }]);
 	});
 
 	it('guards the copy when the length is not proven at compile time', () => {
@@ -73,8 +72,8 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(WASM_MEMORY_SIZE);
-		expect(context.instructions).toContain(WASM_MISC_MEMORY_COPY);
+		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).toContainEqual({ kind: 'memory.copy' });
 	});
 
 	it('compiles memoryCopy 0 as a stack-only no-op', () => {

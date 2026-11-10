@@ -3,9 +3,12 @@
 exports[`load instruction compiler > loads from a safe memory address 1`] = `
 {
   "instructions": [
-    40,
-    2,
-    0,
+    {
+      "alignment": 2,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 40,
+    },
   ],
 }
 `;
@@ -21,32 +24,47 @@ exports[`load instruction compiler > loads from an unsafe memory address with a 
       "binding": 0,
       "kind": "local.get",
     },
-    63,
-    0,
-    65,
-    1,
+    {
+      "kind": "memory.size",
+    },
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
     107,
-    65,
-    16,
+    {
+      "kind": "i32.const",
+      "value": 16,
+    },
     116,
-    65,
-    255,
-    255,
-    3,
+    {
+      "kind": "i32.const",
+      "value": 65535,
+    },
     106,
     77,
-    4,
-    127,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
     {
       "binding": 0,
       "kind": "local.get",
     },
-    45,
-    0,
-    0,
+    {
+      "alignment": 0,
+      "kind": "memoryAccess",
+      "offset": 0,
+      "opcode": 45,
+    },
     5,
-    65,
-    0,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
     11,
   ],
 }

@@ -1,163 +1,176 @@
-import { f32const, f64const, i32const } from '@8f4e/compiler-wasm-utils';
-import type { FunctionAnalysisReport, FunctionBodyFacts } from '@8f4e/function-analyzer';
-import type {
-	CodegenInstructionName,
-	FunctionInliningOptions,
-	WasmIR,
-	WasmIRBody,
-	WasmIRInstruction,
-} from '@8f4e/language-spec';
-import { wasmLocalSet } from '@8f4e/language-spec';
+import {
+	WASM_BLOCK,
+	WASM_BR,
+	WASM_END,
+	WASM_LOOP,
+	WASM_RETURN,
+	WASM_TYPE_F32,
+	WASM_TYPE_F64,
+} from '@8f4e/compiler-wasm-utils';
+import type { FunctionInliningOptions, WasmIR, WasmIRFunction, WasmIRInstruction } from '@8f4e/language-spec';
+import { pruneUnreachableFunctions } from '@8f4e/wasm-ir-pruner';
+import { findRecursiveNodes } from './callGraph';
 
-/** V8 counts parameters and declared locals toward the same per-function limit. */
 const MAX_WASM_LOCAL_SLOTS = 50_000;
+const DEFAULT_DUPLICATED_BODY_GROWTH_LIMIT = 128;
 
-const scalarInstructions: ReadonlySet<CodegenInstructionName> = new Set([
-	'abs',
-	'add',
-	'and',
-	'castToFloat',
-	'castToFloat64',
-	'castToInt',
-	'div',
-	'drop',
-	'equal',
-	'equalToZero',
-	'greaterOrEqual',
-	'greaterOrEqualUnsigned',
-	'greaterThan',
-	'lessOrEqual',
-	'lessThan',
-	'localSet',
-	'max',
-	'min',
-	'mul',
-	'notEqual',
-	'notZero',
-	'or',
-	'push',
-	'remainder',
-	'round',
-	'shiftLeft',
-	'shiftRight',
-	'shiftRightUnsigned',
-	'sqrt',
-	'sub',
-	'xor',
-]);
-
-interface Candidate {
-	callee: WasmIRBody;
-	growth: number;
+function getCalls(func: WasmIRFunction): string[] {
+	const calls: string[] = [];
+	for (const instruction of func.body?.instructions ?? []) {
+		if (typeof instruction !== 'number' && instruction.kind === 'call') calls.push(instruction.targetFunctionId);
+	}
+	return calls;
 }
 
-function hasScalarBody(body: FunctionBodyFacts): boolean {
-	return (
-		!body.hasPointerBindings &&
-		!body.hasPointerReturns &&
-		body.instructionKinds.every(instruction => scalarInstructions.has(instruction)) &&
-		body.pushOperandKinds.every(kind => kind === 'literal' || kind === 'local')
-	);
+interface Expansion {
+	locals: NonNullable<WasmIRFunction['body']>['locals'];
+	instructions: WasmIRInstruction[];
 }
 
-function getCandidates(
-	functions: WasmIR['functions'],
-	functionAnalysis: FunctionAnalysisReport,
-	maxExpansionOperations: number
-): ReadonlyMap<string, Candidate> {
-	const candidates = new Map<string, Candidate>();
-	for (const [id, callee] of Object.entries(functions)) {
-		const { analysis, bodyFacts } = functionAnalysis.functions[id];
-		if (analysis.isImported || !hasScalarBody(bodyFacts)) continue;
-
-		const localCount = callee.sourceBindingCount - callee.parameterCount;
-		const expansionSize = bodyFacts.operationCount + callee.parameterCount + localCount * 2;
-		if (expansionSize <= maxExpansionOperations) {
-			candidates.set(id, { callee, growth: Math.max(0, expansionSize - 1) });
+function prepareExpansion(func: WasmIRFunction): Expansion {
+	const { instructions, locals } = func.body!;
+	const parameters = func.signature.params.length;
+	const initialized = new Set<number>();
+	const needsZero = new Set<number>();
+	let beforeControlFlow = true;
+	let needsExit = false;
+	let depth = 0;
+	const body = instructions.map<WasmIRInstruction>(instruction => {
+		if (instruction === WASM_RETURN) {
+			beforeControlFlow = false;
+			needsExit = true;
+			return { kind: 'branch', opcode: WASM_BR, depth };
 		}
-	}
-	return candidates;
-}
-
-function expandCall(instructions: WasmIRInstruction[], callee: WasmIRBody, bindingOffset: number): void {
-	// The last argument is on top of the caller's stack.
-	for (let index = callee.parameterCount - 1; index >= 0; index--) {
-		instructions.push(...wasmLocalSet(bindingOffset + index));
-	}
-	// Restore Wasm's zero-initialization of declared locals on each execution.
-	for (let index = callee.parameterCount; index < callee.sourceBindingCount; index++) {
-		const local = callee.locals[index];
-		const zero = local.isInteger ? i32const(0) : local.isFloat64 ? f64const(0) : f32const(0);
-		instructions.push(...zero, ...wasmLocalSet(bindingOffset + index));
-	}
-	for (const instruction of callee.instructions) {
-		if (typeof instruction !== 'number' && (instruction.kind === 'local.get' || instruction.kind === 'local.set')) {
-			instructions.push({ ...instruction, binding: bindingOffset + instruction.binding });
-		} else {
-			instructions.push(instruction);
+		if (instruction === WASM_END) depth--;
+		if (typeof instruction === 'number') return instruction;
+		switch (instruction.kind) {
+			case 'block':
+				beforeControlFlow = false;
+				depth++;
+				break;
+			case 'branch':
+				beforeControlFlow = false;
+				needsExit ||= instruction.depth === depth;
+				break;
+			case 'local.get':
+				if (instruction.binding >= parameters && !initialized.has(instruction.binding)) {
+					needsZero.add(instruction.binding);
+				}
+				break;
+			case 'local.set':
+				if (beforeControlFlow) initialized.add(instruction.binding);
+				break;
 		}
+		return instruction;
+	});
+
+	const expansion: WasmIRInstruction[] = [];
+	for (let binding = parameters - 1; binding >= 0; binding--) {
+		expansion.push({ kind: 'local.set', binding });
 	}
+	for (const binding of [...needsZero].sort((a, b) => a - b)) {
+		const type = locals[binding];
+		expansion.push(
+			{ kind: type === WASM_TYPE_F32 ? 'f32.const' : type === WASM_TYPE_F64 ? 'f64.const' : 'i32.const', value: 0 },
+			{ kind: 'local.set', binding }
+		);
+	}
+	if (needsExit) expansion.push({ kind: 'block', opcode: WASM_BLOCK, results: func.signature.results });
+	for (const instruction of body) expansion.push(instruction);
+	if (needsExit) expansion.push(WASM_END);
+	return { locals, instructions: expansion };
 }
 
-function rewriteBody(
-	original: WasmIRBody,
-	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number
-): WasmIRBody {
-	let instructions: WasmIRInstruction[] | undefined;
-	let locals: WasmIRBody['locals'][number][] | undefined;
-	let remainingGrowth = maxCallerGrowth;
-	for (const [index, instruction] of original.instructions.entries()) {
-		const candidate =
-			typeof instruction !== 'number' && instruction.kind === 'call'
-				? candidates.get(instruction.targetFunctionId)
-				: undefined;
-		const localCount = (locals ?? original.locals).length;
-		if (
-			candidate &&
-			candidate.growth <= remainingGrowth &&
-			localCount + candidate.callee.locals.length <= MAX_WASM_LOCAL_SLOTS
-		) {
-			instructions ??= original.instructions.slice(0, index);
-			locals ??= [...original.locals];
-			expandCall(instructions, candidate.callee, localCount);
-			locals.push(...candidate.callee.locals);
-			remainingGrowth -= candidate.growth;
-		} else {
-			instructions?.push(instruction);
-		}
-	}
-	return instructions && locals ? { ...original, instructions, locals } : original;
+function isScalarLeaf(func: WasmIRFunction): boolean {
+	return func.body!.instructions.every(instruction => {
+		if (typeof instruction === 'number') return instruction !== WASM_RETURN;
+		return (
+			instruction.kind === 'local.get' ||
+			instruction.kind === 'local.set' ||
+			instruction.kind === 'i32.const' ||
+			instruction.kind === 'f32.const' ||
+			instruction.kind === 'f64.const' ||
+			(instruction.kind === 'block' && instruction.opcode !== WASM_LOOP) ||
+			instruction.kind === 'prefixed'
+		);
+	});
 }
 
-function rewriteBodies(
-	bodies: WasmIR['functions'],
-	candidates: ReadonlyMap<string, Candidate>,
-	maxCallerGrowth: number
-): WasmIR['functions'] {
-	let rewritten: Record<string, WasmIRBody> | undefined;
-	for (const [id, body] of Object.entries(bodies)) {
-		const result = rewriteBody(body, candidates, maxCallerGrowth);
-		if (result !== body) {
-			rewritten ??= { ...bodies };
-			rewritten[id] = result;
-		}
-	}
-	return rewritten ?? bodies;
-}
-
-/** Replaces eligible calls in Wasm IR using the slots already declared by lowering. */
+/** Inlines direct calls in the complete module before assigning numeric indices. */
 export function inlineFunctions(
 	ir: WasmIR,
-	functionAnalysis: FunctionAnalysisReport,
 	{
-		maxExpansionOperations = Number.POSITIVE_INFINITY,
-		maxCallerGrowth = Number.POSITIVE_INFINITY,
-	}: FunctionInliningOptions = {}
+		maxExpansionOperations = Infinity,
+		maxCallerGrowth,
+		pruneFunctions = true,
+	}: FunctionInliningOptions & { pruneFunctions?: boolean } = {}
 ): WasmIR {
-	const candidates = getCandidates(ir.functions, functionAnalysis, maxExpansionOperations);
-	if (candidates.size === 0) return ir;
-	const modules = rewriteBodies(ir.modules, candidates, maxCallerGrowth);
-	const functions = rewriteBodies(ir.functions, candidates, maxCallerGrowth);
-	return modules === ir.modules && functions === ir.functions ? ir : { modules, functions };
+	const callerGrowthLimit = maxCallerGrowth ?? DEFAULT_DUPLICATED_BODY_GROWTH_LIMIT;
+	const functions = new Map(ir.functions);
+	const exports = new Set(ir.exports.values());
+	const recursive = findRecursiveNodes(new Map([...functions].map(([id, func]) => [id, getCalls(func)])));
+	const growth = new Map<string, number>();
+	let changed = false;
+	while (true) {
+		const counts = new Map<string, number>();
+		for (const func of functions.values()) {
+			for (const target of getCalls(func)) counts.set(target, (counts.get(target) ?? 0) + 1);
+		}
+		const candidates = new Map<string, Expansion & { duplicatesBody: boolean }>();
+		for (const [id, func] of functions) {
+			if (!func.body || !counts.has(id) || recursive.has(id)) continue;
+			const duplicatesBody = counts.get(id) !== 1 || exports.has(id);
+			if (duplicatesBody && !isScalarLeaf(func)) continue;
+			const expansion = prepareExpansion(func);
+			if (expansion.instructions.length <= maxExpansionOperations) {
+				candidates.set(id, { ...expansion, duplicatesBody });
+			}
+		}
+		let changedThisRound = false;
+		for (const [id, func] of functions) {
+			if (!func.body) continue;
+			const { instructions, locals } = func.body;
+			let rewritten: WasmIRInstruction[] | undefined;
+			let expandedLocals: (typeof locals)[number][] | undefined;
+			let usedGrowth = growth.get(id) ?? 0;
+			for (const [index, instruction] of instructions.entries()) {
+				const target =
+					typeof instruction !== 'number' && instruction.kind === 'call' ? instruction.targetFunctionId : undefined;
+				const candidate = target === undefined ? undefined : candidates.get(target);
+				const offset = expandedLocals?.length ?? locals.length;
+				const extra =
+					candidate && (maxCallerGrowth !== undefined || candidate.duplicatesBody)
+						? Math.max(0, candidate.instructions.length - 1)
+						: 0;
+				if (
+					!candidate ||
+					usedGrowth + extra > callerGrowthLimit ||
+					offset + candidate.locals.length > MAX_WASM_LOCAL_SLOTS
+				) {
+					rewritten?.push(instruction);
+					continue;
+				}
+				rewritten ??= instructions.slice(0, index);
+				expandedLocals ??= [...locals];
+				for (const type of candidate.locals) expandedLocals.push(type);
+				for (const operation of candidate.instructions) {
+					rewritten.push(
+						typeof operation !== 'number' && (operation.kind === 'local.get' || operation.kind === 'local.set')
+							? { ...operation, binding: operation.binding + offset }
+							: operation
+					);
+				}
+				usedGrowth += extra;
+			}
+			if (rewritten) {
+				functions.set(id, { signature: func.signature, body: { instructions: rewritten, locals: expandedLocals! } });
+				growth.set(id, usedGrowth);
+				changedThisRound = true;
+			}
+		}
+		if (!changedThisRound) break;
+		changed = true;
+		if (pruneFunctions) pruneUnreachableFunctions(functions, exports);
+	}
+	return changed ? { ...ir, functions } : ir;
 }

@@ -10,8 +10,10 @@ exports[`mapEnd instruction compiler > emits DROP + typed zero for zero rows 1`]
   ],
   "instructions": [
     26,
-    65,
-    0,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
   ],
 }
 `;
@@ -23,14 +25,18 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
       "binding": 0,
       "kind": "local.set",
     },
-    65,
-    121,
+    {
+      "kind": "i32.const",
+      "value": -7,
+    },
     {
       "binding": 1,
       "kind": "local.set",
     },
-    65,
-    30,
+    {
+      "kind": "i32.const",
+      "value": 30,
+    },
     {
       "binding": 1,
       "kind": "local.get",
@@ -39,16 +45,20 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
       "binding": 0,
       "kind": "local.get",
     },
-    65,
-    1,
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
     70,
     27,
     {
       "binding": 1,
       "kind": "local.set",
     },
-    65,
-    20,
+    {
+      "kind": "i32.const",
+      "value": 20,
+    },
     {
       "binding": 1,
       "kind": "local.get",
@@ -57,16 +67,20 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
       "binding": 0,
       "kind": "local.get",
     },
-    65,
-    2,
+    {
+      "kind": "i32.const",
+      "value": 2,
+    },
     70,
     27,
     {
       "binding": 1,
       "kind": "local.set",
     },
-    65,
-    10,
+    {
+      "kind": "i32.const",
+      "value": 10,
+    },
     {
       "binding": 1,
       "kind": "local.get",
@@ -75,8 +89,10 @@ exports[`mapEnd instruction compiler > uses only input and result locals without
       "binding": 0,
       "kind": "local.get",
     },
-    65,
-    1,
+    {
+      "kind": "i32.const",
+      "value": 1,
+    },
     70,
     27,
     {

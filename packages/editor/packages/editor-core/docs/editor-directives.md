@@ -130,7 +130,8 @@ Supported paths:
 - `audioRuntime.<field>` / `workerRuntime.<field>` / `testRuntime.<field>` - independently enabled execution runtimes.
 - `compiler.functionInlining.enabled` / `compiler.functionInlining.maxExpansionOperations` /
   `compiler.functionInlining.maxCallerGrowth` -
-  [compiler inlining settings](../../../plugins/compiler/README.md#function-inlining).
+  [compiler inlining settings](../../../plugins/compiler/README.md#wasm-optimization).
+- `compiler.wasmPruning.enabled` - [Wasm pruning setting](../../../plugins/compiler/README.md#wasm-optimization).
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.

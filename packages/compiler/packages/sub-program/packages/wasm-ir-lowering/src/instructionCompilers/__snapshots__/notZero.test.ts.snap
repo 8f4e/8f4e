@@ -3,15 +3,10 @@
 exports[`notZero instruction compiler > emits F64_NE against zero for float64 operands 1`] = `
 {
   "instructions": [
-    68,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    {
+      "kind": "f64.const",
+      "value": 0,
+    },
     98,
   ],
 }
@@ -20,8 +15,10 @@ exports[`notZero instruction compiler > emits F64_NE against zero for float64 op
 exports[`notZero instruction compiler > emits I32_NE against zero for integer operands 1`] = `
 {
   "instructions": [
-    65,
-    0,
+    {
+      "kind": "i32.const",
+      "value": 0,
+    },
     71,
   ],
 }
@@ -30,11 +27,10 @@ exports[`notZero instruction compiler > emits I32_NE against zero for integer op
 exports[`notZero instruction compiler > emits float comparison segment 1`] = `
 {
   "instructions": [
-    67,
-    0,
-    0,
-    0,
-    0,
+    {
+      "kind": "f32.const",
+      "value": 0,
+    },
     92,
   ],
 }

@@ -30,15 +30,19 @@ cli format path/to/module.8f4em --comment-width 32 --write
 cli test path/to/project.8f4e 'path/to/tests/*.8f4em'
 ```
 
-### Function inlining
+### Wasm optimization
+
+Pruning removes unreachable functions and unused local slots by default. Use `--no-wasm-pruning` to disable it
+independently of inlining.
 
 Function inlining is off by default in `cli compile`. Use `--inline-functions` to inline eligible functions.
 
 - `--max-inline-expansion-operations <n>` caps the size of each replacement, including argument stores and local initialization.
 - `--max-inline-caller-growth <n>` caps the total additional operations from inlining in each caller.
 
-Both limits accept non-negative integers, including zero, and apply when `--inline-functions` is set.
-Omit a limit to leave that budget uncapped.
+Both limits count lowered Wasm operations and accept non-negative integers, including zero. They apply when
+`--inline-functions` is set. The default caller budget allows 128 extra operations from duplicating bodies.
+An explicit caller-growth limit applies to all expansions. Each replacement has no size limit unless configured.
 
 ```bash
 cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-functions \

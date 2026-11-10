@@ -1,16 +1,10 @@
 import {
-	f32const,
-	f64const,
-	i32const,
-	ifelse,
-	memoryCopy,
 	WASM_I32_ADD,
 	WASM_I32_AND,
 	WASM_I32_LE_U,
 	WASM_I32_SHL,
 	WASM_I32_SUB,
 	WASM_MEMORY_PAGE_SIZE,
-	WASM_MEMORY_SIZE,
 	WASM_TYPE_F32,
 	WASM_TYPE_F64,
 	type WASM_TYPE_I32,
@@ -25,6 +19,7 @@ import {
 	type WasmIRInstruction,
 } from '@8f4e/language-spec';
 import { allocateLocal } from '../../localStorage';
+import { f32const, f64const, i32const, ifelse, memoryCopy } from '../../operations';
 
 type NumericWasmValueType = typeof WASM_TYPE_I32 | typeof WASM_TYPE_F32 | typeof WASM_TYPE_F64;
 
@@ -37,7 +32,7 @@ type GuardedLoadOptions = {
 type GuardedStoreOptions = {
 	value: StackItem;
 	accessByteWidth: number;
-	storeByteCode: number[];
+	storeByteCode: WasmIRInstruction[];
 };
 
 /**
@@ -64,10 +59,9 @@ export function isSafeMemoryAccess(address: StackItem, accessByteWidth: number):
  * @param accessByteWidth - Byte width of the memory access being protected.
  * @returns The computed result.
  */
-export function linearLastValidStartAddress(accessByteWidth: number): number[] {
+export function linearLastValidStartAddress(accessByteWidth: number): WasmIRInstruction[] {
 	return [
-		WASM_MEMORY_SIZE,
-		0,
+		{ kind: 'memory.size' },
 		...i32const(1),
 		WASM_I32_SUB,
 		...i32const(16),
@@ -77,8 +71,8 @@ export function linearLastValidStartAddress(accessByteWidth: number): number[] {
 	];
 }
 
-function linearMemoryByteLength(): number[] {
-	return [WASM_MEMORY_SIZE, 0, ...i32const(16), WASM_I32_SHL];
+function linearMemoryByteLength(): WasmIRInstruction[] {
+	return [{ kind: 'memory.size' }, ...i32const(16), WASM_I32_SHL];
 }
 
 function addressWithinMemoryBounds(addressLocalIndex: number, accessByteWidth: number): WasmIRInstruction[] {
@@ -99,7 +93,7 @@ function rangeWithinMemoryBounds(addressLocalIndex: number, byteLength: number):
 	];
 }
 
-function zeroValue(type: NumericWasmValueType): number[] {
+function zeroValue(type: NumericWasmValueType): WasmIRInstruction[] {
 	if (type === WASM_TYPE_F64) {
 		return f64const(0);
 	}
@@ -200,7 +194,7 @@ export function guardedStoreFromLocals(
 	addressLocalIndex: number,
 	valueLocalIndex: number,
 	accessByteWidth: number,
-	storeByteCode: number[]
+	storeByteCode: WasmIRInstruction[]
 ): WasmIRInstruction[] {
 	return [
 		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),

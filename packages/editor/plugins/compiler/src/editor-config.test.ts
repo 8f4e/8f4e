@@ -91,11 +91,12 @@ describe('compiler configuration directives', () => {
 		expect(test.worker.postedMessages).toHaveLength(1);
 	});
 
-	it('passes project inlining options to the worker and restores defaults when removed', async () => {
+	it('passes project optimization options to the worker and restores defaults when removed', async () => {
 		const { store, events, worker, load } = setup();
 		load(
 			'0',
 			'; @config compiler.functionInlining.enabled false',
+			'; @config compiler.wasmPruning.enabled false',
 			'; @config compiler.functionInlining.maxExpansionOperations 12',
 			'; @config compiler.functionInlining.maxCallerGrowth 0'
 		);
@@ -110,6 +111,7 @@ describe('compiler configuration directives', () => {
 		expect(worker.postedMessages[0]).toHaveProperty('payload.compilerOptions', {
 			...defaultOptions,
 			enableFunctionInlining: false,
+			enableWasmPruning: false,
 			functionInlining: { maxExpansionOperations: 12, maxCallerGrowth: 0 },
 		});
 		worker.emitMessage(createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })));

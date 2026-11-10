@@ -1,7 +1,7 @@
-import { br, WASM_END } from '@8f4e/compiler-wasm-utils';
+import { WASM_END } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
-
 import { popBlock } from '@8f4e/semantic-utils';
+import { br } from '../operations';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**

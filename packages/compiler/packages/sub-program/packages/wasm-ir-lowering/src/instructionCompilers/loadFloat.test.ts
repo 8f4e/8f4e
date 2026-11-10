@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
 	compileInstructionForTest,
-	containsByteCodeSequence,
 	createStackFacts as createBaseStackFacts,
 } from '../../tests/testUtils';
 import loadFloat from './loadFloat';
@@ -34,8 +33,12 @@ describe('loadFloat instruction compiler', () => {
 		});
 		facts.stackAnalysis.producedStackItems = [{ kind: 'value', valueType: 'float64', isNonZero: false }];
 		compileInstructionForTest(loadFloat, { lineNumber: 1, instruction: 'loadFloat', arguments: [] }, context, facts);
-		expect(containsByteCodeSequence(context.instructions, [0x2b, 3, 0])).toBe(true);
-		expect(containsByteCodeSequence(context.instructions, [0x04, 0x7c])).toBe(guarded);
+		expect(context.instructions).toContainEqual({ kind: 'memoryAccess', opcode: 0x2b, alignment: 3, offset: 0 });
+		expect(
+			context.instructions.some(
+				op => typeof op !== 'number' && op.kind === 'block' && op.opcode === 0x04 && op.results[0] === 0x7c
+			)
+		).toBe(guarded);
 		expect(context.instructions).toMatchSnapshot();
 	});
 

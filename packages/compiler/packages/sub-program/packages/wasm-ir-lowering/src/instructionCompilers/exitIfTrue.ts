@@ -1,4 +1,4 @@
-import { WASM_DROP, WASM_END, WASM_IF, WASM_RETURN, WASM_TYPE_VOID } from '@8f4e/compiler-wasm-utils';
+import { WASM_DROP, WASM_END, WASM_IF, WASM_RETURN } from '@8f4e/compiler-wasm-utils';
 import type { ExitIfTrueLine, InstructionCompiler } from '@8f4e/language-spec';
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -16,7 +16,7 @@ import { saveByteCode } from './utils/saveByteCode';
 const exitIfTrue: InstructionCompiler<ExitIfTrueLine> = (line, context, facts) => {
 	const drops = (facts.stackAnalysis.droppedStackItems ?? []).flatMap(() => [WASM_DROP]);
 
-	return saveByteCode(context, [WASM_IF, WASM_TYPE_VOID, ...drops, WASM_RETURN, WASM_END]);
+	return saveByteCode(context, [{ kind: 'block', opcode: WASM_IF, results: [] }, ...drops, WASM_RETURN, WASM_END]);
 };
 
 export default exitIfTrue;

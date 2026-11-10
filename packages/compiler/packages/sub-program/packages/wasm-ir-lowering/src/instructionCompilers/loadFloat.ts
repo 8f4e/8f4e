@@ -1,6 +1,7 @@
-import { f32load, f64load, WASM_TYPE_F32, WASM_TYPE_F64 } from '@8f4e/compiler-wasm-utils';
+import { WASM_TYPE_F32, WASM_TYPE_F64 } from '@8f4e/compiler-wasm-utils';
 import type { ASTLineBase, FloatLoadInstructionSpecName, InstructionCompiler } from '@8f4e/language-spec';
 import { DOUBLE_WORD_MEMORY_ACCESS_WIDTH, getInstructionSpec } from '@8f4e/language-spec';
+import { f32load, f64load } from '../operations';
 import { guardedLoad, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 

@@ -1,4 +1,3 @@
-import { WASM_MEMORY_SIZE } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -92,7 +91,7 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
 	});
 
 	it('does not guard when an explicit clamp proves the access width is safe', () => {
@@ -113,6 +112,6 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).not.toContain(WASM_MEMORY_SIZE);
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 	});
 });

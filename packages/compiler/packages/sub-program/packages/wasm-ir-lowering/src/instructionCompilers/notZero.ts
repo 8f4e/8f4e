@@ -1,5 +1,6 @@
-import { f32const, f64const, i32const, WASM_F32_NE, WASM_F64_NE, WASM_I32_NE } from '@8f4e/compiler-wasm-utils';
+import { WASM_F32_NE, WASM_F64_NE, WASM_I32_NE } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
+import { f32const, f64const, i32const } from '../operations';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**

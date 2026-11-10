@@ -1,8 +1,8 @@
 import { type CompileResult, createFunctionId } from '@8f4e/language-spec';
 import { describe, expect, it, vi } from 'vitest';
-import wabt from 'wabt';
 import { compileProject, parseProjectSource } from '../src';
 import { createMemory, getExportedFunction } from './testUtils';
+import { disassembleWasm, getWasmFunctionExportIndex } from './wasmTestUtils';
 
 async function instantiate(result: CompileResult, callbacks: Record<string, CallableFunction> = {}) {
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
@@ -12,13 +12,8 @@ async function instantiate(result: CompileResult, callbacks: Record<string, Call
 }
 
 async function countCalls(result: CompileResult) {
-	const api = await wabt();
-	const module = api.readWasm(new Uint8Array(result.codeBuffer), { threads: true });
-	try {
-		return (module.toText({ foldExprs: false }).match(/\bcall\s/g) ?? []).length;
-	} finally {
-		module.destroy();
-	}
+	const wat = await disassembleWasm(result.codeBuffer);
+	return (wat.match(/\bcall\s/g) ?? []).length;
 }
 
 describe('function inlining', () => {
@@ -108,7 +103,7 @@ moduleEnd
 entryEnd`);
 		const result = await compileProject(project, { enableAssertions: true });
 		const baseline = await compileProject(project, { enableAssertions: true, enableFunctionInlining: false });
-		expect(await countCalls(result)).toBe((await countCalls(baseline)) - 3);
+		expect(await countCalls(result)).toBe((await countCalls(baseline)) - 4);
 		const assertEqualI32 = vi.fn();
 		const assertEqualF64 = vi.fn();
 		const exports = await instantiate(result, { assertEqualI32, assertEqualF64 });
@@ -121,7 +116,7 @@ entryEnd`);
 		expect(getExportedFunction(exports, 'increment')(2.5)).toBe(3.5);
 	});
 
-	it('retains calls to functions with whole-stack effects', async () => {
+	it('preserves the caller stack when inlining a lowered clearStack', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function clear
 push 7
@@ -136,11 +131,11 @@ call clear
 add
 functionEnd int`);
 		const result = await compileProject(project);
-		expect(await countCalls(result)).toBe(1);
+		expect(await countCalls(result)).toBe(0);
 		expect(getExportedFunction(await instantiate(result), 'run')()).toBe(109);
 	});
 
-	it('retains calls to functions that push strings or resolved addresses', async () => {
+	it('inlines bodies with lowered string and address constants', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function text
 push "A"
@@ -166,7 +161,8 @@ moduleEnd
 entryEnd`);
 		const baseline = await compileProject(project, { enableFunctionInlining: false });
 		const result = await compileProject(project);
-		expect(result.codeBuffer).toEqual(baseline.codeBuffer);
+		expect(await countCalls(result)).toBeLessThan(await countCalls(baseline));
+		getExportedFunction(await instantiate(result), 'run')();
 	});
 
 	it('applies configurable expansion and caller growth limits', async () => {
@@ -194,6 +190,103 @@ functionEnd int`);
 		}
 	});
 
+	it('folds an empty module cycle at a zero-operation expansion budget', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module empty
+moduleEnd
+entryEnd`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		const result = await compileProject(project, { functionInlining: { maxExpansionOperations: 0 } });
+
+		expect(await countCalls(baseline)).toBe(1);
+		expect(await countCalls(result)).toBe(0);
+		getExportedFunction(await instantiate(result), 'main')();
+	});
+
+	it('bounds growth when each inlining round exposes more multi-use callees', async () => {
+		const depth = 15;
+		const functions = ['function fold0\npush 1\nfunctionEnd int'];
+		for (let index = 1; index <= depth; index++) {
+			functions.push(`function fold${index}
+call fold${index - 1}
+call fold${index - 1}
+add
+functionEnd int`);
+		}
+		const project = parseProjectSource(`8f4e/v1
+${functions.join('\n\n')}
+
+function run
+#export
+call fold${depth}
+functionEnd int`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		const optimized = await compileProject(project);
+
+		expect(optimized.codeBuffer.length).toBeLessThan(baseline.codeBuffer.length * 4);
+		expect(await countCalls(optimized)).toBeLessThan(await countCalls(baseline));
+		expect(getExportedFunction(await instantiate(optimized), 'run')()).toBe(2 ** depth);
+	});
+
+	it('folds nested dispatchers in execution order and skips disabled cycles', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module first
+push 1
+assertEqual 1
+moduleEnd
+group voice
+entry main
+module second
+push 2
+assertEqual 2
+moduleEnd
+module skipped
+#skipExecution
+push 99
+assertEqual 99
+moduleEnd
+entryEnd
+groupEnd
+module third
+push 3
+assertEqual 3
+moduleEnd
+entryEnd`);
+		const result = await compileProject(project, { enableAssertions: true });
+		const assertEqualI32 = vi.fn();
+		getExportedFunction(await instantiate(result, { assertEqualI32 }), 'main')();
+		expect(assertEqualI32.mock.calls.map(([actual]) => actual)).toEqual([1, 2, 3]);
+		expect(await countCalls(result)).toBe(3);
+	});
+
+	it('returns from an inlined callee without returning from the caller', async () => {
+		const project = parseProjectSource(`8f4e/v1
+function select
+param int condition
+push condition
+if
+push 7
+return
+ifEnd
+push 9
+functionEnd int
+
+function run
+#export
+param int condition
+push 100
+call select condition
+add
+functionEnd int`);
+		const result = await compileProject(project);
+		expect(await countCalls(result)).toBe(0);
+		const run = getExportedFunction(await instantiate(result), 'run');
+		expect(run(1)).toBe(107);
+		expect(run(0)).toBe(109);
+	});
+
 	it('keeps calls that would exceed the Wasm local slot limit', async () => {
 		const project = parseProjectSource(`8f4e/v1
 function heavy
@@ -219,10 +312,16 @@ functionEnd`);
 		const baseline = await compileProject(project, { enableFunctionInlining: false });
 		expect(WebAssembly.validate(new Uint8Array(baseline.codeBuffer))).toBe(true);
 
-		const result = await compileProject(project);
+		const result = await compileProject(project, {
+			enableWasmPruning: false,
+			functionInlining: { maxCallerGrowth: Infinity },
+		});
 		expect(WebAssembly.validate(new Uint8Array(result.codeBuffer))).toBe(true);
 		expect(await countCalls(result)).toBe(2);
-		const run = result.compiledFunctions![createFunctionId('run', ['int'])];
-		expect(run.locals.length + run.signature.parameters.length).toBe(50_000);
+		const wat = await disassembleWasm(result.codeBuffer);
+		const runIndex = getWasmFunctionExportIndex(wat, 'run');
+		const run = wat.split(/^ {2}(?=\()/m).find(body => body.startsWith(`(func (;${runIndex};)`));
+		const locals = run?.match(/\(local ([^)]+)\)/)?.[1].split(/\s+/);
+		expect(locals).toHaveLength(49_999); // The parameter occupies the remaining slot.
 	});
 });

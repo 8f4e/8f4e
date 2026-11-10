@@ -19,9 +19,8 @@ The package is intentionally declarative. Other compiler packages import these f
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete
 function signature, including calls to generated entry dispatchers.
 
-`FunctionAnalysis` defines structural facts shared by the function analyzer and compiled output. Every
-`CompiledFunction.analysis` reports `isImported`, `hasExplicitReturn`, `hasEarlyReturn`, and `isRecursive`, independently
-of source stack-view options. These facts describe function structure; optimization passes choose eligibility and costs.
+The Wasm IR contracts describe a complete module with symbolic function and data references. The compiler result
+carries the emitted Wasm binary alongside source and semantic metadata for functions and modules.
 
 This package does not own:
 

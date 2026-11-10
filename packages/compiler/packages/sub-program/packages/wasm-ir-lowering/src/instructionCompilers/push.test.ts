@@ -158,7 +158,7 @@ describe('push instruction compiler', () => {
 		);
 
 		// f32.const opcode is 67 (0x43), f64.const opcode is 68 (0x44)
-		expect(context.instructions[0]).toBe(67);
+		expect(context.instructions[0]).toEqual({ kind: 'f32.const', value: 3.14 });
 	});
 
 	describe('float64 memory push', () => {
@@ -192,7 +192,7 @@ describe('push instruction compiler', () => {
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF64', memoryItem), context);
 
 			// byteCode: i32const(0) + f64load() = [65, 0, 43, 3, 0]
-			expect(context.instructions).toContain(43); // F64_LOAD opcode
+			expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 })); // F64_LOAD opcode
 		});
 
 		it('emits f32.load (opcode 42) for float32 memory, not f64.load', () => {
@@ -206,8 +206,8 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF32', memoryItem), context);
 
-			expect(context.instructions).toContain(42); // F32_LOAD opcode
-			expect(context.instructions).not.toContain(43); // no F64_LOAD
+			expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 42 })); // F32_LOAD opcode
+			expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 })); // no F64_LOAD
 		});
 
 		it('dereferencing float64* emits f64.load', () => {
@@ -221,7 +221,7 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPointerPushLine('floatPointer', memoryItem), context);
 
-			expect(context.instructions).toContain(43); // F64_LOAD opcode
+			expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 })); // F64_LOAD opcode
 		});
 
 		it('dereferencing float64** once emits an integer load', () => {
@@ -235,7 +235,7 @@ describe('push instruction compiler', () => {
 
 			compileInstructionForTest(push, resolvedMemoryPointerPushLine('floatPointerPointer', memoryItem), context);
 
-			expect(context.instructions).not.toContain(43); // no F64_LOAD opcode for one-level dereference
+			expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 })); // no F64_LOAD opcode for one-level dereference
 		});
 
 		it('handles mixed int32/float32/float64 memory layout', () => {
@@ -265,8 +265,8 @@ describe('push instruction compiler', () => {
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myInt', memory.myInt), contextInt);
 
-			expect(contextInt.instructions).not.toContain(42);
-			expect(contextInt.instructions).not.toContain(43);
+			expect(contextInt.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 42 }));
+			expect(contextInt.instructions).not.toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 }));
 
 			const contextFloat = {
 				...context,
@@ -274,7 +274,7 @@ describe('push instruction compiler', () => {
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myFloat', memory.myFloat), contextFloat);
 
-			expect(contextFloat.instructions).toContain(42); // F32_LOAD
+			expect(contextFloat.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 42 })); // F32_LOAD
 
 			const contextF64 = {
 				...context,
@@ -282,7 +282,7 @@ describe('push instruction compiler', () => {
 			};
 			compileInstructionForTest(push, resolvedMemoryPushLine('myF64', memory.myF64), contextF64);
 
-			expect(contextF64.instructions).toContain(43); // F64_LOAD
+			expect(contextF64.instructions).toContainEqual(expect.objectContaining({ kind: 'memoryAccess', opcode: 43 })); // F64_LOAD
 		});
 	});
 });

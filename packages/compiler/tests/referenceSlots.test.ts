@@ -1,6 +1,6 @@
-import { createFunction, f32load, i32const } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
+import { disassembleWasm } from './wasmTestUtils';
 
 describe('fixed reference artifacts', () => {
 	it.each(['&source:output', '&source:0'])(
@@ -17,7 +17,8 @@ float& input ${targetAddress}
 push *input
 drop
 moduleEnd
-entryEnd`)
+entryEnd`),
+				{ enableFunctionInlining: false }
 			);
 			const target = result.memoryPlan.modules.source.memory.output;
 			expect(result.memoryPlan.modules.sink.memory).toEqual({});
@@ -30,9 +31,8 @@ entryEnd`)
 			});
 			expect(result.compiledModules.sink.referenceSlots.input.targetMemory).toBe(target);
 			expect(result.compiledModules.source.referenceSlots).toEqual({});
-			expect(result.compiledModules.sink.cycleFunction).toEqual(
-				createFunction([], [...i32const(target.byteAddress), ...f32load(2, 0), 0x1a])
-			);
+			const wat = await disassembleWasm(result.codeBuffer);
+			expect(wat).toMatch(new RegExp(`i32\\.const ${target.byteAddress}\\s+f32\\.load\\s+drop`));
 		}
 	);
 

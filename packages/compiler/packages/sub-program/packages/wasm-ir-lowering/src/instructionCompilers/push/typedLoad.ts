@@ -1,8 +1,8 @@
-import { f32load, f64load, i32load, i32load8s, i32load8u, i32load16s, i32load16u } from '@8f4e/compiler-wasm-utils';
-import type { PointeeBaseType } from '@8f4e/language-spec';
+import type { PointeeBaseType, WasmIRInstruction } from '@8f4e/language-spec';
+import { f32load, f64load, i32load, i32load8s, i32load8u, i32load16s, i32load16u } from '../../operations';
 import type { PushValueKind } from '../../pushValueKind';
 
-const typedLoadOpcodes: Record<PointeeBaseType, number[]> = {
+const typedLoadOpcodes: Record<PointeeBaseType, WasmIRInstruction[]> = {
 	int: i32load(2, 0),
 	int8: i32load8s(0, 0),
 	int8u: i32load8u(0, 0),
@@ -13,12 +13,12 @@ const typedLoadOpcodes: Record<PointeeBaseType, number[]> = {
 };
 
 /** Emits one load with the element's width, signedness, and floating-point precision. */
-export function typedLoad(baseType: PointeeBaseType): number[] {
+export function typedLoad(baseType: PointeeBaseType): WasmIRInstruction[] {
 	return typedLoadOpcodes[baseType];
 }
 
 /** Full-width scalar loads keyed by the resolved stack value kind. */
-export const loadOpcode: Record<PushValueKind, number[]> = {
+export const loadOpcode: Record<PushValueKind, WasmIRInstruction[]> = {
 	int32: typedLoad('int'),
 	float32: typedLoad('float'),
 	float64: typedLoad('float64'),

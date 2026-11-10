@@ -135,7 +135,7 @@ moduleEnd`.split('\n'),
 });
 
 describe('compileAndUpdateMemory live code updates', () => {
-	it('preserves live memory when reordering replacements with different code lengths', async () => {
+	it('preserves live memory when reordering module replacements', async () => {
 		const project = createInput([
 			{ code: 'module voice\nint out\npush &out\npush out\nadd 1\nstore\nmoduleEnd'.split('\n') },
 			{ code: 'module sentinel\nint value 7\nmoduleEnd'.split('\n') },
@@ -158,9 +158,6 @@ describe('compileAndUpdateMemory live code updates', () => {
 
 		project.execution.reverse();
 		const second = await compileAndUpdateMemory(project, compilerOptions);
-		expect(second.compiledModules.voice.cycleFunction.length).not.toBe(
-			first.compiledModules.voice.cycleFunction.length
-		);
 		expect(second.memoryAction).toEqual({ action: 'reused' });
 		expect(second.memoryRef).toBe(first.memoryRef);
 		expect(memory[out]).toBe(247);

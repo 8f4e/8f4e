@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { promisify } from 'util';
 
 import { describe, expect, it } from 'vitest';
+import wabt from 'wabt';
 
 const execFileAsync = promisify(execFile);
 
@@ -77,22 +78,41 @@ moduleEnd
 entryEnd
 `
 		);
-		async function compile(...flags: string[]) {
+		const wabtApi = await wabt();
+		async function compileAndCountRunCalls(...flags: string[]) {
 			await execCli(['compile', input, '--wasm-output', output, ...flags]);
-			return fs.readFile(output);
+			const wasm = await fs.readFile(output);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(wasm, { host: { memory } });
+			expect((instance.exports.run as () => number)()).toBe(16);
+
+			const module = wabtApi.readWasm(wasm, { threads: true });
+			try {
+				module.generateNames();
+				module.applyNames();
+				const wat = module.toText({ foldExprs: false });
+				const run = wat.split(/^ {2}(?=\()/m).find(body => body.startsWith('(func $run '));
+				if (!run) throw new Error('Missing exported run function body');
+				return (run.match(/\bcall\s/g) ?? []).length;
+			} finally {
+				module.destroy();
+			}
 		}
 
-		const calls = await compile();
-		const inlined = await compile('--inline-functions');
-		expect(inlined).not.toEqual(calls);
-		expect(await compile('--max-inline-caller-growth', '2')).toEqual(calls);
-		expect(await compile('--inline-functions', '--max-inline-expansion-operations', '0')).toEqual(calls);
-		const oneCall = await compile('--inline-functions', '--max-inline-caller-growth', '2');
-		expect(oneCall).not.toEqual(inlined);
-		expect(oneCall).not.toEqual(calls);
+		expect(await compileAndCountRunCalls()).toBe(2);
+		expect(await compileAndCountRunCalls('--max-inline-caller-growth', '2')).toBe(2);
+		expect(await compileAndCountRunCalls('--inline-functions')).toBe(0);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-caller-growth', '2')).toBe(1);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-expansion-operations', '0')).toBe(2);
 		expect(
-			await compile('--inline-functions', '--max-inline-expansion-operations', '0', '--max-inline-caller-growth', '2')
-		).toEqual(calls);
+			await compileAndCountRunCalls(
+				'--inline-functions',
+				'--max-inline-expansion-operations',
+				'0',
+				'--max-inline-caller-growth',
+				'2'
+			)
+		).toBe(2);
 	});
 
 	it.each([
@@ -104,6 +124,32 @@ entryEnd
 		await expect(execCli(['compile', fixturePath, '--wasm-output', wasmPath, ...flags])).rejects.toMatchObject({
 			stderr: expect.stringContaining(message),
 		});
+	});
+
+	it('can disable Wasm pruning while leaving inlining enabled', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'pruning.8f4e');
+		const output = path.join(tmpDir, 'pruning.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function unused
+#import unused
+functionEnd
+
+entry main
+module root
+moduleEnd
+entryEnd
+`
+		);
+		const imports = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			return WebAssembly.Module.imports(new WebAssembly.Module(await fs.readFile(output))).map(({ name }) => name);
+		};
+
+		expect(await imports()).toEqual(['memory']);
+		expect(await imports('--inline-functions', '--no-wasm-pruning')).toEqual(['unused', 'memory']);
 	});
 
 	it('exports compiler memory information and executable shared-memory WASM', async () => {

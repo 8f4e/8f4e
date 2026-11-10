@@ -15,8 +15,13 @@ exports[`if instruction compiler > emits a float if block 1`] = `
     },
   ],
   "instructions": [
-    4,
-    125,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        125,
+      ],
+    },
   ],
 }
 `;
@@ -34,8 +39,11 @@ exports[`if instruction compiler > emits a void if block when given no arguments
     },
   ],
   "instructions": [
-    4,
-    64,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
   ],
 }
 `;
@@ -53,8 +61,11 @@ exports[`if instruction compiler > emits a void if block when the matching ifEnd
     },
   ],
   "instructions": [
-    4,
-    64,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [],
+    },
   ],
 }
 `;
@@ -74,8 +85,13 @@ exports[`if instruction compiler > emits an int if block 1`] = `
     },
   ],
   "instructions": [
-    4,
-    127,
+    {
+      "kind": "block",
+      "opcode": 4,
+      "results": [
+        127,
+      ],
+    },
   ],
 }
 `;
@@ -96,9 +112,9 @@ exports[`if instruction compiler > lowers a multi-result if with a symbolic bloc
     },
   ],
   "instructions": [
-    4,
     {
-      "kind": "blockType",
+      "kind": "block",
+      "opcode": 4,
       "results": [
         127,
         125,

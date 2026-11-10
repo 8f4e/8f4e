@@ -1,7 +1,4 @@
 import {
-	f32const,
-	f64const,
-	i32const,
 	WASM_ELSE,
 	WASM_END,
 	WASM_F32_EQ,
@@ -9,7 +6,6 @@ import {
 	WASM_I32_EQZ,
 	WASM_IF,
 	WASM_TYPE_I32,
-	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler } from '@8f4e/language-spec';
 import {
@@ -19,6 +15,7 @@ import {
 	wasmLocalSet as localSet,
 } from '@8f4e/language-spec';
 import { allocateLocal } from '../localStorage';
+import { f32const, f64const, i32const } from '../operations';
 
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -44,8 +41,7 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 			...localSet(tempLocalIndex),
 			...localGet(tempLocalIndex),
 			WASM_I32_EQZ,
-			WASM_IF,
-			WASM_TYPE_I32,
+			{ kind: 'block', opcode: WASM_IF, results: [WASM_TYPE_I32] },
 			...i32const(defaultNonZeroValue),
 			WASM_ELSE,
 			...localGet(tempLocalIndex),
@@ -59,8 +55,7 @@ const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 			...localGet(tempLocalIndex),
 			...zeroByteCode,
 			isFloat64 ? WASM_F64_EQ : WASM_F32_EQ,
-			WASM_IF,
-			WASM_TYPE_VOID,
+			{ kind: 'block', opcode: WASM_IF, results: [] },
 			...fallbackByteCode,
 			...localSet(tempLocalIndex),
 			WASM_END,

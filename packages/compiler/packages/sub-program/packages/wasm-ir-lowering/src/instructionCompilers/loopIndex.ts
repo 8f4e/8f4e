@@ -1,6 +1,7 @@
-import { i32const, WASM_I32_SUB } from '@8f4e/compiler-wasm-utils';
+import { WASM_I32_SUB } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, LoopIndexLine } from '@8f4e/language-spec';
 import { wasmLocalGet as localGet } from '@8f4e/language-spec';
+import { i32const } from '../operations';
 
 import { saveByteCode } from './utils/saveByteCode';
 

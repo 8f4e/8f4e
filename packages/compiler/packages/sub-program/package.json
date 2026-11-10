@@ -24,7 +24,6 @@
   "dependencies": {
     "@8f4e/compiler-wasm-utils": "*",
     "@8f4e/constant-resolver": "*",
-    "@8f4e/function-analyzer": "*",
     "@8f4e/function-inliner": "*",
     "@8f4e/language-spec": "*",
     "@8f4e/memory-default-resolver": "*",
@@ -34,7 +33,8 @@
     "@8f4e/semantic-reference-resolver": "*",
     "@8f4e/stack-analyzer": "*",
     "@8f4e/wasm-codegen": "*",
-    "@8f4e/wasm-ir-lowering": "*"
+    "@8f4e/wasm-ir-lowering": "*",
+    "@8f4e/wasm-ir-pruner": "*"
   },
   "devDependencies": {
     "@types/node": "24.13.2"
