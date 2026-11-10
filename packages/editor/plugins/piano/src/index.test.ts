@@ -136,7 +136,7 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
-		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		test.press(2);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
@@ -155,7 +155,7 @@ describe('piano plugin', () => {
 		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
 		test.render();
 		for (const x of [32, 64]) {
-			expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 16, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+			expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		}
 
 		test.click(2);
@@ -324,7 +324,7 @@ describe('piano plugin', () => {
 		test.press(2);
 		test.press(4);
 		test.render();
-		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds(';;'), PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
 		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'

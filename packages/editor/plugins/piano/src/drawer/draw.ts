@@ -3,7 +3,7 @@ import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoKeyboard, PianoKeyboardKey } from '../types';
 
-const PRESSED_OVERLAY = textToGlyphIds(';;');
+const PRESSED_OVERLAY = textToGlyphIds('░░');
 
 function drawPressedKey(engine: DrawContext, key: PianoKeyboardKey): void {
 	const color = key.kind === 'black' ? PALETTE_INDICES.primaryOverlay : PALETTE_INDICES.darkOverlaySoft;
