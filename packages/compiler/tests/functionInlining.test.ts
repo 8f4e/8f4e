@@ -1,8 +1,8 @@
 import { type CompileResult, createFunctionId } from '@8f4e/language-spec';
 import { describe, expect, it, vi } from 'vitest';
-import wabt from 'wabt';
 import { compileProject, parseProjectSource } from '../src';
 import { createMemory, getExportedFunction } from './testUtils';
+import { disassembleWasm, getWasmFunctionExportIndex } from './wasmTestUtils';
 
 async function instantiate(result: CompileResult, callbacks: Record<string, CallableFunction> = {}) {
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), {
@@ -12,13 +12,8 @@ async function instantiate(result: CompileResult, callbacks: Record<string, Call
 }
 
 async function countCalls(result: CompileResult) {
-	const api = await wabt();
-	const module = api.readWasm(new Uint8Array(result.codeBuffer), { threads: true });
-	try {
-		return (module.toText({ foldExprs: false }).match(/\bcall\s/g) ?? []).length;
-	} finally {
-		module.destroy();
-	}
+	const wat = await disassembleWasm(result.codeBuffer);
+	return (wat.match(/\bcall\s/g) ?? []).length;
 }
 
 describe('function inlining', () => {
@@ -195,6 +190,20 @@ functionEnd int`);
 		}
 	});
 
+	it('folds an empty module cycle at a zero-operation expansion budget', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module empty
+moduleEnd
+entryEnd`);
+		const baseline = await compileProject(project, { enableFunctionInlining: false });
+		const result = await compileProject(project, { functionInlining: { maxExpansionOperations: 0 } });
+
+		expect(await countCalls(baseline)).toBe(1);
+		expect(await countCalls(result)).toBe(0);
+		getExportedFunction(await instantiate(result), 'main')();
+	});
+
 	it('bounds growth when each inlining round exposes more multi-use callees', async () => {
 		const depth = 15;
 		const functions = ['function fold0\npush 1\nfunctionEnd int'];
@@ -309,7 +318,10 @@ functionEnd`);
 		});
 		expect(WebAssembly.validate(new Uint8Array(result.codeBuffer))).toBe(true);
 		expect(await countCalls(result)).toBe(2);
-		const run = result.compiledFunctions![createFunctionId('run', ['int'])];
-		expect(run.locals.length + run.signature.parameters.length).toBe(50_000);
+		const wat = await disassembleWasm(result.codeBuffer);
+		const runIndex = getWasmFunctionExportIndex(wat, 'run');
+		const run = wat.split(/^ {2}(?=\()/m).find(body => body.startsWith(`(func (;${runIndex};)`));
+		const locals = run?.match(/\(local ([^)]+)\)/)?.[1].split(/\s+/);
+		expect(locals).toHaveLength(49_999); // The parameter occupies the remaining slot.
 	});
 });

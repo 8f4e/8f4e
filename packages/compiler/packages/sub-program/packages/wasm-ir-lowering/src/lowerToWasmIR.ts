@@ -56,7 +56,7 @@ function lowerBody(
 	};
 }
 
-export function moduleCycleFunctionId(moduleId: string): string {
+function moduleCycleFunctionId(moduleId: string): string {
 	return `\0cycle:${moduleId}`;
 }
 

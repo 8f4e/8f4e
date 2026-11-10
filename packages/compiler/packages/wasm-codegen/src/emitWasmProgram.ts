@@ -20,7 +20,7 @@ import { emitWasmInstructions } from './emitWasmInstructions';
 import { getOrRegisterFunctionType } from './functionTypeRegistry';
 
 /** Assigns indices and serializes an already lowered Wasm module. */
-export function emitWasmProgram(program: WasmIR) {
+export function emitWasmProgram(program: WasmIR): Uint8Array {
 	const types: FunctionTypeRegistry = { types: [], signatures: [], baseTypeIndex: 0 };
 	const functions = [...program.functions];
 	const imports = functions.filter(([, func]) => func.import !== undefined);
@@ -28,18 +28,15 @@ export function emitWasmProgram(program: WasmIR) {
 	const functionIndices = new Map([...imports, ...definitions].map(([id], index) => [id, index]));
 	const typeIndices = new Map(functions.map(([id, func]) => [id, getOrRegisterFunctionType(types, func.signature)]));
 	const dataIndices = new Map([...program.dataSegments.keys()].map((id, index) => [id, index]));
-	const bodies = new Map(
-		definitions.map(([id, func]) => [
-			id,
-			createFunction(
-				func.body!.locals.slice(func.signature.params.length).map(type => createLocalDeclaration(type, 1)),
-				emitWasmInstructions(func.body!.instructions, functionIndices, dataIndices, types)
-			),
-		])
+	const bodies = definitions.map(([, func]) =>
+		createFunction(
+			func.body!.locals.slice(func.signature.params.length).map(type => createLocalDeclaration(type, 1)),
+			emitWasmInstructions(func.body!.instructions, functionIndices, dataIndices, types)
+		)
 	);
 	const memory = program.memory;
 	const dataSegments = [...program.dataSegments.values()].map(createPassiveDataSegment);
-	const codeBuffer = Uint8Array.from([
+	return Uint8Array.from([
 		...WASM_HEADER,
 		...createWasmVersion(1),
 		...createTypeSection(types.types),
@@ -54,8 +51,7 @@ export function emitWasmProgram(program: WasmIR) {
 			[...program.exports].map(([name, id]) => createFunctionExport(name, functionIndices.get(id)!))
 		),
 		...(dataSegments.length ? createDataCountSection(dataSegments.length) : []),
-		...createCodeSection([...bodies.values()]),
+		...createCodeSection(bodies),
 		...(dataSegments.length ? createDataSection(dataSegments) : []),
 	]);
-	return { codeBuffer, functionIndices, typeIndices, bodies };
 }

@@ -21,11 +21,10 @@ export type CompiledStackAnalysisLine = {
 	resolvedCall?: ResolvedCall;
 };
 
-/** Code generation output and metadata for a compiled executable module. */
+/** Source and semantic metadata for a compiled module. */
 export interface CompiledModule {
 	referenceSlots: ReferenceSlotMap;
 	index: number;
-	cycleFunction: number[];
 	id: string;
 	executionEntryName: string;
 	ast: ComposedModuleAST;
@@ -92,14 +91,8 @@ export interface FunctionRegistry {
 	arityByName: Record<string, number>;
 }
 
-/** Code generation output and metadata for a compiled function. */
+/** Source and semantic metadata for a compiled function. */
 export interface CompiledFunction extends FunctionMetadata {
-	/** Index of the emitted function, when its body or import survives optimization. */
-	wasmIndex?: number;
-	body: number[];
-	locals: Array<{ isInteger: boolean; count: number }>;
-	exportName?: string;
-	typeIndex?: number;
 	ast: ComposedFunctionAST;
 	stackAnalysis?: CompiledStackAnalysisLine[];
 }

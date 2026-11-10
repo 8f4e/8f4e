@@ -7,7 +7,6 @@
       "referenceSlots": {},
       "id": "result",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "result",
@@ -76,7 +75,6 @@
       "referenceSlots": {},
       "id": "notes",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "notes",
@@ -124,7 +122,6 @@
       "referenceSlots": {},
       "id": "inputs",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "inputs",
@@ -255,7 +252,6 @@
       },
       "id": "perceptron",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "perceptron",
@@ -560,7 +556,6 @@
       },
       "id": "perceptron2",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "perceptron2",
@@ -841,7 +836,6 @@
       },
       "id": "activationFn",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "activationFn",
@@ -992,7 +986,6 @@
       },
       "id": "activationFn2",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "activationFn2",
@@ -1167,7 +1160,6 @@
       },
       "id": "perceptron3",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "perceptron3",
@@ -1448,7 +1440,6 @@
       },
       "id": "activationFn3",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "activationFn3",

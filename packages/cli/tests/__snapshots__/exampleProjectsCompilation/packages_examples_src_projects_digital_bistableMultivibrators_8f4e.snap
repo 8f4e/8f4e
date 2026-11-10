@@ -7,7 +7,6 @@
       "referenceSlots": {},
       "id": "resetButton",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "resetButton",
@@ -67,7 +66,6 @@
       "referenceSlots": {},
       "id": "setButton",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "setButton",
@@ -176,7 +174,6 @@
       },
       "id": "norGate2",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "norGate2",
@@ -452,7 +449,6 @@
       },
       "id": "norGate",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "norGate",
@@ -704,7 +700,6 @@
       },
       "id": "scope",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "scope",
@@ -973,7 +968,6 @@
       "referenceSlots": {},
       "id": "buttons",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "buttons",
@@ -1070,7 +1064,6 @@
       },
       "id": "negate",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "negate",
@@ -1306,7 +1299,6 @@
       },
       "id": "orGate",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "orGate",
@@ -1582,7 +1574,6 @@
       },
       "id": "andGate",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "andGate",
@@ -1834,7 +1825,6 @@
       },
       "id": "scope2",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "scope2",

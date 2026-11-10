@@ -32,7 +32,6 @@
       },
       "id": "phaseAccumulator",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "phaseAccumulator",
@@ -406,7 +405,6 @@
       },
       "id": "audioout",
       "executionEntryName": "main",
-      "cycleFunction": [],
       "ast": {
         "type": "module",
         "id": "audioout",

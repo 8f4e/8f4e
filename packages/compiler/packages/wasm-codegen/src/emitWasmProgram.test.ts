@@ -34,7 +34,7 @@ it('resolves function and data references in a complete module', async () => {
 	};
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
 	const bytes = new Uint8Array(memory.buffer);
-	const { codeBuffer } = emitWasmProgram(ir);
+	const codeBuffer = emitWasmProgram(ir);
 	const { instance } = await WebAssembly.instantiate(new Uint8Array(codeBuffer), {
 		host: { memory, read: () => bytes[4] + bytes[5] },
 	});

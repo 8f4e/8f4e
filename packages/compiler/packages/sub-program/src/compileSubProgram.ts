@@ -1,4 +1,3 @@
-import { WASM_TYPE_F64, WASM_TYPE_I32 } from '@8f4e/compiler-wasm-utils';
 import { ConstantResolverError, type ResolveConstantsSubProgramAST, resolveConstants } from '@8f4e/constant-resolver';
 import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
@@ -28,7 +27,7 @@ import type { ComposedProgram } from '@8f4e/program-composer/internal';
 import { resolveSemanticReferences } from '@8f4e/semantic-reference-resolver';
 import { analyzeStack } from '@8f4e/stack-analyzer';
 import { emitWasmProgram } from '@8f4e/wasm-codegen';
-import { lowerToWasmIR, moduleCycleFunctionId } from '@8f4e/wasm-ir-lowering';
+import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
 import { pruneWasmIR } from '@8f4e/wasm-ir-pruner';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
@@ -277,22 +276,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		options.enableFunctionInlining === false
 			? pruned
 			: inlineFunctions(pruned, { ...options.functionInlining, pruneFunctions });
-	const { codeBuffer, functionIndices, typeIndices, bodies } = emitWasmProgram(wasmIR);
+	const codeBuffer = emitWasmProgram(wasmIR);
 	const compiledFunctions = Object.fromEntries(
 		Object.entries(semanticReferences.functions).map(([id, { ast, metadata }]) => {
-			const func = wasmIR.functions.get(id) ?? lowered.functions.get(id)!;
-			const wasmIndex = functionIndices.get(id);
 			const functionResult: CompiledFunction = {
 				...metadata,
 				ast,
-				body: bodies.get(id) ?? [],
-				locals:
-					func.body?.locals.slice(func.signature.params.length).map(type => ({
-						isInteger: type === WASM_TYPE_I32,
-						isFloat64: type === WASM_TYPE_F64,
-						count: 1,
-					})) ?? [],
-				...(wasmIndex === undefined ? {} : { wasmIndex, typeIndex: typeIndices.get(id)! }),
 				...(options.includeStackAnalysis ? { stackAnalysis: stackReport.functions[id].stackAnalysis } : {}),
 			};
 			return [id, functionResult];
@@ -304,7 +293,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 				referenceSlots,
 				id: ast.id,
 				executionEntryName: ast.executionEntryName,
-				cycleFunction: bodies.get(moduleCycleFunctionId(ast.id)) ?? [],
 				ast,
 				index,
 				...(skipExecutionInCycle ? { skipExecutionInCycle: true } : {}),

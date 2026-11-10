@@ -1,13 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import wabt from 'wabt';
 
 import { compileFixtureProgramSource, getExportedFunction, instantiateFixtureProgramSource } from './testUtils';
 
-async function compileToWat(codeBuffer: Uint8Array): Promise<string> {
-	const wabtApi = await wabt();
-	const module = wabtApi.readWasm(codeBuffer, { threads: true });
-	return module.toText({});
-}
+import { disassembleWasm } from './wasmTestUtils';
 
 describe('compiler memory initialization', () => {
 	test.each(
@@ -134,7 +129,7 @@ int[] implicitArray 4
 moduleEnd
 entryEnd
 `);
-		const wat = await compileToWat(compileResult.codeBuffer);
+		const wat = await disassembleWasm(compileResult.codeBuffer);
 		const fillIndex = wat.indexOf('memory.fill');
 		const memoryInitIndex = wat.indexOf('memory.init');
 

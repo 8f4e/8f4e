@@ -67,8 +67,7 @@ exported or have multiple call sites. Set `functionInlining.maxCallerGrowth` to 
 all expansions across rounds. Set `enableFunctionInlining: false` to retain ordinary calls throughout the module.
 
 `@8f4e/wasm-codegen` assigns function, type, and data indices and encodes the module. Source ASTs and stack reports are
-assembled separately as compiler metadata. Functions eliminated by the optimizer retain source metadata, with no emitted
-body or indices.
+assembled separately as compiler metadata, including for source functions that the optimizer eliminates.
 
 ## Design Rule
 

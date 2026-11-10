@@ -1,1 +1,1 @@
-export { lowerToWasmIR, moduleCycleFunctionId } from './lowerToWasmIR';
+export { lowerToWasmIR } from './lowerToWasmIR';

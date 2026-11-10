@@ -16,10 +16,6 @@ function createTestCompiledFunction(name: string, projectBlockId: number): Compi
 		id: functionId,
 		name,
 		signature: { parameters: [{ name: 'value', type: paramType }], returns: [] },
-		wasmIndex: 0,
-		typeIndex: 0,
-		body: [],
-		locals: [],
 		stackAnalysis: [],
 		ast: {
 			type: 'function',

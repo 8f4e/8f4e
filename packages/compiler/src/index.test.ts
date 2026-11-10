@@ -376,14 +376,14 @@ describe('compile prototype validation', () => {
 					{ code: ['function consume', 'param float value', 'functionEnd'] },
 				],
 			},
-			{ enableFunctionInlining: false }
+			{ includeStackAnalysis: true }
 		);
 
-		const intOverloadId = createFunctionId('consume', ['int']);
-		const floatOverloadId = createFunctionId('consume', ['float']);
-		expect(result.compiledFunctions![intOverloadId].wasmIndex).not.toBe(
-			result.compiledFunctions![floatOverloadId].wasmIndex
-		);
+		const calls = result.compiledModules.main.stackAnalysis!.filter(line => line.instruction === 'call');
+		expect(calls.map(line => line.resolvedCall?.targetFunctionId)).toEqual([
+			createFunctionId('consume', ['int']),
+			createFunctionId('consume', ['float']),
+		]);
 	});
 
 	it('rejects duplicate function export names during semantic metadata collection', () => {

@@ -79,7 +79,7 @@ entryEnd
 `
 		);
 		const wabtApi = await wabt();
-		async function compileAndCountCalls(...flags: string[]) {
+		async function compileAndCountRunCalls(...flags: string[]) {
 			await execCli(['compile', input, '--wasm-output', output, ...flags]);
 			const wasm = await fs.readFile(output);
 			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
@@ -88,20 +88,24 @@ entryEnd
 
 			const module = wabtApi.readWasm(wasm, { threads: true });
 			try {
-				return (module.toText({ foldExprs: false }).match(/\bcall\s/g) ?? []).length;
+				module.generateNames();
+				module.applyNames();
+				const wat = module.toText({ foldExprs: false });
+				const run = wat.split(/^ {2}(?=\()/m).find(body => body.startsWith('(func $run '));
+				if (!run) throw new Error('Missing exported run function body');
+				return (run.match(/\bcall\s/g) ?? []).length;
 			} finally {
 				module.destroy();
 			}
 		}
 
-		expect(await compileAndCountCalls()).toBe(3);
-		expect(await compileAndCountCalls('--max-inline-caller-growth', '2')).toBe(3);
-		expect(await compileAndCountCalls('--inline-functions')).toBe(0);
-		expect(await compileAndCountCalls('--inline-functions', '--max-inline-caller-growth', '2')).toBe(1);
-		// An empty module cycle fits even a zero-operation expansion budget.
-		expect(await compileAndCountCalls('--inline-functions', '--max-inline-expansion-operations', '0')).toBe(2);
+		expect(await compileAndCountRunCalls()).toBe(2);
+		expect(await compileAndCountRunCalls('--max-inline-caller-growth', '2')).toBe(2);
+		expect(await compileAndCountRunCalls('--inline-functions')).toBe(0);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-caller-growth', '2')).toBe(1);
+		expect(await compileAndCountRunCalls('--inline-functions', '--max-inline-expansion-operations', '0')).toBe(2);
 		expect(
-			await compileAndCountCalls(
+			await compileAndCountRunCalls(
 				'--inline-functions',
 				'--max-inline-expansion-operations',
 				'0',
