@@ -13,6 +13,7 @@
   selection and interpretation belong to consumers.
 - [Linux runtime](packages/runtime-linux/AGENTS.md) owns native JACK playback. The separate
   [runtime command tool](tools/runtime-command/README.md) translates compiler metadata into numeric launch arguments.
+- [Daisy runtime](packages/runtime-daisy/README.md) loads compiled instruments from microSD on the Daisy Field.
 - The compiler ABI imports shared `host.memory` with explicit limits. Hosts allocate matching shared memory.
 
 ## Build and Development
