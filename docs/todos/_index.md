@@ -69,6 +69,7 @@ Active todo files are listed below.
 | 513 | Benchmark fixed-grid glyph addressing | 🟡 | TBD | 2026-10-26 | Compare calculated glyph rectangles with the GPU rectangle lookup, verifying equivalent rendering and measured gains before restricting the atlas layout. |
 | 514 | Investigate viewport culling for code text | 🟡 | TBD | 2026-10-26 | Determine visible text row and column ranges before sprite submission, preserving partial glyphs and layout while measuring traversal, upload, and CPU/GPU savings. |
 | 520 | Explore performance controls and custom banks for Grids | 🟡 | TBD | 2026-11-10 | Start with momentary fills and Snap/Morph playback, then explore density, timing, velocity, and MIDI-derived banks. |
+| 521 | Benchmark Wasm IR simplifications | 🟡 | TBD | 2026-11-10 | Compare local fusion, literal propagation and integer folding, dead local writes, and conditional branch simplification on the DX7. |
 
 ### 🟢 Low Priority
 
