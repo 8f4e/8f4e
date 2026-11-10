@@ -10,10 +10,11 @@ Install the Arm GNU toolchain (`arm-none-eabi-gcc` and `arm-none-eabi-g++`),
 GNU Make and CMake 3.20 or newer. The firmware build compiles libDaisy and
 WAMR from the pinned submodules.
 
-Run the build from the 8f4e repository root after installing the workspace dependencies.
+The Daisy submodules are opt-in. Run the build from the 8f4e repository root
+after installing the workspace dependencies.
 
 ```sh
-git submodule update --init -- packages/runtime-daisy/third_party
+git submodule update --init --checkout -- packages/runtime-daisy/third_party
 npx nx run @8f4e/runtime-daisy:build
 ```
 
