@@ -48,7 +48,8 @@
     "packages/*/*",
     "packages/*/*/*",
     "packages/*/*/*/*/*",
-    "packages/*/*/*/*/*/*/*"
+    "packages/*/*/*/*/*/*/*",
+    "!packages/runtime-daisy/third_party/**"
   ],
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
