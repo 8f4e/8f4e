@@ -58,6 +58,7 @@ function prepareExpansion(func: WasmIRFunction): Expansion {
 				}
 				break;
 			case 'local.set':
+			case 'local.tee':
 				if (beforeControlFlow) initialized.add(instruction.binding);
 				break;
 		}
@@ -87,6 +88,7 @@ function isScalarLeaf(func: WasmIRFunction): boolean {
 		return (
 			instruction.kind === 'local.get' ||
 			instruction.kind === 'local.set' ||
+			instruction.kind === 'local.tee' ||
 			instruction.kind === 'i32.const' ||
 			instruction.kind === 'f32.const' ||
 			instruction.kind === 'f64.const' ||
@@ -155,7 +157,8 @@ export function inlineFunctions(
 				for (const type of candidate.locals) expandedLocals.push(type);
 				for (const operation of candidate.instructions) {
 					rewritten.push(
-						typeof operation !== 'number' && (operation.kind === 'local.get' || operation.kind === 'local.set')
+						typeof operation !== 'number' &&
+							(operation.kind === 'local.get' || operation.kind === 'local.set' || operation.kind === 'local.tee')
 							? { ...operation, binding: operation.binding + offset }
 							: operation
 					);

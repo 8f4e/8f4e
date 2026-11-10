@@ -29,6 +29,7 @@ import { analyzeStack } from '@8f4e/stack-analyzer';
 import { emitWasmProgram } from '@8f4e/wasm-codegen';
 import { lowerToWasmIR } from '@8f4e/wasm-ir-lowering';
 import { pruneWasmIR } from '@8f4e/wasm-ir-pruner';
+import { simplifyWasmLocals } from '@8f4e/wasm-ir-simplifier';
 import { planAssertions } from './assertions';
 import { registerFunctions } from './semantic/buildNamespace';
 
@@ -277,7 +278,8 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		options.enableFunctionInlining === false
 			? pruned
 			: inlineFunctions(pruned, { ...options.functionInlining, pruneFunctions });
-	const codeBuffer = emitWasmProgram(wasmIR);
+	const simplified = options.enableWasmLocalSimplification ? simplifyWasmLocals(wasmIR) : wasmIR;
+	const codeBuffer = emitWasmProgram(simplified);
 	const compiledFunctions = Object.fromEntries(
 		Object.entries(semanticReferences.functions).map(([id, { ast, metadata }]) => {
 			const functionResult: CompiledFunction = {

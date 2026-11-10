@@ -11,6 +11,7 @@ import {
 	prefixedInstruction,
 	signedLEB128,
 	unsignedLEB128,
+	WASM_LOCAL_TEE,
 	WASM_MEMORY_SIZE,
 	WASM_TYPE_VOID,
 } from '@8f4e/compiler-wasm-utils';
@@ -45,6 +46,9 @@ export function emitWasmInstructions(
 				break;
 			case 'local.set':
 				bytes.push(...localSet(instruction.binding));
+				break;
+			case 'local.tee':
+				bytes.push(WASM_LOCAL_TEE, ...unsignedLEB128(instruction.binding));
 				break;
 			case 'call':
 				bytes.push(...call(functionIndices.get(instruction.targetFunctionId)!));

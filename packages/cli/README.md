@@ -52,6 +52,9 @@ cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-func
   --max-inline-expansion-operations 24 --max-inline-caller-growth 64
 ```
 
+Use `--simplify-wasm-locals` to fuse an adjacent `local.set` and `local.get` on the same slot into `local.tee`.
+This opt-in pass runs after optional inlining and preserves shared memory accesses.
+
 ## Output
 
 When `--wasm-output` is used, the CLI writes a decoded WebAssembly binary (`.wasm`) file.

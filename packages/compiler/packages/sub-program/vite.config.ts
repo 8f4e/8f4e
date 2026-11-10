@@ -22,6 +22,7 @@ export default defineConfig({
 				'@8f4e/wasm-codegen',
 				'@8f4e/wasm-ir-lowering',
 				'@8f4e/wasm-ir-pruner',
+				'@8f4e/wasm-ir-simplifier',
 			],
 		},
 	},

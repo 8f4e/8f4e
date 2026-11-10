@@ -126,6 +126,62 @@ entryEnd
 		});
 	});
 
+	it('opts in to local simplification after optional inlining', async () => {
+		await fs.mkdir(tmpDir, { recursive: true });
+		const input = path.join(tmpDir, 'simplify-wasm-locals.8f4e');
+		const output = path.join(tmpDir, 'simplify-wasm-locals.wasm');
+		await fs.writeFile(
+			input,
+			`8f4e/v1
+function bump
+param int value
+push value
+add 1
+functionEnd int
+
+function run
+#export
+param int value
+local int result
+local int scratch
+call bump value
+localSet result
+push result
+push value
+localSet scratch
+push result
+add
+push scratch
+add
+functionEnd int
+
+entry main
+module root
+moduleEnd
+entryEnd
+`
+		);
+		const wabtApi = await wabt();
+		const countTees = async (...flags: string[]) => {
+			await execCli(['compile', input, '--wasm-output', output, ...flags]);
+			const wasm = await fs.readFile(output);
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(wasm, { host: { memory } });
+			expect((instance.exports.run as (value: number) => number)(7)).toBe(23);
+
+			const module = wabtApi.readWasm(wasm, { threads: true });
+			try {
+				return (module.toText({ foldExprs: false }).match(/\blocal\.tee\b/g) ?? []).length;
+			} finally {
+				module.destroy();
+			}
+		};
+
+		expect(await countTees()).toBe(0);
+		expect(await countTees('--simplify-wasm-locals')).toBe(1);
+		expect(await countTees('--inline-functions', '--simplify-wasm-locals')).toBe(2);
+	});
+
 	it('can disable Wasm pruning while leaving inlining enabled', async () => {
 		await fs.mkdir(tmpDir, { recursive: true });
 		const input = path.join(tmpDir, 'pruning.8f4e');
