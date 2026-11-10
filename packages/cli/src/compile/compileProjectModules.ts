@@ -40,7 +40,7 @@ export default async function compileProjectModules(
 	project: ProjectObjectModel,
 	options: CompileProjectModulesOptions
 ): Promise<CompileProjectModulesResult> {
-	if (!hasCompilableProgramBlocks(project) && Object.keys(options.compilerOptions.envOverrides ?? {}).length === 0) {
+	if (!hasCompilableProgramBlocks(project)) {
 		return {
 			compiledModules: {},
 			memoryPlan: { modules: {}, moduleList: [] },

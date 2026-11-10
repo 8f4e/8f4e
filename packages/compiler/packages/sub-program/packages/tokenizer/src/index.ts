@@ -8,6 +8,8 @@ import { mainTokenizerLoop } from './mainTokenizerLoop';
 export { parseInstructionTokens, parseLine } from './parseLine';
 export { parseProjectConstantNamespacePassLine } from './parseProjectConstantNamespacePassLine';
 export { parseProjectMemoryInitializerLine } from './parseProjectMemoryInitializerLine';
+export { foldArgumentContinuationLines } from './sourceLines';
+export { default as parseNumericLiteralToken } from './syntax/parseNumericLiteralToken';
 
 import { createASTFromBuilder } from './sourceBlockASTBuilder';
 import instructionParser from './syntax/instructionParser';

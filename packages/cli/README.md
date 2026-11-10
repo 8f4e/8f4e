@@ -55,10 +55,11 @@ cli compile path/to/project.8f4e --wasm-output path/to/module.wasm --inline-func
 Use `--simplify-wasm-locals` to fuse an adjacent `local.set` and `local.get` on the same slot into `local.tee`.
 This opt-in pass runs after optional inlining and preserves shared memory accesses.
 
-Use `--env NAME=NUMBER` to override a numeric constant declared in the root
-`constants env` block. Repeat the flag to override more than one constant.
-The override preserves the constant's type and applies before memory layout
-and code generation. The source file keeps its default values.
+Use `--env NAME=NUMBER` to override an existing numeric literal in the root
+`constants env` block. The CLI rejects missing constants and requires a numeric
+literal for both the declaration and the replacement. Repeat the flag to
+override more than one constant. The CLI preserves the constant's type and
+rewrites the parsed project in memory before compilation.
 
 ```bash
 cli compile instrument.8f4e --env SAMPLE_RATE=32000 --wasm-output instrument.wasm \

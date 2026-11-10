@@ -187,10 +187,10 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 	const entryNames = entries.map(entry => entry.id);
 	let constantResolution: ReturnType<typeof resolveConstants>;
 	try {
-		constantResolution = resolveConstants(
-			{ ast: subProgramAst, projectConstantNamespaceScopes: program.projectConstantNamespaceScopes },
-			{ envOverrides: options.envOverrides }
-		);
+		constantResolution = resolveConstants({
+			ast: subProgramAst,
+			projectConstantNamespaceScopes: program.projectConstantNamespaceScopes,
+		});
 	} catch (error) {
 		throw wrapConstantResolverError(error, program, subProgramAst);
 	}

@@ -118,65 +118,6 @@ entryEnd`);
 		expect(new Int32Array(memory.buffer)[9]).toBe(7);
 	});
 
-	it('resolves root env overrides before deriving constants and laying out buffers', async () => {
-		const project = parseProjectSource(`8f4e/v1
-constants env
-const SAMPLE_RATE 48000
-const HALF_RATE SAMPLE_RATE/2
-const AUDIO_BUFFER_SIZE 128
-constantsEnd
-
-entry main
-group voice
-pass env
-entry main
-module out
-use env
-float[] buffer AUDIO_BUFFER_SIZE
-int rate HALF_RATE
-moduleEnd
-entryEnd
-groupEnd
-group local
-constants env
-const SAMPLE_RATE 16000
-constantsEnd
-entry main
-module out
-use env
-int rate SAMPLE_RATE
-moduleEnd
-entryEnd
-groupEnd
-entryEnd`);
-		const defaults = await compileProject(project);
-		const options = { cache: defaults.cache, envOverrides: { SAMPLE_RATE: 32000, AUDIO_BUFFER_SIZE: 64 } };
-		const overridden = await compileProject(project, options);
-		expect(overridden.envConstants).toEqual({ SAMPLE_RATE: 32000, HALF_RATE: 16000, AUDIO_BUFFER_SIZE: 64 });
-		expect(overridden.memoryPlan.modules['voice/out'].memory.buffer.numberOfElements).toBe(64);
-
-		const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
-		const { instance } = await WebAssembly.instantiate(overridden.codeBuffer, { host: { memory } });
-		(instance.exports.initDefaults as () => void)();
-		const view = new DataView(memory.buffer);
-		expect(view.getInt32(overridden.memoryPlan.modules['voice/out'].memory.rate.byteAddress, true)).toBe(16000);
-		expect(view.getInt32(overridden.memoryPlan.modules['local/out'].memory.rate.byteAddress, true)).toBe(16000);
-
-		const repeatedDefaults = await compileProject(project, { cache: defaults.cache });
-		expect(repeatedDefaults.envConstants).toEqual({ SAMPLE_RATE: 48000, HALF_RATE: 24000, AUDIO_BUFFER_SIZE: 128 });
-		expect(repeatedDefaults.codeBuffer).toEqual(defaults.codeBuffer);
-	});
-
-	it('rejects unknown env names and fractional overrides of integer constants', async () => {
-		const project = parseProjectSource('8f4e/v1\nconstants env\nconst SAMPLE_RATE 48000\nconstantsEnd');
-		await expect(compileProject(project, { envOverrides: { UNKNOWN: 1 } })).rejects.toThrow(
-			'Unknown root env constant UNKNOWN'
-		);
-		await expect(compileProject(project, { envOverrides: { SAMPLE_RATE: 32000.5 } })).rejects.toThrow(
-			'Override for env:SAMPLE_RATE must be a safe integer'
-		);
-	});
-
 	it('preserves module array order while grouping execution by entry', async () => {
 		const project: ProjectObjectModel = {
 			...directProject,

@@ -14,8 +14,6 @@ export interface FunctionInliningOptions {
 
 /** Optional settings that control optimization, layout, and emitted metadata. */
 export interface CompileOptions {
-	/** Replace numeric constants declared in the root `constants env` block while preserving their types. */
-	envOverrides?: Readonly<Record<string, number>>;
 	/** Emit native assertion callbacks and source sites. Default is false; disabled assertions consume operands only. */
 	enableAssertions?: boolean;
 	/** Inline eligible functions. Default is true. */

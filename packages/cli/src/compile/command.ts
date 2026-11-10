@@ -1,15 +1,18 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { CompileOptions } from '@8f4e/language-spec';
+import { parseNumericLiteralToken } from '@8f4e/tokenizer';
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { RuntimeMemoryInfo } from '../shared/types';
 import { compileProject } from './compileProject';
+import { applyEnvOverrides } from './envOverrides';
 
 interface CompileCommandArgs {
 	inputPath?: string;
 	wasmOutputPath?: string;
 	memoryOutputPath?: string;
 	compilerOptions: CompileOptions;
+	envOverrides: Map<string, number>;
 }
 
 function parseCompileArgs(args: string[]): CompileCommandArgs {
@@ -17,6 +20,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 	let wasmOutputPath: string | undefined;
 	let memoryOutputPath: string | undefined;
 	const compilerOptions: CompileOptions = { enableFunctionInlining: false };
+	const envOverrides = new Map<string, number>();
 
 	for (let i = 0; i < args.length; i += 1) {
 		const arg = args[i];
@@ -51,12 +55,11 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		}
 		if (arg === '--env') {
 			const [name, rawValue, extra] = (args[i + 1] ?? '').split('=');
-			const value = Number(rawValue);
-			if (!name || !rawValue?.trim() || extra !== undefined || !Number.isFinite(value)) {
-				throw new Error('--env expects NAME=NUMBER');
+			const literal = rawValue && rawValue.trim() === rawValue ? parseNumericLiteralToken(rawValue) : null;
+			if (!name || extra !== undefined || !literal) {
+				throw new Error('--env expects NAME=NUMBER with a numeric literal');
 			}
-			const overrides = { ...compilerOptions.envOverrides, [name]: value };
-			compilerOptions.envOverrides = overrides;
+			envOverrides.set(name, literal.value);
 			i += 1;
 			continue;
 		}
@@ -81,7 +84,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 		throw new Error(`Unknown compile argument: ${arg}`);
 	}
 
-	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions };
+	return { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides };
 }
 
 export function getCompileUsage(): string {
@@ -94,7 +97,7 @@ export function getCompileUsage(): string {
 }
 
 export async function runCompileCommand(args: string[]): Promise<void> {
-	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions } = parseCompileArgs(args);
+	const { inputPath, wasmOutputPath, memoryOutputPath, compilerOptions, envOverrides } = parseCompileArgs(args);
 
 	if (!inputPath) {
 		throw new Error(getCompileUsage());
@@ -120,6 +123,9 @@ export async function runCompileCommand(args: string[]): Promise<void> {
 
 	const inputRaw = await fs.readFile(resolvedInput, 'utf8');
 	const project = parseProjectSource(inputRaw);
+	if (envOverrides.size > 0) {
+		applyEnvOverrides(project, envOverrides);
+	}
 
 	const { compiledWasm, envConstants, requiredMemoryBytes, memoryPlan } = await compileProject(project, {
 		compilerOptions,
