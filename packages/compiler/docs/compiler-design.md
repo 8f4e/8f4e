@@ -52,6 +52,9 @@ function has a signature, locals, and instructions. Lowering represents schedule
 and the memory initializer as ordinary functions. Calls and exports refer to symbolic function IDs. The module also
 carries the shared memory import and passive data segments, which `memory.init` references by ID.
 
+Lowering guards dynamic memory accesses by default. Set `enableMemoryGuards: false` to emit direct accesses
+and let Wasm trap on out-of-bounds addresses. Explicit address-clamping instructions retain their behavior.
+
 `@8f4e/wasm-ir-pruner` starts from the exported functions, keeps their transitive callees and compacts unreferenced
 local slots in the retained bodies. Parameters keep their original slots. Pruning runs by default and can be disabled
 with `enableWasmPruning: false`.

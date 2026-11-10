@@ -66,19 +66,16 @@ export function buildPointerDereferenceByteCode(
 	const kind = getDereferencedValueKindFromMetadata(pointerMetadata, dereferenceDepth);
 	const dereferencedValueWordSize = getDereferencedValueWordSizeFromMetadata(pointerMetadata, dereferenceDepth);
 	const finalLoad = typedLoad(pointerMetadata.pointeeBaseType!);
+	const pointerLoadCount = isFinalDereference ? dereferenceDepth - 1 : dereferenceDepth;
 
-	if (pointerValueSource === 'pointer-slot') {
-		const pointerLoads = [
-			...i32load(2, 0),
-			...Array.from({ length: isFinalDereference ? dereferenceDepth - 1 : dereferenceDepth }, () =>
-				i32load(2, 0)
-			).flat(),
-		];
+	if (pointerValueSource === 'pointer-slot' || context.enableMemoryGuards === false) {
+		const loadCount = pointerLoadCount + (pointerValueSource === 'pointer-slot' ? 1 : 0);
+		const pointerLoads = Array.from({ length: loadCount }, () => i32load(2, 0)).flat();
 
 		return { kind, byteCode: [...baseAddressByteCode, ...pointerLoads, ...(isFinalDereference ? finalLoad : [])] };
 	}
 
-	const guardedLoadSteps = Array.from({ length: isFinalDereference ? dereferenceDepth - 1 : dereferenceDepth }, () => ({
+	const guardedLoadSteps = Array.from({ length: pointerLoadCount }, () => ({
 		accessByteWidth: WORD_MEMORY_ACCESS_WIDTH,
 		loadByteCode: i32load(2, 0),
 	}));

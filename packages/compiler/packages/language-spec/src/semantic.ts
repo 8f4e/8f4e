@@ -248,6 +248,7 @@ export interface MemoryReferenceResolutionReport {
 export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
 	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
+	enableMemoryGuards?: boolean;
 }
 
 export type ResolvedMapValueArgument = ResolvedArgumentLiteral | ArgumentStringLiteral;

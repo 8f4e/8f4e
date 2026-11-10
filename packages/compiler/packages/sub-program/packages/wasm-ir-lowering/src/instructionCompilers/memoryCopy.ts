@@ -20,7 +20,7 @@ const memoryCopy: InstructionCompiler<ResolvedMemoryCopyLine> = (line, context, 
 		return context;
 	}
 
-	if (isSafeMemoryCopy(destination, source, byteLength)) {
+	if (context.enableMemoryGuards === false || isSafeMemoryCopy(destination, source, byteLength)) {
 		return saveByteCode(context, [...i32const(byteLength), ...memoryCopyByteCode]);
 	}
 

@@ -37,6 +37,10 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 			compilerOptions.enableWasmPruning = false;
 			continue;
 		}
+		if (arg === '--no-memory-guards') {
+			compilerOptions.enableMemoryGuards = false;
+			continue;
+		}
 		if (arg === '--inline-functions') {
 			compilerOptions.enableFunctionInlining = true;
 			continue;
@@ -68,7 +72,7 @@ function parseCompileArgs(args: string[]): CompileCommandArgs {
 export function getCompileUsage(): string {
 	return [
 		'Usage: cli compile <input.8f4e> --wasm-output <output.wasm> [--memory-output <memory.json>]',
-		'    [--no-wasm-pruning] [--inline-functions]',
+		'    [--no-memory-guards] [--no-wasm-pruning] [--inline-functions]',
 		'    [--max-inline-expansion-operations <n>] [--max-inline-caller-growth <n>]',
 	].join('\n');
 }
