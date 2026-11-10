@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "devDependencies": {
-    "@biomejs/biome": "2.6.3",
+    "@biomejs/biome": "2.6.4",
     "@nx/js": "23.3.1",
     "@nx/vite": "23.3.1",
     "@playwright/test": "1.64.1",
@@ -61,7 +61,7 @@
   },
   "overrides": {
     "nx": {
-      "axios": "1.20.0",
+      "axios": "1.21.0",
       "brace-expansion": "5.0.12",
       "follow-redirects": "1.16.2",
       "yaml": "2.9.1"
