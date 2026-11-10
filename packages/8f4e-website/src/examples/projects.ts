@@ -112,7 +112,7 @@ export const projects = [
 		id: 'grids-patterns',
 		title: 'Grids patterns',
 		description:
-			'Generate 808 drum patterns with X/Y interpolation and independent kick, snare and hi-hat density controls.',
+			'Explore six banks of 808 rhythms with X/Y morphing and separate kick, snare and hi-hat density controls.',
 		path: 'audio/gridsPatterns.8f4e',
 	},
 	{
