@@ -28,7 +28,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
-          submodules: recursive
+
+      - name: Checkout editor submodule
+        run: git submodule update --init --recursive -- packages/editor
 
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e

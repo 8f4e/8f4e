@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
 project(wamr_daisy LANGUAGES C ASM)
 
-set(WAMR_ROOT_DIR "$ENV{WAMR_DIR}" CACHE PATH "Path to WAMR 2.4.5 sources")
+set(default_wamr_dir "$ENV{WAMR_DIR}")
+if(default_wamr_dir STREQUAL "")
+  set(default_wamr_dir "${CMAKE_CURRENT_SOURCE_DIR}/third_party/wamr")
+endif()
+set(WAMR_ROOT_DIR "${default_wamr_dir}" CACHE PATH "Path to WAMR 2.4.5 sources")
 if(NOT EXISTS "${WAMR_ROOT_DIR}/build-scripts/runtime_lib.cmake")
-  message(FATAL_ERROR "Set WAMR_DIR to the WAMR 2.4.5 source directory")
+  message(FATAL_ERROR "Initialize the Daisy submodules or set WAMR_DIR to the WAMR 2.4.5 source directory")
 endif()
 
 set(WAMR_BUILD_PLATFORM "daisy")

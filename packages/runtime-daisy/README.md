@@ -7,16 +7,13 @@ controller events from the 3.5 mm Type A TRS MIDI input.
 ## Build the firmware
 
 Install the Arm GNU toolchain (`arm-none-eabi-gcc` and `arm-none-eabi-g++`),
-GNU Make and CMake 3.20 or newer. Build
-[libDaisy at 85172e2b](https://github.com/electro-smith/libDaisy/tree/85172e2b5c9abea1bf56dcd5d2c7b3f5717eb66b)
-with `make` in its checkout. Use the sources and `wamrc` binary from
-[WAMR 2.4.5](https://github.com/wasm-micro-runtime/wasm-micro-runtime/releases/tag/WAMR-2.4.5).
+GNU Make and CMake 3.20 or newer. The firmware build compiles libDaisy and
+WAMR from the pinned submodules.
 
 Run the build from the 8f4e repository root after installing the workspace dependencies.
 
 ```sh
-export LIBDAISY_DIR=/absolute/path/to/libDaisy
-export WAMR_DIR=/absolute/path/to/wasm-micro-runtime
+git submodule update --init -- packages/runtime-daisy/third_party
 npx nx run @8f4e/runtime-daisy:build
 ```
 
@@ -29,8 +26,10 @@ to install it.
 
 Use a project configured for 48 kHz that exports `initDefaults()`,
 `buffer()`, and `onMidiEvent(i32, i32, i32)`. Each call to `buffer` should
-write one block of 1 to 256 float32 samples per output buffer. Run the
-commands below from the repository root after building the 8f4e CLI.
+write one block of 1 to 256 float32 samples per output buffer. Use `wamrc`
+from the [WAMR 2.4.5 release](https://github.com/wasm-micro-runtime/wasm-micro-runtime/releases/tag/WAMR-2.4.5)
+to match the firmware. Run the commands below from the repository root
+after building the 8f4e CLI.
 
 ```sh
 node packages/cli/bin/cli.js compile instrument.8f4e \
