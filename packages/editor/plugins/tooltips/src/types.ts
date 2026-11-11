@@ -48,40 +48,25 @@ export interface TooltipLiveValueMemoryFormat {
 	isUnsigned: boolean;
 }
 
-export interface TooltipMemoryAddressLiveValueSource {
-	kind: 'memoryAddress';
-	moduleId: string;
-	memoryId: string;
-}
-
-export interface TooltipMemoryValueLiveValueSource {
-	kind: 'memoryValue';
-	moduleId: string;
-	memoryId: string;
-	elementIndex?: number;
-}
-
-export interface TooltipMemoryDereferenceLiveValueSource {
-	kind: 'memoryDereference';
-	moduleId: string;
-	memoryId: string;
+/** A typed read whose storage address is fixed until tooltip preparation runs again. */
+export interface TooltipMemoryReadSource {
+	kind: 'memoryRead';
+	byteAddress: number;
+	allocationUnitAddress: number;
 	format: TooltipLiveValueMemoryFormat;
 }
 
-export type TooltipReferenceLiveValueSource =
-	| { kind: 'referenceValue'; text: string }
-	| {
-			kind: 'referenceDereference';
-			byteAddress: number;
-			allocationUnitAddress: number;
-			format: TooltipLiveValueMemoryFormat;
-	  };
+/** A typed read through the live address stored in a prepared pointer slot. */
+export interface TooltipPointerReadSource {
+	kind: 'pointerRead';
+	allocationUnitAddress: number;
+	format: TooltipLiveValueMemoryFormat;
+}
 
 export type TooltipLiveValueSource =
-	| TooltipMemoryAddressLiveValueSource
-	| TooltipMemoryValueLiveValueSource
-	| TooltipMemoryDereferenceLiveValueSource
-	| TooltipReferenceLiveValueSource;
+	| { kind: 'staticText'; text: string }
+	| TooltipMemoryReadSource
+	| TooltipPointerReadSource;
 
 export interface TooltipLiveValue {
 	x: number;

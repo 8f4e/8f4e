@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration, type ResolvedReferenceSlot } from '@8f4e/language-spec';
-import type { TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
+import type { TooltipLiveValueSource, TooltipLiveValueTarget, TooltipMemoryReadSource } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
 
@@ -18,10 +18,16 @@ export interface LiveTooltipContent {
 }
 
 /**
- * Returns true when memory tooltip content should include a dereferenced value.
+ * Prepares the storage address and format shared by allocated values and fixed-reference targets.
  */
-function isPointerMemory(memory: PlannedMemoryDeclaration): boolean {
-	return memory.pointerDepth > 0;
+function prepareMemoryRead(memory: PlannedMemoryDeclaration): TooltipMemoryReadSource {
+	const { byteAddress, allocationUnitAddress, elementWordSize, isInteger, isUnsigned } = memory;
+	return {
+		kind: 'memoryRead',
+		byteAddress,
+		allocationUnitAddress,
+		format: { elementWordSize, isInteger, isUnsigned },
+	};
 }
 
 /**
@@ -43,11 +49,9 @@ function getDereferencedMemoryFormat(memory: PlannedMemoryDeclaration) {
  */
 export function getLiveTooltipContent(
 	memory: PlannedMemoryDeclaration | undefined,
-	moduleId: string | undefined,
-	memoryId: string | undefined,
 	firstLineIndex: number
 ): LiveTooltipContent {
-	if (!memory || !moduleId || !memoryId) {
+	if (!memory) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
 
@@ -56,20 +60,24 @@ export function getLiveTooltipContent(
 		{
 			label: 'address: ',
 			maxLineLength: 'address: '.length + maxLiveMemoryAddressLength,
-			source: { kind: 'memoryAddress', moduleId, memoryId },
+			source: { kind: 'staticText', text: String(memory.byteAddress) },
 		},
 		{
 			label: valueLabel,
 			maxLineLength: valueLabel.length + maxLiveMemoryValueLength,
-			source: { kind: 'memoryValue', moduleId, memoryId, elementIndex: 0 },
+			source: prepareMemoryRead(memory),
 		},
 	];
 
-	if (isPointerMemory(memory)) {
+	if (memory.pointerDepth > 0) {
 		lines.push({
 			label: 'deref: ',
 			maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-			source: { kind: 'memoryDereference', moduleId, memoryId, format: getDereferencedMemoryFormat(memory) },
+			source: {
+				kind: 'pointerRead',
+				allocationUnitAddress: memory.allocationUnitAddress,
+				format: getDereferencedMemoryFormat(memory),
+			},
 		});
 	}
 
@@ -84,24 +92,19 @@ export function getLiveReferenceTooltipContent(
 	if (!reference) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
-	const { byteAddress, allocationUnitAddress, elementWordSize, isInteger, isUnsigned } = reference.targetMemory;
+	const memory = reference.targetMemory;
 
 	return getLiveLinesContent(
 		[
 			{
 				label: 'value: ',
 				maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
-				source: { kind: 'referenceValue', text: String(byteAddress) },
+				source: { kind: 'staticText', text: String(memory.byteAddress) },
 			},
 			{
 				label: 'deref: ',
 				maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-				source: {
-					kind: 'referenceDereference',
-					byteAddress,
-					allocationUnitAddress,
-					format: { elementWordSize, isInteger, isUnsigned },
-				},
+				source: prepareMemoryRead(memory),
 			},
 		],
 		firstLineIndex

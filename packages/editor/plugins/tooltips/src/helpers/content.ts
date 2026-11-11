@@ -8,11 +8,7 @@ import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
 import { getLiveReferenceTooltipContent, getLiveTooltipContent } from './liveValues';
-import {
-	getMemoryDeclarationIdFromSourceLine,
-	getReferenceDeclarationIdFromSourceLine,
-	getSourceInstruction,
-} from './sourceLine';
+import type { SourceLineDescription } from './sourceLine';
 import { getStackAnalysisTooltipContent } from './stackAnalysisTooltip';
 import { formatStackSignature, formatStackSignatureLines, resolveStackSignature } from './stackSignature';
 import { getMaxLineLength, getTooltipTextCharacters, wrapTooltipText } from './text';
@@ -24,7 +20,7 @@ interface SelectedLineTooltipTextContent {
 }
 
 interface SelectedLineTooltipTextOptions {
-	line: string | undefined;
+	source: SourceLineDescription;
 	maxLength?: number;
 	stackAnalysisLine?: CompiledStackAnalysisLine;
 	parsedLine?: CompilerASTLine;
@@ -32,7 +28,6 @@ interface SelectedLineTooltipTextOptions {
 }
 
 interface SelectedLineTooltipOptions extends SelectedLineTooltipTextOptions {
-	moduleId?: string;
 	memory?: PlannedMemoryDeclaration;
 	reference?: ResolvedReferenceSlot;
 }
@@ -41,17 +36,17 @@ interface SelectedLineTooltipOptions extends SelectedLineTooltipTextOptions {
  * Builds wrapped tooltip text for instruction docs and stack analysis.
  */
 export function getSelectedLineTooltipTextContent({
-	line,
+	source,
 	maxLength = TOOLTIP_WRAP_WIDTH,
 	stackAnalysisLine,
 	parsedLine,
 	moduleExecutionOrder,
 }: SelectedLineTooltipTextOptions): SelectedLineTooltipTextContent {
-	if (!line) {
+	if (!source.text) {
 		return { text: [], signatureLineCount: 0, highlightTargets: [] };
 	}
 
-	const sourceInstruction = getSourceInstruction(line);
+	const { sourceInstruction } = source;
 	const signature = resolveStackSignature({ sourceInstruction, stackAnalysisLine, parsedLine });
 	const signatureLines = signature
 		? signature.kind === 'call'
@@ -101,12 +96,12 @@ export function getSelectedLineTooltipText(options: SelectedLineTooltipTextOptio
 export function getSelectedLineTooltipContent(options: SelectedLineTooltipOptions): SelectedLineTooltipContent {
 	const textContent = getSelectedLineTooltipTextContent(options);
 	const text = textContent.text;
-	const memoryId = getMemoryDeclarationIdFromSourceLine(options.line);
-	const referenceId = getReferenceDeclarationIdFromSourceLine(options.line);
+	const { declaration } = options.source;
 	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
-	const liveTooltipContent = referenceId
-		? getLiveReferenceTooltipContent(options.reference, text.length)
-		: getLiveTooltipContent(options.memory, options.moduleId, memoryId, text.length);
+	const liveTooltipContent =
+		declaration?.kind === 'reference'
+			? getLiveReferenceTooltipContent(options.reference, text.length)
+			: getLiveTooltipContent(declaration ? options.memory : undefined, text.length);
 
 	text.push(...liveTooltipContent.text);
 	colors.push(...liveTooltipContent.colors);

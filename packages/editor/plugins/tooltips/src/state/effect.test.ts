@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
@@ -66,6 +66,43 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 });
 
 describe('tooltip effect', () => {
+	it('uses current source classification while accepted compiler metadata lags incomplete edits', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module sample
+push 8
+sub 3
+drop
+moduleEnd
+entryEnd`);
+		const compiled = await compileProject(project, { includeStackAnalysis: true });
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		const tooltip = createTooltip(store, events);
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		events.dispatch('enterEditMode');
+		store.set('compiler.result', compiled);
+		store.set('initialProjectState', project);
+		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		expect(tooltip.getState().text[0]).toBe('sub (T -- T)');
+		const editLine = (line: string) => {
+			const code = [...block.code];
+			code[2] = line;
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+		};
+		editLine('mul');
+		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');
+		for (const line of ['float& input &', 'float&']) {
+			editLine(line);
+			expect(tooltip.getState().text.join(' ')).toContain('Binds a typed, fixed memory reference');
+			expect(tooltip.getState().liveValues).toEqual([]);
+		}
+	});
 	it('adds selected line stack analysis when compiler data is available', () => {
 		const selectedBlock = createMockCodeBlock({
 			code: ['push 1', 'push 2', 'add'],
@@ -283,6 +320,9 @@ describe('tooltip effect', () => {
 										numberOfElements: 1,
 										byteAddress: 4,
 										allocationUnitAddress: 1,
+										elementWordSize: 4,
+										isInteger: true,
+										isUnsigned: false,
 									},
 								},
 								declarations: [],
@@ -316,13 +356,18 @@ describe('tooltip effect', () => {
 			{
 				x: tooltip.getState().layout.lineX + 'address: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 2) * 16,
-				source: { kind: 'memoryAddress', moduleId, memoryId: 'value' },
+				source: { kind: 'staticText', text: '4' },
 				color: fontInverseAccent,
 			},
 			{
 				x: tooltip.getState().layout.lineX + 'value: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 1) * 16,
-				source: { kind: 'memoryValue', moduleId, memoryId: 'value', elementIndex: 0 },
+				source: {
+					kind: 'memoryRead',
+					byteAddress: 4,
+					allocationUnitAddress: 1,
+					format: { elementWordSize: 4, isInteger: true, isUnsigned: false },
+				},
 				color: fontInverseAccent,
 			},
 		]);

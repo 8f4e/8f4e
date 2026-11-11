@@ -22,14 +22,17 @@ Overridden blocks retain instruction documentation without displaying another de
 
 Fixed reference declarations (`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&`) show their
 resolved target byte address as `value` and the live target value as `deref`. Buffer targets show their first element.
-These rows resolve targets through the shared editor-state memory resolver during tooltip preparation. The prepared
-data retains the address text and target read format; fixed references allocate no pointer storage. Recompilation
-refreshes the prepared data, while each frame reads the current runtime value without another target lookup.
+Fixed references allocate no pointer storage. Both fixed references and allocated declarations resolve targets
+through the shared editor-state memory resolver during preparation and produce the same prepared read variants:
+static text, a typed memory read, or a live pointer read. Recompilation refreshes the prepared addresses and read
+formats. Drawing reads current memory and pointer values without resolving names or distinguishing declaration kinds.
 Missing compilation metadata leaves documentation visible without live rows, and unavailable target memory shows `?`.
 
-Instruction signatures use the accepted parsed source arguments, including operands on `-` continuation lines, so
-their stack effects agree with the compiler's before/after analysis. Before compilation, signatures fall back to the
-selected source line.
+Preparation classifies the current selected source line once. Target lookup, documentation, declaration labels, and
+execution order share that description. Instruction signatures use the accepted parsed source arguments, including
+operands on `-` continuation lines, so their stack effects agree with the compiler's before/after analysis. Before
+compilation or when an edit changes the instruction, signatures fall back to the current source description.
+Incomplete edits retain instruction documentation while accepted compiler metadata catches up.
 
 For `call` instructions, successful compilation supplies the selected overload's parameter names, types, and return
 types. The tooltip uses the callable name from the selected source line and wraps long signatures between parameters,

@@ -1,56 +1,10 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { getCompiledFunctionForCodeBlock, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { createProjectModuleId } from '@8f4e/language-spec';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getSelectedLineTooltipContent } from '../helpers/content';
-import {
-	getInstructionNameFromSourceLine,
-	getMemoryDeclarationIdFromSourceLine,
-	getReferenceDeclarationIdFromSourceLine,
-} from '../helpers/sourceLine';
+import { describeSourceLine } from '../helpers/sourceLine';
 import { createEmptyTooltipState, getTooltipState } from './layout';
-
-/**
- * Finds compiler metadata for the selected source block's active definition.
- */
-function getSelectedCodeBlockCompilation(state: State, selectedCodeBlock: CodeBlockGraphicData) {
-	if (!selectedCodeBlock.name) {
-		return undefined;
-	}
-
-	if (selectedCodeBlock.blockType === 'function') {
-		return getCompiledFunctionForCodeBlock(selectedCodeBlock, state);
-	}
-
-	return getCompiledModuleForCodeBlock(selectedCodeBlock, state);
-}
-
-/**
- * Resolves memory metadata for selected memory declaration tooltip rows.
- */
-function getSelectedMemoryTarget(state: State, codeBlock: CodeBlockGraphicData, memoryId: string | undefined) {
-	if (!codeBlock.name || !memoryId) {
-		return undefined;
-	}
-
-	return getCompiledModuleForCodeBlock(codeBlock, state)
-		? resolveMemoryTarget(state, getCodeBlockMemoryScope(codeBlock), memoryId)
-		: undefined;
-}
-
-function getSelectedModuleExecutionOrder(
-	state: State,
-	selectedCodeBlock: CodeBlockGraphicData,
-	line: string | undefined
-): number | undefined {
-	if (!line || getInstructionNameFromSourceLine(line) !== 'module' || !selectedCodeBlock.name) {
-		return undefined;
-	}
-
-	const module = getCompiledModuleForCodeBlock(selectedCodeBlock, state);
-	return module ? module.index + 1 : undefined;
-}
 
 /**
  * Keeps plugin-owned tooltip state synchronized with the selected code line.
@@ -67,19 +21,26 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 			return;
 		}
 
-		const line = selectedCodeBlock.code[selectedCodeBlock.cursor.row];
-		const memoryId = getMemoryDeclarationIdFromSourceLine(line);
-		const referenceId = getReferenceDeclarationIdFromSourceLine(line);
-		const compilation = getSelectedCodeBlockCompilation(state, selectedCodeBlock);
-		const memoryTarget = getSelectedMemoryTarget(state, selectedCodeBlock, memoryId ?? referenceId);
+		const source = describeSourceLine(selectedCodeBlock.code[selectedCodeBlock.cursor.row]);
+		const module =
+			selectedCodeBlock.name && selectedCodeBlock.blockType !== 'function'
+				? getCompiledModuleForCodeBlock(selectedCodeBlock, state)
+				: undefined;
+		const compilation =
+			selectedCodeBlock.name && selectedCodeBlock.blockType === 'function'
+				? getCompiledFunctionForCodeBlock(selectedCodeBlock, state)
+				: module;
+		const memoryTarget =
+			module && source.declaration
+				? resolveMemoryTarget(state, getCodeBlockMemoryScope(selectedCodeBlock), source.declaration.id)
+				: undefined;
 		const content = getSelectedLineTooltipContent({
-			line,
+			source,
 			parsedLine: compilation?.ast.lines.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
 			stackAnalysisLine: compilation?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
-			moduleId: createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
 			memory: memoryTarget?.memory,
 			reference: memoryTarget?.reference,
-			moduleExecutionOrder: getSelectedModuleExecutionOrder(state, selectedCodeBlock, line),
+			moduleExecutionOrder: source.sourceInstruction?.instruction === 'module' && module ? module.index + 1 : undefined,
 		});
 		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip);
 	}
