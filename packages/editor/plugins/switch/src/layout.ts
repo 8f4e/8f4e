@@ -1,5 +1,5 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
+import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createSwitchDirectiveData } from './data';
 
@@ -25,7 +25,7 @@ export function registerSwitchLayout(
 		});
 		widgets.set(graphicData, []);
 		items.forEach(data => {
-			const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), data.id)?.memory;
+			const memory = resolveMemoryAddress(state, getCodeBlockMemoryScope(graphicData), data.id)?.memory;
 			if (!memory) return;
 			const row = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 			widgets.get(graphicData)!.push({

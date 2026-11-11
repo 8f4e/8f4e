@@ -6,6 +6,18 @@ import { barsPlugin } from './index';
 
 const source = ['module audio', 'int8[] samples 4 0 1 2 3', '; @bars &samples count(samples) 0 3', 'moduleEnd'];
 describe('bars plugin', () => {
+	it('draws a fixed-reference buffer using its backing element count', async () => {
+		const test = await setup(barsPlugin, [
+			'module audio',
+			'float[] samples 3 0.25 0.5 1',
+			'float& buffer &samples',
+			'; @bars buffer count(buffer) 0 1',
+			'moduleEnd',
+		]);
+		test.render();
+		const bars = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.detailBase);
+		expect(bars.map(call => call[4])).toEqual([32, 64, 128]);
+	});
 	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
 		'lays out and draws %s arrays',
 		async type => {

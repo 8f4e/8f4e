@@ -7,6 +7,30 @@ import { createWatchPlugin } from './index';
 const plugin = createWatchPlugin({ prefersReducedMotion: () => true });
 const source = ['module audio', 'int value 7 ; @watch', 'moduleEnd'];
 describe('watch plugin', () => {
+	it.each(['int8u', 'float', 'float64'])(
+		'reads named and inline %s& references without a runtime pointer slot',
+		async type => {
+			const test = await setup(plugin, [
+				'module audio',
+				`${type}[] samples 2 3 4`,
+				`${type}& buffer &samples ; @watch`,
+				`${type}& value &samples ; @watch *[1]`,
+				'; @watch buffer',
+				'; @watch *buffer[1]',
+				'; @watch &buffer',
+				'moduleEnd',
+			]);
+			test.render();
+			const address = String(test.compiled.memoryPlan.modules.audio.memory.samples.byteAddress);
+			const value = type === 'int8u' ? '4' : '4.0000';
+			expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([
+				address,
+				value,
+				address,
+				value,
+			]);
+		}
+	);
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {
 		const test = await setup(plugin, ['module audio', `int 7 ; @${directive}`, 'moduleEnd']);
 		test.render();

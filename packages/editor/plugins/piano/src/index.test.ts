@@ -116,6 +116,21 @@ afterEach(() => {
 });
 
 describe('piano plugin', () => {
+	it('updates notes and count through fixed references', async () => {
+		const test = await setup([
+			'module controls',
+			'int[] notes 4',
+			'int count 0',
+			'int& keys &notes',
+			'int& length &count',
+			'; @piano keys length 48',
+			'moduleEnd',
+		]);
+		test.press(2, 5);
+		const memory = test.compiled.memoryPlan.modules.controls.memory;
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
+	});
 	it('reserves six rows, requires enough width, and draws 24 keys with note labels', async () => {
 		const test = await setup();
 		expect(test.codeBlock.gaps.get(3)).toEqual({ size: 6 });

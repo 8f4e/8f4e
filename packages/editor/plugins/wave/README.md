@@ -9,7 +9,8 @@
 ```
 
 `@wave` adds two rows, `@wave2` four, and `@wave4` eight. The source can be an address such as `&samples` or a typed
-pointer memory. The count can be a positive integer, a live memory value, or `count(samples)`. The optional third
+pointer memory or a fixed reference such as `float& buffer &samples`. Use its bare name (`; @wave buffer 128`).
+The count can be a positive integer, a live memory value, or `count(samples)` / `count(buffer)`. The optional third
 argument supplies an absolute playhead address.
 
 ```ts
@@ -25,7 +26,8 @@ hook. Disposal unregisters all three definitions and the drawer.
 Sample types come from the addressed declaration or pointer's pointee type. The drawer supports signed and unsigned
 8-bit and 16-bit integers, signed 32-bit integers, float32, and float64. Integer bounds follow their type; floating
 samples use `-1..1`. It reads samples, pointer starts, live counts, and playheads from the current memory each frame.
-Group-exposed memory uses the same public memory resolution as module declarations.
+Group-exposed memory and fixed references use the same public memory resolution as module declarations. Fixed
+references supply the target address without reading a runtime pointer slot, including when used as a playhead.
 
 The plugin uses the existing `waveformBackground`, `waveform`, and `scanLine` palette entries.
 

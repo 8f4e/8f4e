@@ -6,6 +6,27 @@ import { createCrossfadePlugin } from './index';
 
 const source = ['module audio', 'float dry 0.25', 'float wet 0.75', '; @crossfade &dry &wet', 'moduleEnd'];
 describe('crossfade plugin', () => {
+	it('writes both fixed-reference targets while dragging', async () => {
+		const test = await setup(createCrossfadePlugin, [
+			'module audio',
+			'float dry 0.25',
+			'float wet 0.75',
+			'float& left &dry',
+			'float& right &wet',
+			'; @crossfade left right',
+			'moduleEnd',
+		]);
+		test.render();
+		const [x, y] = vi.mocked(test.draw.startGroup).mock.calls[0];
+		test.events.dispatch('codeBlockPointerDown', {
+			codeBlock: test.block,
+			x: test.block.x + x - test.state.viewport.x,
+			y: test.block.y + y + 1 - test.state.viewport.y,
+		});
+		const memory = test.compiled.memoryPlan.modules.audio.memory;
+		expect(test.memoryViews.float32[memory.dry.allocationUnitAddress]).toBe(1);
+		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(0);
+	});
 	it.each(['view', 'edit'] as const)('drags through pointer events in %s mode without moving the block', async mode => {
 		const test = await setup(createCrossfadePlugin, source, { mode });
 		test.render();

@@ -6,6 +6,17 @@ import { meterPlugin } from './index';
 
 const source = ['module audio', 'float level 0.5 ; @meter', 'moduleEnd'];
 describe('meter plugin', () => {
+	it.each(['', 'level'])('reads an inline fixed reference with @meter %s', async expression => {
+		const test = await setup(meterPlugin, [
+			'module audio',
+			'float sample 0.5',
+			`float& level &sample ; @meter ${expression}`,
+			'moduleEnd',
+		]);
+		test.render();
+		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, Math.round(width / 2), 16);
+	});
 	it('uses the compiled declaration for an anonymous inline meter', async () => {
 		const test = await setup(meterPlugin, ['module audio', 'float 0.5 ; @meter', 'moduleEnd']);
 		test.render();

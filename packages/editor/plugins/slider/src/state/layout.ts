@@ -1,5 +1,5 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
+import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { SliderDirectiveData } from '../helpers/data';
 import { createSliderDirectiveData } from '../helpers/data';
@@ -15,7 +15,7 @@ function resolveSliderLayout(
 		return;
 	}
 
-	const memory = resolveMemoryIdentifier(state, getCodeBlockMemoryScope(graphicData), slider.memoryId);
+	const memory = resolveMemoryAddress(state, getCodeBlockMemoryScope(graphicData), slider.memoryId);
 
 	if (!memory) {
 		return;

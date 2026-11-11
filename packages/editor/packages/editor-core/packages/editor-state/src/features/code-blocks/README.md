@@ -141,7 +141,7 @@ marker plugin through the same contribution path as other source errors.
 - **Edit History**: Block changes trigger history snapshots
 
 Memory references use the `MemoryScope` type exported through `@8f4e/editor-state/memory`. A module scope
-(`{ kind: 'module', moduleId }`) resolves unqualified names in that module's declarations. A project scope
+(`{ kind: 'module', moduleId }`) resolves unqualified names in that module's allocated declarations and fixed references. A project scope
 (`{ kind: 'project', groupPath }`) resolves unqualified names in the group's exposed aliases; the root project uses
 the empty group path. Qualified names resolve relative to the scope's project path, while paths containing `/` are
 canonical. Local module declarations and group exposures remain distinct even when a module and group share a name.
@@ -151,6 +151,18 @@ editor boundary. Configuration and renderer consumers construct scopes from thei
 module IDs. `resolveMemoryTarget` handles target lookup using these explicit scopes, and `resolveMemoryIdentifier`
 adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
 end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
+
+Fixed references such as `float& buffer &source:samples` resolve to the backing declaration and its owning module,
+with the original reference metadata retained in `ResolvedMemoryTarget.reference`. A bare `buffer` supplies the
+fixed target address; `*buffer` reads the target value, and `*buffer[1]` selects its second element. `&buffer` is
+unresolved because a fixed reference allocates no addressable slot. Buffer displays derive their sample format and
+`count(buffer)` from the backing declaration; live count arguments read its current value.
+
+Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
+fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
+`getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory;
+`resolveMemoryAccess` applies the same address and dereference rules to those targets. Tooltips and connectors use
+the shared target lookup while retaining their own value formatting and source-row geometry.
 
 ## References
 

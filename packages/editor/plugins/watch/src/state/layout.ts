@@ -1,7 +1,7 @@
 import { gapCalculator, getTabStopsByLine, getVisualLineWidth, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
-	getMemoryDeclarationAtSourceLine,
+	getMemoryTargetAtSourceLine,
 	resolveMemoryAccess,
 	resolveMemoryIdentifier,
 } from '@8f4e/editor-state/memory';
@@ -20,11 +20,10 @@ export function registerWatchLayout(
 		watchesByBlock.set(graphicData, []);
 		const scope = getCodeBlockMemoryScope(graphicData);
 		items.forEach(data => {
-			const declaration =
-				data.inlineAccess && getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber)?.memory;
-			if (data.inlineAccess && !declaration) return;
-			const resolveMemory = declaration
-				? () => resolveMemoryAccess(state, declaration, data.inlineAccess)
+			const target = data.inlineAccess && getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber)?.target;
+			if (data.inlineAccess && !target) return;
+			const resolveMemory = target
+				? () => resolveMemoryAccess(state, target, data.inlineAccess)
 				: () => resolveMemoryIdentifier(state, scope, data.memoryId);
 			const dereferenced = data.inlineAccess?.dereference ?? data.memoryId?.startsWith('*');
 			const memory = dereferenced ? undefined : resolveMemory();

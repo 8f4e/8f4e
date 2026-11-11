@@ -1,7 +1,7 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
-	getMemoryDeclarationAtSourceLine,
+	getMemoryTargetAtSourceLine,
 	resolveDirectOrPointerTypedValueSpec,
 	resolveMemoryAccess,
 	resolveMemoryIdentifier,
@@ -24,10 +24,10 @@ export function registerMeterLayout(
 			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
 			if (!data) return [];
 			const declaration =
-				data.memoryId === undefined ? getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber) : undefined;
+				data.memoryId === undefined ? getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber) : undefined;
 			if (data.memoryId === undefined && !declaration) return [];
-			const memory = declaration?.memory
-				? resolveMemoryAccess(state, declaration.memory)
+			const memory = declaration?.target
+				? resolveMemoryAccess(state, declaration.target)
 				: resolveMemoryIdentifier(state, scope, data.memoryId);
 			return [{ data, memory }];
 		});

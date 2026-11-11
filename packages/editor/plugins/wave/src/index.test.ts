@@ -155,6 +155,36 @@ describe('wave plugin', () => {
 		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
 
+	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
+		'draws a %s& buffer with a referenced count and playhead',
+		async type => {
+			const test = await setup([
+				'module samples',
+				`${type}[] values 4 0 0 1 0`,
+				'int length 4',
+				'moduleEnd',
+				'module audio',
+				`${type}& buffer &samples:values`,
+				'int& length &samples:length',
+				`${type}& playhead &samples:values`,
+				'; @wave buffer length playhead',
+				'moduleEnd',
+			]);
+			test.render();
+			expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 32);
+			const columns = vi
+				.mocked(test.draw.drawFill)
+				.mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+			expect(columns.length).toBeGreaterThan(0);
+			expect(columns.every(call => Number.isFinite(call[1]) && Number.isFinite(call[4]))).toBe(true);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 4, 32);
+			const length = test.state.compiler.result.memoryPlan.modules.samples.memory.length;
+			test.memoryViews.int32[length.allocationUnitAddress] = 0;
+			test.render();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
+		}
+	);
+
 	it('resolves exposed group memory through the public memory API', async () => {
 		const test = await setup([
 			'group audio',

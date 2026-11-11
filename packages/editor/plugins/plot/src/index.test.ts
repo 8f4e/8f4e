@@ -6,6 +6,19 @@ import { plotPlugin } from './index';
 
 const source = ['module audio', 'int8[] samples 4 0 1 2 3', '; @plot &samples count(samples) 0 3', 'moduleEnd'];
 describe('plot plugin', () => {
+	it('draws a fixed-reference buffer using its backing element count', async () => {
+		const test = await setup(plotPlugin, [
+			'module audio',
+			'float[] samples 3 -1 0 1',
+			'float& buffer &samples',
+			'; @plot buffer count(buffer)',
+			'moduleEnd',
+		]);
+		test.render();
+		const points = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
+		expect(points).toHaveLength(3);
+		expect(points[0][1]).toBeGreaterThan(points[2][1]);
+	});
 	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
 		'lays out and draws %s arrays',
 		async type => {

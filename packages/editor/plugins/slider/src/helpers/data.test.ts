@@ -4,6 +4,7 @@ import { createSliderDirectiveData } from './data';
 describe('slider arguments', () => {
 	it.each([
 		{ args: ['&gain'], min: undefined, max: undefined, step: undefined },
+		{ args: ['gain'], min: undefined, max: undefined, step: undefined },
 		{ args: ['&gain', '0'], min: 0, max: undefined, step: undefined },
 		{ args: ['&gain', '-100', '100', '5'], min: -100, max: 100, step: 5 },
 		{ args: ['&group:gain', '0', '1', '0.01'], min: 0, max: 1, step: 0.01 },
@@ -12,7 +13,7 @@ describe('slider arguments', () => {
 	});
 	it.each([
 		[],
-		['gain'],
+		['*gain'],
 		['&gain', 'invalid'],
 		['&gain', '0', 'invalid'],
 		['&gain', '0', '1', '0'],

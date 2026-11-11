@@ -1,9 +1,6 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import {
-	getCompiledFunctionForCodeBlock,
-	getCompiledModuleForCodeBlock,
-	getModuleCompilationForCodeBlock,
-} from '@8f4e/editor-state';
+import { getCompiledFunctionForCodeBlock, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
+import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import { createProjectModuleId } from '@8f4e/language-spec';
 import { getSelectedLineTooltipContent } from '../helpers/content';
@@ -32,12 +29,14 @@ function getSelectedCodeBlockCompilation(state: State, selectedCodeBlock: CodeBl
 /**
  * Resolves memory metadata for selected memory declaration tooltip rows.
  */
-function getSelectedMemoryDeclaration(state: State, codeBlock: CodeBlockGraphicData, memoryId: string | undefined) {
+function getSelectedMemoryTarget(state: State, codeBlock: CodeBlockGraphicData, memoryId: string | undefined) {
 	if (!codeBlock.name || !memoryId) {
 		return undefined;
 	}
 
-	return getModuleCompilationForCodeBlock(codeBlock, state)?.plannedModule.memory[memoryId];
+	return getCompiledModuleForCodeBlock(codeBlock, state)
+		? resolveMemoryTarget(state, getCodeBlockMemoryScope(codeBlock), memoryId)
+		: undefined;
 }
 
 function getSelectedModuleExecutionOrder(
@@ -72,15 +71,14 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 		const memoryId = getMemoryDeclarationIdFromSourceLine(line);
 		const referenceId = getReferenceDeclarationIdFromSourceLine(line);
 		const compilation = getSelectedCodeBlockCompilation(state, selectedCodeBlock);
+		const memoryTarget = getSelectedMemoryTarget(state, selectedCodeBlock, memoryId ?? referenceId);
 		const content = getSelectedLineTooltipContent({
 			line,
 			parsedLine: compilation?.ast.lines.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
 			stackAnalysisLine: compilation?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
 			moduleId: createProjectModuleId(selectedCodeBlock.projectPath, selectedCodeBlock.name),
-			memory: getSelectedMemoryDeclaration(state, selectedCodeBlock, memoryId),
-			reference: referenceId
-				? getCompiledModuleForCodeBlock(selectedCodeBlock, state)?.referenceSlots?.[referenceId]
-				: undefined,
+			memory: memoryTarget?.memory,
+			reference: memoryTarget?.reference,
 			moduleExecutionOrder: getSelectedModuleExecutionOrder(state, selectedCodeBlock, line),
 		});
 		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip);

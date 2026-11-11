@@ -97,6 +97,13 @@ async function setup(code = source, installed = true) {
 }
 
 describe('switch plugin', () => {
+	it('toggles the target of a fixed reference', async () => {
+		const test = await setup(['module controls', 'int gate 0', 'int& output &gate ; @switch output', 'moduleEnd']);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(test.address, 0, true);
+	});
 	afterEach(() => {
 		while (cleanups.length) cleanups.pop()!();
 	});

@@ -3,23 +3,24 @@ import {
 	ArgumentType,
 	type CompilerASTLine,
 	isMemoryDeclarationLine,
+	isReferenceSlotLine,
 	type MemoryDeclarationLine,
-	type PlannedMemoryDeclaration,
 } from '@8f4e/language-spec';
 import { parseLine } from '@8f4e/tokenizer';
 import { getCompiledModuleForCodeBlock } from '../features/code-blocks/utils/getCompiledModuleForCodeBlock';
+import resolveMemoryTarget, { type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
 function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
 	const firstArg = line.arguments[0];
 	return firstArg?.type === ArgumentType.IDENTIFIER && firstArg.referenceKind === 'plain' ? firstArg.value : undefined;
 }
 
-/** Checks for a declaration on the source row and returns its memory when compiled. */
-export default function getMemoryDeclarationAtSourceLine(
+/** Resolves an allocated declaration or fixed reference on the current source row when compiled. */
+export default function getMemoryTargetAtSourceLine(
 	state: State,
 	codeBlock: CodeBlockGraphicData,
 	sourceLineIndex: number
-): { memory: PlannedMemoryDeclaration | undefined } | undefined {
+): { target: ResolvedMemoryTarget | undefined } | undefined {
 	if (codeBlock.blockType !== 'module') return;
 
 	// Source edits can refresh layout while the previous compilation is still active.
@@ -29,10 +30,24 @@ export default function getMemoryDeclarationAtSourceLine(
 	} catch {
 		return;
 	}
-	if (!isMemoryDeclarationLine(sourceLine)) return;
+	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
 	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
-	const plannedModule = compiledModule && state.compiler.result.memoryPlan.modules[compiledModule.id];
-	if (!plannedModule) return { memory: undefined };
+	if (!compiledModule) return { target: undefined };
+	if (isReferenceSlotLine(sourceLine)) {
+		const name = sourceLine.arguments[0];
+		const target =
+			name?.type === ArgumentType.IDENTIFIER && name.referenceKind === 'plain'
+				? resolveMemoryTarget(state, { kind: 'module', moduleId: compiledModule.id }, name.value)
+				: undefined;
+		return {
+			target:
+				target?.reference?.lineNumber === sourceLineIndex && target.reference.type === sourceLine.instruction
+					? target
+					: undefined,
+		};
+	}
+	const plannedModule = state.compiler.result.memoryPlan.modules[compiledModule.id];
+	if (!plannedModule) return { target: undefined };
 
 	const sourceName = getDeclarationName(sourceLine);
 	const index = plannedModule.declarationSources.findIndex(
@@ -42,5 +57,15 @@ export default function getMemoryDeclarationAtSourceLine(
 			line.instruction === sourceLine.instruction &&
 			getDeclarationName(line) === sourceName
 	);
-	return { memory: plannedModule.declarations[index] };
+	const memory = plannedModule.declarations[index];
+	return {
+		target: memory
+			? {
+					publicModuleId: compiledModule.id,
+					publicName: memory.name,
+					moduleId: compiledModule.id,
+					memory,
+				}
+			: undefined,
+	};
 }

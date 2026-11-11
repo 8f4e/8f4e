@@ -6,6 +6,7 @@ import {
 	type ProjectGroupPath,
 	type ProjectModuleId,
 	type ResolvedProjectMemoryExposure,
+	type ResolvedReferenceSlot,
 } from '@8f4e/language-spec';
 
 /** The module or project scope in which a memory reference is evaluated. */
@@ -15,10 +16,12 @@ export type MemoryScope =
 
 export interface ResolvedMemoryTarget {
 	publicModuleId: string;
-	publicName: string;
+	publicName: string | undefined;
 	moduleId: string;
 	memory: PlannedMemoryDeclaration;
 	exposure?: ResolvedProjectMemoryExposure;
+	/** A fixed reference has no storage of its own; memory belongs to its target module. */
+	reference?: ResolvedReferenceSlot;
 }
 
 // Compilation replaces exposure arrays; weak keys release indexes from previous compilations and projects.
@@ -44,11 +47,24 @@ export default function resolveMemoryTarget(
 				? referencedNamespace
 				: createProjectModuleId(projectPath, referencedNamespace);
 
-	const memory =
-		separator !== -1 || scope.kind === 'module'
-			? state.compiler.result.memoryPlan.modules[publicModuleId]?.memory[publicName]
-			: undefined;
-	const directTarget = memory ? { publicModuleId, publicName, moduleId: publicModuleId, memory } : undefined;
+	let directTarget: ResolvedMemoryTarget | undefined;
+	if (separator !== -1 || scope.kind === 'module') {
+		const memory = state.compiler.result.memoryPlan.modules[publicModuleId]?.memory[publicName];
+		if (memory) {
+			directTarget = { publicModuleId, publicName, moduleId: publicModuleId, memory };
+		} else {
+			const slot = state.compiler.result.compiledModules[publicModuleId]?.referenceSlots[publicName];
+			if (slot) {
+				directTarget = {
+					publicModuleId,
+					publicName,
+					moduleId: slot.targetModuleId,
+					memory: slot.targetMemory,
+					reference: slot,
+				};
+			}
+		}
+	}
 	if (separator === -1 && scope.kind === 'module') return directTarget;
 
 	const exposures = state.compiler.result.projectMemoryExposuresByGroupPath[publicModuleId];
