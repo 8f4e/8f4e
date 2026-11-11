@@ -1,5 +1,5 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
+import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createCrossfadeDirectiveData } from '../helpers/data';
 import type { Crossfade } from '../types';
@@ -20,8 +20,8 @@ export function registerCrossfadeLayout(
 		crossfadesByBlock.set(graphicData, []);
 		items.forEach(data => {
 			const scope = getCodeBlockMemoryScope(graphicData);
-			const leftMemory = resolveMemoryIdentifier(state, scope, data.leftMemoryId);
-			const rightMemory = resolveMemoryIdentifier(state, scope, data.rightMemoryId);
+			const leftMemory = resolveMemoryAddress(state, scope, data.leftMemoryId);
+			const rightMemory = resolveMemoryAddress(state, scope, data.rightMemoryId);
 
 			if (!leftMemory || !rightMemory) {
 				return;

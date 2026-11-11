@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
@@ -38,21 +38,6 @@ describe('selected line tooltip animation', () => {
 		const codeBlock = createMockCodeBlock();
 		const highlightFont = PALETTE_INDICES.inverseAccent;
 		const state = createMockState({
-			compiler: {
-				result: {
-					memoryPlan: {
-						modules: {
-							test: {
-								memory: {
-									pointer: {
-										allocationUnitAddress: 0,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			featureFlags: { codeLineSelection: true },
 			codeBlockRendering: { selectedCodeBlock: codeBlock },
 		});
@@ -68,10 +53,11 @@ describe('selected line tooltip animation', () => {
 					x: 8,
 					y: 16,
 					source: {
-						kind: 'memoryDereference',
-						moduleId: 'test',
-						memoryId: 'pointer',
-						format: { elementWordSize: 1, isInteger: true, isUnsigned: true },
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'pointer', pointerSlotIndex: 0, byteOffset: 0 },
+							spec: getMemoryValueSpec({ elementWordSize: 1, isInteger: true, isUnsigned: true }),
+						},
 					},
 					color: highlightFont,
 				},
@@ -129,28 +115,6 @@ function createCharacters(text: string): number[] {
 
 function createTooltipCharacters(lines: string[]): number[][] {
 	return lines.map(createCharacters);
-}
-
-function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
-	return {
-		id: 0,
-		name: 'value',
-		numberOfElements: 1,
-		elementWordSize: 4,
-		type: 'int' as const,
-		byteAddress: 0,
-		elementByteLength: 4,
-		allocationUnitCount: 1,
-		allocatedByteLength: 4,
-		allocationUnitAddress: 0,
-		endByteAddress: 0,
-		endAddressSafeByteLength: 4,
-		lineNumber: 1,
-		isInteger: true,
-		pointerDepth: 0,
-		isUnsigned: false,
-		...overrides,
-	};
 }
 
 describe('tooltip drawing', () => {
@@ -240,39 +204,7 @@ describe('tooltip drawing', () => {
 			},
 			code: ['add'],
 		});
-		const pointer = createMemory({
-			id: 0,
-			name: 'pointer',
-			type: 'int*' as const,
-			byteAddress: 8,
-			allocationUnitAddress: 2,
-			endByteAddress: 8,
-			pointeeBaseType: 'int',
-		});
 		const state = createMockState({
-			compiler: {
-				result: {
-					memoryPlan: {
-						modules: {
-							test: {
-								id: 'test',
-								lineNumber: 1,
-								byteAddress: 8,
-								allocationUnitCount: 1,
-								allocatedByteLength: 4,
-								endByteAddress: 8,
-								endAddressSafeByteLength: 4,
-								memory: {
-									pointer,
-								},
-								declarations: [pointer],
-								declarationSources: [],
-							},
-						},
-						moduleList: [],
-					},
-				},
-			},
 			codeBlockRendering: {
 				currentProject: { entries: [], path: '', blocks: [block] },
 				selectedCodeBlock: block,
@@ -300,26 +232,30 @@ describe('tooltip drawing', () => {
 				{
 					x: -168 + 'address: '.length * 8,
 					y: 16 + 16,
-					source: { kind: 'memoryAddress', moduleId: 'test', memoryId: 'pointer' },
+					source: { kind: 'staticText', text: '8' },
 					color: PALETTE_INDICES.inverseAccent,
 				},
 				{
 					x: -168 + 'value: '.length * 8,
 					y: 16 + 2 * 16,
-					source: { kind: 'memoryValue', moduleId: 'test', memoryId: 'pointer', elementIndex: 0 },
+					source: {
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'fixed', byteAddress: 8 },
+							elementIndex: 2,
+							spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
+						},
+					},
 					color: PALETTE_INDICES.inverseAccent,
 				},
 				{
 					x: -168 + 'deref: '.length * 8,
 					y: 16 + 3 * 16,
 					source: {
-						kind: 'memoryDereference',
-						moduleId: 'test',
-						memoryId: 'pointer',
-						format: {
-							elementWordSize: 4,
-							isInteger: true,
-							isUnsigned: false,
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'pointer', pointerSlotIndex: 2, byteOffset: 0 },
+							spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
 						},
 					},
 					color: PALETTE_INDICES.inverseAccent,

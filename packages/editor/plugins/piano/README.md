@@ -6,7 +6,8 @@
 ; @piano <pressedKeysListAddress> <pressedKeyCountAddress> [startingMidiNote]
 ```
 
-Both memory arguments are addresses, including group-exposed addresses. The starting note defaults to zero.
+Both memory arguments accept allocated addresses, including group-exposed addresses, or bare `int&` fixed references.
+The starting note defaults to zero.
 The note array must use `int[]` (32-bit integers), and the count must be a single `int`. Other memory types,
 including `float[]` and `float64[]` notes, do not create an interactive keyboard or a save action.
 The keyboard adds six rows below its directive and requests enough block width for its keys. Clicking a key toggles

@@ -1,7 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import { resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext, GlyphIds, MemoryViews } from '@8f4e/web-ui';
 import type { TooltipLiveValue, TooltipState } from '../types';
 import { formatMemoryValue } from './memoryValue';
@@ -45,45 +43,13 @@ export function getTooltipAnimationOffset(
 	};
 }
 
-function getMemoryForLiveValueLine(
-	state: State,
-	moduleId: string,
-	memoryId: string
-): PlannedMemoryDeclaration | undefined {
-	return resolveMemoryTarget(state, { kind: 'module', moduleId }, memoryId)?.memory;
-}
-
-function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: TooltipLiveValue): string | undefined {
+function getLiveValueText(memoryViews: MemoryViews, liveValue: TooltipLiveValue): string {
 	const { source } = liveValue;
-	if (source.kind === 'referenceValue' || source.kind === 'referenceDereference') {
-		const reference = state.compiler.result.compiledModules[source.moduleId]?.referenceSlots?.[source.referenceId];
-		if (!reference) return undefined;
-		const target = reference.targetMemory;
-		return source.kind === 'referenceValue'
-			? String(target.byteAddress)
-			: formatMemoryValue(memoryViews, target.byteAddress, target.allocationUnitAddress, target);
-	}
-
-	const memory = getMemoryForLiveValueLine(state, source.moduleId, source.memoryId);
-
-	if (!memory) {
-		return undefined;
-	}
-
-	switch (liveValue.source.kind) {
-		case 'memoryAddress':
-			return String(memory.byteAddress);
-		case 'memoryValue':
-			return formatMemoryValue(
-				memoryViews,
-				memory.byteAddress + (liveValue.source.elementIndex ?? 0) * memory.elementWordSize,
-				memory.allocationUnitAddress + (liveValue.source.elementIndex ?? 0),
-				memory
-			);
-		case 'memoryDereference': {
-			const pointerByteAddress = memoryViews.int32[memory.allocationUnitAddress];
-			return formatMemoryValue(memoryViews, pointerByteAddress, pointerByteAddress / 4, liveValue.source.format);
-		}
+	switch (source.kind) {
+		case 'staticText':
+			return source.text;
+		case 'numericRead':
+			return formatMemoryValue(memoryViews, source.read);
 	}
 }
 
@@ -110,16 +76,11 @@ function drawSpritesWithColors(
 
 function drawLiveValue(
 	engine: DrawContext,
-	state: State,
 	memoryViews: MemoryViews,
 	liveValue: TooltipLiveValue,
 	offset: TooltipAnimationOffset
 ): void {
-	const value = getLiveValueText(state, memoryViews, liveValue);
-
-	if (value === undefined) {
-		return;
-	}
+	const value = getLiveValueText(memoryViews, liveValue);
 
 	engine.drawNumericText(
 		liveValue.x + offset.x,
@@ -171,6 +132,6 @@ export default function drawTooltip(
 	}
 
 	for (const liveValue of tooltip.liveValues) {
-		drawLiveValue(engine, state, memoryViews, liveValue, animationOffset);
+		drawLiveValue(engine, memoryViews, liveValue, animationOffset);
 	}
 }

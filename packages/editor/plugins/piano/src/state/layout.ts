@@ -1,5 +1,5 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryIdentifier } from '@8f4e/editor-state/memory';
+import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoDirectiveData } from '../helpers/data';
@@ -56,8 +56,8 @@ function resolvePianoLayout(
 	}
 
 	const scope = getCodeBlockMemoryScope(graphicData);
-	const pressedKeysList = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedKeysListMemoryId);
-	const pressedKeyCount = resolveMemoryIdentifier(state, scope, pianoKeyboard.pressedKeyCountMemoryId);
+	const pressedKeysList = resolveMemoryAddress(state, scope, pianoKeyboard.pressedKeysListMemoryId);
+	const pressedKeyCount = resolveMemoryAddress(state, scope, pianoKeyboard.pressedKeyCountMemoryId);
 
 	if (!pressedKeysList || !pressedKeyCount) {
 		return;

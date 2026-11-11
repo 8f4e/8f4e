@@ -1,4 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
+import { readNumericValue } from '@8f4e/editor-state/memory';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Meter } from '../types';
 
@@ -36,8 +37,6 @@ export default function drawMeter(engine: DrawContext, values: Meter[], memoryVi
 			y,
 			width,
 			height,
-			baseSampleShift,
-			valueType,
 			minValue,
 			maxValue,
 			isBipolar,
@@ -50,11 +49,7 @@ export default function drawMeter(engine: DrawContext, values: Meter[], memoryVi
 		} = meter;
 		engine.startGroup(x, y);
 
-		const values = memoryViews[valueType];
-		const valueIndex =
-			meter.staticValueIndex ??
-			memoryViews.int32[meter.memory.memory.allocationUnitAddress + meter.memory.bufferPointer] >> baseSampleShift;
-		const value = values[valueIndex] ?? minValue;
+		const value = readNumericValue(meter.read, memoryViews) ?? minValue;
 		const normalized = isBipolar
 			? clamp(Math.abs(value) / amplitudeLimit, 0, 1)
 			: clamp((value - minValue) * inverseValueRange, 0, 1);

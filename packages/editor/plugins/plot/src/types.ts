@@ -1,4 +1,4 @@
-import type { MemoryIdentifier, TypedValueKind } from '@8f4e/editor-state-types';
+import type { PreparedBuffer } from '@8f4e/editor-state/memory';
 
 export interface Plot {
 	x: number;
@@ -7,8 +7,5 @@ export interface Plot {
 	height: number;
 	minValue: number;
 	maxValue: number;
-	startAddress: MemoryIdentifier;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	length: number | MemoryIdentifier;
-	valueType: TypedValueKind;
+	buffer: PreparedBuffer;
 }

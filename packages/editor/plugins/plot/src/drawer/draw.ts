@@ -1,5 +1,6 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { readElementCount, readElementIndex } from '@8f4e/editor-state/memory';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Plot } from '../types';
 
@@ -82,19 +83,13 @@ export default function drawPlot(engine: DrawContext, plots: Plot[], memoryViews
 
 	const pointHeight = 1;
 
-	for (const { x, y, width, height, startAddress, baseSampleShift, length, valueType, maxValue, minValue } of plots) {
+	for (const { x, y, width, height, buffer, maxValue, minValue } of plots) {
 		engine.startGroup(x, y);
 
-		const baseValueIndex =
-			(startAddress.showAddress
-				? startAddress.memory.byteAddress
-				: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer]) >> baseSampleShift;
-		const values = memoryViews[valueType];
-		const arrayLength =
-			typeof length === 'number'
-				? length
-				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
-		if (arrayLength <= 0) {
+		const baseValueIndex = readElementIndex(buffer.samples, memoryViews.int32);
+		const values = memoryViews[buffer.samples.spec.valueType];
+		const arrayLength = readElementCount(buffer.elementCount, memoryViews) ?? 0;
+		if (arrayLength <= 0 || baseValueIndex === undefined) {
 			engine.endGroup();
 			continue;
 		}

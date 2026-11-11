@@ -1,10 +1,10 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
-	getMemoryDeclarationAtSourceLine,
-	resolveDirectOrPointerTypedValueSpec,
-	resolveMemoryAccess,
-	resolveMemoryIdentifier,
+	getMemoryTargetAtSourceLine,
+	prepareAddressedRead,
+	prepareMemoryAccess,
+	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createMeterDirectiveData } from '../helpers/data';
@@ -24,23 +24,21 @@ export function registerMeterLayout(
 			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
 			if (!data) return [];
 			const declaration =
-				data.memoryId === undefined ? getMemoryDeclarationAtSourceLine(state, graphicData, data.lineNumber) : undefined;
+				data.memoryId === undefined ? getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber) : undefined;
 			if (data.memoryId === undefined && !declaration) return [];
-			const memory = declaration?.memory
-				? resolveMemoryAccess(state, declaration.memory)
-				: resolveMemoryIdentifier(state, scope, data.memoryId);
-			return [{ data, memory }];
+			const access = declaration?.target
+				? { target: declaration.target, options: {} }
+				: prepareMemoryAccess(state, scope, data.memoryId);
+			const read = access && (prepareAddressedRead(access) ?? prepareNumericRead(access));
+			return [{ data, read }];
 		});
 		contribution.update(graphicData, {
 			verticalSpaceAfterSourceLine: items.map(({ data }) => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
 		});
 		metersByBlock.set(graphicData, []);
-		items.forEach(({ data, memory }) => {
-			const valueSpec = memory ? resolveDirectOrPointerTypedValueSpec(memory) : undefined;
-
-			if (!memory || !valueSpec) {
-				return;
-			}
+		items.forEach(({ data, read }) => {
+			if (!read) return;
+			const valueSpec = read.spec;
 
 			const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 			const minValue = data.minValueOverride ?? valueSpec.minValue;
@@ -52,10 +50,6 @@ export function registerMeterLayout(
 			const greenEndX = Math.floor(width * RED_THRESHOLD * GREEN_START_FACTOR);
 			const yellowEndX = Math.floor(width * RED_THRESHOLD);
 			const overloadMarkerWidth = Math.min(state.viewport.vGrid, width);
-			const staticValueIndex =
-				memory.showAddress || !memory.memory.pointerDepth
-					? (memory.memory.byteAddress >> valueSpec.baseSampleShift) + memory.bufferPointer
-					: undefined;
 
 			metersByBlock.get(graphicData)!.push({
 				width,
@@ -69,10 +63,7 @@ export function registerMeterLayout(
 				yellowEndX,
 				overloadMarkerX: width - overloadMarkerWidth,
 				overloadMarkerWidth,
-				staticValueIndex,
-				memory,
-				baseSampleShift: valueSpec.baseSampleShift,
-				valueType: valueSpec.valueType,
+				read,
 				minValue,
 				maxValue,
 			});

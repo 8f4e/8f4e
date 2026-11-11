@@ -17,6 +17,7 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ```
 
 Crossfades write float32 values to both targets while dragging and consume movement before block or viewport dragging.
+Each target accepts an allocated address (`&dry`) or a bare fixed reference (`dry` declared with `float&`).
 
 Cleanup releases layout subscriptions/contributions and the drawer and releases pointer listeners. Omit the plugin to remove its behavior and layout space.
 

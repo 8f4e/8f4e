@@ -30,7 +30,7 @@ async function setup(source: string) {
 	store.set('codeBlockRendering.selectedCodeBlock', block);
 	store.set(
 		'codeBlockRendering.selectedCodeBlock.cursor.row',
-		block.code.findIndex(line => line.includes('& input'))
+		block.code.findIndex(line => line.includes(' input'))
 	);
 	const buffer = new ArrayBuffer(65536);
 	const memory: MemoryViews = {
@@ -54,18 +54,31 @@ async function setup(source: string) {
 	return { compiled, store, tooltip, block, memory, renderValues };
 }
 
-const namedSource = (padding = '') => `8f4e/v1
+const namedSource = (declaration = 'float& input &source:output') => `8f4e/v1
 entry main
 module source
-${padding}
 float output 1.5
 moduleEnd
 module sink
-float& input &source:output
+${declaration}
 moduleEnd
 entryEnd`;
 
 describe('fixed reference live tooltips', () => {
+	it('retains prepared addresses and formats while reading live memory without target lookups', async () => {
+		const { compiled, memory, renderValues } = await setup(namedSource());
+		const references = compiled.compiledModules.sink.referenceSlots;
+		const slot = references.input;
+		const target = slot.targetMemory;
+		const lookup = vi.fn(() => slot);
+		Object.defineProperty(references, 'input', { configurable: true, get: lookup });
+
+		memory.float32[target.byteAddress / 4] = 1.5;
+		expect(renderValues()).toEqual([String(target.byteAddress), '1.5000']);
+		memory.float32[target.byteAddress / 4] = -2.75;
+		expect(renderValues()).toEqual([String(target.byteAddress), '-2.7500']);
+		expect(lookup).not.toHaveBeenCalled();
+	});
 	it.each([
 		{ name: 'named', target: '&source:output', local: false, grouped: false },
 		{ name: 'indexed', target: '&source:0', local: false, grouped: false },
@@ -124,20 +137,27 @@ entryEnd`);
 		}
 	);
 
-	it('refreshes the address after a cached recompilation changes the target layout', async () => {
-		const { compiled, store, memory, renderValues } = await setup(namedSource());
-		const originalAddress = compiled.compiledModules.sink.referenceSlots.input.targetMemory.byteAddress;
-		memory.float32[originalAddress / 4] = 1.5;
-		expect(renderValues()).toEqual([String(originalAddress), '1.5000']);
-		const next = await compileProject(parseProjectSource(namedSource('int padding')), {
-			cache: compiled.cache,
-		});
-		const nextAddress = next.compiledModules.sink.referenceSlots.input.targetMemory.byteAddress;
-		expect(nextAddress).not.toBe(originalAddress);
-		memory.float32[nextAddress / 4] = 2.75;
-		store.set('compiler.result', next);
-		expect(renderValues()).toEqual([String(nextAddress), '2.7500']);
-	});
+	it.each([
+		{ declaration: 'float& input &source:output', moduleId: 'source', memoryId: 'output' },
+		{ declaration: 'float input 1.5', moduleId: 'sink', memoryId: 'input' },
+	])(
+		'refreshes $declaration after a cached recompilation changes the layout',
+		async ({ declaration, moduleId, memoryId }) => {
+			const { compiled, store, memory, renderValues } = await setup(namedSource(declaration));
+			const originalAddress = compiled.memoryPlan.modules[moduleId].memory[memoryId].byteAddress;
+			memory.float32[originalAddress / 4] = 1.5;
+			expect(renderValues()).toEqual([String(originalAddress), '1.5000']);
+			const next = await compileProject(parseProjectSource(namedSource(declaration)), {
+				cache: compiled.cache,
+				startingMemoryAllocationUnitAddress: 16,
+			});
+			const nextAddress = next.memoryPlan.modules[moduleId].memory[memoryId].byteAddress;
+			expect(nextAddress).not.toBe(originalAddress);
+			memory.float32[nextAddress / 4] = 2.75;
+			store.set('compiler.result', next);
+			expect(renderValues()).toEqual([String(nextAddress), '2.7500']);
+		}
+	);
 
 	it.each(['missing module', 'missing slot', 'inactive source'] as const)(
 		'keeps documentation without live rows for %s metadata',
@@ -166,4 +186,70 @@ entryEnd`);
 		memory.float32 = new Float32Array(0);
 		expect(renderValues()).toEqual([String(address), '?']);
 	});
+});
+
+const numericCases = [
+	{ type: 'int8u', view: 'uint8', size: 1, first: 200, second: 255, firstText: '200', secondText: '255' },
+	{ type: 'float', view: 'float32', size: 4, first: 1.5, second: 2.75, firstText: '1.5000', secondText: '2.7500' },
+	{
+		type: 'float64',
+		view: 'float64',
+		size: 8,
+		first: Math.PI,
+		second: Math.E,
+		firstText: '3.1416',
+		secondText: '2.7183',
+	},
+] as const;
+
+describe('allocated memory live tooltips', () => {
+	it.each(numericCases)(
+		'reads $type buffers without resolving names during drawing',
+		async ({ type, view, size, first, second, firstText, secondText }) => {
+			const { compiled, tooltip, memory, renderValues } = await setup(`8f4e/v1
+entry main
+module sink
+${type}[] input 2
+moduleEnd
+entryEnd`);
+			const declarations = compiled.memoryPlan.modules.sink.memory;
+			const input = declarations.input;
+			const lookup = vi.fn(() => input);
+			Object.defineProperty(declarations, 'input', { configurable: true, get: lookup });
+			expect(tooltip.getState().text.slice(-2)).toEqual(['address: ', 'value[0]: ']);
+			memory[view][input.byteAddress / size] = first;
+			expect(renderValues()).toEqual([String(input.byteAddress), firstText]);
+			memory[view][input.byteAddress / size] = second;
+			expect(renderValues()).toEqual([String(input.byteAddress), secondText]);
+			expect(lookup).not.toHaveBeenCalled();
+		}
+	);
+
+	it.each(numericCases)(
+		'follows a $type pointer using its prepared slot and read format',
+		async ({ type, view, size, first, second, firstText, secondText }) => {
+			const { compiled, tooltip, memory, renderValues } = await setup(`8f4e/v1
+entry main
+module source
+${type}[] output 2
+moduleEnd
+module sink
+${type}* input &source:output
+moduleEnd
+entryEnd`);
+			const declarations = compiled.memoryPlan.modules.sink.memory;
+			const pointer = declarations.input;
+			const output = compiled.memoryPlan.modules.source.memory.output;
+			const lookup = vi.fn(() => pointer);
+			Object.defineProperty(declarations, 'input', { configurable: true, get: lookup });
+			expect(tooltip.getState().text.slice(-3)).toEqual(['address: ', 'value: ', 'deref: ']);
+			memory[view][output.byteAddress / size] = first;
+			memory[view][output.byteAddress / size + 1] = second;
+			memory.int32[pointer.allocationUnitAddress] = output.byteAddress;
+			expect(renderValues()).toEqual([String(pointer.byteAddress), String(output.byteAddress), firstText]);
+			memory.int32[pointer.allocationUnitAddress] = output.byteAddress + size;
+			expect(renderValues()).toEqual([String(pointer.byteAddress), String(output.byteAddress + size), secondText]);
+			expect(lookup).not.toHaveBeenCalled();
+		}
+	);
 });

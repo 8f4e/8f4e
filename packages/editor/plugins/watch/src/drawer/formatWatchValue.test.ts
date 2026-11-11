@@ -1,6 +1,14 @@
+import { prepareNumericRead } from '@8f4e/editor-state/memory';
 import { describe, expect, it } from 'vitest';
 import { createMemory } from '../__tests__/memory';
 import formatWatchValue from './formatWatchValue';
+
+function prepare(memory: ReturnType<typeof createMemory>, index = 0) {
+	return prepareNumericRead({
+		target: { publicModuleId: 'test', publicName: memory.name, moduleId: 'test', memory },
+		options: { bufferPointer: index },
+	})!;
+}
 
 function createMemoryViews() {
 	const buffer = new ArrayBuffer(8);
@@ -21,21 +29,21 @@ describe('formatWatchValue', () => {
 		const memoryViews = createMemoryViews();
 		memoryViews.uint8.set([0xff, 0xa8, 0x00, 0x00]);
 
-		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 4 }), 0, 'hex')).toBe('00 00 a8 ff');
+		expect(formatWatchValue(memoryViews, prepare(createMemory({ elementWordSize: 4 })), 'hex')).toBe('00 00 a8 ff');
 	});
 
 	it('preserves leading zero bytes for 16-bit hex values', () => {
 		const memoryViews = createMemoryViews();
 		memoryViews.uint8.set([0x0f, 0x00]);
 
-		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 2 }), 0, 'hex')).toBe('00 0f');
+		expect(formatWatchValue(memoryViews, prepare(createMemory({ elementWordSize: 2 })), 'hex')).toBe('00 0f');
 	});
 
 	it('formats single-byte hex values as a padded byte', () => {
 		const memoryViews = createMemoryViews();
 		memoryViews.uint8[0] = 0x0a;
 
-		expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 1 }), 0, 'hex')).toBe('0a');
+		expect(formatWatchValue(memoryViews, prepare(createMemory({ elementWordSize: 1 })), 'hex')).toBe('0a');
 	});
 
 	it.each(['decimal', 'binary', 'hex'] as const)(
@@ -43,7 +51,7 @@ describe('formatWatchValue', () => {
 		format => {
 			const memoryViews = createMemoryViews();
 
-			expect(formatWatchValue(memoryViews, createMemory({ elementWordSize: 4 }), 2, format)).toBe('?');
+			expect(formatWatchValue(memoryViews, prepare(createMemory({ elementWordSize: 4 }), 2), format)).toBe('?');
 		}
 	);
 });

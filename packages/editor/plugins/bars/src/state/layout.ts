@@ -1,10 +1,5 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import {
-	getCodeBlockMemoryScope,
-	resolveElementCount,
-	resolveMemoryIdentifier,
-	resolveTypedValueSpec,
-} from '@8f4e/editor-state/memory';
+import { getCodeBlockMemoryScope, prepareBuffer } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createBarsDirectiveData } from '../helpers/data';
 import type { Bars } from '../types';
@@ -25,13 +20,9 @@ export function registerBarsLayout(
 		barsByBlock.set(graphicData, []);
 		items.forEach(data => {
 			const scope = getCodeBlockMemoryScope(graphicData);
-			const startAddress = resolveMemoryIdentifier(state, scope, data.startAddressMemoryId);
-			const length = resolveElementCount(data.length, scope, state);
-			const valueSpec = startAddress ? resolveTypedValueSpec(startAddress) : undefined;
-
-			if (!startAddress || !valueSpec || !length) {
-				return;
-			}
+			const buffer = prepareBuffer(state, scope, data.startAddressMemoryId, data.length);
+			if (!buffer) return;
+			const valueSpec = buffer.samples.spec;
 
 			const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 			const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
@@ -44,10 +35,7 @@ export function registerBarsLayout(
 				x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 				inverseValueRange: maxValue === minValue ? 0 : 1 / (maxValue - minValue),
-				startAddress,
-				baseSampleShift: valueSpec.baseSampleShift,
-				length,
-				valueType: valueSpec.valueType,
+				buffer,
 				minValue,
 			});
 		});

@@ -47,26 +47,45 @@ export interface MemoryAccessOptions {
 	bufferPointer?: number;
 }
 
-/** Resolves an access to a declaration that has already been identified. */
+/** A name and its access operators resolved against the accepted compiler metadata, without reading runtime memory. */
+export interface PreparedMemoryAccess {
+	target: ResolvedMemoryTarget;
+	options: MemoryAccessOptions;
+}
+
+/** Resolved storage and access flags, retaining the source target even when a pointer selects different storage. */
+export interface ResolvedMemoryAccess extends MemoryIdentifier {
+	target: ResolvedMemoryTarget;
+}
+
+/** Resolves an access to allocated memory or a fixed reference's backing declaration. */
 export function resolveMemoryAccess(
 	state: State,
-	memory: PlannedMemoryDeclaration,
+	target: ResolvedMemoryTarget,
 	{ showAddress = false, dereference = false, bufferPointer = 0 }: MemoryAccessOptions = {}
-): MemoryIdentifier | undefined {
+): ResolvedMemoryAccess | undefined {
+	const { memory, reference } = target;
+	if (reference) {
+		// A bare fixed reference is its target address; * reads the target without a runtime pointer load.
+		if (showAddress) return;
+		return { showAddress: !dereference, memory, bufferPointer, target };
+	}
+
 	if (dereference && memory.pointeeBaseType) {
 		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
 		const pointee = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
-		return pointee && { showAddress, memory: pointee, bufferPointer };
+		return pointee && { showAddress, memory: pointee, bufferPointer, target };
 	}
 
-	return { showAddress, memory, bufferPointer };
+	return { showAddress, memory, bufferPointer, target };
 }
 
-export default function resolveMemoryIdentifier(
-	state: State,
+/** Parses an access and resolves its declaration once; prepare again when compiler metadata or source changes. */
+export function prepareMemoryAccess(
+	state: Pick<State, 'compiler'>,
 	scope: MemoryScope,
 	memoryIdentifier: string | undefined
-): (MemoryIdentifier & { target: ResolvedMemoryTarget }) | undefined {
+): PreparedMemoryAccess | undefined {
 	if (!memoryIdentifier) {
 		return;
 	}
@@ -94,10 +113,25 @@ export default function resolveMemoryIdentifier(
 
 	const target = resolveMemoryTarget(state, scope, memoryIdentifier);
 	if (!target) return;
-	const access = resolveMemoryAccess(state, target.memory, {
-		showAddress,
-		dereference: operator === '*',
-		bufferPointer,
-	});
-	return access && { ...access, target };
+	return { target, options: { showAddress, dereference: operator === '*', bufferPointer } };
+}
+
+/** Resolves a named access, including the current target of a dereferenced runtime pointer. */
+export default function resolveMemoryIdentifier(
+	state: State,
+	scope: MemoryScope,
+	memoryIdentifier: string | undefined
+): ResolvedMemoryAccess | undefined {
+	const prepared = prepareMemoryAccess(state, scope, memoryIdentifier);
+	return prepared && resolveMemoryAccess(state, prepared.target, prepared.options);
+}
+
+/** Resolves an explicit declaration address or a bare fixed reference for memory controls. */
+export function resolveMemoryAddress(
+	state: State,
+	scope: MemoryScope,
+	memoryIdentifier: string | undefined
+): ResolvedMemoryAccess | undefined {
+	const access = resolveMemoryIdentifier(state, scope, memoryIdentifier);
+	return access?.showAddress ? access : undefined;
 }

@@ -1,4 +1,4 @@
-import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
+import { type PreparedNumericRead, readByteAddress, readNumericValue } from '@8f4e/editor-state/memory';
 import type { MemoryViews } from '@8f4e/web-ui';
 
 // Hot render path: cache byte-to-hex conversion once so per-frame formatting avoids repeated allocations.
@@ -27,40 +27,23 @@ function formatHexBytes(memoryViews: MemoryViews, byteAddress: number, elementWo
 
 export default function formatWatchValue(
 	memoryViews: MemoryViews,
-	memory: PlannedMemoryDeclaration,
-	bufferPointer: number,
+	read: PreparedNumericRead,
 	displayFormat: 'decimal' | 'binary' | 'hex'
 ): string {
-	const byteAddress = memory.byteAddress + bufferPointer * memory.elementWordSize;
 	if (displayFormat === 'hex') {
-		return formatHexBytes(memoryViews, byteAddress, memory.elementWordSize);
+		const byteAddress = readByteAddress(read.address, memoryViews.int32);
+		return byteAddress === undefined
+			? INVALID_VALUE
+			: formatHexBytes(memoryViews, byteAddress, read.spec.elementByteSize);
 	}
 
 	const radixMap = { decimal: 10, binary: 2 } as const;
 	const radix = radixMap[displayFormat];
 
-	if (memory.elementWordSize === 1 && memory.isInteger) {
-		const view = memory.isUnsigned ? memoryViews.uint8 : memoryViews.int8;
-		const value = view[byteAddress];
-		return value === undefined ? INVALID_VALUE : value.toString(radix);
-	}
-
-	if (memory.elementWordSize === 2 && memory.isInteger) {
-		const view = memory.isUnsigned ? memoryViews.uint16 : memoryViews.int16;
-		const value = view[byteAddress / 2];
-		return value === undefined ? INVALID_VALUE : value.toString(radix);
-	}
-
-	if (memory.elementWordSize === 8 && !memory.isInteger) {
-		const value = memoryViews.float64[byteAddress / 8];
-		return value === undefined ? INVALID_VALUE : value.toFixed(4);
-	}
-
-	const view = memory.isInteger ? memoryViews.int32 : memoryViews.float32;
-	const value = view[memory.allocationUnitAddress + bufferPointer];
+	const value = readNumericValue(read, memoryViews);
 	if (value === undefined) {
 		return INVALID_VALUE;
 	}
 
-	return memory.isInteger ? value.toString(radix) : value.toFixed(4);
+	return read.spec.isInteger ? value.toString(radix) : value.toFixed(4);
 }

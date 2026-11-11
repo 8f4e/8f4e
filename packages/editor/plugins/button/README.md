@@ -16,6 +16,7 @@ The plugin uses `layout.subscribe` for geometry updates; its button data stays p
 handlers subscribe to `codeBlockPointerDown` and `codeBlockPointerUp`.
 
 Memory references can point to module declarations or exposed group memory through the existing public memory API.
+Use `&gate` for an allocated declaration, or a bare name for a fixed reference such as `int& gate &source:trigger`.
 Integer and float values are drawn from their respective memory views. Disposal releases a held button and removes
 its listeners and contributions.
 

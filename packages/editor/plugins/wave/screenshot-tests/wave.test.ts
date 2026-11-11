@@ -16,10 +16,11 @@ entry main
 module audio
 ; @pos 4 3
 float[] samples 64
+float& buffer &samples
 float* playhead &samples
 ; @wave &samples count(samples) playhead
-; @wave2 &samples count(samples) playhead
-; @wave4 &samples count(samples) playhead
+; @wave2 buffer count(buffer) playhead
+; @wave4 buffer count(buffer) playhead
 moduleEnd
 entryEnd`);
 	const compiled = await compileProject(project);

@@ -76,6 +76,14 @@ afterEach(() => {
 });
 
 describe('button plugin', () => {
+	it('presses and releases the target of a fixed reference', async () => {
+		const test = await setup(['module controls', 'int gate 0', 'int& output &gate ; @button output', 'moduleEnd']);
+		const address = test.state.compiler.result.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(address, 1, true);
+		test.release();
+		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
+	});
 	it('derives geometry and draws released, pressed, and unmatched memory values', async () => {
 		const test = await setup();
 		test.render();

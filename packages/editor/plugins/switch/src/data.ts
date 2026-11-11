@@ -1,4 +1,4 @@
-import { isMemoryAddress, parseFiniteNumber } from '@8f4e/editor-state';
+import { isPointerSource, parseFiniteNumber } from '@8f4e/editor-state';
 
 export interface SwitchDirectiveData {
 	id: string;
@@ -8,7 +8,7 @@ export interface SwitchDirectiveData {
 }
 
 export function createSwitchDirectiveData(args: string[], lineNumber: number): SwitchDirectiveData | undefined {
-	if (args.length < 1 || args.length > 3 || !isMemoryAddress(args[0])) {
+	if (args.length < 1 || args.length > 3 || !isPointerSource(args[0])) {
 		return undefined;
 	}
 	const offValue = args[1] === undefined ? 0 : parseFiniteNumber(args[1]);

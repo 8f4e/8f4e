@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { readByteAddress, readDeclarationEndAddress } from '@8f4e/editor-state/memory';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { WatchValue } from '../types';
@@ -57,20 +58,22 @@ export default function drawWatch(
 		return;
 	}
 
-	for (const { x, y, resolveMemory, showEndAddress, displayFormat } of values) {
-		const resolved = resolveMemory();
-		if (!resolved) continue;
-		const { memory, showAddress, bufferPointer } = resolved;
-		if (showAddress) {
-			// Elements are `elementWordSize` bytes wide, so narrow and float64 arrays do not step by 4.
-			const byteAddress = memory.byteAddress + bufferPointer * memory.elementWordSize;
-			drawBracketedValue(engine, vGrid, hGrid, x, y, String(byteAddress), now, reducedMotion);
-		} else if (showEndAddress) {
-			// The planner's end address excludes leading alignment padding, which `allocationUnitCount` includes.
-			drawBracketedValue(engine, vGrid, hGrid, x, y, String(memory.endByteAddress), now, reducedMotion);
-		} else {
-			const value = formatWatchValue(memoryViews, memory, bufferPointer, displayFormat);
-			drawBracketedValue(engine, vGrid, hGrid, x, y, value, now, reducedMotion);
+	for (const { x, y, display, displayFormat } of values) {
+		if (display.kind === 'value') {
+			drawBracketedValue(
+				engine,
+				vGrid,
+				hGrid,
+				x,
+				y,
+				formatWatchValue(memoryViews, display.read, displayFormat),
+				now,
+				reducedMotion
+			);
+			continue;
 		}
+		const address = readByteAddress(display.address, memoryViews.int32);
+		const value = display.kind === 'endAddress' ? readDeclarationEndAddress(address, display.declarations) : address;
+		if (value !== undefined) drawBracketedValue(engine, vGrid, hGrid, x, y, String(value), now, reducedMotion);
 	}
 }

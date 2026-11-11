@@ -1,5 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import { BASE_TYPE_METADATA, type PlannedMemoryDeclaration, type ResolvedReferenceSlot } from '@8f4e/language-spec';
+import { prepareNumericRead, type ResolvedMemoryTarget } from '@8f4e/editor-state/memory';
 import type { TooltipLiveValueSource, TooltipLiveValueTarget } from '../types';
 import { getTooltipLineColors } from './colors';
 import { maxLiveMemoryAddressLength, maxLiveMemoryValueLength } from './constants';
@@ -18,58 +18,39 @@ export interface LiveTooltipContent {
 }
 
 /**
- * Returns true when memory tooltip content should include a dereferenced value.
- */
-function isPointerMemory(memory: PlannedMemoryDeclaration): boolean {
-	return memory.pointerDepth > 0;
-}
-
-/**
- * Describes how the drawer should read a pointer's dereferenced live value.
- */
-function getDereferencedMemoryFormat(memory: PlannedMemoryDeclaration) {
-	const pointeeType = memory.pointerDepth > 1 ? 'pointer' : memory.pointeeBaseType!;
-	const metadata = BASE_TYPE_METADATA[pointeeType];
-
-	return {
-		elementWordSize: metadata.wordSize,
-		isInteger: metadata.isInteger,
-		isUnsigned: pointeeType === 'int8u' || pointeeType === 'int16u',
-	};
-}
-
-/**
  * Builds tooltip rows and live-value targets for selected memory declarations.
  */
 export function getLiveTooltipContent(
-	memory: PlannedMemoryDeclaration | undefined,
-	moduleId: string | undefined,
-	memoryId: string | undefined,
+	target: ResolvedMemoryTarget | undefined,
 	firstLineIndex: number
 ): LiveTooltipContent {
-	if (!memory || !moduleId || !memoryId) {
+	if (!target) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
+	const { memory } = target;
 
 	const valueLabel = memory.numberOfElements > 1 ? 'value[0]: ' : 'value: ';
 	const lines: LiveTooltipLine[] = [
 		{
 			label: 'address: ',
 			maxLineLength: 'address: '.length + maxLiveMemoryAddressLength,
-			source: { kind: 'memoryAddress', moduleId, memoryId },
+			source: { kind: 'staticText', text: String(memory.byteAddress) },
 		},
 		{
 			label: valueLabel,
 			maxLineLength: valueLabel.length + maxLiveMemoryValueLength,
-			source: { kind: 'memoryValue', moduleId, memoryId, elementIndex: 0 },
+			source: { kind: 'numericRead', read: prepareNumericRead({ target, options: {} })! },
 		},
 	];
 
-	if (isPointerMemory(memory)) {
+	if (memory.pointerDepth > 0) {
 		lines.push({
 			label: 'deref: ',
 			maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-			source: { kind: 'memoryDereference', moduleId, memoryId, format: getDereferencedMemoryFormat(memory) },
+			source: {
+				kind: 'numericRead',
+				read: prepareNumericRead({ target, options: { dereference: true } })!,
+			},
 		});
 	}
 
@@ -78,26 +59,25 @@ export function getLiveTooltipContent(
 
 /** Fixed references have a value and a dereferenced value, but no storage address of their own. */
 export function getLiveReferenceTooltipContent(
-	reference: ResolvedReferenceSlot | undefined,
-	moduleId: string | undefined,
-	referenceId: string,
+	target: ResolvedMemoryTarget | undefined,
 	firstLineIndex: number
 ): LiveTooltipContent {
-	if (!reference || !moduleId) {
+	if (!target?.reference) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
+	const memory = target.memory;
 
 	return getLiveLinesContent(
 		[
 			{
 				label: 'value: ',
 				maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
-				source: { kind: 'referenceValue', moduleId, referenceId },
+				source: { kind: 'staticText', text: String(memory.byteAddress) },
 			},
 			{
 				label: 'deref: ',
 				maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-				source: { kind: 'referenceDereference', moduleId, referenceId },
+				source: { kind: 'numericRead', read: prepareNumericRead({ target, options: { dereference: true } })! },
 			},
 		],
 		firstLineIndex

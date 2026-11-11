@@ -1,4 +1,4 @@
-import { isMemoryAddress } from '@8f4e/editor-state';
+import { isPointerSource } from '@8f4e/editor-state';
 
 export interface CrossfadeDirectiveData {
 	leftMemoryId: string;
@@ -11,7 +11,7 @@ export function createCrossfadeDirectiveData(args: string[], lineNumber: number)
 		return undefined;
 	}
 
-	if (!isMemoryAddress(args[0]) || !isMemoryAddress(args[1])) {
+	if (!isPointerSource(args[0]) || !isPointerSource(args[1])) {
 		return undefined;
 	}
 

@@ -122,6 +122,26 @@ afterEach(() => {
 });
 
 describe('slider plugin', () => {
+	it('writes fixed references to the backing module and saves its defaults', async () => {
+		const test = await setup([
+			'module source',
+			'float gain 0.25',
+			'moduleEnd',
+			'module controls',
+			'float& gain &source:gain',
+			'; @slider gain 0 1 0.01',
+			'moduleEnd',
+		]);
+		test.press(0.75);
+		test.release();
+		const target = test.compiled.memoryPlan.modules.source.memory.gain;
+		expect(test.write).toHaveBeenLastCalledWith(target.allocationUnitAddress, 0.75, false);
+		await test.menuItems();
+		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
+		const sourceBlock = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		expect(sourceBlock.code).toContain('float gain 0.75');
+		expect(test.block.code).toContain('float& gain &source:gain');
+	});
 	it('reserves two rows and draws current runtime values with a two-row handle', async () => {
 		const test = await setup();
 		const memory = test.compiled.memoryPlan.modules.controls.memory.gain;

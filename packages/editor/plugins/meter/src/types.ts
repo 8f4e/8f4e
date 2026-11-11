@@ -1,4 +1,4 @@
-import type { MemoryIdentifier, TypedValueKind } from '@8f4e/editor-state-types';
+import type { PreparedNumericRead } from '@8f4e/editor-state/memory';
 
 export interface Meter {
 	width: number;
@@ -14,8 +14,5 @@ export interface Meter {
 	yellowEndX: number;
 	overloadMarkerX: number;
 	overloadMarkerWidth: number;
-	staticValueIndex?: number;
-	memory: MemoryIdentifier;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	valueType: TypedValueKind;
+	read: PreparedNumericRead;
 }

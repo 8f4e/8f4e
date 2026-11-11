@@ -1,4 +1,4 @@
-import { isMemoryAddress, parseInteger } from '@8f4e/editor-state';
+import { isPointerSource, parseInteger } from '@8f4e/editor-state';
 
 export interface PianoDirectiveData {
 	sourceLineIndex: number;
@@ -8,7 +8,7 @@ export interface PianoDirectiveData {
 }
 
 export function createPianoDirectiveData(args: string[], sourceLineIndex: number): PianoDirectiveData | undefined {
-	if ((args.length !== 2 && args.length !== 3) || !isMemoryAddress(args[0]) || !isMemoryAddress(args[1])) {
+	if ((args.length !== 2 && args.length !== 3) || !isPointerSource(args[0]) || !isPointerSource(args[1])) {
 		return undefined;
 	}
 
