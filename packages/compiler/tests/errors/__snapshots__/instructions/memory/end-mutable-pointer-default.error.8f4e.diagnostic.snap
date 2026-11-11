@@ -1,0 +1,13 @@
+{
+  "code": 84,
+  "domain": "semantic",
+  "instruction": "int*",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "end(*pointer) requires a fixed reference connection; a mutable pointer does not retain a fixed buffer boundary. (84)",
+}

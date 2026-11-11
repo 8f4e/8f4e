@@ -6,9 +6,7 @@ export { default as extractIntermodularElementCountBase } from './extractIntermo
 export { default as extractIntermodularElementMaxBase } from './extractIntermodularElementMaxBase';
 export { default as extractIntermodularElementMinBase } from './extractIntermodularElementMinBase';
 export { default as extractIntermodularElementWordSizeBase } from './extractIntermodularElementWordSizeBase';
-export { default as extractIntermodularModuleReferenceBase } from './extractIntermodularModuleReferenceBase';
 export { default as extractMemoryPointerBase } from './extractMemoryPointerBase';
-export { default as extractMemoryReferenceBase } from './extractMemoryReferenceBase';
 export { default as extractPointeeElementMaxBase } from './extractPointeeElementMaxBase';
 export { default as extractPointeeElementWordSizeBase } from './extractPointeeElementWordSizeBase';
 export { default as extractUseDependencies } from './extractUseDependencies';
@@ -18,8 +16,6 @@ export { default as hasElementCountPrefix } from './hasElementCountPrefix';
 export { default as hasElementMaxPrefix } from './hasElementMaxPrefix';
 export { default as hasElementMinPrefix } from './hasElementMinPrefix';
 export { default as hasElementWordSizePrefix } from './hasElementWordSizePrefix';
-export { default as hasMemoryReferencePrefix } from './hasMemoryReferencePrefix';
-export { default as hasMemoryReferencePrefixStart } from './hasMemoryReferencePrefixStart';
 export { default as hasPointeeElementMaxPrefix } from './hasPointeeElementMaxPrefix';
 export { default as hasPointeeElementWordSizePrefix } from './hasPointeeElementWordSizePrefix';
 export { default as instructionParser } from './instructionParser';
@@ -30,9 +26,6 @@ export { default as isIntermodularElementCountReference } from './isIntermodular
 export { default as isIntermodularElementMaxReference } from './isIntermodularElementMaxReference';
 export { default as isIntermodularElementMinReference } from './isIntermodularElementMinReference';
 export { default as isIntermodularElementWordSizeReference } from './isIntermodularElementWordSizeReference';
-export { default as isIntermodularModuleReference } from './isIntermodularModuleReference';
-export { default as isIntermodularReference } from './isIntermodularReference';
-export { default as isIntermodularReferencePattern } from './isIntermodularReferencePattern';
 export { default as isMemoryPointerIdentifier } from './isMemoryPointerIdentifier';
 export { default as isSkipExecutionDirective } from './isSkipExecutionDirective';
 export type {

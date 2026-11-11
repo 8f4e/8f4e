@@ -10,8 +10,7 @@ import { classifyIdentifier, decodeStringLiteral, parseArgument } from './parseA
  * correct referenceKind for tokens that would be misclassified if the order were violated:
  *
  * 1. intermodular-module-reference (&mod:) before intermodular-reference (&mod:mem)
- *    — &mod: would match isIntermodularReference if checked first (the memory
- *      name part would be empty, but the module-base form must win).
+ *    — the module selector must win over a named-memory selector with an empty name.
  * 2. intermodular-module-nth-reference (&mod:0) before intermodular-reference (&mod:mem)
  *    — digits are valid [^\s&:.] characters, so &mod:0 silently classifies as a
  *      named memory reference if the nth check comes second.

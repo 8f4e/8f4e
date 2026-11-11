@@ -46,7 +46,6 @@ import type {
 import { resolveProjectMemoryInitializers } from './resolveProjectMemoryInitializers';
 import { resolveReferenceSlots } from './resolveReferenceSlots';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
-import { validateEndQueries } from './validateEndQueries';
 
 export type {
 	MemoryReferenceResolutionBlockFacts,
@@ -231,13 +230,14 @@ function resolvedValueToLiteral(resolved: Const): ResolvedArgumentLiteral {
 
 function resolveMemoryReferenceArgument(
 	argument: Argument,
-	context: MemoryReferenceResolutionContext
+	context: MemoryReferenceResolutionContext,
+	line: CompilerASTLine
 ): Argument | ResolvedArgumentLiteral {
 	if (argument.type !== ArgumentType.IDENTIFIER && argument.type !== ArgumentType.COMPILE_TIME_EXPRESSION) {
 		return argument;
 	}
 
-	const resolved = tryResolveValueArgument(context, argument);
+	const resolved = tryResolveValueArgument(context, argument, line);
 	if (!resolved) {
 		return argument;
 	}
@@ -250,7 +250,6 @@ function resolveMemoryReferenceLineFacts(
 	context: MemoryReferenceResolutionContext,
 	initializerDefaults: ReadonlyMap<number, Const> | undefined
 ): MemoryReferenceResolutionLineFacts | undefined {
-	validateEndQueries(line, context);
 	if (isReferenceSlotLine(line)) return undefined;
 	const firstArgument = line.arguments[0];
 	const declaration =
@@ -268,7 +267,7 @@ function resolveMemoryReferenceLineFacts(
 			!isReferenceValuePosition(line, index)
 		)
 			return argument;
-		const resolved = resolveMemoryReferenceArgument(argument, context);
+		const resolved = resolveMemoryReferenceArgument(argument, context, line);
 		if (resolved !== argument) {
 			changed = true;
 		}

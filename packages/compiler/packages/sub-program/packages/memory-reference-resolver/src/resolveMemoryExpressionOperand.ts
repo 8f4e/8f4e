@@ -1,4 +1,5 @@
 import type {
+	CompilerDiagnosticLine,
 	CompileTimeOperand,
 	Const,
 	MemoryPointerMetadataMap,
@@ -74,16 +75,18 @@ export function resolveMetadataTarget(
  *
  * @param operand - Parsed operand to resolve.
  * @param context - Current semantic compilation context.
+ * @param line - Originating source line for located semantic diagnostics.
  * @returns Resolved memory/layout value, or `undefined` when the operand is not a memory expression.
  */
 export function resolveMemoryExpressionOperand(
 	operand: CompileTimeOperand,
-	context: MemoryReferenceResolutionContext
+	context: MemoryReferenceResolutionContext,
+	line: CompilerDiagnosticLine
 ): Const | undefined {
 	if (operand.type === ArgumentType.LITERAL) {
 		return undefined;
 	}
-	if (operand.referenceKind === 'end-address') return resolveEndAddress(operand, context);
+	if (operand.referenceKind === 'end-address') return resolveEndAddress(operand, context, line);
 	if (operand.referenceKind === 'plain') {
 		const slot = context.referenceSlots[operand.value];
 		return slot ? memoryStartAddressValue(slot.targetMemory, slot.targetModuleId) : undefined;
