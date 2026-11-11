@@ -4,7 +4,11 @@ import {
 	resolveElementCount,
 	resolveTypedValueSpec,
 } from '~/features/code-blocks/features/directives/shared/typedValueSpec';
-import resolveMemoryIdentifier, { resolveMemoryAddress } from '~/pureHelpers/resolveMemoryIdentifier';
+import resolveMemoryIdentifier, {
+	prepareMemoryAccess,
+	resolveMemoryAccess,
+	resolveMemoryAddress,
+} from '~/pureHelpers/resolveMemoryIdentifier';
 import resolveMemoryTarget, { type MemoryScope } from '~/pureHelpers/resolveMemoryTarget';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 
@@ -42,6 +46,21 @@ async function setup() {
 }
 
 describe('shared fixed reference resolution', () => {
+	it('prepares indexed pointer access without reading runtime memory', async () => {
+		const { state, compiled } = await setup();
+		const prepared = prepareMemoryAccess(state, scope, '*pointer[2]')!;
+		expect(prepared.target.memory).toBe(compiled.memoryPlan.modules['audio/sink'].memory.pointer);
+		expect(prepared.options).toEqual({ showAddress: false, dereference: true, bufferPointer: 2 });
+		expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
+
+		const samples = compiled.memoryPlan.modules['audio/bank/source'].memory.samples;
+		vi.mocked(state.callbacks.getWordFromMemory!).mockReturnValue(samples.byteAddress);
+		expect(resolveMemoryAccess(state, prepared.target, prepared.options)).toMatchObject({
+			memory: samples,
+			showAddress: false,
+			bufferPointer: 2,
+		});
+	});
 	it('retains the public reference identity and the backing module and declaration', async () => {
 		const { state, compiled } = await setup();
 		const reference = compiled.compiledModules['audio/sink'].referenceSlots.buffer;

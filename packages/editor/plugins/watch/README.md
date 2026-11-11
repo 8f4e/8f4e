@@ -29,6 +29,8 @@ the memory reference. Formatting choices remain private to watch.
 
 Dereferenced watches such as `; @watch *pointer` follow the current pointer target and its value on every rendered frame,
 without requiring a selection change. Indexed and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
+Named pointer declarations, element indices, and access options are prepared during layout. Drawing reads the live
+pointer and locates its current target without parsing the expression or resolving the declaration name again.
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 

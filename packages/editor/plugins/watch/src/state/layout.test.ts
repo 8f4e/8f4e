@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { setup } from '../__tests__/setup';
 import type { WatchValue } from '../types';
 import { registerWatchLayout } from './layout';
@@ -45,7 +45,7 @@ describe('watch memory preparation', () => {
 		}
 	});
 
-	it('continues resolving a runtime pointer that initially has no target and later retargets', async () => {
+	it('prepares a named pointer once while following live targets, including an initially unresolved target', async () => {
 		const watches = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
 		const test = await setup({ id: 'watch-layout', setup: ({ layout }) => registerWatchLayout(layout, watches) }, [
 			'module audio',
@@ -57,10 +57,14 @@ describe('watch memory preparation', () => {
 		]);
 		const [watch] = watches.get(test.block)!;
 		const memory = test.compiled.memoryPlan.modules.audio.memory;
+		const pointer = memory.pointer;
+		const lookup = vi.fn(() => pointer);
+		Object.defineProperty(memory, 'pointer', { configurable: true, get: lookup });
 		expect(watch.resolveMemory()).toBeUndefined();
-		test.memoryViews.int32[memory.pointer.allocationUnitAddress] = memory.first.byteAddress;
+		test.memoryViews.int32[pointer.allocationUnitAddress] = memory.first.byteAddress;
 		expect(watch.resolveMemory()?.memory).toBe(memory.first);
-		test.memoryViews.int32[memory.pointer.allocationUnitAddress] = memory.second.byteAddress;
+		test.memoryViews.int32[pointer.allocationUnitAddress] = memory.second.byteAddress;
 		expect(watch.resolveMemory()?.memory).toBe(memory.second);
+		expect(lookup).not.toHaveBeenCalled();
 	});
 });

@@ -2,8 +2,8 @@ import { gapCalculator, getTabStopsByLine, getVisualLineWidth, matchEditorDirect
 import {
 	getCodeBlockMemoryScope,
 	getMemoryTargetAtSourceLine,
+	prepareMemoryAccess,
 	resolveMemoryAccess,
-	resolveMemoryIdentifier,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWatchDirectiveData } from '../helpers/data';
@@ -20,14 +20,17 @@ export function registerWatchLayout(
 		watchesByBlock.set(graphicData, []);
 		const scope = getCodeBlockMemoryScope(graphicData);
 		items.forEach(data => {
-			const target = data.inlineAccess && getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber)?.target;
-			if (data.inlineAccess && !target) return;
-			const resolveMemory = target
-				? () => resolveMemoryAccess(state, target, data.inlineAccess)
-				: () => resolveMemoryIdentifier(state, scope, data.memoryId);
-			const memory = resolveMemory();
-			const dereferenced = data.inlineAccess?.dereference ?? data.memoryId?.startsWith('*');
-			const runtimePointer = dereferenced && !memory?.target.reference;
+			const inlineTarget =
+				data.inlineAccess && getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber)?.target;
+			const prepared = data.inlineAccess
+				? inlineTarget && { target: inlineTarget, options: data.inlineAccess }
+				: prepareMemoryAccess(state, scope, data.memoryId);
+			if (!prepared) return;
+			const resolveMemory = () => resolveMemoryAccess(state, prepared.target, prepared.options);
+			const runtimePointer = Boolean(
+				prepared.options.dereference && !prepared.target.reference && prepared.target.memory.pointeeBaseType
+			);
+			const memory = runtimePointer ? undefined : resolveMemory();
 			if (!runtimePointer && !memory) {
 				return;
 			}

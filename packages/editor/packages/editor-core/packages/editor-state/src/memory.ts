@@ -13,6 +13,9 @@ export { default as getMemoryTargetAtSourceLine } from './pureHelpers/getMemoryT
 export {
 	default as resolveMemoryIdentifier,
 	type MemoryAccessOptions,
+	type PreparedMemoryAccess,
+	prepareMemoryAccess,
+	type ResolvedMemoryAccess,
 	resolveMemoryAccess,
 	resolveMemoryAddress,
 } from './pureHelpers/resolveMemoryIdentifier';

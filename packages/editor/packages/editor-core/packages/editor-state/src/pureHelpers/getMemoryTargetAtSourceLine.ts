@@ -15,7 +15,11 @@ function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
 	return firstArg?.type === ArgumentType.IDENTIFIER && firstArg.referenceKind === 'plain' ? firstArg.value : undefined;
 }
 
-/** Resolves an allocated declaration or fixed reference on the current source row when compiled. */
+/**
+ * Resolves an allocated declaration or fixed reference on the current source row when compiled.
+ * Returns undefined when the row has no memory declaration. A result with target: undefined marks a declaration
+ * whose matching accepted metadata is not yet available, allowing consumers to reserve its layout space.
+ */
 export default function getMemoryTargetAtSourceLine(
 	state: State,
 	codeBlock: CodeBlockGraphicData,

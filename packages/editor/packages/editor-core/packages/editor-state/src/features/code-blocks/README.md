@@ -152,6 +152,12 @@ module IDs. `resolveMemoryTarget` handles target lookup using these explicit sco
 adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
 end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
 
+Consumers that retain an access across frames use `prepareMemoryAccess` during layout. Its `PreparedMemoryAccess`
+contains the resolved declaration and parsed access options, without reading runtime memory. They pass that target
+and its options to `resolveMemoryAccess` when needed, so runtime pointer reads follow the current target without
+repeating expression parsing or name lookup. `ResolvedMemoryAccess` describes the resulting storage and access flags
+and retains the original source target. Prepared bindings must be refreshed after source or compiler metadata changes.
+
 Fixed references such as `float& buffer &source:samples` resolve to the backing declaration and its owning module,
 with the original reference metadata retained in `ResolvedMemoryTarget.reference`. A bare `buffer` supplies the
 fixed target address; `*buffer` reads the target value, and `*buffer[1]` selects its second element. `&buffer` is
@@ -160,7 +166,9 @@ unresolved because a fixed reference allocates no addressable slot. Buffer displ
 
 Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
 fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
-`getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory;
+`getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory.
+It returns `undefined` for rows without a memory declaration and `{ target: undefined }` for declarations awaiting
+matching accepted compiler metadata, allowing widgets to reserve layout space while compilation is pending.
 `resolveMemoryAccess` applies the same address and dereference rules to those targets. Tooltips use the shared target
 lookup during preparation. Connectors consume the resolved reference targets already supplied by the compiler;
 each plugin retains its own value formatting and source-row geometry.
