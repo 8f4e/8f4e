@@ -18,6 +18,8 @@ a zero-based location. Include wording contains no row prefix; hosts present sou
 `serializeDiagnostic(error, stage, location?)` returns a detached serializable record. A `CompilerError` keeps its
 complete diagnostic through worker and include transports. Unexpected exceptions become explicit internal failures,
 retaining the stage, stack and any known source location. There are no empty-context or fabricated-row defaults.
+If a transported internal failure has no location, serialization or a later stage boundary can attach a known one
+without changing the original failure's stage or stack. Existing source and internal diagnostic locations are preserved.
 
 Locations distinguish document rows, block rows, project-scope rows, include-file rows, and included symbols with their
 include site. Exposure declarations retain their row in the owning group's `code`; composition supplies the group's

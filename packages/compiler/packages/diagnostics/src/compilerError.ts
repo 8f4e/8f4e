@@ -11,13 +11,25 @@ export class CompilerError<TDiagnostic extends CompilerDiagnostic = SourceDiagno
 	}
 }
 
+function compilerErrorAtStage(
+	error: unknown,
+	stage: string,
+	location?: DiagnosticLocation
+): CompilerError<CompilerDiagnostic> {
+	if (
+		error instanceof CompilerError &&
+		(error.diagnostic.kind === 'source' || error.diagnostic.location !== undefined || location === undefined)
+	)
+		return error;
+	return new CompilerError(serializeDiagnostic(error, stage, location), { cause: error });
+}
+
 /** Attribute unexpected failures to their compiler phase while preserving expected source diagnostics. */
 export function withCompilerStage<T>(stage: string, operation: () => T, location?: DiagnosticLocation): T {
 	try {
 		return operation();
 	} catch (error) {
-		if (error instanceof CompilerError) throw error;
-		throw new CompilerError(serializeDiagnostic(error, stage, location), { cause: error });
+		throw compilerErrorAtStage(error, stage, location);
 	}
 }
 
@@ -30,14 +42,18 @@ export async function withAsyncCompilerStage<T>(
 	try {
 		return await operation();
 	} catch (error) {
-		if (error instanceof CompilerError) throw error;
-		throw new CompilerError(serializeDiagnostic(error, stage, location), { cause: error });
+		throw compilerErrorAtStage(error, stage, location);
 	}
 }
 
-/** Serialization preserves complete diagnostics and labels unexpected exceptions explicitly. */
+/** Preserves diagnostics, adding known locations only to internal failures that lack one. */
 export function serializeDiagnostic(error: unknown, stage: string, location?: DiagnosticLocation): CompilerDiagnostic {
-	if (error instanceof CompilerError) return structuredClone(error.diagnostic);
+	if (error instanceof CompilerError) {
+		const diagnostic: CompilerDiagnostic = structuredClone(error.diagnostic);
+		if (diagnostic.kind === 'internal' && diagnostic.location === undefined && location !== undefined)
+			diagnostic.location = structuredClone(location);
+		return diagnostic;
+	}
 	return {
 		kind: 'internal',
 		message: error instanceof Error ? error.message : String(error),

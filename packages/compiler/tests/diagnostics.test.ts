@@ -1,4 +1,4 @@
-import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
+import { CompilerError, serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileProjectOptions, ProjectObjectModel } from '@8f4e/language-spec';
 import { getProjectGroups, getProjectModules, IncludeErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
@@ -160,23 +160,27 @@ entryEnd`);
 		});
 	});
 
-	it('preserves the stage and known include site of an unexpected resolver failure', async () => {
+	it.each([false, true])('locates an unexpected resolver failure (transported: %s)', async transported => {
 		const project = parseProjectSource(`8f4e/v1
+entry main
+group audio
 includes
 include helpers
-includesEnd`);
+includesEnd
+groupEnd
+entryEnd`);
+		const group = getProjectGroups(project)[0];
+		const original = new Error('Resolver unavailable');
+		const serialized = serializeDiagnostic(original, 'include loading');
 		expect(
 			await diagnosticFor(project, {
 				resolveInclude: async () => {
-					throw new Error('Resolver unavailable');
+					throw transported ? new CompilerError(structuredClone(serialized)) : original;
 				},
 			})
-		).toMatchObject({
-			kind: 'internal',
-			stage: 'include loading',
-			message: 'Resolver unavailable',
-			stack: expect.any(String),
-			location: { kind: 'block', projectBlockId: project.includes[0].id, projectGroupPath: '', lineNumber: 1 },
+		).toEqual({
+			...serialized,
+			location: { kind: 'block', projectBlockId: group.includes[0].id, projectGroupPath: 'audio', lineNumber: 1 },
 		});
 	});
 });

@@ -1,6 +1,6 @@
 import type { SourceDiagnostic } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { CompilerError, serializeDiagnostic, withCompilerStage } from './compilerError';
+import { CompilerError, serializeDiagnostic, withAsyncCompilerStage, withCompilerStage } from './compilerError';
 
 const diagnostic: SourceDiagnostic = {
 	kind: 'source',
@@ -41,6 +41,56 @@ describe('compiler diagnostics', () => {
 			location: diagnostic.location,
 		});
 	});
+	it('adds a detached known location to a transported internal diagnostic', () => {
+		const original = serializeDiagnostic(new Error('Loading failed'), 'include fetch');
+		const error = new CompilerError(original);
+		const location = { ...diagnostic.location };
+		const snapshot = serializeDiagnostic(error, 'outer', location);
+		location.lineNumber = 99;
+		expect(snapshot).toEqual({ ...original, location: diagnostic.location });
+		expect(error.diagnostic).toEqual(original);
+	});
+
+	describe.each([
+		{ name: 'synchronous', boundary: withCompilerStage },
+		{ name: 'asynchronous', boundary: withAsyncCompilerStage },
+	])('$name stage boundaries', ({ boundary }) => {
+		it('adds a missing location while preserving the original failure details and cause', async () => {
+			const original = serializeDiagnostic(new Error('Loading failed'), 'include fetch');
+			const error = new CompilerError(original);
+			await expect(async () =>
+				boundary(
+					'include loading',
+					() => {
+						throw error;
+					},
+					diagnostic.location
+				)
+			).rejects.toMatchObject({
+				cause: error,
+				diagnostic: { ...original, location: diagnostic.location },
+			});
+			expect(error.diagnostic).toEqual(original);
+		});
+
+		it.each([diagnostic, serializeDiagnostic(new Error('Located failure'), 'inner', diagnostic.location)])(
+			'preserves an already located $kind error',
+			async locatedDiagnostic => {
+				const error = new CompilerError(locatedDiagnostic);
+				expect(serializeDiagnostic(error, 'outer', { kind: 'document', lineNumber: 10 })).toEqual(locatedDiagnostic);
+				await expect(async () =>
+					boundary(
+						'outer',
+						() => {
+							throw error;
+						},
+						{ kind: 'document', lineNumber: 10 }
+					)
+				).rejects.toBe(error);
+			}
+		);
+	});
+
 	it('keeps the original failing phase and cause through outer stage boundaries', () => {
 		const cause = new Error('Broken invariant');
 		try {
