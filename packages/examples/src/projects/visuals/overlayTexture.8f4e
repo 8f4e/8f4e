@@ -5,6 +5,7 @@ constants env
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
+; @favorite
 
 constantsEnd
 
@@ -25,7 +26,7 @@ note
 noteEnd
 
 note
-; @pos 63 -4
+; @pos 145 5
 
 ; The shortest 8f4e program
 ; I managed to write that
@@ -36,7 +37,7 @@ noteEnd
 
 entry main
 module frameCounter
-; @pos 99 -32
+; @pos 100 -30
 
 int frame ; @w
 push &frame
@@ -47,7 +48,7 @@ store
 
 moduleEnd
 module screen
-; @pos 100 -16
+; @pos 100 -17
 
 const WIDTH 32
 const HEIGHT 32
@@ -60,15 +61,13 @@ int8u[] rgba PIXEL_COUNT*4
 ; @texture &rgba 8 32 32
 
 moduleEnd
-module screen2
-; @pos 143 -21
+module patternGenerator
+; @pos 145 -21
 ; @home right
 use screen
 
 int& frame &frameCounter:frame
 int8u* rgba &screen:rgba
-
-; @texture rgba 8 32 32
 
 loop PIXEL_COUNT*4
 
