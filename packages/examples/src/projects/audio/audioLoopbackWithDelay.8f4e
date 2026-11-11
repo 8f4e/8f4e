@@ -1,7 +1,7 @@
 8f4e/v1
 
 function buffer
-; @pos -126 23
+; @pos -47 27
 #export buffer
 use env
 
@@ -11,8 +11,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -126 33
-; @favorite
+; @pos -47 9
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -22,7 +21,7 @@ const AUDIO_BUFFER_SIZE 128
 constantsEnd
 
 note
-; @pos -126 6
+; @pos -70 -8
 ; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioInBufferLAddress audioin:buffer
@@ -31,48 +30,34 @@ note
 ; @config export.fileName audioLoopbackWithDelay
 noteEnd
 
-note colors
-; @pos -176 6
-; @config color.canvas #160f11
-; @config color.surface #2d1d21
-; @config color.ink #ddcfca
-; @config color.primary #ed7067
-; @config color.secondary #efaa68
-; @config color.positive #5d9874
-; @config color.warning #dba653
-; @config color.negative #dc4d48
-; @config color.muted #80666a
-; @config color.stroke rgba(238,87,80,0.6)
-; @config color.tertiary #947b7a
-; @config color.highlight #ff6d5f
-; @config color.detail #c44845
-noteEnd
-
 note
-; @pos 51 0
-; This is a stereo loopback example
-; that delays the input audio before
-; writing the signal into a shared
-; left and right output buffer.
+; @pos 0 -11
+; Audio loopback with delay records
+; mono input in a two-second buffer
+; and plays it through both outputs.
+;
+; Switch freeze on to stop recording
+; while the read head keeps looping.
+; Switch it off to resume recording.
 noteEnd
 
 entry main
 module audioin
-; @pos 5 1
+; @pos 0 0
 use env
 
-; Audio buffer
 float[] buffer AUDIO_BUFFER_SIZE
 float out
-int pointer &buffer
+float* pointer &buffer
 
 ; @plot &buffer count(buffer)
 
+; Read the next input sample.
 push &out
-push pointer
-loadFloat
+push *pointer
 store
 
+; Advance within the input block.
 push &pointer
 push pointer
 push sizeof(buffer)
@@ -89,76 +74,109 @@ store
 ifEnd
 
 moduleEnd
-module delay
-; @pos 53 9
+module recorder
+; @pos 43 0
 ; @home
 use env
 
-const BUFFER_SIZE SAMPLE_RATE*3
+const BUFFER_SIZE SAMPLE_RATE*2
 
 float& in &audioin:out
-float out
 float[] buffer BUFFER_SIZE
-float* pointer &buffer
+float* writeHead &buffer
+int freeze 0
 
-; Read sample
-push &out
-push *pointer
-store
+; @switch &freeze
+; @wave4 &buffer count(buffer) writeHead
+; @watch writeHead
 
-; Write current sample
-push pointer
+; Freeze holds the recording and
+; write head while playback runs.
+push freeze
+equalToZero
+if
+
+; Record the current input sample.
+push writeHead
 push *in
 store
 
-; Advance and wrap the circular
-; buffer pointer
-push &pointer
-push pointer
+; Move to the next sample slot.
+push &writeHead
+push writeHead
 push sizeof(buffer)
 add
 store
 
-push pointer
+; Wrap after the final slot.
+push writeHead
 push buffer&
 greaterThan
 if
-push &pointer
+push &writeHead
 push &buffer
+store
+ifEnd
+
+ifEnd
+
+moduleEnd
+module player
+; @pos 94 0
+use env
+; The initial read-head offset
+; is measured in bytes.
+float& buffer &recorder:buffer
+float* head &recorder:buffer+SAMPLE_RATE
+float out
+
+; @wave4 buffer count(buffer) head
+; @watch head
+
+; Read from the circular recording.
+push &out
+push *head
+store
+
+; Advance one sample.
+push &head
+push head
+push sizeof(*buffer)
+add
+store
+
+; Wrap independently of the writer.
+push head
+push recorder:buffer&
+greaterThan
+if
+push &head
+push &recorder:buffer
 store
 ifEnd
 
 moduleEnd
 module audioout
-; @pos 99 1
+; @pos 145 0
 use env
 
-float& in &delay:out
-
-; Audio buffer
+float& in &player:out
 float[] buffer AUDIO_BUFFER_SIZE
-int pointer &buffer
+float* pointer &buffer
 
 ; @plot &buffer count(buffer)
 
-; Store the input value
-; in the buffer
+; Send playback to both outputs.
 push pointer
 push *in
 store
 
-; Increment the buffer
-; pointer by the
-; buffer word size
 push &pointer
 push pointer
 push sizeof(buffer)
 add
 store
 
-; Reset the buffer pointer
-; when it reaches the end
-; of the buffer
 push pointer
 push buffer&
 greaterThan

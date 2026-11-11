@@ -56,7 +56,8 @@ export const projects = [
 	{
 		id: 'audio-loopback-with-delay',
 		title: 'Audio loopback with delay',
-		description: 'Delay incoming audio through a circular buffer before routing it to the left and right outputs.',
+		description:
+			'Record and freeze incoming audio in a two-second circular buffer, with an independent read head feeding both outputs.',
 		path: 'audio/audioLoopbackWithDelay.8f4e',
 	},
 	{
