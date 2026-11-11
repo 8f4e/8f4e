@@ -204,9 +204,11 @@ entryEnd`);
 		const compilation = compileProject(project);
 
 		await expect(compilation).rejects.toMatchObject({
-			code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-			context: { projectGroupPath: 'audio', projectMemoryExposureName: 'publicValue' },
-			message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
+			diagnostic: expect.objectContaining({
+				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
+				message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
+				location: expect.objectContaining({ projectGroupPath: 'audio' }),
+			}),
 		});
 		await expect(compilation).rejects.not.toHaveProperty('line');
 	});

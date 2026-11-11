@@ -12,7 +12,6 @@ import { parseProjectSource, resolveProjectIncludesAsync } from '@8f4e/project-p
 import { deriveEffectiveMemorySize } from '@8f4e/wasm-codegen';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
-export { serializeDiagnostic } from './diagnostic';
 export { deriveEffectiveMemorySize, parseProjectSource };
 
 /**
@@ -26,7 +25,7 @@ async function resolveRecursiveProjectIncludes(
 	projectPath: ProjectGroupPath = ROOT_PROJECT_GROUP_PATH,
 	result: Map<ProjectGroupPath, Awaited<ReturnType<typeof resolveProjectIncludesAsync>>> = new Map()
 ): Promise<IncludedFunctionsByProjectGroupPath> {
-	const includedFunctions = await resolveProjectIncludesAsync(project.includes, resolveInclude);
+	const includedFunctions = await resolveProjectIncludesAsync(project.includes, resolveInclude, projectPath);
 	if (includedFunctions.length > 0) {
 		result.set(projectPath, includedFunctions);
 	}

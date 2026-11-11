@@ -11,7 +11,7 @@ import type {
 	PrototypeLine,
 } from '@8f4e/language-spec';
 import { isFunctionBodyInstructionName, isImportedFunctionDeclarationInstructionName } from '@8f4e/language-spec';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 /** Accumulates module-specific lines while the tokenizer builds a validated AST. */
 type ModuleASTBuilder = {
@@ -88,32 +88,32 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 /** Validates function declaration structure while collecting its AST metadata. */
 function applyFunctionASTLine(builder: FunctionASTBuilder, line: CompilerASTLine): void {
 	if (builder.bodyStarted && (line.instruction === 'param' || line.instruction === 'paramShape')) {
-		throw new SyntaxRulesError(SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY, undefined, line);
+		throw new SyntaxIssue(SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY, undefined, line);
 	}
 
 	switch (line.instruction) {
 		case '#export':
 			if (builder.importLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
 			}
 			if (builder.exportLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT, undefined, line);
 			}
 			builder.exportLine = line;
 			return;
 		case '#import':
 			if (builder.importLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT, undefined, line);
 			}
 			if (builder.exportLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
 			}
 			builder.importLine = line;
 			return;
 	}
 
 	if (builder.importLine && !isImportedFunctionDeclarationInstructionName(line.instruction)) {
-		throw new SyntaxRulesError(SyntaxErrorCode.IMPORTED_FUNCTION_BODY, undefined, line);
+		throw new SyntaxIssue(SyntaxErrorCode.IMPORTED_FUNCTION_BODY, undefined, line);
 	}
 	if (isFunctionBodyInstructionName(line.instruction)) {
 		builder.bodyStarted = true;
@@ -162,7 +162,7 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 			};
 		case 'function':
 			if (!builder.functionEndLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a matching functionEnd.', {
+				throw new SyntaxIssue(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a matching functionEnd.', {
 					lineNumber: builder.functionLine.lineNumber,
 					instruction: builder.functionLine.instruction,
 				});

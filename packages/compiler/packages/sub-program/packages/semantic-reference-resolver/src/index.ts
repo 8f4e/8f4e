@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilerASTLine,
 	ConstantResolutionBlockFacts,
@@ -32,7 +33,6 @@ import {
 	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
-	getError,
 	getInstructionSpec,
 	type InstructionSpec,
 	isCodegenInstructionName,
@@ -406,7 +406,7 @@ function resolveBody(
 			constantReferences?.lineFacts[sourceLineIndex],
 			memoryReferences?.lineFacts[sourceLineIndex]
 		);
-		withSourceDiagnostic(originalLine, () => {
+		withSourceDiagnostic(originalLine, 'semantic references', () => {
 			for (const operation of normalizeOperands(sourceLine)) {
 				const line = resolveLineReferences(operation, context);
 				applyResolvedLineEffect(line, context);

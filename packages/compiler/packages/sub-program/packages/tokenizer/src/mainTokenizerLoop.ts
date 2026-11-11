@@ -29,7 +29,7 @@ import {
 	type SourceBlockASTBuilder,
 } from './sourceBlockASTBuilder';
 import { foldArgumentContinuationLines } from './sourceLines';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 /** Parsed source lines plus the source-block builder needed to materialize the final AST. */
 export type MainTokenizerLoopResult = {
@@ -112,7 +112,7 @@ function createParserBlockState(): ParserBlockState {
 
 /** Throws the placement syntax error with the source line metadata attached. */
 function throwInstructionNotAllowedInBlock(line: CompilerASTLine): never {
-	throw new SyntaxRulesError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, undefined, {
+	throw new SyntaxIssue(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, undefined, {
 		lineNumber: line.lineNumber,
 		instruction: line.instruction,
 	});
@@ -276,7 +276,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 		if (isCompilerDirective && isInOpenSourceBlockPrologue) {
 			parsedLine.isBlockPrologue = true;
 		} else if (isCompilerDirective) {
-			throw new SyntaxRulesError(SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE, undefined, {
+			throw new SyntaxIssue(SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE, undefined, {
 				lineNumber,
 				instruction: parsedLine.instruction,
 			});
@@ -347,7 +347,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 			const openBlock = blockStack[blockStack.length - 1];
 
 			if (!openBlock || openBlock.instruction !== 'if') {
-				throw new SyntaxRulesError(
+				throw new SyntaxIssue(
 					SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 					'Unexpected else without a matching open if block.',
 					{
@@ -358,7 +358,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 			}
 
 			if (openBlock.hasElse) {
-				throw new SyntaxRulesError(
+				throw new SyntaxIssue(
 					SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 					'Unexpected else: if blocks may only contain one else branch.',
 					{
@@ -381,7 +381,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 		const openBlock = blockStack.pop();
 
 		if (!openBlock) {
-			throw new SyntaxRulesError(
+			throw new SyntaxIssue(
 				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 				`Unexpected ${endInstruction} without a matching open ${expectedStartInstruction} block.`,
 				{
@@ -392,7 +392,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 		}
 
 		if (openBlock.instruction !== expectedStartInstruction) {
-			throw new SyntaxRulesError(
+			throw new SyntaxIssue(
 				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 				`Unexpected ${endInstruction}: expected ${openBlock.instruction} to be closed before ending ${expectedStartInstruction}.`,
 				{
@@ -439,7 +439,7 @@ export function mainTokenizerLoop(code: string[]): MainTokenizerLoopResult {
 		const openBlock = blockStack[blockStack.length - 1];
 		const openLine = ast[openBlock.astIndex];
 
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, `Unclosed ${openBlock.instruction} block.`, {
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, `Unclosed ${openBlock.instruction} block.`, {
 			lineNumber: openLine.lineNumber,
 			instruction: openBlock.instruction,
 		});

@@ -1,20 +1,14 @@
 {
   "code": 0,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 2,
-      },
-    ],
-    "instruction": "mul",
+  "domain": "semantic",
+  "instruction": "mul",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Insufficient number of elements in the stack for the operation to proceed. (0)",
+  "symbol": "invalid",
 }

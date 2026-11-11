@@ -11,6 +11,7 @@ describe('and stack analysis', () => {
 			{ kind: 'value', valueType: 'float', isNonZero: false }
 		);
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'and',
 			arguments: [],
@@ -29,11 +30,7 @@ describe('and stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'and',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'and', arguments: [] } as CompilerASTLine,
 			context
 		);
 

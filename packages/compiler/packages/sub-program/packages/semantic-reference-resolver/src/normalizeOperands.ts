@@ -2,7 +2,12 @@ import type { CompilerASTLine, PushArgument, PushLine } from '@8f4e/language-spe
 import { getInstructionSpec } from '@8f4e/language-spec';
 
 function pushOperand(line: CompilerASTLine, argument: PushArgument): PushLine {
-	return { lineNumber: line.lineNumber, instruction: 'push', arguments: [argument] };
+	return {
+		diagnosticSource: line.diagnosticSource,
+		lineNumber: line.lineNumber,
+		instruction: 'push',
+		arguments: [argument],
+	};
 }
 
 /** Expands source operand shorthand once; each operation keeps the physical source line. */

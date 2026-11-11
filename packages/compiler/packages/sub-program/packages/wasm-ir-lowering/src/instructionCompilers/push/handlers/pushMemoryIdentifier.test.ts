@@ -23,6 +23,7 @@ describe('pushMemoryIdentifier', () => {
 
 		pushMemoryIdentifier(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [identifier('value')],

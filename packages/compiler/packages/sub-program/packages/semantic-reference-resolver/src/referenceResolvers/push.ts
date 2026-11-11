@@ -1,9 +1,9 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ArgumentType,
 	BASE_TYPE_METADATA,
 	type CodegenPushLine,
 	ErrorCode,
-	getError,
 	getMemoryBaseType,
 	getPointerDepthFromMetadata,
 	type LocalValueMetadata,

@@ -8,7 +8,12 @@ export default function resolveAssertEqualReferences(
 	context: ReferenceResolutionContext
 ): SemanticAssertEqualLine {
 	const expectedPush = resolvePushReferences(
-		{ instruction: 'push', arguments: line.arguments, lineNumber: line.lineNumber },
+		{
+			instruction: 'push',
+			arguments: line.arguments,
+			diagnosticSource: line.diagnosticSource,
+			lineNumber: line.lineNumber,
+		},
 		context
 	);
 	return { ...line, expectedPush };

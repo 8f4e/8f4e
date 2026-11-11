@@ -20,6 +20,7 @@ function createLine(
 	accessByteWidth?: number
 ): ClampAddressLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction,
 		arguments:

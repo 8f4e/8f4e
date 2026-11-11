@@ -1,3 +1,4 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import type { ResolveIncludeRequestMessage, ResolveIncludeResultMessage } from './messages';
 
 export interface IncludeSourceRequestBroker {
@@ -31,7 +32,7 @@ export function createIncludeSourceRequestBroker(
 			if (!pending) return;
 			pendingRequests.delete(message.payload.requestId);
 			if ('error' in message.payload) {
-				pending.reject(message.payload.error);
+				pending.reject(new CompilerError(message.payload.error));
 			} else {
 				pending.resolve(message.payload.source);
 			}

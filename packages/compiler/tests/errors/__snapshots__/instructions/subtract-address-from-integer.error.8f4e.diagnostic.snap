@@ -1,14 +1,14 @@
 {
   "code": 78,
-  "context": {
-    "codeBlockId": "subtractAddressFromInteger",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [],
-    "instruction": "sub",
+  "domain": "semantic",
+  "instruction": "sub",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Invalid address arithmetic. Add accepts one address and one integer offset; subtraction accepts an address minus an integer offset or two addresses. (78)",
+  "symbol": "subtractAddressFromInteger",
 }

@@ -13,7 +13,7 @@ import {
 	SCALAR_TYPE_IDENTIFIERS,
 } from '@8f4e/language-spec';
 import isConstantName from './isConstantName';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 
 const supportedScalarTypeIdentifiers: ReadonlySet<string> = new Set(SCALAR_TYPE_IDENTIFIERS);
 const supportedFunctionTypeIdentifiers: ReadonlySet<string> = new Set(FUNCTION_TYPE_IDENTIFIERS);
@@ -43,7 +43,7 @@ function isCompileTimeValue(argument: Argument): boolean {
 
 function validateArgumentShape(argument: Argument, rule: SourceArgumentShapeRule, instruction: string): void {
 	const invalid = (message: string) => {
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_ARGUMENT, message);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_ARGUMENT, message);
 	};
 
 	switch (rule) {
@@ -54,7 +54,7 @@ function validateArgumentShape(argument: Argument, rule: SourceArgumentShapeRule
 			return;
 		case 'moduleName':
 			if (argument.type !== ArgumentType.IDENTIFIER || !isValidModuleName(argument.value)) {
-				throw new SyntaxRulesError(
+				throw new SyntaxIssue(
 					SyntaxErrorCode.INVALID_IDENTIFIER,
 					`Invalid module name. Module names must match ${MODULE_NAME_PATTERN}.`
 				);
@@ -143,7 +143,7 @@ function validateArgumentShape(argument: Argument, rule: SourceArgumentShapeRule
  */
 export default function validateInstructionArguments(instruction: string, args: Argument[]): void {
 	if (!isSubProgramInstructionName(instruction)) {
-		throw new SyntaxRulesError(SyntaxErrorCode.UNRECOGNISED_INSTRUCTION);
+		throw new SyntaxIssue(SyntaxErrorCode.UNRECOGNISED_INSTRUCTION);
 	}
 
 	const spec = getInstructionArgumentSpec(instruction);
@@ -152,11 +152,11 @@ export default function validateInstructionArguments(instruction: string, args: 
 	}
 
 	if (spec.minArguments !== undefined && args.length < spec.minArguments) {
-		throw new SyntaxRulesError(SyntaxErrorCode.MISSING_ARGUMENT, `Missing required argument for ${instruction}.`);
+		throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT, `Missing required argument for ${instruction}.`);
 	}
 
 	if (spec.maxArguments !== undefined && args.length > spec.maxArguments) {
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_ARGUMENT, `Too many arguments for ${instruction}.`);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_ARGUMENT, `Too many arguments for ${instruction}.`);
 	}
 
 	if (!spec.argumentTypes) {
@@ -176,7 +176,7 @@ export default function validateInstructionArguments(instruction: string, args: 
 			name.value === 'this' ||
 			!isMemoryStartAddress
 		) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_REFERENCE_SLOT);
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_REFERENCE_SLOT);
 		}
 	}
 
@@ -191,7 +191,7 @@ export default function validateInstructionArguments(instruction: string, args: 
 		if (isArrayMemoryDeclarationInstructionName(instruction)) {
 			const name = args[0];
 			if (name.type === ArgumentType.IDENTIFIER && name.referenceKind === 'constant') {
-				throw new SyntaxRulesError(
+				throw new SyntaxIssue(
 					SyntaxErrorCode.INVALID_IDENTIFIER,
 					`Array name "${name.value}" uses a naming pattern reserved for constants.`
 				);

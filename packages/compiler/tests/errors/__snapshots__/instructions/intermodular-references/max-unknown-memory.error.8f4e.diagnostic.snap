@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "maxUnknownMemoryTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "maxValue",
-      },
-      {
-        "referenceKind": "intermodular-element-max",
-        "scope": "intermodule",
-        "targetMemoryId": "missing",
-        "targetModuleId": "maxUnknownMemorySource",
-        "type": "identifier",
-        "value": "max(maxUnknownMemorySource:missing)",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: missing. (5)",
+  "message": "Unknown memory declaration in memory default.",
 }

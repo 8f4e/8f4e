@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EditorLoadingRegistry, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
@@ -21,15 +22,15 @@ describe('compilation scheduling and publication', () => {
 		cleanup = () => {};
 		loading = { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) };
 
-		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
-			message: 'Memory access is not allowed in pure functions. (19)',
-			line: { lineNumber: 2 },
-			context: {
-				codeBlockId: 'helper',
-				codeBlockType: 'function',
-				projectBlockId: 0,
-			},
-		});
+		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'semantic',
+				code: 19,
+				message: 'Memory access is not allowed in pure functions. (19)',
+				location: { kind: 'block', projectBlockId: 0, projectGroupPath: '', lineNumber: 2 },
+			})
+		);
 
 		mockState = createMockState();
 		const emitter = new EventEmitter();
@@ -162,12 +163,17 @@ describe('compilation scheduling and publication', () => {
 		);
 	});
 
-	it('reads line number from syntax errors that expose line directly (no longer defaults to 0)', async () => {
-		mockCompileCode.mockRejectedValue({
-			message: 'Too many arguments for if.',
-			line: { lineNumber: 3, instruction: 'if' },
-			context: { projectBlockId: 0 },
-		});
+	it('preserves syntax diagnostic locations', async () => {
+		mockCompileCode.mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'syntax',
+				code: 2,
+				message: 'Too many arguments for if.',
+				instruction: 'if',
+				location: { kind: 'block', projectBlockId: 0, projectGroupPath: '', lineNumber: 3 },
+			})
+		);
 
 		await triggerCompile();
 
@@ -181,18 +187,22 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it('stores the owning project path for project-scope compiler errors', async () => {
-		mockCompileCode.mockRejectedValue({
-			message: 'Passed constant namespace env is undefined in the parent project scope.',
-			line: { lineNumber: 1, instruction: 'pass' },
-			context: { projectGroupPath: 'audio' },
-		});
+		mockCompileCode.mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'semantic',
+				code: 2,
+				message: 'Passed constant namespace env is undefined in the parent project scope.',
+				instruction: 'pass',
+				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+			})
+		);
 
 		await triggerCompile();
 
 		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 1,
-				codeBlockId: -1,
 				projectGroupPath: 'audio',
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
@@ -330,7 +340,7 @@ describe('compilation scheduling and publication', () => {
 		mockCompileCode.mockRejectedValue(new Error('Worker unavailable'));
 		await triggerCompile();
 		expect(mockState.codeErrors.compiler).toEqual([
-			expect.objectContaining({ lineNumber: 0, codeBlockId: -1, message: 'Worker unavailable' }),
+			{ message: 'Internal compiler error (compilation): Worker unavailable' },
 		]);
 		expect(mockState.compiler.isCompiling).toBe(false);
 	});

@@ -12,11 +12,7 @@ describe('div instruction compiler', () => {
 
 		compileInstructionForTest(
 			div,
-			{
-				lineNumber: 1,
-				instruction: 'div',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -37,11 +33,7 @@ describe('div instruction compiler', () => {
 
 		compileInstructionForTest(
 			div,
-			{
-				lineNumber: 1,
-				instruction: 'div',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -62,11 +54,7 @@ describe('div instruction compiler', () => {
 
 		compileInstructionForTest(
 			div,
-			{
-				lineNumber: 1,
-				instruction: 'div',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

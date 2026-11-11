@@ -8,6 +8,7 @@ const targetId = 'convert__float';
 
 function createCallLine(): SemanticCallLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'call',
 		arguments: [{ type: ArgumentType.IDENTIFIER, value: 'convert', referenceKind: 'plain', scope: 'local' }],

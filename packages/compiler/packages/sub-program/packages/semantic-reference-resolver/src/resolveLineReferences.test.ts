@@ -7,6 +7,7 @@ import {
 	type MemoryLayoutPlan,
 	type ValidatedFunctionAST,
 } from '@8f4e/language-spec';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { classifyIdentifier, parseArgument } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { resolveSemanticReferences } from '.';
@@ -54,6 +55,7 @@ function createClampLine(
 	accessByteWidth?: number
 ): CompilerASTLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction,
 		arguments:
@@ -64,6 +66,7 @@ function createClampLine(
 describe('resolveLineReferences', () => {
 	it('keeps pre-resolved push literals unchanged', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
 			arguments: [{ type: ArgumentType.LITERAL, value: 8, isInteger: true }],
@@ -81,9 +84,10 @@ describe('resolveLineReferences', () => {
 
 	it('leaves identifier-definition positions unchanged when not resolvable', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int',
-			arguments: [classifyIdentifier('output')],
+			arguments: [syntaxValue(classifyIdentifier('output'))],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -98,6 +102,7 @@ describe('resolveLineReferences', () => {
 
 	it('keeps pre-resolved map value arguments unchanged', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'map',
 			arguments: [
@@ -118,9 +123,10 @@ describe('resolveLineReferences', () => {
 
 	it('throws when a targeted value expression cannot be resolved', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [parseArgument('2*MISSING')],
+			arguments: [syntaxValue(parseArgument('2*MISSING'))],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -135,9 +141,13 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER when a map key argument is an unresolved identifier', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'map',
-			arguments: [classifyIdentifier('MISSING_CONST'), { type: ArgumentType.LITERAL, value: 100, isInteger: true }],
+			arguments: [
+				syntaxValue(classifyIdentifier('MISSING_CONST')),
+				{ type: ArgumentType.LITERAL, value: 100, isInteger: true },
+			],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -152,9 +162,13 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER when a map value argument is an unresolved identifier', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'map',
-			arguments: [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }, classifyIdentifier('UNRESOLVED')],
+			arguments: [
+				{ type: ArgumentType.LITERAL, value: 1, isInteger: true },
+				syntaxValue(classifyIdentifier('UNRESOLVED')),
+			],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -169,9 +183,10 @@ describe('resolveLineReferences', () => {
 
 	it('throws UNDECLARED_IDENTIFIER when a default argument is an unresolved identifier', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'default',
-			arguments: [classifyIdentifier('MISSING_CONST')],
+			arguments: [syntaxValue(classifyIdentifier('MISSING_CONST'))],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -186,9 +201,10 @@ describe('resolveLineReferences', () => {
 
 	it('resolves push identifier arguments when the identifier is a known local', () => {
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('localVar')],
+			arguments: [syntaxValue(classifyIdentifier('localVar'))],
 		};
 		const context = {
 			referenceSlots: Object.create(null),
@@ -214,9 +230,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('unknownVar')],
+			arguments: [syntaxValue(classifyIdentifier('unknownVar'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -229,9 +246,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'localSet',
-			arguments: [classifyIdentifier('missing')],
+			arguments: [syntaxValue(classifyIdentifier('missing'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -248,9 +266,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('&otherModule:missingMemory')],
+			arguments: [syntaxValue(classifyIdentifier('&otherModule:missingMemory'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -267,9 +286,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int',
-			arguments: [classifyIdentifier('buffer'), classifyIdentifier('&source:missingBuffer')],
+			arguments: [syntaxValue(classifyIdentifier('buffer')), syntaxValue(classifyIdentifier('&source:missingBuffer'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -286,15 +306,16 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int',
-			arguments: [classifyIdentifier('ptr'), classifyIdentifier('&source:buffer')],
+			arguments: [syntaxValue(classifyIdentifier('ptr')), syntaxValue(classifyIdentifier('&source:buffer'))],
 		};
 
 		const result = resolveLineReferences(line, context);
 		expect(result.arguments).toHaveLength(2);
-		expect(result.arguments[0]).toEqual(classifyIdentifier('ptr'));
-		expect(result.arguments[1]).toEqual(classifyIdentifier('&source:buffer'));
+		expect(result.arguments[0]).toEqual(syntaxValue(classifyIdentifier('ptr')));
+		expect(result.arguments[1]).toEqual(syntaxValue(classifyIdentifier('&source:buffer')));
 	});
 
 	it('validates unresolved intermodule references through group aliases', () => {
@@ -306,14 +327,15 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int*',
-			arguments: [classifyIdentifier('ptr'), classifyIdentifier('&audio:level')],
+			arguments: [syntaxValue(classifyIdentifier('ptr')), syntaxValue(classifyIdentifier('&audio:level'))],
 		};
 
 		const result = resolveLineReferences(line, context);
 
-		expect(result.arguments[1]).toEqual(classifyIdentifier('&audio:level'));
+		expect(result.arguments[1]).toEqual(syntaxValue(classifyIdentifier('&audio:level')));
 	});
 
 	it('does not strip array declaration element count arguments', () => {
@@ -327,9 +349,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int[]',
-			arguments: [classifyIdentifier('buffer'), classifyIdentifier('&source:buffer')],
+			arguments: [syntaxValue(classifyIdentifier('buffer')), syntaxValue(classifyIdentifier('&source:buffer'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -342,9 +365,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'int',
-			arguments: [classifyIdentifier('buffer'), parseArgument('2*MISSING')],
+			arguments: [syntaxValue(classifyIdentifier('buffer')), syntaxValue(parseArgument('2*MISSING'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -361,9 +385,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('&source:buffer')],
+			arguments: [syntaxValue(classifyIdentifier('&source:buffer'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -376,9 +401,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('&missing')],
+			arguments: [syntaxValue(classifyIdentifier('&missing'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDECLARED_IDENTIFIER}`);
@@ -395,9 +421,10 @@ describe('resolveLineReferences', () => {
 			},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
-			arguments: [classifyIdentifier('count(*lut)')],
+			arguments: [syntaxValue(classifyIdentifier('count(*lut)'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.POINTEE_ELEMENT_COUNT_UNKNOWN}`);
@@ -413,9 +440,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'call',
-			arguments: [classifyIdentifier('missingFn')],
+			arguments: [syntaxValue(classifyIdentifier('missingFn'))],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(`${ErrorCode.UNDEFINED_FUNCTION}`);
@@ -435,9 +463,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'call',
-			arguments: [classifyIdentifier('knownFn')],
+			arguments: [syntaxValue(classifyIdentifier('knownFn'))],
 		};
 
 		expect(resolveLineReferences(line, context)).toEqual(line);
@@ -461,9 +490,10 @@ describe('resolveLineReferences', () => {
 			locals: {},
 		} as unknown as ReferenceResolutionContext;
 		const line: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'call',
-			arguments: [classifyIdentifier('knownFn')],
+			arguments: [syntaxValue(classifyIdentifier('knownFn'))],
 		};
 
 		expect(resolveLineReferences(line, context)).toEqual(line);
@@ -477,7 +507,7 @@ describe('resolveLineReferences', () => {
 		} as unknown as ReferenceResolutionContext;
 
 		expect(() => resolveLineReferences(createClampLine('clampAddress', 0), context)).toThrow(
-			expect.objectContaining({ code: ErrorCode.INVALID_ACCESS_WIDTH })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: ErrorCode.INVALID_ACCESS_WIDTH }) })
 		);
 	});
 
@@ -489,7 +519,7 @@ describe('resolveLineReferences', () => {
 		} as unknown as ReferenceResolutionContext;
 
 		expect(() => resolveLineReferences(createClampLine('clampAddress', 3), context)).toThrow(
-			expect.objectContaining({ code: ErrorCode.INVALID_ACCESS_WIDTH })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: ErrorCode.INVALID_ACCESS_WIDTH }) })
 		);
 	});
 });
@@ -497,24 +527,28 @@ describe('resolveLineReferences', () => {
 describe('resolveSemanticReferences', () => {
 	it('resolves function parameter pushes once for the sub-program AST', () => {
 		const functionLine: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'function',
-			arguments: [classifyIdentifier('echo')],
+			arguments: [syntaxValue(classifyIdentifier('echo'))],
 		};
 		const paramLine: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'param',
-			arguments: [classifyIdentifier('int'), classifyIdentifier('value')],
+			arguments: [syntaxValue(classifyIdentifier('int')), syntaxValue(classifyIdentifier('value'))],
 		};
 		const pushLine: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
-			arguments: [classifyIdentifier('value')],
+			arguments: [syntaxValue(classifyIdentifier('value'))],
 		};
 		const functionEndLine: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'functionEnd',
-			arguments: [classifyIdentifier('int')],
+			arguments: [syntaxValue(classifyIdentifier('int'))],
 		};
 		const functionId = createFunctionId('echo', ['int']);
 		const ast = {
@@ -562,3 +596,8 @@ describe('resolveSemanticReferences', () => {
 		});
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

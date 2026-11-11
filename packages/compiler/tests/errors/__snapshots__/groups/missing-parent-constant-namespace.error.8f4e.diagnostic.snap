@@ -1,19 +1,12 @@
 {
   "code": 69,
-  "context": {
-    "projectGroupPath": "audio",
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "env",
-      },
-    ],
-    "instruction": "pass",
+  "domain": "semantic",
+  "instruction": "pass",
+  "kind": "source",
+  "location": {
+    "kind": "scope",
     "lineNumber": 1,
+    "projectGroupPath": "audio",
   },
   "message": "Passed name env is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
 }

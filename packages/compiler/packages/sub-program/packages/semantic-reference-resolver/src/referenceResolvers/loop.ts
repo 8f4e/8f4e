@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { LoopLine, ResolvedLoopLine } from '@8f4e/language-spec';
-import { ArgumentType, ErrorCode, getError } from '@8f4e/language-spec';
+import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 import { validateValueArguments } from './helpers';
 

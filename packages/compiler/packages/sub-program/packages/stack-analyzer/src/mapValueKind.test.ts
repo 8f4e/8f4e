@@ -5,6 +5,7 @@ import { validateMapValueKind } from './mapValueKind';
 
 describe('map value kind validation', () => {
 	const line = {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'map',
 		arguments: [],
@@ -27,7 +28,7 @@ describe('map value kind validation', () => {
 		[{ valueType: 'float' }, 'float64', ErrorCode.MIXED_FLOAT_WIDTH],
 	])('rejects %j for %s', (valueKind, expectedKind, errorCode) => {
 		expect(() => validateMapValueKind(valueKind as StackItem, expectedKind, line, context)).toThrow(
-			expect.objectContaining({ code: errorCode })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: errorCode }) })
 		);
 	});
 });

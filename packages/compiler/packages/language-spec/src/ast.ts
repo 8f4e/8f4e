@@ -6,6 +6,7 @@ import type {
 	ArgumentStringLiteral,
 } from './arguments';
 import type { SourceMetadata } from './compiled';
+import type { DiagnosticSource } from './diagnostics';
 import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
@@ -22,6 +23,7 @@ import { isReferenceSlotInstruction, type ReferenceSlotInstruction } from './ref
 type ClampAddressInstructionName = 'clampAddress' | 'clampModuleAddress' | 'clampGlobalAddress';
 
 export type ASTLineBase<Instruction extends string, Arguments extends Array<Argument>> = {
+	readonly diagnosticSource: DiagnosticSource;
 	lineNumber: number;
 	instruction: Instruction;
 	arguments: Arguments;

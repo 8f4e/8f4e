@@ -1,8 +1,10 @@
 {
-  "code": -1,
-  "context": {},
-  "line": {
-    "lineNumber": 0,
+  "code": 9,
+  "domain": "syntax",
+  "kind": "source",
+  "location": {
+    "kind": "document",
+    "lineNumber": 2,
   },
   "message": "Parse error at line 3: entry "main" can only contain module or group blocks, got "init &input &source:output"",
 }

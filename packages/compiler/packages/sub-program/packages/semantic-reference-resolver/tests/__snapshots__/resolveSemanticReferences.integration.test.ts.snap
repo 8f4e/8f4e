@@ -27,6 +27,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "amount",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 4,
             "resolvedTarget": {
@@ -55,6 +58,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
               "name": "temp",
               "type": "int",
             },
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "localSet",
             "lineNumber": 5,
           },
@@ -70,6 +76,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "temp",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 6,
             "resolvedTarget": {
@@ -115,6 +124,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "value",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 3,
             "resolvedTarget": {
@@ -159,6 +171,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": 4,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 4,
           },
@@ -174,6 +189,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "value",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 5,
             "resolvedTarget": {
@@ -210,6 +228,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "increment",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "call",
             "lineNumber": 5,
           },
@@ -225,6 +246,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "state",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "pushShape",
             "lineNumber": 6,
             "shapeExpansions": [
@@ -247,6 +271,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                       "value": 4,
                     },
                   ],
+                  "diagnosticSource": {
+                    "kind": "document",
+                  },
                   "instruction": "push",
                   "lineNumber": 6,
                 },

@@ -4,6 +4,7 @@ import { type ResolveMemoryDefaultsInput, resolveMemoryDefaults } from '../src';
 describe('resolveMemoryDefaults integration', () => {
 	it('resolves sub-program-level memory defaults from pass-shaped fixtures', () => {
 		const inheritedCounterLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 11,
 			instruction: 'int',
 			arguments: [
@@ -12,6 +13,7 @@ describe('resolveMemoryDefaults integration', () => {
 			],
 		} as const;
 		const valuesLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 12,
 			instruction: 'int[]',
 			arguments: [
@@ -31,11 +33,13 @@ describe('resolveMemoryDefaults integration', () => {
 			isEndAddress: false,
 		} as const;
 		const pointerLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 13,
 			instruction: 'int*',
 			arguments: [{ type: 'identifier', value: 'ptr', referenceKind: 'plain', scope: 'local' }, valuesStartReference],
 		} as const;
 		const copiedCountLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 14,
 			instruction: 'int',
 			arguments: [
@@ -51,6 +55,7 @@ describe('resolveMemoryDefaults integration', () => {
 			],
 		} as const;
 		const gainLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 15,
 			instruction: 'float',
 			arguments: [
@@ -59,6 +64,7 @@ describe('resolveMemoryDefaults integration', () => {
 			],
 		} as const;
 		const audioSamplesLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 22,
 			instruction: 'int16u[]',
 			arguments: [

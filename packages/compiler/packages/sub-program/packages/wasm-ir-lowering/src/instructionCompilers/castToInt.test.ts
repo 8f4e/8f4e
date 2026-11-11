@@ -12,11 +12,7 @@ describe('castToInt instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToInt,
-			{
-				lineNumber: 1,
-				instruction: 'castToInt',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'castToInt', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
@@ -31,11 +27,7 @@ describe('castToInt instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToInt,
-			{
-				lineNumber: 1,
-				instruction: 'castToInt',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'castToInt', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);

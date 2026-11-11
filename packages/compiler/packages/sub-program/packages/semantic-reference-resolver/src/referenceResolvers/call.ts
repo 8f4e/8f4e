@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CallLine, SemanticCallLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 
 /** Validates the function symbol after inline arguments have been normalized into pushes. */

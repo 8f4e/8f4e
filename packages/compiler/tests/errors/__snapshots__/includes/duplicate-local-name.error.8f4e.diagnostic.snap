@@ -1,19 +1,18 @@
 {
   "code": 66,
-  "context": {
-    "codeBlockType": "function",
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "same",
-      },
-    ],
-    "instruction": "function",
+  "domain": "semantic",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "includeId": "test/math",
+    "includeSite": {
+      "lineNumber": 1,
+      "projectBlockId": 3,
+    },
+    "kind": "include",
     "lineNumber": 0,
+    "projectGroupPath": "",
+    "symbolName": "same",
   },
   "message": "Duplicate function overload signature: same__int. Function overloads must have unique parameter signatures. (66)",
 }

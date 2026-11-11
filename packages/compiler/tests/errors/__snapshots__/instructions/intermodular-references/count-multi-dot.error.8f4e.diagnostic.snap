@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "countMultiDotTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "size",
-      },
-      {
-        "referenceKind": "intermodular-element-count",
-        "scope": "intermodule",
-        "targetMemoryId": "buffer.extra",
-        "targetModuleId": "countMultiDotSource",
-        "type": "identifier",
-        "value": "count(countMultiDotSource:buffer.extra)",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: buffer.extra. (5)",
+  "message": "Unknown memory declaration in memory default.",
 }

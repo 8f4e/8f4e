@@ -1,3 +1,4 @@
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type {
 	AST,
 	CompiledFunction,
@@ -16,7 +17,7 @@ import { formatTestFailures, hasTestEntry, runTests } from '@8f4e/test-runner';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { compileProject, parseProjectSource, serializeDiagnostic } from '../src';
+import { compileProject, parseProjectSource } from '../src';
 import { resolveTestInclude } from './testIncludeResolver';
 
 export interface FixtureCompileSnapshots {
@@ -88,9 +89,9 @@ export function getExportedFunction(
 }
 
 export function formatCompileError(relativePath: string, error: unknown): Error {
-	const diagnostic = serializeDiagnostic(error);
-	const line = diagnostic.line.instruction ? ` at ${diagnostic.line.instruction}` : '';
-	const context = diagnostic.context.codeBlockId ? ` in ${diagnostic.context.codeBlockId}` : '';
+	const diagnostic = serializeDiagnostic(error, 'compile');
+	const line = diagnostic.kind === 'source' && diagnostic.instruction ? ` at ${diagnostic.instruction}` : '';
+	const context = diagnostic.kind === 'source' && diagnostic.symbol ? ` in ${diagnostic.symbol}` : '';
 
 	return new Error(`${relativePath}: ${diagnostic.message}${context}${line}`);
 }
@@ -145,6 +146,7 @@ function serializeAstLine(line: CompilerASTLine): Record<string, unknown> {
 	const lineSnapshot: Record<string, unknown> = { ...line };
 
 	delete lineSnapshot.lineNumber;
+	delete lineSnapshot.diagnosticSource;
 	delete lineSnapshot.ifBlock;
 	delete lineSnapshot.ifEndBlock;
 	delete lineSnapshot.blockBlock;

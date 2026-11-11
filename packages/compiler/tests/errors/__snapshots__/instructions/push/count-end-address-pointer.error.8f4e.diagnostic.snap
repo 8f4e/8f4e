@@ -1,23 +1,14 @@
 {
   "code": 58,
-  "context": {
-    "codeBlockId": "endAddressCount",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isPointee": true,
-        "referenceKind": "pointee-element-count",
-        "scope": "local",
-        "targetMemoryId": "pointer",
-        "type": "identifier",
-        "value": "count(*pointer)",
-      },
-    ],
-    "instruction": "push",
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Pointee element count is unknown: count(*pointer). Pass the length explicitly or use count() on a named memory declaration. (58)",
+  "symbol": "endAddressCount",
 }

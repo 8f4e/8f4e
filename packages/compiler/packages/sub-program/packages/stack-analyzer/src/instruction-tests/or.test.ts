@@ -12,11 +12,7 @@ describe('or stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'or',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'or', arguments: [] } as CompilerASTLine,
 			context
 		);
 

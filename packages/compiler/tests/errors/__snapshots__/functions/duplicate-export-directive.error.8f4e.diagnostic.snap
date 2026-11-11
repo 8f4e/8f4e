@@ -1,20 +1,13 @@
 {
   "code": 13,
-  "context": {
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "second",
-      },
-    ],
-    "instruction": "#export",
-    "isBlockPrologue": true,
+  "domain": "syntax",
+  "instruction": "#export",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "A function may only declare one export directive.",
 }

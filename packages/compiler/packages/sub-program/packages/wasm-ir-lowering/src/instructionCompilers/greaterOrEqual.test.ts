@@ -13,11 +13,7 @@ describe('greaterOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('greaterOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('greaterOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

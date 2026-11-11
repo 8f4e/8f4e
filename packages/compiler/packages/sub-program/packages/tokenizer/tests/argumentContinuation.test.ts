@@ -20,15 +20,20 @@ describe('argument continuations with inline comments', () => {
 			singleLine: ['module test', 'call write -1 "hello; world" 2*4', 'moduleEnd'],
 		},
 	])('matches the single-line AST for $name', ({ split, singleLine }) => {
-		expect(compileToAST(split).lines[1]).toEqual(compileToAST(singleLine).lines[1]);
+		expect(compileToAST(split, { kind: 'document' }).lines[1]).toEqual(
+			compileToAST(singleLine, { kind: 'document' }).lines[1]
+		);
 	});
 
 	it.each(['push ; explanatory comment', 'push; explanatory comment'])(
 		'keeps the continued argument after %s',
 		instruction => {
-			const ast = compileToAST(['module test', instruction, '- 7 ; argument comment', 'moduleEnd']);
+			const ast = compileToAST(['module test', instruction, '- 7 ; argument comment', 'moduleEnd'], {
+				kind: 'document',
+			});
 
 			expect(ast.lines[1]).toMatchObject({
+				diagnosticSource: { kind: 'document' },
 				instruction: 'push',
 				lineNumber: 1,
 				arguments: [{ type: ArgumentType.LITERAL, value: 7, isInteger: true }],
@@ -37,17 +42,21 @@ describe('argument continuations with inline comments', () => {
 	);
 
 	it('keeps multiple continued arguments when each physical line has a comment', () => {
-		const ast = compileToAST([
-			'module test',
-			'int[]; array declaration',
-			'- values ; name',
-			'- 2; element count',
-			'- 7 ; first value',
-			'- 9; second value',
-			'moduleEnd',
-		]);
+		const ast = compileToAST(
+			[
+				'module test',
+				'int[]; array declaration',
+				'- values ; name',
+				'- 2; element count',
+				'- 7 ; first value',
+				'- 9; second value',
+				'moduleEnd',
+			],
+			{ kind: 'document' }
+		);
 
 		expect(ast.lines[1]).toMatchObject({
+			diagnosticSource: { kind: 'document' },
 			instruction: 'int[]',
 			lineNumber: 1,
 			arguments: [
@@ -66,18 +75,21 @@ describe('argument continuations with inline comments', () => {
 			value: String.raw`say "hello; world" at C:\tmp`,
 		},
 	])('preserves quoted continuation contents in $source', ({ source, value }) => {
-		const ast = compileToAST(['module test', 'push; instruction comment', source, 'moduleEnd']);
+		const ast = compileToAST(['module test', 'push; instruction comment', source, 'moduleEnd'], { kind: 'document' });
 
 		expect(ast.lines[1].arguments).toEqual([{ type: ArgumentType.STRING_LITERAL, value }]);
 	});
 
 	it('preserves semicolons and escapes in an existing argument before appending another', () => {
-		const ast = compileToAST([
-			'module test',
-			String.raw`call inspect "say \"hello; world\" at C:\\tmp"; instruction comment`,
-			'- 7 ; argument comment',
-			'moduleEnd',
-		]);
+		const ast = compileToAST(
+			[
+				'module test',
+				String.raw`call inspect "say \"hello; world\" at C:\\tmp"; instruction comment`,
+				'- 7 ; argument comment',
+				'moduleEnd',
+			],
+			{ kind: 'document' }
+		);
 
 		expect(ast.lines[1].arguments).toMatchObject([
 			{ type: ArgumentType.IDENTIFIER, value: 'inspect' },
@@ -87,25 +99,33 @@ describe('argument continuations with inline comments', () => {
 	});
 
 	it('keeps physical line numbers after comments and continuation lines are folded', () => {
-		const ast = compileToAST([
-			'module test',
-			'; before the instruction',
-			'push ; instruction comment',
-			'- 7 ; argument comment',
-			'; after the continuation',
-			'drop',
-			'moduleEnd',
-		]);
+		const ast = compileToAST(
+			[
+				'module test',
+				'; before the instruction',
+				'push ; instruction comment',
+				'- 7 ; argument comment',
+				'; after the continuation',
+				'drop',
+				'moduleEnd',
+			],
+			{ kind: 'document' }
+		);
 
 		expect(ast.lines.map(line => line.lineNumber)).toEqual([0, 2, 5, 6]);
 		expect(ast.lines[1].arguments).toEqual([{ type: ArgumentType.LITERAL, value: 7, isInteger: true }]);
 	});
 
 	it('validates instruction argument counts after folding the continuation', () => {
-		expect(() => compileToAST(['module test', 'push ; comment', '- 7 9 ; two arguments', 'moduleEnd'])).toThrow(
+		expect(() =>
+			compileToAST(['module test', 'push ; comment', '- 7 9 ; two arguments', 'moduleEnd'], { kind: 'document' })
+		).toThrow(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INVALID_ARGUMENT,
-				line: expect.objectContaining({ lineNumber: 1, instruction: 'push' }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INVALID_ARGUMENT,
+					instruction: 'push',
+					location: expect.objectContaining({ lineNumber: 1 }),
+				}),
 			})
 		);
 	});
@@ -136,8 +156,14 @@ describe('argument continuations with inline comments', () => {
 			lineNumber: 1,
 		},
 	])('keeps the error and source line for a $name', ({ source, code, lineNumber }) => {
-		expect(() => compileToAST(source)).toThrow(
-			expect.objectContaining({ code, line: expect.objectContaining({ lineNumber, instruction: '-' }) })
+		expect(() => compileToAST(source, { kind: 'document' })).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: code,
+					instruction: '-',
+					location: expect.objectContaining({ lineNumber: lineNumber }),
+				}),
+			})
 		);
 	});
 });

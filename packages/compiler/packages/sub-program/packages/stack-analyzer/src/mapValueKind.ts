@@ -1,10 +1,11 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	CompilerASTLine,
 	StackAnalysisNumericValueKind,
 	StackValueType,
 } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 
 /**
  * Validates that a map input, row value, or default value matches the expected map kind.

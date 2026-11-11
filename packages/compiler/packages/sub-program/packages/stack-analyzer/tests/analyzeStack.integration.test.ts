@@ -7,11 +7,13 @@ type StackAnalyzerIntegrationInput = AnalyzeStackSubProgramInput;
 describe('analyzeStack integration', () => {
 	it('analyzes a sub-program-level module and function report from pass-shaped fixtures', () => {
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const bufferDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int[]',
 			arguments: [
@@ -20,22 +22,26 @@ describe('analyzeStack integration', () => {
 			],
 		} as const;
 		const moduleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 9,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const functionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'function',
 			arguments: [{ type: 'identifier', value: 'increment', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const exportLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: '#export',
 			arguments: [{ type: 'identifier', value: 'inc', referenceKind: 'plain', scope: 'local' }],
 			isBlockPrologue: true,
 		} as const;
 		const functionEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 10,
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],
@@ -74,6 +80,7 @@ describe('analyzeStack integration', () => {
 						moduleLine,
 						bufferDeclarationLine,
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 3,
 							instruction: 'push',
 							arguments: [
@@ -88,22 +95,25 @@ describe('analyzeStack integration', () => {
 							],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 4,
 							instruction: 'clampAddress',
 							arguments: [{ type: 'literal', value: 4, isInteger: true }],
 						},
-						{ lineNumber: 5, instruction: 'drop', arguments: [] },
+						{ diagnosticSource: { kind: 'document' }, lineNumber: 5, instruction: 'drop', arguments: [] },
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 6,
 							instruction: 'push',
 							arguments: [{ type: 'literal', value: 5, isInteger: true }],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 7,
 							instruction: 'call',
 							arguments: [{ type: 'identifier', value: 'increment', referenceKind: 'plain', scope: 'local' }],
 						},
-						{ lineNumber: 8, instruction: 'drop', arguments: [] },
+						{ diagnosticSource: { kind: 'document' }, lineNumber: 8, instruction: 'drop', arguments: [] },
 						moduleEndLine,
 					],
 				},
@@ -119,6 +129,7 @@ describe('analyzeStack integration', () => {
 						functionLine,
 						exportLine,
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 3,
 							instruction: 'param',
 							arguments: [
@@ -127,6 +138,7 @@ describe('analyzeStack integration', () => {
 							],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 4,
 							instruction: 'local',
 							arguments: [
@@ -135,22 +147,26 @@ describe('analyzeStack integration', () => {
 							],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 5,
 							instruction: 'push',
 							arguments: [{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' }],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 6,
 							instruction: 'push',
 							arguments: [{ type: 'literal', value: 1, isInteger: true }],
 						},
-						{ lineNumber: 7, instruction: 'add', arguments: [] },
+						{ diagnosticSource: { kind: 'document' }, lineNumber: 7, instruction: 'add', arguments: [] },
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 8,
 							instruction: 'localSet',
 							arguments: [{ type: 'identifier', value: 'temp', referenceKind: 'plain', scope: 'local' }],
 						},
 						{
+							diagnosticSource: { kind: 'document' },
 							lineNumber: 9,
 							instruction: 'push',
 							arguments: [{ type: 'identifier', value: 'temp', referenceKind: 'plain', scope: 'local' }],

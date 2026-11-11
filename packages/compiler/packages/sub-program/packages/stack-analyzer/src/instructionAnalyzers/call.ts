@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	FunctionMetadata,
@@ -10,7 +11,6 @@ import {
 	createFunctionId,
 	ErrorCode,
 	functionValueTypeToStackItem,
-	getError,
 	stackItemToFunctionValueType,
 } from '@8f4e/language-spec';
 import { consume, produce } from './stack';

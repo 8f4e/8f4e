@@ -1,28 +1,29 @@
+import type { CompilerDiagnosticLine } from '@8f4e/language-spec';
+import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { ArgumentType } from './arguments';
-import type { CompilerASTLine } from './ast';
-import { getError } from './compilerError';
-import { ErrorCode } from './errors';
+import { getError } from './semanticError';
 
 describe('getError', () => {
 	const line = {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [],
-	} as CompilerASTLine;
+	} satisfies CompilerDiagnosticLine;
 
 	it('returns a diagnostic for every compiler error code', () => {
 		for (const code of Object.values(ErrorCode)) {
 			const error = getError(code, line);
 
-			expect(error.code).toBe(code);
-			expect(error.line).toBe(line);
+			expect(error.diagnostic.code).toBe(code);
+			expect(error.diagnostic.location).toEqual({ kind: 'document', lineNumber: line.lineNumber });
 			expect(error.message).toContain(`(${code})`);
 		}
 	});
 
 	it('formats stack mismatch diagnostics with stack item types', () => {
 		const context = {
+			codeBlockId: 'example',
 			stack: [
 				{ kind: 'value', valueType: 'int' },
 				{ kind: 'address', valueType: 'int' },
@@ -50,10 +51,11 @@ describe('getError', () => {
 
 	it('includes the undeclared identifier when provided', () => {
 		const localLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
 			arguments: [{ type: ArgumentType.IDENTIFIER, value: 'missingLocal' }],
-		} as CompilerASTLine;
+		} satisfies CompilerDiagnosticLine;
 
 		const error = getError(ErrorCode.UNDECLARED_IDENTIFIER, localLine, undefined, { identifier: 'missingLocal' });
 
@@ -62,10 +64,11 @@ describe('getError', () => {
 
 	it('keeps the generic undeclared identifier message when no identifier is available', () => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'use',
 			arguments: [],
-		} as CompilerASTLine;
+		} satisfies CompilerDiagnosticLine;
 
 		const error = getError(ErrorCode.UNDECLARED_IDENTIFIER, line);
 
@@ -74,10 +77,11 @@ describe('getError', () => {
 
 	it('includes the duplicate identifier when provided', () => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: ArgumentType.IDENTIFIER, value: 'same' }],
-		} as CompilerASTLine;
+		} satisfies CompilerDiagnosticLine;
 
 		const error = getError(ErrorCode.DUPLICATE_IDENTIFIER, line, undefined, { identifier: 'same' });
 

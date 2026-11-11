@@ -12,11 +12,7 @@ describe('mul instruction compiler', () => {
 
 		compileInstructionForTest(
 			mul,
-			{
-				lineNumber: 1,
-				instruction: 'mul',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'mul', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -37,11 +33,7 @@ describe('mul instruction compiler', () => {
 
 		compileInstructionForTest(
 			mul,
-			{
-				lineNumber: 1,
-				instruction: 'mul',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'mul', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -62,11 +54,7 @@ describe('mul instruction compiler', () => {
 
 		compileInstructionForTest(
 			mul,
-			{
-				lineNumber: 1,
-				instruction: 'mul',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'mul', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

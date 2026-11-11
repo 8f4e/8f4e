@@ -1,21 +1,14 @@
 {
   "code": 8,
-  "context": {
-    "codeBlockId": "negativeLoopCap",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "LOOP_COUNT",
-      },
-    ],
-    "instruction": "loop",
+  "domain": "semantic",
+  "instruction": "loop",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Expected value, got an identifier. (8)",
+  "symbol": "negativeLoopCap",
 }

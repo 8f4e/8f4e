@@ -191,8 +191,9 @@ describe('include export selections', () => {
 	])('rejects conflicting names for one export: %s, %s', (...declarations) => {
 		expect(() => resolveProjectIncludes([includeBlock(...declarations)], () => selectableSource)).toThrowError(
 			expect.objectContaining({
-				lineNumber: 3,
-				projectBlockId: 42,
+				diagnostic: expect.objectContaining({
+					location: { kind: 'block', lineNumber: 2, projectBlockId: 42, projectGroupPath: '' },
+				}),
 				message: expect.stringContaining('is already included as'),
 			})
 		);
@@ -214,8 +215,9 @@ describe('include export selections', () => {
 			).toThrowError(
 				expect.objectContaining({
 					message: `Parse error at line 2: include "std/test" does not export "${name}"`,
-					lineNumber: 2,
-					projectBlockId: 42,
+					diagnostic: expect.objectContaining({
+						location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
+					}),
 				})
 			);
 		}
@@ -300,8 +302,9 @@ describe('include export selections', () => {
 		await expect(
 			resolveProjectIncludesAsync([includeBlock('include std/missing')], () => undefined)
 		).rejects.toMatchObject({
-			lineNumber: 2,
-			projectBlockId: 42,
+			diagnostic: expect.objectContaining({
+				location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
+			}),
 			message: 'Parse error at line 2: unresolved include "std/missing"',
 		});
 	});

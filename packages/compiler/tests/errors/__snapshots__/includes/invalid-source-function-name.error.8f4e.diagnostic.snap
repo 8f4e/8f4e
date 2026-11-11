@@ -1,15 +1,18 @@
 {
   "code": 2,
-  "context": {
-    "source": {
-      "includeId": "test/invalid-function-name",
-      "kind": "include",
-      "symbolName": "renamed",
+  "domain": "syntax",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "includeId": "test/invalid-function-name",
+    "includeSite": {
+      "lineNumber": 1,
+      "projectBlockId": 3,
     },
-  },
-  "line": {
-    "instruction": "function",
+    "kind": "include",
     "lineNumber": 0,
+    "projectGroupPath": "",
+    "symbolName": "renamed",
   },
   "message": "Invalid argument for function: expected identifier.",
 }

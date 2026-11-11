@@ -1,69 +1,14 @@
 {
   "code": 17,
-  "context": {
-    "codeBlockId": "tooManyReturns",
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-    ],
-    "instruction": "functionEnd",
+  "domain": "semantic",
+  "instruction": "functionEnd",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 12,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Function signature overflow. Maximum 16 parameters and 8 return values. (17)",
+  "symbol": "tooManyReturns",
 }

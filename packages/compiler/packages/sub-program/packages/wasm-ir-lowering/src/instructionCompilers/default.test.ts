@@ -28,6 +28,7 @@ describe('default instruction compiler', () => {
 		compileInstructionForTest(
 			_default,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'default',
 				arguments: [{ type: ArgumentType.LITERAL, value: 99, isInteger: true }],

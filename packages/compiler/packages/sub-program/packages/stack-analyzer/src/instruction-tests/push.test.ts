@@ -1,5 +1,6 @@
 import type { CompilerASTLine, LiteralPushLine, ResolvedMemoryDeclaration } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
@@ -8,18 +9,20 @@ const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
 function resolvedMemoryPushLine(id: string, memoryItem: ResolvedMemoryDeclaration): CompilerASTLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
-		arguments: [classifyIdentifier(id)],
+		arguments: [syntaxValue(classifyIdentifier(id))],
 		resolvedTarget: { kind: 'memory', memoryItem },
 	} as CompilerASTLine;
 }
 
 function resolvedMemoryPointerPushLine(id: string, memoryItem: ResolvedMemoryDeclaration): CompilerASTLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
-		arguments: [classifyIdentifier(`*${id}`)],
+		arguments: [syntaxValue(classifyIdentifier(`*${id}`))],
 		resolvedTarget: { kind: 'memory-pointer', memoryItem },
 	} as CompilerASTLine;
 }
@@ -46,6 +49,7 @@ describe('push stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -82,6 +86,7 @@ describe('push stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.STRING_LITERAL, value: 'hi' }],
@@ -100,6 +105,7 @@ describe('push stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -122,6 +128,7 @@ describe('push stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -144,6 +151,7 @@ describe('push stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 3.14, isInteger: false }],
@@ -287,3 +295,8 @@ describe('push stack analysis', () => {
 		});
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

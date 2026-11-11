@@ -10,6 +10,7 @@ describe('mapBegin instruction compiler', () => {
 		compileInstructionForTest(
 			mapBegin,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'mapBegin',
 				arguments: [identifier('int')],
@@ -28,6 +29,7 @@ describe('mapBegin instruction compiler', () => {
 		compileInstructionForTest(
 			mapBegin,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'mapBegin',
 				arguments: [identifier('float')],
@@ -46,6 +48,7 @@ describe('mapBegin instruction compiler', () => {
 		compileInstructionForTest(
 			mapBegin,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'mapBegin',
 				arguments: [identifier('float64')],

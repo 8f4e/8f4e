@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	type CompilerDiagnosticContext,
 	type ComposedFunctionAST,
@@ -8,11 +9,10 @@ import {
 	type FunctionMetadata,
 	type FunctionMetadataLookup,
 	type FunctionRegistry,
-	getEffectiveFunctionMetadata,
-	getError,
 	type RegisteredFunction,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
+import { getEffectiveFunctionMetadata } from '@8f4e/semantic-utils';
 
 function getAstDiagnosticContext(ast: ComposedFunctionAST): CompilerDiagnosticContext {
 	return {

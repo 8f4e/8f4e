@@ -5,6 +5,7 @@ import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
 
 const line = {
+	diagnosticSource: { kind: 'document' },
 	lineNumber: 1,
 	instruction: 'memoryCopy',
 	arguments: [{ type: ArgumentType.LITERAL, value: 20, isInteger: true }],

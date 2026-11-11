@@ -39,6 +39,7 @@ describe('map instruction compiler', () => {
 		compileInstructionForTest(
 			map,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'map',
 				arguments: [
@@ -75,6 +76,7 @@ describe('map instruction compiler', () => {
 		compileInstructionForTest(
 			map,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'map',
 				arguments: [
@@ -125,6 +127,7 @@ describe('map instruction compiler', () => {
 		compileInstructionForTest(
 			map,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'map',
 				arguments: [

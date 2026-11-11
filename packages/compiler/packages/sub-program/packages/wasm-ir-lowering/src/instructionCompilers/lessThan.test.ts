@@ -13,11 +13,7 @@ describe('lessThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessThan,
-			{
-				lineNumber: 1,
-				instruction: 'lessThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('lessThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessThan,
-			{
-				lineNumber: 1,
-				instruction: 'lessThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('lessThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessThan,
-			{
-				lineNumber: 1,
-				instruction: 'lessThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

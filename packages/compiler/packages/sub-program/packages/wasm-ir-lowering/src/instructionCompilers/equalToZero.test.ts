@@ -13,11 +13,7 @@ describe('equalToZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			equalToZero,
-			{
-				lineNumber: 1,
-				instruction: 'equalToZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equalToZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
@@ -30,11 +26,7 @@ describe('equalToZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			equalToZero,
-			{
-				lineNumber: 1,
-				instruction: 'equalToZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equalToZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);
@@ -47,11 +39,7 @@ describe('equalToZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			equalToZero,
-			{
-				lineNumber: 1,
-				instruction: 'equalToZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equalToZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: false }] })
 		);

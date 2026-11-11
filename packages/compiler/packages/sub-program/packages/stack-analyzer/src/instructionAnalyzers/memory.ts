@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { getClampAccessByteWidth, getClampedAddressStackItem, getModuleAddressRange } from '@8f4e/semantic-utils';
 import { consume, createStackValue, produce } from './stack';
 import type { InstructionAnalysisResult } from './types';

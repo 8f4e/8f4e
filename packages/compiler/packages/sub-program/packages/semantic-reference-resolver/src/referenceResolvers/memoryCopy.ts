@@ -1,10 +1,5 @@
-import {
-	ArgumentType,
-	ErrorCode,
-	getError,
-	type MemoryCopyLine,
-	type ResolvedMemoryCopyLine,
-} from '@8f4e/language-spec';
+import { getError } from '@8f4e/compiler-diagnostics';
+import { ArgumentType, ErrorCode, type MemoryCopyLine, type ResolvedMemoryCopyLine } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 import { validateValueArguments } from './helpers';
 

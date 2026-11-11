@@ -1,10 +1,10 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	type Argument,
 	type ArgumentIdentifier,
 	ArgumentType,
 	type CompilerASTLine,
 	ErrorCode,
-	getError,
 	isBinaryCompileTimeExpression,
 	resolveProjectMemoryAlias,
 } from '@8f4e/language-spec';

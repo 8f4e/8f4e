@@ -73,6 +73,15 @@ more detail.
 
 ## Compilation boundaries
 
+Expected source failures throw `CompilerError` from `@8f4e/compiler-diagnostics`. Its `diagnostic` contains a
+`kind: 'source'`, the `syntax`, `semantic` or `include` domain, a code, message and required location. Locations
+identify a document row, project block row, project scope row, included symbol and include declaration, or a named
+project exposure. Source rows are zero-based within the identified source.
+
+Worker and host boundaries use `serializeDiagnostic(error, stage)` from that package. It preserves complete source
+diagnostics and reports unexpected exceptions as `kind: 'internal'`, retaining their stage and stack without
+inventing a source row. See the [diagnostics package](packages/diagnostics/README.md) for construction and transport.
+
 ```text
 .8f4e text -> parseProjectSource --\
                                     ProjectObjectModel

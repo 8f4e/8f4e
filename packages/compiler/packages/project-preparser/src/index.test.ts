@@ -183,7 +183,7 @@ describe('parseProjectSource', () => {
 			message: 'Parse error at line 2: group blocks must be inside an entry block',
 		},
 	])('retains scope diagnostics: $message', ({ body, message }) => {
-		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(new Error(message));
+		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(message);
 	});
 
 	it.each(noteContentMarkers)('preserves %s as root note content', marker => {

@@ -1,6 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ErrorCode,
-	getError,
 	getMemoryBaseType,
 	isReferenceSlotLine,
 	type ModuleAST,

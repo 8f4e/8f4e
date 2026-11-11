@@ -3,14 +3,22 @@
 `@8f4e/tokenizer` parses a single compiler source block into a validated AST.
 
 ```ts
-const ast = compileToAST(sourceLines, cache, cacheKey);
+const ast = compileToAST(sourceLines, {
+	kind: 'block', projectBlockId: 7, projectGroupPath: '',
+}, cache, cacheKey);
 ```
 
 The tokenizer owns source-to-AST parsing and syntax-level validation that can be decided from tokens, block placement, or argument shape alone. It also exports focused syntax helpers for argument parsing, memory-reference token classification, block classification, and instruction argument validation.
 
-`parseInstructionTokens(line, lineNumber)` returns the raw instruction and argument tokens for source-editing tools.
+`parseInstructionTokens(line, lineNumber)` returns a `SyntaxResult<string[]>` for source-editing tools.
 It preserves quoted strings and escape sequences and stops at an unquoted comment delimiter. It does not validate
 instruction names or argument shapes; use `parseLine` when a validated AST line is needed.
+
+Public syntax helpers return `{ ok: true, value }` or `{ ok: false, issue }`. The issue contains a syntax code,
+message and a source-relative line when available. Source-owning callers construct diagnostics from that failure
+data. `compileToAST` requires the source owner and throws a located `CompilerError` on invalid source.
+Each AST line retains its `diagnosticSource`. The AST cache stores document-relative syntax, and each compilation
+binds a detached tree to its current block or include without changing earlier compilation results.
 
 This package owns:
 

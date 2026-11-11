@@ -1,4 +1,5 @@
-import { ErrorCode, getError, type LocalSetLine, type ResolvedLocalSetLine } from '@8f4e/language-spec';
+import { getError } from '@8f4e/compiler-diagnostics';
+import { ErrorCode, type LocalSetLine, type ResolvedLocalSetLine } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 
 /**

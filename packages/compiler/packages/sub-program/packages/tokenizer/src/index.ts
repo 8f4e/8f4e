@@ -1,17 +1,14 @@
-import type { ASTCache, ASTCacheEntry, ValidatedAST } from '@8f4e/language-spec';
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
+import type { ASTCache, ASTCacheEntry, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
 
 export { createASTCache } from './cache';
 
 import { hashSource } from './cache';
 import { mainTokenizerLoop } from './mainTokenizerLoop';
 
-export { parseInstructionTokens, parseLine } from './parseLine';
-export { parseProjectConstantNamespacePassLine } from './parseProjectConstantNamespacePassLine';
-export { parseProjectMemoryInitializerLine } from './parseProjectMemoryInitializerLine';
-
 import { createASTFromBuilder } from './sourceBlockASTBuilder';
 import instructionParser from './syntax/instructionParser';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 export * from './syntax';
 
@@ -54,7 +51,34 @@ function getASTCacheLookupResult<TAst>(
  * @param cacheKey - Optional cache key for the source block.
  * @returns Validated AST for the source block.
  */
-export function compileToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheKey?: string): ValidatedAST {
+export function compileToAST(
+	code: string[],
+	source: DiagnosticSource,
+	cache?: ASTCache<ValidatedAST>,
+	cacheKey?: string
+): ValidatedAST {
+	try {
+		return bindSource(parseSourceToAST(code, cache, cacheKey), source);
+	} catch (error) {
+		if (!(error instanceof SyntaxIssue)) throw error;
+		if (!error.line) throw new Error('Syntax parser failed without a source position', { cause: error });
+		throw syntaxErrorAt(error.code, error.message, source, error.line);
+	}
+}
+
+/** Cached syntax trees stay detached from each compilation's source ownership. */
+function bindSource(ast: ValidatedAST, diagnosticSource: DiagnosticSource): ValidatedAST {
+	if (diagnosticSource.kind === 'document') return ast;
+	const lines = new Map(ast.lines.map(line => [line, { ...line, diagnosticSource }]));
+	return Object.fromEntries(
+		Object.entries(ast).map(([key, value]) => [
+			key,
+			key === 'lines' ? ast.lines.map(line => lines.get(line)!) : (lines.get(value) ?? value),
+		])
+	) as ValidatedAST;
+}
+
+function parseSourceToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheKey?: string): ValidatedAST {
 	const cached = cacheKey !== undefined ? cache?.entries.get(cacheKey) : undefined;
 	const cachedLookup = getASTCacheLookupResult(cached, code);
 	if (cachedLookup.ast) {
@@ -68,7 +92,7 @@ export function compileToAST(code: string[], cache?: ASTCache<ValidatedAST>, cac
 	const parsedSource = mainTokenizerLoop(code);
 	if (!parsedSource.astBuilder) {
 		const firstLine = parsedSource.lines[0];
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a compiler source block.', {
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a compiler source block.', {
 			lineNumber: firstLine?.lineNumber ?? 0,
 			instruction: firstLine?.instruction,
 		});

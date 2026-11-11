@@ -1,20 +1,13 @@
 {
   "code": 52,
-  "context": {
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "initDefaults",
-      },
-    ],
-    "instruction": "#export",
+  "domain": "semantic",
+  "instruction": "#export",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Duplicate function export name: initDefaults. Exported function names must be unique and must not reuse built-in export names. (52)",
 }

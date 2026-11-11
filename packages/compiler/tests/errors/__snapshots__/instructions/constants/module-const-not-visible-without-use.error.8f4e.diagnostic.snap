@@ -1,27 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "moduleB",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "result",
-      },
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "SECRET",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 5,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Undeclared identifier: SECRET. (5)",
 }

@@ -1,47 +1,34 @@
-import type { CompilerCache, ProjectBlock, ProjectGroupPath, SourceMetadata, ValidatedAST } from '@8f4e/language-spec';
-import { compileToAST, SyntaxRulesError } from '@8f4e/tokenizer';
+import type {
+	CompilerCache,
+	DiagnosticSource,
+	ProjectBlock,
+	ProjectGroupPath,
+	SourceMetadata,
+	ValidatedAST,
+} from '@8f4e/language-spec';
+import { compileToAST } from '@8f4e/tokenizer';
 import type { CompilerDerivedSource } from './types';
 
 type CompilerSource = {
 	code: string[];
 	cacheKey: string;
-	projectBlockId?: number;
+	diagnosticSource: DiagnosticSource;
+	projectBlockId: number;
 	source?: SourceMetadata;
 };
 
-function attachSourceMetadataToSyntaxError(source: CompilerSource, error: unknown): unknown {
-	if (!(error instanceof SyntaxRulesError) || (source.projectBlockId === undefined && source.source === undefined)) {
-		return error;
-	}
-
-	error.context = {
-		...error.context,
-		...(source.projectBlockId !== undefined ? { projectBlockId: source.projectBlockId } : {}),
-		...(source.source !== undefined ? { source: source.source } : {}),
-	};
-	return error;
-}
-
 function attachSourceMetadataToAst<TAst extends ValidatedAST>(ast: TAst, source: CompilerSource): TAst {
-	if (source.projectBlockId === undefined && source.source === undefined) {
-		return ast;
-	}
-
 	return {
 		...ast,
-		...(source.projectBlockId !== undefined ? { projectBlockId: source.projectBlockId } : {}),
+		projectBlockId: source.projectBlockId,
 		...(source.source !== undefined ? { source: source.source } : {}),
 	} as TAst;
 }
 
 /** Parses one compiler source block and attaches its project diagnostic metadata. */
 export function compileSourceToAST<TAst extends ValidatedAST>(source: CompilerSource, cache: CompilerCache): TAst {
-	try {
-		const ast = compileToAST(source.code, cache.ast, source.cacheKey) as TAst;
-		return attachSourceMetadataToAst(ast, source);
-	} catch (error) {
-		throw attachSourceMetadataToSyntaxError(source, error);
-	}
+	const ast = compileToAST(source.code, source.diagnosticSource, cache.ast, source.cacheKey) as TAst;
+	return attachSourceMetadataToAst(ast, source);
 }
 
 /** Creates a source block with a cache key scoped to its owning canonical project-group path. */
@@ -52,6 +39,18 @@ export function createCompilerSource(
 ): CompilerSource {
 	return {
 		code: source.code,
+		diagnosticSource:
+			'source' in source
+				? {
+						...source.source,
+						projectGroupPath: projectPath,
+						includeSite: { projectBlockId: source.projectBlockId, lineNumber: source.includeLineNumber },
+					}
+				: {
+						kind: 'block',
+						projectBlockId: source.id,
+						projectGroupPath: projectPath,
+					},
 		cacheKey: `${projectPath || 'root'}:${blockKey}`,
 		...('id' in source ? { projectBlockId: source.id } : { projectBlockId: source.projectBlockId }),
 		...('source' in source ? { source: source.source } : {}),

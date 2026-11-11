@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	CompilerASTLine,
@@ -7,7 +8,7 @@ import type {
 	StackMutationSpec,
 	StackProducedItemSpec,
 } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { consume, createStackValue, produce } from './stack';
 import type { InstructionAnalysisResult } from './types';
 

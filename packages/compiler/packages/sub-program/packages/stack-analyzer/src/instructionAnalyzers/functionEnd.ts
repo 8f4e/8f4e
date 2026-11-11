@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, Stack } from '@8f4e/language-spec';
-import { ErrorCode, getError, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
+import { ErrorCode, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
 import { consume } from './stack';
 
 /**

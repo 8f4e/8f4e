@@ -16,11 +16,8 @@ function escapeRegExp(text: string): string {
 }
 
 function parseSourceLine(line: string, lineNumber: number): CompilerASTLine | undefined {
-	try {
-		return parseLine(line, lineNumber);
-	} catch {
-		return undefined;
-	}
+	const result = parseLine(line, lineNumber);
+	return result.ok ? result.value : undefined;
 }
 
 function getMemoryDeclarationName(line: string, lineNumber: number, isArray = false): string | undefined {

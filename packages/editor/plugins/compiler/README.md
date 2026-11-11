@@ -56,7 +56,10 @@ during compilation coalesce into the latest snapshot once its debounce interval 
 successes and failures cannot replace handles, rendering artifacts, compiler metadata, or diagnostics. Failed current
 compilations retain the previous memory and bytecode and publish the diagnostic instead.
 
-The plugin replaces its raw errors through `codeErrors.compiler` and removes that contribution on disposal.
+`getDiagnostics().compilationErrors` returns detached complete `CompilerDiagnostic` records for the completed input
+revision. The plugin projects their locations into generic editor errors through `codeErrors.compiler` and removes
+that contribution on disposal. Included-source errors target the include declaration while retaining the include
+and symbol in the message. Internal failures and document errors without an editor target remain global errors.
 Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
 Inline message layout and drawing belong to `editor-plugin-error-messages`.
 

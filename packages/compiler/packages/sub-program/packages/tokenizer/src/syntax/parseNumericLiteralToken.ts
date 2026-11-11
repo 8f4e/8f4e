@@ -1,4 +1,4 @@
-import { SyntaxErrorCode, SyntaxRulesError } from './syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 
 export type ParsedNumericLiteralToken = {
 	value: number;
@@ -44,7 +44,7 @@ export default function parseNumericLiteralToken(argument: string): ParsedNumeri
 	if (/^-?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?\d+)?f64$/.test(argument)) {
 		const value = parseFloat(argument.slice(0, -3));
 		if (!Number.isFinite(value)) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
 		}
 		return { value, isInteger: false, isFloat64: true };
 	}
@@ -52,7 +52,7 @@ export default function parseNumericLiteralToken(argument: string): ParsedNumeri
 	if (/^-?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?\d+)?$/.test(argument)) {
 		const value = parseFloat(argument);
 		if (!Number.isFinite(value)) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
 		}
 		return {
 			value,
@@ -63,7 +63,7 @@ export default function parseNumericLiteralToken(argument: string): ParsedNumeri
 	if (/^-?0x[0-9a-fA-F]+$/.test(argument)) {
 		const value = parseInt(argument.replace('0x', ''), 16);
 		if (!Number.isFinite(value)) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
 		}
 		return {
 			value,
@@ -75,7 +75,7 @@ export default function parseNumericLiteralToken(argument: string): ParsedNumeri
 	if (/^-?0b[0-1]+$/.test(argument)) {
 		const value = parseInt(argument.replace('0b', ''), 2);
 		if (!Number.isFinite(value)) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_NUMERIC_LITERAL, `Invalid numeric literal: ${argument}`);
 		}
 		return { value, isInteger: true };
 	}

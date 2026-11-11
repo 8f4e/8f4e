@@ -1,11 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "float&",
+  "domain": "syntax",
+  "instruction": "float&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Missing required argument for float&.",
 }

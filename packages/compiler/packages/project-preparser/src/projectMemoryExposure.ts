@@ -1,4 +1,6 @@
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import { isValidModuleName, type ProjectMemoryExposure, projectInstructions } from '@8f4e/language-spec';
+import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { startsWithInstruction } from './projectKeywords';
 
 const EXPOSURE_INSTRUCTION = projectInstructions.expose;
@@ -16,7 +18,12 @@ export function parseProjectMemoryExposureLine(line: string, lineNumber: number)
 		!target?.startsWith('&') ||
 		extra.length > 0
 	) {
-		throw new Error(`Parse error at line ${lineNumber}: expected "expose <name> &<module>:<memory>"`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${lineNumber}: expected "expose <name> &<module>:<memory>"`,
+			{ kind: 'document' },
+			{ lineNumber: lineNumber - 1 }
+		);
 	}
 
 	const targetParts = target.slice(1).split(':');
@@ -26,7 +33,12 @@ export function parseProjectMemoryExposureLine(line: string, lineNumber: number)
 		!isValidModuleName(targetModuleName ?? '') ||
 		!isValidNamedMemoryReference(targetMemoryName ?? '')
 	) {
-		throw new Error(`Parse error at line ${lineNumber}: expected "expose <name> &<module>:<memory>"`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${lineNumber}: expected "expose <name> &<module>:<memory>"`,
+			{ kind: 'document' },
+			{ lineNumber: lineNumber - 1 }
+		);
 	}
 
 	return {

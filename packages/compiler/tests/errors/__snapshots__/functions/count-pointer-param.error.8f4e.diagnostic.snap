@@ -1,23 +1,14 @@
 {
   "code": 58,
-  "context": {
-    "codeBlockId": "readCell",
-    "codeBlockType": "function",
-    "projectBlockId": 11,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isPointee": true,
-        "referenceKind": "pointee-element-count",
-        "scope": "local",
-        "targetMemoryId": "grid",
-        "type": "identifier",
-        "value": "count(*grid)",
-      },
-    ],
-    "instruction": "push",
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 11,
+    "projectGroupPath": "",
   },
   "message": "Pointee element count is unknown: count(*grid). Pass the length explicitly or use count() on a named memory declaration. (58)",
+  "symbol": "readCell",
 }

@@ -15,8 +15,8 @@ These failures have different inputs, different ownership, and different remedia
 
 The repository already encodes this distinction in:
 
-- `packages/compiler/src/syntax/syntaxError.ts`
-- `packages/compiler/src/compilerError.ts`
+- `packages/compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts`
+- `packages/compiler/packages/diagnostics/src/semanticError.ts`
 - repository guidance in `AGENTS.md`
 
 ## Decision
@@ -26,12 +26,16 @@ We maintain **two separate compiler error domains**:
 1. **Syntax errors**
    - Owned by the syntax layer
    - Raised when the problem is detectable from token or argument shape alone
-   - Implemented with `SyntaxRulesError` and `SyntaxErrorCode`
+   - Pure helpers return `SyntaxResult` failure data with `SyntaxErrorCode`; source-owning parsers construct located diagnostics.
 
 2. **Semantic/compiler errors**
    - Owned by the compiler layer
    - Raised when detection requires symbol resolution, scope, stack state, memory rules, or type checking
-   - Implemented with `getError` and `ErrorCode`
+   - Constructed with `getError` and `ErrorCode`, using the line's required source provenance.
+
+Both domains use `CompilerError` from `@8f4e/compiler-diagnostics` and the shared serializable diagnostic contract.
+The explicit `domain` field preserves phase ownership. Every expected source error has a required location;
+unexpected exceptions carry their compiler stage, stack and any known location as internal failures.
 
 The decision rule is:
 
@@ -58,9 +62,11 @@ Default messages remain owned by the central registry for each error domain. Thr
 
 ## Alternatives Considered
 
-### 1. Single Unified Compiler Error Type
+### 1. Single Undifferentiated Error Domain
 
-Rejected because it would hide the distinction between pre-semantic and semantic failures and make error ownership less explicit.
+Rejected because it would hide the distinction between pre-semantic and semantic failures and make error ownership
+less explicit. A shared exception type with an explicit diagnostic domain retains that distinction and avoids
+package-specific context-recovery adapters.
 
 ### 2. Classify Errors by Feature Area Instead of Phase
 

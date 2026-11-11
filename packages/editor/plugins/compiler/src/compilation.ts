@@ -1,3 +1,4 @@
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { EditorPluginContext, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logMessage, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeError, InfoRecord } from '@8f4e/editor-state-types';
@@ -6,6 +7,7 @@ import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { hasTestEntry } from '@8f4e/test-runner';
 import type { CompilerService } from './compiler-service';
 import debounceTrailing from './debounce-trailing';
+import { diagnosticToCodeError } from './diagnostic-presentation';
 import {
 	compilerEditorConfigSchemaContribution,
 	getCompilerOptimizationOptions,
@@ -17,7 +19,7 @@ export interface CompilerDiagnostics {
 	inputRevision: number;
 	completedRevision: number | null;
 	status: 'pending' | 'compiling' | 'ready' | 'disposed';
-	compilationErrors: CodeError[];
+	compilationErrors: CompilerDiagnostic[];
 	editorDirectiveErrors: CodeError[];
 }
 
@@ -38,6 +40,7 @@ export default function installCompilation(
 	let compileQueued = false;
 	let completedRevision: number | null = null;
 	let diagnosticsCurrent = false;
+	let compilationErrors: CompilerDiagnostic[] = [];
 	let compilationLoading: LoadingIndicatorHandle | undefined;
 
 	const scheduleRecompile = debounceTrailing(compileProject, () => getRecompileDebounceDelay(state.editorConfig));
@@ -63,6 +66,7 @@ export default function installCompilation(
 		compilationLoading = indicator;
 
 		store.set('codeErrors.compiler', []);
+		compilationErrors = [];
 
 		const generation = inputGeneration;
 		const revision = state.compilerInputRevision;
@@ -136,18 +140,9 @@ export default function installCompilation(
 
 			store.set('compiler.isCompiling', false);
 			setCompilerInfo({ isCompiling: false });
-			const diagnostic = error as CompilerDiagnostic;
-
-			store.set('codeErrors.compiler', [
-				{
-					lineNumber: diagnostic?.line?.lineNumber ?? 0,
-					codeBlockId: diagnostic?.context?.projectBlockId ?? -1,
-					...(diagnostic?.context?.projectGroupPath !== undefined
-						? { projectGroupPath: diagnostic?.context?.projectGroupPath }
-						: {}),
-					message: diagnostic?.message || String(error) || 'Compilation failed',
-				},
-			]);
+			const diagnostic = serializeDiagnostic(error, 'compilation');
+			compilationErrors = [diagnostic];
+			store.set('codeErrors.compiler', [diagnosticToCodeError(diagnostic, state)]);
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 		} finally {
@@ -199,7 +194,7 @@ export default function installCompilation(
 					: 'pending',
 		compilationErrors:
 			!disposed && diagnosticsCurrent && completedRevision === state.compilerInputRevision
-				? structuredClone(state.codeErrors.compiler)
+				? structuredClone(compilationErrors)
 				: [],
 		editorDirectiveErrors: structuredClone(state.codeErrors['editor-directives'] ?? []),
 	});

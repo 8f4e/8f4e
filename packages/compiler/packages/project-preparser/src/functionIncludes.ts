@@ -1,3 +1,4 @@
+import { CompilerError, syntaxErrorAt, withAsyncCompilerStage, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import type {
 	ExportLine,
 	IncludedFunctionBindings,
@@ -5,27 +6,31 @@ import type {
 	ProjectIncludeResolver,
 	SourceMetadata,
 } from '@8f4e/language-spec';
-import { parseLine, SyntaxRulesError } from '@8f4e/tokenizer';
+import { parseLine } from '@8f4e/tokenizer';
 import { INCLUDES_BLOCK_DELIMITER } from './delimiters';
 import { isProjectGapLine } from './projectLines';
 
 type SyncProjectIncludeResolver = (includeId: string) => string | undefined;
 
-type ResolvedFunctionSource = {
+export type ResolvedFunctionSource = {
 	code: string[];
 	bindings: IncludedFunctionBindings;
 	source: SourceMetadata;
 };
 
-export class ProjectIncludeError extends Error {
-	constructor(
-		message: string,
-		readonly lineNumber: number,
-		readonly projectBlockId?: number
-	) {
-		super(`Parse error at line ${lineNumber}: ${message}`);
-		this.name = 'ProjectIncludeError';
-	}
+type ProjectResolvedFunctionSource = ResolvedFunctionSource & { projectBlockId: number; includeLineNumber: number };
+
+function includeError(message: string, lineNumber: number, projectBlockId?: number, projectGroupPath = '') {
+	return new CompilerError({
+		kind: 'source',
+		domain: 'include',
+		code: -1,
+		message: `Parse error at line ${lineNumber}: ${message}`,
+		location:
+			projectBlockId === undefined
+				? { kind: 'document', lineNumber: lineNumber - 1 }
+				: { kind: 'block', projectBlockId, projectGroupPath, lineNumber: lineNumber - 1 },
+	});
 }
 
 type FunctionIncludeBlock = {
@@ -108,13 +113,21 @@ function getIncludeExport(includeId: string, block: FunctionIncludeBlock): Inclu
 		}
 
 		if (includeExport) {
-			throw new ProjectIncludeError(
+			throw includeError(
 				`include "${includeId}" function can only declare one #export`,
 				block.startLineNumber + lineIndex
 			);
 		}
 
-		const exportLine = parseLine(line, block.startLineNumber + lineIndex) as ExportLine;
+		const result = parseLine(line, block.startLineNumber + lineIndex - 1);
+		if (!result.ok)
+			throw syntaxErrorAt(
+				result.issue.code,
+				result.issue.message,
+				{ kind: 'document' },
+				{ lineNumber: block.startLineNumber + lineIndex - 1, instruction: '#export' }
+			);
+		const exportLine = result.value as ExportLine;
 		const publicName = exportLine.arguments[0]?.value;
 
 		includeExport = {
@@ -147,7 +160,7 @@ function createIncludeFunctions(includeId: string, blocks: FunctionIncludeBlock[
 	});
 
 	if (functions.every(func => !func.export)) {
-		throw new ProjectIncludeError(`include "${includeId}" must export at least one function`, 1);
+		throw includeError(`include "${includeId}" must export at least one function`, 1);
 	}
 
 	return functions;
@@ -190,7 +203,7 @@ function createCallTargetRewriteMap(includeId: string, functions: IncludeFunctio
 			}
 			const targetName = getLineFirstArgument(line);
 			if (ambiguousNames.has(targetName)) {
-				throw new ProjectIncludeError(
+				throw includeError(
 					`include "${includeId}" call target "${targetName}" is ambiguous because that function name expands to multiple public/internal include names`,
 					func.startLineNumber + lineIndex
 				);
@@ -235,7 +248,7 @@ export function resolveFunctionIncludeSource(includeId: string, source: string):
 	return expandIncludeFunctions(includeId, functions, bindings);
 }
 
-export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>) {
+export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>, projectGroupPath = '') {
 	const includeIds: IncludeDeclaration[] = [];
 
 	for (const [index, line] of block.code.entries()) {
@@ -251,19 +264,18 @@ export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'cod
 
 		const [instruction, includeId, exportedName, localName, ...extraArgs] = trimmed.split(/\s+/);
 		if (instruction !== 'include' || !includeId || extraArgs.length > 0) {
-			throw new ProjectIncludeError('include expects <path> [exportedName [localName]]', lineNumber, block.id);
+			throw includeError('include expects <path> [exportedName [localName]]', lineNumber, block.id, projectGroupPath);
 		}
 		for (const name of [exportedName, localName]) {
 			if (name !== undefined) {
-				try {
-					parseLine(`function ${name}`, lineNumber);
-				} catch (error) {
-					if (error instanceof SyntaxRulesError) {
-						error.line = { lineNumber, instruction: 'include' };
-						error.context = { projectBlockId: block.id };
-					}
-					throw error;
-				}
+				const result = parseLine(`function ${name}`, index);
+				if (!result.ok)
+					throw syntaxErrorAt(
+						result.issue.code,
+						result.issue.message,
+						{ kind: 'block', projectBlockId: block.id, projectGroupPath },
+						{ lineNumber: index, instruction: 'include' }
+					);
 			}
 		}
 		includeIds.push({
@@ -307,14 +319,15 @@ export function collectProjectIncludeIdsFromText(text: string): string[] {
 }
 
 function collectProjectIncludeDeclarations(
-	includeBlocks: readonly Pick<ProjectBlock, 'code' | 'id' | 'disabled'>[]
+	includeBlocks: readonly Pick<ProjectBlock, 'code' | 'id' | 'disabled'>[],
+	projectGroupPath: string
 ): Map<string, ProjectIncludeDeclaration[]> {
 	const declarationsByIncludeId = new Map<string, ProjectIncludeDeclaration[]>();
 	for (const block of includeBlocks) {
 		if (block.disabled) {
 			continue;
 		}
-		for (const declaration of collectProjectIncludeIdsFromBlock(block)) {
+		for (const declaration of collectProjectIncludeIdsFromBlock(block, projectGroupPath)) {
 			const declarations = declarationsByIncludeId.get(declaration.includeId) ?? [];
 			declarations.push({ ...declaration, projectBlockId: block.id });
 			declarationsByIncludeId.set(declaration.includeId, declarations);
@@ -325,41 +338,56 @@ function collectProjectIncludeDeclarations(
 
 function resolveProjectIncludeDeclarations(
 	declarationsByIncludeId: Map<string, ProjectIncludeDeclaration[]>,
-	resolveInclude: SyncProjectIncludeResolver
-): ResolvedFunctionSource[] {
-	const includedFunctionBlocks: ResolvedFunctionSource[] = [];
+	resolveInclude: SyncProjectIncludeResolver,
+	projectGroupPath: string
+): ProjectResolvedFunctionSource[] {
+	const includedFunctionBlocks: ProjectResolvedFunctionSource[] = [];
 
 	for (const [includeId, declarations] of declarationsByIncludeId) {
-		const source = resolveInclude(includeId);
+		const declaration = declarations[0]!;
+		const source = withCompilerStage('include loading', () => resolveInclude(includeId), {
+			kind: 'block',
+			projectBlockId: declaration.projectBlockId,
+			projectGroupPath,
+			lineNumber: declaration.lineNumber - 1,
+		});
 		if (source === undefined) {
 			const { lineNumber, projectBlockId } = declarations[0]!;
-			throw new ProjectIncludeError(`unresolved include "${includeId}"`, lineNumber, projectBlockId);
+			throw includeError(`unresolved include "${includeId}"`, lineNumber, projectBlockId, projectGroupPath);
 		}
 		const functions = createIncludeFunctions(includeId, splitFunctionBlocks(normalizeSourceLines(source)));
 		const publicNames = new Set(functions.flatMap(func => (func.export ? [func.export.publicName] : [])));
 		const bindings: IncludeBindings = new Map();
 		for (const { exportedName, localName, lineNumber, projectBlockId } of declarations) {
 			if (exportedName !== undefined && !publicNames.has(exportedName)) {
-				throw new ProjectIncludeError(
+				throw includeError(
 					`include "${includeId}" does not export "${exportedName}"`,
 					lineNumber,
-					projectBlockId
+					projectBlockId,
+					projectGroupPath
 				);
 			}
 			for (const publicName of exportedName === undefined ? publicNames : [exportedName]) {
 				const name = localName ?? publicName;
 				const previousName = bindings.get(publicName);
 				if (previousName !== undefined && previousName !== name) {
-					throw new ProjectIncludeError(
+					throw includeError(
 						`include "${includeId}" export "${publicName}" is already included as "${previousName}"`,
 						lineNumber,
-						projectBlockId
+						projectBlockId,
+						projectGroupPath
 					);
 				}
 				bindings.set(publicName, name);
 			}
 		}
-		includedFunctionBlocks.push(...expandIncludeFunctions(includeId, functions, bindings));
+		includedFunctionBlocks.push(
+			...expandIncludeFunctions(includeId, functions, bindings).map(func => ({
+				...func,
+				projectBlockId: declarations[0]!.projectBlockId,
+				includeLineNumber: declarations[0]!.lineNumber - 1,
+			}))
+		);
 	}
 
 	return includedFunctionBlocks;
@@ -367,19 +395,34 @@ function resolveProjectIncludeDeclarations(
 
 export function resolveProjectIncludes(
 	includeBlocks: readonly Pick<ProjectBlock, 'code' | 'id' | 'disabled'>[],
-	resolveInclude: SyncProjectIncludeResolver
-): ResolvedFunctionSource[] {
-	return resolveProjectIncludeDeclarations(collectProjectIncludeDeclarations(includeBlocks), resolveInclude);
+	resolveInclude: SyncProjectIncludeResolver,
+	projectGroupPath = ''
+): ProjectResolvedFunctionSource[] {
+	return resolveProjectIncludeDeclarations(
+		collectProjectIncludeDeclarations(includeBlocks, projectGroupPath),
+		resolveInclude,
+		projectGroupPath
+	);
 }
 
 export async function resolveProjectIncludesAsync(
 	includeBlocks: readonly Pick<ProjectBlock, 'code' | 'id' | 'disabled'>[],
-	resolveInclude: ProjectIncludeResolver
-): Promise<ResolvedFunctionSource[]> {
-	const declarations = collectProjectIncludeDeclarations(includeBlocks);
+	resolveInclude: ProjectIncludeResolver,
+	projectGroupPath = ''
+): Promise<ProjectResolvedFunctionSource[]> {
+	const declarations = collectProjectIncludeDeclarations(includeBlocks, projectGroupPath);
 	const includeSources = new Map<string, string | undefined>();
 	for (const includeId of declarations.keys()) {
-		includeSources.set(includeId, await resolveInclude(includeId));
+		const declaration = declarations.get(includeId)![0]!;
+		includeSources.set(
+			includeId,
+			await withAsyncCompilerStage('include loading', async () => resolveInclude(includeId), {
+				kind: 'block',
+				projectBlockId: declaration.projectBlockId,
+				projectGroupPath,
+				lineNumber: declaration.lineNumber - 1,
+			})
+		);
 	}
-	return resolveProjectIncludeDeclarations(declarations, includeId => includeSources.get(includeId));
+	return resolveProjectIncludeDeclarations(declarations, includeId => includeSources.get(includeId), projectGroupPath);
 }

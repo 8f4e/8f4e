@@ -11,6 +11,7 @@ import push from './push';
 
 function resolvedMemoryPushLine(id: string, memoryItem: ResolvedMemoryDeclaration): ResolvedMemoryPushLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [identifier(id)],
@@ -23,6 +24,7 @@ function resolvedMemoryPointerPushLine(
 	memoryItem: ResolvedMemoryDeclaration
 ): ResolvedMemoryPointerPushLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [
@@ -64,6 +66,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 5, isInteger: true }],
@@ -82,6 +85,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 42, isInteger: true }],
@@ -100,6 +104,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -125,6 +130,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -150,6 +156,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 3.14, isInteger: false }],

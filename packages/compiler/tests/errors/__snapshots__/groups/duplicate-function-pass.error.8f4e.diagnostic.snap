@@ -1,19 +1,12 @@
 {
   "code": 45,
-  "context": {
-    "projectGroupPath": "child",
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "helper",
-      },
-    ],
-    "instruction": "pass",
+  "domain": "semantic",
+  "instruction": "pass",
+  "kind": "source",
+  "location": {
+    "kind": "scope",
     "lineNumber": 2,
+    "projectGroupPath": "child",
   },
   "message": "Duplicate identifier: helper. (45)",
 }

@@ -1,6 +1,7 @@
 import type { CompileTimeValueArgument, LoopLine, ResolvedLoopLine } from '@8f4e/language-spec';
 import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { createCompilationContext } from '@8f4e/semantic-utils';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { parseArgument } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import type { ReferenceResolutionContext } from '../context';
@@ -16,6 +17,7 @@ describe('resolved loop caps', () => {
 	])('resolves $cap with directive $directive to $expected', ({ cap, directive, expected }) => {
 		const context = createCompilationContext<ReferenceResolutionContext>({ loopCap: directive });
 		const line: LoopLine = {
+			diagnosticSource: { kind: 'document' },
 			instruction: 'loop',
 			lineNumber: 7,
 			arguments:
@@ -36,11 +38,17 @@ describe('resolved loop caps', () => {
 	])('rejects $cap during semantic resolution', ({ cap, code }) => {
 		const context = createCompilationContext<ReferenceResolutionContext>();
 		const line: LoopLine = {
+			diagnosticSource: { kind: 'document' },
 			instruction: 'loop',
 			lineNumber: 7,
-			arguments: [parseArgument(cap) as CompileTimeValueArgument],
+			arguments: [syntaxValue(parseArgument(cap)) as CompileTimeValueArgument],
 		};
 
 		expect(() => resolveLineReferences(line, context)).toThrow(String(code));
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

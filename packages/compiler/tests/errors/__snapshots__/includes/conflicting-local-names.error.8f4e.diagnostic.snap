@@ -1,10 +1,12 @@
 {
   "code": -1,
-  "context": {
+  "domain": "include",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 2,
     "projectBlockId": 3,
-  },
-  "line": {
-    "lineNumber": 3,
+    "projectGroupPath": "",
   },
   "message": "Parse error at line 3: include "test/math" export "inc" is already included as "firstName"",
 }

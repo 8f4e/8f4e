@@ -1,11 +1,13 @@
 {
   "code": 2,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "add",
+  "domain": "syntax",
+  "instruction": "add",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Too many arguments for add.",
 }

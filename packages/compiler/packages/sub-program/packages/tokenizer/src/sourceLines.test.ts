@@ -101,7 +101,7 @@ describe('foldArgumentContinuationLines', () => {
 
 		expect(() => foldArgumentContinuationLines(code)).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
+				name: 'SyntaxIssue',
 				code: codeNumber,
 				message,
 				line: { lineNumber, instruction: '-' },

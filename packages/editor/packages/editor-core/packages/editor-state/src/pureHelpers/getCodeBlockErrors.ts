@@ -15,9 +15,10 @@ export default function getCodeBlockErrors(state: State, codeBlock: CodeBlockGra
 	return Object.values(state.codeErrors)
 		.flat()
 		.filter(
-			error =>
-				error.codeBlockId === codeBlock.creationIndex ||
-				(projectScopePath !== undefined && error.projectGroupPath === projectScopePath)
+			(error): error is CodeError & { lineNumber: number } =>
+				error.lineNumber !== undefined &&
+				(error.codeBlockId === codeBlock.creationIndex ||
+					(projectScopePath !== undefined && error.projectGroupPath === projectScopePath))
 		);
 }
 
@@ -34,7 +35,7 @@ export function createCodeErrorBlockLookup(project: ProjectLevel) {
 		if (scope !== undefined && !blocksByScope.has(scope)) blocksByScope.set(scope, entry);
 	}
 	return (error: CodeError): CodeBlockGraphicData | undefined => {
-		const document = blocksById.get(error.codeBlockId);
+		const document = error.codeBlockId === undefined ? undefined : blocksById.get(error.codeBlockId);
 		const scope = error.projectGroupPath === undefined ? undefined : blocksByScope.get(error.projectGroupPath);
 		if (!document) return scope?.codeBlock;
 		return scope && scope.order < document.order ? scope.codeBlock : document.codeBlock;

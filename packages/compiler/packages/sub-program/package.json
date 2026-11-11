@@ -35,7 +35,9 @@
     "@8f4e/wasm-codegen": "*",
     "@8f4e/wasm-ir-lowering": "*",
     "@8f4e/wasm-ir-pruner": "*",
-    "@8f4e/wasm-ir-simplifier": "*"
+    "@8f4e/wasm-ir-simplifier": "*",
+    "@8f4e/semantic-utils": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@types/node": "24.13.2"

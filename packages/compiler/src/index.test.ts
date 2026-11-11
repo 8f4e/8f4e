@@ -1,8 +1,8 @@
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileOptions, ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { createFunctionId, ErrorCode } from '@8f4e/language-spec';
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
-import { serializeDiagnostic } from '.';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
 type SourceFixture = { code: string[]; projectBlockId?: number };
@@ -65,9 +65,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-			line: expect.objectContaining({ instruction: 'prototype' }),
+			instruction: 'prototype',
 		});
 	});
 
@@ -87,10 +87,10 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: SyntaxErrorCode.MISSING_ARGUMENT,
 			message: 'Missing required argument for prototype.',
-			line: expect.objectContaining({ instruction: 'prototype' }),
+			instruction: 'prototype',
 		});
 	});
 
@@ -116,11 +116,11 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: SyntaxErrorCode.MISSING_ARGUMENT,
 			message: 'Missing required argument for shape.',
-			line: expect.objectContaining({ instruction: 'shape' }),
-			context: expect.objectContaining({ projectBlockId: 42 }),
+			instruction: 'shape',
+			location: expect.objectContaining({ projectBlockId: 42 }),
 		});
 	});
 
@@ -190,9 +190,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.DUPLICATE_IDENTIFIER,
-			line: expect.objectContaining({ instruction: 'function' }),
+			instruction: 'function',
 		});
 	});
 
@@ -298,9 +298,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.DUPLICATE_FUNCTION_SIGNATURE,
-			line: expect.objectContaining({ instruction: 'function' }),
+			instruction: 'function',
 		});
 	});
 
@@ -333,9 +333,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.INVALID_FUNCTION_OVERLOAD_SET,
-			line: expect.objectContaining({ instruction: 'function' }),
+			instruction: 'function',
 		});
 	});
 
@@ -358,9 +358,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.INVALID_FUNCTION_OVERLOAD_SET,
-			line: expect.objectContaining({ instruction: 'function' }),
+			instruction: 'function',
 		});
 	});
 
@@ -405,10 +405,10 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.DUPLICATE_EXPORT_NAME,
-			line: expect.objectContaining({ instruction: '#export' }),
-			context: expect.objectContaining({ projectBlockId: 21 }),
+			instruction: '#export',
+			location: expect.objectContaining({ projectBlockId: 21 }),
 		});
 	});
 
@@ -431,10 +431,10 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.OVERLOADED_FUNCTION_EXPORT_UNSUPPORTED,
-			line: expect.objectContaining({ instruction: '#export' }),
-			context: expect.objectContaining({ projectBlockId: 20 }),
+			instruction: '#export',
+			location: expect.objectContaining({ projectBlockId: 20 }),
 		});
 	});
 
@@ -454,9 +454,9 @@ describe('compile prototype validation', () => {
 			thrownError = error;
 		}
 
-		expect(serializeDiagnostic(thrownError)).toMatchObject({
+		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
 			code: ErrorCode.DUPLICATE_EXPORT_NAME,
-			line: expect.objectContaining({ instruction: '#export' }),
+			instruction: '#export',
 		});
 	});
 

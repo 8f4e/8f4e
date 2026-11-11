@@ -51,6 +51,7 @@ export type ProjectModuleId = string;
 
 /** Explicit same-name namespace forwarding from an immediate parent project scope. */
 export interface ProjectConstantNamespacePassLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'pass';
 	arguments: [ArgumentIdentifier];
@@ -65,6 +66,7 @@ export interface ProjectConstantNamespaceScope {
 
 /** A default for group-local exposed scalar memory, using a number or immediate-parent memory address. */
 export interface ProjectMemoryInitializerLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'init';
 	arguments: [

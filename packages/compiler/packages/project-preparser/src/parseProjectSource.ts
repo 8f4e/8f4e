@@ -1,9 +1,11 @@
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type { DocumentBlockType, ProjectBlock, ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import {
 	createProjectObjectModel,
 	documentBlockInstructionByType,
 	documentBlockInstructionPairs,
 } from '@8f4e/language-spec';
+import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { FORMAT_HEADER } from './delimiters';
 import { startsWithInstruction } from './projectKeywords';
 import { getProjectBlockName, isProjectGapLine } from './projectLines';
@@ -36,7 +38,12 @@ function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentB
 	};
 	if (type === 'module') {
 		if (!entry)
-			throw new Error(`Parse error at line ${node.start.lineNumber}: module blocks must be inside an entry block`);
+			throw syntaxErrorAt(
+				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				`Parse error at line ${node.start.lineNumber}: module blocks must be inside an entry block`,
+				{ kind: 'document' },
+				{ lineNumber: node.start.lineNumber - 1 }
+			);
 		target.execution.push({ ...block, type: 'module', entry });
 	} else {
 		const collections = {
@@ -73,7 +80,12 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 		if (startsWithInstruction(trimmed, 'expose')) {
 			const exposure = parseProjectMemoryExposureLine(trimmed, node.lineNumber);
 			if (context.project.exposures.some(item => item.name === exposure.name))
-				throw new Error(`Parse error at line ${node.lineNumber}: duplicate exposure "${exposure.name}"`);
+				throw syntaxErrorAt(
+					SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+					`Parse error at line ${node.lineNumber}: duplicate exposure "${exposure.name}"`,
+					{ kind: 'document' },
+					{ lineNumber: node.lineNumber - 1 }
+				);
 			context.project.exposures.push(exposure);
 		}
 		project.code.push(line);
@@ -84,11 +96,19 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 		return;
 	}
 	if (context.kind === 'entry')
-		throw new Error(
-			`Parse error at line ${node.lineNumber}: entry "${context.name}" can only contain module or group blocks, got "${trimmed}"`
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${node.lineNumber}: entry "${context.name}" can only contain module or group blocks, got "${trimmed}"`,
+			{ kind: 'document' },
+			{ lineNumber: node.lineNumber - 1 }
 		);
 	if (!startsWithInstruction(trimmed, 'pass') && !startsWithInstruction(trimmed, 'init'))
-		throw new Error(`Parse error at line ${node.lineNumber}: expected opener keyword, got "${trimmed}"`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${node.lineNumber}: expected opener keyword, got "${trimmed}"`,
+			{ kind: 'document' },
+			{ lineNumber: node.lineNumber - 1 }
+		);
 	if (project.code.length === 0) while (pendingGapLines[0]?.trim() === '') pendingGapLines.shift();
 	project.code.push(...pendingGapLines, line);
 	pendingGapLines.length = 0;
@@ -98,7 +118,12 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 	const { project } = context;
 	if (node.opener === 'entry') {
 		if (context.kind === 'entry')
-			throw new Error(`Parse error at line ${node.start.lineNumber}: entry blocks cannot be nested inside entries`);
+			throw syntaxErrorAt(
+				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				`Parse error at line ${node.start.lineNumber}: entry blocks cannot be nested inside entries`,
+				{ kind: 'document' },
+				{ lineNumber: node.start.lineNumber - 1 }
+			);
 		const name = getProjectBlockName(node.start.text, node.start.lineNumber, 'entry');
 		if (!project.entries.includes(name)) project.entries.push(name);
 		readScope(node.children, { kind: 'entry', project, name });
@@ -106,17 +131,30 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 	}
 	if (node.opener === 'group') {
 		if (context.kind !== 'entry')
-			throw new Error(`Parse error at line ${node.start.lineNumber}: group blocks must be inside an entry block`);
+			throw syntaxErrorAt(
+				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				`Parse error at line ${node.start.lineNumber}: group blocks must be inside an entry block`,
+				{ kind: 'document' },
+				{ lineNumber: node.start.lineNumber - 1 }
+			);
 		const group = readGroup(node, context.name);
 		if (project.execution.some(block => block.type === 'group' && block.name === group.name))
-			throw new Error(`Parse error at line ${node.start.lineNumber}: duplicate sibling group "${group.name}"`);
+			throw syntaxErrorAt(
+				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				`Parse error at line ${node.start.lineNumber}: duplicate sibling group "${group.name}"`,
+				{ kind: 'document' },
+				{ lineNumber: node.start.lineNumber - 1 }
+			);
 		project.execution.push(group);
 		return;
 	}
 	const entry = context.kind === 'entry' ? context.name : undefined;
 	if (entry && node.opener !== documentBlockInstructionByType.module.start)
-		throw new Error(
-			`Parse error at line ${node.start.lineNumber}: entry "${entry}" can only contain module or group blocks, got "${node.start.text.trim()}"`
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${node.start.lineNumber}: entry "${entry}" can only contain module or group blocks, got "${node.start.text.trim()}"`,
+			{ kind: 'document' },
+			{ lineNumber: node.start.lineNumber - 1 }
 		);
 	const type = documentBlockInstructionPairs.find(({ start }) => start === node.opener)!.type;
 	addBlock(project, node, type, entry);
@@ -138,7 +176,12 @@ export function parseProjectSource(text: string): ProjectObjectModel {
 	const source = inlineProjectTemplates(text);
 	const header = source.split('\n', 1)[0].trim();
 	if (header !== FORMAT_HEADER)
-		throw new Error(`Invalid .8f4e file: expected header "${FORMAT_HEADER}", got "${header}"`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Invalid .8f4e file: expected header "${FORMAT_HEADER}", got "${header}"`,
+			{ kind: 'document' },
+			{ lineNumber: 0 }
+		);
 	const project = createProjectObjectModel();
 	readScope(readProjectSource(source).slice(1), { kind: 'root', project });
 	return project;

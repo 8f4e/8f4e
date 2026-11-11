@@ -1,4 +1,6 @@
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import { isValidModuleName, MODULE_NAME_PATTERN } from '@8f4e/language-spec';
+import { SyntaxErrorCode } from '@8f4e/tokenizer';
 
 type NamedProjectBlockKeyword = 'entry' | 'group';
 
@@ -14,10 +16,20 @@ export function getProjectBlockName(line: string, lineNumber: number, keyword: N
 	const [, ...args] = line.trim().split(/\s+/);
 	const [blockName] = args;
 	if (!blockName || args.length !== 1) {
-		throw new Error(`Parse error at line ${lineNumber}: ${keyword} requires exactly one name`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${lineNumber}: ${keyword} requires exactly one name`,
+			{ kind: 'document' },
+			{ lineNumber: lineNumber - 1 }
+		);
 	}
 	if (keyword === 'group' && !isValidModuleName(blockName)) {
-		throw new Error(`Parse error at line ${lineNumber}: invalid group name; names must match ${MODULE_NAME_PATTERN}`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Parse error at line ${lineNumber}: invalid group name; names must match ${MODULE_NAME_PATTERN}`,
+			{ kind: 'document' },
+			{ lineNumber: lineNumber - 1 }
+		);
 	}
 	return blockName;
 }

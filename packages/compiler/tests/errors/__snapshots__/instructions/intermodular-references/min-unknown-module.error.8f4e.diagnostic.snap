@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "minUnknownModuleTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "minValue",
-      },
-      {
-        "referenceKind": "intermodular-element-min",
-        "scope": "intermodule",
-        "targetMemoryId": "buffer",
-        "targetModuleId": "missingModule",
-        "type": "identifier",
-        "value": "min(missingModule:buffer)",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: missingModule. (5)",
+  "message": "Unknown module in memory default.",
 }

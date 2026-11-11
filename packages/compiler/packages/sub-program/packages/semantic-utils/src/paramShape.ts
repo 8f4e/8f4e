@@ -1,11 +1,23 @@
-import { ArgumentType } from './arguments';
-import type { CompilerASTLine, FunctionAST, MemoryDeclarationLine, ParamShapeLine, PrototypeAST } from './ast';
-import { isMemoryDeclarationLine } from './ast';
-import type { FunctionMetadata, FunctionParamShapeExpansion } from './compiled';
-import { ErrorCode, getError } from './compilerError';
-import type { CompilerDiagnosticContext } from './diagnostics';
-import type { FunctionValueType } from './functionTypes';
-import { isFunctionValueType, MAX_FUNCTION_PARAMETERS, MAX_FUNCTION_RETURN_VALUES } from './functionTypes';
+import { getError } from '@8f4e/compiler-diagnostics';
+import type {
+	CompilerASTLine,
+	CompilerDiagnosticContext,
+	FunctionAST,
+	FunctionMetadata,
+	FunctionParamShapeExpansion,
+	FunctionValueType,
+	MemoryDeclarationLine,
+	ParamShapeLine,
+	PrototypeAST,
+} from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	ErrorCode,
+	isFunctionValueType,
+	isMemoryDeclarationLine,
+	MAX_FUNCTION_PARAMETERS,
+	MAX_FUNCTION_RETURN_VALUES,
+} from '@8f4e/language-spec';
 
 function getAstDiagnosticContext(ast: FunctionAST): CompilerDiagnosticContext {
 	return {

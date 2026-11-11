@@ -1,5 +1,3 @@
-import type { ProjectGroupPath, SourceMetadata } from '@8f4e/language-spec';
-
 /**
  * Syntax errors — raised when source structure is invalid before semantic analysis.
  *
@@ -92,20 +90,18 @@ export interface SyntaxErrorLine {
 	arguments?: unknown[];
 }
 
-export interface SyntaxErrorContext {
-	projectBlockId?: number;
-	projectGroupPath?: ProjectGroupPath;
-	source?: SourceMetadata;
-}
-
-export class SyntaxRulesError extends Error {
+export class SyntaxIssue extends Error {
 	constructor(
 		public code: SyntaxErrorCodeValue,
 		message?: string,
-		public line?: SyntaxErrorLine,
-		public context?: SyntaxErrorContext
+		public line?: SyntaxErrorLine
 	) {
 		super(message ?? SyntaxErrorMessages[code]);
-		this.name = 'SyntaxRulesError';
+		this.name = 'SyntaxIssue';
 	}
+}
+
+/** Default syntax wording for source-aware diagnostic construction. */
+export function syntaxErrorMessage(code: SyntaxErrorCodeValue): string {
+	return SyntaxErrorMessages[code];
 }

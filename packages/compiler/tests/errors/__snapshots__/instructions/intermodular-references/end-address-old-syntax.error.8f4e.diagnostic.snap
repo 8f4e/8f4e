@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "oldEndAddressTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "ptr",
-      },
-      {
-        "isEndAddress": true,
-        "referenceKind": "memory-reference",
-        "scope": "local",
-        "targetMemoryId": "oldEndAddressSource:buffer&",
-        "type": "identifier",
-        "value": "&oldEndAddressSource:buffer&",
-      },
-    ],
-    "instruction": "int*",
+  "domain": "semantic",
+  "instruction": "int*",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: oldEndAddressSource:buffer&. (5)",
+  "message": "Unknown memory declaration.",
 }

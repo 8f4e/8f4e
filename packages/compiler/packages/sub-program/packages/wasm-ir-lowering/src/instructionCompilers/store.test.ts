@@ -12,11 +12,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 1,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -48,11 +44,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 2,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -72,11 +64,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 3,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -108,11 +96,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 4,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 4, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -143,11 +127,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 5,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 5, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -166,11 +146,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 6,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 6, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

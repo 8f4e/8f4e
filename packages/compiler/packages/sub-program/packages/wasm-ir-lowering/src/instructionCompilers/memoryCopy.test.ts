@@ -9,6 +9,7 @@ import createInstructionCompilerTestContext, {
 import memoryCopy from './memoryCopy';
 
 const line: ResolvedMemoryCopyLine = {
+	diagnosticSource: { kind: 'document' },
 	lineNumber: 1,
 	instruction: 'memoryCopy',
 	arguments: [{ type: ArgumentType.LITERAL, value: 20, isInteger: true }],

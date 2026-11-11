@@ -96,10 +96,10 @@ export interface CodeBlockPointerDownEvent {
  * A raw source error contributed to shared editor state.
  */
 export interface CodeError {
-	lineNumber: number;
+	lineNumber?: number;
 	message: string;
 	/** Creation index of the code block that owns the error. */
-	codeBlockId: number;
+	codeBlockId?: number;
 	/** Project scope that owns an error not associated with a document block id. */
 	projectGroupPath?: ProjectGroupPath;
 }

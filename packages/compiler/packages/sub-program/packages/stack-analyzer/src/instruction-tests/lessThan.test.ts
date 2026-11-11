@@ -13,6 +13,7 @@ describe('lessThan stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'lessThan',
 				arguments: [],

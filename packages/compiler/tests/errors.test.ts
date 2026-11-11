@@ -1,9 +1,9 @@
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { describe, expect, test } from 'vitest';
-
-import { compileProject, parseProjectSource, serializeDiagnostic } from '../src';
+import { compileProject, parseProjectSource } from '../src';
 import { resolveTestInclude } from './testIncludeResolver';
 
 const errorRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), 'errors');
@@ -63,7 +63,13 @@ describe('8f4e compiler error fixtures', () => {
 			const snapshotPath = getErrorSnapshotPath(filePath);
 
 			await fs.mkdir(path.dirname(snapshotPath), { recursive: true });
-			await expect(serializeDiagnostic(thrownError)).toMatchFileSnapshot(snapshotPath);
+			const diagnostic = serializeDiagnostic(thrownError, 'compile');
+			expect(diagnostic.kind).toBe('source');
+			if (diagnostic.kind === 'source') {
+				expect(diagnostic.location.kind).toBeDefined();
+				if (diagnostic.location.kind !== 'exposure') expect(diagnostic.location.lineNumber).toBeGreaterThanOrEqual(0);
+			}
+			await expect(diagnostic).toMatchFileSnapshot(snapshotPath);
 		}
 	);
 });

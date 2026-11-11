@@ -14,15 +14,25 @@
  *  If detecting the error requires symbol resolution, scope validation, stack
  *  state, type checking, or runtime-model knowledge → it belongs here.
  *  If the error can be detected from the raw token or argument structure alone,
- *  before any semantic context is built → use SyntaxRulesError in syntaxError.ts.
+ *  before any semantic context is built → use SyntaxIssue in syntaxError.ts.
  */
 
-import { SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS } from './constants';
-import type { CompilerDiagnosticContext, CompilerDiagnosticLine, CompilerStageError } from './diagnostics';
-import { ErrorCode, type ErrorCodeValue } from './errors';
-import { MAX_FUNCTION_PARAMETERS, MAX_FUNCTION_RETURN_VALUES } from './functionTypes';
-import type { ProjectGroupPath, ProjectModuleId } from './project';
-import type { CodegenContext, CompilationContext } from './semantic';
+import type {
+	CodegenContext,
+	CompilationContext,
+	CompilerDiagnosticContext,
+	CompilerDiagnosticLine,
+	ProjectGroupPath,
+	ProjectModuleId,
+} from '@8f4e/language-spec';
+import {
+	ErrorCode,
+	type ErrorCodeValue,
+	MAX_FUNCTION_PARAMETERS,
+	MAX_FUNCTION_RETURN_VALUES,
+	SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS,
+} from '@8f4e/language-spec';
+import { CompilerError } from './compilerError';
 
 export { ErrorCode };
 
@@ -48,25 +58,6 @@ function getProjectMemoryExposureTargetMessage(details: ErrorDetails = {}): stri
 	return `Project memory exposure${publicReference} targets undeclared memory${targetReference}. (${code})`;
 }
 
-/** Creates a semantic diagnostic for a group exposure whose canonical backing memory does not exist. */
-export function getProjectMemoryExposureTargetError(
-	groupPath: ProjectGroupPath,
-	exposureName: string,
-	targetModuleId: ProjectModuleId,
-	targetMemoryId: string
-): CompilerStageError {
-	return {
-		code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-		message: getProjectMemoryExposureTargetMessage({
-			projectGroupPath: groupPath,
-			projectMemoryExposureName: exposureName,
-			targetModuleId,
-			targetMemoryId,
-		}),
-		context: { projectGroupPath: groupPath, projectMemoryExposureName: exposureName },
-	};
-}
-
 /**
  * Creates a compiler-stage diagnostic for a semantic or code-generation error.
  *
@@ -76,12 +67,12 @@ export function getProjectMemoryExposureTargetError(
  * @param details - Optional dynamic details to include in the diagnostic.
  * @returns The compiler error instance.
  */
-export function getError(
+function formatSemanticError(
 	code: ErrorCodeValue,
 	line: CompilerDiagnosticLine,
 	context?: CodegenContext | CompilationContext | CompilerDiagnosticContext,
 	details?: ErrorDetails
-): CompilerStageError {
+): { code: number; message: string; line?: CompilerDiagnosticLine; context?: unknown } {
 	switch (code) {
 		case ErrorCode.UNDEFINED_TEMPLATE:
 			return {
@@ -631,4 +622,44 @@ export function getError(
 				context,
 			};
 	}
+}
+
+/** Creates a semantic source error. The caller must supply the owning source. */
+export function getError(
+	code: ErrorCodeValue,
+	line: CompilerDiagnosticLine,
+	context?: CodegenContext | CompilationContext | CompilerDiagnosticContext,
+	details?: ErrorDetails
+): CompilerError {
+	const formatted = formatSemanticError(code, line, context, details);
+	return new CompilerError({
+		kind: 'source',
+		domain: 'semantic',
+		code,
+		message: formatted.message,
+		location: { ...line.diagnosticSource, lineNumber: line.lineNumber },
+		...(line.instruction !== undefined ? { instruction: line.instruction } : {}),
+		...(context?.codeBlockId !== undefined ? { symbol: context.codeBlockId } : {}),
+	});
+}
+
+/** Creates a semantic error targeting an explicitly named project exposure. */
+export function getProjectMemoryExposureTargetError(
+	groupPath: ProjectGroupPath,
+	exposureName: string,
+	targetModuleId: ProjectModuleId,
+	targetMemoryId: string
+): CompilerError {
+	return new CompilerError({
+		kind: 'source',
+		domain: 'semantic',
+		code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
+		message: getProjectMemoryExposureTargetMessage({
+			projectGroupPath: groupPath,
+			projectMemoryExposureName: exposureName,
+			targetModuleId,
+			targetMemoryId,
+		}),
+		location: { kind: 'exposure', projectGroupPath: groupPath, name: exposureName },
+	});
 }

@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	CompiledStackAnalysisLine,
@@ -13,7 +14,7 @@ import type {
 	Stack,
 	StackAnalysisLineFacts,
 } from '@8f4e/language-spec';
-import { ArgumentType, BlockType, ErrorCode, functionValueTypeToLocalMetadata, getError } from '@8f4e/language-spec';
+import { ArgumentType, BlockType, ErrorCode, functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 import type {
 	FunctionSemanticReferences,
 	ModuleSemanticReferences,
@@ -212,7 +213,9 @@ function analyzeBodyOperations(
 	let previousSourceLineIndex = -1;
 	let untouchedSourceValues = 0;
 	for (const { sourceLineIndex, line } of body) {
-		const facts = withSourceDiagnostic(sourceLines[sourceLineIndex], () => analyzeSemanticReferenceLine(line, context));
+		const facts = withSourceDiagnostic(sourceLines[sourceLineIndex], 'stack analysis', () =>
+			analyzeSemanticReferenceLine(line, context)
+		);
 		operationFacts.push(facts);
 		const operation = facts.stackAnalysis;
 		const preservedInputCount = Math.max(

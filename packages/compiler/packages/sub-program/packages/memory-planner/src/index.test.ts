@@ -1,3 +1,4 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import type {
 	ArgumentCompileTimeExpression,
 	CompilerASTLine,
@@ -10,7 +11,7 @@ import type {
 } from '@8f4e/language-spec';
 import { ArgumentType, arrayMemoryDeclarationInstructions, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { MemoryPlannerError, planSubProgramMemoryLayout } from './index';
+import { planSubProgramMemoryLayout } from './index';
 
 function identifier(value: string) {
 	return {
@@ -45,15 +46,12 @@ function expression(
 }
 
 function shapeLine(id: string, lineNumber: number): ShapeLine {
-	return {
-		lineNumber,
-		instruction: 'shape',
-		arguments: [identifier(id)],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'shape', arguments: [identifier(id)] };
 }
 
 function moduleLine(id: string, lineNumber: number) {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber,
 		instruction: 'module',
 		arguments: [identifier(id)],
@@ -77,6 +75,7 @@ function prototypeAst(
 	declarationLines: readonly MemoryDeclarationLine[]
 ): ValidatedPrototypeAST {
 	const prototypeLine = {
+		diagnosticSource: { kind: 'document' },
 		lineNumber,
 		instruction: 'prototype',
 		arguments: [identifier(id)],
@@ -104,11 +103,13 @@ describe('planSubProgramMemoryLayout', () => {
 			modules: [
 				validatedModuleAst('first', 1, [
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 2,
 						instruction: 'int',
 						arguments: [identifier('counter')],
 					},
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 3,
 						instruction: 'int8[]',
 						arguments: [identifier('bytes'), literal(5)],
@@ -116,6 +117,7 @@ describe('planSubProgramMemoryLayout', () => {
 				]),
 				validatedModuleAst('second', 10, [
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 11,
 						instruction: 'float64',
 						arguments: [identifier('phase')],
@@ -140,6 +142,7 @@ describe('planSubProgramMemoryLayout', () => {
 			modules: [
 				validatedModuleAst('zeta', 1, [
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 2,
 						instruction: 'int',
 						arguments: [identifier('last')],
@@ -147,6 +150,7 @@ describe('planSubProgramMemoryLayout', () => {
 				]),
 				validatedModuleAst('alpha', 10, [
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 11,
 						instruction: 'int[]',
 						arguments: [identifier('first'), literal(2)],
@@ -170,6 +174,7 @@ describe('planSubProgramMemoryLayout', () => {
 			modules: [
 				validatedModuleAst('main', 1, [
 					{
+						diagnosticSource: { kind: 'document' },
 						lineNumber: 2,
 						instruction: 'int[]',
 						arguments: [identifier('values'), literal(4)],
@@ -185,6 +190,7 @@ describe('planSubProgramMemoryLayout', () => {
 
 	it('plans anonymous scalar declarations with generated ids', () => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'float',
 			arguments: [],
@@ -203,16 +209,19 @@ describe('planSubProgramMemoryLayout', () => {
 
 	it('expands shape declarations into effective declaration sources', () => {
 		const foo = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int',
 			arguments: [identifier('foo')],
 		} satisfies MemoryDeclarationLine;
 		const bar = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'float[]',
 			arguments: [identifier('bar'), literal(2)],
 		} satisfies MemoryDeclarationLine;
 		const local = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 12,
 			instruction: 'int',
 			arguments: [identifier('local')],
@@ -227,8 +236,8 @@ describe('planSubProgramMemoryLayout', () => {
 
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['foo', 'bar', 'local']);
 		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: { ...foo, lineNumber: 11 }, isInherited: true },
-			{ line: { ...bar, lineNumber: 11 }, isInherited: true },
+			{ line: foo, isInherited: true, shapeLine: shapeLine('state', 11) },
+			{ line: bar, isInherited: true, shapeLine: shapeLine('state', 11) },
 			{ line: local, isInherited: false },
 		]);
 		expect(plan.modules.main.memory.local.byteAddress).toBe(16);
@@ -241,7 +250,7 @@ describe('planSubProgramMemoryLayout', () => {
 				modules: [validatedModuleAst('main', 1, [shapeLine('missing', 11)])],
 				constantReferences: noConstantReferences(),
 			})
-		).toThrow(MemoryPlannerError);
+		).toThrow(CompilerError);
 	});
 });
 
@@ -252,6 +261,7 @@ describe('planner input building', () => {
 		['ceil', 2],
 	] as const)('plans a pre-resolved explicitly %s array element count', (rounding, expectedElementCount) => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'float[]',
 			arguments: [identifier('values'), expression(literal(3), '/', literal(2), rounding)],
@@ -277,6 +287,7 @@ describe('planner input building', () => {
 		)
 	)('rejects %s with invalid element count %s', (instruction, size) => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction,
 			arguments: [identifier('values'), literal(size)],
@@ -288,16 +299,26 @@ describe('planner input building', () => {
 				modules: [validatedModuleAst('main', 1, [line])],
 				constantReferences: noConstantReferences(),
 			})
-		).toThrow(expect.objectContaining({ compilerErrorCode: ErrorCode.INVALID_ARRAY_SIZE, line }));
+		).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.INVALID_ARRAY_SIZE,
+					instruction: line.instruction,
+					location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+				}),
+			})
+		);
 	});
 
 	it('builds planner-ready source from validated module and prototype ASTs', () => {
 		const inherited = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 20,
 			instruction: 'int',
 			arguments: [identifier('inherited')],
 		} satisfies MemoryDeclarationLine;
 		const local = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'int[]',
 			arguments: [identifier('values'), expression(literal(2), '*', literal(3))],
@@ -320,7 +341,7 @@ describe('planner input building', () => {
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['inherited', 'values']);
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(6);
 		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: { ...inherited, lineNumber: 3 }, isInherited: true },
+			{ line: inherited, isInherited: true, shapeLine: shapeLine('state', 3) },
 			{
 				line: {
 					...local,
@@ -333,6 +354,7 @@ describe('planner input building', () => {
 
 	it('rejects compile-time expressions that were not resolved by the constant pass', () => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'int[]',
 			arguments: [identifier('values'), expression(literal(2), '*', literal(3))],
@@ -344,11 +366,12 @@ describe('planner input building', () => {
 				modules: [validatedModuleAst('main', 1, [line])],
 				constantReferences: noConstantReferences(),
 			})
-		).toThrow(MemoryPlannerError);
+		).toThrow(CompilerError);
 	});
 
 	it('rejects unresolved array declaration sizes while building planner input', () => {
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'int[]',
 			arguments: [identifier('values'), identifier('missing')],
@@ -360,7 +383,7 @@ describe('planner input building', () => {
 				modules: [validatedModuleAst('main', 1, [line])],
 				constantReferences: noConstantReferences(),
 			})
-		).toThrow(MemoryPlannerError);
+		).toThrow(CompilerError);
 	});
 
 	it('rejects duplicate prototype ids while building planner input', () => {
@@ -373,12 +396,13 @@ describe('planner input building', () => {
 				modules: [],
 				constantReferences: noConstantReferences(),
 			})
-		).toThrow(MemoryPlannerError);
+		).toThrow(CompilerError);
 	});
 
 	it('uses constant resolution facts while keeping source declaration lines unchanged', () => {
 		const sizeIdentifier = identifier('SIZE');
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'int[]',
 			arguments: [identifier('values'), sizeIdentifier],
@@ -409,16 +433,19 @@ describe('planner input building', () => {
 
 	it('preserves declaration and shape order across non-declaration lines without mutating the input AST', () => {
 		const inherited = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int',
 			arguments: [identifier('inherited')],
 		} satisfies MemoryDeclarationLine;
 		const firstDeclaration = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 11,
 			instruction: 'int',
 			arguments: [identifier('first')],
 		} satisfies MemoryDeclarationLine;
 		const ignoredInstruction = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 12,
 			instruction: 'push',
 			arguments: [literal(1)],
@@ -426,6 +453,7 @@ describe('planner input building', () => {
 		const shape = shapeLine('state', 13);
 		const sizeIdentifier = identifier('COUNT');
 		const arrayDeclaration = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 14,
 			instruction: 'int[]',
 			arguments: [identifier('items'), sizeIdentifier],
@@ -455,7 +483,7 @@ describe('planner input building', () => {
 		]);
 		expect(plan.modules.main.declarationSources).toEqual([
 			{ line: firstDeclaration, isInherited: false },
-			{ line: { ...inherited, lineNumber: 13 }, isInherited: true },
+			{ line: inherited, isInherited: true, shapeLine: shapeLine('state', 13) },
 			{
 				line: {
 					...arrayDeclaration,

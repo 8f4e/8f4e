@@ -1,16 +1,14 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ArgumentType,
 	type CodegenPushLine,
 	ErrorCode,
-	getError,
-	getParamType,
-	getPrototypeMemoryDeclarationId,
 	isMemoryDeclarationLine,
 	memoryStartAddressValue,
 	type PushShapeLine,
 	type ResolvedPushShapeLine,
 } from '@8f4e/language-spec';
-import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
+import { getParamType, getPrototypeMemoryDeclarationId, getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from '../context';
 
 function createAddressPushLine(
@@ -24,6 +22,7 @@ function createAddressPushLine(
 	);
 
 	return {
+		diagnosticSource: line.diagnosticSource,
 		lineNumber: line.lineNumber,
 		instruction: 'push',
 		arguments: [

@@ -15,6 +15,7 @@ describe('pushLocalPointer', () => {
 
 		pushLocalPointer(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [pointerIdentifier('lut', 2)],
@@ -40,6 +41,7 @@ describe('pushLocalPointer', () => {
 
 		pushLocalPointer(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [pointerIdentifier('lut', 1)],
@@ -64,6 +66,7 @@ describe('pushLocalPointer', () => {
 
 		pushLocalPointer(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [pointerIdentifier('bytes', 1)],

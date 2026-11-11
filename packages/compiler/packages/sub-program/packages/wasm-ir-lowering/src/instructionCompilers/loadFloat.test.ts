@@ -32,7 +32,12 @@ describe('loadFloat instruction compiler', () => {
 			],
 		});
 		facts.stackAnalysis.producedStackItems = [{ kind: 'value', valueType: 'float64', isNonZero: false }];
-		compileInstructionForTest(loadFloat, { lineNumber: 1, instruction: 'loadFloat', arguments: [] }, context, facts);
+		compileInstructionForTest(
+			loadFloat,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'loadFloat', arguments: [] },
+			context,
+			facts
+		);
 		expect(context.instructions).toContainEqual({ kind: 'memoryAccess', opcode: 0x2b, alignment: 3, offset: 0 });
 		expect(
 			context.instructions.some(
@@ -47,11 +52,7 @@ describe('loadFloat instruction compiler', () => {
 
 		compileInstructionForTest(
 			loadFloat,
-			{
-				lineNumber: 1,
-				instruction: 'loadFloat',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'loadFloat', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -82,11 +83,7 @@ describe('loadFloat instruction compiler', () => {
 
 		compileInstructionForTest(
 			loadFloat,
-			{
-				lineNumber: 2,
-				instruction: 'loadFloat',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'loadFloat', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);

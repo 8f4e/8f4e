@@ -18,11 +18,7 @@ describe('else instruction compiler', () => {
 
 		compileInstructionForTest(
 			_else,
-			{
-				lineNumber: 1,
-				instruction: 'else',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'else', arguments: [] },
 			context
 		);
 

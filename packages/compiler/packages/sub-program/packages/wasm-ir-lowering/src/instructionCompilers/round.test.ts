@@ -13,11 +13,7 @@ describe('round instruction compiler', () => {
 
 		compileInstructionForTest(
 			round,
-			{
-				lineNumber: 1,
-				instruction: 'round',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'round', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
@@ -30,11 +26,7 @@ describe('round instruction compiler', () => {
 
 		compileInstructionForTest(
 			round,
-			{
-				lineNumber: 1,
-				instruction: 'round',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'round', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);

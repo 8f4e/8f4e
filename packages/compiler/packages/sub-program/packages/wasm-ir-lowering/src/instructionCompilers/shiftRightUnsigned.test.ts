@@ -9,11 +9,7 @@ describe('shiftRightUnsigned instruction compiler', () => {
 
 		compileInstructionForTest(
 			shiftRightUnsigned,
-			{
-				lineNumber: 1,
-				instruction: 'shiftRightUnsigned',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'shiftRightUnsigned', arguments: [] },
 			context
 		);
 

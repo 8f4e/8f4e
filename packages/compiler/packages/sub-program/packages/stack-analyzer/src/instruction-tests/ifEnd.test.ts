@@ -16,6 +16,7 @@ describe('ifEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 9,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -45,6 +46,7 @@ describe('ifEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -74,6 +76,7 @@ describe('ifEnd stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 			lineNumber: 9,
 			instruction: 'ifEnd',
 			arguments: [],
@@ -81,12 +84,14 @@ describe('ifEnd stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.ONLY_FLOATS,
-				line,
-				context: expect.objectContaining({
-					codeBlockId: 'example',
-					codeBlockType: 'module',
-					projectBlockId: 13,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.ONLY_FLOATS,
+					instruction: line.instruction,
+					location: expect.objectContaining({
+						...line.diagnosticSource,
+						lineNumber: line.lineNumber,
+						projectBlockId: 13,
+					}),
 				}),
 			})
 		);
@@ -106,6 +111,7 @@ describe('ifEnd stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -113,8 +119,11 @@ describe('ifEnd stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}
@@ -134,6 +143,7 @@ describe('ifEnd stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -141,8 +151,11 @@ describe('ifEnd stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}

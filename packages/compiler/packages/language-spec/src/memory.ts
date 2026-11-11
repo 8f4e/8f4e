@@ -1,4 +1,4 @@
-import type { MemoryDeclarationLine } from './ast';
+import type { MemoryDeclarationLine, ShapeLine } from './ast';
 
 export const scalarMemoryDeclarationInstructions = [
 	'int',
@@ -187,10 +187,10 @@ export interface PlannedMemoryDeclaration {
 	isUnsigned: boolean;
 }
 
-export interface PlannedMemoryDeclarationSource {
-	line: MemoryDeclarationLine;
-	isInherited: boolean;
-}
+export type PlannedMemoryDeclarationSource = { line: MemoryDeclarationLine } & (
+	| { isInherited: false }
+	| { isInherited: true; shapeLine: ShapeLine }
+);
 
 export interface PlannedMemoryModule {
 	id: string;

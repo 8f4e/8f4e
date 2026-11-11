@@ -14,6 +14,7 @@ describe('storeBytes instruction compiler', () => {
 		compileInstructionForTest(
 			storeBytes,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],
@@ -51,6 +52,7 @@ describe('storeBytes instruction compiler', () => {
 		compileInstructionForTest(
 			storeBytes,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],

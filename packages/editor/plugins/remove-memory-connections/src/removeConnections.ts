@@ -5,15 +5,11 @@ import {
 	isArrayMemoryDeclarationLine,
 	isScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
-import { parseInstructionTokens, parseLine, SyntaxRulesError } from '@8f4e/tokenizer';
+import { parseInstructionTokens, parseLine } from '@8f4e/tokenizer';
 
 function parseSourceLine(line: string, lineNumber: number): CompilerASTLine | undefined {
-	try {
-		return parseLine(line, lineNumber);
-	} catch (error) {
-		if (error instanceof SyntaxRulesError) return undefined;
-		throw error;
-	}
+	const result = parseLine(line, lineNumber);
+	return result.ok ? result.value : undefined;
 }
 
 function splitComment(line: string): { body: string; comment?: string } {
@@ -97,9 +93,9 @@ function removeIntermodularMemoryConnectionsFromLine(line: string, lineNumber: n
 
 	const { body, comment } = splitComment(line);
 	const leadingWhitespace = body.match(/^\s*/)?.[0] ?? '';
-	const keptTokens = parseInstructionTokens(body, lineNumber).filter(
-		(_token, tokenIndex) => !removedTokenIndexes.has(tokenIndex)
-	);
+	const tokens = parseInstructionTokens(body, lineNumber);
+	if (!tokens.ok) return undefined;
+	const keptTokens = tokens.value.filter((_token, tokenIndex) => !removedTokenIndexes.has(tokenIndex));
 	const updatedLine = `${leadingWhitespace}${keptTokens.join(' ')}`;
 
 	return comment !== undefined ? `${updatedLine} ;${comment}` : updatedLine;

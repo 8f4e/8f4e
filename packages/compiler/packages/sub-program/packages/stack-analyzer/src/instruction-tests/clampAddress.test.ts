@@ -34,6 +34,7 @@ function createLine(
 	accessByteWidth?: number
 ) {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction,
 		arguments:
@@ -130,7 +131,7 @@ describe('clampAddress stack analysis', () => {
 		context.stack.push({ kind: 'value', valueType: 'int', isNonZero: false });
 
 		expect(() => analyzeInstruction(createLine('clampAddress'), context)).toThrow(
-			expect.objectContaining({ code: ErrorCode.ADDRESS_RANGE_REQUIRED })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: ErrorCode.ADDRESS_RANGE_REQUIRED }) })
 		);
 	});
 
@@ -200,7 +201,7 @@ describe('clampAddress stack analysis', () => {
 		});
 
 		expect(() => analyzeInstruction(createLine('clampAddress'), context)).toThrow(
-			expect.objectContaining({ code: ErrorCode.ADDRESS_RANGE_TOO_SMALL })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: ErrorCode.ADDRESS_RANGE_TOO_SMALL }) })
 		);
 	});
 });

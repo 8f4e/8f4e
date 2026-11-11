@@ -18,8 +18,9 @@ import type {
 /** Function source produced by resolving a project's include blocks. */
 export type CompilerDerivedSource = {
 	code: string[];
-	projectBlockId?: number;
-	source?: SourceMetadata;
+	projectBlockId: number;
+	includeLineNumber: number;
+	source: SourceMetadata;
 };
 
 /** Include expansions keyed by the canonical path of the project group that owns them. */

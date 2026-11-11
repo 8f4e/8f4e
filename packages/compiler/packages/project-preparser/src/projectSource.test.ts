@@ -64,7 +64,9 @@ it('attaches block-relative source locations to structural diagnostics', () => {
 		error = caught;
 	}
 	expect(error).toMatchObject({
-		line: { instruction: 'constants', lineNumber: 2 },
-		context: { projectBlockId: 2 },
+		diagnostic: {
+			instruction: 'constants',
+			location: { kind: 'block', projectBlockId: 2, projectGroupPath: '', lineNumber: 2 },
+		},
 	});
 });

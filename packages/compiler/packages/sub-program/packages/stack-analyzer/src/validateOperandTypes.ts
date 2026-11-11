@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, OperandRule, StackItem } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { areAllOperandsIntegers } from '@8f4e/semantic-utils';
 import { inferErrorCodeFromRule } from './inferErrorCodeFromRule';
 

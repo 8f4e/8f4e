@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { deriveSubStackMetadata } from '../../utils/stackAddressMetadata';
 import { consume, produce } from '../stack';
 import type { InstructionAnalysisResult } from '../types';
