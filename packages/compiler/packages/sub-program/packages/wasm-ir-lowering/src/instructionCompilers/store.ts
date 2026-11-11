@@ -1,6 +1,12 @@
 import type { ASTLineBase, InstructionCompiler } from '@8f4e/language-spec';
-import { DOUBLE_WORD_MEMORY_ACCESS_WIDTH, getInstructionSpec, WORD_MEMORY_ACCESS_WIDTH } from '@8f4e/language-spec';
-import { f32store, f64store, i32store } from '../operations';
+import {
+	BYTE_MEMORY_ACCESS_WIDTH,
+	DOUBLE_WORD_MEMORY_ACCESS_WIDTH,
+	getInstructionSpec,
+	HALF_WORD_MEMORY_ACCESS_WIDTH,
+	WORD_MEMORY_ACCESS_WIDTH,
+} from '@8f4e/language-spec';
+import { f32store, f64store, i32store, i32store8, i32store16 } from '../operations';
 import { guardedStore, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
@@ -16,8 +22,28 @@ const store: InstructionCompiler<StoreLine> = (line, context, facts) => {
 	const operand1Value = facts.stackAnalysis.consumedOperands[operation.valueOperandIndex];
 	const valueIsInteger = operand1Value.valueType === 'int';
 	const valueIsFloat64 = operand1Value.valueType === 'float64';
-	const instructions = valueIsInteger ? i32store(2, 0) : valueIsFloat64 ? f64store(3, 0) : f32store(2, 0);
-	const accessByteWidth = valueIsFloat64 ? DOUBLE_WORD_MEMORY_ACCESS_WIDTH : WORD_MEMORY_ACCESS_WIDTH;
+	const pointee = operand2Address.kind === 'address' ? operand2Address.pointsTo : undefined;
+	const baseType = pointee?.pointerDepth === 1 ? pointee.baseType : undefined;
+	const integerAccessByteWidth =
+		baseType === 'int8' || baseType === 'int8u'
+			? BYTE_MEMORY_ACCESS_WIDTH
+			: baseType === 'int16' || baseType === 'int16u'
+				? HALF_WORD_MEMORY_ACCESS_WIDTH
+				: WORD_MEMORY_ACCESS_WIDTH;
+	const accessByteWidth = valueIsInteger
+		? integerAccessByteWidth
+		: valueIsFloat64
+			? DOUBLE_WORD_MEMORY_ACCESS_WIDTH
+			: WORD_MEMORY_ACCESS_WIDTH;
+	const instructions = valueIsInteger
+		? accessByteWidth === BYTE_MEMORY_ACCESS_WIDTH
+			? i32store8()
+			: accessByteWidth === HALF_WORD_MEMORY_ACCESS_WIDTH
+				? i32store16()
+				: i32store()
+		: valueIsFloat64
+			? f64store()
+			: f32store();
 	if (!context.enableMemoryGuards || isSafeMemoryAccess(operand2Address, accessByteWidth)) {
 		return saveByteCode(context, instructions);
 	}

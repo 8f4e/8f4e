@@ -97,7 +97,17 @@ loadFloat
 ### store
 
 The store instruction consumes a value and an address from the stack and stores the value at the address.
-If the address is out of bounds, the write is skipped instead of trapping.
+For integer values, a typed `int8*` or `int8u*` destination writes one byte, and an `int16*` or `int16u*`
+destination writes two bytes. Narrow stores truncate the value to its low 8 or 16 bits. An `int*` destination
+or an address without pointee type information writes four bytes. Ordinary pointer arithmetic preserves
+the destination type.
+
+Storing an address into a pointer variable writes four bytes: `push pointer` addresses the pointed-to element,
+while `push &pointer` addresses the pointer variable itself. Floating-point values write four bytes for `float`
+and eight bytes for `float64`.
+
+Bounds checks use the selected write width. If the complete value is out of bounds, the write is skipped instead
+of trapping.
 
 #### Examples
 
@@ -105,6 +115,14 @@ If the address is out of bounds, the write is skipped instead of trapping.
 int output
 push &output
 push 10
+store
+```
+
+```
+int8u[] pixels 4
+int8u* pixel &pixels
+push pixel
+push 255
 store
 ```
 
