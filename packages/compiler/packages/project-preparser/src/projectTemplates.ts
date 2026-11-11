@@ -1,4 +1,5 @@
-import { ErrorCode, getError, isValidModuleName, projectInstructions } from '@8f4e/language-spec';
+import { getError } from '@8f4e/compiler-diagnostics';
+import { ErrorCode, isValidModuleName, projectInstructions } from '@8f4e/language-spec';
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { mapSourceScope } from './mapSourceScope';
 import { startsWithInstruction } from './projectKeywords';
@@ -33,13 +34,18 @@ function templateError(
 ): never {
 	const diagnostic = getError(
 		code,
-		{ lineNumber: line.lineNumber - 1, instruction: instruction(line).split(/\s+/)[0] },
-		undefined,
 		{
-			identifier: name,
+			diagnosticSource: { kind: 'document' },
+			lineNumber: line.lineNumber - 1,
+			instruction: instruction(line).split(/\s+/)[0],
+		},
+		{
+			details: {
+				identifier: name,
+			},
 		}
 	);
-	throw Object.assign(new Error(diagnostic.message), diagnostic);
+	throw diagnostic;
 }
 
 /** Expand scope-local templates in raw source, retaining useTemplate as an ordinary group source line. */

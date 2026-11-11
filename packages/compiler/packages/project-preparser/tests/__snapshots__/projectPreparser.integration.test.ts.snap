@@ -15,6 +15,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd int",
       ],
+      "includeLineNumber": 1,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/events/risingEdge",
         "kind": "include",
@@ -33,6 +35,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd int*",
       ],
+      "includeLineNumber": 2,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/memory/wrapPointer",
         "kind": "include",
@@ -51,6 +55,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd float*",
       ],
+      "includeLineNumber": 2,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/memory/wrapPointer",
         "kind": "include",

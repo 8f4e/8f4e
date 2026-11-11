@@ -1,20 +1,13 @@
 {
   "code": 45,
-  "context": {
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "main",
-      },
-    ],
-    "instruction": "function",
+  "domain": "semantic",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Duplicate identifier: main. (45)",
 }

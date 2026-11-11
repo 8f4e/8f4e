@@ -1,3 +1,4 @@
+import { IncludeErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import {
 	collectProjectIncludeIdsFromBlock,
@@ -91,6 +92,18 @@ describe('include function expansion', () => {
 	it('rejects sources without exported functions', () => {
 		expect(() => resolveFunctionIncludeSource('std/test', 'function helper\nfunctionEnd')).toThrow(
 			'include "std/test" must export at least one function'
+		);
+	});
+
+	it('keeps the file identity when standalone include syntax fails', () => {
+		expect(() =>
+			resolveFunctionIncludeSource('std/test', 'function helper\n#export first second\nfunctionEnd')
+		).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					location: { kind: 'include-file', includeId: 'std/test', lineNumber: 1 },
+				}),
+			})
 		);
 	});
 
@@ -191,8 +204,10 @@ describe('include export selections', () => {
 	])('rejects conflicting names for one export: %s, %s', (...declarations) => {
 		expect(() => resolveProjectIncludes([includeBlock(...declarations)], () => selectableSource)).toThrowError(
 			expect.objectContaining({
-				lineNumber: 3,
-				projectBlockId: 42,
+				diagnostic: expect.objectContaining({
+					code: IncludeErrorCode.CONFLICTING_BINDING,
+					location: { kind: 'block', lineNumber: 2, projectBlockId: 42, projectGroupPath: '' },
+				}),
 				message: expect.stringContaining('is already included as'),
 			})
 		);
@@ -213,9 +228,11 @@ describe('include export selections', () => {
 				resolveProjectIncludes([includeBlock(`include std/test ${name}`)], () => selectableSource)
 			).toThrowError(
 				expect.objectContaining({
-					message: `Parse error at line 2: include "std/test" does not export "${name}"`,
-					lineNumber: 2,
-					projectBlockId: 42,
+					message: `include "std/test" does not export "${name}"`,
+					diagnostic: expect.objectContaining({
+						code: IncludeErrorCode.UNKNOWN_EXPORT,
+						location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
+					}),
 				})
 			);
 		}
@@ -300,9 +317,11 @@ describe('include export selections', () => {
 		await expect(
 			resolveProjectIncludesAsync([includeBlock('include std/missing')], () => undefined)
 		).rejects.toMatchObject({
-			lineNumber: 2,
-			projectBlockId: 42,
-			message: 'Parse error at line 2: unresolved include "std/missing"',
+			diagnostic: expect.objectContaining({
+				code: IncludeErrorCode.UNRESOLVED_INCLUDE,
+				location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
+			}),
+			message: 'unresolved include "std/missing"',
 		});
 	});
 
@@ -316,7 +335,13 @@ describe('include export selections', () => {
 
 	it.each(['include', 'include std/test first alias extra'])('rejects malformed declarations: %s', line => {
 		expect(() => collectProjectIncludeIdsFromBlock(includeBlock(line))).toThrow(
-			'include expects <path> [exportedName [localName]]'
+			expect.objectContaining({
+				message: 'include expects <path> [exportedName [localName]]',
+				diagnostic: expect.objectContaining({
+					code: IncludeErrorCode.INVALID_DECLARATION,
+					location: { kind: 'block', projectBlockId: 42, projectGroupPath: '', lineNumber: 1 },
+				}),
+			})
 		);
 	});
 });

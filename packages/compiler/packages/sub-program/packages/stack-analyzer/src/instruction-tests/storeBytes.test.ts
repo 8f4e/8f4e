@@ -13,6 +13,7 @@ describe('storeBytes stack analysis', () => {
 			{ kind: 'value', valueType: 'int', isNonZero: false }
 		);
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'storeBytes',
 			arguments: [{ type: ArgumentType.LITERAL, value: 3, isInteger: true }],
@@ -47,6 +48,7 @@ describe('storeBytes stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 3, isInteger: true }],
@@ -79,6 +81,7 @@ describe('storeBytes stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],
@@ -107,6 +110,7 @@ describe('storeBytes stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 0, isInteger: true }],

@@ -1,4 +1,5 @@
-import { SyntaxErrorCode, SyntaxRulesError } from '@8f4e/tokenizer';
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
+import { SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
 import { ENTRY_BLOCK_DELIMITER, GROUP_BLOCK_DELIMITER } from './delimiters';
 import {
 	getExpectedProjectCloserPrefix,
@@ -30,19 +31,19 @@ export function instruction(line: SourceLine): string {
 }
 
 export function syntaxError(
-	code: ConstructorParameters<typeof SyntaxRulesError>[0],
+	code: Parameters<typeof syntaxErrorMessage>[0],
 	line: SourceLine,
 	message?: string,
 	owner?: SourceLine
 ): never {
-	throw new SyntaxRulesError(
+	throw syntaxErrorAt(
 		code,
-		message,
+		message ?? syntaxErrorMessage(code),
+		owner ? { kind: 'block', projectBlockId: owner.lineNumber, projectGroupPath: '' } : { kind: 'document' },
 		{
 			lineNumber: line.lineNumber - (owner?.lineNumber ?? 1),
 			instruction: instruction(line).split(/\s+/)[0],
-		},
-		owner ? { projectBlockId: owner.lineNumber } : undefined
+		}
 	);
 }
 
@@ -169,23 +170,54 @@ export function sourceLines(nodes: SourceNode[]): string[] {
 /** Validate a model-owned block or group shell before source serialization. Child blocks are owned separately. */
 export function validateProjectCodeBlock(code: readonly string[], blockIndex: number): void {
 	const first = code.findIndex(line => line.trim() !== '');
-	if (first < 0) throw new Error(`Block ${blockIndex}: block has no content`);
+	if (first < 0)
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: block has no content`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, first) }
+		);
 	const opener = getProjectOpenerKeyword(code[first].trim());
-	if (!opener) throw new Error(`Block ${blockIndex}: unknown or missing opener "${code[first].trim()}"`);
+	if (!opener)
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: unknown or missing opener "${code[first].trim()}"`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, first) }
+		);
 	let last = code.length - 1;
 	while (code[last].trim() === '') last--;
 	const closer = getProjectCloserKeyword(code[last].trim());
-	if (!closer) throw new Error(`Block ${blockIndex}: unknown or missing closer "${code[last].trim()}"`);
+	if (!closer)
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: unknown or missing closer "${code[last].trim()}"`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, last) }
+		);
 	if (closer !== getExpectedProjectCloserPrefix(opener))
-		throw new Error(`Block ${blockIndex}: opener/closer mismatch (opener "${opener}", closer "${code[last].trim()}")`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: opener/closer mismatch (opener "${opener}", closer "${code[last].trim()}")`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, last) }
+		);
 	const reader = new ProjectSourceReader(code.join('\n'));
 	reader.position = first;
 	const block = reader.readBlock();
 	if (reader.position !== last + 1)
-		throw new Error(`Block ${blockIndex}: closer "${block.end.text.trim()}" is not at the end of the block`);
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: closer "${block.end.text.trim()}" is not at the end of the block`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, last) }
+		);
 	const nested = block.children.find(isBlock);
 	if (nested)
-		throw new Error(
-			`Block ${blockIndex}: mixed block type markers (found opener "${nested.start.text.trim()}" inside "${opener}" block)`
+		throw syntaxErrorAt(
+			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+			`Block ${blockIndex}: mixed block type markers (found opener "${nested.start.text.trim()}" inside "${opener}" block)`,
+			{ kind: 'document' },
+			{ lineNumber: Math.max(0, first) }
 		);
 }

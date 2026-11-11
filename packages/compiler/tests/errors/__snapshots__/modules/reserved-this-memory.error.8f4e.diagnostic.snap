@@ -1,21 +1,13 @@
 {
   "code": 38,
-  "context": {
-    "codeBlockId": "reservedThisMemory",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "this",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
-  "message": "Reserved identifier cannot be used as a memory allocation name: this. (38)",
+  "message": "Reserved memory identifier.",
 }

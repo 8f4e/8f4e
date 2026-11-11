@@ -3,7 +3,6 @@ export { BLOCK_DELIMITERS, FORMAT_HEADER, INCLUDES_BLOCK_DELIMITER } from './del
 export {
 	collectProjectIncludeIdsFromBlock,
 	collectProjectIncludeIdsFromText,
-	ProjectIncludeError,
 	resolveFunctionIncludeSource,
 	resolveProjectIncludes,
 	resolveProjectIncludesAsync,

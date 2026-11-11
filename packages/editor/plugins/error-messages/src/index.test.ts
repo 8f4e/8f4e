@@ -40,10 +40,11 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
-	const draw = { drawFill, drawGlyphs } as unknown as DrawContext;
+	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
 	const render = (codeBlock: CodeBlockGraphicData = block) =>
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
-	return { state, store, events, block, render, drawFill, drawGlyphs, dispose };
+	const renderOverlay = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
+	return { state, store, events, block, render, renderOverlay, drawFill, drawGlyphs, dispose };
 }
 
 describe('error messages plugin', () => {
@@ -175,5 +176,20 @@ entryEnd`),
 			textToGlyphIds(' Child error'),
 			expect.any(Number)
 		);
+	});
+	it('keeps unlocated and unmappable errors visible and clears them with their contributor', () => {
+		const test = setup({
+			custom: [{ message: 'Worker failed' }, { codeBlockId: 999, lineNumber: 2, message: 'Unmapped source' }],
+		});
+		test.store.set('viewport.width', 640);
+		test.renderOverlay();
+		expect(test.drawGlyphs.mock.calls.map(([, , glyphs]) => glyphs)).toEqual([
+			textToGlyphIds('Error: Worker failed'),
+			textToGlyphIds('Error: Unmapped source'),
+		]);
+		test.store.set('codeErrors.custom', []);
+		test.drawGlyphs.mockClear();
+		test.renderOverlay();
+		expect(test.drawGlyphs).not.toHaveBeenCalled();
 	});
 });

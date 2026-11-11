@@ -1,3 +1,4 @@
+import { CompilerError, getError } from '@8f4e/compiler-diagnostics';
 import type {
 	Argument,
 	CompilerASTLine,
@@ -20,7 +21,6 @@ import {
 	ArgumentType,
 	ErrorCode,
 	type ErrorCodeValue,
-	getError,
 	isArrayMemoryDeclarationLine,
 	isBinaryCompileTimeExpression,
 	isMemoryDeclarationLine,
@@ -39,25 +39,6 @@ export type {
 interface MemoryPlannerErrorDetails {
 	identifier?: string;
 	reason?: string;
-}
-
-export class MemoryPlannerError extends Error {
-	readonly compilerErrorCode: ErrorCodeValue;
-	readonly line: CompilerASTLine;
-	readonly details?: MemoryPlannerErrorDetails;
-
-	constructor(
-		compilerErrorCode: ErrorCodeValue,
-		line: CompilerASTLine,
-		message: string,
-		details?: MemoryPlannerErrorDetails
-	) {
-		super(message);
-		this.name = 'MemoryPlannerError';
-		this.compilerErrorCode = compilerErrorCode;
-		this.line = line;
-		this.details = details;
-	}
 }
 
 interface MemoryLayoutSourcePrototype {
@@ -95,10 +76,11 @@ export interface SubProgramMemoryLayoutPlanInput<
 function plannerError(
 	compilerErrorCode: ErrorCodeValue,
 	line: CompilerASTLine,
-	message = getError(compilerErrorCode, line).message,
+	message?: string,
 	details?: MemoryPlannerErrorDetails
-): MemoryPlannerError {
-	return new MemoryPlannerError(compilerErrorCode, line, message, details);
+) {
+	const error = getError(compilerErrorCode, line, { details: details });
+	return message ? new CompilerError({ ...error.diagnostic, message }) : error;
 }
 
 function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
@@ -249,9 +231,9 @@ function getEffectiveMemoryDeclarationSources(
 			declarationSources.push({
 				line: {
 					...declarationLine,
-					lineNumber: line.lineNumber,
 				},
 				isInherited: true,
+				shapeLine: line,
 			});
 		}
 	}
@@ -298,7 +280,9 @@ function planModuleMemory(
 
 	for (const declarationSource of declarationSources) {
 		const plannedDeclaration = planDeclarationLine(
-			declarationSource.line,
+			declarationSource.isInherited
+				? { ...declarationSource.line, lineNumber: declarationSource.shapeLine.lineNumber }
+				: declarationSource.line,
 			moduleByteAddress,
 			localAllocationUnitOffset
 		);

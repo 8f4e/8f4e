@@ -9,11 +9,7 @@ describe('drop instruction compiler', () => {
 
 		compileInstructionForTest(
 			drop,
-			{
-				lineNumber: 1,
-				instruction: 'drop',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'drop', arguments: [] },
 			context
 		);
 

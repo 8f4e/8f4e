@@ -13,6 +13,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 48,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -25,6 +30,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 48,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -37,12 +47,22 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 48,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 48,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -72,6 +92,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 57,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -84,6 +109,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 57,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -96,12 +126,22 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 57,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 57,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -180,6 +220,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -192,6 +237,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -213,6 +263,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -225,6 +280,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -246,6 +306,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -260,6 +325,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -274,6 +344,11 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -288,11 +363,21 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -304,11 +389,21 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "equal",
             "arguments": []
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -321,6 +416,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -332,11 +432,21 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -348,6 +458,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -366,17 +481,32 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 67,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 67,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -455,6 +585,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -467,6 +602,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -488,6 +628,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -500,6 +645,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -521,6 +671,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -535,6 +690,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -549,6 +709,11 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -563,11 +728,21 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -579,11 +754,21 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "equal",
             "arguments": []
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -596,6 +781,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -607,11 +797,21 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -623,6 +823,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -641,17 +846,32 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 91,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 91,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -706,6 +926,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -718,6 +943,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -739,6 +969,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "int[]",
             "arguments": [
               {
@@ -756,6 +991,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -776,6 +1016,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -790,6 +1035,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -802,6 +1052,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -815,16 +1070,31 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -837,6 +1107,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -851,11 +1126,21 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -866,6 +1151,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -880,6 +1170,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -894,11 +1189,21 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -908,6 +1213,11 @@
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -920,6 +1230,11 @@
           },
           {
             "lineNumber": 25,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -934,17 +1249,32 @@
           },
           {
             "lineNumber": 26,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 28,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 115,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 115,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -974,6 +1304,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 144,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -986,6 +1321,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 144,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -998,6 +1338,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 144,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1010,12 +1355,22 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 144,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 144,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1070,6 +1425,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1082,6 +1442,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1103,6 +1468,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1115,6 +1485,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1129,6 +1504,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1143,6 +1523,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1154,11 +1539,21 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "equal",
             "arguments": []
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -1171,6 +1566,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1182,11 +1582,21 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1198,6 +1608,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -1216,17 +1631,32 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 159,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 159,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1305,6 +1735,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1317,6 +1752,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1338,6 +1778,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1350,6 +1795,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1371,6 +1821,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1385,6 +1840,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1399,6 +1859,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1413,11 +1878,21 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1429,11 +1904,21 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterOrEqual",
             "arguments": []
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -1446,6 +1931,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1457,11 +1947,21 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1473,6 +1973,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -1491,17 +1996,32 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 177,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 177,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1580,6 +2100,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1592,6 +2117,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1613,6 +2143,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1625,6 +2160,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1646,6 +2186,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1660,6 +2205,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1674,6 +2224,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1688,11 +2243,21 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1704,11 +2269,21 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterOrEqual",
             "arguments": []
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -1721,6 +2296,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1732,11 +2312,21 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1748,6 +2338,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -1766,17 +2361,32 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 200,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 200,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1831,6 +2441,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1843,6 +2458,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1864,6 +2484,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "int[]",
             "arguments": [
               {
@@ -1881,6 +2506,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1901,6 +2531,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1915,6 +2550,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1927,6 +2567,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1940,16 +2585,31 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1962,6 +2622,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1976,11 +2641,21 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -1991,6 +2666,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2005,6 +2685,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2019,11 +2704,21 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2033,6 +2728,11 @@
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2045,6 +2745,11 @@
           },
           {
             "lineNumber": 25,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2059,17 +2764,32 @@
           },
           {
             "lineNumber": 26,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 28,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 223,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 223,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -2144,6 +2864,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2246,6 +2971,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2261,6 +2991,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2327,6 +3062,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 159,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2393,6 +3133,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2459,6 +3204,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 67,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2525,6 +3275,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 177,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2591,6 +3346,11 @@
           {
             "line": {
               "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 48,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2693,6 +3453,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
               "instruction": "int[]",
               "arguments": [
                 {
@@ -2713,6 +3478,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2823,6 +3593,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
               "instruction": "int[]",
               "arguments": [
                 {
@@ -2843,6 +3618,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2917,6 +3697,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 57,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2985,6 +3770,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3087,6 +3877,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3102,6 +3897,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3168,6 +3968,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 159,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3234,6 +4039,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3300,6 +4110,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 67,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3366,6 +4181,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 177,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3432,6 +4252,11 @@
           {
             "line": {
               "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 48,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3534,6 +4359,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
               "instruction": "int[]",
               "arguments": [
                 {
@@ -3554,6 +4384,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3664,6 +4499,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
               "instruction": "int[]",
               "arguments": [
                 {
@@ -3684,6 +4524,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3758,6 +4603,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 57,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {

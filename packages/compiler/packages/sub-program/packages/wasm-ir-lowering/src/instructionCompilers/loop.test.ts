@@ -8,6 +8,7 @@ describe('loop instruction compiler', () => {
 	it('uses distinct counter bindings for loops on the same source line', () => {
 		const context = createInstructionCompilerTestContext();
 		const open: ResolvedLoopLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'loop',
 			arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],
@@ -29,6 +30,7 @@ describe('loop instruction compiler', () => {
 		compileInstructionForTest(
 			loop,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'loop',
 				arguments: [{ type: ArgumentType.LITERAL, value: 1000, isInteger: true }],
@@ -49,6 +51,7 @@ describe('loop instruction compiler', () => {
 		compileInstructionForTest(
 			loop,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'loop',
 				arguments: [{ type: ArgumentType.LITERAL, value: 32, isInteger: true }],
@@ -69,6 +72,7 @@ describe('loop instruction compiler', () => {
 		compileInstructionForTest(
 			loop,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'loop',
 				arguments: [{ type: ArgumentType.LITERAL, value: 10, isInteger: true }],

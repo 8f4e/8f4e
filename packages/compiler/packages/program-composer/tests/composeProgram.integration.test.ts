@@ -51,6 +51,32 @@ describe('composeProgram fixtures', () => {
 		expect(fixtureNames.length).toBeGreaterThan(0);
 	});
 
+	it('binds exposure declarations to their owning scope while preserving stored rows', () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group outer
+entry main
+group inner
+; keep this row
+expose value &source:value
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		expect(composeProgram(project).memoryExposures).toEqual([
+			{
+				name: 'value',
+				targetModuleName: 'source',
+				targetMemoryName: 'value',
+				lineNumber: 2,
+				groupPath: 'outer/inner',
+				targetModuleId: 'outer/inner/source',
+				diagnosticSource: { kind: 'scope', projectGroupPath: 'outer/inner' },
+				instruction: 'expose',
+			},
+		]);
+	});
+
 	it('recomputes function passes without changing cached source calls', () => {
 		const source = readFileSync(path.join(fixtureDirectory, 'function-passes.8f4e'), 'utf8');
 		const project = parseProjectSource(source);

@@ -12,11 +12,7 @@ describe('xor stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'xor',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'xor', arguments: [] } as CompilerASTLine,
 			context
 		);
 

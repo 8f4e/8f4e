@@ -5,13 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { resolveSemanticReferences } from '../src';
 
 function resolveFunction(body: string[], isImpure = false) {
-	const ast = compileToAST([
-		'function caller',
-		...(isImpure ? ['#impure'] : []),
-		'param int* pointer',
-		...body,
-		'functionEnd',
-	]) as ValidatedFunctionAST;
+	const ast = compileToAST(
+		['function caller', ...(isImpure ? ['#impure'] : []), 'param int* pointer', ...body, 'functionEnd'],
+		{ kind: 'document' }
+	) as ValidatedFunctionAST;
 	const metadata: FunctionMetadata = {
 		id: 'caller__int_p',
 		name: 'caller',

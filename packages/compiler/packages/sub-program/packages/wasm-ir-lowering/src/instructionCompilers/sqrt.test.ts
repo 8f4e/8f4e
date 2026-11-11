@@ -13,11 +13,7 @@ describe('sqrt instruction compiler', () => {
 
 		compileInstructionForTest(
 			sqrt,
-			{
-				lineNumber: 1,
-				instruction: 'sqrt',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sqrt', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
@@ -32,11 +28,7 @@ describe('sqrt instruction compiler', () => {
 
 		compileInstructionForTest(
 			sqrt,
-			{
-				lineNumber: 1,
-				instruction: 'sqrt',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sqrt', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);

@@ -2,11 +2,11 @@ import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { parseMemoryInstructionArgumentsShape } from './memoryInstructionParser';
 import { classifyIdentifier } from './parseArgument';
-import { SyntaxRulesError } from './syntaxError';
+import { SyntaxIssue } from './syntaxError';
 
 describe('parseMemoryInstructionArgumentsShape', () => {
 	it('throws when first argument is missing', () => {
-		expect(() => parseMemoryInstructionArgumentsShape([])).toThrow(SyntaxRulesError);
+		expect(() => parseMemoryInstructionArgumentsShape([])).toThrow(SyntaxIssue);
 	});
 
 	it('parses literal argument', () => {
@@ -227,7 +227,7 @@ describe('parseMemoryInstructionArgumentsShape', () => {
 
 	it('throws when constant-style identifier is followed by a special reference', () => {
 		expect(() => parseMemoryInstructionArgumentsShape([classifyIdentifier('HI'), classifyIdentifier('&buf')])).toThrow(
-			SyntaxRulesError
+			SyntaxIssue
 		);
 	});
 });

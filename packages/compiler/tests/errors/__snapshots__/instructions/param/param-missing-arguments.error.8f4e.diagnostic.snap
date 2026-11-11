@@ -1,11 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "projectBlockId": 8,
-  },
-  "line": {
-    "instruction": "param",
+  "domain": "syntax",
+  "instruction": "param",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Missing required argument for param.",
 }

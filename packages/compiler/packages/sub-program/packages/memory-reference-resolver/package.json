@@ -26,7 +26,8 @@
   "dependencies": {
     "@8f4e/language-spec": "*",
     "@8f4e/memory-planner": "*",
-    "@8f4e/semantic-utils": "*"
+    "@8f4e/semantic-utils": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@8f4e/tokenizer": "*",

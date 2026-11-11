@@ -1,21 +1,14 @@
 {
   "code": 3,
-  "context": {
-    "codeBlockId": "ifElseIntReturnedAsFloat",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "float",
-      },
-    ],
-    "instruction": "ifEnd",
+  "domain": "semantic",
+  "instruction": "ifEnd",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 8,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "The operation only accepts float values as operands. (3)",
+  "symbol": "ifElseIntReturnedAsFloat",
 }

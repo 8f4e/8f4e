@@ -12,31 +12,37 @@ type SemanticReferenceResolverIntegrationInput = ResolveSemanticReferencesInput<
 describe('resolveSemanticReferences integration', () => {
 	it('resolves sub-program-level semantic references from pass-shaped fixtures', () => {
 		const prototypeLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'prototype',
 			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const valueDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int',
 			arguments: [{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const prototypeEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'prototypeEnd',
 			arguments: [],
 		} as const;
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const shapeLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'shape',
 			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const pushMemoryLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
 			arguments: [{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' }],
@@ -50,11 +56,13 @@ describe('resolveSemanticReferences integration', () => {
 			isEndAddress: false,
 		} as const;
 		const pushAddressLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
 			arguments: [valueAddressReference],
 		} as const;
 		const callLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 5,
 			instruction: 'call',
 			arguments: [
@@ -63,21 +71,25 @@ describe('resolveSemanticReferences integration', () => {
 			],
 		} as const;
 		const pushShapeLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 6,
 			instruction: 'pushShape',
 			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const moduleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 7,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const functionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'function',
 			arguments: [{ type: 'identifier', value: 'increment', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const paramLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'param',
 			arguments: [
@@ -86,6 +98,7 @@ describe('resolveSemanticReferences integration', () => {
 			],
 		} as const;
 		const localLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'local',
 			arguments: [
@@ -94,21 +107,25 @@ describe('resolveSemanticReferences integration', () => {
 			],
 		} as const;
 		const pushParamLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
 			arguments: [{ type: 'identifier', value: 'amount', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const localSetLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 5,
 			instruction: 'localSet',
 			arguments: [{ type: 'identifier', value: 'temp', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const pushLocalLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 6,
 			instruction: 'push',
 			arguments: [{ type: 'identifier', value: 'temp', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const functionEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 7,
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],

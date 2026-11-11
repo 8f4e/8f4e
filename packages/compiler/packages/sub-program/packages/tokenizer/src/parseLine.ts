@@ -1,6 +1,6 @@
 import type { Argument, CompilerASTLine } from '@8f4e/language-spec';
 import { parseArgument } from './syntax/parseArgument';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 import validateInstructionArguments from './syntax/validateInstructionArguments';
 
 /**
@@ -33,7 +33,7 @@ function tokenizeInstruction(line: string): string[] {
 				}
 			}
 			if (i >= len) {
-				throw new SyntaxRulesError(SyntaxErrorCode.INVALID_STRING_LITERAL, 'Unterminated string literal');
+				throw new SyntaxIssue(SyntaxErrorCode.INVALID_STRING_LITERAL, 'Unterminated string literal');
 			}
 			token += '"';
 			i++;
@@ -51,8 +51,8 @@ function tokenizeInstruction(line: string): string[] {
 }
 
 /** Recreates a syntax error with source line metadata from the parser context. */
-export function withSyntaxLine(error: SyntaxRulesError, lineNumber: number, instruction?: string): SyntaxRulesError {
-	return new SyntaxRulesError(error.code, error.message, {
+export function withSyntaxLine(error: SyntaxIssue, lineNumber: number, instruction?: string): SyntaxIssue {
+	return new SyntaxIssue(error.code, error.message, {
 		lineNumber,
 		instruction,
 	});
@@ -75,7 +75,7 @@ export function parseInstructionSourceLine(line: string, lineNumber: number): Pa
 			arguments: args.map(parseArgument),
 		};
 	} catch (error) {
-		if (error instanceof SyntaxRulesError) {
+		if (error instanceof SyntaxIssue) {
 			throw withSyntaxLine(error, lineNumber, instruction);
 		}
 		throw error;
@@ -93,7 +93,7 @@ export function parseInstructionTokens(line: string, lineNumber: number): string
 	try {
 		return tokenizeInstruction(line);
 	} catch (error) {
-		if (error instanceof SyntaxRulesError) {
+		if (error instanceof SyntaxIssue) {
 			throw withSyntaxLine(error, lineNumber);
 		}
 		throw error;
@@ -113,12 +113,13 @@ export function parseLine(line: string, lineNumber: number): CompilerASTLine {
 		validateInstructionArguments(parsed.instruction, parsed.arguments);
 		const parsedLine = {
 			lineNumber,
+			diagnosticSource: { kind: 'document' } as const,
 			...parsed,
 		} as CompilerASTLine;
 
 		return parsedLine;
 	} catch (error) {
-		if (error instanceof SyntaxRulesError) {
+		if (error instanceof SyntaxIssue) {
 			throw withSyntaxLine(error, lineNumber, parsed.instruction);
 		}
 		throw error;

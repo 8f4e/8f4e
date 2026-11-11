@@ -1,3 +1,4 @@
+import { CompilerError, getError, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type {
 	ArrayMemoryDeclarationLine,
 	CompilerASTLine,
@@ -14,13 +15,7 @@ import type {
 	ScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import { ArgumentType, BASE_TYPE_METADATA, ErrorCode, isArrayMemoryDeclarationLine } from '@8f4e/language-spec';
-import {
-	type MemoryArgumentShape,
-	parseMemoryInstructionArgumentsShape,
-	type SplitByteToken,
-	SyntaxErrorCode,
-	SyntaxRulesError,
-} from '@8f4e/tokenizer';
+import { type MemoryArgumentShape, parseMemoryInstructionArgumentsShape, type SplitByteToken } from '@8f4e/tokenizer';
 
 export interface ResolveMemoryDefaultsInput {
 	memoryPlan: MemoryLayoutPlan;
@@ -30,25 +25,6 @@ export interface ResolveMemoryDefaultsInput {
 interface MemoryDefaultResolverErrorDetails {
 	identifier?: string;
 	reason?: string;
-}
-
-export class MemoryDefaultResolverError extends Error {
-	readonly compilerErrorCode: ErrorCodeValue;
-	readonly line: CompilerASTLine;
-	readonly details?: MemoryDefaultResolverErrorDetails;
-
-	constructor(
-		compilerErrorCode: ErrorCodeValue,
-		line: CompilerASTLine,
-		message: string,
-		details?: MemoryDefaultResolverErrorDetails
-	) {
-		super(message);
-		this.name = 'MemoryDefaultResolverError';
-		this.compilerErrorCode = compilerErrorCode;
-		this.line = line;
-		this.details = details;
-	}
 }
 
 interface ScalarDefaultResolution {
@@ -62,8 +38,9 @@ function resolverError(
 	line: CompilerASTLine,
 	message: string,
 	details?: MemoryDefaultResolverErrorDetails
-): MemoryDefaultResolverError {
-	return new MemoryDefaultResolverError(compilerErrorCode, line, message, details);
+) {
+	const error = getError(compilerErrorCode, line, { details: details });
+	return new CompilerError({ ...error.diagnostic, message });
 }
 
 function combineSplitHexBytes(bytes: readonly number[], maxBytes: number): number {
@@ -99,15 +76,10 @@ function resolveSplitByteTokens(tokens: readonly SplitByteToken[], line: Compile
 
 function parseScalarDeclarationShape(
 	line: ScalarMemoryDeclarationLine
-): ReturnType<typeof parseMemoryInstructionArgumentsShape> {
-	try {
-		return parseMemoryInstructionArgumentsShape(line.arguments);
-	} catch (error) {
-		if (error instanceof SyntaxRulesError && error.code === SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS) {
-			throw resolverError(ErrorCode.SPLIT_HEX_MIXED_TOKENS, line, 'Split hex default mixes literals and constants.');
-		}
-		throw error;
-	}
+): import('@8f4e/tokenizer').ParsedMemoryInstructionArguments {
+	const result = parseMemoryInstructionArgumentsShape(line.arguments);
+	if (!result.ok) throw syntaxErrorAt(result.issue.code, result.issue.message, line.diagnosticSource, line);
+	return result.value;
 }
 
 function assertDeclarableScalarIdentifier(shape: MemoryArgumentShape, line: ScalarMemoryDeclarationLine): void {

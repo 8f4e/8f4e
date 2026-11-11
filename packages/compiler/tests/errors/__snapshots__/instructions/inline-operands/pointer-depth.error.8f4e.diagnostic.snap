@@ -1,23 +1,14 @@
 {
   "code": 57,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "dereferenceDepth": 2,
-        "referenceKind": "memory-pointer",
-        "scope": "local",
-        "targetMemoryId": "pointer",
-        "type": "identifier",
-        "value": "**pointer",
-      },
-    ],
-    "instruction": "add",
+  "domain": "semantic",
+  "instruction": "add",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Pointer dereference depth exceeds the declared pointer depth: **pointer. (57)",
+  "symbol": "invalid",
 }

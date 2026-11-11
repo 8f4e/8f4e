@@ -24,6 +24,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 3,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float[]",
             "lineNumber": 22,
           },
@@ -44,6 +47,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 6,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int16u[]",
             "lineNumber": 23,
           },
@@ -146,7 +152,25 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "phase",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float",
+            "lineNumber": 2,
+          },
+          "shapeLine": {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "state",
+              },
+            ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
+            "instruction": "shape",
             "lineNumber": 11,
           },
         },
@@ -161,7 +185,25 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "gain",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float",
+            "lineNumber": 3,
+          },
+          "shapeLine": {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "state",
+              },
+            ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
+            "instruction": "shape",
             "lineNumber": 11,
           },
         },
@@ -176,6 +218,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "counter",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int",
             "lineNumber": 12,
           },
@@ -196,6 +241,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 5,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int8[]",
             "lineNumber": 13,
           },
@@ -216,6 +264,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 2,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float64[]",
             "lineNumber": 14,
           },
@@ -435,6 +486,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 3,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float[]",
             "lineNumber": 22,
           },
@@ -455,6 +509,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 6,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int16u[]",
             "lineNumber": 23,
           },
@@ -557,7 +614,25 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "phase",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float",
+            "lineNumber": 2,
+          },
+          "shapeLine": {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "state",
+              },
+            ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
+            "instruction": "shape",
             "lineNumber": 11,
           },
         },
@@ -572,7 +647,25 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "gain",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float",
+            "lineNumber": 3,
+          },
+          "shapeLine": {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "state",
+              },
+            ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
+            "instruction": "shape",
             "lineNumber": 11,
           },
         },
@@ -587,6 +680,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": "counter",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int",
             "lineNumber": 12,
           },
@@ -607,6 +703,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 5,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "int8[]",
             "lineNumber": 13,
           },
@@ -627,6 +726,9 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
                 "value": 2,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "float64[]",
             "lineNumber": 14,
           },

@@ -1,29 +1,14 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 6,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "slot",
-      },
-      {
-        "referenceKind": "intermodular-module-nth-reference",
-        "scope": "intermodule",
-        "targetMemoryIndex": 1,
-        "targetModuleId": "source",
-        "type": "identifier",
-        "value": "&source:1",
-      },
-    ],
-    "instruction": "int&",
+  "domain": "semantic",
+  "instruction": "int&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 6,
+    "projectGroupPath": "",
   },
   "message": "Undeclared identifier: &source:1. (5)",
+  "symbol": "invalid",
 }

@@ -36,16 +36,13 @@ export { default as isIntermodularReference } from './isIntermodularReference';
 export { default as isIntermodularReferencePattern } from './isIntermodularReferencePattern';
 export { default as isMemoryPointerIdentifier } from './isMemoryPointerIdentifier';
 export { default as isSkipExecutionDirective } from './isSkipExecutionDirective';
-export {
-	type MemoryArgumentShape,
-	type ParsedMemoryInstructionArguments,
-	parseMemoryInstructionArgumentsShape,
-	type SplitByteToken,
+export type {
+	MemoryArgumentShape,
+	ParsedMemoryInstructionArguments,
+	SplitByteToken,
 } from './memoryInstructionParser';
-export { classifyIdentifier, decodeStringLiteral, parseArgument, parseCompileTimeOperand } from './parseArgument';
-export {
-	type CompileTimeMulDivExpression,
-	default as parseConstantMulDivExpression,
-} from './parseConstantMulDivExpression';
-export { default as parseLiteralMulDivExpression, type LiteralMulDivResult } from './parseLiteralMulDivExpression';
-export { SyntaxErrorCode, type SyntaxErrorLine, SyntaxRulesError } from './syntaxError';
+
+export type { CompileTimeMulDivExpression } from './parseConstantMulDivExpression';
+export type { LiteralMulDivResult } from './parseLiteralMulDivExpression';
+export * from './public';
+export { SyntaxErrorCode, type SyntaxErrorLine, syntaxErrorMessage } from './syntaxError';

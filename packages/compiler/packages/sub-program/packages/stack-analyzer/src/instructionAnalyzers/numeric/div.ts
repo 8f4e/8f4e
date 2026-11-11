@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { BASE_TYPE_METADATA, ErrorCode, getError } from '@8f4e/language-spec';
+import { BASE_TYPE_METADATA, ErrorCode } from '@8f4e/language-spec';
 import { deriveKnownIntegerValue } from '../../utils/knownIntegerValue';
 import { consume, produce } from '../stack';
 import type { InstructionAnalysisResult } from '../types';
@@ -17,7 +18,7 @@ export function analyzeDiv(line: CompilerASTLine, context: CompilationContext): 
 	const right = consumed[1];
 
 	if (!right.isNonZero) {
-		throw getError(ErrorCode.DIVISION_BY_ZERO, line, context);
+		throw getError(ErrorCode.DIVISION_BY_ZERO, line, { symbol: context.codeBlockId });
 	}
 
 	const produced = [

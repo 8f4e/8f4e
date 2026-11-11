@@ -14,9 +14,11 @@
 ## Contracts and Tests
 
 - Keep compiler stage dependencies external in library bundles so consumers share their error classes.
-- Choose errors by detection phase. Use tokenizer's `SyntaxRulesError` and `SyntaxErrorCode` for token or
-  argument shape. Use language-spec's `getError` and `ErrorCode` for semantic checks. Keep default messages
-  in the central registries and add throw-site text for dynamic context.
+- Choose diagnostic domains by detection phase. Public tokenizer helpers return `SyntaxResult` failure data for
+  token or argument shape. Use `syntaxErrorAt` or `getError` from `@8f4e/compiler-diagnostics` to construct a
+  located `CompilerError`. Keep default wording in the syntax and semantic registries.
+- Preserve each line's required `diagnosticSource` through compiler passes. Bind cached syntax to the current
+  source without mutating the cache. Keep inherited declarations' original source and their shape site distinct.
 - Downstream stages rely on tokenizer validation and semantic normalization. Keep diagnostics block-relative.
 - Extend `tests/**/*.test.8f4e` for language and generated-program behavior and
   `tests/errors/**/*.error.8f4e` for diagnostics. Use TypeScript tests for host APIs, generated inputs and

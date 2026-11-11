@@ -10,6 +10,7 @@ describe('equalToZero stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'equalToZero',
 				arguments: [],
@@ -26,6 +27,7 @@ describe('equalToZero stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'equalToZero',
 				arguments: [],
@@ -42,6 +44,7 @@ describe('equalToZero stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'equalToZero',
 				arguments: [],

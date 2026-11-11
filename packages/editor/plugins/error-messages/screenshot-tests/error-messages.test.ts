@@ -78,6 +78,9 @@ test('draws wrapped contributor messages between source rows and clears their re
 		context.store.set('codeErrors.fixture-two', []);
 		expect(block.gaps.size).toBe(0);
 		expect(block.height).toBe(height);
+		context.store.set('codeErrors.fixture-global', [{ message: 'Internal compiler error: worker unavailable' }]);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('unlocated-error');
 	} finally {
 		editor.dispose();
 		canvas.remove();

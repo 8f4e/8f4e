@@ -14,6 +14,7 @@ describe('remainder stack analysis', () => {
 		expect(() => {
 			analyzeInstruction(
 				{
+					diagnosticSource: { kind: 'document' },
 					lineNumber: 1,
 					instruction: 'remainder',
 					arguments: [],
@@ -32,6 +33,7 @@ describe('remainder stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'remainder',
 				arguments: [],

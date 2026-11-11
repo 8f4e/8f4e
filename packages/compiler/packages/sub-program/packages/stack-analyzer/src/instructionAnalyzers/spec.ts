@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	CompilerASTLine,
@@ -7,7 +8,7 @@ import type {
 	StackMutationSpec,
 	StackProducedItemSpec,
 } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { consume, createStackValue, produce } from './stack';
 import type { InstructionAnalysisResult } from './types';
 
@@ -26,7 +27,7 @@ function analyzeExpectedBlockResult(
 	const consumed = consume(context, expectedResultTypes.length);
 
 	if (consumed.length < expectedResultTypes.length) {
-		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, context);
+		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, { symbol: context.codeBlockId });
 	}
 
 	for (let index = 0; index < expectedResultTypes.length; index++) {
@@ -34,11 +35,11 @@ function analyzeExpectedBlockResult(
 		const operand = consumed[index];
 
 		if (expectedResultType === 'int' && operand.valueType !== 'int') {
-			throw getError(ErrorCode.ONLY_INTEGERS, line, context);
+			throw getError(ErrorCode.ONLY_INTEGERS, line, { symbol: context.codeBlockId });
 		}
 
 		if (expectedResultType === 'float' && operand.valueType !== 'float') {
-			throw getError(ErrorCode.ONLY_FLOATS, line, context);
+			throw getError(ErrorCode.ONLY_FLOATS, line, { symbol: context.codeBlockId });
 		}
 	}
 

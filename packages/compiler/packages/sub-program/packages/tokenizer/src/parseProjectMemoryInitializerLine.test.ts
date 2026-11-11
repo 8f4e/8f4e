@@ -5,6 +5,7 @@ import { SyntaxErrorCode } from './syntax/syntaxError';
 describe('parseProjectMemoryInitializerLine', () => {
 	it('preserves structured references and accepts an inline comment', () => {
 		expect(parseProjectMemoryInitializerLine('init &input &source:output ; connection', 4)).toMatchObject({
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'init',
 			arguments: [

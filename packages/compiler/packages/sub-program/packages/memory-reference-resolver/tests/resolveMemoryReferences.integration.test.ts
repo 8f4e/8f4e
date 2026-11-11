@@ -12,11 +12,13 @@ type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<
 describe('resolveMemoryReferences integration', () => {
 	it('resolves sub-program-level memory references from pass-shaped fixtures', () => {
 		const mainModuleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const samplesDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'float[]',
 			arguments: [
@@ -33,11 +35,13 @@ describe('resolveMemoryReferences integration', () => {
 			isEndAddress: false,
 		} as const;
 		const pointerDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'float*',
 			arguments: [{ type: 'identifier', value: 'ptr', referenceKind: 'plain', scope: 'local' }, samplesStartReference],
 		} as const;
 		const localAddressExpressionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
 			arguments: [
@@ -50,6 +54,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const pointeeCountLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 5,
 			instruction: 'push',
 			arguments: [
@@ -64,6 +69,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const audioAddressLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 6,
 			instruction: 'push',
 			arguments: [
@@ -79,16 +85,19 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const mainModuleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 7,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const audioModuleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 10,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'audio', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const audioSamplesDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 12,
 			instruction: 'int16u[]',
 			arguments: [
@@ -97,16 +106,19 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const audioModuleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 13,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const constantsLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'constants',
 			arguments: [{ type: 'identifier', value: 'layout', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const audioCountConstantLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'const',
 			arguments: [
@@ -123,16 +135,19 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const constantsEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'constantsEnd',
 			arguments: [],
 		} as const;
 		const functionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'function',
 			arguments: [{ type: 'identifier', value: 'readPointer', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const pointerParamLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'param',
 			arguments: [
@@ -141,6 +156,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const pointeeSizeLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
 			arguments: [
@@ -155,6 +171,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const functionEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],

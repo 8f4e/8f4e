@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { validateOperandTypes } from './validateOperandTypes';
 
 const line: Parameters<InstructionCompiler>[0] = {
+	diagnosticSource: { kind: 'document' },
 	lineNumber: 1,
 	instruction: 'test' as never,
 	arguments: [],

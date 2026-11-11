@@ -12,11 +12,7 @@ describe('clearStack instruction compiler', () => {
 
 		compileInstructionForTest(
 			clearStack,
-			{
-				lineNumber: 1,
-				instruction: 'clearStack',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'clearStack', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

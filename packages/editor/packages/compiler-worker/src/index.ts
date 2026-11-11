@@ -1,4 +1,4 @@
-import { serializeDiagnostic } from '@8f4e/compiler';
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileOptions, ProjectObjectModel } from '@8f4e/language-spec';
 import compileAndUpdateMemory from './compileAndUpdateMemory';
 import { createIncludeSourceCache } from './includeSourceCache';
@@ -22,7 +22,7 @@ async function compile(project: ProjectObjectModel, compilerOptions: CompileOpti
 		self.postMessage({
 			type: 'compilationError',
 			compilationId,
-			payload: serializeDiagnostic(error),
+			payload: serializeDiagnostic(error, 'compile'),
 		});
 	}
 }

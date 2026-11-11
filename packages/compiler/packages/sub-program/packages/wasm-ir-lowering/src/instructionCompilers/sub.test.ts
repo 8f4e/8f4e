@@ -12,11 +12,7 @@ describe('sub instruction compiler', () => {
 
 		compileInstructionForTest(
 			sub,
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -37,11 +33,7 @@ describe('sub instruction compiler', () => {
 
 		compileInstructionForTest(
 			sub,
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -62,11 +54,7 @@ describe('sub instruction compiler', () => {
 
 		compileInstructionForTest(
 			sub,
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

@@ -10,6 +10,7 @@ function createResolvedMemoryPointerPushLine(
 	dereferenceDepth = 1
 ): ResolvedMemoryPointerPushLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [pointerIdentifier(memoryId, dereferenceDepth)],

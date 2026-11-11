@@ -12,6 +12,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "sizes",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "constants",
       "lineNumber": 0,
     },
@@ -26,6 +29,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "sizes",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "constants",
         "lineNumber": 0,
       },
@@ -43,6 +49,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 8,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "const",
         "lineNumber": 1,
       },
@@ -64,11 +73,17 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "&synth:buffer",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "const",
         "lineNumber": 2,
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "constantsEnd",
         "lineNumber": 3,
       },
@@ -85,6 +100,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "mixExport",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "#export",
       "isBlockPrologue": true,
       "lineNumber": 2,
@@ -104,6 +122,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "float",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "functionEnd",
       "lineNumber": 10,
     },
@@ -116,6 +137,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "mix",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "function",
       "lineNumber": 1,
     },
@@ -134,6 +158,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 2,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "const",
         "lineNumber": 0,
       },
@@ -146,6 +173,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "mix",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "function",
         "lineNumber": 1,
       },
@@ -158,6 +188,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "mixExport",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "#export",
         "isBlockPrologue": true,
         "lineNumber": 2,
@@ -177,6 +210,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "left",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "param",
         "lineNumber": 3,
       },
@@ -195,6 +231,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "right",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "param",
         "lineNumber": 4,
       },
@@ -213,6 +252,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "output",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "local",
         "lineNumber": 5,
       },
@@ -223,6 +265,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "resultTypes": [
             "float",
           ],
+        },
+        "diagnosticSource": {
+          "kind": "document",
         },
         "instruction": "block",
         "lineNumber": 6,
@@ -236,6 +281,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "right",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 7,
       },
@@ -254,6 +302,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "float",
           ],
         },
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "blockEnd",
         "lineNumber": 8,
       },
@@ -266,6 +317,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "left",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 9,
       },
@@ -284,6 +338,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "float",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "functionEnd",
         "lineNumber": 10,
       },
@@ -303,11 +360,17 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "synth",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "module",
         "lineNumber": 0,
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "#skipExecution",
         "isBlockPrologue": true,
         "lineNumber": 1,
@@ -326,6 +389,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 0.5,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "float",
         "lineNumber": 2,
       },
@@ -349,6 +415,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 10,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "int[]",
         "lineNumber": 3,
       },
@@ -370,6 +439,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "&audio:samples",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "float*",
         "lineNumber": 6,
       },
@@ -380,6 +452,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "ready",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 7,
       },
@@ -393,6 +468,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "count(buffer)",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 8,
       },
@@ -414,6 +492,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "&audio:samples",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "float&",
         "lineNumber": 9,
       },
@@ -428,6 +509,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "sizeof(*samples)",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 10,
       },
@@ -442,6 +526,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "&buffer",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 11,
       },
@@ -456,6 +543,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "buffer&",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 12,
       },
@@ -470,11 +560,17 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "*readHead",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 13,
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "ifBlock": {
           "hasElse": true,
           "matchingIfEndIndex": 16,
@@ -493,11 +589,17 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 1,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 15,
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "else",
         "lineNumber": 16,
       },
@@ -509,6 +611,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": 0,
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "push",
         "lineNumber": 17,
       },
@@ -521,6 +626,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "int",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "ifEndBlock": {
           "matchingIfIndex": 12,
           "resultTypes": [
@@ -532,6 +640,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "moduleEnd",
         "lineNumber": 19,
       },
@@ -545,6 +656,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "synth",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "module",
       "lineNumber": 0,
     },
@@ -562,6 +676,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "state",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "prototype",
         "lineNumber": 0,
       },
@@ -574,6 +691,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "phase",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "float",
         "lineNumber": 1,
       },
@@ -592,11 +712,17 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "TABLE_SIZE",
           },
         ],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "int[]",
         "lineNumber": 2,
       },
       {
         "arguments": [],
+        "diagnosticSource": {
+          "kind": "document",
+        },
         "instruction": "prototypeEnd",
         "lineNumber": 4,
       },
@@ -610,6 +736,9 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
           "value": "state",
         },
       ],
+      "diagnosticSource": {
+        "kind": "document",
+      },
       "instruction": "prototype",
       "lineNumber": 0,
     },

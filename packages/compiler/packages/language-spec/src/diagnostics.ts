@@ -1,45 +1,59 @@
-import type { SourceMetadata } from './compiled';
-import type { CompilerSourceBlockType } from './instructions';
 import type { ProjectGroupPath } from './project';
-import type { CodegenContext, CompilationContext } from './semantic';
 
-/** Source block context attached to a serialized compiler diagnostic. */
-export interface CompilerDiagnosticContext {
-	codeBlockId?: string;
-	codeBlockType?: CompilerSourceBlockType;
-	projectBlockId?: number;
-	source?: SourceMetadata;
-	projectGroupPath?: ProjectGroupPath;
-	projectMemoryExposureName?: string;
-}
+/** Source ownership is explicit even before a document has been divided into blocks. */
+export type DiagnosticSource =
+	| { readonly kind: 'document' }
+	| { readonly kind: 'block'; readonly projectBlockId: number; readonly projectGroupPath: ProjectGroupPath }
+	| { readonly kind: 'scope'; readonly projectGroupPath: ProjectGroupPath }
+	| {
+			readonly kind: 'include-file';
+			readonly includeId: string;
+			/** Present when this file was loaded through a project declaration. */
+			readonly includeSite?: {
+				readonly projectBlockId: number;
+				readonly projectGroupPath: ProjectGroupPath;
+				readonly lineNumber: number;
+			};
+	  }
+	| {
+			readonly kind: 'include';
+			readonly includeId: string;
+			readonly symbolName: string;
+			readonly projectGroupPath: ProjectGroupPath;
+			readonly includeSite: { readonly projectBlockId: number; readonly lineNumber: number };
+	  };
 
-/**
- * Internal compiler-stage error shape returned by getError().
- * This is not the public cross-stage contract; consumers should use CompilerDiagnostic.
- */
-export interface CompilerStageError {
-	message: string;
-	line?: CompilerDiagnosticLine;
-	context?: CodegenContext | CompilationContext | CompilerDiagnosticContext;
-	code: number;
-}
+/** Zero-based line in the identified document, block, project scope, or include source. */
+export type DiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
 
-/**
- * The shared, serializable diagnostic shape exposed to all consumers of the compiler pipeline.
- * Both syntax errors (SyntaxRulesError) and semantic/compiler errors conform to this contract
- * once serialized. Consumers must not special-case either stage.
- */
+/** Source line supplied to diagnostic construction after syntax has identified its position. */
 export interface CompilerDiagnosticLine {
+	readonly diagnosticSource: DiagnosticSource;
 	lineNumber: number;
 	instruction?: string;
 	arguments?: unknown[];
 }
 
 /** Serializable compiler diagnostic shared across syntax and semantic stages. */
-export interface CompilerDiagnostic {
-	/** Numeric ErrorCode for compiler errors; numeric SyntaxErrorCode for syntax errors. */
+export interface SourceDiagnostic {
+	kind: 'source';
+	domain: 'syntax' | 'semantic' | 'include';
+	/** Numeric code from the registry identified by domain: ErrorCode, SyntaxErrorCode, or IncludeErrorCode. */
 	code: number;
 	message: string;
-	line: CompilerDiagnosticLine;
-	context: CompilerDiagnosticContext;
+	location: DiagnosticLocation;
+	instruction?: string;
+	symbol?: string;
 }
+
+/** Unexpected failures retain debugging context without inventing a source position. */
+export interface InternalCompilerDiagnostic {
+	kind: 'internal';
+	message: string;
+	stage: string;
+	stack?: string;
+	location?: DiagnosticLocation;
+}
+
+/** Complete, serializable diagnostic shared by compiler hosts and worker transports. */
+export type CompilerDiagnostic = SourceDiagnostic | InternalCompilerDiagnostic;

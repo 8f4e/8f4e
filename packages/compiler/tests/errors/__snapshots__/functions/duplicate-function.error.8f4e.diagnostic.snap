@@ -1,20 +1,13 @@
 {
   "code": 66,
-  "context": {
-    "codeBlockType": "function",
-    "projectBlockId": 11,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "same",
-      },
-    ],
-    "instruction": "function",
+  "domain": "semantic",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 11,
+    "projectGroupPath": "",
   },
   "message": "Duplicate function overload signature: same__void. Function overloads must have unique parameter signatures. (66)",
 }

@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, ResolvedLocalSetLine, Stack } from '@8f4e/language-spec';
-import { ErrorCode, getError, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
+import { ErrorCode, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
 import { consume } from './stack';
 
 /**
@@ -19,19 +20,19 @@ export function analyzeLocalSet(
 	const local = context.locals[localName]!;
 
 	if (local.isInteger && operand.valueType !== 'int') {
-		throw getError(ErrorCode.ONLY_INTEGERS, line, context);
+		throw getError(ErrorCode.ONLY_INTEGERS, line, { symbol: context.codeBlockId });
 	}
 
 	if (!local.isInteger && operand.valueType === 'int') {
-		throw getError(ErrorCode.ONLY_FLOATS, line, context);
+		throw getError(ErrorCode.ONLY_FLOATS, line, { symbol: context.codeBlockId });
 	}
 
 	if (!local.isInteger && (operand.valueType === 'float64') !== !!local.isFloat64) {
-		throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, context);
+		throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, { symbol: context.codeBlockId });
 	}
 
 	if (!stackItemMatchesFunctionValueType(operand, (line as ResolvedLocalSetLine).binding.type)) {
-		throw getError(ErrorCode.TYPE_MISMATCH, line, context);
+		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
 	}
 
 	return { consumed, produced: [] };

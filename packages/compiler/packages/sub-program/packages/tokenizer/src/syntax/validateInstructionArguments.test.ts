@@ -2,7 +2,7 @@ import { ArgumentType, referenceSlotInstructions } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
 import { classifyIdentifier } from './parseArgument';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 import validateInstructionArguments from './validateInstructionArguments';
 
 const { parseCompileTimeOperand } = await import('./parseArgument');
@@ -31,8 +31,8 @@ describe('validateInstructionArguments', () => {
 		).toThrow(expect.objectContaining({ code: SyntaxErrorCode.INVALID_REFERENCE_SLOT }));
 	});
 	it('enforces missing arguments for known instruction arity', () => {
-		expect(() => validateInstructionArguments('push', [])).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('map', [])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('push', [])).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('map', [])).toThrowError(SyntaxIssue);
 	});
 
 	it('rejects unknown instruction names before argument validation', () => {
@@ -61,11 +61,11 @@ describe('validateInstructionArguments', () => {
 				{ type: ArgumentType.LITERAL, value: 1, isInteger: true },
 				{ type: ArgumentType.LITERAL, value: 2, isInteger: true },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('module', [classifyIdentifier('main'), classifyIdentifier('extra')])
-		).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('abs', [classifyIdentifier('extra')])).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('abs', [classifyIdentifier('extra')])).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts one push-style arithmetic operand but rejects two', () => {
@@ -73,7 +73,7 @@ describe('validateInstructionArguments', () => {
 		expect(() => validateInstructionArguments('add', [classifyIdentifier('*gain')])).not.toThrow();
 		expect(() =>
 			validateInstructionArguments('add', [classifyIdentifier('first'), classifyIdentifier('second')])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it.each(['audioOut', 'XORShift', 'voice_1', 'low-pass', '_internal'])('accepts the module name %s', moduleName => {
@@ -108,13 +108,13 @@ describe('validateInstructionArguments', () => {
 				{ type: ArgumentType.STRING_LITERAL, value: 'AB' },
 				{ type: ArgumentType.LITERAL, value: 1, isInteger: true },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('rejects unsupported type identifiers', () => {
 		expect(() =>
 			validateInstructionArguments('param', [classifyIdentifier('bool'), classifyIdentifier('x')])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts pointer type identifiers for params, locals, and functionEnd', () => {
@@ -135,14 +135,12 @@ describe('validateInstructionArguments', () => {
 	});
 
 	it('still rejects pointer type identifiers where only scalar types are valid', () => {
-		expect(() => validateInstructionArguments('mapBegin', [classifyIdentifier('float*')])).toThrowError(
-			SyntaxRulesError
-		);
+		expect(() => validateInstructionArguments('mapBegin', [classifyIdentifier('float*')])).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts bare #impure and rejects any arguments', () => {
 		expect(() => validateInstructionArguments('#impure', [])).not.toThrow();
-		expect(() => validateInstructionArguments('#impure', [classifyIdentifier('x')])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('#impure', [classifyIdentifier('x')])).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts an optional identifier argument for #export', () => {
@@ -150,10 +148,10 @@ describe('validateInstructionArguments', () => {
 		expect(() => validateInstructionArguments('#export', [])).not.toThrow();
 		expect(() =>
 			validateInstructionArguments('#export', [classifyIdentifier('onMidiCC'), classifyIdentifier('extra')])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('#export', [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts one identifier or string literal field argument for #import', () => {
@@ -161,18 +159,18 @@ describe('validateInstructionArguments', () => {
 		expect(() =>
 			validateInstructionArguments('#import', [{ type: ArgumentType.STRING_LITERAL, value: 'log.value' }])
 		).not.toThrow();
-		expect(() => validateInstructionArguments('#import', [])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('#import', [])).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('#import', [classifyIdentifier('log'), classifyIdentifier('extra')])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('#import', [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts bare exitIfTrue and rejects any arguments', () => {
 		expect(() => validateInstructionArguments('exitIfTrue', [])).not.toThrow();
-		expect(() => validateInstructionArguments('exitIfTrue', [classifyIdentifier('x')])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('exitIfTrue', [classifyIdentifier('x')])).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts an optional literal fallback for ensureNonZero', () => {
@@ -181,14 +179,14 @@ describe('validateInstructionArguments', () => {
 			validateInstructionArguments('ensureNonZero', [{ type: ArgumentType.LITERAL, value: 0.000001, isInteger: false }])
 		).not.toThrow();
 		expect(() => validateInstructionArguments('ensureNonZero', [classifyIdentifier('fallback')])).toThrowError(
-			SyntaxRulesError
+			SyntaxIssue
 		);
 		expect(() =>
 			validateInstructionArguments('ensureNonZero', [
 				{ type: ArgumentType.LITERAL, value: 1, isInteger: true },
 				{ type: ArgumentType.LITERAL, value: 2, isInteger: true },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('requires a non-negative compile-time byte count for memoryCopy', () => {
@@ -196,10 +194,10 @@ describe('validateInstructionArguments', () => {
 			validateInstructionArguments('memoryCopy', [{ type: ArgumentType.LITERAL, value: 20, isInteger: true }])
 		).not.toThrow();
 		expect(() => validateInstructionArguments('memoryCopy', [classifyIdentifier('sizeof(buffer)')])).not.toThrow();
-		expect(() => validateInstructionArguments('memoryCopy', [])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('memoryCopy', [])).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('memoryCopy', [{ type: ArgumentType.LITERAL, value: -1, isInteger: true }])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts multiple result types for ifEnd', () => {
@@ -229,7 +227,7 @@ describe('validateInstructionArguments', () => {
 				classifyIdentifier('foo'),
 				{ type: ArgumentType.LITERAL, value: 1, isInteger: true },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('validates array declaration argument shapes', () => {
@@ -265,16 +263,16 @@ describe('validateInstructionArguments', () => {
 				{ type: ArgumentType.LITERAL, value: 8, isInteger: true },
 				{ type: ArgumentType.STRING_LITERAL, value: 'AB' },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('rejects any argument for block', () => {
-		expect(() => validateInstructionArguments('block', [classifyIdentifier('int')])).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('block', [classifyIdentifier('float')])).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('block', [classifyIdentifier('void')])).toThrowError(SyntaxRulesError);
+		expect(() => validateInstructionArguments('block', [classifyIdentifier('int')])).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('block', [classifyIdentifier('float')])).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('block', [classifyIdentifier('void')])).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('block', [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts bare blockEnd', () => {
@@ -289,13 +287,13 @@ describe('validateInstructionArguments', () => {
 		expect(() => validateInstructionArguments('clampAddress', [classifyIdentifier('sizeof(buffer)')])).not.toThrow();
 		expect(() =>
 			validateInstructionArguments('clampGlobalAddress', [{ type: ArgumentType.LITERAL, value: -1, isInteger: true }])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 		expect(() =>
 			validateInstructionArguments('clampAddress', [
 				{ type: ArgumentType.LITERAL, value: 4, isInteger: true },
 				{ type: ArgumentType.LITERAL, value: 4, isInteger: true },
 			])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it('accepts blockEnd with int or float', () => {
@@ -304,17 +302,15 @@ describe('validateInstructionArguments', () => {
 	});
 
 	it('rejects blockEnd with invalid type identifiers', () => {
-		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('void')])).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('bool')])).toThrowError(SyntaxRulesError);
-		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('string')])).toThrowError(
-			SyntaxRulesError
-		);
+		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('void')])).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('bool')])).toThrowError(SyntaxIssue);
+		expect(() => validateInstructionArguments('blockEnd', [classifyIdentifier('string')])).toThrowError(SyntaxIssue);
 	});
 
 	it('rejects too many result types for blockEnd', () => {
 		expect(() =>
 			validateInstructionArguments('blockEnd', [classifyIdentifier('int'), classifyIdentifier('float')])
-		).toThrowError(SyntaxRulesError);
+		).toThrowError(SyntaxIssue);
 	});
 
 	it.each(['branch', 'branchIfTrue'] as const)(

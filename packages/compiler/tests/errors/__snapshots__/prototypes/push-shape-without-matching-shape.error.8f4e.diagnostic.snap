@@ -1,21 +1,14 @@
 {
   "code": 65,
-  "context": {
-    "codeBlockId": "main",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "mixerState",
-      },
-    ],
-    "instruction": "pushShape",
+  "domain": "semantic",
+  "instruction": "pushShape",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "pushShape requires the current module to declare the requested shape. (65)",
+  "symbol": "main",
 }

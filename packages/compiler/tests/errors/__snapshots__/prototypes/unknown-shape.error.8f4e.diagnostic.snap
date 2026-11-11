@@ -1,21 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "missingShape",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "missing",
-      },
-    ],
-    "instruction": "shape",
+  "domain": "semantic",
+  "instruction": "shape",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: missing. (5)",
+  "message": "Unknown prototype shape in memory layout.",
 }

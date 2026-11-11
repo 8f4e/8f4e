@@ -8,11 +8,15 @@ describe('non-finite radix literal diagnostics', () => {
 		['positive binary', `0b${'1'.repeat(1025)}`],
 		['negative binary', `-0b${'1'.repeat(1025)}`],
 	])('reports the source line for an overflowing %s literal', (_name, token) => {
-		expect(() => compileToAST(['function example', '#export answer', `push ${token}`, 'functionEnd int'])).toThrowError(
+		expect(() =>
+			compileToAST(['function example', '#export answer', `push ${token}`, 'functionEnd int'], { kind: 'document' })
+		).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
-				line: expect.objectContaining({ lineNumber: 2, instruction: 'push' }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
+					instruction: 'push',
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});

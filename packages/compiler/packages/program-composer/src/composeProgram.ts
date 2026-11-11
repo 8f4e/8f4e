@@ -1,3 +1,4 @@
+import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import {
 	type CallLine,
 	type CompilerCache,
@@ -18,11 +19,7 @@ import {
 	type ValidatedFunctionAST,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
-import {
-	parseProjectConstantNamespacePassLine,
-	parseProjectMemoryInitializerLine,
-	SyntaxRulesError,
-} from '@8f4e/tokenizer';
+import { parseProjectConstantNamespacePassLine, parseProjectMemoryInitializerLine } from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
@@ -40,14 +37,15 @@ function collectProjectScopePasses(
 			continue;
 		}
 
-		try {
-			passes.push(parseProjectConstantNamespacePassLine(sourceLine, index));
-		} catch (error) {
-			if (error instanceof SyntaxRulesError) {
-				error.context = { ...error.context, projectGroupPath: projectPath };
-			}
-			throw error;
-		}
+		const result = parseProjectConstantNamespacePassLine(sourceLine, index);
+		if (!result.ok)
+			throw syntaxErrorAt(
+				result.issue.code,
+				result.issue.message,
+				{ kind: 'scope', projectGroupPath: projectPath },
+				{ lineNumber: index, instruction: 'pass' }
+			);
+		passes.push({ ...result.value, diagnosticSource: { kind: 'scope', projectGroupPath: projectPath } });
 	}
 	return passes;
 }
@@ -66,7 +64,13 @@ function appendMemoryExposureAliases(
 
 	for (const exposure of exposures) {
 		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
-		program.memoryExposures.push({ ...exposure, groupPath, targetModuleId });
+		program.memoryExposures.push({
+			...exposure,
+			groupPath,
+			targetModuleId,
+			diagnosticSource: { kind: 'scope', projectGroupPath: groupPath },
+			instruction: 'expose',
+		});
 		groupAliases.set(exposure.name, { targetModuleId, targetMemoryId: exposure.targetMemoryName });
 	}
 
@@ -80,12 +84,15 @@ function collectProjectMemoryInitializers(
 ): ProjectMemoryInitializerLine[] {
 	return code.flatMap((line, index) => {
 		if (!/^\s*init(?:\s|$)/.test(line)) return [];
-		try {
-			return [parseProjectMemoryInitializerLine(line, index)];
-		} catch (error) {
-			if (error instanceof SyntaxRulesError) error.context = { ...error.context, projectGroupPath: projectPath };
-			throw error;
-		}
+		const result = parseProjectMemoryInitializerLine(line, index);
+		if (!result.ok)
+			throw syntaxErrorAt(
+				result.issue.code,
+				result.issue.message,
+				{ kind: 'scope', projectGroupPath: projectPath },
+				{ lineNumber: index, instruction: 'init' }
+			);
+		return [{ ...result.value, diagnosticSource: { kind: 'scope' as const, projectGroupPath: projectPath } }];
 	});
 }
 

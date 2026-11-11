@@ -13,11 +13,7 @@ describe('greaterThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterThan,
-			{
-				lineNumber: 1,
-				instruction: 'greaterThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('greaterThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterThan,
-			{
-				lineNumber: 1,
-				instruction: 'greaterThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('greaterThan instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterThan,
-			{
-				lineNumber: 1,
-				instruction: 'greaterThan',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterThan', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

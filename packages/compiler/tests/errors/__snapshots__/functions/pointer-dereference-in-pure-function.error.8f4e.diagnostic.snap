@@ -1,23 +1,14 @@
 {
   "code": 21,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "dereferenceDepth": 1,
-        "referenceKind": "memory-pointer",
-        "scope": "local",
-        "targetMemoryId": "x",
-        "type": "identifier",
-        "value": "*x",
-      },
-    ],
-    "instruction": "push",
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Memory IO in functions requires #impure. (21)",
+  "symbol": "invalid",
 }

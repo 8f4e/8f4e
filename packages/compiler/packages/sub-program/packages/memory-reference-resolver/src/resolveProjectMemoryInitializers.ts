@@ -1,9 +1,9 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ArgumentType,
 	type Const,
 	createProjectModuleId,
 	ErrorCode,
-	getError,
 	isScalarMemoryDeclarationLine,
 	type ProjectMemoryInitializerScope,
 } from '@8f4e/language-spec';
@@ -19,9 +19,8 @@ export function resolveProjectMemoryInitializers(
 	const defaults = new Map<string, Map<number, Const>>();
 	for (const scope of scopes) {
 		for (const line of scope.initializers) {
-			const diagnosticContext = { projectGroupPath: scope.groupPath };
 			if (scope.parentGroupPath === undefined) {
-				throw getError(ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP, line, diagnosticContext);
+				throw getError(ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP, line, {});
 			}
 			const [destination, source] = line.arguments;
 			const name = destination.targetMemoryId;
@@ -35,15 +34,17 @@ export function resolveProjectMemoryInitializers(
 				!resolved ||
 				!isScalarMemoryDeclarationLine(declaration!.line)
 			) {
-				throw getError(ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET, line, diagnosticContext, {
-					identifier: name,
+				throw getError(ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET, line, {
+					details: {
+						identifier: name,
+					},
 				});
 			}
 			const { targetMemory, targetModule } = resolved;
 			const targetModuleId = targetModule.id;
 			const moduleDefaults = defaults.get(targetModuleId) ?? new Map<number, Const>();
 			if (moduleDefaults.has(targetMemory.id)) {
-				throw getError(ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER, line, diagnosticContext, { identifier: name });
+				throw getError(ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER, line, { details: { identifier: name } });
 			}
 			let value: Const;
 			if (source.type === ArgumentType.LITERAL) {
@@ -55,8 +56,10 @@ export function resolveProjectMemoryInitializers(
 				};
 				const resolvedValue = tryResolveValueArgument(context, qualifiedSource);
 				if (!resolvedValue) {
-					throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, diagnosticContext, {
-						identifier: `${qualifiedSource.targetModuleId}:${source.targetMemoryId}`,
+					throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+						details: {
+							identifier: `${qualifiedSource.targetModuleId}:${source.targetMemoryId}`,
+						},
 					});
 				}
 				value = resolvedValue;

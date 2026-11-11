@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 3,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "copy",
-      },
-      {
-        "isPointee": true,
-        "referenceKind": "pointee-element-count",
-        "scope": "local",
-        "targetMemoryId": "slot",
-        "type": "identifier",
-        "value": "count(*slot)",
-      },
-    ],
-    "instruction": "int[]",
+  "domain": "semantic",
+  "instruction": "int[]",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: count(*slot). (5)",
+  "message": "Unable to resolve memory declaration size.",
 }

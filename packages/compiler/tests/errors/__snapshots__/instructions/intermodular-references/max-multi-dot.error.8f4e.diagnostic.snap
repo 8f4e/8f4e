@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "maxMultiDotTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "maxValue",
-      },
-      {
-        "referenceKind": "intermodular-element-max",
-        "scope": "intermodule",
-        "targetMemoryId": "buffer.extra",
-        "targetModuleId": "maxMultiDotSource",
-        "type": "identifier",
-        "value": "max(maxMultiDotSource:buffer.extra)",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: buffer.extra. (5)",
+  "message": "Unknown memory declaration in memory default.",
 }

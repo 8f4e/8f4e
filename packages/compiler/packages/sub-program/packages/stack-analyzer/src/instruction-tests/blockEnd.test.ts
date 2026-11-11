@@ -16,6 +16,7 @@ describe('blockEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 11, projectGroupPath: '' },
 				lineNumber: 6,
 				instruction: 'blockEnd',
 				arguments: [],
@@ -45,6 +46,7 @@ describe('blockEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 11, projectGroupPath: '' },
 				lineNumber: 6,
 				instruction: 'blockEnd',
 				arguments: [],
@@ -61,8 +63,6 @@ describe('blockEnd stack analysis', () => {
 	it.each(['int', 'float64'] as const)('rejects a %s operand when float is expected', valueType => {
 		const context = createStackAnalyzerTestContext({
 			codeBlockId: 'example',
-			codeBlockType: 'module',
-			projectBlockId: 11,
 			stack: [{ kind: 'value', valueType, isNonZero: true }],
 			blockStack: [
 				{ blockType: BlockType.MODULE, expectedResultTypes: [] },
@@ -70,6 +70,7 @@ describe('blockEnd stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 11, projectGroupPath: '' },
 			lineNumber: 6,
 			instruction: 'blockEnd',
 			arguments: [],
@@ -77,12 +78,15 @@ describe('blockEnd stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.ONLY_FLOATS,
-				line,
-				context: expect.objectContaining({
-					codeBlockId: 'example',
-					codeBlockType: 'module',
-					projectBlockId: 11,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.ONLY_FLOATS,
+					symbol: 'example',
+					instruction: line.instruction,
+					location: expect.objectContaining({
+						...line.diagnosticSource,
+						lineNumber: line.lineNumber,
+						projectBlockId: 11,
+					}),
 				}),
 			})
 		);
@@ -97,6 +101,7 @@ describe('blockEnd stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 11, projectGroupPath: '' },
 			lineNumber: 6,
 			instruction: 'blockEnd',
 			arguments: [],
@@ -104,8 +109,11 @@ describe('blockEnd stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.ONLY_INTEGERS,
-				line,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.ONLY_INTEGERS,
+					instruction: line.instruction,
+					location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+				}),
 			})
 		);
 	});
@@ -119,6 +127,7 @@ describe('blockEnd stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 11, projectGroupPath: '' },
 			lineNumber: 6,
 			instruction: 'blockEnd',
 			arguments: [],
@@ -126,8 +135,11 @@ describe('blockEnd stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.INSUFFICIENT_OPERANDS,
-				line,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.INSUFFICIENT_OPERANDS,
+					instruction: line.instruction,
+					location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+				}),
 			})
 		);
 	});

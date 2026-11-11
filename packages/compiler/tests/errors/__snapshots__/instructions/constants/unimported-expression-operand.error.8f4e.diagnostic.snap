@@ -1,0 +1,13 @@
+{
+  "code": 5,
+  "domain": "semantic",
+  "instruction": "float*",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 2,
+    "projectBlockId": 6,
+    "projectGroupPath": "",
+  },
+  "message": "Undeclared identifier: OFFSET. (5)",
+}

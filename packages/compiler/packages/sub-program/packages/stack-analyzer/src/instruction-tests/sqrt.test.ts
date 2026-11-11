@@ -9,11 +9,7 @@ describe('sqrt stack analysis', () => {
 		context.stack.push({ kind: 'value', valueType: 'float64', isNonZero: true });
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'sqrt',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sqrt', arguments: [] } as CompilerASTLine,
 			context
 		);
 

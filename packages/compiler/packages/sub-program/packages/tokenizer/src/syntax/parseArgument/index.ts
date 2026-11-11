@@ -6,7 +6,7 @@ import parseNumericLiteralToken, {
 	isNumericLikeInvalidToken,
 	startsWithNumericPrefix,
 } from '../parseNumericLiteralToken';
-import { SyntaxErrorCode, SyntaxRulesError } from '../syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from '../syntaxError';
 import { classifyIdentifier } from './classifyIdentifier';
 import { decodeStringLiteral } from './decodeStringLiteral';
 import { parseCompileTimeOperand } from './parseCompileTimeOperand';
@@ -40,7 +40,7 @@ function parseCompileTimeRoundingExpression(argument: string): ArgumentCompileTi
 
 	const rounding = argument.slice(0, openParenIndex) as CompileTimeRoundingValue;
 	if (!argument.endsWith(')')) {
-		throw new SyntaxRulesError(
+		throw new SyntaxIssue(
 			SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 			`Invalid compile-time rounding expression: ${argument}`
 		);
@@ -55,7 +55,7 @@ function parseCompileTimeRoundingExpression(argument: string): ArgumentCompileTi
 		operatorIndex === 0 ||
 		operatorIndex === operandSource.length - 1
 	) {
-		throw new SyntaxRulesError(
+		throw new SyntaxIssue(
 			SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 			`Invalid compile-time rounding expression: ${argument}`
 		);
@@ -64,7 +64,7 @@ function parseCompileTimeRoundingExpression(argument: string): ArgumentCompileTi
 	const operand = parseArgument(operandSource);
 	if (operand.type === ArgumentType.STRING_LITERAL || operand.type === ArgumentType.COMPILE_TIME_EXPRESSION) {
 		if (operand.type !== ArgumentType.COMPILE_TIME_EXPRESSION || operand.rounding !== undefined) {
-			throw new SyntaxRulesError(
+			throw new SyntaxIssue(
 				SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 				`Invalid compile-time rounding expression: ${argument}`
 			);
@@ -141,16 +141,13 @@ export function parseArgument(argument: string): Argument {
 			// Reject numeric-looking tokens that failed literal parsing so they do not silently
 			// become identifiers. This keeps standalone and compound numeric syntax boundaries clear.
 			if (isNumericLikeInvalidToken(argument)) {
-				throw new SyntaxRulesError(
+				throw new SyntaxIssue(
 					SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 					`Invalid numeric literal or expression: ${argument}`
 				);
 			}
 			if (startsWithNumericPrefix(argument)) {
-				throw new SyntaxRulesError(
-					SyntaxErrorCode.INVALID_IDENTIFIER,
-					`Identifiers cannot start with numbers: ${argument}`
-				);
+				throw new SyntaxIssue(SyntaxErrorCode.INVALID_IDENTIFIER, `Identifiers cannot start with numbers: ${argument}`);
 			}
 			return classifyIdentifier(argument);
 		}

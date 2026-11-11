@@ -12,11 +12,7 @@ describe('add instruction compiler', () => {
 
 		compileInstructionForTest(
 			add,
-			{
-				lineNumber: 1,
-				instruction: 'add',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'add', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -37,11 +33,7 @@ describe('add instruction compiler', () => {
 
 		compileInstructionForTest(
 			add,
-			{
-				lineNumber: 1,
-				instruction: 'add',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'add', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -62,11 +54,7 @@ describe('add instruction compiler', () => {
 
 		compileInstructionForTest(
 			add,
-			{
-				lineNumber: 1,
-				instruction: 'add',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'add', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

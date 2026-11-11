@@ -199,15 +199,16 @@ entryEnd`);
 	it.each([
 		{ fixture: 'missing-exposure-module', targetModuleId: 'audio/missing', targetMemoryId: 'value' },
 		{ fixture: 'missing-exposure-memory', targetModuleId: 'audio/source', targetMemoryId: 'missing' },
-	])('reports invalid unused group exposure targets without an AST line: $fixture', async testCase => {
+	])('reports invalid unused group exposure targets at their declaration: $fixture', async testCase => {
 		const project = await readProject(`./errors/groups/${testCase.fixture}.error.8f4e`);
 		const compilation = compileProject(project);
 
 		await expect(compilation).rejects.toMatchObject({
-			code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-			context: { projectGroupPath: 'audio', projectMemoryExposureName: 'publicValue' },
-			message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
+			diagnostic: expect.objectContaining({
+				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
+				message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
+				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+			}),
 		});
-		await expect(compilation).rejects.not.toHaveProperty('line');
 	});
 });

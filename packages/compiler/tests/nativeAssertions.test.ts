@@ -127,7 +127,9 @@ assertEqual *expected
 functionEnd`,
 					enabled
 				)
-			).rejects.toMatchObject({ code: ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO });
+			).rejects.toMatchObject({
+				diagnostic: expect.objectContaining({ code: ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO }),
+			});
 		}
 	);
 
@@ -412,6 +414,7 @@ functionEnd`,
 				siteId: 0,
 				instruction: 'assert',
 				projectGroupPath: 'included',
+				projectBlockId: 4,
 				codeBlockType: 'function',
 				codeBlockId: 'originalCheck',
 				functionId: 'included/includedCheck__void',
@@ -511,7 +514,7 @@ entryEnd`),
 			['int x\nfloat y\npush &x\nassertEqual &y', ErrorCode.UNMATCHING_OPERANDS],
 		] as const) {
 			await expect(compile(`entry main\nmodule invalid\n${body}\nmoduleEnd\nentryEnd`, enabled)).rejects.toMatchObject({
-				code,
+				diagnostic: expect.objectContaining({ code: code }),
 			});
 		}
 	});

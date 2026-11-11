@@ -1,11 +1,12 @@
 {
   "code": 73,
-  "context": {
+  "domain": "semantic",
+  "instruction": "expose",
+  "kind": "source",
+  "location": {
+    "kind": "scope",
+    "lineNumber": 1,
     "projectGroupPath": "audio",
-    "projectMemoryExposureName": "publicValue",
-  },
-  "line": {
-    "lineNumber": 0,
   },
   "message": "Project memory exposure "audio:publicValue" targets undeclared memory "audio/missing:value". (73)",
 }

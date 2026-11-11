@@ -6,6 +6,11 @@
         "exportLine": undefined,
         "functionEndLine": {
           "arguments": [],
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 5,
+            "projectGroupPath": "helpers",
+          },
           "instruction": "functionEnd",
           "lineNumber": 6,
         },
@@ -18,6 +23,11 @@
               "value": "helpers/hidden",
             },
           ],
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 5,
+            "projectGroupPath": "helpers",
+          },
           "instruction": "function",
           "lineNumber": 0,
         },
@@ -31,6 +41,11 @@
                 "value": "helpers/hidden",
               },
             ],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "instruction": "function",
             "lineNumber": 0,
           },
@@ -42,11 +57,21 @@
                 "value": 1,
               },
             ],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "instruction": "push",
             "lineNumber": 2,
           },
           {
             "arguments": [],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "ifBlock": {
               "hasElse": false,
               "matchingIfEndIndex": 4,
@@ -63,11 +88,21 @@
                 "value": 2,
               },
             ],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "instruction": "push",
             "lineNumber": 4,
           },
           {
             "arguments": [],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "ifEndBlock": {
               "matchingIfIndex": 2,
               "resultTypes": [],
@@ -77,6 +112,11 @@
           },
           {
             "arguments": [],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 5,
+              "projectGroupPath": "helpers",
+            },
             "instruction": "functionEnd",
             "lineNumber": 6,
           },

@@ -12,11 +12,7 @@ describe('notEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			notEqual,
-			{
-				lineNumber: 1,
-				instruction: 'notEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -37,11 +33,7 @@ describe('notEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			notEqual,
-			{
-				lineNumber: 1,
-				instruction: 'notEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -62,11 +54,7 @@ describe('notEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			notEqual,
-			{
-				lineNumber: 1,
-				instruction: 'notEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

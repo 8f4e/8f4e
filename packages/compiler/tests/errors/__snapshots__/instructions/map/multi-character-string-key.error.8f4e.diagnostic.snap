@@ -1,11 +1,13 @@
 {
   "code": 2,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "map",
+  "domain": "syntax",
+  "instruction": "map",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 7,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Invalid argument for map: string literals must contain exactly one character.",
 }

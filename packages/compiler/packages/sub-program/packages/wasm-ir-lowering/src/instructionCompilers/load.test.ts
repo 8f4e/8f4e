@@ -12,11 +12,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 1,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -47,11 +43,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 2,
-				instruction: 'load8u',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'load8u', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
@@ -66,11 +58,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 3,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -99,11 +87,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 4,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 4, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

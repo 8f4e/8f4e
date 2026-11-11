@@ -190,6 +190,7 @@ entryEnd`;
 					exposures: [
 						{
 							name: 'count',
+							lineNumber: 3,
 							targetModuleName: 'counter',
 							targetMemoryName: 'count',
 						},
@@ -226,6 +227,7 @@ entryEnd`;
 			exposures: [
 				{
 					name: 'count',
+					lineNumber: 3,
 					targetModuleName: 'counter',
 					targetMemoryName: 'count',
 				},

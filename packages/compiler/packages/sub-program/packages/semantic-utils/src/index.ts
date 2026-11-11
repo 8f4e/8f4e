@@ -5,4 +5,5 @@ export * from './createCompilationContext';
 export * from './mapValueKind';
 export * from './memoryState';
 export * from './operandTypes';
+export * from './paramShape';
 export { withSourceDiagnostic } from './withSourceDiagnostic';

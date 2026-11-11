@@ -182,7 +182,7 @@ describe('serializeProjectLevel', () => {
 							createMockCodeBlock({
 								name: 'Oscillator',
 								entry: 'main',
-								code: ['group Oscillator', 'groupEnd'],
+								code: ['group Oscillator', '; child comment', '', 'expose childLevel &voice:level', 'groupEnd'],
 								childProject: {
 									entries: [],
 									path: '',
@@ -210,6 +210,7 @@ describe('serializeProjectLevel', () => {
 			code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 			exposures: [
 				{
+					lineNumber: 2,
 					name: 'level',
 					targetModuleName: 'voice',
 					targetMemoryName: 'level',
@@ -222,6 +223,7 @@ describe('serializeProjectLevel', () => {
 					id: 0,
 					type: 'group',
 					name: 'Oscillator',
+					exposures: [{ name: 'childLevel', lineNumber: 3 }],
 
 					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 				},

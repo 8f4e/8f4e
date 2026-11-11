@@ -18,7 +18,13 @@ function findTarget(state: State) {
 	const findBlock = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject);
 	for (const error of errors) {
 		const codeBlock = findBlock(error);
-		if (codeBlock && error.lineNumber >= 0 && error.lineNumber < codeBlock.code.length) return { error, codeBlock };
+		if (
+			codeBlock &&
+			error.lineNumber !== undefined &&
+			error.lineNumber >= 0 &&
+			error.lineNumber < codeBlock.code.length
+		)
+			return { error: { ...error, lineNumber: error.lineNumber }, codeBlock };
 	}
 }
 

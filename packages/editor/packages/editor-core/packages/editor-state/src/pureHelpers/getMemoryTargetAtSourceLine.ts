@@ -1,7 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import {
 	ArgumentType,
-	type CompilerASTLine,
 	isMemoryDeclarationLine,
 	isReferenceSlotLine,
 	type MemoryDeclarationLine,
@@ -28,12 +27,9 @@ export default function getMemoryTargetAtSourceLine(
 	if (codeBlock.blockType !== 'module') return;
 
 	// Source edits can refresh layout while the previous compilation is still active.
-	let sourceLine: CompilerASTLine;
-	try {
-		sourceLine = parseLine(codeBlock.code[sourceLineIndex], sourceLineIndex);
-	} catch {
-		return;
-	}
+	const parsed = parseLine(codeBlock.code[sourceLineIndex], sourceLineIndex);
+	if (!parsed.ok) return;
+	const sourceLine = parsed.value;
 	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
 	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
 	if (!compiledModule) return { target: undefined };

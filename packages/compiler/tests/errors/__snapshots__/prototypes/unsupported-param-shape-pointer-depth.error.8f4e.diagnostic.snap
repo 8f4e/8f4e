@@ -1,21 +1,14 @@
 {
   "code": 64,
-  "context": {
-    "codeBlockId": "broken",
-    "codeBlockType": "function",
-    "projectBlockId": 7,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "tooDeep",
-      },
-    ],
-    "instruction": "paramShape",
+  "domain": "semantic",
+  "instruction": "paramShape",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 7,
+    "projectGroupPath": "",
   },
   "message": "paramShape cannot expand this prototype declaration because the resulting pointer parameter type is unsupported. (64)",
+  "symbol": "broken",
 }

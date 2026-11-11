@@ -1,29 +1,14 @@
 {
   "code": 21,
-  "context": {
-    "codeBlockId": "pureCaller",
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "consume",
-      },
-      {
-        "dereferenceDepth": 1,
-        "referenceKind": "memory-pointer",
-        "scope": "local",
-        "targetMemoryId": "pointer",
-        "type": "identifier",
-        "value": "*pointer",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Memory IO in functions requires #impure. (21)",
+  "symbol": "pureCaller",
 }

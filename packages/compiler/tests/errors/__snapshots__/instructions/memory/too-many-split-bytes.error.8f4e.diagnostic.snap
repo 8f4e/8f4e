@@ -1,46 +1,13 @@
 {
   "code": 35,
-  "context": {
-    "codeBlockId": "tooManySplitBytes",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "foo",
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 1,
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 2,
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 3,
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 4,
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 5,
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
-  "message": "Too many split-byte values for this declaration type. (35)",
+  "message": "Split hex default has too many bytes.",
 }

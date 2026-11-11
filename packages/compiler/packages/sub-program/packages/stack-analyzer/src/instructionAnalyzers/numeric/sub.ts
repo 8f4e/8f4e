@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { deriveSubStackMetadata } from '../../utils/stackAddressMetadata';
 import { consume, produce } from '../stack';
 import type { InstructionAnalysisResult } from '../types';
@@ -15,7 +16,7 @@ import { numericResult } from './shared';
 export function analyzeSub(line: CompilerASTLine, context: CompilationContext): InstructionAnalysisResult {
 	const consumed = consume(context, 2);
 	if (consumed[0].kind !== 'address' && consumed[1].kind === 'address') {
-		throw getError(ErrorCode.INVALID_ADDRESS_ARITHMETIC, line, context);
+		throw getError(ErrorCode.INVALID_ADDRESS_ARITHMETIC, line, { symbol: context.codeBlockId });
 	}
 	const produced = [
 		numericResult(consumed[0], consumed[1], {

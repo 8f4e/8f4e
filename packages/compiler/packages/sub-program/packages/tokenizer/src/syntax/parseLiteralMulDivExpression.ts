@@ -1,5 +1,5 @@
 import parseNumericLiteralToken, { isNumericLikeInvalidToken } from './parseNumericLiteralToken';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 
 export type LiteralMulDivResult = {
 	value: number;
@@ -12,7 +12,7 @@ export type LiteralMulDivResult = {
  * and numeric-literal operands on both sides.
  *
  * Returns the folded result, or `null` if the argument is not a literal arithmetic expression.
- * Throws `SyntaxRulesError` when a literal-only numeric expression contains an invalid
+ * Throws `SyntaxIssue` when a literal-only numeric expression contains an invalid
  * numeric operand or divides by zero.
  *
  * @param argument - Parsed argument to process.
@@ -42,8 +42,8 @@ export default function parseLiteralMulDivExpression(argument: string): LiteralM
 		lhs = parseNumericLiteralToken(lhsStr);
 		rhs = parseNumericLiteralToken(rhsStr);
 	} catch (error) {
-		if (error instanceof SyntaxRulesError && error.code === SyntaxErrorCode.INVALID_NUMERIC_LITERAL) {
-			throw new SyntaxRulesError(
+		if (error instanceof SyntaxIssue && error.code === SyntaxErrorCode.INVALID_NUMERIC_LITERAL) {
+			throw new SyntaxIssue(
 				SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 				`Invalid numeric literal or expression: ${argument}`
 			);
@@ -53,7 +53,7 @@ export default function parseLiteralMulDivExpression(argument: string): LiteralM
 
 	if (!lhs || !rhs) {
 		if ((!lhs && isNumericLikeInvalidToken(lhsStr)) || (!rhs && isNumericLikeInvalidToken(rhsStr))) {
-			throw new SyntaxRulesError(
+			throw new SyntaxIssue(
 				SyntaxErrorCode.INVALID_NUMERIC_LITERAL,
 				`Invalid numeric literal or expression: ${argument}`
 			);
@@ -62,7 +62,7 @@ export default function parseLiteralMulDivExpression(argument: string): LiteralM
 	}
 
 	if (operator === '/' && rhs.value === 0) {
-		throw new SyntaxRulesError(SyntaxErrorCode.DIVISION_BY_ZERO, `Division by zero in literal expression: ${argument}`);
+		throw new SyntaxIssue(SyntaxErrorCode.DIVISION_BY_ZERO, `Division by zero in literal expression: ${argument}`);
 	}
 
 	const value =

@@ -19,11 +19,13 @@ describe.each(['café', 'value🚀'])('non-ASCII entity name %s', name => {
 			instruction: 'const',
 		},
 	])('rejects the $instruction declaration with its source line', ({ code, lineNumber, instruction }) => {
-		expect(() => compileToAST(code)).toThrowError(
+		expect(() => compileToAST(code, { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.INVALID_IDENTIFIER,
-				line: expect.objectContaining({ lineNumber, instruction }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INVALID_IDENTIFIER,
+					instruction: instruction,
+					location: expect.objectContaining({ lineNumber: lineNumber }),
+				}),
 			})
 		);
 	});
@@ -42,13 +44,10 @@ describe.each(['café', 'value🚀'])('non-ASCII entity name %s', name => {
 		`2/${name.toUpperCase()}`,
 		`floor(sizeof(${name})/2)`,
 	])('rejects the reference %s with its source line', reference => {
-		expect(() => parseLine(`push ${reference}`, 9)).toThrowError(
-			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.INVALID_IDENTIFIER,
-				line: expect.objectContaining({ lineNumber: 9, instruction: 'push' }),
-			})
-		);
+		expect(parseLine(`push ${reference}`, 9)).toMatchObject({
+			ok: false,
+			issue: { code: SyntaxErrorCode.INVALID_IDENTIFIER, line: { lineNumber: 9, instruction: 'push' } },
+		});
 	});
 });
 
@@ -59,23 +58,28 @@ describe('ASCII entity names', () => {
 		['prototype state!$', 'int field!$', 'prototypeEnd'],
 		['constants config!$', 'const VALUE!$_0 7', 'constantsEnd'],
 	])('preserves existing naming conventions in %s', (...code) => {
-		expect(() => compileToAST(code)).not.toThrow();
+		expect(() => compileToAST(code, { kind: 'document' })).not.toThrow();
 	});
 
 	it.each(['value!$', '&value!$', '*pointer!$', 'other:value!$', 'sizeof(value!$)', 'VALUE!$_0*2'])(
 		'accepts the reference %s',
 		reference => {
-			expect(() => parseLine(`push ${reference}`, 0)).not.toThrow();
+			expect(parseLine(`push ${reference}`, 0)).toMatchObject({ ok: true });
 		}
 	);
 
 	it('keeps Unicode string literals separate from identifiers', () => {
-		expect(parseLine('push "café 🚀"', 3).arguments).toEqual([{ type: ArgumentType.STRING_LITERAL, value: 'café 🚀' }]);
+		expect(parseLine('push "café 🚀"', 3)).toMatchObject({
+			ok: true,
+			value: { arguments: [{ type: ArgumentType.STRING_LITERAL, value: 'café 🚀' }] },
+		});
 	});
 
 	it('preserves constant capitalization rules', () => {
-		expect(() => compileToAST(['constants config', 'const lowerCase 7', 'constantsEnd'])).toThrowError(
-			expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT })
+		expect(() =>
+			compileToAST(['constants config', 'const lowerCase 7', 'constantsEnd'], { kind: 'document' })
+		).toThrowError(
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT }) })
 		);
 	});
 
@@ -83,16 +87,21 @@ describe('ASCII entity names', () => {
 		{ code: ['module example', 'int[] TABLE 2', 'moduleEnd'], instruction: 'int[]' },
 		{ code: ['prototype state', 'float64*[] TABLE 2', 'prototypeEnd'], instruction: 'float64*[]' },
 	])('rejects a constant-style name on the $instruction declaration line', ({ code, instruction }) => {
-		expect(() => compileToAST(code)).toThrowError(
+		expect(() => compileToAST(code, { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INVALID_IDENTIFIER,
-				message: 'Array name "TABLE" uses a naming pattern reserved for constants.',
-				line: expect.objectContaining({ lineNumber: 1, instruction }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INVALID_IDENTIFIER,
+					message: 'Array name "TABLE" uses a naming pattern reserved for constants.',
+					instruction: instruction,
+					location: expect.objectContaining({ lineNumber: 1 }),
+				}),
 			})
 		);
 	});
 
 	it('accepts constant-style identifiers in array length and initializer positions', () => {
-		expect(() => compileToAST(['module example', 'int[] table SIZE VALUE', 'moduleEnd'])).not.toThrow();
+		expect(() =>
+			compileToAST(['module example', 'int[] table SIZE VALUE', 'moduleEnd'], { kind: 'document' })
+		).not.toThrow();
 	});
 });

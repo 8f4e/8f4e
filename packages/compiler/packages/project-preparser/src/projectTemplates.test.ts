@@ -1,5 +1,6 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import { ErrorCode, getProjectGroups, getProjectModules } from '@8f4e/language-spec';
-import { SyntaxErrorCode, SyntaxRulesError } from '@8f4e/tokenizer';
+import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { parseProjectSource } from './parseProjectSource';
 import { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
@@ -96,9 +97,9 @@ entryEnd`);
 			source(`${definition}\nentry main\ngroup parent\nentry main\n${instance('child')}\nentryEnd\ngroupEnd\nentryEnd`)
 		);
 		expect(error).toBeInstanceOf(Error);
-		expect(error).toMatchObject({ code: ErrorCode.UNDEFINED_TEMPLATE });
+		expect(error).toMatchObject({ diagnostic: expect.objectContaining({ code: ErrorCode.UNDEFINED_TEMPLATE }) });
 		const sibling = thrown(source(`entry main\ngroup a\n${definition}\ngroupEnd\n${instance('b')}\nentryEnd`));
-		expect(sibling).toMatchObject({ code: ErrorCode.UNDEFINED_TEMPLATE });
+		expect(sibling).toMatchObject({ diagnostic: expect.objectContaining({ code: ErrorCode.UNDEFINED_TEMPLATE }) });
 	});
 
 	it('rejects recursive references instead of making the enclosing template visible', () => {
@@ -108,11 +109,13 @@ entryEnd`);
 					`template voice\nentry main\n${instance('child')}\nentryEnd\ntemplateEnd\nentry main\n${instance('a')}\nentryEnd`
 				)
 			)
-		).toMatchObject({ code: ErrorCode.RECURSIVE_TEMPLATE });
+		).toMatchObject({ diagnostic: expect.objectContaining({ code: ErrorCode.RECURSIVE_TEMPLATE }) });
 	});
 
 	it('rejects duplicate definitions only within the same owning scope', () => {
-		expect(thrown(source(`${definition}\n${definition}`))).toMatchObject({ code: ErrorCode.DUPLICATE_TEMPLATE });
+		expect(thrown(source(`${definition}\n${definition}`))).toMatchObject({
+			diagnostic: expect.objectContaining({ code: ErrorCode.DUPLICATE_TEMPLATE }),
+		});
 	});
 
 	it.each([
@@ -127,17 +130,21 @@ entryEnd`);
 		'template x\ntemplateEnd',
 	])('rejects inline child content: %s', content => {
 		const text = source(`${definition}\nentry main\ngroup a\nuseTemplate voice\n${content}\ngroupEnd\nentryEnd`);
-		expect(thrown(text)).toMatchObject({ code: SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT });
+		expect(thrown(text)).toMatchObject({
+			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT }),
+		});
 	});
 
 	it('rejects repeated useTemplate instructions before expansion', () => {
 		const error = thrown(
 			source(`${definition}\nentry main\ngroup a\nuseTemplate voice\nuseTemplate voice\ngroupEnd\nentryEnd`)
 		);
-		expect(error).toBeInstanceOf(SyntaxRulesError);
+		expect(error).toBeInstanceOf(CompilerError);
 		expect(error).toMatchObject({
-			code: SyntaxErrorCode.MULTIPLE_TEMPLATE_REFERENCES,
-			line: { instruction: 'useTemplate' },
+			diagnostic: expect.objectContaining({
+				code: SyntaxErrorCode.MULTIPLE_TEMPLATE_REFERENCES,
+				instruction: 'useTemplate',
+			}),
 		});
 	});
 
@@ -153,7 +160,9 @@ entryEnd`);
 		const text = line.startsWith('template')
 			? source(`${line}\ntemplateEnd`)
 			: source(`entry main\ngroup a\n${line}\ngroupEnd\nentryEnd`);
-		expect(thrown(text)).toMatchObject({ code: SyntaxErrorCode.INVALID_TEMPLATE_NAME });
+		expect(thrown(text)).toMatchObject({
+			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_TEMPLATE_NAME }),
+		});
 	});
 
 	it.each([
@@ -162,12 +171,14 @@ entryEnd`);
 		'entry main\ntemplate voice\ntemplateEnd\nentryEnd',
 		'entry main\nmodule x\nuseTemplate voice\nmoduleEnd\nentryEnd',
 	])('rejects template syntax in invalid contexts: %s', content => {
-		expect(thrown(source(content))).toMatchObject({ code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK });
+		expect(thrown(source(content))).toMatchObject({
+			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK }),
+		});
 	});
 
 	it('rejects declaration lines in template bodies', () => {
 		expect(thrown(source('template voice\npass env\ntemplateEnd'))).toMatchObject({
-			code: SyntaxErrorCode.INVALID_TEMPLATE_CONTENT,
+			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_TEMPLATE_CONTENT }),
 		});
 	});
 
@@ -197,16 +208,18 @@ entryEnd`);
 	it.each(['template voice', 'template voice\nentry main\ntemplateEnd', 'templateEnd'])(
 		'rejects malformed block structure: %s',
 		content => {
-			expect(thrown(source(content))).toMatchObject({ code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE });
+			expect(thrown(source(content))).toMatchObject({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE }),
+			});
 		}
 	);
 });
 
 it('validates bare commented references and template closer arguments in the inlining stage', () => {
 	expect(thrown(source('entry main\ngroup a\nuseTemplate; missing name\ngroupEnd\nentryEnd'))).toMatchObject({
-		code: SyntaxErrorCode.INVALID_TEMPLATE_NAME,
+		diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_TEMPLATE_NAME }),
 	});
 	expect(thrown(source('template voice\ntemplateEnd extra'))).toMatchObject({
-		code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE }),
 	});
 });

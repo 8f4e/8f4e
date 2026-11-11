@@ -11,9 +11,11 @@ describe.each(['café', 'value🚀'])('compiler rejects non-ASCII entity name %s
 		{ code: `entry main\nmodule example\nint ${name} 7\nmoduleEnd\nentryEnd`, instruction: 'int', lineNumber: 1 },
 	])('fails at $instruction before emitting WebAssembly', async ({ code, instruction, lineNumber }) => {
 		await expect(compileProject(parseProjectSource(`8f4e/v1\n${code}`))).rejects.toMatchObject({
-			name: 'SyntaxRulesError',
-			code: SyntaxErrorCode.INVALID_IDENTIFIER,
-			line: expect.objectContaining({ lineNumber, instruction }),
+			diagnostic: expect.objectContaining({
+				code: SyntaxErrorCode.INVALID_IDENTIFIER,
+				instruction: instruction,
+				location: expect.objectContaining({ lineNumber: lineNumber }),
+			}),
 		});
 	});
 });

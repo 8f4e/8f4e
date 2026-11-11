@@ -1,11 +1,13 @@
 {
   "code": 9,
-  "context": {
-    "projectBlockId": 8,
-  },
-  "line": {
-    "instruction": "constants",
+  "domain": "syntax",
+  "instruction": "constants",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Parse error at line 11: mixed block type markers (found opener "constants nested" inside "function" block)",
 }

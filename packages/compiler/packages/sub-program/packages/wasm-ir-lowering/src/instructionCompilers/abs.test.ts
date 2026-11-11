@@ -12,11 +12,7 @@ describe('abs instruction compiler', () => {
 
 		compileInstructionForTest(
 			abs,
-			{
-				lineNumber: 1,
-				instruction: 'abs',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'abs', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
@@ -31,11 +27,7 @@ describe('abs instruction compiler', () => {
 
 		compileInstructionForTest(
 			abs,
-			{
-				lineNumber: 3,
-				instruction: 'abs',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'abs', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: true }] })
 		);
@@ -51,11 +43,7 @@ describe('abs instruction compiler', () => {
 
 		compileInstructionForTest(
 			abs,
-			{
-				lineNumber: 2,
-				instruction: 'abs',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'abs', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);

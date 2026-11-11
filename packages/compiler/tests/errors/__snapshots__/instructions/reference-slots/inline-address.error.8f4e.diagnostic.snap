@@ -1,23 +1,14 @@
 {
   "code": 79,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 3,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isEndAddress": false,
-        "referenceKind": "memory-reference",
-        "scope": "local",
-        "targetMemoryId": "slot",
-        "type": "identifier",
-        "value": "&slot",
-      },
-    ],
-    "instruction": "assertEqual",
+  "domain": "semantic",
+  "instruction": "assertEqual",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Fixed reference slot "slot" has no addressable storage. Push the slot name to use its target address. (79)",
+  "symbol": "invalid",
 }

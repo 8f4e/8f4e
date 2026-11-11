@@ -1,11 +1,13 @@
 {
   "code": 2,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "const",
+  "domain": "syntax",
+  "instruction": "const",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Invalid argument for const: expected constant identifier.",
 }

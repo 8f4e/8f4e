@@ -1,19 +1,22 @@
-import { ArgumentType } from './arguments';
-import type { CompilerASTLine, FunctionAST, MemoryDeclarationLine, ParamShapeLine, PrototypeAST } from './ast';
-import { isMemoryDeclarationLine } from './ast';
-import type { FunctionMetadata, FunctionParamShapeExpansion } from './compiled';
-import { ErrorCode, getError } from './compilerError';
-import type { CompilerDiagnosticContext } from './diagnostics';
-import type { FunctionValueType } from './functionTypes';
-import { isFunctionValueType, MAX_FUNCTION_PARAMETERS, MAX_FUNCTION_RETURN_VALUES } from './functionTypes';
-
-function getAstDiagnosticContext(ast: FunctionAST): CompilerDiagnosticContext {
-	return {
-		codeBlockType: ast.type,
-		codeBlockId: ast.name,
-		...(ast.projectBlockId !== undefined ? { projectBlockId: ast.projectBlockId } : {}),
-	};
-}
+import { getError } from '@8f4e/compiler-diagnostics';
+import type {
+	CompilerASTLine,
+	FunctionAST,
+	FunctionMetadata,
+	FunctionParamShapeExpansion,
+	FunctionValueType,
+	MemoryDeclarationLine,
+	ParamShapeLine,
+	PrototypeAST,
+} from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	ErrorCode,
+	isFunctionValueType,
+	isMemoryDeclarationLine,
+	MAX_FUNCTION_PARAMETERS,
+	MAX_FUNCTION_RETURN_VALUES,
+} from '@8f4e/language-spec';
 
 function getPointerDepth(type: string): number {
 	if (type.endsWith('**')) {
@@ -28,11 +31,11 @@ function getPointerDepth(type: string): number {
 export function getPrototypeMemoryDeclarationId(
 	line: MemoryDeclarationLine,
 	sourceLine: CompilerASTLine,
-	context: CompilerDiagnosticContext
+	symbol: string | undefined
 ): string {
 	const idArgument = line.arguments[0];
 	if (idArgument.type !== ArgumentType.IDENTIFIER || idArgument.referenceKind !== 'plain') {
-		throw getError(ErrorCode.EXPECTED_IDENTIFIER, sourceLine, context);
+		throw getError(ErrorCode.EXPECTED_IDENTIFIER, sourceLine, { symbol });
 	}
 
 	return idArgument.value;
@@ -41,7 +44,7 @@ export function getPrototypeMemoryDeclarationId(
 export function getParamType(
 	line: MemoryDeclarationLine,
 	sourceLine: CompilerASTLine,
-	context: CompilerDiagnosticContext
+	symbol: string | undefined
 ): FunctionValueType {
 	const declarationType = line.instruction.endsWith('[]') ? line.instruction.slice(0, -2) : line.instruction;
 	const normalizedType = declarationType === 'int32' ? 'int' : declarationType;
@@ -49,13 +52,13 @@ export function getParamType(
 	const expandedPointerDepth = pointerDepth + 1;
 
 	if (expandedPointerDepth > 2) {
-		throw getError(ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH, sourceLine, context);
+		throw getError(ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH, sourceLine, { symbol });
 	}
 
 	const baseType = normalizedType.replace(/\*+$/, '');
 	const paramType = `${baseType}${'*'.repeat(expandedPointerDepth)}`;
 	if (!isFunctionValueType(paramType)) {
-		throw getError(ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH, sourceLine, context);
+		throw getError(ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH, sourceLine, { symbol });
 	}
 
 	return paramType;
@@ -64,19 +67,19 @@ export function getParamType(
 function getParamShapeExpansion(
 	line: ParamShapeLine,
 	prototypeShapes: Readonly<Record<string, PrototypeAST>>,
-	context: CompilerDiagnosticContext
+	symbol: string | undefined
 ): FunctionParamShapeExpansion {
 	const prototypeId = line.arguments[0].value;
 	const prototype = prototypeShapes[prototypeId];
 	if (!prototype) {
-		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: prototypeId });
+		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, { symbol, details: { identifier: prototypeId } });
 	}
 
 	return {
 		lineNumber: line.lineNumber,
 		parameters: prototype.lines.filter(isMemoryDeclarationLine).map(declarationLine => ({
-			type: getParamType(declarationLine, line, context),
-			name: getPrototypeMemoryDeclarationId(declarationLine, line, context),
+			type: getParamType(declarationLine, line, symbol),
+			name: getPrototypeMemoryDeclarationId(declarationLine, line, symbol),
 		})),
 	};
 }
@@ -87,22 +90,22 @@ export function getEffectiveFunctionMetadata(
 ): Pick<FunctionMetadata, 'signature' | 'paramShapeExpansions'> {
 	const parameters: FunctionMetadata['signature']['parameters'] = [];
 	const paramShapeExpansions: FunctionParamShapeExpansion[] = [];
-	const context = getAstDiagnosticContext(ast);
+	const symbol = ast.name;
 
 	for (const line of ast.lines) {
 		if (line.instruction === 'param') {
 			parameters.push({ name: line.arguments[1].value, type: line.arguments[0].value as FunctionValueType });
 		}
 		if (line.instruction === 'paramShape') {
-			const expansion = getParamShapeExpansion(line, prototypeShapes, context);
+			const expansion = getParamShapeExpansion(line, prototypeShapes, symbol);
 			paramShapeExpansions.push(expansion);
 			parameters.push(...expansion.parameters);
 		}
 		if (parameters.length > MAX_FUNCTION_PARAMETERS)
-			throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, line, context);
+			throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, line, { symbol });
 	}
 	if (ast.functionEndLine.arguments.length > MAX_FUNCTION_RETURN_VALUES) {
-		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, ast.functionEndLine, context);
+		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, ast.functionEndLine, { symbol });
 	}
 
 	return {

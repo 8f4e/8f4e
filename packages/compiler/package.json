@@ -29,7 +29,8 @@
     "@8f4e/project-preparser": "*",
     "@8f4e/sub-program": "*",
     "@8f4e/tokenizer": "*",
-    "@8f4e/wasm-codegen": "*"
+    "@8f4e/wasm-codegen": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@8f4e/stdlib": "*",

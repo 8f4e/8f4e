@@ -3,10 +3,12 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutContext } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { installGlobalErrors } from './global-errors';
 
 export const errorMessagesPlugin: EditorPlugin = {
 	id: 'error-messages',
 	setup: ({ store, layout, drawers }) => {
+		const disposeGlobalErrors = installGlobalErrors({ store, drawers });
 		const messagesByBlock = new WeakMap<CodeBlockGraphicData, Array<{ lines: GlyphIds[]; y: number }>>();
 		const contribution = layout.createContribution();
 		const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
@@ -58,6 +60,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 			}
 		});
 		return () => {
+			disposeGlobalErrors();
 			store.unsubscribe('codeErrors', refresh);
 			unsubscribeLayout();
 			removeDrawer();

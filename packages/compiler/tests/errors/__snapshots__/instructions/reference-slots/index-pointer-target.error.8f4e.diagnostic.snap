@@ -1,29 +1,14 @@
 {
   "code": 19,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 6,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "slot",
-      },
-      {
-        "referenceKind": "intermodular-module-nth-reference",
-        "scope": "intermodule",
-        "targetMemoryIndex": 0,
-        "targetModuleId": "source",
-        "type": "identifier",
-        "value": "&source:0",
-      },
-    ],
-    "instruction": "int&",
+  "domain": "semantic",
+  "instruction": "int&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 6,
+    "projectGroupPath": "",
   },
   "message": "Type mismatch. (19)",
+  "symbol": "invalid",
 }

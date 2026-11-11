@@ -77,6 +77,10 @@ are runtime data and are excluded from project exports, history snapshots, and s
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.
 
+While collecting a group's exposure declarations, serialization records each declaration's zero-based row in that
+group's visible `code`. These rows match the coordinates recorded by source parsing after child blocks are extracted;
+they are independent of the declaration's original position in a whole `.8f4e` document.
+
 ## References
 
 - [`serializeToProject.ts`](./serializeToProject.ts) - Session JSON structure serialization

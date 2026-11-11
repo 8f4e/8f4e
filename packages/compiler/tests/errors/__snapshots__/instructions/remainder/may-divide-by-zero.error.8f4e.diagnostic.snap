@@ -1,14 +1,14 @@
 {
   "code": 14,
-  "context": {
-    "codeBlockId": "remainderMayDivideByZero",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [],
-    "instruction": "remainder",
+  "domain": "semantic",
+  "instruction": "remainder",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 10,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Possible division by zero. (14)",
+  "symbol": "remainderMayDivideByZero",
 }

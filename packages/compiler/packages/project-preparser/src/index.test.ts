@@ -183,7 +183,7 @@ describe('parseProjectSource', () => {
 			message: 'Parse error at line 2: group blocks must be inside an entry block',
 		},
 	])('retains scope diagnostics: $message', ({ body, message }) => {
-		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(new Error(message));
+		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(message);
 	});
 
 	it.each(noteContentMarkers)('preserves %s as root note content', marker => {
@@ -387,11 +387,44 @@ describe('parseProjectSource', () => {
 		]);
 		expect(getProjectGroups(project)[0].exposures).toEqual([
 			{
+				lineNumber: 3,
 				name: 'level',
 				targetModuleName: 'voice',
 				targetMemoryName: 'level',
 			},
 		]);
+	});
+
+	it('records exposure rows in each owning group after extracting nested blocks', () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group outer
+expose outerValue &source:value
+entry main
+group inner
+; before the module
+expose first &source:value
+entry main
+module source
+int value
+moduleEnd
+entryEnd
+; after the module
+expose second &source:value
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		const outer = getProjectGroups(project)[0];
+		const inner = getProjectGroups(outer)[0];
+		expect(outer.exposures).toMatchObject([{ name: 'outerValue', lineNumber: 1 }]);
+		expect(inner.exposures).toMatchObject([
+			{ name: 'first', lineNumber: 2 },
+			{ name: 'second', lineNumber: 4 },
+		]);
+		for (const exposure of inner.exposures) {
+			expect(inner.code[exposure.lineNumber]).toBe(`expose ${exposure.name} &source:value`);
+		}
 	});
 
 	it('throws on invalid project shape', () => {

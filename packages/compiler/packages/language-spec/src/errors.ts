@@ -67,3 +67,16 @@ export const ErrorCode = {
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+/** Include resolution failures, distinguished by the diagnostic's include domain. */
+export const IncludeErrorCode = {
+	INVALID_DECLARATION: 0,
+	DUPLICATE_EXPORT: 1,
+	MISSING_EXPORT: 2,
+	AMBIGUOUS_CALL_TARGET: 3,
+	UNRESOLVED_INCLUDE: 4,
+	UNKNOWN_EXPORT: 5,
+	CONFLICTING_BINDING: 6,
+} as const;
+
+export type IncludeErrorCodeValue = (typeof IncludeErrorCode)[keyof typeof IncludeErrorCode];

@@ -51,6 +51,7 @@ export type ProjectModuleId = string;
 
 /** Explicit same-name namespace forwarding from an immediate parent project scope. */
 export interface ProjectConstantNamespacePassLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'pass';
 	arguments: [ArgumentIdentifier];
@@ -65,6 +66,7 @@ export interface ProjectConstantNamespaceScope {
 
 /** A default for group-local exposed scalar memory, using a number or immediate-parent memory address. */
 export interface ProjectMemoryInitializerLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'init';
 	arguments: [
@@ -147,6 +149,8 @@ export interface ProjectObjectModel {
 
 /** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
 export interface ProjectMemoryExposure {
+	/** Zero-based row in the owning group's code, after nested blocks have been extracted. */
+	lineNumber: number;
 	/** Public name used by the enclosing project. */
 	name: string;
 	/** Source-level name of the direct child module that owns the target memory item. */

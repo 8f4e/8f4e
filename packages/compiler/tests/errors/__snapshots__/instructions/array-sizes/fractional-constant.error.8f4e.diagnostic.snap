@@ -1,27 +1,13 @@
 {
   "code": 77,
-  "context": {
-    "codeBlockId": "example",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "values",
-      },
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "SIZE",
-      },
-    ],
-    "instruction": "int[]",
+  "domain": "semantic",
+  "instruction": "int[]",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Array size must be a finite nonnegative integer. (77)",
 }

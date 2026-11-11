@@ -111,7 +111,13 @@ describe('compiler plugin', () => {
 		test.worker.emitMessage({
 			type: 'compilationError',
 			compilationId: 0,
-			payload: { message: 'Invalid source', line: { lineNumber: 1 }, context: {} },
+			payload: {
+				kind: 'source',
+				domain: 'syntax',
+				code: 1,
+				message: 'Invalid source',
+				location: { kind: 'document', lineNumber: 1 },
+			},
 		});
 		await vi.advanceTimersByTimeAsync(0);
 		expect(test.store.getState().loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
@@ -168,7 +174,17 @@ describe('compiler plugin', () => {
 			test.worker.emitMessage(
 				type === 'success'
 					? createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 }))
-					: { type, compilationId: 0, payload: { message: 'Obsolete failure', line: { lineNumber: 1 }, context: {} } }
+					: {
+							type,
+							compilationId: 0,
+							payload: {
+								kind: 'source',
+								domain: 'syntax',
+								code: 1,
+								message: 'Obsolete failure',
+								location: { kind: 'document', lineNumber: 1 },
+							},
+						}
 			);
 			await vi.advanceTimersByTimeAsync(0);
 			expect(test.worker.postedMessages).toHaveLength(2);

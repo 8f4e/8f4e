@@ -13,6 +13,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 332,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -25,6 +30,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 332,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -37,6 +47,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 332,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -49,12 +64,22 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 332,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 332,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -109,6 +134,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -121,6 +151,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -142,6 +177,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -154,6 +194,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -168,6 +213,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -182,6 +232,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
@@ -194,17 +249,32 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 348,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 348,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -234,6 +304,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -246,6 +321,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -257,6 +337,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -268,6 +353,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -279,6 +369,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -290,6 +385,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -301,6 +401,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -312,6 +417,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -323,6 +433,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -334,6 +449,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -345,6 +465,11 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -356,6 +481,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -367,6 +497,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -378,6 +513,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -389,6 +529,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -400,6 +545,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -411,6 +561,11 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -422,6 +577,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -433,6 +593,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -444,6 +609,11 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -455,6 +625,11 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -466,6 +641,11 @@
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -477,6 +657,11 @@
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -488,6 +673,11 @@
           },
           {
             "lineNumber": 25,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -499,6 +689,11 @@
           },
           {
             "lineNumber": 26,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -510,6 +705,11 @@
           },
           {
             "lineNumber": 27,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -521,6 +721,11 @@
           },
           {
             "lineNumber": 28,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -532,6 +737,11 @@
           },
           {
             "lineNumber": 29,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -543,6 +753,11 @@
           },
           {
             "lineNumber": 30,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -554,6 +769,11 @@
           },
           {
             "lineNumber": 31,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -565,6 +785,11 @@
           },
           {
             "lineNumber": 32,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -576,6 +801,11 @@
           },
           {
             "lineNumber": 33,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -587,6 +817,11 @@
           },
           {
             "lineNumber": 34,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -598,6 +833,11 @@
           },
           {
             "lineNumber": 35,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -609,6 +849,11 @@
           },
           {
             "lineNumber": 36,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -620,6 +865,11 @@
           },
           {
             "lineNumber": 37,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -631,6 +881,11 @@
           },
           {
             "lineNumber": 38,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -642,6 +897,11 @@
           },
           {
             "lineNumber": 39,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -653,6 +913,11 @@
           },
           {
             "lineNumber": 40,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -664,6 +929,11 @@
           },
           {
             "lineNumber": 41,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -675,6 +945,11 @@
           },
           {
             "lineNumber": 42,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -686,6 +961,11 @@
           },
           {
             "lineNumber": 43,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -697,6 +977,11 @@
           },
           {
             "lineNumber": 44,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -708,6 +993,11 @@
           },
           {
             "lineNumber": 45,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -719,6 +1009,11 @@
           },
           {
             "lineNumber": 46,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -730,6 +1025,11 @@
           },
           {
             "lineNumber": 47,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -741,6 +1041,11 @@
           },
           {
             "lineNumber": 48,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -752,6 +1057,11 @@
           },
           {
             "lineNumber": 49,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -763,6 +1073,11 @@
           },
           {
             "lineNumber": 50,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -774,6 +1089,11 @@
           },
           {
             "lineNumber": 51,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -785,6 +1105,11 @@
           },
           {
             "lineNumber": 52,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -796,6 +1121,11 @@
           },
           {
             "lineNumber": 53,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -807,6 +1137,11 @@
           },
           {
             "lineNumber": 54,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -818,6 +1153,11 @@
           },
           {
             "lineNumber": 55,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -829,6 +1169,11 @@
           },
           {
             "lineNumber": 56,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -840,6 +1185,11 @@
           },
           {
             "lineNumber": 57,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -851,6 +1201,11 @@
           },
           {
             "lineNumber": 58,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -862,6 +1217,11 @@
           },
           {
             "lineNumber": 59,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -873,6 +1233,11 @@
           },
           {
             "lineNumber": 60,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -884,6 +1249,11 @@
           },
           {
             "lineNumber": 61,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -895,6 +1265,11 @@
           },
           {
             "lineNumber": 62,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -906,6 +1281,11 @@
           },
           {
             "lineNumber": 63,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -917,6 +1297,11 @@
           },
           {
             "lineNumber": 64,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -928,6 +1313,11 @@
           },
           {
             "lineNumber": 65,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -939,6 +1329,11 @@
           },
           {
             "lineNumber": 66,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -950,6 +1345,11 @@
           },
           {
             "lineNumber": 67,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -961,6 +1361,11 @@
           },
           {
             "lineNumber": 68,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -972,6 +1377,11 @@
           },
           {
             "lineNumber": 69,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -983,6 +1393,11 @@
           },
           {
             "lineNumber": 70,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -994,6 +1409,11 @@
           },
           {
             "lineNumber": 71,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1005,6 +1425,11 @@
           },
           {
             "lineNumber": 72,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1016,6 +1441,11 @@
           },
           {
             "lineNumber": 73,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1027,6 +1457,11 @@
           },
           {
             "lineNumber": 74,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1038,6 +1473,11 @@
           },
           {
             "lineNumber": 75,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1049,6 +1489,11 @@
           },
           {
             "lineNumber": 76,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1060,6 +1505,11 @@
           },
           {
             "lineNumber": 77,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1071,6 +1521,11 @@
           },
           {
             "lineNumber": 78,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1082,6 +1537,11 @@
           },
           {
             "lineNumber": 79,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1093,6 +1553,11 @@
           },
           {
             "lineNumber": 80,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1104,6 +1569,11 @@
           },
           {
             "lineNumber": 81,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1115,6 +1585,11 @@
           },
           {
             "lineNumber": 82,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1126,6 +1601,11 @@
           },
           {
             "lineNumber": 83,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1137,6 +1617,11 @@
           },
           {
             "lineNumber": 84,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1148,6 +1633,11 @@
           },
           {
             "lineNumber": 85,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1159,6 +1649,11 @@
           },
           {
             "lineNumber": 86,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1170,6 +1665,11 @@
           },
           {
             "lineNumber": 87,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1181,6 +1681,11 @@
           },
           {
             "lineNumber": 88,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1192,6 +1697,11 @@
           },
           {
             "lineNumber": 89,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1203,6 +1713,11 @@
           },
           {
             "lineNumber": 90,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1214,6 +1729,11 @@
           },
           {
             "lineNumber": 91,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1225,6 +1745,11 @@
           },
           {
             "lineNumber": 92,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1236,6 +1761,11 @@
           },
           {
             "lineNumber": 93,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1247,6 +1777,11 @@
           },
           {
             "lineNumber": 94,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1258,6 +1793,11 @@
           },
           {
             "lineNumber": 95,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1269,6 +1809,11 @@
           },
           {
             "lineNumber": 96,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1280,6 +1825,11 @@
           },
           {
             "lineNumber": 97,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1291,6 +1841,11 @@
           },
           {
             "lineNumber": 98,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1302,6 +1857,11 @@
           },
           {
             "lineNumber": 99,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1313,6 +1873,11 @@
           },
           {
             "lineNumber": 100,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1324,6 +1889,11 @@
           },
           {
             "lineNumber": 101,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1335,6 +1905,11 @@
           },
           {
             "lineNumber": 102,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1346,6 +1921,11 @@
           },
           {
             "lineNumber": 103,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1357,6 +1937,11 @@
           },
           {
             "lineNumber": 104,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1368,6 +1953,11 @@
           },
           {
             "lineNumber": 105,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1379,6 +1969,11 @@
           },
           {
             "lineNumber": 106,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1390,6 +1985,11 @@
           },
           {
             "lineNumber": 107,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1401,6 +2001,11 @@
           },
           {
             "lineNumber": 108,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1412,6 +2017,11 @@
           },
           {
             "lineNumber": 109,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1423,6 +2033,11 @@
           },
           {
             "lineNumber": 110,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1434,6 +2049,11 @@
           },
           {
             "lineNumber": 111,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1445,6 +2065,11 @@
           },
           {
             "lineNumber": 112,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1456,6 +2081,11 @@
           },
           {
             "lineNumber": 113,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1467,6 +2097,11 @@
           },
           {
             "lineNumber": 114,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1478,6 +2113,11 @@
           },
           {
             "lineNumber": 115,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1489,6 +2129,11 @@
           },
           {
             "lineNumber": 116,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1500,6 +2145,11 @@
           },
           {
             "lineNumber": 117,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1511,6 +2161,11 @@
           },
           {
             "lineNumber": 118,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1522,6 +2177,11 @@
           },
           {
             "lineNumber": 119,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1533,6 +2193,11 @@
           },
           {
             "lineNumber": 120,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1544,6 +2209,11 @@
           },
           {
             "lineNumber": 121,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1555,6 +2225,11 @@
           },
           {
             "lineNumber": 122,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1566,6 +2241,11 @@
           },
           {
             "lineNumber": 123,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1577,6 +2257,11 @@
           },
           {
             "lineNumber": 124,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1588,6 +2273,11 @@
           },
           {
             "lineNumber": 125,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1599,6 +2289,11 @@
           },
           {
             "lineNumber": 126,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1610,6 +2305,11 @@
           },
           {
             "lineNumber": 127,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1621,6 +2321,11 @@
           },
           {
             "lineNumber": 128,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1632,6 +2337,11 @@
           },
           {
             "lineNumber": 129,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1643,6 +2353,11 @@
           },
           {
             "lineNumber": 130,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1654,12 +2369,22 @@
           },
           {
             "lineNumber": 132,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 370,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 370,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1714,6 +2439,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1726,6 +2456,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -1747,6 +2482,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1759,6 +2499,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "float*",
             "arguments": [
               {
@@ -1779,6 +2524,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1793,6 +2543,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1805,6 +2560,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1819,6 +2579,11 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1830,32 +2595,62 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "loadFloat",
             "arguments": []
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 503,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 503,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1958,6 +2753,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1970,6 +2770,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1987,6 +2792,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -2004,6 +2814,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "int&",
             "arguments": [
               {
@@ -2025,6 +2840,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -2045,6 +2865,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -2065,6 +2890,11 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -2077,6 +2907,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -2094,6 +2929,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -2106,6 +2946,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2120,6 +2965,11 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
@@ -2140,6 +2990,11 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -2150,6 +3005,11 @@
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2164,6 +3024,11 @@
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2175,11 +3040,21 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2189,6 +3064,11 @@
           },
           {
             "lineNumber": 25,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2201,6 +3081,11 @@
           },
           {
             "lineNumber": 26,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2212,11 +3097,21 @@
           },
           {
             "lineNumber": 27,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 28,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -2227,6 +3122,11 @@
           },
           {
             "lineNumber": 29,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2241,6 +3141,11 @@
           },
           {
             "lineNumber": 30,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2253,6 +3158,11 @@
           },
           {
             "lineNumber": 31,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2267,21 +3177,41 @@
           },
           {
             "lineNumber": 32,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 33,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 34,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 35,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2296,6 +3226,11 @@
           },
           {
             "lineNumber": 36,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2308,6 +3243,11 @@
           },
           {
             "lineNumber": 37,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2322,16 +3262,31 @@
           },
           {
             "lineNumber": 38,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "sub",
             "arguments": []
           },
           {
             "lineNumber": 39,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 40,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2341,6 +3296,11 @@
           },
           {
             "lineNumber": 42,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2353,6 +3313,11 @@
           },
           {
             "lineNumber": 43,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2364,11 +3329,21 @@
           },
           {
             "lineNumber": 44,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 45,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -2379,6 +3354,11 @@
           },
           {
             "lineNumber": 46,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2393,6 +3373,11 @@
           },
           {
             "lineNumber": 47,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2404,11 +3389,21 @@
           },
           {
             "lineNumber": 48,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 49,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2418,6 +3413,11 @@
           },
           {
             "lineNumber": 51,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2430,6 +3430,11 @@
           },
           {
             "lineNumber": 52,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2441,11 +3446,21 @@
           },
           {
             "lineNumber": 53,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "lessThan",
             "arguments": []
           },
           {
             "lineNumber": 54,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -2456,6 +3471,11 @@
           },
           {
             "lineNumber": 55,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2470,6 +3490,11 @@
           },
           {
             "lineNumber": 56,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2481,11 +3506,21 @@
           },
           {
             "lineNumber": 57,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 58,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2495,12 +3530,22 @@
           },
           {
             "lineNumber": 60,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 522,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 522,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -2555,6 +3600,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -2567,6 +3617,11 @@
           },
           {
             "lineNumber": 2,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "use",
             "arguments": [
               {
@@ -2579,6 +3634,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -2596,6 +3656,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -2617,6 +3682,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -2629,6 +3699,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -2641,6 +3716,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "use",
             "arguments": [
               {
@@ -2653,6 +3733,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2667,6 +3752,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2679,6 +3769,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2691,6 +3786,11 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2705,11 +3805,21 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2722,31 +3832,61 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "castToFloat",
             "arguments": []
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "ensureNonZero",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "div",
             "arguments": []
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 26,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2759,6 +3899,11 @@
           },
           {
             "lineNumber": 27,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2771,11 +3916,21 @@
           },
           {
             "lineNumber": 28,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 29,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -2786,6 +3941,11 @@
           },
           {
             "lineNumber": 30,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2800,6 +3960,11 @@
           },
           {
             "lineNumber": 31,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2812,11 +3977,21 @@
           },
           {
             "lineNumber": 32,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 33,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -2826,6 +4001,11 @@
           },
           {
             "lineNumber": 35,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2840,6 +4020,11 @@
           },
           {
             "lineNumber": 36,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -2852,6 +4037,11 @@
           },
           {
             "lineNumber": 39,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
@@ -2864,17 +4054,32 @@
           },
           {
             "lineNumber": 40,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 42,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 583,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 583,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -2953,6 +4158,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -2965,6 +4175,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -2986,6 +4201,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -3007,6 +4227,11 @@
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -3019,6 +4244,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3033,6 +4263,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3047,6 +4282,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3061,22 +4301,42 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 626,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 626,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -3131,6 +4391,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -3143,6 +4408,11 @@
           },
           {
             "lineNumber": 2,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "use",
             "arguments": [
               {
@@ -3155,6 +4425,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -3176,6 +4451,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "float[]",
             "arguments": [
               {
@@ -3194,6 +4474,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -3214,6 +4499,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3226,6 +4516,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3240,11 +4535,21 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3259,6 +4564,11 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3271,6 +4581,11 @@
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3284,16 +4599,31 @@
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 25,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 30,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3306,6 +4636,11 @@
           },
           {
             "lineNumber": 31,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3320,11 +4655,21 @@
           },
           {
             "lineNumber": 32,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 33,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -3335,6 +4680,11 @@
           },
           {
             "lineNumber": 34,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3349,6 +4699,11 @@
           },
           {
             "lineNumber": 35,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -3363,11 +4718,21 @@
           },
           {
             "lineNumber": 36,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 37,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [],
             "ifEndBlock": {
@@ -3377,12 +4742,22 @@
           },
           {
             "lineNumber": 39,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 640,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 640,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -3601,6 +4976,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -3621,6 +5001,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -3641,6 +5026,11 @@
           {
             "line": {
               "lineNumber": 12,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -3656,6 +5046,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3676,6 +5071,11 @@
           {
             "line": {
               "lineNumber": 15,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3778,6 +5178,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 640,
+                "projectGroupPath": ""
+              },
               "instruction": "float[]",
               "arguments": [
                 {
@@ -3798,6 +5203,11 @@
           {
             "line": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 640,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3872,6 +5282,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 348,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3974,6 +5389,11 @@
           {
             "line": {
               "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 332,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -3989,6 +5409,11 @@
           {
             "line": {
               "lineNumber": 10,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 332,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -6194,6 +7619,11 @@
           {
             "line": {
               "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6208,6 +7638,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6222,6 +7657,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6236,6 +7676,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6250,6 +7695,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6264,6 +7714,11 @@
           {
             "line": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6278,6 +7733,11 @@
           {
             "line": {
               "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6292,6 +7752,11 @@
           {
             "line": {
               "lineNumber": 10,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6306,6 +7771,11 @@
           {
             "line": {
               "lineNumber": 11,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6320,6 +7790,11 @@
           {
             "line": {
               "lineNumber": 12,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6334,6 +7809,11 @@
           {
             "line": {
               "lineNumber": 13,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6348,6 +7828,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6362,6 +7847,11 @@
           {
             "line": {
               "lineNumber": 15,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6376,6 +7866,11 @@
           {
             "line": {
               "lineNumber": 16,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6390,6 +7885,11 @@
           {
             "line": {
               "lineNumber": 17,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6404,6 +7904,11 @@
           {
             "line": {
               "lineNumber": 18,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6418,6 +7923,11 @@
           {
             "line": {
               "lineNumber": 19,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6432,6 +7942,11 @@
           {
             "line": {
               "lineNumber": 20,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6446,6 +7961,11 @@
           {
             "line": {
               "lineNumber": 21,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6460,6 +7980,11 @@
           {
             "line": {
               "lineNumber": 22,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6474,6 +7999,11 @@
           {
             "line": {
               "lineNumber": 23,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6488,6 +8018,11 @@
           {
             "line": {
               "lineNumber": 24,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6502,6 +8037,11 @@
           {
             "line": {
               "lineNumber": 25,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6516,6 +8056,11 @@
           {
             "line": {
               "lineNumber": 26,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6530,6 +8075,11 @@
           {
             "line": {
               "lineNumber": 27,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6544,6 +8094,11 @@
           {
             "line": {
               "lineNumber": 28,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6558,6 +8113,11 @@
           {
             "line": {
               "lineNumber": 29,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6572,6 +8132,11 @@
           {
             "line": {
               "lineNumber": 30,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6586,6 +8151,11 @@
           {
             "line": {
               "lineNumber": 31,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6600,6 +8170,11 @@
           {
             "line": {
               "lineNumber": 32,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6614,6 +8189,11 @@
           {
             "line": {
               "lineNumber": 33,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6628,6 +8208,11 @@
           {
             "line": {
               "lineNumber": 34,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6642,6 +8227,11 @@
           {
             "line": {
               "lineNumber": 35,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6656,6 +8246,11 @@
           {
             "line": {
               "lineNumber": 36,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6670,6 +8265,11 @@
           {
             "line": {
               "lineNumber": 37,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6684,6 +8284,11 @@
           {
             "line": {
               "lineNumber": 38,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6698,6 +8303,11 @@
           {
             "line": {
               "lineNumber": 39,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6712,6 +8322,11 @@
           {
             "line": {
               "lineNumber": 40,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6726,6 +8341,11 @@
           {
             "line": {
               "lineNumber": 41,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6740,6 +8360,11 @@
           {
             "line": {
               "lineNumber": 42,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6754,6 +8379,11 @@
           {
             "line": {
               "lineNumber": 43,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6768,6 +8398,11 @@
           {
             "line": {
               "lineNumber": 44,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6782,6 +8417,11 @@
           {
             "line": {
               "lineNumber": 45,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6796,6 +8436,11 @@
           {
             "line": {
               "lineNumber": 46,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6810,6 +8455,11 @@
           {
             "line": {
               "lineNumber": 47,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6824,6 +8474,11 @@
           {
             "line": {
               "lineNumber": 48,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6838,6 +8493,11 @@
           {
             "line": {
               "lineNumber": 49,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6852,6 +8512,11 @@
           {
             "line": {
               "lineNumber": 50,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6866,6 +8531,11 @@
           {
             "line": {
               "lineNumber": 51,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6880,6 +8550,11 @@
           {
             "line": {
               "lineNumber": 52,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6894,6 +8569,11 @@
           {
             "line": {
               "lineNumber": 53,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6908,6 +8588,11 @@
           {
             "line": {
               "lineNumber": 54,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6922,6 +8607,11 @@
           {
             "line": {
               "lineNumber": 55,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6936,6 +8626,11 @@
           {
             "line": {
               "lineNumber": 56,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6950,6 +8645,11 @@
           {
             "line": {
               "lineNumber": 57,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6964,6 +8664,11 @@
           {
             "line": {
               "lineNumber": 58,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6978,6 +8683,11 @@
           {
             "line": {
               "lineNumber": 59,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -6992,6 +8702,11 @@
           {
             "line": {
               "lineNumber": 60,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7006,6 +8721,11 @@
           {
             "line": {
               "lineNumber": 61,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7020,6 +8740,11 @@
           {
             "line": {
               "lineNumber": 62,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7034,6 +8759,11 @@
           {
             "line": {
               "lineNumber": 63,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7048,6 +8778,11 @@
           {
             "line": {
               "lineNumber": 64,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7062,6 +8797,11 @@
           {
             "line": {
               "lineNumber": 65,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7076,6 +8816,11 @@
           {
             "line": {
               "lineNumber": 66,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7090,6 +8835,11 @@
           {
             "line": {
               "lineNumber": 67,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7104,6 +8854,11 @@
           {
             "line": {
               "lineNumber": 68,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7118,6 +8873,11 @@
           {
             "line": {
               "lineNumber": 69,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7132,6 +8892,11 @@
           {
             "line": {
               "lineNumber": 70,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7146,6 +8911,11 @@
           {
             "line": {
               "lineNumber": 71,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7160,6 +8930,11 @@
           {
             "line": {
               "lineNumber": 72,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7174,6 +8949,11 @@
           {
             "line": {
               "lineNumber": 73,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7188,6 +8968,11 @@
           {
             "line": {
               "lineNumber": 74,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7202,6 +8987,11 @@
           {
             "line": {
               "lineNumber": 75,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7216,6 +9006,11 @@
           {
             "line": {
               "lineNumber": 76,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7230,6 +9025,11 @@
           {
             "line": {
               "lineNumber": 77,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7244,6 +9044,11 @@
           {
             "line": {
               "lineNumber": 78,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7258,6 +9063,11 @@
           {
             "line": {
               "lineNumber": 79,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7272,6 +9082,11 @@
           {
             "line": {
               "lineNumber": 80,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7286,6 +9101,11 @@
           {
             "line": {
               "lineNumber": 81,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7300,6 +9120,11 @@
           {
             "line": {
               "lineNumber": 82,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7314,6 +9139,11 @@
           {
             "line": {
               "lineNumber": 83,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7328,6 +9158,11 @@
           {
             "line": {
               "lineNumber": 84,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7342,6 +9177,11 @@
           {
             "line": {
               "lineNumber": 85,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7356,6 +9196,11 @@
           {
             "line": {
               "lineNumber": 86,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7370,6 +9215,11 @@
           {
             "line": {
               "lineNumber": 87,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7384,6 +9234,11 @@
           {
             "line": {
               "lineNumber": 88,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7398,6 +9253,11 @@
           {
             "line": {
               "lineNumber": 89,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7412,6 +9272,11 @@
           {
             "line": {
               "lineNumber": 90,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7426,6 +9291,11 @@
           {
             "line": {
               "lineNumber": 91,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7440,6 +9310,11 @@
           {
             "line": {
               "lineNumber": 92,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7454,6 +9329,11 @@
           {
             "line": {
               "lineNumber": 93,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7468,6 +9348,11 @@
           {
             "line": {
               "lineNumber": 94,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7482,6 +9367,11 @@
           {
             "line": {
               "lineNumber": 95,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7496,6 +9386,11 @@
           {
             "line": {
               "lineNumber": 96,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7510,6 +9405,11 @@
           {
             "line": {
               "lineNumber": 97,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7524,6 +9424,11 @@
           {
             "line": {
               "lineNumber": 98,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7538,6 +9443,11 @@
           {
             "line": {
               "lineNumber": 99,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7552,6 +9462,11 @@
           {
             "line": {
               "lineNumber": 100,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7566,6 +9481,11 @@
           {
             "line": {
               "lineNumber": 101,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7580,6 +9500,11 @@
           {
             "line": {
               "lineNumber": 102,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7594,6 +9519,11 @@
           {
             "line": {
               "lineNumber": 103,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7608,6 +9538,11 @@
           {
             "line": {
               "lineNumber": 104,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7622,6 +9557,11 @@
           {
             "line": {
               "lineNumber": 105,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7636,6 +9576,11 @@
           {
             "line": {
               "lineNumber": 106,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7650,6 +9595,11 @@
           {
             "line": {
               "lineNumber": 107,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7664,6 +9614,11 @@
           {
             "line": {
               "lineNumber": 108,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7678,6 +9633,11 @@
           {
             "line": {
               "lineNumber": 109,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7692,6 +9652,11 @@
           {
             "line": {
               "lineNumber": 110,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7706,6 +9671,11 @@
           {
             "line": {
               "lineNumber": 111,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7720,6 +9690,11 @@
           {
             "line": {
               "lineNumber": 112,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7734,6 +9709,11 @@
           {
             "line": {
               "lineNumber": 113,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7748,6 +9728,11 @@
           {
             "line": {
               "lineNumber": 114,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7762,6 +9747,11 @@
           {
             "line": {
               "lineNumber": 115,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7776,6 +9766,11 @@
           {
             "line": {
               "lineNumber": 116,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7790,6 +9785,11 @@
           {
             "line": {
               "lineNumber": 117,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7804,6 +9804,11 @@
           {
             "line": {
               "lineNumber": 118,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7818,6 +9823,11 @@
           {
             "line": {
               "lineNumber": 119,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7832,6 +9842,11 @@
           {
             "line": {
               "lineNumber": 120,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7846,6 +9861,11 @@
           {
             "line": {
               "lineNumber": 121,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7860,6 +9880,11 @@
           {
             "line": {
               "lineNumber": 122,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7874,6 +9899,11 @@
           {
             "line": {
               "lineNumber": 123,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7888,6 +9918,11 @@
           {
             "line": {
               "lineNumber": 124,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7902,6 +9937,11 @@
           {
             "line": {
               "lineNumber": 125,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7916,6 +9956,11 @@
           {
             "line": {
               "lineNumber": 126,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7930,6 +9975,11 @@
           {
             "line": {
               "lineNumber": 127,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7944,6 +9994,11 @@
           {
             "line": {
               "lineNumber": 128,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7958,6 +10013,11 @@
           {
             "line": {
               "lineNumber": 129,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -7972,6 +10032,11 @@
           {
             "line": {
               "lineNumber": 130,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8075,6 +10140,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 503,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8090,6 +10160,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 503,
+                "projectGroupPath": ""
+              },
               "instruction": "float*",
               "arguments": [
                 {
@@ -8236,6 +10311,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8256,6 +10336,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8271,6 +10356,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8337,6 +10427,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 626,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8549,6 +10644,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8569,6 +10669,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8589,6 +10694,11 @@
           {
             "line": {
               "lineNumber": 12,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -8604,6 +10714,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -8624,6 +10739,11 @@
           {
             "line": {
               "lineNumber": 15,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 522,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -8726,6 +10846,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 640,
+                "projectGroupPath": ""
+              },
               "instruction": "float[]",
               "arguments": [
                 {
@@ -8746,6 +10871,11 @@
           {
             "line": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 640,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -8820,6 +10950,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 348,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -8922,6 +11057,11 @@
           {
             "line": {
               "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 332,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -8937,6 +11077,11 @@
           {
             "line": {
               "lineNumber": 10,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 332,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -11142,6 +13287,11 @@
           {
             "line": {
               "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11156,6 +13306,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11170,6 +13325,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11184,6 +13344,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11198,6 +13363,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11212,6 +13382,11 @@
           {
             "line": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11226,6 +13401,11 @@
           {
             "line": {
               "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11240,6 +13420,11 @@
           {
             "line": {
               "lineNumber": 10,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11254,6 +13439,11 @@
           {
             "line": {
               "lineNumber": 11,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11268,6 +13458,11 @@
           {
             "line": {
               "lineNumber": 12,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11282,6 +13477,11 @@
           {
             "line": {
               "lineNumber": 13,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11296,6 +13496,11 @@
           {
             "line": {
               "lineNumber": 14,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11310,6 +13515,11 @@
           {
             "line": {
               "lineNumber": 15,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11324,6 +13534,11 @@
           {
             "line": {
               "lineNumber": 16,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11338,6 +13553,11 @@
           {
             "line": {
               "lineNumber": 17,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11352,6 +13572,11 @@
           {
             "line": {
               "lineNumber": 18,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11366,6 +13591,11 @@
           {
             "line": {
               "lineNumber": 19,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11380,6 +13610,11 @@
           {
             "line": {
               "lineNumber": 20,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11394,6 +13629,11 @@
           {
             "line": {
               "lineNumber": 21,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11408,6 +13648,11 @@
           {
             "line": {
               "lineNumber": 22,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11422,6 +13667,11 @@
           {
             "line": {
               "lineNumber": 23,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11436,6 +13686,11 @@
           {
             "line": {
               "lineNumber": 24,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11450,6 +13705,11 @@
           {
             "line": {
               "lineNumber": 25,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11464,6 +13724,11 @@
           {
             "line": {
               "lineNumber": 26,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11478,6 +13743,11 @@
           {
             "line": {
               "lineNumber": 27,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11492,6 +13762,11 @@
           {
             "line": {
               "lineNumber": 28,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11506,6 +13781,11 @@
           {
             "line": {
               "lineNumber": 29,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11520,6 +13800,11 @@
           {
             "line": {
               "lineNumber": 30,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11534,6 +13819,11 @@
           {
             "line": {
               "lineNumber": 31,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11548,6 +13838,11 @@
           {
             "line": {
               "lineNumber": 32,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11562,6 +13857,11 @@
           {
             "line": {
               "lineNumber": 33,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11576,6 +13876,11 @@
           {
             "line": {
               "lineNumber": 34,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11590,6 +13895,11 @@
           {
             "line": {
               "lineNumber": 35,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11604,6 +13914,11 @@
           {
             "line": {
               "lineNumber": 36,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11618,6 +13933,11 @@
           {
             "line": {
               "lineNumber": 37,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11632,6 +13952,11 @@
           {
             "line": {
               "lineNumber": 38,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11646,6 +13971,11 @@
           {
             "line": {
               "lineNumber": 39,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11660,6 +13990,11 @@
           {
             "line": {
               "lineNumber": 40,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11674,6 +14009,11 @@
           {
             "line": {
               "lineNumber": 41,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11688,6 +14028,11 @@
           {
             "line": {
               "lineNumber": 42,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11702,6 +14047,11 @@
           {
             "line": {
               "lineNumber": 43,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11716,6 +14066,11 @@
           {
             "line": {
               "lineNumber": 44,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11730,6 +14085,11 @@
           {
             "line": {
               "lineNumber": 45,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11744,6 +14104,11 @@
           {
             "line": {
               "lineNumber": 46,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11758,6 +14123,11 @@
           {
             "line": {
               "lineNumber": 47,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11772,6 +14142,11 @@
           {
             "line": {
               "lineNumber": 48,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11786,6 +14161,11 @@
           {
             "line": {
               "lineNumber": 49,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11800,6 +14180,11 @@
           {
             "line": {
               "lineNumber": 50,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11814,6 +14199,11 @@
           {
             "line": {
               "lineNumber": 51,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11828,6 +14218,11 @@
           {
             "line": {
               "lineNumber": 52,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11842,6 +14237,11 @@
           {
             "line": {
               "lineNumber": 53,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11856,6 +14256,11 @@
           {
             "line": {
               "lineNumber": 54,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11870,6 +14275,11 @@
           {
             "line": {
               "lineNumber": 55,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11884,6 +14294,11 @@
           {
             "line": {
               "lineNumber": 56,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11898,6 +14313,11 @@
           {
             "line": {
               "lineNumber": 57,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11912,6 +14332,11 @@
           {
             "line": {
               "lineNumber": 58,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11926,6 +14351,11 @@
           {
             "line": {
               "lineNumber": 59,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11940,6 +14370,11 @@
           {
             "line": {
               "lineNumber": 60,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11954,6 +14389,11 @@
           {
             "line": {
               "lineNumber": 61,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11968,6 +14408,11 @@
           {
             "line": {
               "lineNumber": 62,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11982,6 +14427,11 @@
           {
             "line": {
               "lineNumber": 63,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -11996,6 +14446,11 @@
           {
             "line": {
               "lineNumber": 64,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12010,6 +14465,11 @@
           {
             "line": {
               "lineNumber": 65,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12024,6 +14484,11 @@
           {
             "line": {
               "lineNumber": 66,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12038,6 +14503,11 @@
           {
             "line": {
               "lineNumber": 67,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12052,6 +14522,11 @@
           {
             "line": {
               "lineNumber": 68,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12066,6 +14541,11 @@
           {
             "line": {
               "lineNumber": 69,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12080,6 +14560,11 @@
           {
             "line": {
               "lineNumber": 70,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12094,6 +14579,11 @@
           {
             "line": {
               "lineNumber": 71,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12108,6 +14598,11 @@
           {
             "line": {
               "lineNumber": 72,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12122,6 +14617,11 @@
           {
             "line": {
               "lineNumber": 73,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12136,6 +14636,11 @@
           {
             "line": {
               "lineNumber": 74,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12150,6 +14655,11 @@
           {
             "line": {
               "lineNumber": 75,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12164,6 +14674,11 @@
           {
             "line": {
               "lineNumber": 76,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12178,6 +14693,11 @@
           {
             "line": {
               "lineNumber": 77,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12192,6 +14712,11 @@
           {
             "line": {
               "lineNumber": 78,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12206,6 +14731,11 @@
           {
             "line": {
               "lineNumber": 79,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12220,6 +14750,11 @@
           {
             "line": {
               "lineNumber": 80,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12234,6 +14769,11 @@
           {
             "line": {
               "lineNumber": 81,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12248,6 +14788,11 @@
           {
             "line": {
               "lineNumber": 82,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12262,6 +14807,11 @@
           {
             "line": {
               "lineNumber": 83,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12276,6 +14826,11 @@
           {
             "line": {
               "lineNumber": 84,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12290,6 +14845,11 @@
           {
             "line": {
               "lineNumber": 85,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12304,6 +14864,11 @@
           {
             "line": {
               "lineNumber": 86,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12318,6 +14883,11 @@
           {
             "line": {
               "lineNumber": 87,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12332,6 +14902,11 @@
           {
             "line": {
               "lineNumber": 88,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12346,6 +14921,11 @@
           {
             "line": {
               "lineNumber": 89,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12360,6 +14940,11 @@
           {
             "line": {
               "lineNumber": 90,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12374,6 +14959,11 @@
           {
             "line": {
               "lineNumber": 91,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12388,6 +14978,11 @@
           {
             "line": {
               "lineNumber": 92,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12402,6 +14997,11 @@
           {
             "line": {
               "lineNumber": 93,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12416,6 +15016,11 @@
           {
             "line": {
               "lineNumber": 94,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12430,6 +15035,11 @@
           {
             "line": {
               "lineNumber": 95,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12444,6 +15054,11 @@
           {
             "line": {
               "lineNumber": 96,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12458,6 +15073,11 @@
           {
             "line": {
               "lineNumber": 97,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12472,6 +15092,11 @@
           {
             "line": {
               "lineNumber": 98,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12486,6 +15111,11 @@
           {
             "line": {
               "lineNumber": 99,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12500,6 +15130,11 @@
           {
             "line": {
               "lineNumber": 100,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12514,6 +15149,11 @@
           {
             "line": {
               "lineNumber": 101,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12528,6 +15168,11 @@
           {
             "line": {
               "lineNumber": 102,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12542,6 +15187,11 @@
           {
             "line": {
               "lineNumber": 103,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12556,6 +15206,11 @@
           {
             "line": {
               "lineNumber": 104,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12570,6 +15225,11 @@
           {
             "line": {
               "lineNumber": 105,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12584,6 +15244,11 @@
           {
             "line": {
               "lineNumber": 106,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12598,6 +15263,11 @@
           {
             "line": {
               "lineNumber": 107,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12612,6 +15282,11 @@
           {
             "line": {
               "lineNumber": 108,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12626,6 +15301,11 @@
           {
             "line": {
               "lineNumber": 109,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12640,6 +15320,11 @@
           {
             "line": {
               "lineNumber": 110,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12654,6 +15339,11 @@
           {
             "line": {
               "lineNumber": 111,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12668,6 +15358,11 @@
           {
             "line": {
               "lineNumber": 112,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12682,6 +15377,11 @@
           {
             "line": {
               "lineNumber": 113,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12696,6 +15396,11 @@
           {
             "line": {
               "lineNumber": 114,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12710,6 +15415,11 @@
           {
             "line": {
               "lineNumber": 115,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12724,6 +15434,11 @@
           {
             "line": {
               "lineNumber": 116,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12738,6 +15453,11 @@
           {
             "line": {
               "lineNumber": 117,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12752,6 +15472,11 @@
           {
             "line": {
               "lineNumber": 118,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12766,6 +15491,11 @@
           {
             "line": {
               "lineNumber": 119,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12780,6 +15510,11 @@
           {
             "line": {
               "lineNumber": 120,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12794,6 +15529,11 @@
           {
             "line": {
               "lineNumber": 121,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12808,6 +15548,11 @@
           {
             "line": {
               "lineNumber": 122,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12822,6 +15567,11 @@
           {
             "line": {
               "lineNumber": 123,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12836,6 +15586,11 @@
           {
             "line": {
               "lineNumber": 124,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12850,6 +15605,11 @@
           {
             "line": {
               "lineNumber": 125,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12864,6 +15624,11 @@
           {
             "line": {
               "lineNumber": 126,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12878,6 +15643,11 @@
           {
             "line": {
               "lineNumber": 127,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12892,6 +15662,11 @@
           {
             "line": {
               "lineNumber": 128,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12906,6 +15681,11 @@
           {
             "line": {
               "lineNumber": 129,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -12920,6 +15700,11 @@
           {
             "line": {
               "lineNumber": 130,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 370,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -13023,6 +15808,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 503,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -13038,6 +15828,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 503,
+                "projectGroupPath": ""
+              },
               "instruction": "float*",
               "arguments": [
                 {
@@ -13184,6 +15979,11 @@
           {
             "line": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -13204,6 +16004,11 @@
           {
             "line": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -13219,6 +16024,11 @@
           {
             "line": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 583,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -13285,6 +16095,11 @@
           {
             "line": {
               "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 626,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {

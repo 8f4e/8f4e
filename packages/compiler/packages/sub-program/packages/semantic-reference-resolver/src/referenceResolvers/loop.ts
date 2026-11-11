@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { LoopLine, ResolvedLoopLine } from '@8f4e/language-spec';
-import { ArgumentType, ErrorCode, getError } from '@8f4e/language-spec';
+import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 import { validateValueArguments } from './helpers';
 
@@ -20,10 +21,10 @@ export default function resolveLoopReferences(line: LoopLine, context: Reference
 	const argument = resolved.arguments[0];
 
 	if (!argument.isInteger) {
-		throw getError(ErrorCode.TYPE_MISMATCH, line, context);
+		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
 	}
 	if (argument.value < 0) {
-		throw getError(ErrorCode.EXPECTED_VALUE, line, context);
+		throw getError(ErrorCode.EXPECTED_VALUE, line, { symbol: context.codeBlockId });
 	}
 
 	return resolved;

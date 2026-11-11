@@ -1,3 +1,4 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import type {
 	ArgumentCompileTimeExpression,
 	ArgumentIdentifier,
@@ -19,7 +20,7 @@ import type {
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
-import { ConstantResolverError, ConstantResolverErrorCode, resolveConstants } from './index';
+import { ConstantResolverErrorCode, resolveConstants } from './index';
 
 function id(value: string, referenceKind: 'plain' | 'constant' = 'plain'): ArgumentIdentifier {
 	return {
@@ -75,39 +76,24 @@ function roundedOperand(
 }
 
 function moduleLine(lineNumber: number, name: string): ModuleLine {
-	return {
-		lineNumber,
-		instruction: 'module',
-		arguments: [id(name)],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'module', arguments: [id(name)] };
 }
 
 function moduleEndLine(lineNumber: number): ModuleEndLine {
-	return {
-		lineNumber,
-		instruction: 'moduleEnd',
-		arguments: [],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'moduleEnd', arguments: [] };
 }
 
 function constantsLine(lineNumber: number, name: string): ConstantsLine {
-	return {
-		lineNumber,
-		instruction: 'constants',
-		arguments: [id(name)],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'constants', arguments: [id(name)] };
 }
 
 function useLine(lineNumber: number, name: string): UseLine {
-	return {
-		lineNumber,
-		instruction: 'use',
-		arguments: [id(name, 'constant')],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'use', arguments: [id(name, 'constant')] };
 }
 
 function constLine(lineNumber: number, name: string, value: ConstLine['arguments'][1]): ConstLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber,
 		instruction: 'const',
 		arguments: [id(name, 'constant'), value],
@@ -115,19 +101,11 @@ function constLine(lineNumber: number, name: string, value: ConstLine['arguments
 }
 
 function passLine(lineNumber: number, name: string): ProjectConstantNamespacePassLine {
-	return {
-		lineNumber,
-		instruction: 'pass',
-		arguments: [id(name, 'constant')],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'pass', arguments: [id(name, 'constant')] };
 }
 
 function pushLine(lineNumber: number, value: PushLine['arguments'][0]): PushLine {
-	return {
-		lineNumber,
-		instruction: 'push',
-		arguments: [value],
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'push', arguments: [value] };
 }
 
 function constantsAst(id: string, lines: CompilerASTLine[], constantsLineRef: ConstantsLine): ValidatedConstantsAST {
@@ -156,7 +134,7 @@ describe('constant resolver', () => {
 			[
 				envLine,
 				constLine(2, 'SAMPLE_RATE', literal(48_000)),
-				{ lineNumber: 3, instruction: 'constantsEnd', arguments: [] },
+				{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'constantsEnd', arguments: [] },
 			],
 			envLine
 		);
@@ -206,7 +184,11 @@ describe('constant resolver', () => {
 		const envLine = constantsLine(1, 'env');
 		const env = constantsAst(
 			'env',
-			[envLine, constLine(2, 'RATE', literal(48_000)), { lineNumber: 3, instruction: 'constantsEnd', arguments: [] }],
+			[
+				envLine,
+				constLine(2, 'RATE', literal(48_000)),
+				{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'constantsEnd', arguments: [] },
+			],
 			envLine
 		);
 		const childModuleLine = moduleLine(1, 'child/module');
@@ -216,21 +198,24 @@ describe('constant resolver', () => {
 			childModuleLine
 		);
 
-		const result = resolveConstants({
-			ast: { prototypes: [], modules: [childModule], constants: [env], functions: [] },
-			projectConstantNamespaceScopes: [
-				{ groupPath: '', passes: [] },
-				{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-			],
-		});
-
-		expect(result.namespaces['child/env']).toBe(result.namespaces.env);
-		expect(result.references.modules[0].lineFacts[1]).toBeUndefined();
+		expect(() =>
+			resolveConstants({
+				ast: { prototypes: [], modules: [childModule], constants: [env], functions: [] },
+				projectConstantNamespaceScopes: [
+					{ groupPath: '', passes: [] },
+					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
+				],
+			})
+		).toThrow('Undeclared identifier: RATE');
 	});
 
 	it('requires a namespace pass at every nested project boundary', () => {
 		const envLine = constantsLine(1, 'env');
-		const env = constantsAst('env', [envLine, { lineNumber: 2, instruction: 'constantsEnd', arguments: [] }], envLine);
+		const env = constantsAst(
+			'env',
+			[envLine, { diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'constantsEnd', arguments: [] }],
+			envLine
+		);
 
 		expect(() =>
 			resolveConstants({
@@ -246,7 +231,11 @@ describe('constant resolver', () => {
 
 	it('rejects a passed namespace that collides with a child namespace', () => {
 		const envLine = constantsLine(1, 'env');
-		const env = constantsAst('env', [envLine, { lineNumber: 2, instruction: 'constantsEnd', arguments: [] }], envLine);
+		const env = constantsAst(
+			'env',
+			[envLine, { diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'constantsEnd', arguments: [] }],
+			envLine
+		);
 		const childEnvLine = moduleLine(1, 'child/env');
 		const childEnv = moduleAst('child/env', [childEnvLine, moduleEndLine(2)], childEnvLine);
 
@@ -305,7 +294,11 @@ describe('constant resolver', () => {
 		const sharedConstLine = constLine(11, 'SIZE', literal(8));
 		const sharedAst = constantsAst(
 			'SHARED',
-			[sharedLine, sharedConstLine, { lineNumber: 12, instruction: 'constantsEnd', arguments: [] }],
+			[
+				sharedLine,
+				sharedConstLine,
+				{ diagnosticSource: { kind: 'document' }, lineNumber: 12, instruction: 'constantsEnd', arguments: [] },
+			],
 			sharedLine
 		);
 		const mainLine = moduleLine(20, 'main');
@@ -414,7 +407,7 @@ describe('constant resolver', () => {
 					functions: [],
 				},
 			})
-		).toThrowError(ConstantResolverError);
+		).toThrowError(CompilerError);
 		expect(() =>
 			resolveConstants({
 				ast: {
@@ -440,7 +433,7 @@ describe('constant resolver', () => {
 					functions: [],
 				},
 			})
-		).toThrowError(ConstantResolverError);
+		).toThrowError(CompilerError);
 		expect(() =>
 			resolveConstants({
 				ast: {
@@ -460,7 +453,7 @@ describe('constant resolver', () => {
 			[
 				sharedConstantsLine,
 				constLine(2, 'VALUE', literal(1)),
-				{ lineNumber: 3, instruction: 'constantsEnd', arguments: [] },
+				{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'constantsEnd', arguments: [] },
 			],
 			sharedConstantsLine
 		);
@@ -476,7 +469,7 @@ describe('constant resolver', () => {
 					functions: [],
 				},
 			})
-		).toThrowError(ConstantResolverError);
+		).toThrowError(CompilerError);
 		expect(() =>
 			resolveConstants({
 				ast: {

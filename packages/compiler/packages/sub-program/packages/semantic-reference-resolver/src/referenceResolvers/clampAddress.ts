@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilerASTLine } from '@8f4e/language-spec';
-import { ArgumentType, ErrorCode, getError, SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS } from '@8f4e/language-spec';
+import { ArgumentType, ErrorCode, SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 import { validateValueArguments } from './helpers';
 
@@ -21,7 +22,7 @@ export default function resolveClampAddressReferences(
 		argument?.type === ArgumentType.LITERAL &&
 		(!Number.isInteger(argument.value) || !SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS.includes(argument.value))
 	) {
-		throw getError(ErrorCode.INVALID_ACCESS_WIDTH, line, context);
+		throw getError(ErrorCode.INVALID_ACCESS_WIDTH, line, { symbol: context.codeBlockId });
 	}
 
 	return resolved;

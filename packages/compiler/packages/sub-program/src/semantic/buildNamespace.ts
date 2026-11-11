@@ -1,5 +1,5 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
-	type CompilerDiagnosticContext,
 	type ComposedFunctionAST,
 	createFunctionId,
 	DEFAULT_HOST_IMPORT_MODULE_NAME,
@@ -8,18 +8,10 @@ import {
 	type FunctionMetadata,
 	type FunctionMetadataLookup,
 	type FunctionRegistry,
-	getEffectiveFunctionMetadata,
-	getError,
 	type RegisteredFunction,
 	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
-
-function getAstDiagnosticContext(ast: ComposedFunctionAST): CompilerDiagnosticContext {
-	return {
-		codeBlockType: ast.type,
-		...(ast.projectBlockId !== undefined ? { projectBlockId: ast.projectBlockId } : {}),
-	};
-}
+import { getEffectiveFunctionMetadata } from '@8f4e/semantic-utils';
 
 /** Inputs for registering function metadata and validating whole-program function names. */
 type FunctionRegistrationOptions = {
@@ -82,13 +74,17 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 			functionMetadata.signature.parameters.map(parameter => parameter.type)
 		);
 		if (reservedFunctionNames.has(name)) {
-			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, getAstDiagnosticContext(ast), {
-				identifier: name,
+			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, {
+				details: {
+					identifier: name,
+				},
 			});
 		}
 		if (seenFunctionIds.has(id)) {
-			throw getError(ErrorCode.DUPLICATE_FUNCTION_SIGNATURE, ast.functionLine, getAstDiagnosticContext(ast), {
-				identifier: id,
+			throw getError(ErrorCode.DUPLICATE_FUNCTION_SIGNATURE, ast.functionLine, {
+				details: {
+					identifier: id,
+				},
 			});
 		}
 
@@ -96,8 +92,10 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 		const arity = functionMetadata.signature.parameters.length;
 		if (existingArity !== undefined) {
 			if (existingArity === 0 || arity === 0 || existingArity !== arity) {
-				throw getError(ErrorCode.INVALID_FUNCTION_OVERLOAD_SET, ast.functionLine, getAstDiagnosticContext(ast), {
-					identifier: name,
+				throw getError(ErrorCode.INVALID_FUNCTION_OVERLOAD_SET, ast.functionLine, {
+					details: {
+						identifier: name,
+					},
 				});
 			}
 		}
@@ -105,25 +103,19 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 		const importedFunction = getFunctionImportMetadata(ast);
 		const exportName = getFunctionExportName(ast);
 		if (exportName && overloadCountsByName[name] > 1) {
-			throw getError(
-				ErrorCode.OVERLOADED_FUNCTION_EXPORT_UNSUPPORTED,
-				ast.exportLine ?? ast.functionLine,
-				getAstDiagnosticContext(ast),
-				{
+			throw getError(ErrorCode.OVERLOADED_FUNCTION_EXPORT_UNSUPPORTED, ast.exportLine ?? ast.functionLine, {
+				details: {
 					identifier: name,
-				}
-			);
+				},
+			});
 		}
 		if (exportName) {
 			if (seenExportNames.has(exportName)) {
-				throw getError(
-					ErrorCode.DUPLICATE_EXPORT_NAME,
-					ast.exportLine ?? ast.functionLine,
-					getAstDiagnosticContext(ast),
-					{
+				throw getError(ErrorCode.DUPLICATE_EXPORT_NAME, ast.exportLine ?? ast.functionLine, {
+					details: {
 						identifier: exportName,
-					}
-				);
+					},
+				});
 			}
 			seenExportNames.add(exportName);
 		}

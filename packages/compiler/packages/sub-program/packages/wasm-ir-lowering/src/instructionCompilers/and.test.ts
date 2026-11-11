@@ -8,11 +8,7 @@ describe('and instruction compiler', () => {
 
 		compileInstructionForTest(
 			and,
-			{
-				lineNumber: 1,
-				instruction: 'and',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'and', arguments: [] },
 			context
 		);
 

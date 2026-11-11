@@ -13,6 +13,7 @@ describe('analyzeInstruction', () => {
 		);
 
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'add',
 			arguments: [],
@@ -39,6 +40,7 @@ describe('analyzeInstruction', () => {
 	it('owns stack errors before codegen runs', () => {
 		const context = createStackAnalyzerTestContext();
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'add',
 			arguments: [],
@@ -50,6 +52,7 @@ describe('analyzeInstruction', () => {
 	it('records push-produced stack metadata', () => {
 		const context = createStackAnalyzerTestContext();
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
 			arguments: [{ type: ArgumentType.LITERAL, value: 7, isInteger: true }],
@@ -66,11 +69,13 @@ describe('analyzeInstruction', () => {
 	it('records float32 and float64 push values at their runtime precision', () => {
 		const context = createStackAnalyzerTestContext();
 		const float32Line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'push',
 			arguments: [{ type: ArgumentType.LITERAL, value: Math.PI, isInteger: false }],
 		} as CompilerASTLine;
 		const float64Line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'push',
 			arguments: [{ type: ArgumentType.LITERAL, value: Math.PI, isInteger: false, isFloat64: true }],
@@ -99,7 +104,12 @@ describe('analyzeInstruction', () => {
 				{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(right) },
 			],
 		});
-		const line = { lineNumber: 1, instruction, arguments: [] } as CompilerASTLine;
+		const line = {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 1,
+			instruction,
+			arguments: [],
+		} as CompilerASTLine;
 
 		const facts = analyzeInstruction(line, context);
 
@@ -120,11 +130,11 @@ describe('analyzeInstruction', () => {
 		});
 
 		const divisionFacts = analyzeInstruction(
-			{ lineNumber: 1, instruction: 'div', arguments: [] } as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] } as CompilerASTLine,
 			divisionContext
 		);
 		const absFacts = analyzeInstruction(
-			{ lineNumber: 1, instruction: 'abs', arguments: [] } as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'abs', arguments: [] } as CompilerASTLine,
 			absContext
 		);
 
@@ -159,6 +169,7 @@ describe('analyzeInstruction', () => {
 			activeMapBlock: mapBlock,
 		});
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'mapEnd',
 			arguments: [
@@ -190,6 +201,7 @@ describe('analyzeInstruction', () => {
 			address: { clampRange: range },
 		});
 		const line = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'clampAddress',
 			arguments: [{ type: ArgumentType.LITERAL, value: ALLOCATION_UNIT_BYTE_SIZE * 2, isInteger: true }],
