@@ -42,7 +42,6 @@ export function createMemory(
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
 		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
-		endAddressSafeByteLength: 0,
 	};
 }
 
@@ -77,7 +76,6 @@ export function createMemoryPlan(
 		allocationUnitCount,
 		allocatedByteLength: getAllocatedByteLength(allocationUnitCount),
 		endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
-		endAddressSafeByteLength: 0,
 		memory,
 		declarations,
 		declarationSources: overrides.declarationSources ?? [],

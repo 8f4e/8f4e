@@ -24,7 +24,6 @@ describe('memory declaration layout planner', () => {
 				allocatedByteLength: 8,
 				elementByteLength: 8,
 				endByteAddress: byteAddress + 8,
-				endAddressSafeByteLength: 0,
 			});
 			expect(result.nextLocalAllocationUnitOffset).toBe(localAllocationUnitOffset + padding + 2);
 			const following = planScalarDeclarationLayout({
@@ -53,7 +52,6 @@ describe('memory declaration layout planner', () => {
 				allocatedByteLength: numberOfElements * 8,
 				elementByteLength: numberOfElements * 8,
 				endByteAddress: numberOfElements === 0 ? byteAddress : byteAddress + numberOfElements * 8,
-				endAddressSafeByteLength: 0,
 			});
 			expect(result.nextLocalAllocationUnitOffset).toBe(localAllocationUnitOffset + padding + numberOfElements * 2);
 			const following = planScalarDeclarationLayout({
@@ -120,7 +118,6 @@ describe('memory declaration layout planner', () => {
 				byteAddress: 4,
 				elementByteLength: 4,
 				endByteAddress: 8,
-				endAddressSafeByteLength: 0,
 				lineNumber: 1,
 				type: 'int',
 				pointerDepth: 0,

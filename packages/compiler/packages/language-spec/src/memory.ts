@@ -165,8 +165,6 @@ export interface PlannedMemoryDeclaration {
 	allocationUnitAddress: number;
 	/** Exclusive logical end address, excluding trailing allocation padding. */
 	endByteAddress: number;
-	/** Readable bytes at the exclusive end address; always zero. */
-	endAddressSafeByteLength: number;
 	lineNumber: number;
 	isInteger: boolean;
 	isFloat64?: boolean;
@@ -202,8 +200,6 @@ export interface PlannedMemoryModule {
 	allocatedByteLength: number;
 	/** Exclusive end address of this module allocation. */
 	endByteAddress: number;
-	/** Readable bytes at the exclusive end address; always zero. */
-	endAddressSafeByteLength: number;
 	/** Effective named declarations, keyed by source name. */
 	memory: Record<string, PlannedMemoryDeclaration>;
 	/** All declarations in expanded source order, indexed by declaration ID. */

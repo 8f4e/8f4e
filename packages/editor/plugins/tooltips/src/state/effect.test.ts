@@ -312,7 +312,6 @@ entryEnd`);
 								allocationUnitCount: 0,
 								allocatedByteLength: 0,
 								endByteAddress: 0,
-								endAddressSafeByteLength: 0,
 								memory: {
 									value: {
 										id: 0,

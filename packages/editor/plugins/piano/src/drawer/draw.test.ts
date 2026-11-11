@@ -36,7 +36,6 @@ function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Pl
 		allocatedByteLength: 4,
 		allocationUnitAddress: 0,
 		endByteAddress: 4,
-		endAddressSafeByteLength: 0,
 		lineNumber: 0,
 		isInteger: true,
 		pointerDepth: 0,

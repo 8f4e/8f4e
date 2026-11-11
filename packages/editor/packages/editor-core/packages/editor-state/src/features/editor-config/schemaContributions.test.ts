@@ -44,7 +44,6 @@ const store = createStateManager(
 							allocationUnitCount: 0,
 							allocatedByteLength: 0,
 							endByteAddress: 0,
-							endAddressSafeByteLength: 0,
 							memory: {
 								buffer: { id: 0, name: 'buffer', allocationUnitAddress: 32 },
 							},

@@ -41,7 +41,6 @@ entryEnd`,
 				byteAddress: 8,
 				allocatedByteLength: byteLength,
 				endByteAddress: 8 + byteLength,
-				endAddressSafeByteLength: 0,
 			});
 			expect(source.memory.next.byteAddress).toBe(8 + byteLength);
 			expect(source.allocationUnitCount).toBe((byteLength + 8) / 4);

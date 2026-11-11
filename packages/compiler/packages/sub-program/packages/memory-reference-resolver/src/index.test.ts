@@ -42,8 +42,7 @@ function createMemoryDeclaration(
 		...declaration,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
-		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.allocationUnitCount),
-		endAddressSafeByteLength: 0,
+		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
 	} as PlannedMemoryDeclaration;
 }
 
@@ -71,7 +70,6 @@ function createPlannedModule(
 		...module,
 		allocatedByteLength: getAllocatedByteLength(module.allocationUnitCount),
 		endByteAddress: getEndByteAddress(module.byteAddress, module.allocationUnitCount),
-		endAddressSafeByteLength: 0,
 	} as PlannedMemoryModule;
 }
 
@@ -747,7 +745,7 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		// End address = byteAddress + allocationUnitCount * 4 = 8 + 4 * 4 = 24
+		// End address = byteAddress + element count * element size = 8 + 4 * 4 = 24
 		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('end(source:buffer)')))).toEqual({
 			value: 24,
 			isInteger: true,

@@ -55,7 +55,6 @@ describe('analyzeStack integration', () => {
 			allocatedByteLength: 16,
 			allocationUnitAddress: 1,
 			endByteAddress: 20,
-			endAddressSafeByteLength: 0,
 			lineNumber: 2,
 			isInteger: true,
 			id: 0,
@@ -184,7 +183,6 @@ describe('analyzeStack integration', () => {
 					allocationUnitCount: 4,
 					allocatedByteLength: 16,
 					endByteAddress: 20,
-					endAddressSafeByteLength: 0,
 					memory: {
 						buffer: bufferMemory,
 					},
@@ -205,7 +203,6 @@ describe('analyzeStack integration', () => {
 					allocationUnitCount: 4,
 					allocatedByteLength: 16,
 					endByteAddress: 20,
-					endAddressSafeByteLength: 0,
 					memory: {
 						buffer: bufferMemory,
 					},

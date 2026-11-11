@@ -68,7 +68,6 @@ for (const font of [
 						allocationUnitCount: 1,
 						allocatedByteLength: 4,
 						endByteAddress: (index + 1) * 4,
-						endAddressSafeByteLength: 0,
 						lineNumber: 0,
 						isInteger: false,
 						pointerDepth: 0,

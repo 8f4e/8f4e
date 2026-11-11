@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { classifyEndQuery } from './classifyEndQuery';
-import { classifyIdentifier } from './classifyIdentifier';
 
 describe('exclusive-end query syntax', () => {
 	it.each([
@@ -28,8 +27,5 @@ describe('exclusive-end query syntax', () => {
 		'end(buffer',
 		'end(end(buffer))',
 	])('rejects malformed %s', value => expect(() => classifyEndQuery(value)).toThrow());
-	it.each(['buffer&', 'source:buffer&', 'source:&', '&source:buffer&'])('rejects removed trailing syntax %s', value =>
-		expect(() => classifyIdentifier(value)).toThrow('Trailing & end addresses were removed')
-	);
 	it('does not classify a start address as a query', () => expect(classifyEndQuery('&buffer')).toBeNull());
 });

@@ -12,7 +12,6 @@ export function createMemory(overrides: Partial<PlannedMemoryDeclaration>): Plan
 		allocationUnitCount: 1,
 		allocatedByteLength: 4,
 		endByteAddress: 4,
-		endAddressSafeByteLength: 0,
 		lineNumber: 0,
 		isInteger: true,
 		isUnsigned: false,

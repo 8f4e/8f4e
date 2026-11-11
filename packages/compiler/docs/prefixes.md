@@ -50,8 +50,8 @@ ifEnd
 
 Mutable pointer variables do not provide a fixed allocation boundary; pass that boundary separately. `end(pointer)`
 queries the pointer variable's own storage. `end(module:N)` queries an indexed declaration, and `end(module:)` queries
-the complete module allocation. Leading `&` continues to select start addresses. Trailing `&` has been removed;
-migrate `pointer > buffer&` to `pointer >= end(buffer)`.
+the complete module allocation. Leading `&` selects start addresses. Circular buffers wrap when
+`pointer >= end(buffer)`.
 
 ## Pointer dereference
 

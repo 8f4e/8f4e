@@ -33,7 +33,6 @@ function fixture(width = 8, height = 16) {
 			allocationUnitCount: 1,
 			allocatedByteLength: 4,
 			endByteAddress: 4,
-			endAddressSafeByteLength: 0,
 			lineNumber: 0,
 			isInteger: false,
 			pointerDepth: 0,

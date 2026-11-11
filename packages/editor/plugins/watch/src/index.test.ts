@@ -8,7 +8,7 @@ const plugin = createWatchPlugin({ prefersReducedMotion: () => true });
 const source = ['module audio', 'int value 7 ; @watch', 'moduleEnd'];
 describe('watch plugin', () => {
 	it.each(['int8u', 'float', 'float64'])(
-		'reads named and inline %end(s) references without a runtime pointer slot',
+		'reads named and inline %s& references without a runtime pointer slot',
 		async type => {
 			const test = await setup(plugin, [
 				'module audio',

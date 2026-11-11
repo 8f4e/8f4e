@@ -39,7 +39,7 @@ export function memoryEndAddressValue(memoryItem: PlannedMemoryDeclaration, modu
 			safeRange: {
 				source: 'memory-end',
 				byteAddress: memoryItem.endByteAddress,
-				safeByteLength: memoryItem.endAddressSafeByteLength,
+				safeByteLength: 0,
 				...(moduleId ? { moduleId } : {}),
 				memoryId: memoryItem.id,
 			},
@@ -68,7 +68,7 @@ export function moduleAddressValue(
 			safeRange: {
 				source,
 				byteAddress,
-				safeByteLength: source === 'module-start' ? module.allocatedByteLength : module.endAddressSafeByteLength,
+				safeByteLength: source === 'module-start' ? module.allocatedByteLength : 0,
 				...(moduleId ? { moduleId } : {}),
 			},
 		},

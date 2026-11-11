@@ -183,7 +183,6 @@ describe('resolveMemoryReferences integration', () => {
 			allocatedByteLength: 16,
 			allocationUnitAddress: 1,
 			endByteAddress: 20,
-			endAddressSafeByteLength: 0,
 			lineNumber: 2,
 			isInteger: false,
 			id: 0,
@@ -201,7 +200,6 @@ describe('resolveMemoryReferences integration', () => {
 			allocatedByteLength: 4,
 			allocationUnitAddress: 5,
 			endByteAddress: 24,
-			endAddressSafeByteLength: 0,
 			lineNumber: 3,
 			isInteger: true,
 			id: 1,
@@ -220,7 +218,6 @@ describe('resolveMemoryReferences integration', () => {
 			allocatedByteLength: 12,
 			allocationUnitAddress: 1,
 			endByteAddress: 16,
-			endAddressSafeByteLength: 0,
 			lineNumber: 12,
 			isInteger: true,
 			id: 0,
@@ -280,7 +277,6 @@ describe('resolveMemoryReferences integration', () => {
 					allocationUnitCount: 5,
 					allocatedByteLength: 20,
 					endByteAddress: 24,
-					endAddressSafeByteLength: 0,
 					memory: {
 						samples: samplesMemory,
 						ptr: ptrMemory,
@@ -298,7 +294,6 @@ describe('resolveMemoryReferences integration', () => {
 					allocationUnitCount: 3,
 					allocatedByteLength: 12,
 					endByteAddress: 16,
-					endAddressSafeByteLength: 0,
 					memory: {
 						samples: audioSamplesMemory,
 					},
@@ -314,7 +309,6 @@ describe('resolveMemoryReferences integration', () => {
 					allocationUnitCount: 5,
 					allocatedByteLength: 20,
 					endByteAddress: 24,
-					endAddressSafeByteLength: 0,
 					memory: {
 						samples: samplesMemory,
 						ptr: ptrMemory,
@@ -332,7 +326,6 @@ describe('resolveMemoryReferences integration', () => {
 					allocationUnitCount: 3,
 					allocatedByteLength: 12,
 					endByteAddress: 16,
-					endAddressSafeByteLength: 0,
 					memory: {
 						samples: audioSamplesMemory,
 					},

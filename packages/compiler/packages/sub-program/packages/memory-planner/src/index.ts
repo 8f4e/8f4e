@@ -269,10 +269,7 @@ function planModuleMemory(
 	sourceModule: MemoryLayoutSourceModule,
 	moduleByteAddress: number,
 	prototypesById: Readonly<Record<string, MemoryLayoutSourcePrototype>>
-): Omit<
-	PlannedMemoryModule,
-	'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress' | 'endAddressSafeByteLength'
-> {
+): Omit<PlannedMemoryModule, 'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress'> {
 	let localAllocationUnitOffset = 0;
 	const memory: Record<string, PlannedMemoryDeclaration> = {};
 	const declarations: PlannedMemoryDeclaration[] = [];
@@ -326,7 +323,6 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 			allocationUnitCount: moduleMemory.allocationUnitCount,
 			allocatedByteLength: getAllocatedByteLength(moduleMemory.allocationUnitCount),
 			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.allocationUnitCount),
-			endAddressSafeByteLength: 0,
 			memory: moduleMemory.memory,
 			declarations: moduleMemory.declarations,
 			declarationSources: moduleMemory.declarationSources,

@@ -6,6 +6,62 @@ import { createWatchPlugin } from '../index';
 const plugin = createWatchPlugin({ prefersReducedMotion: () => true });
 
 describe('prepared watch rendering', () => {
+	it('resolves named, indexed, module and fixed-reference boundary selectors', async () => {
+		const test = await setup(plugin, [
+			'module source',
+			'int8[] bytes 3 1 2 3',
+			'int16[] words 3 4 5 6',
+			'int8[] empty 0',
+			'int tail 7',
+			'moduleEnd',
+			'module audio',
+			'int marker 8',
+			'int8& connected &source:bytes',
+			'int8& emptyConnection &source:empty',
+			'; @watch end(source:bytes)',
+			'; @watch end(source:words)',
+			'; @watch end(source:empty)',
+			'; @watch end(source:0)',
+			'; @watch end(source:)',
+			'; @watch end(*connected)',
+			'; @watch end(*emptyConnection)',
+			'; @watch end(this)',
+			'; @watch end(this:0)',
+			'moduleEnd',
+		]);
+		test.render();
+		const { source, audio } = test.compiled.memoryPlan.modules;
+		expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual(
+			[
+				source.memory.bytes.byteAddress + 3,
+				source.memory.words.byteAddress + 6,
+				source.memory.empty.byteAddress,
+				source.memory.bytes.byteAddress + 3,
+				source.byteAddress + source.allocatedByteLength,
+				source.memory.bytes.byteAddress + 3,
+				source.memory.empty.byteAddress,
+				audio.byteAddress + audio.allocatedByteLength,
+				audio.memory.marker.byteAddress + 4,
+			].map(String)
+		);
+	});
+
+	it('resolves inline ends and ignores invalid boundary targets', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int8[] bytes 3 1 2 3 ; @watch end()',
+			'int8& connected &bytes ; @watch end(*)',
+			'int8& other &bytes ; @watch end()',
+			'; @watch end(connected)',
+			'; @watch end(*bytes)',
+			'; @watch end(**connected)',
+			'moduleEnd',
+		]);
+		test.render();
+		const end = String(test.compiled.memoryPlan.modules.audio.memory.bytes.byteAddress + 3);
+		expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([end, end]);
+	});
+
 	it('refreshes named and inline fixed-reference reads after recompilation', async () => {
 		const source = (padding = '') => [
 			'module source',

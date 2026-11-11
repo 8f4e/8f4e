@@ -156,7 +156,7 @@ describe('wave plugin', () => {
 	});
 
 	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
-		'draws a %end(s) buffer with a referenced count and playhead',
+		'draws a %s& buffer with a referenced count and playhead',
 		async type => {
 			const test = await setup([
 				'module samples',

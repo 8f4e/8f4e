@@ -54,13 +54,6 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 		}
 	}
 
-	if (value.endsWith('&')) {
-		throw new SyntaxIssue(
-			SyntaxErrorCode.INVALID_IDENTIFIER,
-			`Trailing & end addresses were removed. Use end(${value.slice(0, -1)}) instead.`
-		);
-	}
-
 	const firstChar = value[0];
 	const hasIntermoduleSeparator = value.includes(':');
 	const hasMemoryReferenceSigil = firstChar === '&';
