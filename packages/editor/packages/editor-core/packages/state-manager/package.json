@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/state-manager",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "8f4e state manager package",
   "type": "module",
