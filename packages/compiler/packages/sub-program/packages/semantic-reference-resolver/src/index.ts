@@ -361,8 +361,6 @@ function createFunctionContext(
 		memoryAliases: input.memoryAliases,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
-		currentFunctionId: functionMetadata.id,
-		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 		codeBlockId: functionMetadata.name,
 		prototypeShapes: input.prototypeShapes,

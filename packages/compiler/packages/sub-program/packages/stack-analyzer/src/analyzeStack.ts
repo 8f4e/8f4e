@@ -306,8 +306,6 @@ function createFunctionContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
 		codeBlockId: functionMetadata.name,
-		currentFunctionId: functionMetadata.id,
-		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 	});
 }

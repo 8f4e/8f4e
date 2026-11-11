@@ -124,8 +124,7 @@ export interface CompilationContext extends BlockState {
 	mode: CompilationMode;
 	/** Symbol label supplied explicitly to semantic diagnostics. Source ownership belongs to each source line. */
 	codeBlockId?: string;
-	currentFunctionId?: string;
-	currentFunctionName?: string;
+	/** Function identity, signature, parameter-shape expansions, and effect metadata used by semantic passes. */
 	currentFunctionMetadata?: FunctionMetadata;
 	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
@@ -138,8 +137,6 @@ export interface ModuleCompilationContext extends CompilationContext {
 /** Compilation context narrowed to a function body with function metadata resolved. */
 export interface FunctionCompilationContext extends CompilationContext {
 	mode: 'function';
-	currentFunctionId: string;
-	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
 }
 
