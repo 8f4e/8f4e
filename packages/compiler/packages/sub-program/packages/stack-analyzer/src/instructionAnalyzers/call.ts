@@ -29,7 +29,7 @@ function resolveTargetFunction(line: SemanticCallLine, context: CompilationConte
 	const arity = functionRegistry.arityByName[functionName]!;
 
 	if (context.stack.length < arity) {
-		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, context);
+		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, { symbol: context.codeBlockId });
 	}
 
 	const operands = context.stack.slice(context.stack.length - arity);
@@ -49,10 +49,13 @@ function resolveTargetFunction(line: SemanticCallLine, context: CompilationConte
 		)
 		.sort((left, right) => left.localeCompare(right));
 
-	throw getError(ErrorCode.FUNCTION_OVERLOAD_NO_MATCH, line, context, {
-		identifier: functionName,
-		inferredCallSignature: formatFunctionCallSignature(functionName, inferredParameterTypes),
-		availableOverloadSignatures,
+	throw getError(ErrorCode.FUNCTION_OVERLOAD_NO_MATCH, line, {
+		symbol: context.codeBlockId,
+		details: {
+			identifier: functionName,
+			inferredCallSignature: formatFunctionCallSignature(functionName, inferredParameterTypes),
+			availableOverloadSignatures,
+		},
 	});
 }
 

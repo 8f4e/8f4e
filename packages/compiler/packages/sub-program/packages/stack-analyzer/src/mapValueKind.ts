@@ -24,25 +24,25 @@ export function validateMapValueKind(
 ) {
 	if (expectedKind === 'float64') {
 		if (valueKind.valueType === 'int') {
-			throw getError(ErrorCode.ONLY_FLOATS, line, context);
+			throw getError(ErrorCode.ONLY_FLOATS, line, { symbol: context.codeBlockId });
 		}
 		if (valueKind.valueType !== 'float64') {
-			throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, context);
+			throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, { symbol: context.codeBlockId });
 		}
 		return;
 	}
 
 	if (expectedKind === 'int32') {
 		if (valueKind.valueType !== 'int') {
-			throw getError(ErrorCode.ONLY_INTEGERS, line, context);
+			throw getError(ErrorCode.ONLY_INTEGERS, line, { symbol: context.codeBlockId });
 		}
 		return;
 	}
 
 	if (valueKind.valueType === 'int') {
-		throw getError(ErrorCode.ONLY_FLOATS, line, context);
+		throw getError(ErrorCode.ONLY_FLOATS, line, { symbol: context.codeBlockId });
 	}
 	if (valueKind.valueType === 'float64') {
-		throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, context);
+		throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, { symbol: context.codeBlockId });
 	}
 }

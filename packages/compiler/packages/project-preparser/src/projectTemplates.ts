@@ -39,9 +39,10 @@ function templateError(
 			lineNumber: line.lineNumber - 1,
 			instruction: instruction(line).split(/\s+/)[0],
 		},
-		undefined,
 		{
-			identifier: name,
+			details: {
+				identifier: name,
+			},
 		}
 	);
 	throw diagnostic;

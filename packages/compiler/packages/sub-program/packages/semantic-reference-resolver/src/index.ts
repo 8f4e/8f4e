@@ -204,7 +204,7 @@ function registerFunctionParameter(
 	context: ReferenceResolutionContext
 ): void {
 	if (context.locals[paramName] !== undefined) {
-		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, context);
+		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, { symbol: context.codeBlockId });
 	}
 	bindLocal(context, paramName, paramType);
 }
@@ -225,7 +225,10 @@ function applyLocalLine(line: CompilerASTLine, context: ReferenceResolutionConte
 	const localName = nameArg.value;
 
 	if (getPlannedMemoryDeclaration(context, localName)) {
-		throw getError(ErrorCode.LOCAL_NAME_COLLISION_WITH_MEMORY, line, context, { identifier: localName });
+		throw getError(ErrorCode.LOCAL_NAME_COLLISION_WITH_MEMORY, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: localName },
+		});
 	}
 
 	bindLocal(context, localName, typeArg.value);
@@ -389,7 +392,7 @@ function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: Ref
 			(push.resolvedTarget.kind === 'local-pointer' || push.resolvedTarget.kind === 'memory-pointer')
 	);
 	if (spec.effects?.memory || pointerPush || inlinePointerPush) {
-		throw getError(ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO, line, context);
+		throw getError(ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO, line, { symbol: context.codeBlockId });
 	}
 }
 

@@ -1,4 +1,4 @@
-import { CompilerError, syntaxErrorAt, withAsyncCompilerStage, withCompilerStage } from '@8f4e/compiler-diagnostics';
+import { includeErrorAt, syntaxErrorAt, withAsyncCompilerStage, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import type {
 	DiagnosticSource,
 	ExportLine,
@@ -7,6 +7,7 @@ import type {
 	ProjectIncludeResolver,
 	SourceMetadata,
 } from '@8f4e/language-spec';
+import { IncludeErrorCode } from '@8f4e/language-spec';
 import { parseLine } from '@8f4e/tokenizer';
 import { INCLUDES_BLOCK_DELIMITER } from './delimiters';
 import { isProjectGapLine } from './projectLines';
@@ -22,18 +23,9 @@ export type ResolvedFunctionSource = {
 type ProjectResolvedFunctionSource = ResolvedFunctionSource & { projectBlockId: number; includeLineNumber: number };
 type IncludeFileSource = Extract<DiagnosticSource, { kind: 'include-file' }>;
 
-function includeError(message: string, lineNumber: number, source: DiagnosticSource) {
-	return new CompilerError({
-		kind: 'source',
-		domain: 'include',
-		code: -1,
-		message: `Parse error at line ${lineNumber}: ${message}`,
-		location: { ...source, lineNumber: lineNumber - 1 },
-	});
-}
-
 type FunctionIncludeBlock = {
 	code: string[];
+	/** Zero-based row in the included file. */
 	startLineNumber: number;
 };
 
@@ -41,6 +33,7 @@ type IncludeDeclaration = {
 	includeId: string;
 	exportedName?: string;
 	localName?: string;
+	/** Zero-based row in the owning includes block. */
 	lineNumber: number;
 };
 
@@ -88,14 +81,14 @@ function splitFunctionBlocks(lines: string[]): FunctionIncludeBlock[] {
 
 	for (const [index, line] of lines.entries()) {
 		if (startsWithInstruction(line, 'function')) {
-			currentBlock = { code: [line], startLineNumber: index + 1 };
+			currentBlock = { code: [line], startLineNumber: index };
 			continue;
 		}
 
 		currentBlock?.code.push(line);
 
 		if (startsWithInstruction(line, 'functionEnd')) {
-			blocks.push(currentBlock ?? { code: [line], startLineNumber: index + 1 });
+			blocks.push(currentBlock ?? { code: [line], startLineNumber: index });
 			currentBlock = undefined;
 		}
 	}
@@ -113,17 +106,17 @@ function getIncludeExport(source: IncludeFileSource, block: FunctionIncludeBlock
 		}
 
 		if (includeExport) {
-			throw includeError(
+			throw includeErrorAt(
+				IncludeErrorCode.DUPLICATE_EXPORT,
 				`include "${includeId}" function can only declare one #export`,
-				block.startLineNumber + lineIndex,
-				source
+				{ ...source, lineNumber: block.startLineNumber + lineIndex }
 			);
 		}
 
-		const result = parseLine(line, block.startLineNumber + lineIndex - 1);
+		const result = parseLine(line, block.startLineNumber + lineIndex);
 		if (!result.ok)
 			throw syntaxErrorAt(result.issue.code, result.issue.message, source, {
-				lineNumber: block.startLineNumber + lineIndex - 1,
+				lineNumber: block.startLineNumber + lineIndex,
 				instruction: '#export',
 			});
 		const exportLine = result.value as ExportLine;
@@ -160,7 +153,10 @@ function createIncludeFunctions(source: IncludeFileSource, blocks: FunctionInclu
 	});
 
 	if (functions.every(func => !func.export)) {
-		throw includeError(`include "${includeId}" must export at least one function`, 1, source);
+		throw includeErrorAt(IncludeErrorCode.MISSING_EXPORT, `include "${includeId}" must export at least one function`, {
+			...source,
+			lineNumber: 0,
+		});
 	}
 
 	return functions;
@@ -204,10 +200,10 @@ function createCallTargetRewriteMap(source: IncludeFileSource, functions: Includ
 			}
 			const targetName = getLineFirstArgument(line);
 			if (ambiguousNames.has(targetName)) {
-				throw includeError(
+				throw includeErrorAt(
+					IncludeErrorCode.AMBIGUOUS_CALL_TARGET,
 					`include "${includeId}" call target "${targetName}" is ambiguous because that function name expands to multiple public/internal include names`,
-					func.startLineNumber + lineIndex,
-					source
+					{ ...source, lineNumber: func.startLineNumber + lineIndex }
 				);
 			}
 		}
@@ -255,8 +251,7 @@ export function resolveFunctionIncludeSource(includeId: string, source: string):
 export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>, projectGroupPath = '') {
 	const includeIds: IncludeDeclaration[] = [];
 
-	for (const [index, line] of block.code.entries()) {
-		const lineNumber = index + 1;
+	for (const [lineNumber, line] of block.code.entries()) {
 		const trimmed = line.trim();
 		if (
 			trimmed === INCLUDES_BLOCK_DELIMITER.opener ||
@@ -268,21 +263,22 @@ export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'cod
 
 		const [instruction, includeId, exportedName, localName, ...extraArgs] = trimmed.split(/\s+/);
 		if (instruction !== 'include' || !includeId || extraArgs.length > 0) {
-			throw includeError('include expects <path> [exportedName [localName]]', lineNumber, {
+			throw includeErrorAt(IncludeErrorCode.INVALID_DECLARATION, 'include expects <path> [exportedName [localName]]', {
 				kind: 'block',
 				projectBlockId: block.id,
 				projectGroupPath,
+				lineNumber,
 			});
 		}
 		for (const name of [exportedName, localName]) {
 			if (name !== undefined) {
-				const result = parseLine(`function ${name}`, index);
+				const result = parseLine(`function ${name}`, lineNumber);
 				if (!result.ok)
 					throw syntaxErrorAt(
 						result.issue.code,
 						result.issue.message,
 						{ kind: 'block', projectBlockId: block.id, projectGroupPath },
-						{ lineNumber: index, instruction: 'include' }
+						{ lineNumber, instruction: 'include' }
 					);
 			}
 		}
@@ -359,21 +355,22 @@ function resolveProjectIncludeDeclarations(
 			includeSite: {
 				projectBlockId: declaration.projectBlockId,
 				projectGroupPath,
-				lineNumber: declaration.lineNumber - 1,
+				lineNumber: declaration.lineNumber,
 			},
 		};
 		const source = withCompilerStage('include loading', () => resolveInclude(includeId), {
 			kind: 'block',
 			projectBlockId: declaration.projectBlockId,
 			projectGroupPath,
-			lineNumber: declaration.lineNumber - 1,
+			lineNumber: declaration.lineNumber,
 		});
 		if (source === undefined) {
 			const { lineNumber, projectBlockId } = declarations[0]!;
-			throw includeError(`unresolved include "${includeId}"`, lineNumber, {
+			throw includeErrorAt(IncludeErrorCode.UNRESOLVED_INCLUDE, `unresolved include "${includeId}"`, {
 				kind: 'block',
 				projectBlockId,
 				projectGroupPath,
+				lineNumber,
 			});
 		}
 		const functions = createIncludeFunctions(diagnosticSource, splitFunctionBlocks(normalizeSourceLines(source)));
@@ -381,20 +378,20 @@ function resolveProjectIncludeDeclarations(
 		const bindings: IncludeBindings = new Map();
 		for (const { exportedName, localName, lineNumber, projectBlockId } of declarations) {
 			if (exportedName !== undefined && !publicNames.has(exportedName)) {
-				throw includeError(`include "${includeId}" does not export "${exportedName}"`, lineNumber, {
-					kind: 'block',
-					projectBlockId,
-					projectGroupPath,
-				});
+				throw includeErrorAt(
+					IncludeErrorCode.UNKNOWN_EXPORT,
+					`include "${includeId}" does not export "${exportedName}"`,
+					{ kind: 'block', projectBlockId, projectGroupPath, lineNumber }
+				);
 			}
 			for (const publicName of exportedName === undefined ? publicNames : [exportedName]) {
 				const name = localName ?? publicName;
 				const previousName = bindings.get(publicName);
 				if (previousName !== undefined && previousName !== name) {
-					throw includeError(
+					throw includeErrorAt(
+						IncludeErrorCode.CONFLICTING_BINDING,
 						`include "${includeId}" export "${publicName}" is already included as "${previousName}"`,
-						lineNumber,
-						{ kind: 'block', projectBlockId, projectGroupPath }
+						{ kind: 'block', projectBlockId, projectGroupPath, lineNumber }
 					);
 				}
 				bindings.set(publicName, name);
@@ -404,7 +401,7 @@ function resolveProjectIncludeDeclarations(
 			...expandIncludeFunctions(diagnosticSource, functions, bindings).map(func => ({
 				...func,
 				projectBlockId: declarations[0]!.projectBlockId,
-				includeLineNumber: declarations[0]!.lineNumber - 1,
+				includeLineNumber: declarations[0]!.lineNumber,
 			}))
 		);
 	}
@@ -439,7 +436,7 @@ export async function resolveProjectIncludesAsync(
 				kind: 'block',
 				projectBlockId: declaration.projectBlockId,
 				projectGroupPath,
-				lineNumber: declaration.lineNumber - 1,
+				lineNumber: declaration.lineNumber,
 			})
 		);
 	}

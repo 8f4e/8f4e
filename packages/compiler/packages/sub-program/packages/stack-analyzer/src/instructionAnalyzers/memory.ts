@@ -41,11 +41,11 @@ export function analyzeClampAddress(line: CompilerASTLine, context: CompilationC
 				: undefined;
 
 	if (line.instruction === 'clampAddress' && !range) {
-		throw getError(ErrorCode.ADDRESS_RANGE_REQUIRED, line, context);
+		throw getError(ErrorCode.ADDRESS_RANGE_REQUIRED, line, { symbol: context.codeBlockId });
 	}
 
 	if (range && range.safeByteLength < accessByteWidth) {
-		throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
+		throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 	}
 
 	const produced = [getClampedAddressStackItem(consumed[0], range, accessByteWidth)];

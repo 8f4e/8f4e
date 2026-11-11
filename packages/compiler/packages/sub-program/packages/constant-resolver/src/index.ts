@@ -71,7 +71,7 @@ function constantError(
 	detail: string,
 	line: CompilerASTLine | ProjectConstantNamespacePassLine
 ) {
-	return getError(ErrorCode.CONSTANT_RESOLUTION_FAILED, line, undefined, { reason: `${detail} (${code})` });
+	return getError(ErrorCode.CONSTANT_RESOLUTION_FAILED, line, { details: { reason: `${detail} (${code})` } });
 }
 
 export interface ResolveConstantsOptions {
@@ -130,7 +130,7 @@ function resolveConstantArgumentReference(
 			: [argument];
 	for (const operand of operands) {
 		if (operand.type === ArgumentType.IDENTIFIER && operand.referenceKind === 'constant' && !constants[operand.value]) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, undefined, { identifier: operand.value });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, { details: { identifier: operand.value } });
 		}
 	}
 

@@ -16,10 +16,16 @@ export default function resolveLocalVariableAccess(
 ): ResolvedLocalSetLine {
 	const nameArg = line.arguments[0];
 	if (context.referenceSlots[nameArg.value]) {
-		throw getError(ErrorCode.REFERENCE_SLOT_CANNOT_BE_REBOUND, line, context, { identifier: nameArg.value });
+		throw getError(ErrorCode.REFERENCE_SLOT_CANNOT_BE_REBOUND, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: nameArg.value },
+		});
 	}
 	if (!context.locals[nameArg.value]) {
-		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: nameArg.value });
+		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: nameArg.value },
+		});
 	}
 
 	return { ...line, binding: context.bindingsByName[nameArg.value]! };

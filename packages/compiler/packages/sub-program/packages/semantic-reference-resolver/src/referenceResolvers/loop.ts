@@ -21,10 +21,10 @@ export default function resolveLoopReferences(line: LoopLine, context: Reference
 	const argument = resolved.arguments[0];
 
 	if (!argument.isInteger) {
-		throw getError(ErrorCode.TYPE_MISMATCH, line, context);
+		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
 	}
 	if (argument.value < 0) {
-		throw getError(ErrorCode.EXPECTED_VALUE, line, context);
+		throw getError(ErrorCode.EXPECTED_VALUE, line, { symbol: context.codeBlockId });
 	}
 
 	return resolved;

@@ -1,6 +1,6 @@
 import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileProjectOptions, ProjectObjectModel } from '@8f4e/language-spec';
-import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { getProjectGroups, getProjectModules, IncludeErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
@@ -14,6 +14,31 @@ async function diagnosticFor(project: ProjectObjectModel, options: CompileProjec
 }
 
 describe('compiler source locations', () => {
+	it('locates an invalid exposure after nested blocks at its owning scope row', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group outer
+entry main
+group inner
+entry main
+module source
+int value
+moduleEnd
+entryEnd
+; declaration follows an extracted module
+expose output &source:missing
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		expect(await diagnosticFor(project)).toMatchObject({
+			kind: 'source',
+			domain: 'semantic',
+			instruction: 'expose',
+			location: { kind: 'scope', projectGroupPath: 'outer/inner', lineNumber: 2 },
+			message: expect.stringContaining('outer/inner/source:missing'),
+		});
+	});
 	it('locates unresolved expression constants in nested module source', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
@@ -75,24 +100,27 @@ functionEnd`,
 		},
 		{
 			name: 'duplicate exports',
+			code: IncludeErrorCode.DUPLICATE_EXPORT,
 			source: 'function first\n#export\nfunctionEnd\n\nfunction helper\n#export\n#export\nfunctionEnd',
 			lineNumber: 6,
 			domain: 'include',
 		},
 		{
 			name: 'missing exports',
+			code: IncludeErrorCode.MISSING_EXPORT,
 			source: 'function helper\nfunctionEnd',
 			lineNumber: 0,
 			domain: 'include',
 		},
 		{
 			name: 'ambiguous calls',
+			code: IncludeErrorCode.AMBIGUOUS_CALL_TARGET,
 			source:
 				'function caller\n#export\ncall convert 1\nfunctionEnd int\nfunction convert\n#export\nparam int value\nfunctionEnd int\nfunction convert\nparam float value\nfunctionEnd float',
 			lineNumber: 2,
 			domain: 'include',
 		},
-	])('keeps include-file ownership during $name validation', async ({ source, lineNumber, domain }) => {
+	])('keeps include-file ownership during $name validation', async ({ source, lineNumber, domain, code }) => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
 group audio
@@ -105,6 +133,7 @@ entryEnd`);
 		expect(await diagnosticFor(project, { resolveInclude: () => source })).toMatchObject({
 			kind: 'source',
 			domain,
+			...(code !== undefined ? { code } : {}),
 			location: {
 				kind: 'include-file',
 				includeId: 'helpers',

@@ -50,18 +50,28 @@ export default function resolvePushShapeReferences(
 	const prototypeId = line.arguments[0].value;
 	const prototype = context.prototypeShapes?.[prototypeId];
 	if (!prototype) {
-		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: prototypeId });
+		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: prototypeId },
+		});
 	}
 
 	if (!context.namespace.prototypeShapeIds.includes(prototypeId)) {
-		throw getError(ErrorCode.PUSH_SHAPE_REQUIRES_MODULE_SHAPE, line, context, { identifier: prototypeId });
+		throw getError(ErrorCode.PUSH_SHAPE_REQUIRES_MODULE_SHAPE, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: prototypeId },
+		});
 	}
 
 	return {
 		...line,
 		shapeExpansions: prototype.lines.filter(isMemoryDeclarationLine).map(declarationLine => ({
-			pushLine: createAddressPushLine(line, getPrototypeMemoryDeclarationId(declarationLine, line, context), context),
-			pointerType: getParamType(declarationLine, line, context),
+			pushLine: createAddressPushLine(
+				line,
+				getPrototypeMemoryDeclarationId(declarationLine, line, context.codeBlockId),
+				context
+			),
+			pointerType: getParamType(declarationLine, line, context.codeBlockId),
 		})),
 	};
 }

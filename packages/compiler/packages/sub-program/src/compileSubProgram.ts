@@ -1,4 +1,4 @@
-import { getProjectMemoryExposureTargetError, withCompilerStage } from '@8f4e/compiler-diagnostics';
+import { getError, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import { resolveConstants } from '@8f4e/constant-resolver';
 import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
@@ -13,7 +13,7 @@ import type {
 	MemoryLayoutPlan,
 	ProjectMemoryExposuresByGroupPath,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode } from '@8f4e/language-spec';
 import { resolveMemoryDefaults } from '@8f4e/memory-default-resolver';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
 import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
@@ -40,12 +40,14 @@ function resolveProjectMemoryExposures(
 	for (const exposure of program.memoryExposures) {
 		const targetMemory = memoryPlan.modules[exposure.targetModuleId]?.memory[exposure.targetMemoryName];
 		if (!targetMemory) {
-			throw getProjectMemoryExposureTargetError(
-				exposure.groupPath,
-				exposure.name,
-				exposure.targetModuleId,
-				exposure.targetMemoryName
-			);
+			throw getError(ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET, exposure, {
+				details: {
+					projectGroupPath: exposure.groupPath,
+					projectMemoryExposureName: exposure.name,
+					targetModuleId: exposure.targetModuleId,
+					targetMemoryId: exposure.targetMemoryName,
+				},
+			});
 		}
 		(result[exposure.groupPath] ??= []).push({
 			...exposure,

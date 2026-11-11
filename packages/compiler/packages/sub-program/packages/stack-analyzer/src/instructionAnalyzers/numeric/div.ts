@@ -18,7 +18,7 @@ export function analyzeDiv(line: CompilerASTLine, context: CompilationContext): 
 	const right = consumed[1];
 
 	if (!right.isNonZero) {
-		throw getError(ErrorCode.DIVISION_BY_ZERO, line, context);
+		throw getError(ErrorCode.DIVISION_BY_ZERO, line, { symbol: context.codeBlockId });
 	}
 
 	const produced = [

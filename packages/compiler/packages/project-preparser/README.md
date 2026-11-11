@@ -45,7 +45,9 @@ This package does not own:
 - Editor layout, rendering, storage, or host webview state.
 
 Groups recursively own their project blocks. Their memory exposure declarations remain symbolic project metadata;
-the program composer resolves those aliases before the compiler's single global memory-planning pass.
+the program composer resolves those aliases before the compiler's single global memory-planning pass. Each exposure
+records a zero-based `lineNumber` in its owning group's `code`. The parser records that row while collecting the
+declaration, after nested blocks have been extracted; document line numbers are used separately for parsing errors.
 
 Include declarations use `include <path> [exportedName [localName]]`: omit the name to expose all public exports,
 select an exported name to expose its overload family, or add a local name to rename that selection. Repeated selections
@@ -58,6 +60,8 @@ ordinary namespace validation.
 Early include export and binding failures retain the included file id and its zero-based source row. Project
 resolution also records the declaration that loaded the file, including its project group. Standalone
 `resolveFunctionIncludeSource` parsing keeps the file identity without inventing a project declaration.
+Include failures use named `IncludeErrorCode` values, and all stored include rows are zero-based. Their messages
+describe the failure while hosts format the supplied source coordinates.
 
 ## Group source templates
 

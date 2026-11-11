@@ -1,3 +1,4 @@
+import { IncludeErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import {
 	collectProjectIncludeIdsFromBlock,
@@ -204,6 +205,7 @@ describe('include export selections', () => {
 		expect(() => resolveProjectIncludes([includeBlock(...declarations)], () => selectableSource)).toThrowError(
 			expect.objectContaining({
 				diagnostic: expect.objectContaining({
+					code: IncludeErrorCode.CONFLICTING_BINDING,
 					location: { kind: 'block', lineNumber: 2, projectBlockId: 42, projectGroupPath: '' },
 				}),
 				message: expect.stringContaining('is already included as'),
@@ -226,8 +228,9 @@ describe('include export selections', () => {
 				resolveProjectIncludes([includeBlock(`include std/test ${name}`)], () => selectableSource)
 			).toThrowError(
 				expect.objectContaining({
-					message: `Parse error at line 2: include "std/test" does not export "${name}"`,
+					message: `include "std/test" does not export "${name}"`,
 					diagnostic: expect.objectContaining({
+						code: IncludeErrorCode.UNKNOWN_EXPORT,
 						location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
 					}),
 				})
@@ -315,9 +318,10 @@ describe('include export selections', () => {
 			resolveProjectIncludesAsync([includeBlock('include std/missing')], () => undefined)
 		).rejects.toMatchObject({
 			diagnostic: expect.objectContaining({
+				code: IncludeErrorCode.UNRESOLVED_INCLUDE,
 				location: { kind: 'block', lineNumber: 1, projectBlockId: 42, projectGroupPath: '' },
 			}),
-			message: 'Parse error at line 2: unresolved include "std/missing"',
+			message: 'unresolved include "std/missing"',
 		});
 	});
 
@@ -331,7 +335,13 @@ describe('include export selections', () => {
 
 	it.each(['include', 'include std/test first alias extra'])('rejects malformed declarations: %s', line => {
 		expect(() => collectProjectIncludeIdsFromBlock(includeBlock(line))).toThrow(
-			'include expects <path> [exportedName [localName]]'
+			expect.objectContaining({
+				message: 'include expects <path> [exportedName [localName]]',
+				diagnostic: expect.objectContaining({
+					code: IncludeErrorCode.INVALID_DECLARATION,
+					location: { kind: 'block', projectBlockId: 42, projectGroupPath: '', lineNumber: 1 },
+				}),
+			})
 		);
 	});
 });

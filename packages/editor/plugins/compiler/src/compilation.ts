@@ -142,7 +142,7 @@ export default function installCompilation(
 			setCompilerInfo({ isCompiling: false });
 			const diagnostic = serializeDiagnostic(error, 'compilation');
 			compilationErrors = [diagnostic];
-			store.set('codeErrors.compiler', [diagnosticToCodeError(diagnostic, state)]);
+			store.set('codeErrors.compiler', [diagnosticToCodeError(diagnostic)]);
 			completedRevision = revision;
 			diagnosticsCurrent = true;
 		} finally {

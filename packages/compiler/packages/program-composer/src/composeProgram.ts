@@ -64,7 +64,13 @@ function appendMemoryExposureAliases(
 
 	for (const exposure of exposures) {
 		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
-		program.memoryExposures.push({ ...exposure, groupPath, targetModuleId });
+		program.memoryExposures.push({
+			...exposure,
+			groupPath,
+			targetModuleId,
+			diagnosticSource: { kind: 'scope', projectGroupPath: groupPath },
+			instruction: 'expose',
+		});
 		groupAliases.set(exposure.name, { targetModuleId, targetMemoryId: exposure.targetMemoryName });
 	}
 

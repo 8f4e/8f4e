@@ -293,14 +293,26 @@
   },
   "memoryExposures": [
     {
+      "diagnosticSource": {
+        "kind": "scope",
+        "projectGroupPath": "audio",
+      },
       "groupPath": "audio",
+      "instruction": "expose",
+      "lineNumber": 1,
       "name": "exposedValue",
       "targetMemoryName": "value",
       "targetModuleId": "audio/source",
       "targetModuleName": "source",
     },
     {
+      "diagnosticSource": {
+        "kind": "scope",
+        "projectGroupPath": "audio",
+      },
       "groupPath": "audio",
+      "instruction": "expose",
+      "lineNumber": 2,
       "name": "exposedInput",
       "targetMemoryName": "input",
       "targetModuleId": "audio/consumer",

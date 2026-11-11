@@ -22,7 +22,7 @@ export default function resolveClampAddressReferences(
 		argument?.type === ArgumentType.LITERAL &&
 		(!Number.isInteger(argument.value) || !SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS.includes(argument.value))
 	) {
-		throw getError(ErrorCode.INVALID_ACCESS_WIDTH, line, context);
+		throw getError(ErrorCode.INVALID_ACCESS_WIDTH, line, { symbol: context.codeBlockId });
 	}
 
 	return resolved;

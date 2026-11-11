@@ -160,6 +160,7 @@ describe('code block rendering home directive', () => {
 						exposures: [
 							{
 								name: 'level',
+								lineNumber: 2,
 								targetModuleName: 'voice',
 								targetMemoryName: 'level',
 							},

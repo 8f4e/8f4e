@@ -149,6 +149,8 @@ export interface ProjectObjectModel {
 
 /** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
 export interface ProjectMemoryExposure {
+	/** Zero-based row in the owning group's code, after nested blocks have been extracted. */
+	lineNumber: number;
 	/** Public name used by the enclosing project. */
 	name: string;
 	/** Source-level name of the direct child module that owns the target memory item. */

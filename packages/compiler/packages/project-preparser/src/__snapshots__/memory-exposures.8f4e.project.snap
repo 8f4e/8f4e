@@ -52,11 +52,13 @@
       ],
       "exposures": [
         {
+          "lineNumber": 1,
           "name": "exposedValue",
           "targetMemoryName": "value",
           "targetModuleName": "source",
         },
         {
+          "lineNumber": 2,
           "name": "exposedInput",
           "targetMemoryName": "input",
           "targetModuleName": "consumer",

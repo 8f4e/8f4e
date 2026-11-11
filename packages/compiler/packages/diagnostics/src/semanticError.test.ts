@@ -22,30 +22,29 @@ describe('getError', () => {
 	});
 
 	it('formats stack mismatch diagnostics with stack item types', () => {
-		const context = {
-			codeBlockId: 'example',
+		const error = getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, line, {
+			symbol: 'example',
 			stack: [
 				{ kind: 'value', valueType: 'int' },
 				{ kind: 'address', valueType: 'int' },
 			],
-		};
-
-		const error = getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, line, context);
+		});
 
 		expect(error.message).toBe(
 			`1: Expected 0 elements on the stack, found 2 [int, address] (${ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS})`
 		);
+		expect(error.diagnostic.symbol).toBe('example');
 	});
 
 	it('includes optional identifiers in memory metadata errors', () => {
-		expect(getError(ErrorCode.RESERVED_MEMORY_IDENTIFIER, line, undefined, { identifier: 'this' }).message).toBe(
+		expect(getError(ErrorCode.RESERVED_MEMORY_IDENTIFIER, line, { details: { identifier: 'this' } }).message).toBe(
 			`Reserved identifier cannot be used as a memory allocation name: this. (${ErrorCode.RESERVED_MEMORY_IDENTIFIER})`
 		);
 		expect(
-			getError(ErrorCode.POINTEE_WORD_SIZE_ON_NON_POINTER, line, undefined, { identifier: 'count' }).message
+			getError(ErrorCode.POINTEE_WORD_SIZE_ON_NON_POINTER, line, { details: { identifier: 'count' } }).message
 		).toContain('"count" is not a pointer');
 		expect(
-			getError(ErrorCode.POINTEE_ELEMENT_MAX_ON_NON_POINTER, line, undefined, { identifier: 'peak' }).message
+			getError(ErrorCode.POINTEE_ELEMENT_MAX_ON_NON_POINTER, line, { details: { identifier: 'peak' } }).message
 		).toContain('"peak" is not a pointer');
 	});
 
@@ -57,7 +56,7 @@ describe('getError', () => {
 			arguments: [{ type: ArgumentType.IDENTIFIER, value: 'missingLocal' }],
 		} satisfies CompilerDiagnosticLine;
 
-		const error = getError(ErrorCode.UNDECLARED_IDENTIFIER, localLine, undefined, { identifier: 'missingLocal' });
+		const error = getError(ErrorCode.UNDECLARED_IDENTIFIER, localLine, { details: { identifier: 'missingLocal' } });
 
 		expect(error.message).toBe(`Undeclared identifier: missingLocal. (${ErrorCode.UNDECLARED_IDENTIFIER})`);
 	});
@@ -83,7 +82,7 @@ describe('getError', () => {
 			arguments: [{ type: ArgumentType.IDENTIFIER, value: 'same' }],
 		} satisfies CompilerDiagnosticLine;
 
-		const error = getError(ErrorCode.DUPLICATE_IDENTIFIER, line, undefined, { identifier: 'same' });
+		const error = getError(ErrorCode.DUPLICATE_IDENTIFIER, line, { details: { identifier: 'same' } });
 
 		expect(error.message).toBe(`Duplicate identifier: same. (${ErrorCode.DUPLICATE_IDENTIFIER})`);
 	});

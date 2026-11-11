@@ -25,7 +25,7 @@ export function validateInstruction(line: CompilerASTLine, context: CompilationC
 	const operands = peekStackOperands(context.stack, operandsNeeded);
 
 	if (operands.length < operandsNeeded) {
-		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, context);
+		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, { symbol: context.codeBlockId });
 	}
 
 	if (operandTypes) {

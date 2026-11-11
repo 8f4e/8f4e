@@ -16,7 +16,7 @@ import { numericResult } from './shared';
 export function analyzeAdd(line: CompilerASTLine, context: CompilationContext): InstructionAnalysisResult {
 	const consumed = consume(context, 2);
 	if (consumed[0].kind === 'address' && consumed[1].kind === 'address') {
-		throw getError(ErrorCode.INVALID_ADDRESS_ARITHMETIC, line, context);
+		throw getError(ErrorCode.INVALID_ADDRESS_ARITHMETIC, line, { symbol: context.codeBlockId });
 	}
 	const produced = [
 		numericResult(consumed[0], consumed[1], {

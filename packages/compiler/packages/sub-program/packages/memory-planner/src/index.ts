@@ -79,7 +79,7 @@ function plannerError(
 	message?: string,
 	details?: MemoryPlannerErrorDetails
 ) {
-	const error = getError(compilerErrorCode, line, undefined, details);
+	const error = getError(compilerErrorCode, line, { details: details });
 	return message ? new CompilerError({ ...error.diagnostic, message }) : error;
 }
 

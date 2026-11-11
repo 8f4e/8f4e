@@ -78,7 +78,10 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 	const { project } = context;
 	if (context.kind === 'group') {
 		if (startsWithInstruction(trimmed, 'expose')) {
-			const exposure = parseProjectMemoryExposureLine(trimmed, node.lineNumber);
+			const exposure = {
+				...parseProjectMemoryExposureLine(trimmed, node.lineNumber),
+				lineNumber: project.code.length,
+			};
 			if (context.project.exposures.some(item => item.name === exposure.name))
 				throw syntaxErrorAt(
 					SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,

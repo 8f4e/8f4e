@@ -17,15 +17,7 @@
  *  before any semantic context is built → use SyntaxIssue in syntaxError.ts.
  */
 
-import type {
-	CodegenContext,
-	CompilationContext,
-	CompilerDiagnosticContext,
-	CompilerDiagnosticLine,
-	ProjectGroupPath,
-	ProjectModuleId,
-	StackItem,
-} from '@8f4e/language-spec';
+import type { CompilerDiagnosticLine, ProjectGroupPath, ProjectModuleId, StackItem } from '@8f4e/language-spec';
 import {
 	ErrorCode,
 	type ErrorCodeValue,
@@ -48,6 +40,13 @@ interface ErrorDetails {
 	targetMemoryId?: string;
 }
 
+/** Only the diagnostic facts consumed by semantic error construction. */
+export interface SemanticErrorOptions {
+	symbol?: string;
+	stack?: readonly Pick<StackItem, 'kind' | 'valueType'>[];
+	details?: ErrorDetails;
+}
+
 function getProjectMemoryExposureTargetMessage(details: ErrorDetails = {}): string {
 	const code = ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET;
 	const publicReference =
@@ -64,7 +63,7 @@ function formatSemanticMessage(
 	code: ErrorCodeValue,
 	lineNumber: number,
 	details: ErrorDetails | undefined,
-	stack: readonly StackItem[]
+	stack: readonly Pick<StackItem, 'kind' | 'valueType'>[]
 ): string {
 	switch (code) {
 		case ErrorCode.UNDEFINED_TEMPLATE:
@@ -315,10 +314,8 @@ function formatSemanticMessage(
 export function getError(
 	code: ErrorCodeValue,
 	line: CompilerDiagnosticLine,
-	context?: CodegenContext | CompilationContext | CompilerDiagnosticContext,
-	details?: ErrorDetails
+	{ symbol, stack = [], details }: SemanticErrorOptions = {}
 ): CompilerError {
-	const stack = context && 'stack' in context ? context.stack : [];
 	return new CompilerError({
 		kind: 'source',
 		domain: 'semantic',
@@ -326,27 +323,6 @@ export function getError(
 		message: formatSemanticMessage(code, line.lineNumber, details, stack),
 		location: { ...line.diagnosticSource, lineNumber: line.lineNumber },
 		...(line.instruction !== undefined ? { instruction: line.instruction } : {}),
-		...(context?.codeBlockId !== undefined ? { symbol: context.codeBlockId } : {}),
-	});
-}
-
-/** Creates a semantic error targeting an explicitly named project exposure. */
-export function getProjectMemoryExposureTargetError(
-	groupPath: ProjectGroupPath,
-	exposureName: string,
-	targetModuleId: ProjectModuleId,
-	targetMemoryId: string
-): CompilerError {
-	return new CompilerError({
-		kind: 'source',
-		domain: 'semantic',
-		code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-		message: getProjectMemoryExposureTargetMessage({
-			projectGroupPath: groupPath,
-			projectMemoryExposureName: exposureName,
-			targetModuleId,
-			targetMemoryId,
-		}),
-		location: { kind: 'exposure', projectGroupPath: groupPath, name: exposureName },
+		...(symbol !== undefined ? { symbol } : {}),
 	});
 }

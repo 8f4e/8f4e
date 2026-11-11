@@ -67,7 +67,7 @@ describe('8f4e compiler error fixtures', () => {
 			expect(diagnostic.kind).toBe('source');
 			if (diagnostic.kind === 'source') {
 				expect(diagnostic.location.kind).toBeDefined();
-				if (diagnostic.location.kind !== 'exposure') expect(diagnostic.location.lineNumber).toBeGreaterThanOrEqual(0);
+				expect(diagnostic.location.lineNumber).toBeGreaterThanOrEqual(0);
 			}
 			await expect(diagnostic).toMatchFileSnapshot(snapshotPath);
 		}

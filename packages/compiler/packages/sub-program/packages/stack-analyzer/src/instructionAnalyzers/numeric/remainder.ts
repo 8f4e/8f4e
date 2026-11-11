@@ -18,7 +18,7 @@ export function analyzeRemainder(line: CompilerASTLine, context: CompilationCont
 	const divisor = consumed[1];
 
 	if (!divisor.isNonZero) {
-		throw getError(ErrorCode.DIVISION_BY_ZERO, line, context);
+		throw getError(ErrorCode.DIVISION_BY_ZERO, line, { symbol: context.codeBlockId });
 	}
 
 	const integerMetadata = deriveKnownIntegerValue(consumed[0], divisor, (dividend, divisorValue) => {

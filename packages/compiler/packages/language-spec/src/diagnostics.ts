@@ -25,10 +25,8 @@ export type DiagnosticSource =
 			readonly includeSite: { readonly projectBlockId: number; readonly lineNumber: number };
 	  };
 
-/** Zero-based line in the identified source, or a named declaration in a project scope. */
-export type DiagnosticLocation =
-	| (DiagnosticSource & { readonly lineNumber: number })
-	| { readonly kind: 'exposure'; readonly projectGroupPath: ProjectGroupPath; readonly name: string };
+/** Zero-based line in the identified document, block, project scope, or include source. */
+export type DiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
 
 /** Source block context attached to a serialized compiler diagnostic. */
 export interface CompilerDiagnosticContext {
@@ -50,7 +48,7 @@ export interface CompilerDiagnosticLine {
 export interface SourceDiagnostic {
 	kind: 'source';
 	domain: 'syntax' | 'semantic' | 'include';
-	/** Numeric ErrorCode for compiler errors; numeric SyntaxErrorCode for syntax errors. */
+	/** Numeric code from the registry identified by domain: ErrorCode, SyntaxErrorCode, or IncludeErrorCode. */
 	code: number;
 	message: string;
 	location: DiagnosticLocation;

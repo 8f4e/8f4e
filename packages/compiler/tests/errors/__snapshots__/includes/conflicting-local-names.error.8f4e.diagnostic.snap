@@ -1,5 +1,5 @@
 {
-  "code": -1,
+  "code": 6,
   "domain": "include",
   "kind": "source",
   "location": {
@@ -8,5 +8,5 @@
     "projectBlockId": 3,
     "projectGroupPath": "",
   },
-  "message": "Parse error at line 3: include "test/math" export "inc" is already included as "firstName"",
+  "message": "include "test/math" export "inc" is already included as "firstName"",
 }

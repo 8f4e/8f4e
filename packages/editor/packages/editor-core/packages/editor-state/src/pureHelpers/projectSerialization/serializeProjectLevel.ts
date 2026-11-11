@@ -25,9 +25,9 @@ export default function serializeProjectLevel(level: ProjectLevel): ProjectObjec
 				entry: codeBlock.entry!,
 
 				code: [...codeBlock.code],
-				exposures: codeBlock.code.flatMap(line => {
+				exposures: codeBlock.code.flatMap((line, lineNumber) => {
 					const exposure = tryParseProjectMemoryExposureLine(line);
-					return exposure ? [exposure] : [];
+					return exposure ? [{ ...exposure, lineNumber }] : [];
 				}),
 			});
 			continue;

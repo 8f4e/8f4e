@@ -60,6 +60,8 @@ compilations retain the previous memory and bytecode and publish the diagnostic 
 revision. The plugin projects their locations into generic editor errors through `codeErrors.compiler` and removes
 that contribution on disposal. Included-source errors target the include declaration while retaining the include
 and symbol in the message. Internal failures and document errors without an editor target remain global errors.
+Exposure failures arrive with their owning group path and source row and map directly to scope errors. Diagnostic
+presentation does not need editor state or source text to locate declarations.
 Core directive validation owns `codeErrors['editor-directives']`; other plugins can publish their own lists.
 Inline message layout and drawing belong to `editor-plugin-error-messages`.
 

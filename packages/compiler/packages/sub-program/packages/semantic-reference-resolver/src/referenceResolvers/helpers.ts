@@ -28,12 +28,18 @@ export function validateAddressReference(
 	context: ReferenceResolutionContext
 ): void {
 	if (identifier.referenceKind === 'memory-reference' && context.referenceSlots[identifier.targetMemoryId]) {
-		throw getError(ErrorCode.REFERENCE_SLOT_HAS_NO_STORAGE, line, context, { identifier: identifier.targetMemoryId });
+		throw getError(ErrorCode.REFERENCE_SLOT_HAS_NO_STORAGE, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: identifier.targetMemoryId },
+		});
 	}
 	if (identifier.referenceKind === 'intermodular-module-reference') {
 		const targetModuleId = identifier.targetModuleId;
 		if (!getTargetPlannedModule(context, targetModuleId)) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: targetModuleId });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+				symbol: context.codeBlockId,
+				details: { identifier: targetModuleId },
+			});
 		}
 		return;
 	}
@@ -47,12 +53,18 @@ export function validateAddressReference(
 
 		const targetModule = getTargetPlannedModule(context, targetModuleId);
 		if (!targetModule) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: targetModuleId });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+				symbol: context.codeBlockId,
+				details: { identifier: targetModuleId },
+			});
 		}
 
 		const targetMemory = targetModule?.memory[targetMemoryId];
 		if (!targetMemory) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: targetMemoryId });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+				symbol: context.codeBlockId,
+				details: { identifier: targetMemoryId },
+			});
 		}
 		return;
 	}
@@ -71,10 +83,16 @@ export function validateAddressReference(
 		);
 		const targetModule = getTargetPlannedModule(context, targetModuleId);
 		if (!targetModule) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: targetModuleId });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+				symbol: context.codeBlockId,
+				details: { identifier: targetModuleId },
+			});
 		}
 		if (!targetModule?.memory[targetMemoryId]) {
-			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: targetMemoryId });
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+				symbol: context.codeBlockId,
+				details: { identifier: targetMemoryId },
+			});
 		}
 	}
 }
@@ -101,8 +119,11 @@ export function validateUnresolvedValueExpression(
 	const expression = isBinaryCompileTimeExpression(argument)
 		? `${argument.left.value}${argument.operator}${argument.right.value}`
 		: String(argument.left.value);
-	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, {
-		identifier: argument.rounding ? `${argument.rounding}(${expression})` : expression,
+	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+		symbol: context.codeBlockId,
+		details: {
+			identifier: argument.rounding ? `${argument.rounding}(${expression})` : expression,
+		},
 	});
 }
 
@@ -121,7 +142,10 @@ export function validateUnresolvedIdentifier(
 	context: ReferenceResolutionContext
 ): never {
 	validateAddressReference(argument, line, context);
-	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: argument.value });
+	throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+		symbol: context.codeBlockId,
+		details: { identifier: argument.value },
+	});
 }
 
 /**

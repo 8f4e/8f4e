@@ -7,7 +7,7 @@ import type { ReferenceResolutionContext } from '../context';
 export default function resolveCallReferences(line: CallLine, context: ReferenceResolutionContext): SemanticCallLine {
 	const target = line.arguments[0];
 	if (context.namespace.functions!.arityByName[target.value] === undefined) {
-		throw getError(ErrorCode.UNDEFINED_FUNCTION, line, context);
+		throw getError(ErrorCode.UNDEFINED_FUNCTION, line, { symbol: context.codeBlockId });
 	}
 	return { ...line, arguments: [target] };
 }

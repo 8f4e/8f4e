@@ -18,10 +18,10 @@ export default function resolveMemoryCopyReferences(
 
 	const argument = resolved.arguments[0];
 	if (argument?.type === ArgumentType.LITERAL && !argument.isInteger) {
-		throw getError(ErrorCode.TYPE_MISMATCH, line, context);
+		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
 	}
 	if (argument?.type === ArgumentType.LITERAL && argument.value < 0) {
-		throw getError(ErrorCode.EXPECTED_VALUE, line, context);
+		throw getError(ErrorCode.EXPECTED_VALUE, line, { symbol: context.codeBlockId });
 	}
 
 	return resolved as ResolvedMemoryCopyLine | MemoryCopyLine;

@@ -44,7 +44,7 @@ export function resolveFunctionPasses(program: ComposedProgram): void {
 			if (isNamespace) namespaces.add(local);
 			if (!target) return true;
 			if (functions.has(local) || entries.has(local) || aliases.has(local)) {
-				throw getError(ErrorCode.DUPLICATE_IDENTIFIER, line, undefined, { identifier: name });
+				throw getError(ErrorCode.DUPLICATE_IDENTIFIER, line, { details: { identifier: name } });
 			}
 			aliases.set(local, target);
 			// One name can identify both a function and a constant namespace; forward both.

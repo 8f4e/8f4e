@@ -5,6 +5,7 @@ import type {
 	ComposedFunctionAST,
 	ComposedModuleAST,
 	ComposedPrototypeAST,
+	DiagnosticSource,
 	IncludedFunctionBindings,
 	ProjectConstantNamespaceScope,
 	ProjectGroupPath,
@@ -31,6 +32,8 @@ export type IncludedFunctionsByProjectGroupPath = ReadonlyMap<
 
 /** A group memory exposure with its canonical group and backing-module identities. */
 export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure {
+	readonly diagnosticSource: Extract<DiagnosticSource, { kind: 'scope' }>;
+	readonly instruction: 'expose';
 	groupPath: ProjectGroupPath;
 	targetModuleId: ProjectModuleId;
 }

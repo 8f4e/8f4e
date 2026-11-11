@@ -171,6 +171,7 @@ describe('deriveConnectors', () => {
 		state.compiler.result.projectMemoryExposuresByGroupPath.audio = [
 			{
 				name: 'publicInput',
+				lineNumber: 1,
 				targetModuleName: 'source',
 				targetMemoryName: '_input',
 				groupPath: 'audio',
@@ -179,6 +180,7 @@ describe('deriveConnectors', () => {
 			},
 			{
 				name: 'publicValue',
+				lineNumber: 2,
 				targetModuleName: 'source',
 				targetMemoryName: '_privateValue',
 				groupPath: 'audio',

@@ -39,7 +39,7 @@ function resolverError(
 	message: string,
 	details?: MemoryDefaultResolverErrorDetails
 ) {
-	const error = getError(compilerErrorCode, line, undefined, details);
+	const error = getError(compilerErrorCode, line, { details: details });
 	return new CompilerError({ ...error.diagnostic, message });
 }
 

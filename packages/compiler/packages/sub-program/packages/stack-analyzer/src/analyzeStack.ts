@@ -282,7 +282,10 @@ function analyzeModule(input: AnalyzeStackSubProgramInput, resolved: ModuleSeman
 	const context = createModuleContext(input, resolved);
 	const { operationFacts, stackAnalysis } = analyzeBodyOperations(ast.lines, body, context);
 	if (context.stack.length > 0)
-		throw getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, ast.lines[ast.lines.length - 1], context);
+		throw getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, ast.lines[ast.lines.length - 1], {
+			symbol: context.codeBlockId,
+			stack: context.stack,
+		});
 	return { operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
 }
 
