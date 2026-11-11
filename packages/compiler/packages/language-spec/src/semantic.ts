@@ -21,10 +21,9 @@ import type {
 	PushLine,
 	PushShapeLine,
 } from './ast';
-import type { FunctionMetadata, FunctionRegistry, SourceMetadata } from './compiled';
-import type { CompilerDiagnosticContext } from './diagnostics';
+import type { FunctionMetadata, FunctionRegistry } from './compiled';
 import type { FunctionValueType } from './functionTypes';
-import type { CodegenInstructionName, CompilerSourceBlockType, CompilerSourceCompilationMode } from './instructions';
+import type { CodegenInstructionName, CompilerSourceCompilationMode } from './instructions';
 import type {
 	ArrayDeclarationInstruction,
 	MemoryLayoutPlan,
@@ -123,10 +122,8 @@ export interface CompilationContext extends BlockState {
 	currentPlannedModule?: PlannedMemoryModule;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 	mode: CompilationMode;
+	/** Symbol label supplied explicitly to semantic diagnostics. Source ownership belongs to each source line. */
 	codeBlockId?: string;
-	codeBlockType?: CompilerSourceBlockType;
-	projectBlockId?: number;
-	source?: SourceMetadata;
 	currentFunctionId?: string;
 	currentFunctionName?: string;
 	currentFunctionMetadata?: FunctionMetadata;
@@ -141,7 +138,6 @@ export interface ModuleCompilationContext extends CompilationContext {
 /** Compilation context narrowed to a function body with function metadata resolved. */
 export interface FunctionCompilationContext extends CompilationContext {
 	mode: 'function';
-	codeBlockType: 'function';
 	currentFunctionId: string;
 	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
@@ -245,7 +241,7 @@ export interface MemoryReferenceResolutionReport {
 }
 
 /** Mutable state for lowering one resolved body to Wasm IR. */
-export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
+export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame> {
 	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
 	enableMemoryGuards: boolean;

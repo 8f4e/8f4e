@@ -15,8 +15,6 @@ export default function createInstructionCompilerTestContext(overrides: Partial<
 	return createCodegenContext({
 		...overrides,
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
-		codeBlockId: overrides.codeBlockId ?? 'test',
-		codeBlockType: overrides.codeBlockType ?? 'module',
 	});
 }
 

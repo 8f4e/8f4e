@@ -67,8 +67,6 @@ describe('ifEnd stack analysis', () => {
 	it.each(['int', 'float64'] as const)('rejects a %s else-branch result when float is expected', valueType => {
 		const context = createStackAnalyzerTestContext({
 			codeBlockId: 'example',
-			codeBlockType: 'module',
-			projectBlockId: 13,
 			stack: [{ kind: 'value', valueType, isNonZero: true }],
 			blockStack: [
 				{ blockType: BlockType.MODULE, expectedResultTypes: [] },
@@ -86,6 +84,7 @@ describe('ifEnd stack analysis', () => {
 			expect.objectContaining({
 				diagnostic: expect.objectContaining({
 					code: ErrorCode.ONLY_FLOATS,
+					symbol: 'example',
 					instruction: line.instruction,
 					location: expect.objectContaining({
 						...line.diagnosticSource,

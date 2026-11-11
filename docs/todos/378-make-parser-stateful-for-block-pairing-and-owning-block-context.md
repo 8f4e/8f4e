@@ -14,14 +14,14 @@ completed: null
 
 The tokenizer/parser already owns some cross-line structural syntax concerns such as `if` pairing and block-closure validation, but that statefulness is still too narrow in two important ways:
 - block-structure pairing is not yet a clearly generalized parser capability across all relevant block instructions
-- syntax errors can still lack the owning top-level code block context (`module`, `function`, `constants`), which makes editor-side error routing harder or impossible in some cases
+- structural parsing must preserve the explicit source ownership supplied by its caller (`module`, `function`, `constants`) so editor error routing remains reliable
 
 Example problem:
 - a syntax error such as an unexpected `moduleEnd` can expose a real line number
-- but if it does not carry the owning `module` or `function` id, the editor cannot reliably attach that error to a specific code block
+- its location must also retain the caller-supplied project block identity to target the corresponding editor block
 
 Why this is a problem:
-- syntax diagnostics still degrade to empty `codeBlockId` in cases where the parser could have known the owning top-level block
+- mutable compilation context and symbol names must not replace the caller-supplied `diagnosticSource` when locating structural syntax failures
 - parser-owned structural rules are spread across ad hoc local state instead of a more explicit stateful parsing model
 - upcoming block-syntax work such as `block ... blockEnd [type]` wants the same kind of parser-owned pairing already used for `if`
 
@@ -31,14 +31,14 @@ Make the parser explicitly stateful for structural block parsing and top-level o
 
 Desired direction:
 - track block nesting and matching start/end instructions during parsing
-- track the current owning top-level code block context while parsing (`module`, `function`, `constants`)
+- preserve the supplied `DiagnosticSource` separately from structural parser state (`module`, `function`, `constants`)
 - attach parser-owned linkage metadata for block constructs that need it
-- attach owning top-level block context to syntax errors whenever it is known at parse time
+- attach the supplied source ownership and zero-based row to syntax errors at the parser boundary
 
 Concrete outcomes:
 - nested control-flow blocks such as `if`, `block`, and their closing instructions are paired by parser-owned state
-- syntax errors inside a `module foo` block carry `context.codeBlockId = 'foo'` and `context.codeBlockType = 'module'`
-- syntax errors inside a `function bar` block carry the corresponding function ownership context
+- syntax errors inside a `module foo` block retain its supplied block identity, project group path, and source row in `location`
+- syntax errors inside a `function bar` block retain that function's supplied source ownership
 
 This change is intentionally breaking at the parser/diagnostic contract level:
 - no compatibility fallback or dual parser modes should be added
@@ -49,14 +49,14 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 
 - Do not add hidden global parser state shared across unrelated parse calls.
 - Do not keep structural pairing logic split between parser state and later compiler-side rewrites.
-- Do not invent fake `codeBlockId` values when the owning block is not actually known.
+- Do not invent project block identities when the caller supplies document ownership.
 - Do not add compatibility shims for both the old and new parser behavior.
 
 ## Implementation Plan
 
 ### Step 1: Define parser-owned structural state
 - Introduce explicit per-parse state for nested block tracking.
-- Represent the current owning top-level code block (`module`, `function`, `constants`) separately from nested control-flow blocks.
+- Keep caller-supplied source ownership separate from nested control-flow blocks.
 
 ### Step 2: Generalize block pairing ownership
 - Keep `if` pairing under parser ownership.
@@ -64,9 +64,9 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 - Avoid compiler-side normalization passes that reconstruct pairings later.
 
 ### Step 3: Attach owning block context to syntax diagnostics
-- When a syntax error occurs inside a known top-level code block, attach its `codeBlockId` and `codeBlockType`.
-- Preserve correct line metadata alongside that context.
-- Leave context empty only when no owning top-level block has been established yet.
+- When a syntax helper reports a failure, its caller constructs the diagnostic using the supplied `DiagnosticSource`.
+- Preserve the correct zero-based row within that source.
+- Use explicit document ownership when parsing a whole document; do not recover ownership from mutable compilation contexts.
 
 ### Step 4: Add regression coverage
 - Add parser tests for block pairing metadata across nested structures.
@@ -78,13 +78,13 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 - `npx nx run @8f4e/tokenizer:test`
 - `npx nx run @8f4e/compiler:test`
 - `npx nx run @8f4e/editor-state:test`
-- `rg -n "INVALID_BLOCK_STRUCTURE|codeBlockId|codeBlockType|matchingIfEndIndex|matchingBlockEndIndex" packages/compiler packages/editor`
+- `rg -n "INVALID_BLOCK_STRUCTURE|diagnosticSource|matchingIfEndIndex|matchingBlockEndIndex" packages/compiler packages/editor`
 
 ## Success Criteria
 
 - [ ] The parser has an explicit stateful model for structural block parsing.
 - [ ] Parser-owned block pairing is the source of truth for relevant block constructs.
-- [ ] Syntax errors inside known top-level code blocks expose `codeBlockId` and `codeBlockType`.
+- [ ] Syntax errors retain their supplied source ownership and zero-based row in `location`.
 - [ ] Editor-side syntax diagnostics no longer depend on missing block ownership for parser-known module/function/constants regions.
 - [ ] No compatibility fallback remains for the older less-stateful parser behavior.
 
@@ -92,16 +92,16 @@ This change is intentionally breaking at the parser/diagnostic contract level:
 
 - `packages/compiler/packages/sub-program/packages/tokenizer/src/parser.ts` - parser state, block pairing, and top-level ownership tracking
 - `packages/compiler/packages/sub-program/packages/tokenizer/src/types.ts` - parser-owned linkage metadata for structural blocks
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts` - syntax diagnostics carrying parser-known context
-- `packages/compiler/src/diagnostic.ts` - preserve parser-supplied line/context in serialized diagnostics
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/program-compiler/effect.ts` - consume syntax diagnostics with parser-known block ownership
+- `packages/compiler/packages/diagnostics/src/syntaxError.ts` - construct syntax diagnostics with caller-supplied source ownership
+- `packages/compiler/packages/diagnostics/src/compilerError.ts` - preserve complete diagnostic locations during transport
+- `packages/editor/plugins/compiler/src/diagnostic-presentation.ts` - consume supplied diagnostic locations directly
 - `packages/compiler/tests/` and `packages/compiler/packages/sub-program/packages/tokenizer/src/` - parser and integration coverage
 
 ## Risks & Considerations
 
 - **Scope drift**: keep this focused on parser state for structure and ownership, not semantic analysis.
 - **Boundary creep**: the parser should own syntax structure and parser-known block identity, but not stack/type reasoning.
-- **Context timing**: syntax errors that occur before a top-level owning block is established may still legitimately have empty context.
+- **Source coordinates**: document rows and rows within a supplied block or scope must stay in their respective coordinate systems.
 - **Related work overlap**: this should complement, not replace, the separate module-batch parsing todo.
 
 ## Related Items

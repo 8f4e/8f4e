@@ -33,15 +33,11 @@ function lowerBody(
 	enableMemoryGuards: boolean,
 	assertions?: AssertionCodegenSites
 ): WasmIRBody {
-	const { ast, bindings, body } = resolved;
+	const { bindings, body } = resolved;
 	const blockType = 'metadata' in resolved ? BlockType.FUNCTION : BlockType.MODULE;
 	const context = createCodegenContext(
 		{
 			blockStack: [{ blockType, expectedResultTypes: [] }],
-			codeBlockType: ast.type,
-			codeBlockId: 'metadata' in resolved ? resolved.metadata.name : resolved.ast.id,
-			projectBlockId: ast.projectBlockId,
-			source: ast.source,
 			enableMemoryGuards,
 		},
 		bindings

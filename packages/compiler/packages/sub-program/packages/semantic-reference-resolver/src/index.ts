@@ -29,7 +29,6 @@ import type {
 import {
 	ArgumentType,
 	BlockType,
-	compilerSourceBlockInstructionByType,
 	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
@@ -42,8 +41,6 @@ import { createCompilationContext, popBlock, pushBlock, withSourceDiagnostic } f
 import type { ReferenceResolutionContext } from './context';
 import { normalizeOperands } from './normalizeOperands';
 import resolveLineReferences from './resolveLineReferences';
-
-const moduleBlockType = compilerSourceBlockInstructionByType.module.type;
 
 export interface SemanticReferenceResolverSubProgramAST<
 	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
@@ -160,7 +157,6 @@ function applySemanticLine(line: CompilerASTLine, context: ReferenceResolutionCo
 			pushBlock(context, { expectedResultTypes: [], blockType: BlockType.MODULE });
 			context.namespace.moduleName = moduleId;
 			context.codeBlockId = moduleId;
-			context.codeBlockType = moduleBlockType;
 			return;
 		}
 		case 'moduleEnd':
@@ -342,14 +338,11 @@ function createModuleContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
 		prototypeShapes: input.prototypeShapes,
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 	});
 }
 
 function createFunctionContext(
 	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
-	ast: FunctionAST,
 	functionMetadata: FunctionMetadata
 ): ReferenceResolutionContext {
 	return createCompilationContext<ReferenceResolutionContext>({
@@ -368,9 +361,6 @@ function createFunctionContext(
 		memoryAliases: input.memoryAliases,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
-		codeBlockType: 'function',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 		currentFunctionId: functionMetadata.id,
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
@@ -452,7 +442,7 @@ function resolveFunctionReferences<TFunction extends FunctionAST>(
 	astIndex: number
 ): [string, FunctionSemanticReferences<TFunction>] {
 	const { ast, metadata } = declaration;
-	const context = createFunctionContext(input, ast, metadata);
+	const context = createFunctionContext(input, metadata);
 	const body = resolveBody(
 		ast.lines,
 		context,

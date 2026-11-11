@@ -1,5 +1,3 @@
-import type { SourceMetadata } from './compiled';
-import type { CompilerSourceBlockType } from './instructions';
 import type { ProjectGroupPath } from './project';
 
 /** Source ownership is explicit even before a document has been divided into blocks. */
@@ -27,14 +25,6 @@ export type DiagnosticSource =
 
 /** Zero-based line in the identified document, block, project scope, or include source. */
 export type DiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
-
-/** Source block context attached to a serialized compiler diagnostic. */
-export interface CompilerDiagnosticContext {
-	codeBlockId?: string;
-	codeBlockType?: CompilerSourceBlockType;
-	projectBlockId?: number;
-	source?: SourceMetadata;
-}
 
 /** Source line supplied to diagnostic construction after syntax has identified its position. */
 export interface CompilerDiagnosticLine {

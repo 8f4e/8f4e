@@ -271,9 +271,6 @@ function createModuleContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
 		codeBlockId: ast.id,
-		codeBlockType: 'module',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 	});
 }
 
@@ -293,7 +290,7 @@ function createFunctionContext(
 	input: AnalyzeStackSubProgramInput,
 	resolved: FunctionSemanticReferences
 ): FunctionCompilationContext {
-	const { ast, metadata: functionMetadata } = resolved;
+	const { metadata: functionMetadata } = resolved;
 	return createCompilationContext<FunctionCompilationContext>({
 		namespace: {
 			moduleName: undefined,
@@ -309,9 +306,6 @@ function createFunctionContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
 		codeBlockId: functionMetadata.name,
-		codeBlockType: 'function',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 		currentFunctionId: functionMetadata.id,
 		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
