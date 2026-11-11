@@ -1,9 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it, vi } from 'vitest';
-import {
-	resolveElementCount,
-	resolveTypedValueSpec,
-} from '~/features/code-blocks/features/directives/shared/typedValueSpec';
+import { prepareAddressedRead, prepareBuffer, prepareElementCount } from '~/pureHelpers/preparedMemory';
 import resolveMemoryIdentifier, {
 	prepareMemoryAccess,
 	resolveMemoryAccess,
@@ -72,6 +69,11 @@ describe('shared fixed reference resolution', () => {
 		});
 		expect(resolved.reference).toBe(reference);
 		expect(resolved.memory).toBe(reference.targetMemory);
+		expect(prepareBuffer(state, scope, 'buffer', 'count(buffer)')?.target).toMatchObject({
+			moduleId: 'audio/bank/source',
+			memory: reference.targetMemory,
+			reference,
+		});
 		expect(compiled.memoryPlan.modules['audio/sink'].memory.buffer).toBeUndefined();
 
 		for (const [otherScope, name] of [
@@ -90,15 +92,21 @@ describe('shared fixed reference resolution', () => {
 		const address = resolveMemoryIdentifier(state, scope, 'buffer')!;
 		expect(address).toMatchObject({ showAddress: true, bufferPointer: 0 });
 		expect(address.memory).toBe(memory);
-		expect(resolveTypedValueSpec(address)).toMatchObject({ valueType: 'float32', elementByteSize: 4 });
+		expect(prepareAddressedRead(prepareMemoryAccess(state, scope, 'buffer')!)?.spec).toMatchObject({
+			valueType: 'float32',
+			elementByteSize: 4,
+		});
 		expect(resolveMemoryIdentifier(state, scope, '*buffer[2]')).toMatchObject({
 			showAddress: false,
 			bufferPointer: 2,
 			memory,
 		});
-		expect(resolveElementCount('count(buffer)', scope, state)).toBe(4);
-		expect(resolveElementCount('length', scope, state)).toMatchObject({
-			memory: compiled.memoryPlan.modules['audio/bank/source'].memory.length,
+		expect(prepareElementCount(state, scope, 'count(buffer)')).toBe(4);
+		expect(prepareElementCount(state, scope, 'length')).toMatchObject({
+			address: {
+				kind: 'fixed',
+				byteAddress: compiled.memoryPlan.modules['audio/bank/source'].memory.length.byteAddress,
+			},
 		});
 		expect(resolveMemoryIdentifier(state, scope, '&buffer')).toBeUndefined();
 		expect(resolveMemoryAddress(state, scope, 'buffer')?.memory).toBe(memory);
@@ -130,8 +138,8 @@ entryEnd`)
 		);
 		const state = createMockState();
 		state.compiler.result = compiled;
-		const address = resolveMemoryIdentifier(state, { kind: 'module', moduleId: 'audio' }, 'buffer')!;
-		expect(resolveTypedValueSpec(address)).toMatchObject({ valueType, elementByteSize });
+		const access = prepareMemoryAccess(state, { kind: 'module', moduleId: 'audio' }, 'buffer')!;
+		expect(prepareAddressedRead(access)?.spec).toMatchObject({ valueType, elementByteSize });
 	});
 
 	it('follows replacement compiler metadata and drops removed references', async () => {

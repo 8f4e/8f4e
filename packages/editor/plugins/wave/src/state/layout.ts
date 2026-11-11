@@ -1,9 +1,9 @@
 import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
-	resolveElementCount,
-	resolveMemoryIdentifier,
-	resolveTypedValueSpec,
+	prepareAddressBinding,
+	prepareBuffer,
+	prepareMemoryAccess,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWaveDirectiveData } from '../helpers/data';
@@ -39,22 +39,19 @@ export function registerWaveLayout(
 		wavesByBlock.set(codeBlock, []);
 		items.forEach(({ data, heightRows }) => {
 			const scope = getCodeBlockMemoryScope(codeBlock);
-			const source = resolveMemoryIdentifier(state, scope, data.startAddressMemoryId);
-			const elementCount = resolveElementCount(data.length, scope, state);
-			const spec = source ? resolveTypedValueSpec(source) : undefined;
-			if (!source || !elementCount || !spec) return;
+			const buffer = prepareBuffer(state, scope, data.startAddressMemoryId, data.length);
+			if (!buffer) return;
+			const spec = buffer.samples.spec;
+			const playhead = prepareMemoryAccess(state, scope, data.pointerMemoryId);
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 			wavesByBlock.get(codeBlock)!.push({
 				width: codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				height: state.viewport.hGrid * heightRows,
 				x: (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				y: (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
-				source,
-				elementCount,
-				playhead: resolveMemoryIdentifier(state, scope, data.pointerMemoryId),
+				buffer,
+				playhead: playhead && prepareAddressBinding(playhead),
 				inverseElementByteSize: 1 / spec.elementByteSize,
-				baseSampleShift: spec.baseSampleShift,
-				valueType: spec.valueType,
 				minValue: spec.minValue,
 				maxValue: spec.maxValue,
 				inverseValueRange: 1 / (spec.maxValue - spec.minValue),

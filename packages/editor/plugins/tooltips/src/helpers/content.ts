@@ -1,9 +1,5 @@
-import type {
-	CompiledStackAnalysisLine,
-	CompilerASTLine,
-	PlannedMemoryDeclaration,
-	ResolvedReferenceSlot,
-} from '@8f4e/language-spec';
+import type { ResolvedMemoryTarget } from '@8f4e/editor-state/memory';
+import type { CompiledStackAnalysisLine, CompilerASTLine } from '@8f4e/language-spec';
 import type { SelectedLineTooltipContent } from '../types';
 import { getSelectedLineTooltipColors } from './colors';
 import { TOOLTIP_WRAP_WIDTH } from './constants';
@@ -28,8 +24,7 @@ interface SelectedLineTooltipTextOptions {
 }
 
 interface SelectedLineTooltipOptions extends SelectedLineTooltipTextOptions {
-	memory?: PlannedMemoryDeclaration;
-	reference?: ResolvedReferenceSlot;
+	target?: ResolvedMemoryTarget;
 }
 
 /**
@@ -100,8 +95,8 @@ export function getSelectedLineTooltipContent(options: SelectedLineTooltipOption
 	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
 	const liveTooltipContent =
 		declaration?.kind === 'reference'
-			? getLiveReferenceTooltipContent(options.reference, text.length)
-			: getLiveTooltipContent(declaration ? options.memory : undefined, text.length);
+			? getLiveReferenceTooltipContent(options.target, text.length)
+			: getLiveTooltipContent(declaration ? options.target : undefined, text.length);
 
 	text.push(...liveTooltipContent.text);
 	colors.push(...liveTooltipContent.colors);

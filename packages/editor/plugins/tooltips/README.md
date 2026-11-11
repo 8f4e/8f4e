@@ -23,9 +23,10 @@ Overridden blocks retain instruction documentation without displaying another de
 Fixed reference declarations (`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&`) show their
 resolved target byte address as `value` and the live target value as `deref`. Buffer targets show their first element.
 Fixed references allocate no pointer storage. Both fixed references and allocated declarations resolve targets
-through the shared editor-state memory resolver during preparation and produce the same prepared read variants:
-static text, a typed memory read, or a live pointer read. Recompilation refreshes the prepared addresses and read
-formats. Drawing reads current memory and pointer values without resolving names or distinguishing declaration kinds.
+through the shared editor-state memory resolver during preparation. Rows contain static text or a shared prepared
+numeric read, which can use fixed storage or a live pointer. The shared memory API owns view selection, typed indices,
+and offsets; the plugin owns declaration labels and decimal precision. Recompilation refreshes prepared bindings.
+Drawing reads current views without resolving names or distinguishing declaration kinds.
 Missing compilation metadata leaves documentation visible without live rows, and unavailable target memory shows `?`.
 
 Preparation classifies the current selected source line once. Target lookup, documentation, declaration labels, and

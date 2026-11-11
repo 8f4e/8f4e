@@ -152,17 +152,35 @@ module IDs. `resolveMemoryTarget` handles target lookup using these explicit sco
 adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
 end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
 
-Consumers that retain an access across frames use `prepareMemoryAccess` during layout. Its `PreparedMemoryAccess`
-contains the resolved declaration and parsed access options, without reading runtime memory. They pass that target
-and its options to `resolveMemoryAccess` when needed, so runtime pointer reads follow the current target without
-repeating expression parsing or name lookup. `ResolvedMemoryAccess` describes the resulting storage and access flags
-and retains the original source target. Prepared bindings must be refreshed after source or compiler metadata changes.
-
 Fixed references such as `float& buffer &source:samples` resolve to the backing declaration and its owning module,
 with the original reference metadata retained in `ResolvedMemoryTarget.reference`. A bare `buffer` supplies the
 fixed target address; `*buffer` reads the target value, and `*buffer[1]` selects its second element. `&buffer` is
 unresolved because a fixed reference allocates no addressable slot. Buffer displays derive their sample format and
 `count(buffer)` from the backing declaration; live count arguments read its current value.
+
+Consumers prepare names once with `prepareMemoryAccess`. Its `PreparedMemoryAccess` retains the resolved declaration
+and parsed address/dereference/index options without reading runtime memory. `prepareAddressBinding` turns an address
+source into a fixed byte address or a runtime pointer-slot index plus a byte offset. `readByteAddress` accepts that
+binding and the current 32-bit pointer view; it performs no name lookup or allocation.
+
+`prepareNumericRead` describes scalar storage or an explicit dereference. `prepareAddressedRead` describes samples
+at an address source, following a typed pointer implicitly. Both produce `PreparedNumericRead`: the typed-view kind,
+element byte size, default display bounds, and a fixed typed-element index or live address binding. `readNumericValue`
+reads current structural numeric views; `readElementIndex` supplies the index for buffer drawing loops. These helpers
+depend on no renderer and retain no runtime views. Plugins keep radix, precision, text, colors, and overload behavior.
+
+Offsets are normalized during preparation: `&samples[1]` advances by one stored element, `pointers[1]` selects the
+second 32-bit pointer slot, and `*pointer[1]` advances by one pointee element after reading the live pointer. Byte
+addresses, allocation-unit pointer indices, and typed-element indices remain distinct fields.
+
+`prepareBuffer` combines source, sample type, and `prepareElementCount` for wave, bars, and plot. Counts can be literal,
+`count(declaration)` metadata, or a live typed read; `readElementCount` returns the current count. The buffer retains
+the source's public identity and backing module/declaration. Source/compiler invalidation refreshes prepared bindings
+through each plugin's existing lifecycle. Watch end-address displays reuse the memory-plan address index and
+`readDeclarationEndAddress` for live target boundaries.
+
+One-off metadata consumers can still use `resolveMemoryAccess` or `resolveMemoryIdentifier`. Their `ResolvedMemoryAccess`
+result includes storage and access flags plus the original source target; frame readers use the prepared primitives.
 
 Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
 fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.

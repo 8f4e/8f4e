@@ -23,6 +23,8 @@ Both directives accept pointer sources: `&pixels` or `&screen:pixels` uses the s
 pointer such as `framebufferPointer` reads the current address from memory. Qualified names and group exposures use
 the containing block's scope. Addresses are resolved after entry execution each frame, so pointer swaps affect the
 same frame. Uploads are discovered throughout the project, including unopened groups.
+Address sources are prepared through the shared editor-state memory API. Each frame uses its allocation-free byte
+address reader; texture span bounds, upload conflicts, formats, and GPU lifetime remain local to this plugin.
 
 Matching resolved byte addresses share one GPU texture and one upload per frame when at least one view is visible,
 regardless of the reference spelling, crop, magnification, or number of views. Identical upload declarations coalesce.

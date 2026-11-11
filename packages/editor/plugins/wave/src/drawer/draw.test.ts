@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it } from 'vitest';
@@ -24,11 +25,16 @@ function wave(): Wave {
 		y: 3,
 		width: 8,
 		height: 8,
-		source: { showAddress: true, bufferPointer: 0, memory: { byteAddress: 0, allocationUnitAddress: 0 } } as never,
-		elementCount: 4,
+		buffer: {
+			target: {} as never,
+			samples: {
+				address: { kind: 'fixed', byteAddress: 0 },
+				elementIndex: 0,
+				spec: getMemoryValueSpec({ elementWordSize: 1, isInteger: true, isUnsigned: false }),
+			},
+			elementCount: 4,
+		},
 		inverseElementByteSize: 1,
-		baseSampleShift: 0,
-		valueType: 'int8',
 		minValue: -128,
 		maxValue: 127,
 		inverseValueRange: 1 / 255,
@@ -57,14 +63,18 @@ describe('wave drawing', () => {
 		const data = wave();
 		memory.int8.set([-128, 0, 127, 0]);
 		memory.int32[4] = 2;
-		data.playhead = { showAddress: false, bufferPointer: 0, memory: { allocationUnitAddress: 4 } } as never;
+		data.playhead = { kind: 'pointer', pointerSlotIndex: 4, byteOffset: 0 };
 		drawWaves(draw, state(), [data], memory);
 		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
 	});
 	it('skips a waveform while its live element count is zero', () => {
 		const draw = createDrawContextMock();
 		const data = wave();
-		data.elementCount = { memory: { allocationUnitAddress: 4 }, bufferPointer: 0 } as never;
+		data.buffer.elementCount = {
+			address: { kind: 'fixed', byteAddress: 16 },
+			elementIndex: 4,
+			spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
+		};
 		drawWaves(draw, state(), [data], memoryViews());
 		expect(draw.drawFill).not.toHaveBeenCalled();
 		expect(draw.endGroup).toHaveBeenCalledOnce();

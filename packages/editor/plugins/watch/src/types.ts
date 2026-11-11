@@ -1,9 +1,18 @@
-import type { MemoryIdentifier } from '@8f4e/editor-state-types';
+import type { PreparedAddressBinding, PreparedNumericRead } from '@8f4e/editor-state/memory';
+import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
+
+export type WatchDisplay =
+	| { kind: 'address'; address: PreparedAddressBinding }
+	| { kind: 'value'; read: PreparedNumericRead }
+	| {
+			kind: 'endAddress';
+			address: PreparedAddressBinding;
+			declarations: ReadonlyMap<number, PlannedMemoryDeclaration>;
+	  };
 
 export interface WatchValue {
 	x: number;
 	y: number;
-	resolveMemory: () => MemoryIdentifier | undefined;
-	showEndAddress: boolean;
+	display: WatchDisplay;
 	displayFormat: 'decimal' | 'binary' | 'hex';
 }

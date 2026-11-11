@@ -28,6 +28,8 @@ Sample types come from the addressed declaration or pointer's pointee type. The 
 samples use `-1..1`. It reads samples, pointer starts, live counts, and playheads from the current memory each frame.
 Group-exposed memory and fixed references use the same public memory resolution as module declarations. Fixed
 references supply the target address without reading a runtime pointer slot, including when used as a playhead.
+Source, sample type, and count are prepared through the shared `prepareBuffer` helper. Drawing uses shared address,
+typed-index, and count readers, including for the playhead; waveform geometry and colors remain local.
 
 The plugin uses the existing `waveformBackground`, `waveform`, and `scanLine` palette entries.
 

@@ -1,5 +1,6 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { readByteAddress, readElementCount, readElementIndex } from '@8f4e/editor-state/memory';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Wave } from '../types';
@@ -57,32 +58,23 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		y,
 		width,
 		height,
-		source,
+		buffer,
 		inverseElementByteSize,
-		baseSampleShift,
-		elementCount,
 		playhead,
-		valueType,
 		minValue,
 		maxValue,
 		inverseValueRange,
 	} of waves) {
 		engine.startGroup(x, y);
 
-		const arrayLength =
-			typeof elementCount === 'number'
-				? elementCount
-				: memoryViews.int32[elementCount.memory.allocationUnitAddress + elementCount.bufferPointer];
-		if (arrayLength <= 0) {
+		const arrayLength = readElementCount(buffer.elementCount, memoryViews) ?? 0;
+		const baseValueIndex = readElementIndex(buffer.samples, memoryViews.int32);
+		if (arrayLength <= 0 || baseValueIndex === undefined) {
 			engine.endGroup();
 			continue;
 		}
 
-		const startPointerValue = source.showAddress
-			? source.memory.byteAddress
-			: memoryViews.int32[source.memory.allocationUnitAddress + source.bufferPointer];
-		const baseValueIndex = startPointerValue >> baseSampleShift;
-		const values = memoryViews[valueType];
+		const values = memoryViews[buffer.samples.spec.valueType];
 		const waveformColumnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
 		const columnCount = Math.max(1, Math.floor(width / waveformColumnWidth));
 		const columnWidth = Math.max(1, Math.floor(width / columnCount));
@@ -102,9 +94,12 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		);
 
 		if (playhead) {
-			const pointerValue = playhead.showAddress
-				? playhead.memory.byteAddress
-				: memoryViews.int32[playhead.memory.allocationUnitAddress + playhead.bufferPointer];
+			const startPointerValue = readByteAddress(buffer.samples.address, memoryViews.int32)!;
+			const pointerValue = readByteAddress(playhead, memoryViews.int32);
+			if (pointerValue === undefined) {
+				engine.endGroup();
+				continue;
+			}
 			const pointerIndex = Math.floor((pointerValue - startPointerValue) * inverseElementByteSize);
 			const clampedIndex = Math.max(0, Math.min(pointerIndex, arrayLength - 1));
 			const scanlineWidth = state.viewport.vGrid / 2;

@@ -352,7 +352,7 @@ entryEnd`);
 			height: tooltip.getState().lineCount * 16,
 			y: 0,
 		});
-		expect(tooltip.getState().liveValues).toEqual([
+		expect(tooltip.getState().liveValues).toMatchObject([
 			{
 				x: tooltip.getState().layout.lineX + 'address: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 2) * 16,
@@ -363,10 +363,12 @@ entryEnd`);
 				x: tooltip.getState().layout.lineX + 'value: '.length * 8,
 				y: tooltip.getState().layout.y + (tooltip.getState().text.length - 1) * 16,
 				source: {
-					kind: 'memoryRead',
-					byteAddress: 4,
-					allocationUnitAddress: 1,
-					format: { elementWordSize: 4, isInteger: true, isUnsigned: false },
+					kind: 'numericRead',
+					read: {
+						address: { kind: 'fixed', byteAddress: 4 },
+						elementIndex: 1,
+						spec: { valueType: 'int32', elementByteSize: 4, isInteger: true },
+					},
 				},
 				color: fontInverseAccent,
 			},

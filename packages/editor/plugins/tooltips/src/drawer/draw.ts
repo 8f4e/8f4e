@@ -48,12 +48,8 @@ function getLiveValueText(memoryViews: MemoryViews, liveValue: TooltipLiveValue)
 	switch (source.kind) {
 		case 'staticText':
 			return source.text;
-		case 'memoryRead':
-			return formatMemoryValue(memoryViews, source.byteAddress, source.allocationUnitAddress, source.format);
-		case 'pointerRead': {
-			const pointerByteAddress = memoryViews.int32[source.allocationUnitAddress];
-			return formatMemoryValue(memoryViews, pointerByteAddress, pointerByteAddress / 4, source.format);
-		}
+		case 'numericRead':
+			return formatMemoryValue(memoryViews, source.read);
 	}
 }
 

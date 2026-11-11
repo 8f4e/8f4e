@@ -1,13 +1,12 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from '../__tests__/setup';
-import type { WatchValue } from '../types';
-import { registerWatchLayout } from './layout';
+import { createWatchPlugin } from '../index';
 
-describe('watch memory preparation', () => {
-	it('retains named and inline fixed-reference accesses until compilation changes', async () => {
-		const watches = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
+const plugin = createWatchPlugin({ prefersReducedMotion: () => true });
+
+describe('prepared watch rendering', () => {
+	it('refreshes named and inline fixed-reference reads after recompilation', async () => {
 		const source = (padding = '') => [
 			'module source',
 			padding,
@@ -18,53 +17,68 @@ describe('watch memory preparation', () => {
 			'; @watch *buffer[1]',
 			'moduleEnd',
 		];
-		const test = await setup(
-			{ id: 'watch-layout', setup: ({ layout }) => registerWatchLayout(layout, watches) },
-			source()
-		);
-		const initial = watches.get(test.block)!;
-		expect(initial).toHaveLength(2);
-		const accesses = initial.map(watch => watch.resolveMemory()!);
-		for (const [index, watch] of initial.entries()) {
-			expect(accesses[index]).toMatchObject({ showAddress: false, bufferPointer: 1 });
-			expect(watch.resolveMemory()).toBe(accesses[index]);
-			expect(watch.resolveMemory()).toBe(accesses[index]);
-		}
-
+		const test = await setup(plugin, source());
+		const values = () => {
+			test.render();
+			return vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2]);
+		};
+		expect(values()).toEqual(['4', '4']);
 		const project = parseProjectSource(['8f4e/v1', 'entry main', ...source('int padding'), 'entryEnd'].join('\n'));
 		const replacement = await compileProject(project, { cache: test.compiled.cache });
 		test.store.set('compiler.isCompiling', true);
 		test.store.set('compiler.result', replacement);
 		test.store.set('compiler.isCompiling', false);
-		for (const [index, watch] of watches.get(test.block)!.entries()) {
-			const next = watch.resolveMemory()!;
-			expect(next).not.toBe(accesses[index]);
-			expect(next.memory.byteAddress).not.toBe(accesses[index].memory.byteAddress);
-			expect(next.memory).toBe(replacement.compiledModules.audio.referenceSlots.buffer.targetMemory);
-			expect(watch.resolveMemory()).toBe(next);
-		}
+		test.memoryViews.int32[replacement.memoryPlan.modules.source.memory.samples.allocationUnitAddress + 1] = 9;
+		expect(values()).toEqual(['9', '9']);
 	});
 
-	it('prepares a named pointer once while following live targets, including an initially unresolved target', async () => {
-		const watches = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
-		const test = await setup({ id: 'watch-layout', setup: ({ layout }) => registerWatchLayout(layout, watches) }, [
+	it('renders live pointer targets without repeating declaration-name lookup', async () => {
+		const test = await setup(plugin, [
 			'module audio',
 			'int first 3',
 			'int second 4',
-			'int* pointer 0',
+			'int* pointer &first',
 			'; @watch *pointer',
 			'moduleEnd',
 		]);
-		const [watch] = watches.get(test.block)!;
 		const memory = test.compiled.memoryPlan.modules.audio.memory;
 		const pointer = memory.pointer;
 		const lookup = vi.fn(() => pointer);
 		Object.defineProperty(memory, 'pointer', { configurable: true, get: lookup });
-		expect(watch.resolveMemory()).toBeUndefined();
-		test.memoryViews.int32[pointer.allocationUnitAddress] = memory.first.byteAddress;
-		expect(watch.resolveMemory()?.memory).toBe(memory.first);
-		test.memoryViews.int32[pointer.allocationUnitAddress] = memory.second.byteAddress;
-		expect(watch.resolveMemory()?.memory).toBe(memory.second);
+		for (const target of [memory.first, memory.second]) {
+			test.memoryViews.int32[pointer.allocationUnitAddress] = target.byteAddress;
+			test.render();
+			expect(test.draw.drawNumericText).toHaveBeenCalledWith(
+				expect.any(Number),
+				expect.any(Number),
+				String(test.memoryViews.int32[target.allocationUnitAddress]),
+				expect.any(Number)
+			);
+		}
 		expect(lookup).not.toHaveBeenCalled();
+	});
+
+	it('keeps end-address and indexed hexadecimal displays live when a pointer retargets', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int8u[] first 4 1 2 3 4',
+			'int8u[] second 2 5 6',
+			'int8u* pointer &first',
+			'; @watch *pointer&',
+			'; @watch 0x*pointer[1]',
+			'moduleEnd',
+		]);
+		const { first, second, pointer } = test.compiled.memoryPlan.modules.audio.memory;
+		for (const [target, hex] of [
+			[first, '02'],
+			[second, '06'],
+		] as const) {
+			test.memoryViews.int32[pointer.allocationUnitAddress] = target.byteAddress;
+			test.render();
+			expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([
+				String(target.endByteAddress),
+				hex,
+			]);
+		}
 	});
 });

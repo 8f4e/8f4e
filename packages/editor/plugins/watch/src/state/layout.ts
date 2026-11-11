@@ -1,13 +1,16 @@
 import { gapCalculator, getTabStopsByLine, getVisualLineWidth, matchEditorDirectives } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
+	getDeclarationsByByteAddress,
 	getMemoryTargetAtSourceLine,
+	isAddressAccess,
+	prepareAddressBinding,
 	prepareMemoryAccess,
-	resolveMemoryAccess,
+	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWatchDirectiveData } from '../helpers/data';
-import type { WatchValue } from '../types';
+import type { WatchDisplay, WatchValue } from '../types';
 
 export function registerWatchLayout(
 	layout: EditorLayoutRegistry,
@@ -26,13 +29,28 @@ export function registerWatchLayout(
 				? inlineTarget && { target: inlineTarget, options: data.inlineAccess }
 				: prepareMemoryAccess(state, scope, data.memoryId);
 			if (!prepared) return;
-			const resolveMemory = () => resolveMemoryAccess(state, prepared.target, prepared.options);
-			const runtimePointer = Boolean(
-				prepared.options.dereference && !prepared.target.reference && prepared.target.memory.pointeeBaseType
-			);
-			const memory = runtimePointer ? undefined : resolveMemory();
-			if (!runtimePointer && !memory) {
-				return;
+			let display: WatchDisplay;
+			if (isAddressAccess(prepared)) {
+				const address = prepareAddressBinding(prepared);
+				if (!address) return;
+				display = { kind: 'address', address };
+			} else {
+				const read = prepareNumericRead(prepared);
+				if (!read) return;
+				if (!data.showEndAddress) display = { kind: 'value', read };
+				else if (read.address.kind === 'fixed')
+					display = { kind: 'address', address: { kind: 'fixed', byteAddress: prepared.target.memory.endByteAddress } };
+				else {
+					const base = prepareNumericRead({
+						target: prepared.target,
+						options: { ...prepared.options, bufferPointer: 0 },
+					})!;
+					display = {
+						kind: 'endAddress',
+						address: base.address,
+						declarations: getDeclarationsByByteAddress(state.compiler.result.memoryPlan)!,
+					};
+				}
 			}
 
 			const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
@@ -45,8 +63,7 @@ export function registerWatchLayout(
 			watchesByBlock.get(graphicData)!.push({
 				x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
 				y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
-				resolveMemory: runtimePointer ? resolveMemory : () => memory,
-				showEndAddress: data.showEndAddress,
+				display,
 				displayFormat: data.displayFormat,
 			});
 		});

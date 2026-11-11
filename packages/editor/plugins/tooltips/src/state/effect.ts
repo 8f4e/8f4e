@@ -38,8 +38,7 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 			source,
 			parsedLine: compilation?.ast.lines.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
 			stackAnalysisLine: compilation?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
-			memory: memoryTarget?.memory,
-			reference: memoryTarget?.reference,
+			target: memoryTarget,
 			moduleExecutionOrder: source.sourceInstruction?.instruction === 'module' && module ? module.index + 1 : undefined,
 		});
 		tooltip = getTooltipState(content, state, selectedCodeBlock, tooltip);

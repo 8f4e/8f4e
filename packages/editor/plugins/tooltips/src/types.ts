@@ -1,4 +1,5 @@
 import type { PaletteIndex, PaletteToken } from '@8f4e/editor-palette';
+import type { PreparedNumericRead } from '@8f4e/editor-state/memory';
 import type { GlyphIds } from '@8f4e/web-ui';
 
 /**
@@ -42,31 +43,9 @@ export interface SelectedLineTooltipContent {
 	liveValueTargets: TooltipLiveValueTarget[];
 }
 
-export interface TooltipLiveValueMemoryFormat {
-	elementWordSize: number;
-	isInteger: boolean;
-	isUnsigned: boolean;
-}
-
-/** A typed read whose storage address is fixed until tooltip preparation runs again. */
-export interface TooltipMemoryReadSource {
-	kind: 'memoryRead';
-	byteAddress: number;
-	allocationUnitAddress: number;
-	format: TooltipLiveValueMemoryFormat;
-}
-
-/** A typed read through the live address stored in a prepared pointer slot. */
-export interface TooltipPointerReadSource {
-	kind: 'pointerRead';
-	allocationUnitAddress: number;
-	format: TooltipLiveValueMemoryFormat;
-}
-
 export type TooltipLiveValueSource =
 	| { kind: 'staticText'; text: string }
-	| TooltipMemoryReadSource
-	| TooltipPointerReadSource;
+	| { kind: 'numericRead'; read: PreparedNumericRead };
 
 export interface TooltipLiveValue {
 	x: number;

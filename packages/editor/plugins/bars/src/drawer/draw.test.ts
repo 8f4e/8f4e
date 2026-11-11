@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
@@ -29,14 +30,15 @@ function createBarsWidget(overrides: Partial<Bars> = {}): Bars {
 		height: 8,
 		minValue: 0,
 		inverseValueRange: 1,
-		startAddress: {
-			showAddress: true,
-			bufferPointer: 0,
-			memory: { byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 },
-		} as never,
-		baseSampleShift: 2,
-		length: 4,
-		valueType: 'float32',
+		buffer: {
+			target: {} as never,
+			samples: {
+				address: { kind: 'fixed', byteAddress: 0 },
+				elementIndex: 0,
+				spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: false, isUnsigned: false }),
+			},
+			elementCount: 4,
+		},
 		...overrides,
 	};
 }
@@ -61,9 +63,9 @@ describe('drawBars', () => {
 		const values: Bars[] = [
 			createBarsWidget({
 				width: 4,
-				length: 8,
 			}),
 		];
+		values[0].buffer.elementCount = 8;
 
 		drawBars(engine, values, createMemoryViews({ float32: [0, 0.25, 0.1, 0.5, 0.2, 0.75, 0.3, 1] }));
 

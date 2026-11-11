@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
@@ -52,9 +53,11 @@ describe('selected line tooltip animation', () => {
 					x: 8,
 					y: 16,
 					source: {
-						kind: 'pointerRead',
-						allocationUnitAddress: 0,
-						format: { elementWordSize: 1, isInteger: true, isUnsigned: true },
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'pointer', pointerSlotIndex: 0, byteOffset: 0 },
+							spec: getMemoryValueSpec({ elementWordSize: 1, isInteger: true, isUnsigned: true }),
+						},
 					},
 					color: highlightFont,
 				},
@@ -236,10 +239,12 @@ describe('tooltip drawing', () => {
 					x: -168 + 'value: '.length * 8,
 					y: 16 + 2 * 16,
 					source: {
-						kind: 'memoryRead',
-						byteAddress: 8,
-						allocationUnitAddress: 2,
-						format: { elementWordSize: 4, isInteger: true, isUnsigned: false },
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'fixed', byteAddress: 8 },
+							elementIndex: 2,
+							spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
+						},
 					},
 					color: PALETTE_INDICES.inverseAccent,
 				},
@@ -247,12 +252,10 @@ describe('tooltip drawing', () => {
 					x: -168 + 'deref: '.length * 8,
 					y: 16 + 3 * 16,
 					source: {
-						kind: 'pointerRead',
-						allocationUnitAddress: 2,
-						format: {
-							elementWordSize: 4,
-							isInteger: true,
-							isUnsigned: false,
+						kind: 'numericRead',
+						read: {
+							address: { kind: 'pointer', pointerSlotIndex: 2, byteOffset: 0 },
+							spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
 						},
 					},
 					color: PALETTE_INDICES.inverseAccent,
