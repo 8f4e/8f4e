@@ -61,7 +61,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -74,7 +73,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "source",
@@ -111,7 +109,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -138,7 +135,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -273,7 +269,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -286,7 +281,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "source",
@@ -309,7 +303,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -336,7 +329,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -393,7 +385,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -450,7 +441,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",
@@ -507,7 +497,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "target",

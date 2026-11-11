@@ -22,6 +22,7 @@ export type ReferenceKind =
 	| 'pointee-element-word-size'
 	| 'pointee-element-max'
 	| 'pointee-element-min'
+	| 'end-address'
 	| 'intermodular-reference'
 	| 'intermodular-module-reference'
 	| 'intermodular-module-nth-reference'
@@ -53,7 +54,6 @@ export type MemoryPointerIdentifier = IdentifierBase<'memory-pointer', 'local'> 
 };
 type MemoryReferenceIdentifier = IdentifierBase<'memory-reference', 'local'> & {
 	targetMemoryId: string;
-	isEndAddress: boolean;
 };
 type ElementCountIdentifier = IdentifierBase<'element-count', 'local'> & {
 	targetMemoryId: string;
@@ -81,14 +81,27 @@ type PointeeElementMinIdentifier = IdentifierBase<'pointee-element-min', 'local'
 	targetMemoryId: string;
 	isPointee: true;
 };
+/** An explicit exclusive-end query, independent of start-address reference syntax. */
+export type EndAddressIdentifier =
+	| (IdentifierBase<'end-address', 'local'> & { targetKind: 'memory' | 'pointee'; targetMemoryId: string })
+	| (IdentifierBase<'end-address', 'intermodule'> & { targetKind: 'module'; targetModuleId: string })
+	| (IdentifierBase<'end-address', 'intermodule'> & {
+			targetKind: 'memory';
+			targetModuleId: string;
+			targetMemoryId: string;
+	  })
+	| (IdentifierBase<'end-address', 'intermodule'> & {
+			targetKind: 'indexed-memory';
+			targetModuleId: string;
+			targetMemoryIndex: number;
+	  });
+
 type IntermodularReferenceIdentifier = IdentifierBase<'intermodular-reference', 'intermodule'> & {
 	targetModuleId: string;
 	targetMemoryId: string;
-	isEndAddress: boolean;
 };
 type IntermodularModuleReferenceIdentifier = IdentifierBase<'intermodular-module-reference', 'intermodule'> & {
 	targetModuleId: string;
-	isEndAddress: boolean;
 };
 type IntermodularModuleNthReferenceIdentifier = IdentifierBase<'intermodular-module-nth-reference', 'intermodule'> & {
 	targetModuleId: string;
@@ -124,6 +137,7 @@ export type ArgumentIdentifier =
 	| PointeeElementWordSizeIdentifier
 	| PointeeElementMaxIdentifier
 	| PointeeElementMinIdentifier
+	| EndAddressIdentifier
 	| IntermodularReferenceIdentifier
 	| IntermodularModuleReferenceIdentifier
 	| IntermodularModuleNthReferenceIdentifier

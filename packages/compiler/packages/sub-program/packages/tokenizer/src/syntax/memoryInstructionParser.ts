@@ -1,4 +1,4 @@
-import type { Argument, ArgumentLiteral, ArgumentStringLiteral } from '@8f4e/language-spec';
+import type { Argument, ArgumentLiteral, ArgumentStringLiteral, EndAddressIdentifier } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 
@@ -10,17 +10,17 @@ export type SplitByteToken = { type: 'literal'; value: number } | { type: 'ident
 
 export type MemoryArgumentShape =
 	| { type: 'literal'; value: number }
+	| { type: 'end-query'; query: EndAddressIdentifier }
 	| { type: 'identifier'; value: string }
 	| { type: 'constant-identifier'; value: string }
 	| { type: 'split-byte-tokens'; tokens: SplitByteToken[] }
-	| { type: 'memory-reference'; base: string; pattern: string; isEndAddress: boolean }
+	| { type: 'memory-reference'; base: string; pattern: string }
 	| { type: 'element-count'; base: string }
 	| { type: 'intermodular-reference'; pattern: string }
 	| {
 			type: 'intermodular-module-reference';
 			module: string;
 			pattern: string;
-			isEndAddress: boolean;
 	  }
 	| {
 			type: 'intermodular-element-count';
@@ -255,6 +255,8 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 	// Use the pre-classified referenceKind and extracted fields from the ArgumentIdentifier
 	// instead of re-detecting patterns from raw strings.
 	switch (arg.referenceKind) {
+		case 'end-address':
+			return { type: 'end-query', query: arg };
 		case 'intermodular-reference':
 			return {
 				type: 'intermodular-reference',
@@ -265,7 +267,6 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 				type: 'intermodular-module-reference',
 				module: arg.targetModuleId,
 				pattern: arg.value,
-				isEndAddress: !!arg.isEndAddress,
 			};
 		case 'intermodular-element-count':
 			return {
@@ -300,7 +301,6 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 				type: 'memory-reference',
 				base: arg.targetMemoryId,
 				pattern: arg.value,
-				isEndAddress: arg.isEndAddress,
 			};
 		case 'element-count':
 			return {

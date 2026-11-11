@@ -19,7 +19,6 @@ export { default as hasElementMaxPrefix } from './hasElementMaxPrefix';
 export { default as hasElementMinPrefix } from './hasElementMinPrefix';
 export { default as hasElementWordSizePrefix } from './hasElementWordSizePrefix';
 export { default as hasMemoryReferencePrefix } from './hasMemoryReferencePrefix';
-export { default as hasMemoryReferencePrefixEnd } from './hasMemoryReferencePrefixEnd';
 export { default as hasMemoryReferencePrefixStart } from './hasMemoryReferencePrefixStart';
 export { default as hasPointeeElementMaxPrefix } from './hasPointeeElementMaxPrefix';
 export { default as hasPointeeElementWordSizePrefix } from './hasPointeeElementWordSizePrefix';

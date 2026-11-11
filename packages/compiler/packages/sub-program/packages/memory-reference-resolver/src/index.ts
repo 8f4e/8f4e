@@ -46,6 +46,7 @@ import type {
 import { resolveProjectMemoryInitializers } from './resolveProjectMemoryInitializers';
 import { resolveReferenceSlots } from './resolveReferenceSlots';
 import { tryResolveValueArgument } from './tryResolveValueArgument';
+import { validateEndQueries } from './validateEndQueries';
 
 export type {
 	MemoryReferenceResolutionBlockFacts,
@@ -249,6 +250,7 @@ function resolveMemoryReferenceLineFacts(
 	context: MemoryReferenceResolutionContext,
 	initializerDefaults: ReadonlyMap<number, Const> | undefined
 ): MemoryReferenceResolutionLineFacts | undefined {
+	validateEndQueries(line, context);
 	if (isReferenceSlotLine(line)) return undefined;
 	const firstArgument = line.arguments[0];
 	const declaration =

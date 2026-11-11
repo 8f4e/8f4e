@@ -1,0 +1,8 @@
+8f4e/v1
+entry test
+module example
+float[] samples 4
+push samples&
+drop
+moduleEnd
+entryEnd

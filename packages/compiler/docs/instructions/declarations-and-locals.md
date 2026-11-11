@@ -43,7 +43,7 @@ Anonymous scalar declarations are supported in three forms:
 
 This bare zero-initialized form applies to scalar declarations only (including pointer variants such as `int*`). Array declarations (`int[]`) still require an element count.
 
-Default values can be specified as literals, constants, or memory references (using `&name` for start address or `name&` for end address).
+Default values can be specified as literals, constants, or memory references (using `&name` for start address or `end(name)` for end address).
 Constant expressions are also supported with the same one-operator rule (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`).
 Quoted string literals are supported for scalar defaults and use the same byte encoding as `push "..."`.
 Single-character strings become their byte value. Multi-character strings are packed as split bytes; for example, `int "AB"` is equivalent to `int 0x41 0x42`.
@@ -88,7 +88,7 @@ int count 4
 int halfCount MAX/2
 int*
 int* ptr &count
-int* endPtr count&
+int* endPtr end(count)
 int colorARGB 0xA8 0xFF 0x00 0x00
 int colorAR   0xA8 0xFF
 int 0xA8 0xFF
@@ -178,7 +178,7 @@ The float instruction declares a 32-bit floating-point value in module memory. U
 
 A bare `float` (no arguments) allocates an anonymous `float` with default `0`. This zero-initialized form applies to scalar declarations only (including pointer variants such as `float*`).
 
-Default values can be specified as literals, constants, or memory references (using `&name` for start address or `name&` for end address).
+Default values can be specified as literals, constants, or memory references (using `&name` for start address or `end(name)` for end address).
 Constant expressions are also supported with the same one-operator rule (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`).
 
 #### Examples
@@ -191,7 +191,7 @@ float halfGain MAX_GAIN/2
 float[] samples 4 0.0 0.25 0.5 0.75
 float*
 float* ptr &samples
-float* endPtr samples&
+float* endPtr end(samples)
 ```
 
 ### float64
@@ -328,7 +328,7 @@ keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `
 Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
 local names and follow the same non-constant naming convention as memory declarations.
 
-Fixed slots have no addressable storage of their own: `&slot` and `slot&` report this explicitly. Use `push slot` for
+Fixed slots have no addressable storage of their own: `&slot` and `end(slot)` report this explicitly. Use `push slot` for
 the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
 Initializers must select an allocated, non-pointer memory item by name or declaration index. Numeric addresses,
 address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.

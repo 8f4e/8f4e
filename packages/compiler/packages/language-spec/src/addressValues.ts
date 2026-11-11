@@ -25,9 +25,9 @@ export function memoryStartAddressValue(memoryItem: PlannedMemoryDeclaration, mo
 }
 
 /**
- * Creates a resolved value representing the end byte address of a memory item.
+ * Creates a resolved value representing the exclusive logical end of a memory item.
  *
- * @param memoryItem - Memory item whose end address should be represented.
+ * @param memoryItem - Memory item whose exclusive end should be represented.
  * @param moduleId - Optional owning module id for intermodule safe-range metadata.
  * @returns Integer value with address safe-range metadata.
  */

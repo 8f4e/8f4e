@@ -328,7 +328,6 @@
               "value": "hasChanged",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -388,7 +387,6 @@
               "value": "hasChanged",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -448,7 +446,6 @@
               "value": "hasChanged",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -487,7 +484,6 @@
               "value": "hasChanged",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",

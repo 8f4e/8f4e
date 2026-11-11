@@ -64,7 +64,7 @@ describe('prepared watch rendering', () => {
 			'int8u[] first 4 1 2 3 4',
 			'int8u[] second 2 5 6',
 			'int8u* pointer &first',
-			'; @watch *pointer&',
+			'; @watch end(*pointer)',
 			'; @watch 0x*pointer[1]',
 			'moduleEnd',
 		]);

@@ -168,7 +168,6 @@ export default function validateInstructionArguments(instruction: string, args: 
 			target?.type === ArgumentType.IDENTIFIER &&
 			(target.referenceKind === 'intermodular-module-nth-reference' ||
 				((target.referenceKind === 'memory-reference' || target.referenceKind === 'intermodular-reference') &&
-					!target.isEndAddress &&
 					!(target.referenceKind === 'memory-reference' && target.targetMemoryId === 'this')));
 		if (
 			name?.type !== ArgumentType.IDENTIFIER ||

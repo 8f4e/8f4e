@@ -12,11 +12,7 @@ function getAllocatedByteLength(allocationUnitCount: number): number {
 }
 
 function getEndByteAddress(byteAddress: number, allocationUnitCount: number): number {
-	return allocationUnitCount <= 0 ? byteAddress : byteAddress + (allocationUnitCount - 1) * ALLOCATION_UNIT_BYTE_SIZE;
-}
-
-function getEndAddressSafeByteLength(allocationUnitCount: number): number {
-	return allocationUnitCount > 0 ? ALLOCATION_UNIT_BYTE_SIZE : 0;
+	return allocationUnitCount <= 0 ? byteAddress : byteAddress + allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE;
 }
 
 /**
@@ -45,8 +41,8 @@ export function createMemory(
 		...declaration,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
-		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(declaration.allocationUnitCount),
+		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
+		endAddressSafeByteLength: 0,
 	};
 }
 
@@ -81,7 +77,7 @@ export function createMemoryPlan(
 		allocationUnitCount,
 		allocatedByteLength: getAllocatedByteLength(allocationUnitCount),
 		endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(allocationUnitCount),
+		endAddressSafeByteLength: 0,
 		memory,
 		declarations,
 		declarationSources: overrides.declarationSources ?? [],

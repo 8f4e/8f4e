@@ -62,7 +62,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "count",
@@ -206,7 +205,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "ran",
@@ -260,7 +258,6 @@
               "value": "stateInitialized",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "initialized",
@@ -342,7 +339,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "count",
@@ -411,7 +407,6 @@
               "value": "stateMainCalls",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "mainCalls",
@@ -431,7 +426,6 @@
               "value": "nestedCount",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "count",
@@ -451,7 +445,6 @@
               "value": "dormantRan",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "ran",
@@ -605,7 +598,6 @@
               "value": "stateInitialized",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "initialized",
@@ -698,7 +690,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "count",
@@ -767,7 +758,6 @@
               "value": "nestedInitialized",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "initialized",
@@ -831,7 +821,6 @@
               "value": "count",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "count",
@@ -851,7 +840,6 @@
               "value": "mainCalls",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "mainCalls",
@@ -871,7 +859,6 @@
               "value": "initialized",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "initialized",
@@ -891,7 +878,6 @@
               "value": "siblingCount",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "count",

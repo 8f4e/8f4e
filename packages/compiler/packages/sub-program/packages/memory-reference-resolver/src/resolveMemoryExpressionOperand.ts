@@ -4,13 +4,7 @@ import type {
 	MemoryPointerMetadataMap,
 	PlannedMemoryDeclaration,
 } from '@8f4e/language-spec';
-import {
-	ArgumentType,
-	memoryEndAddressValue,
-	memoryStartAddressValue,
-	moduleAddressValue,
-	type PointerMetadata,
-} from '@8f4e/language-spec';
+import { ArgumentType, memoryStartAddressValue, moduleAddressValue, type PointerMetadata } from '@8f4e/language-spec';
 
 import type { MemoryReferenceResolutionContext } from './context';
 import {
@@ -19,6 +13,7 @@ import {
 	type MetadataTargetRequest,
 	type ResolvedMetadataTarget,
 } from './metadataQuery';
+import { resolveEndAddress } from './resolveEndAddress';
 import { resolveMemoryTarget, resolveModuleTarget } from './resolveMemoryTarget';
 
 function getPointerMetadata(
@@ -88,6 +83,7 @@ export function resolveMemoryExpressionOperand(
 	if (operand.type === ArgumentType.LITERAL) {
 		return undefined;
 	}
+	if (operand.referenceKind === 'end-address') return resolveEndAddress(operand, context);
 	if (operand.referenceKind === 'plain') {
 		const slot = context.referenceSlots[operand.value];
 		return slot ? memoryStartAddressValue(slot.targetMemory, slot.targetModuleId) : undefined;
@@ -107,9 +103,7 @@ export function resolveMemoryExpressionOperand(
 			context,
 			operand.scope === 'intermodule' ? operand.targetModuleId : undefined
 		);
-		return targetModule
-			? moduleAddressValue(targetModule, operand.isEndAddress ? 'module-end' : 'module-start', targetModule.id)
-			: undefined;
+		return targetModule ? moduleAddressValue(targetModule, 'module-start', targetModule.id) : undefined;
 	}
 
 	if (
@@ -120,11 +114,8 @@ export function resolveMemoryExpressionOperand(
 		const target = resolveMemoryTarget(operand, context);
 		if (!target) return undefined;
 		const { targetMemory, targetModule } = target;
-		if (operand.referenceKind !== 'intermodular-module-nth-reference') {
-			return operand.isEndAddress
-				? memoryEndAddressValue(targetMemory, targetModule.id)
-				: memoryStartAddressValue(targetMemory, targetModule.id);
-		}
+		if (operand.referenceKind !== 'intermodular-module-nth-reference')
+			return memoryStartAddressValue(targetMemory, targetModule.id);
 		return {
 			...memoryStartAddressValue(targetMemory, targetModule.id),
 			address: {

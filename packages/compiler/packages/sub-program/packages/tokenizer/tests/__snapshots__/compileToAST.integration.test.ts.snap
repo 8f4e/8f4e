@@ -64,7 +64,6 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "START",
           },
           {
-            "isEndAddress": false,
             "referenceKind": "intermodular-reference",
             "scope": "intermodule",
             "targetMemoryId": "buffer",
@@ -430,7 +429,6 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "readHead",
           },
           {
-            "isEndAddress": false,
             "referenceKind": "intermodular-reference",
             "scope": "intermodule",
             "targetMemoryId": "samples",
@@ -483,7 +481,6 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
             "value": "samples",
           },
           {
-            "isEndAddress": false,
             "referenceKind": "intermodular-reference",
             "scope": "intermodule",
             "targetMemoryId": "samples",
@@ -518,7 +515,6 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       {
         "arguments": [
           {
-            "isEndAddress": false,
             "referenceKind": "memory-reference",
             "scope": "local",
             "targetMemoryId": "buffer",
@@ -535,12 +531,12 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       {
         "arguments": [
           {
-            "isEndAddress": true,
-            "referenceKind": "memory-reference",
+            "referenceKind": "end-address",
             "scope": "local",
+            "targetKind": "memory",
             "targetMemoryId": "buffer",
             "type": "identifier",
-            "value": "buffer&",
+            "value": "end(buffer)",
           },
         ],
         "diagnosticSource": {

@@ -153,7 +153,6 @@
               "value": "skippedDirectiveModuleValue",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -206,7 +205,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "output",
@@ -314,7 +312,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",

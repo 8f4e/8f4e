@@ -1208,7 +1208,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "count",
@@ -1300,7 +1299,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",
@@ -1382,7 +1380,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "count",
@@ -1474,7 +1471,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",
@@ -1535,7 +1531,6 @@
               "value": "leftValue",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -1555,7 +1550,6 @@
               "value": "rightValue",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",

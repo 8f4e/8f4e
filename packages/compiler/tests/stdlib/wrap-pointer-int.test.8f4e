@@ -40,6 +40,10 @@ sub
 push &buffer
 push count(buffer)
 call wrapPointer
-assertEqual buffer&
+push end(buffer)
+push sizeof(buffer)
+sub
+equal
+assert
 moduleEnd
 entryEnd

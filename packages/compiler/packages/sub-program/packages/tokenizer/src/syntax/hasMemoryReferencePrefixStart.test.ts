@@ -7,8 +7,8 @@ describe('hasMemoryReferencePrefixStart', () => {
 		expect(hasMemoryReferencePrefixStart('&value')).toBe(true);
 	});
 
-	it('returns false for suffix-only', () => {
-		expect(hasMemoryReferencePrefixStart('value&')).toBe(false);
+	it('returns false for end queries', () => {
+		expect(hasMemoryReferencePrefixStart('end(value)')).toBe(false);
 	});
 
 	it('returns false for plain identifiers', () => {

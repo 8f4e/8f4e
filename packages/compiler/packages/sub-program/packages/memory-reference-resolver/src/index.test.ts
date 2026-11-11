@@ -15,11 +15,7 @@ function getAllocatedByteLength(allocationUnitCount: number): number {
 }
 
 function getEndByteAddress(byteAddress: number, allocationUnitCount: number): number {
-	return allocationUnitCount <= 0 ? byteAddress : byteAddress + (allocationUnitCount - 1) * 4;
-}
-
-function getEndAddressSafeByteLength(allocationUnitCount: number): number {
-	return allocationUnitCount > 0 ? 4 : 0;
+	return allocationUnitCount <= 0 ? byteAddress : byteAddress + allocationUnitCount * 4;
 }
 
 function createMemoryDeclaration(
@@ -47,7 +43,7 @@ function createMemoryDeclaration(
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
 		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(declaration.allocationUnitCount),
+		endAddressSafeByteLength: 0,
 	} as PlannedMemoryDeclaration;
 }
 
@@ -75,7 +71,7 @@ function createPlannedModule(
 		...module,
 		allocatedByteLength: getAllocatedByteLength(module.allocationUnitCount),
 		endByteAddress: getEndByteAddress(module.byteAddress, module.allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(module.allocationUnitCount),
+		endAddressSafeByteLength: 0,
 	} as PlannedMemoryModule;
 }
 
@@ -343,7 +339,7 @@ describe('resolveMemoryReferences', () => {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
-			arguments: [syntaxValue(classifyIdentifier('audio:level&'))],
+			arguments: [syntaxValue(classifyIdentifier('end(audio:level)'))],
 		};
 		const countLine = {
 			diagnosticSource: { kind: 'document' },
@@ -740,7 +736,7 @@ describe('tryResolveValueArgument', () => {
 		});
 	});
 
-	it('resolves intermodule end-address reference (module:memory&) once module is laid out', () => {
+	it('resolves intermodule end-address reference (end(module:memory)) once module is laid out', () => {
 		const buffer = createMemoryDeclaration('buffer', {
 			byteAddress: 8,
 			allocationUnitCount: 4,
@@ -751,15 +747,15 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		// End address = byteAddress + (allocationUnitCount - 1) * 4 = 8 + 3 * 4 = 20
-		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('source:buffer&')))).toEqual({
-			value: 20,
+		// End address = byteAddress + allocationUnitCount * 4 = 8 + 4 * 4 = 24
+		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('end(source:buffer)')))).toEqual({
+			value: 24,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'memory-end',
-					byteAddress: 20,
-					safeByteLength: 4,
+					byteAddress: 24,
+					safeByteLength: 0,
 					moduleId: 'source',
 					memoryId: 0,
 				},
@@ -786,20 +782,20 @@ describe('tryResolveValueArgument', () => {
 		});
 	});
 
-	it('resolves intermodule module-base end-address (module:&) once module is laid out', () => {
+	it('resolves intermodule module-base end-address (end(module:)) once module is laid out', () => {
 		const laidOutNamespace = withRemoteModules(mockContext, [
 			createPlannedModule('source', {}, { byteAddress: 12, allocationUnitCount: 3 }),
 		]);
 
-		// End address = 12 + (3 - 1) * 4 = 12 + 8 = 20
-		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('source:&')))).toEqual({
-			value: 20,
+		// End address = 12 + 3 * 4 = 24
+		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('end(source:)')))).toEqual({
+			value: 24,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'module-end',
-					byteAddress: 20,
-					safeByteLength: 4,
+					byteAddress: 24,
+					safeByteLength: 0,
 					moduleId: 'source',
 				},
 			},
@@ -833,14 +829,14 @@ describe('tryResolveValueArgument', () => {
 				},
 			},
 		});
-		expect(tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('this&')))).toEqual({
-			value: 40,
+		expect(tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('end(this)')))).toEqual({
+			value: 44,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'module-end',
-					byteAddress: 40,
-					safeByteLength: 4,
+					byteAddress: 44,
+					safeByteLength: 0,
 					moduleId: 'main',
 				},
 			},
@@ -857,7 +853,7 @@ describe('tryResolveValueArgument', () => {
 			tryResolveValueArgument(contextWithoutCurrentModule, syntaxValue(classifyIdentifier('&this')))
 		).toBeUndefined();
 		expect(
-			tryResolveValueArgument(contextWithoutCurrentModule, syntaxValue(classifyIdentifier('this&')))
+			tryResolveValueArgument(contextWithoutCurrentModule, syntaxValue(classifyIdentifier('end(this)')))
 		).toBeUndefined();
 	});
 

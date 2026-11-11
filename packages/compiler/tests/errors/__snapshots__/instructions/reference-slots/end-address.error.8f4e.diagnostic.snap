@@ -10,5 +10,4 @@
     "projectGroupPath": "",
   },
   "message": "Fixed reference slot "slot" has no addressable storage. Push the slot name to use its target address. (79)",
-  "symbol": "invalid",
 }

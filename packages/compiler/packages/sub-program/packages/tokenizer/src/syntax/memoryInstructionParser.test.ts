@@ -44,17 +44,14 @@ describe('parseMemoryInstructionArgumentsShape', () => {
 			type: 'intermodular-module-reference',
 			module: 'mod',
 			pattern: '&mod:',
-			isEndAddress: false,
 		});
 	});
 
 	it('parses intermodular module-end reference argument', () => {
-		const result = parseMemoryInstructionArgumentsShape([classifyIdentifier('mod:&')]);
+		const result = parseMemoryInstructionArgumentsShape([classifyIdentifier('end(mod:)')]);
 		expect(result.firstArg).toEqual({
-			type: 'intermodular-module-reference',
-			module: 'mod',
-			pattern: 'mod:&',
-			isEndAddress: true,
+			type: 'end-query',
+			query: classifyIdentifier('end(mod:)'),
 		});
 	});
 
@@ -104,17 +101,14 @@ describe('parseMemoryInstructionArgumentsShape', () => {
 			type: 'memory-reference',
 			base: 'foo',
 			pattern: '&foo',
-			isEndAddress: false,
 		});
 	});
 
 	it('parses memory end-address reference argument', () => {
-		const result = parseMemoryInstructionArgumentsShape([classifyIdentifier('foo&')]);
+		const result = parseMemoryInstructionArgumentsShape([classifyIdentifier('end(foo)')]);
 		expect(result.firstArg).toEqual({
-			type: 'memory-reference',
-			base: 'foo',
-			pattern: 'foo&',
-			isEndAddress: true,
+			type: 'end-query',
+			query: classifyIdentifier('end(foo)'),
 		});
 	});
 

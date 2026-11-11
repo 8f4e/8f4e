@@ -1,15 +1,4 @@
-/**
- * Extracts the base identifier from a memory reference identifier by removing the & prefix or suffix.
- *
- * @param name - Name to inspect.
- * @returns Extracted memory reference base.
- */
+/** Extracts the identifier selected by the leading start-address operator. */
 export default function extractMemoryReferenceBase(name: string): string {
-	if (name.startsWith('&')) {
-		return name.substring(1);
-	}
-	if (name.endsWith('&')) {
-		return name.slice(0, -1);
-	}
-	return name;
+	return name.startsWith('&') ? name.slice(1) : name;
 }

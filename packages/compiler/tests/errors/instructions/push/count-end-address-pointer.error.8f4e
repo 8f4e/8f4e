@@ -3,7 +3,7 @@
 entry main
 module endAddressCount
 int[] values 2 7 8
-int* pointer values&
+int* pointer end(values)
 push count(*pointer)
 moduleEnd
 entryEnd

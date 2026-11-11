@@ -46,7 +46,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "dest",
@@ -96,7 +95,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "dest",
@@ -137,7 +135,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "src",
@@ -226,7 +223,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "dest",
@@ -323,7 +319,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "dest",

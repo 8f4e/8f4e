@@ -1,6 +1,6 @@
 {
-  "code": 5,
-  "domain": "semantic",
+  "code": 1,
+  "domain": "syntax",
   "instruction": "int*",
   "kind": "source",
   "location": {
@@ -9,5 +9,5 @@
     "projectBlockId": 8,
     "projectGroupPath": "",
   },
-  "message": "Unknown memory declaration.",
+  "message": "Trailing & end addresses were removed. Use end(&oldEndAddressSource:buffer) instead.",
 }

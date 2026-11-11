@@ -1,21 +1,10 @@
 import { describe, expect, it } from 'vitest';
-
-import isIntermodularModuleReference from './isIntermodularModuleReference';
+import check from './isIntermodularModuleReference';
 
 describe('isIntermodularModuleReference', () => {
-	it('matches valid intermodular module-base references', () => {
-		expect(isIntermodularModuleReference('&module:')).toBe(true);
-		expect(isIntermodularModuleReference('&notesMux2:')).toBe(true);
-		expect(isIntermodularModuleReference('module:&')).toBe(true);
-		expect(isIntermodularModuleReference('notesMux2:&')).toBe(true);
-	});
-
-	it('rejects invalid references', () => {
-		expect(isIntermodularModuleReference('&buffer')).toBe(false);
-		expect(isIntermodularModuleReference('&module:memory')).toBe(false);
-		expect(isIntermodularModuleReference('module:')).toBe(false);
-		expect(isIntermodularModuleReference('&module:&')).toBe(false);
-		expect(isIntermodularModuleReference('&module::')).toBe(false);
-		expect(isIntermodularModuleReference('&module.memory')).toBe(false);
-	});
+	it.each(['&module:', '&notesMux2:'])('recognizes the start reference %s', value => expect(check(value)).toBe(true));
+	it.each(['end(module:)', 'module:&', '&module:memory', '&module::', '&module:memory&'])(
+		'rejects %s as a start reference',
+		value => expect(check(value)).toBe(false)
+	);
 });

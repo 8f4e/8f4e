@@ -189,7 +189,7 @@ sub
 push &buffer
 push count(buffer)
 call wrapPointer
-; stack: buffer&
+; stack: end(buffer)-sizeof(buffer)
 moduleEnd
 entryEnd
 ```
@@ -253,7 +253,7 @@ push &pointer
 push &buffer
 push count(buffer)
 call decrementPointer
-; pointer is buffer&
+; pointer is end(buffer)-sizeof(buffer)
 moduleEnd
 entryEnd
 ```

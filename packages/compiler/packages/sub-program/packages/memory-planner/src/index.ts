@@ -27,7 +27,7 @@ import {
 	isScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import { planArrayDeclarationLayout, planScalarDeclarationLayout } from './declarations';
-import { getAllocatedByteLength, getEndAddressSafeByteLength, getEndByteAddress } from './layoutAddresses';
+import { getAllocatedByteLength, getEndByteAddress } from './layoutAddresses';
 
 export type {
 	MemoryLayoutPlan,
@@ -326,7 +326,7 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 			allocationUnitCount: moduleMemory.allocationUnitCount,
 			allocatedByteLength: getAllocatedByteLength(moduleMemory.allocationUnitCount),
 			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.allocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(moduleMemory.allocationUnitCount),
+			endAddressSafeByteLength: 0,
 			memory: moduleMemory.memory,
 			declarations: moduleMemory.declarations,
 			declarationSources: moduleMemory.declarationSources,

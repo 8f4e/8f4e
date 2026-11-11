@@ -328,7 +328,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -388,7 +387,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -448,7 +446,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -487,7 +484,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -526,7 +522,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousFloat",
@@ -597,7 +592,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -657,7 +651,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -717,7 +710,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -756,7 +748,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -795,7 +786,6 @@
               "value": "gateToTrigger",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",

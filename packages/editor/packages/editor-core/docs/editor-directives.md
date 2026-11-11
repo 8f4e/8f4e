@@ -211,7 +211,7 @@ Supported `memoryId` forms:
 - `0bname` - Show an integer value in binary.
 - `0xname` - Show an integer value in hexadecimal.
 - `&name` - Show the start address.
-- `name&` - Show the end address.
+- `end(name)` - Show the end address.
 - `*name` - Dereference a pointer memory.
 - `module:name` - Resolve `name` from another module.
 - `name[3]` - Show a specific array element.
@@ -222,7 +222,7 @@ These modifiers can be combined when they make sense. For example:
 ; @watch 0bcounter
 ; @watch 0xcounter
 ; @watch &buffer
-; @watch pointer&
+; @watch end(pointer)
 ; @watch *out
 ; @watch otherModule:value
 ; @watch buffer[3]

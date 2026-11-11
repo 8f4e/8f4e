@@ -550,7 +550,6 @@
               "value": "pointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -599,7 +598,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -636,7 +634,6 @@
           "arguments": [
             {
               "left": {
-                "isEndAddress": false,
                 "referenceKind": "memory-reference",
                 "scope": "local",
                 "targetMemoryId": "buffer",
@@ -700,7 +697,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -736,7 +732,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -776,7 +771,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -812,15 +806,39 @@
         {
           "arguments": [
             {
-              "isEndAddress": true,
-              "referenceKind": "memory-reference",
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "buffer",
+              "type": "identifier",
+              "value": "end(buffer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-word-size",
               "scope": "local",
               "targetMemoryId": "buffer",
               "type": "identifier",
-              "value": "buffer&",
+              "value": "sizeof(buffer)",
             },
           ],
-          "instruction": "assertEqual",
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
         },
         {
           "arguments": [],

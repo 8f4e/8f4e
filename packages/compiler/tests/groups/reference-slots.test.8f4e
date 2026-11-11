@@ -14,6 +14,8 @@ push *signal
 assertEqual 41
 push count(*signal)
 assertEqual 1
+push end(*signal)
+assertEqual end(audio:exposed)
 moduleEnd
 
 group audio
@@ -28,6 +30,8 @@ int& localValue &value
 int& indexedValue &this:0
 push *localValue
 assertEqual 41
+push end(*localValue)
+assertEqual end(value)
 push *indexedValue
 assertEqual 41
 moduleEnd

@@ -10,6 +10,8 @@ completed: null
 
 # TODO: Add `*name&` pointee end address suffix for pointers
 
+> Language migration note: trailing `&` is replaced by exclusive `end()`. Fixed connections support `end(*reference)`; any future mutable-pointer implementation should use that spelling and exclusive bounds. The proposal below records the original design.
+
 ## Problem Description
 
 8f4e supports `name&` to push the start byte address of the last word-aligned chunk covering a memory item. That gives users an address-oriented way to reference the end of an allocation. For pointer-typed memory items, there is no corresponding syntax for the end address of the pointee target.

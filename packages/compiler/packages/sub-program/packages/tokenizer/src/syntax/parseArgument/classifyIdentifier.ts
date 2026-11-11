@@ -2,6 +2,7 @@ import type { ArgumentIdentifier } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { SyntaxErrorCode, SyntaxIssue } from '../syntaxError';
 import { classifyElementQuery } from './classifyElementQuery';
+import { classifyEndQuery } from './classifyEndQuery';
 import { classifyIntermodularReference } from './classifyIntermodularReference';
 import { getMemoryPointerTarget } from './getMemoryPointerTarget';
 
@@ -40,18 +41,8 @@ function isLowercaseAsciiLetter(charCode: number): boolean {
  * Classifies an identifier string into a structured `ArgumentIdentifier` with reference metadata.
  * Classification is based purely on token shape; no semantic resolution is performed.
  *
- * Required check order (earlier checks must precede later ones):
- *  1. intermodular-module-reference  (&mod: / mod:&)     - before intermodular-reference,
- *     because &mod: starts with & like local memory refs and the module-base form must win.
- *  2. intermodular-module-nth-reference (&mod:0)          - before intermodular-reference,
- *     because digits are valid [^\s&:.] chars so &mod:0 would silently match the named-memory regex.
- *  3. intermodular-reference (&mod:mem / mod:mem&)        - before memory-reference,
- *     because both start/end with & and the intermodular form must win.
- *  4. intermodular element-query forms (count/sizeof/...) - before local element-query forms,
- *     because their pattern (e.g. count(mod:mem)) is a superset of the local form (count(name)).
- *  5. memory-reference (&name / name&)                    - after all intermodular forms.
- *  6. pointee element-query forms                         - before plain element-query forms,
- *     because sizeof(*name) also starts with sizeof( and max(*name) also starts with max(.
+ * Qualified start-address selectors are handled before the local & operator. Function-style
+ * queries have their own parsers and AST nodes; end() never passes through prefix handling.
  *
  * @param value - Identifier token to classify.
  * @returns Classified identifier argument.
@@ -63,10 +54,16 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 		}
 	}
 
+	if (value.endsWith('&')) {
+		throw new SyntaxIssue(
+			SyntaxErrorCode.INVALID_IDENTIFIER,
+			`Trailing & end addresses were removed. Use end(${value.slice(0, -1)}) instead.`
+		);
+	}
+
 	const firstChar = value[0];
-	const lastChar = value[value.length - 1];
 	const hasIntermoduleSeparator = value.includes(':');
-	const hasMemoryReferenceSigil = firstChar === '&' || lastChar === '&';
+	const hasMemoryReferenceSigil = firstChar === '&';
 	const hasPointerPrefix = firstChar === '*';
 	const hasQueryOpen = value.includes('(');
 
@@ -86,24 +83,22 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 
 	// Metadata query parsing keeps intermodular forms ahead of local and pointee forms.
 	if (hasQueryOpen) {
-		const elementQuery = classifyElementQuery(value);
+		const elementQuery = classifyEndQuery(value) ?? classifyElementQuery(value);
 		if (elementQuery) {
 			return elementQuery;
 		}
 	}
 
-	// Local memory reference: &name (start) or name& (end).
+	// Leading & denotes a start address; end() is classified separately as a query.
 	// Checked after all intermodular forms since &mod: and &mod:mem also start with &.
 	if (hasMemoryReferenceSigil) {
-		const isEndAddress = lastChar === '&';
-		const targetMemoryId = firstChar === '&' ? value.substring(1) : value.slice(0, -1);
+		const targetMemoryId = value.substring(1);
 		return {
 			type: ArgumentType.IDENTIFIER,
 			value,
 			referenceKind: 'memory-reference',
 			scope: 'local',
 			targetMemoryId,
-			isEndAddress,
 		};
 	}
 

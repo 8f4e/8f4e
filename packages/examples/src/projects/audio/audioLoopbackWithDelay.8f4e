@@ -65,8 +65,8 @@ add
 store
 
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -110,8 +110,8 @@ store
 
 ; Wrap after the final slot.
 push writeHead
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &writeHead
 push &buffer
@@ -127,7 +127,7 @@ use env
 ; The initial read-head offset
 ; is measured in bytes.
 float& buffer &recorder:buffer
-float* head &recorder:buffer+SAMPLE_RATE
+float* head buffer+SAMPLE_RATE
 float out
 
 ; @wave4 buffer count(buffer) head
@@ -147,11 +147,11 @@ store
 
 ; Wrap independently of the writer.
 push head
-push recorder:buffer&
-greaterThan
+push end(*buffer)
+greaterOrEqual
 if
 push &head
-push &recorder:buffer
+push buffer
 store
 ifEnd
 
@@ -178,8 +178,8 @@ add
 store
 
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

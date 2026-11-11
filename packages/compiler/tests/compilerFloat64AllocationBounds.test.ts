@@ -19,15 +19,15 @@ ${declaration}
 int next 99
 push &value
 drop
-push value&
+push end(value)
 drop
 moduleEnd
-; Legacy end-address coverage: fixed references do not support end initializers.
+; Fixed connections bind the start address; end() queries the target boundary.
 module mReader
 float64& start &aSource:value
 push start
 drop
-push aSource:value&
+push end(aSource:value)
 drop
 moduleEnd
 module zTail
@@ -40,8 +40,8 @@ entryEnd`,
 			expect(source.memory.value).toMatchObject({
 				byteAddress: 8,
 				allocatedByteLength: byteLength,
-				endByteAddress: 8 + byteLength - 4,
-				endAddressSafeByteLength: 4,
+				endByteAddress: 8 + byteLength,
+				endAddressSafeByteLength: 0,
 			});
 			expect(source.memory.next.byteAddress).toBe(8 + byteLength);
 			expect(source.allocationUnitCount).toBe((byteLength + 8) / 4);
@@ -66,12 +66,12 @@ entryEnd`,
 					},
 					{
 						kind: 'address',
-						knownValue: 8 + byteLength - 4,
+						knownValue: 8 + byteLength,
 						address: {
 							safeRange: {
 								source: 'memory-end',
-								byteAddress: 8 + byteLength - 4,
-								safeByteLength: 4,
+								byteAddress: 8 + byteLength,
+								safeByteLength: 0,
 								memoryId: source.memory.value.id,
 							},
 						},

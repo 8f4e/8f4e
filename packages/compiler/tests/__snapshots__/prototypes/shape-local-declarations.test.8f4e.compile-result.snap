@@ -148,7 +148,6 @@
               "value": "test2",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "foo",
@@ -168,7 +167,6 @@
               "value": "test1",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "bar",
@@ -188,7 +186,6 @@
               "value": "test3",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "he",

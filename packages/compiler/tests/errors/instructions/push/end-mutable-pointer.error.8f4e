@@ -1,0 +1,9 @@
+8f4e/v1
+entry test
+module example
+int[] samples 4
+int* pointer &samples
+push end(*pointer)
+drop
+moduleEnd
+entryEnd

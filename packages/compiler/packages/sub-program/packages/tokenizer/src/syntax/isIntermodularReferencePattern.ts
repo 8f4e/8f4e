@@ -1,22 +1,4 @@
-/**
- * Tests if a string matches the intermodular reference pattern.
- * This regex is used for detecting inter-module references in AST arguments
- * during compilation.
- *
- * Valid patterns:
- * - &module:memory (start address reference)
- * - module:memory& (end address reference)
- *
- * Enforces exactly one colon separator (module:memory only).
- */
-const intermodularReferencePattern = /^(&[^\s&:.]+:[^\s&:.]+|[^\s&:.]+:[^\s&:.]+&)$/;
-
-/**
- * Tests if a string matches the intermodular reference pattern.
- *
- * @param value - Value to inspect.
- * @returns Whether the intermodular reference pattern condition is true.
- */
+/** Recognizes a leading &module:memory start-address reference. */
 export default function isIntermodularReferencePattern(value: string): boolean {
-	return intermodularReferencePattern.test(value);
+	return /^&[^\s&:.()]+:[^\s&:.()]+$/.test(value);
 }
