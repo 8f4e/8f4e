@@ -22,8 +22,9 @@ Overridden blocks retain instruction documentation without displaying another de
 
 Fixed reference declarations (`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&`) show their
 resolved target byte address as `value` and the live target value as `deref`. Buffer targets show their first element.
-These rows resolve targets through the shared editor-state memory resolver and use the target's numeric format; fixed references
-allocate no pointer storage. Recompilation refreshes the target, while each frame reads the current runtime value.
+These rows resolve targets through the shared editor-state memory resolver during tooltip preparation. The prepared
+data retains the address text and target read format; fixed references allocate no pointer storage. Recompilation
+refreshes the prepared data, while each frame reads the current runtime value without another target lookup.
 Missing compilation metadata leaves documentation visible without live rows, and unavailable target memory shows `?`.
 
 Instruction signatures use the accepted parsed source arguments, including operands on `-` continuation lines, so

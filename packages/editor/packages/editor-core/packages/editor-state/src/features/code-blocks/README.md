@@ -161,8 +161,9 @@ unresolved because a fixed reference allocates no addressable slot. Buffer displ
 Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
 fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
 `getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory;
-`resolveMemoryAccess` applies the same address and dereference rules to those targets. Tooltips and connectors use
-the shared target lookup while retaining their own value formatting and source-row geometry.
+`resolveMemoryAccess` applies the same address and dereference rules to those targets. Tooltips use the shared target
+lookup during preparation. Connectors consume the resolved reference targets already supplied by the compiler;
+each plugin retains its own value formatting and source-row geometry.
 
 ## References
 

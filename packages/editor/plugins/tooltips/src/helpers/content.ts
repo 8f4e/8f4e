@@ -105,7 +105,7 @@ export function getSelectedLineTooltipContent(options: SelectedLineTooltipOption
 	const referenceId = getReferenceDeclarationIdFromSourceLine(options.line);
 	const colors = getSelectedLineTooltipColors(text, textContent.signatureLineCount);
 	const liveTooltipContent = referenceId
-		? getLiveReferenceTooltipContent(options.reference, options.moduleId, referenceId, text.length)
+		? getLiveReferenceTooltipContent(options.reference, text.length)
 		: getLiveTooltipContent(options.memory, options.moduleId, memoryId, text.length);
 
 	text.push(...liveTooltipContent.text);

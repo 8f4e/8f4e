@@ -55,12 +55,9 @@ function getMemoryForLiveValueLine(
 
 function getLiveValueText(state: State, memoryViews: MemoryViews, liveValue: TooltipLiveValue): string | undefined {
 	const { source } = liveValue;
-	if (source.kind === 'referenceValue' || source.kind === 'referenceDereference') {
-		const target = getMemoryForLiveValueLine(state, source.moduleId, source.referenceId);
-		if (!target) return undefined;
-		return source.kind === 'referenceValue'
-			? String(target.byteAddress)
-			: formatMemoryValue(memoryViews, target.byteAddress, target.allocationUnitAddress, target);
+	if (source.kind === 'referenceValue') return source.text;
+	if (source.kind === 'referenceDereference') {
+		return formatMemoryValue(memoryViews, source.byteAddress, source.allocationUnitAddress, source.format);
 	}
 
 	const memory = getMemoryForLiveValueLine(state, source.moduleId, source.memoryId);

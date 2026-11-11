@@ -69,8 +69,13 @@ export interface TooltipMemoryDereferenceLiveValueSource {
 }
 
 export type TooltipReferenceLiveValueSource =
-	| { kind: 'referenceValue'; moduleId: string; referenceId: string }
-	| { kind: 'referenceDereference'; moduleId: string; referenceId: string };
+	| { kind: 'referenceValue'; text: string }
+	| {
+			kind: 'referenceDereference';
+			byteAddress: number;
+			allocationUnitAddress: number;
+			format: TooltipLiveValueMemoryFormat;
+	  };
 
 export type TooltipLiveValueSource =
 	| TooltipMemoryAddressLiveValueSource

@@ -79,25 +79,29 @@ export function getLiveTooltipContent(
 /** Fixed references have a value and a dereferenced value, but no storage address of their own. */
 export function getLiveReferenceTooltipContent(
 	reference: ResolvedReferenceSlot | undefined,
-	moduleId: string | undefined,
-	referenceId: string,
 	firstLineIndex: number
 ): LiveTooltipContent {
-	if (!reference || !moduleId) {
+	if (!reference) {
 		return { text: [], colors: [], liveValueTargets: [], maxLineLength: 0 };
 	}
+	const { byteAddress, allocationUnitAddress, elementWordSize, isInteger, isUnsigned } = reference.targetMemory;
 
 	return getLiveLinesContent(
 		[
 			{
 				label: 'value: ',
 				maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
-				source: { kind: 'referenceValue', moduleId, referenceId },
+				source: { kind: 'referenceValue', text: String(byteAddress) },
 			},
 			{
 				label: 'deref: ',
 				maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-				source: { kind: 'referenceDereference', moduleId, referenceId },
+				source: {
+					kind: 'referenceDereference',
+					byteAddress,
+					allocationUnitAddress,
+					format: { elementWordSize, isInteger, isUnsigned },
+				},
 			},
 		],
 		firstLineIndex

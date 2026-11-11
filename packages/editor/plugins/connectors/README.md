@@ -20,7 +20,7 @@ is the current `ProjectLevel`, the plugin rebuilds its byte-address index from t
 groups leave the active index unchanged. Runtime pointer values are read on every frame, so wires follow live memory
 without recompilation.
 Fixed reference slots such as `float& input &source:output` also produce input connectors, positioned at their
-declaration rows. Their wires use the target byte address from the shared editor-state memory resolver, without
+declaration rows. Their wires use the target byte address already resolved in the compiler's reference-slot metadata, without
 reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no
 fixed declarations. Target type and buffer metadata come from the backing declaration in the allocation plan.
 

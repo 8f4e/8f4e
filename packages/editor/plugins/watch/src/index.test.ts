@@ -29,6 +29,17 @@ describe('watch plugin', () => {
 				address,
 				value,
 			]);
+			const memory = test.compiled.memoryPlan.modules.audio.memory.samples;
+			const samples = test.memoryViews[type === 'int8u' ? 'uint8' : type === 'float' ? 'float32' : 'float64'];
+			samples[memory.byteAddress / memory.elementWordSize + 1] = 6;
+			test.render();
+			const nextValue = type === 'int8u' ? '6' : '6.0000';
+			expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([
+				address,
+				nextValue,
+				address,
+				nextValue,
+			]);
 		}
 	);
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {

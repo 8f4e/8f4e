@@ -66,6 +66,20 @@ moduleEnd
 entryEnd`;
 
 describe('fixed reference live tooltips', () => {
+	it('retains prepared addresses and formats while reading live memory without target lookups', async () => {
+		const { compiled, memory, renderValues } = await setup(namedSource());
+		const references = compiled.compiledModules.sink.referenceSlots;
+		const slot = references.input;
+		const target = slot.targetMemory;
+		const lookup = vi.fn(() => slot);
+		Object.defineProperty(references, 'input', { configurable: true, get: lookup });
+
+		memory.float32[target.byteAddress / 4] = 1.5;
+		expect(renderValues()).toEqual([String(target.byteAddress), '1.5000']);
+		memory.float32[target.byteAddress / 4] = -2.75;
+		expect(renderValues()).toEqual([String(target.byteAddress), '-2.7500']);
+		expect(lookup).not.toHaveBeenCalled();
+	});
 	it.each([
 		{ name: 'named', target: '&source:output', local: false, grouped: false },
 		{ name: 'indexed', target: '&source:0', local: false, grouped: false },

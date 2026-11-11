@@ -1,5 +1,4 @@
 import { gapCalculator, getModuleCompilationForCodeBlock } from '@8f4e/editor-state';
-import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { ConnectorWidgets } from '../types';
@@ -55,15 +54,13 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps) + rowOffset);
 		}
 		for (const slot of Object.values(compilation.compiledModule.referenceSlots)) {
-			const target = resolveMemoryTarget(state, getCodeBlockMemoryScope(codeBlock), slot.id);
-			if (!target) continue;
 			const y = gapCalculator(slot.lineNumber, codeBlock.gaps) * height;
 			widgets.inputs.push({
 				x: 0,
 				y,
 				wireX: Math.round(width / 2),
 				wireY: Math.round(y + height / 2),
-				source: { kind: 'reference', byteAddress: target.memory.byteAddress },
+				source: { kind: 'reference', byteAddress: slot.targetMemory.byteAddress },
 			});
 		}
 		widgets.inputs.sort((left, right) => left.y - right.y);

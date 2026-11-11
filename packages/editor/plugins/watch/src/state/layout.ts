@@ -25,9 +25,10 @@ export function registerWatchLayout(
 			const resolveMemory = target
 				? () => resolveMemoryAccess(state, target, data.inlineAccess)
 				: () => resolveMemoryIdentifier(state, scope, data.memoryId);
+			const memory = resolveMemory();
 			const dereferenced = data.inlineAccess?.dereference ?? data.memoryId?.startsWith('*');
-			const memory = dereferenced ? undefined : resolveMemory();
-			if (!dereferenced && !memory) {
+			const runtimePointer = dereferenced && !memory?.target.reference;
+			if (!runtimePointer && !memory) {
 				return;
 			}
 
@@ -41,7 +42,7 @@ export function registerWatchLayout(
 			watchesByBlock.get(graphicData)!.push({
 				x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
 				y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
-				resolveMemory: dereferenced ? resolveMemory : () => memory,
+				resolveMemory: runtimePointer ? resolveMemory : () => memory,
 				showEndAddress: data.showEndAddress,
 				displayFormat: data.displayFormat,
 			});
