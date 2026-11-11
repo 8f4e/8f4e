@@ -164,10 +164,10 @@ function resolveMemoryDefaultValue(
 			return shape.value;
 		case 'memory-reference': {
 			if (shape.base === 'this') {
-				return shape.isEndAddress ? module.endByteAddress : module.byteAddress;
+				return module.byteAddress;
 			}
 			const declaration = getMemoryDeclarationOrThrow(module, shape.base, line);
-			return shape.isEndAddress ? declaration.endByteAddress : declaration.byteAddress;
+			return declaration.byteAddress;
 		}
 		case 'element-count':
 			return getMemoryDeclarationOrThrow(module, shape.base, line).numberOfElements;
@@ -178,7 +178,7 @@ function resolveMemoryDefaultValue(
 					identifier: shape.module,
 				});
 			}
-			return shape.isEndAddress ? targetModule.endByteAddress : targetModule.byteAddress;
+			return targetModule.byteAddress;
 		}
 		case 'intermodular-element-count':
 			return getIntermoduleMemoryDeclaration(shape, line, memoryPlan).numberOfElements;

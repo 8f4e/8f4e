@@ -49,8 +49,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn3",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -274,8 +273,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -298,8 +296,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -354,8 +351,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in1",
-                "isEndAddress": false
+                "targetMemoryId": "in1"
               }
             ]
           },
@@ -380,8 +376,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in2",
-                "isEndAddress": false
+                "targetMemoryId": "in2"
               }
             ]
           },
@@ -482,8 +477,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -678,8 +672,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -702,8 +695,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -758,8 +750,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in1",
-                "isEndAddress": false
+                "targetMemoryId": "in1"
               }
             ]
           },
@@ -784,8 +775,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in2",
-                "isEndAddress": false
+                "targetMemoryId": "in2"
               }
             ]
           },
@@ -886,8 +876,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1082,8 +1071,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -1138,8 +1126,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1174,8 +1161,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1277,8 +1263,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -1333,8 +1318,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron2",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1369,8 +1353,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1472,8 +1455,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -1496,8 +1478,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -1552,8 +1533,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1578,8 +1558,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn2",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1680,8 +1659,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1876,8 +1854,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -1932,8 +1909,7 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron3",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -1968,8 +1944,7 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
@@ -2173,8 +2148,7 @@
         "byteAddress": 0,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 0,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2184,8 +2158,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2204,8 +2177,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2244,8 +2216,7 @@
         "byteAddress": 4,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 4,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 8,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2255,8 +2226,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2275,8 +2245,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2315,8 +2284,7 @@
         "byteAddress": 8,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 8,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 12,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2326,8 +2294,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
@@ -2346,8 +2313,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
@@ -2386,8 +2352,7 @@
         "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 20,
         "memory": {
           "in1": {
             "numberOfElements": 1,
@@ -2397,8 +2362,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2415,8 +2379,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -2435,8 +2398,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2453,8 +2415,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -2524,7 +2485,6 @@
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
         "endByteAddress": 20,
-        "endAddressSafeByteLength": 0,
         "memory": {},
         "declarations": [],
         "declarationSources": []
@@ -2535,8 +2495,7 @@
         "byteAddress": 20,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 20,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 24,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2546,8 +2505,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2566,8 +2524,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2606,8 +2563,7 @@
         "byteAddress": 24,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 24,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 28,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2617,8 +2573,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2637,8 +2592,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2677,8 +2631,7 @@
         "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 28,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 32,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2688,8 +2641,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2708,8 +2660,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -2748,8 +2699,7 @@
         "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 32,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 36,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2759,8 +2709,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -2780,8 +2729,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -2815,8 +2763,7 @@
                   "referenceKind": "intermodular-reference",
                   "scope": "intermodule",
                   "targetModuleId": "activationFn3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
+                  "targetMemoryId": "out"
                 }
               ]
             },
@@ -2832,8 +2779,7 @@
         "byteAddress": 0,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 0,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2843,8 +2789,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2863,8 +2808,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2903,8 +2847,7 @@
         "byteAddress": 4,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 4,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 8,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2914,8 +2857,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2934,8 +2876,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
@@ -2974,8 +2915,7 @@
         "byteAddress": 8,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 8,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 12,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2985,8 +2925,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
@@ -3005,8 +2944,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
@@ -3045,8 +2983,7 @@
         "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 20,
         "memory": {
           "in1": {
             "numberOfElements": 1,
@@ -3056,8 +2993,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3074,8 +3010,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -3094,8 +3029,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3112,8 +3046,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
@@ -3183,7 +3116,6 @@
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
         "endByteAddress": 20,
-        "endAddressSafeByteLength": 0,
         "memory": {},
         "declarations": [],
         "declarationSources": []
@@ -3194,8 +3126,7 @@
         "byteAddress": 20,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 20,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 24,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -3205,8 +3136,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3225,8 +3155,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3265,8 +3194,7 @@
         "byteAddress": 24,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 24,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 28,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -3276,8 +3204,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3296,8 +3223,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3336,8 +3262,7 @@
         "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 28,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 32,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -3347,8 +3272,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3367,8 +3291,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
@@ -3407,8 +3330,7 @@
         "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 32,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 36,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -3418,8 +3340,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -3439,8 +3360,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -3474,8 +3394,7 @@
                   "referenceKind": "intermodular-reference",
                   "scope": "intermodule",
                   "targetModuleId": "activationFn3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
+                  "targetMemoryId": "out"
                 }
               ]
             },

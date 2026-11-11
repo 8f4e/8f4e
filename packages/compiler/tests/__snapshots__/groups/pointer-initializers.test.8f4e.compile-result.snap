@@ -333,7 +333,6 @@
               "value": "input",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "fallback",

@@ -22,7 +22,7 @@ describe('validateInstructionArguments', () => {
 		['this', '&value'],
 		['slot', 'value'],
 		['slot', '*value'],
-		['slot', 'value&'],
+		['slot', 'end(value)'],
 		['slot', '&source:'],
 		['slot', '&this'],
 	])('rejects invalid fixed reference %s %s', (name, target) => {

@@ -74,7 +74,7 @@ describe('watch plugin', () => {
 			'int8[] buffer 4 1 2 3 4',
 			'; @watch buffer[2]',
 			'; @watch &buffer[2]',
-			'; @watch buffer&',
+			'; @watch end(buffer)',
 			'moduleEnd',
 		]);
 		test.render();

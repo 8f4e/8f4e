@@ -1,15 +1,15 @@
 # Identifier prefixes and metadata queries
 
-8f4e supports a small set of identifier prefixes/suffixes that expand memory identifiers into derived values, and function-style metadata queries.
+8f4e supports a small set of identifier prefixes that expand memory identifiers into derived values, and function-style metadata queries.
 
 ## Memory reference
 
 - `&name` pushes the start address (byte address) of the memory item.
-- `name&` pushes the start address (byte address) of the final 4-byte allocation unit covering the memory item.
+- `end(name)` pushes the exclusive byte address immediately after the declared elements, excluding allocation padding.
 - `&this` pushes the start byte address of the current module.
-- `this&` pushes the byte address of the current module's final allocation unit.
+- `end(this)` pushes the exclusive end of the current module allocation.
 
-These work in both `push` instructions and declaration initializers (e.g., `int* ptr &buffer` or `int* endPtr buffer&`) with the same address semantics.
+These work in both `push` instructions and declaration initializers (e.g., `int* ptr &buffer` or `int* endPtr end(buffer)`) with the same address semantics.
 
 Examples:
 
@@ -21,9 +21,37 @@ int8[] buffer 4
 push &buffer[0]
 
 int* moduleStart &this
-int* moduleEnd this&
+int* moduleEnd end(this)
 
 ```
+
+## Exclusive end queries
+
+`end(name)` is `start + count * element size`. It resolves during compilation in pushes, declaration initializers,
+and memory-aware arithmetic expressions. An empty buffer ends at its start. For byte and halfword buffers, alignment
+padding is outside the logical buffer. The returned boundary is not readable storage; use an explicit element offset
+such as `end(samples)-sizeof(samples)` to address the final element.
+
+A fixed connection exposes the complete target boundary through `end(*connection)`:
+
+```8f4e
+float& samples &recorder:buffer
+float* head samples
+
+push head
+push end(*samples)
+greaterOrEqual
+if
+push &head
+push samples
+store
+ifEnd
+```
+
+Mutable pointer variables do not provide a fixed allocation boundary; pass that boundary separately. `end(pointer)`
+queries the pointer variable's own storage. `end(module:N)` queries an indexed declaration, and `end(module:)` queries
+the complete module allocation. Leading `&` selects start addresses. Circular buffers wrap when
+`pointer >= end(buffer)`.
 
 ## Pointer dereference
 
@@ -249,24 +277,24 @@ All of the address and metadata forms above have intermodular counterparts that 
 ### Module base address
 
 - `&module:` — start byte address of the module's memory allocation.
-- `module:&` — byte address of the final allocation unit in the module's memory allocation.
+- `end(module:)` — exclusive end byte address of the module allocation.
 
 ```
 module targetModule
 int* start &sourceModule:
-int* end   sourceModule:&
+int* end   end(sourceModule:)
 moduleEnd
 ```
 
 ### Named memory item address
 
 - `&module:name` — start byte address of a named memory item in another module.
-- `module:name&` — byte address of the final allocation unit of a named memory item in another module.
+- `end(module:name)` — exclusive logical end of a named memory item in another module.
 
 ```
 module targetModule
 int* ptr    &sourceModule:buffer
-int* endPtr sourceModule:buffer&
+int* endPtr end(sourceModule:buffer)
 moduleEnd
 ```
 

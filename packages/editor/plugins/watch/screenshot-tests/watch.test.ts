@@ -21,7 +21,7 @@ test('watch plugin renders its directive', async () => {
 			'float gain 0.125 ; @watch',
 			'int8[] buffer 4 10 20 30 40',
 			'; @watch &buffer[2]',
-			'; @watch buffer&',
+			'; @watch end(buffer)',
 			'moduleEnd',
 		],
 		{ drawers }

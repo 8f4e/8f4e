@@ -99,7 +99,6 @@
               "value": "localValue",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",
@@ -147,6 +146,32 @@
               "isInteger": true,
               "type": "literal",
               "value": 41,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "localValue",
+              "type": "identifier",
+              "value": "end(*localValue)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "end(value)",
             },
           ],
           "instruction": "assertEqual",
@@ -204,7 +229,6 @@
               "value": "signal",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "exposed",
@@ -257,6 +281,33 @@
               "isInteger": true,
               "type": "literal",
               "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "signal",
+              "type": "identifier",
+              "value": "end(*signal)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "exposed",
+              "targetModuleId": "processing/audio",
+              "type": "identifier",
+              "value": "end(audio:exposed)",
             },
           ],
           "instruction": "assertEqual",

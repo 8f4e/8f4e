@@ -238,7 +238,6 @@
               "value": "namedStart",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "integers",

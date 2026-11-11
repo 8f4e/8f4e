@@ -8,7 +8,7 @@ Avoid duplicating array metadata in separate variables.
 
 - Use `count(buffer)` for element count.
 - Use `sizeof(buffer)` for element word size.
-- Use `buffer&` (or inter-module `module.buffer&`) for end address.
+- Use `end(buffer)` (or inter-module `end(module:buffer)`) for the exclusive end address.
 
 This keeps modules resilient when array declarations change.
 
@@ -196,7 +196,7 @@ if
  push _offset
  add
  push *bufferEndIn
- greaterThan
+ greaterOrEqual
  if
   push &_offset
   push 0

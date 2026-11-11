@@ -33,7 +33,6 @@
                 "value": "input",
               },
               {
-                "isEndAddress": false,
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetMemoryId": "exposedValue",

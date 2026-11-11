@@ -54,7 +54,7 @@ export function resolveProjectMemoryInitializers(
 					...source,
 					targetModuleId: createProjectModuleId(scope.parentGroupPath, source.targetModuleId),
 				};
-				const resolvedValue = tryResolveValueArgument(context, qualifiedSource);
+				const resolvedValue = tryResolveValueArgument(context, qualifiedSource, line);
 				if (!resolvedValue) {
 					throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
 						details: {

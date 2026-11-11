@@ -30,7 +30,11 @@ push count(buffer)
 call advancePointer
 
 push pointer
-assertEqual buffer&
+push end(buffer)
+push sizeof(buffer)
+sub
+equal
+assert
 
 push &pointer
 push &buffer

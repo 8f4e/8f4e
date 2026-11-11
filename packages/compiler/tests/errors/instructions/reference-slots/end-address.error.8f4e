@@ -3,7 +3,7 @@ entry main
 module invalid
 float value
 float& slot &value
-push slot&
+push end(slot)
 drop
 moduleEnd
 entryEnd

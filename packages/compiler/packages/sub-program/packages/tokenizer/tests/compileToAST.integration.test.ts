@@ -29,7 +29,7 @@ describe('compileToAST integration', () => {
 					'float& samples &audio:samples',
 					'push sizeof(*samples)',
 					'push &buffer',
-					'push buffer&',
+					'push end(buffer)',
 					'push *readHead',
 					'if',
 					'push 1',

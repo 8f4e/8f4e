@@ -44,7 +44,7 @@ module sameModuleAddressAssertions
 ; declaration initializers.
 int[] buffer 5 1 2 3 4 5
 int* startPtr &buffer
-int* endPtr buffer&
+int* endPtr end(buffer)-4
 
 push *startPtr
 assertEqual 1
@@ -108,7 +108,7 @@ int a 10
 int b 20
 int[] tail 2 30 40
 int* moduleStart &this
-int* moduleEndPtr this&
+int* moduleEndPtr end(this)
 int* second &this:1
 
 push *moduleStart
@@ -118,8 +118,8 @@ push *second
 assertEqual 20
 
 push moduleEndPtr
-push &moduleEndPtr
-push sizeof(moduleEndPtr)
+push &second
+push sizeof(second)
 add
 equal
 assertEqual 1
@@ -139,12 +139,11 @@ push *moduleStart
 assertEqual 11
 
 ; End-address references should
-; point at the final
-; word-aligned
-; element.
-int* bufferEnd addressSource:buffer&
-int* scalarEnd addressSource:scalar&
-int* moduleEnd addressSource:&
+; use an explicit offset to read
+; the final four-byte value.
+int* bufferEnd end(addressSource:buffer)-4
+int* scalarEnd end(addressSource:scalar)-4
+int* moduleEnd end(addressSource:)-4
 
 push *bufferEnd
 assertEqual 33
@@ -162,7 +161,7 @@ module outOfOrderAddressAssertions
 ; declared
 ; later in the entry.
 int* start &lateAddressSource:buffer
-int* end lateAddressSource:buffer&
+int* end end(lateAddressSource:buffer)-4
 
 push *start
 assertEqual 5
@@ -179,10 +178,10 @@ int alignment 0
 float64 aligned 1.25f64
 int alignedNext 99
 
-push padded&
+push end(padded)-4
 load
 assertEqual 1072955392
-push aligned&
+push end(aligned)-4
 load
 assertEqual 1072955392
 moduleEnd
@@ -193,25 +192,25 @@ int alignment 0
 float64[] aligned 2 1.25f64 1.25f64
 int alignedNext 99
 
-push padded&
+push end(padded)-4
 load
 assertEqual 1072955392
-push aligned&
+push end(aligned)-4
 load
 assertEqual 1072955392
 moduleEnd
-; Legacy end-address coverage: fixed references do not support end initializers.
+; Read the final four-byte unit through explicit end offsets.
 module zzFloat64Third
-push zzFloat64First:padded&
+push end(zzFloat64First:padded)-4
 load
 assertEqual 1072955392
-push zzFloat64First:aligned&
+push end(zzFloat64First:aligned)-4
 load
 assertEqual 1072955392
-push zzFloat64Second:padded&
+push end(zzFloat64Second:padded)-4
 load
 assertEqual 1072955392
-push zzFloat64Second:aligned&
+push end(zzFloat64Second:aligned)-4
 load
 assertEqual 1072955392
 moduleEnd

@@ -33,9 +33,7 @@ export type CompileTimeValueArgument = ArgumentLiteral | ArgumentIdentifier | Ar
 export type PushArgument = ArgumentLiteral | ArgumentIdentifier | ArgumentCompileTimeExpression | ArgumentStringLiteral;
 export type PushLine = ASTLineBase<'push', [PushArgument]>;
 export type ReferenceSlotAddressArgument =
-	| (Extract<ArgumentIdentifier, { referenceKind: 'memory-reference' | 'intermodular-reference' }> & {
-			isEndAddress: false;
-	  })
+	| (Extract<ArgumentIdentifier, { referenceKind: 'memory-reference' | 'intermodular-reference' }> & {})
 	| Extract<ArgumentIdentifier, { referenceKind: 'intermodular-module-nth-reference' }>;
 export type ReferenceSlotLine = ASTLineBase<
 	ReferenceSlotInstruction,

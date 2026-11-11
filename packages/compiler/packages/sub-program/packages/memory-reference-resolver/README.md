@@ -91,13 +91,15 @@ The memory reference resolver owns value resolution for memory-layout expression
 - `min(name)`
 - `max(name)`
 - `&name`
-- `name&`
+- `end(name)`
 - `&this`
-- `this&`
+- `end(this)`
 - `&module:`
-- `module:&`
+- `end(module:)`
 - `&module:name`
-- `module:name&`
+- `end(module:name)`
+- `end(module:index)`
+- `end(*fixedReference)`
 - `&module:index`
 - `&this:index`
 - Arithmetic around resolved memory-layout values, such as `sizeof(buffer)*2`, `&buffer+4`, or `4+&buffer`.

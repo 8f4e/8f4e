@@ -8,6 +8,7 @@ import {
 	parseCompileTimeOperand as readOperand,
 	decodeStringLiteral as readString,
 } from './parseArgument';
+import { classifyEndQuery as readEndQuery } from './parseArgument/classifyEndQuery';
 import readConstantExpression from './parseConstantMulDivExpression';
 import readLiteralExpression from './parseLiteralMulDivExpression';
 import { type SyntaxErrorCodeValue, type SyntaxErrorLine, SyntaxIssue } from './syntaxError';
@@ -46,3 +47,5 @@ export const parseConstantMulDivExpression = (...args: Parameters<typeof readCon
 	capture(() => readConstantExpression(...args));
 export const parseLiteralMulDivExpression = (...args: Parameters<typeof readLiteralExpression>) =>
 	capture(() => readLiteralExpression(...args));
+
+export const classifyEndQuery = (...args: Parameters<typeof readEndQuery>) => capture(() => readEndQuery(...args));

@@ -22,7 +22,11 @@ push count(buffer)
 call decrementPointer
 
 push pointer
-assertEqual buffer&
+push end(buffer)
+push sizeof(buffer)
+sub
+equal
+assert
 
 push &pointer
 push &buffer

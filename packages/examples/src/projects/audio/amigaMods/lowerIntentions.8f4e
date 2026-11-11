@@ -937,8 +937,8 @@ store
 ifEnd
 
 push patternPointer
-push patternOrder:&
-greaterThan
+push end(patternOrder:)
+greaterOrEqual
 if
 push &patternPointer
 push &patternOrder:
@@ -980,8 +980,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1050,8 +1050,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1121,8 +1121,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1192,8 +1192,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -2599,8 +2599,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -2635,8 +2635,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

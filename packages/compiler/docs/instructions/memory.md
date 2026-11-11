@@ -1,6 +1,6 @@
 # Memory instructions
 
-For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
+For identifier prefixes and metadata queries that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
 In functions, memory instructions require the `#impure` compiler directive. Impure functions may use
 intermodular addresses such as `&source:value` and target metadata such as `sizeof(source:buffer)`. Memory

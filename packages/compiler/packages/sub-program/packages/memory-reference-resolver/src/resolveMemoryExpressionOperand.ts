@@ -1,16 +1,11 @@
 import type {
+	CompilerDiagnosticLine,
 	CompileTimeOperand,
 	Const,
 	MemoryPointerMetadataMap,
 	PlannedMemoryDeclaration,
 } from '@8f4e/language-spec';
-import {
-	ArgumentType,
-	memoryEndAddressValue,
-	memoryStartAddressValue,
-	moduleAddressValue,
-	type PointerMetadata,
-} from '@8f4e/language-spec';
+import { ArgumentType, memoryStartAddressValue, moduleAddressValue, type PointerMetadata } from '@8f4e/language-spec';
 
 import type { MemoryReferenceResolutionContext } from './context';
 import {
@@ -19,6 +14,7 @@ import {
 	type MetadataTargetRequest,
 	type ResolvedMetadataTarget,
 } from './metadataQuery';
+import { resolveEndAddress } from './resolveEndAddress';
 import { resolveMemoryTarget, resolveModuleTarget } from './resolveMemoryTarget';
 
 function getPointerMetadata(
@@ -79,15 +75,18 @@ export function resolveMetadataTarget(
  *
  * @param operand - Parsed operand to resolve.
  * @param context - Current semantic compilation context.
+ * @param line - Originating source line for located semantic diagnostics.
  * @returns Resolved memory/layout value, or `undefined` when the operand is not a memory expression.
  */
 export function resolveMemoryExpressionOperand(
 	operand: CompileTimeOperand,
-	context: MemoryReferenceResolutionContext
+	context: MemoryReferenceResolutionContext,
+	line: CompilerDiagnosticLine
 ): Const | undefined {
 	if (operand.type === ArgumentType.LITERAL) {
 		return undefined;
 	}
+	if (operand.referenceKind === 'end-address') return resolveEndAddress(operand, context, line);
 	if (operand.referenceKind === 'plain') {
 		const slot = context.referenceSlots[operand.value];
 		return slot ? memoryStartAddressValue(slot.targetMemory, slot.targetModuleId) : undefined;
@@ -107,9 +106,7 @@ export function resolveMemoryExpressionOperand(
 			context,
 			operand.scope === 'intermodule' ? operand.targetModuleId : undefined
 		);
-		return targetModule
-			? moduleAddressValue(targetModule, operand.isEndAddress ? 'module-end' : 'module-start', targetModule.id)
-			: undefined;
+		return targetModule ? moduleAddressValue(targetModule, 'module-start', targetModule.id) : undefined;
 	}
 
 	if (
@@ -120,11 +117,8 @@ export function resolveMemoryExpressionOperand(
 		const target = resolveMemoryTarget(operand, context);
 		if (!target) return undefined;
 		const { targetMemory, targetModule } = target;
-		if (operand.referenceKind !== 'intermodular-module-nth-reference') {
-			return operand.isEndAddress
-				? memoryEndAddressValue(targetMemory, targetModule.id)
-				: memoryStartAddressValue(targetMemory, targetModule.id);
-		}
+		if (operand.referenceKind !== 'intermodular-module-nth-reference')
+			return memoryStartAddressValue(targetMemory, targetModule.id);
 		return {
 			...memoryStartAddressValue(targetMemory, targetModule.id),
 			address: {

@@ -610,7 +610,6 @@
               "value": "pointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -623,7 +622,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "pointer",
@@ -636,7 +634,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -684,7 +681,6 @@
           "arguments": [
             {
               "left": {
-                "isEndAddress": false,
                 "referenceKind": "memory-reference",
                 "scope": "local",
                 "targetMemoryId": "buffer",
@@ -707,7 +703,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "pointer",
@@ -720,7 +715,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -767,20 +761,43 @@
         {
           "arguments": [
             {
-              "isEndAddress": true,
-              "referenceKind": "memory-reference",
+              "referenceKind": "end-address",
               "scope": "local",
+              "targetKind": "memory",
               "targetMemoryId": "buffer",
               "type": "identifier",
-              "value": "buffer&",
+              "value": "end(buffer)",
             },
           ],
-          "instruction": "assertEqual",
+          "instruction": "push",
         },
         {
           "arguments": [
             {
-              "isEndAddress": false,
+              "referenceKind": "element-word-size",
+              "scope": "local",
+              "targetMemoryId": "buffer",
+              "type": "identifier",
+              "value": "sizeof(buffer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "pointer",
@@ -793,7 +810,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",
@@ -840,7 +856,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "buffer",

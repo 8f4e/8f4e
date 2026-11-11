@@ -211,7 +211,8 @@ Supported `memoryId` forms:
 - `0bname` - Show an integer value in binary.
 - `0xname` - Show an integer value in hexadecimal.
 - `&name` - Show the start address.
-- `name&` - Show the end address.
+- `end(name)` - Show the exclusive end address.
+- `end(*connection)` - Show a fixed reference's target boundary.
 - `*name` - Dereference a pointer memory.
 - `module:name` - Resolve `name` from another module.
 - `name[3]` - Show a specific array element.
@@ -222,11 +223,15 @@ These modifiers can be combined when they make sense. For example:
 ; @watch 0bcounter
 ; @watch 0xcounter
 ; @watch &buffer
-; @watch pointer&
+; @watch end(pointer)
 ; @watch *out
 ; @watch otherModule:value
 ; @watch buffer[3]
 ```
+
+For live debugger inspection, `@watch end(*pointer)` follows a mutable pointer whose current value is the start of a
+known declaration. Compiler `end(*connection)` expressions require a fixed reference. An inline `end()` watch selects
+the current declaration's boundary; inline `end(*)` selects its fixed target or live pointer target.
 
 ### `@stack`
 

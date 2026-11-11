@@ -53,7 +53,6 @@ describe('resolveSemanticReferences integration', () => {
 			referenceKind: 'memory-reference',
 			scope: 'local',
 			targetMemoryId: 'value',
-			isEndAddress: false,
 		} as const;
 		const pushAddressLine = {
 			diagnosticSource: { kind: 'document' },
@@ -138,8 +137,7 @@ describe('resolveSemanticReferences integration', () => {
 			allocationUnitCount: 1,
 			allocatedByteLength: 4,
 			allocationUnitAddress: 1,
-			endByteAddress: 4,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 8,
 			lineNumber: 2,
 			isInteger: true,
 			id: 0,
@@ -184,8 +182,7 @@ describe('resolveSemanticReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 1,
 					allocatedByteLength: 4,
-					endByteAddress: 4,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 8,
 					memory: {
 						value: valueMemory,
 					},
@@ -202,8 +199,7 @@ describe('resolveSemanticReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 1,
 					allocatedByteLength: 4,
-					endByteAddress: 4,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 8,
 					memory: {
 						value: valueMemory,
 					},

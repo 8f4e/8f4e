@@ -36,11 +36,7 @@ function memory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemor
 		...declaration,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: Math.max(0, declaration.allocationUnitCount) * ALLOCATION_UNIT_BYTE_SIZE,
-		endByteAddress:
-			declaration.allocationUnitCount <= 0
-				? declaration.byteAddress
-				: declaration.byteAddress + (declaration.allocationUnitCount - 1) * ALLOCATION_UNIT_BYTE_SIZE,
-		endAddressSafeByteLength: declaration.allocationUnitCount > 0 ? ALLOCATION_UNIT_BYTE_SIZE : 0,
+		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
 	};
 }
 

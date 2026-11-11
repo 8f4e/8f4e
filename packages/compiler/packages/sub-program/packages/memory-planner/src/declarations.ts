@@ -10,8 +10,6 @@ import {
 	getAbsoluteAllocationUnitOffset,
 	getAllocatedByteLength,
 	getByteAddressFromAllocationUnitOffset,
-	getEndAddressSafeByteLength,
-	getEndByteAddress,
 } from './layoutAddresses';
 import getMemoryFlags from './memoryFlags';
 
@@ -80,8 +78,7 @@ export function planScalarDeclarationLayout(input: {
 				allocatedByteLength: getAllocatedByteLength(allocationUnitCount),
 				byteAddress,
 				elementByteLength: numberOfElements * elementWordSize,
-				endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
-				endAddressSafeByteLength: getEndAddressSafeByteLength(allocationUnitCount),
+				endByteAddress: byteAddress + numberOfElements * elementWordSize,
 				lineNumber: input.lineNumber,
 				type: input.instruction,
 				...flags,
@@ -113,8 +110,7 @@ export function planScalarDeclarationLayout(input: {
 			allocatedByteLength: getAllocatedByteLength(occupiedAllocationUnitCount),
 			byteAddress,
 			elementByteLength: numberOfElements * nonPointerElementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
+			endByteAddress: byteAddress + numberOfElements * nonPointerElementWordSize,
 			lineNumber: input.lineNumber,
 			type: input.instruction,
 			...flags,
@@ -162,8 +158,7 @@ export function planArrayDeclarationLayout(input: {
 			lineNumber: input.lineNumber,
 			byteAddress,
 			elementByteLength: input.numberOfElements * elementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
+			endByteAddress: byteAddress + input.numberOfElements * elementWordSize,
 			isInteger: input.instruction.startsWith('int') || input.instruction.includes('*'),
 			...(input.instruction === 'float64[]' ? { isFloat64: true } : {}),
 			pointerDepth,

@@ -50,8 +50,8 @@ describe('parseProjectMemoryInitializerLine', () => {
 		'init &input output',
 		'init &input &output',
 		'init &input "text"',
-		'init input& &source:output',
-		'init &input source:output&',
+		'init end(input) &source:output',
+		'init &input end(source:output)',
 		'init &input &outer/source:output',
 		'init &input &source:output+4',
 	])('rejects unsupported initializer syntax: %s', source => {

@@ -434,7 +434,7 @@ module sequencer
 ; @pos -38 -8
 
 int* start &scroll:
-int* end scroll:&
+int* end end(scroll:)
 int* yad &scroll:
 int& tick &godClock:out
 int note
@@ -530,7 +530,7 @@ ifEnd
 ; Wrap the yad
 push yad
 push end
-greaterThan
+greaterOrEqual
 if
 push &yad
 push start
@@ -1021,8 +1021,8 @@ store
 ; Wrap buffer pointer back
 ; to start when reaches end
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1064,8 +1064,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

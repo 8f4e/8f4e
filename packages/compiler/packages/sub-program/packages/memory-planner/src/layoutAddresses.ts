@@ -15,7 +15,7 @@ export function getByteAddressFromAllocationUnitOffset(
 }
 
 /**
- * Returns the byte address at the start of an allocation's final allocation unit.
+ * Returns the exclusive byte boundary of an allocation.
  *
  * @param byteAddress - Byte address where the value should be written.
  * @param allocationUnitCount - Number of reserved 4-byte allocation units.
@@ -25,15 +25,11 @@ export function getEndByteAddress(byteAddress: number, allocationUnitCount: numb
 	if (allocationUnitCount <= 0) {
 		return byteAddress;
 	}
-	return byteAddress + (allocationUnitCount - 1) * ALLOCATION_UNIT_BYTE_SIZE;
+	return byteAddress + allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE;
 }
 
 export function getAllocatedByteLength(allocationUnitCount: number): number {
 	return Math.max(0, allocationUnitCount) * ALLOCATION_UNIT_BYTE_SIZE;
-}
-
-export function getEndAddressSafeByteLength(allocationUnitCount: number): number {
-	return allocationUnitCount > 0 ? ALLOCATION_UNIT_BYTE_SIZE : 0;
 }
 
 /**

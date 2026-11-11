@@ -19,11 +19,9 @@ export function parseProjectMemoryInitializerLine(line: string, lineNumber: numb
 			parsed.arguments.length !== 2 ||
 			destination?.type !== ArgumentType.IDENTIFIER ||
 			destination.referenceKind !== 'memory-reference' ||
-			destination.isEndAddress ||
 			(source?.type !== ArgumentType.LITERAL &&
 				(source?.type !== ArgumentType.IDENTIFIER ||
 					source.referenceKind !== 'intermodular-reference' ||
-					source.isEndAddress ||
 					!isValidModuleName(source.targetModuleId)))
 		) {
 			throw new SyntaxIssue(SyntaxErrorCode.INVALID_PROJECT_MEMORY_INITIALIZER);

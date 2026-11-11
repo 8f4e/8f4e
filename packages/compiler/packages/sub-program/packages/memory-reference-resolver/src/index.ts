@@ -230,13 +230,14 @@ function resolvedValueToLiteral(resolved: Const): ResolvedArgumentLiteral {
 
 function resolveMemoryReferenceArgument(
 	argument: Argument,
-	context: MemoryReferenceResolutionContext
+	context: MemoryReferenceResolutionContext,
+	line: CompilerASTLine
 ): Argument | ResolvedArgumentLiteral {
 	if (argument.type !== ArgumentType.IDENTIFIER && argument.type !== ArgumentType.COMPILE_TIME_EXPRESSION) {
 		return argument;
 	}
 
-	const resolved = tryResolveValueArgument(context, argument);
+	const resolved = tryResolveValueArgument(context, argument, line);
 	if (!resolved) {
 		return argument;
 	}
@@ -266,7 +267,7 @@ function resolveMemoryReferenceLineFacts(
 			!isReferenceValuePosition(line, index)
 		)
 			return argument;
-		const resolved = resolveMemoryReferenceArgument(argument, context);
+		const resolved = resolveMemoryReferenceArgument(argument, context, line);
 		if (resolved !== argument) {
 			changed = true;
 		}
