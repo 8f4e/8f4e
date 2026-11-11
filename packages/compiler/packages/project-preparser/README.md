@@ -55,6 +55,10 @@ Later compiler passes receive ordinary functions. Include-specific internal name
 an export marker and `unselected` for exports that were not selected. Collisions with project declarations are handled by
 ordinary namespace validation.
 
+Early include export and binding failures retain the included file id and its zero-based source row. Project
+resolution also records the declaration that loaded the file, including its project group. Standalone
+`resolveFunctionIncludeSource` parsing keeps the file identity without inventing a project declaration.
+
 ## Group source templates
 
 `parseProjectSource` calls `inlineProjectTemplates` before parsing. Definitions use `template NAME` / `templateEnd`;

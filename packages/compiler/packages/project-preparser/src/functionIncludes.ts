@@ -1,5 +1,6 @@
 import { CompilerError, syntaxErrorAt, withAsyncCompilerStage, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import type {
+	DiagnosticSource,
 	ExportLine,
 	IncludedFunctionBindings,
 	ProjectBlock,
@@ -19,17 +20,15 @@ export type ResolvedFunctionSource = {
 };
 
 type ProjectResolvedFunctionSource = ResolvedFunctionSource & { projectBlockId: number; includeLineNumber: number };
+type IncludeFileSource = Extract<DiagnosticSource, { kind: 'include-file' }>;
 
-function includeError(message: string, lineNumber: number, projectBlockId?: number, projectGroupPath = '') {
+function includeError(message: string, lineNumber: number, source: DiagnosticSource) {
 	return new CompilerError({
 		kind: 'source',
 		domain: 'include',
 		code: -1,
 		message: `Parse error at line ${lineNumber}: ${message}`,
-		location:
-			projectBlockId === undefined
-				? { kind: 'document', lineNumber: lineNumber - 1 }
-				: { kind: 'block', projectBlockId, projectGroupPath, lineNumber: lineNumber - 1 },
+		location: { ...source, lineNumber: lineNumber - 1 },
 	});
 }
 
@@ -104,7 +103,8 @@ function splitFunctionBlocks(lines: string[]): FunctionIncludeBlock[] {
 	return blocks;
 }
 
-function getIncludeExport(includeId: string, block: FunctionIncludeBlock): IncludeExport | undefined {
+function getIncludeExport(source: IncludeFileSource, block: FunctionIncludeBlock): IncludeExport | undefined {
+	const { includeId } = source;
 	let includeExport: IncludeExport | undefined;
 
 	for (const [lineIndex, line] of block.code.entries()) {
@@ -115,18 +115,17 @@ function getIncludeExport(includeId: string, block: FunctionIncludeBlock): Inclu
 		if (includeExport) {
 			throw includeError(
 				`include "${includeId}" function can only declare one #export`,
-				block.startLineNumber + lineIndex
+				block.startLineNumber + lineIndex,
+				source
 			);
 		}
 
 		const result = parseLine(line, block.startLineNumber + lineIndex - 1);
 		if (!result.ok)
-			throw syntaxErrorAt(
-				result.issue.code,
-				result.issue.message,
-				{ kind: 'document' },
-				{ lineNumber: block.startLineNumber + lineIndex - 1, instruction: '#export' }
-			);
+			throw syntaxErrorAt(result.issue.code, result.issue.message, source, {
+				lineNumber: block.startLineNumber + lineIndex - 1,
+				instruction: '#export',
+			});
 		const exportLine = result.value as ExportLine;
 		const publicName = exportLine.arguments[0]?.value;
 
@@ -143,11 +142,12 @@ function getLineFirstArgument(line: string): string {
 	return line.trim().split(/\s+/)[1] ?? '';
 }
 
-function createIncludeFunctions(includeId: string, blocks: FunctionIncludeBlock[]): IncludeFunction[] {
+function createIncludeFunctions(source: IncludeFileSource, blocks: FunctionIncludeBlock[]): IncludeFunction[] {
+	const { includeId } = source;
 	const prefix = getIncludeFunctionPrefix(includeId);
 	const functions = blocks.map(block => {
 		const originalName = getFunctionName(block.code[0] ?? '');
-		const includeExport = getIncludeExport(includeId, block);
+		const includeExport = getIncludeExport(source, block);
 
 		return {
 			...block,
@@ -160,13 +160,14 @@ function createIncludeFunctions(includeId: string, blocks: FunctionIncludeBlock[
 	});
 
 	if (functions.every(func => !func.export)) {
-		throw includeError(`include "${includeId}" must export at least one function`, 1);
+		throw includeError(`include "${includeId}" must export at least one function`, 1, source);
 	}
 
 	return functions;
 }
 
-function createCallTargetRewriteMap(includeId: string, functions: IncludeFunction[]): Map<string, string> {
+function createCallTargetRewriteMap(source: IncludeFileSource, functions: IncludeFunction[]): Map<string, string> {
+	const { includeId } = source;
 	const finalNamesByOriginalName = new Map<string, Set<string>>();
 
 	for (const func of functions) {
@@ -205,7 +206,8 @@ function createCallTargetRewriteMap(includeId: string, functions: IncludeFunctio
 			if (ambiguousNames.has(targetName)) {
 				throw includeError(
 					`include "${includeId}" call target "${targetName}" is ambiguous because that function name expands to multiple public/internal include names`,
-					func.startLineNumber + lineIndex
+					func.startLineNumber + lineIndex,
+					source
 				);
 			}
 		}
@@ -215,15 +217,16 @@ function createCallTargetRewriteMap(includeId: string, functions: IncludeFunctio
 }
 
 function expandIncludeFunctions(
-	includeId: string,
+	source: IncludeFileSource,
 	functions: IncludeFunction[],
 	bindings: IncludeBindings
 ): ResolvedFunctionSource[] {
+	const { includeId } = source;
 	const renamedFunctions = functions.map(func => ({
 		...func,
 		finalName: func.export ? (bindings.get(func.export.publicName) ?? func.finalName) : func.finalName,
 	}));
-	const callTargetRewriteMap = createCallTargetRewriteMap(includeId, renamedFunctions);
+	const callTargetRewriteMap = createCallTargetRewriteMap(source, renamedFunctions);
 	return renamedFunctions.map(func => ({
 		code: func.code.map((line, index) => (index === func.export?.lineIndex ? '' : line)),
 		bindings: {
@@ -238,14 +241,15 @@ function expandIncludeFunctions(
  * Converts all public exports and their private dependencies into function source blocks.
  */
 export function resolveFunctionIncludeSource(includeId: string, source: string): ResolvedFunctionSource[] {
-	const functions = createIncludeFunctions(includeId, splitFunctionBlocks(normalizeSourceLines(source)));
+	const diagnosticSource: IncludeFileSource = { kind: 'include-file', includeId };
+	const functions = createIncludeFunctions(diagnosticSource, splitFunctionBlocks(normalizeSourceLines(source)));
 	const bindings: IncludeBindings = new Map();
 	for (const func of functions) {
 		if (func.export) {
 			bindings.set(func.export.publicName, func.export.publicName);
 		}
 	}
-	return expandIncludeFunctions(includeId, functions, bindings);
+	return expandIncludeFunctions(diagnosticSource, functions, bindings);
 }
 
 export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>, projectGroupPath = '') {
@@ -264,7 +268,11 @@ export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'cod
 
 		const [instruction, includeId, exportedName, localName, ...extraArgs] = trimmed.split(/\s+/);
 		if (instruction !== 'include' || !includeId || extraArgs.length > 0) {
-			throw includeError('include expects <path> [exportedName [localName]]', lineNumber, block.id, projectGroupPath);
+			throw includeError('include expects <path> [exportedName [localName]]', lineNumber, {
+				kind: 'block',
+				projectBlockId: block.id,
+				projectGroupPath,
+			});
 		}
 		for (const name of [exportedName, localName]) {
 			if (name !== undefined) {
@@ -345,6 +353,15 @@ function resolveProjectIncludeDeclarations(
 
 	for (const [includeId, declarations] of declarationsByIncludeId) {
 		const declaration = declarations[0]!;
+		const diagnosticSource: IncludeFileSource = {
+			kind: 'include-file',
+			includeId,
+			includeSite: {
+				projectBlockId: declaration.projectBlockId,
+				projectGroupPath,
+				lineNumber: declaration.lineNumber - 1,
+			},
+		};
 		const source = withCompilerStage('include loading', () => resolveInclude(includeId), {
 			kind: 'block',
 			projectBlockId: declaration.projectBlockId,
@@ -353,19 +370,22 @@ function resolveProjectIncludeDeclarations(
 		});
 		if (source === undefined) {
 			const { lineNumber, projectBlockId } = declarations[0]!;
-			throw includeError(`unresolved include "${includeId}"`, lineNumber, projectBlockId, projectGroupPath);
+			throw includeError(`unresolved include "${includeId}"`, lineNumber, {
+				kind: 'block',
+				projectBlockId,
+				projectGroupPath,
+			});
 		}
-		const functions = createIncludeFunctions(includeId, splitFunctionBlocks(normalizeSourceLines(source)));
+		const functions = createIncludeFunctions(diagnosticSource, splitFunctionBlocks(normalizeSourceLines(source)));
 		const publicNames = new Set(functions.flatMap(func => (func.export ? [func.export.publicName] : [])));
 		const bindings: IncludeBindings = new Map();
 		for (const { exportedName, localName, lineNumber, projectBlockId } of declarations) {
 			if (exportedName !== undefined && !publicNames.has(exportedName)) {
-				throw includeError(
-					`include "${includeId}" does not export "${exportedName}"`,
-					lineNumber,
+				throw includeError(`include "${includeId}" does not export "${exportedName}"`, lineNumber, {
+					kind: 'block',
 					projectBlockId,
-					projectGroupPath
-				);
+					projectGroupPath,
+				});
 			}
 			for (const publicName of exportedName === undefined ? publicNames : [exportedName]) {
 				const name = localName ?? publicName;
@@ -374,15 +394,14 @@ function resolveProjectIncludeDeclarations(
 					throw includeError(
 						`include "${includeId}" export "${publicName}" is already included as "${previousName}"`,
 						lineNumber,
-						projectBlockId,
-						projectGroupPath
+						{ kind: 'block', projectBlockId, projectGroupPath }
 					);
 				}
 				bindings.set(publicName, name);
 			}
 		}
 		includedFunctionBlocks.push(
-			...expandIncludeFunctions(includeId, functions, bindings).map(func => ({
+			...expandIncludeFunctions(diagnosticSource, functions, bindings).map(func => ({
 				...func,
 				projectBlockId: declarations[0]!.projectBlockId,
 				includeLineNumber: declarations[0]!.lineNumber - 1,

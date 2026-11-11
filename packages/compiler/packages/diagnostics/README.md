@@ -16,8 +16,11 @@ Pure syntax helpers return failure data for their caller to locate. Expected sou
 complete diagnostic through worker and include transports. Unexpected exceptions become explicit internal failures,
 retaining the stage, stack and any known source location. There are no empty-context or fabricated-row defaults.
 
-Locations distinguish document rows, block rows, project-scope rows, included source with its include site, and named
-project exposures. Hosts can navigate source diagnostics and present internal or unmappable failures persistently.
+Locations distinguish document rows, block rows, project-scope rows, include-file rows, included symbols with their
+include site, and named project exposures. Early include validation uses `include-file` with the file id and a row
+relative to that file. Its `includeSite` identifies the loading declaration when the file belongs to a project;
+standalone include parsing still retains file identity. Diagnostics inside an included symbol use a row relative to
+that symbol. Hosts can navigate source diagnostics and present internal or unmappable failures persistently.
 Inherited memory declarations retain their original source line and a separate `shapeLine` for module layout.
 
 Run the package's Nx `build`, `test` and `typecheck` targets from the repository root.

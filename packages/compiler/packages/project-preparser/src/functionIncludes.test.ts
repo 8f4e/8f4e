@@ -94,6 +94,18 @@ describe('include function expansion', () => {
 		);
 	});
 
+	it('keeps the file identity when standalone include syntax fails', () => {
+		expect(() =>
+			resolveFunctionIncludeSource('std/test', 'function helper\n#export first second\nfunctionEnd')
+		).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					location: { kind: 'include-file', includeId: 'std/test', lineNumber: 1 },
+				}),
+			})
+		);
+	});
+
 	it('rejects ambiguous mixed public/private overload calls', () => {
 		expect(() =>
 			resolveFunctionIncludeSource(

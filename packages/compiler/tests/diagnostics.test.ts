@@ -66,6 +66,54 @@ functionEnd`,
 		});
 	});
 
+	it.each([
+		{
+			name: 'invalid export syntax',
+			source: 'function first\n#export\nfunctionEnd\n\nfunction helper\n#export first second\nfunctionEnd',
+			lineNumber: 5,
+			domain: 'syntax',
+		},
+		{
+			name: 'duplicate exports',
+			source: 'function first\n#export\nfunctionEnd\n\nfunction helper\n#export\n#export\nfunctionEnd',
+			lineNumber: 6,
+			domain: 'include',
+		},
+		{
+			name: 'missing exports',
+			source: 'function helper\nfunctionEnd',
+			lineNumber: 0,
+			domain: 'include',
+		},
+		{
+			name: 'ambiguous calls',
+			source:
+				'function caller\n#export\ncall convert 1\nfunctionEnd int\nfunction convert\n#export\nparam int value\nfunctionEnd int\nfunction convert\nparam float value\nfunctionEnd float',
+			lineNumber: 2,
+			domain: 'include',
+		},
+	])('keeps include-file ownership during $name validation', async ({ source, lineNumber, domain }) => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group audio
+includes
+include helpers
+includesEnd
+groupEnd
+entryEnd`);
+		const group = getProjectGroups(project)[0];
+		expect(await diagnosticFor(project, { resolveInclude: () => source })).toMatchObject({
+			kind: 'source',
+			domain,
+			location: {
+				kind: 'include-file',
+				includeId: 'helpers',
+				lineNumber,
+				includeSite: { projectBlockId: group.includes[0].id, projectGroupPath: 'audio', lineNumber: 1 },
+			},
+		});
+	});
+
 	it('reports inherited declaration failures at the original prototype', async () => {
 		const project = parseProjectSource(`8f4e/v1
 prototype state

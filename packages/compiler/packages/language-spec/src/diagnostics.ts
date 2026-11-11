@@ -8,6 +8,16 @@ export type DiagnosticSource =
 	| { readonly kind: 'block'; readonly projectBlockId: number; readonly projectGroupPath: ProjectGroupPath }
 	| { readonly kind: 'scope'; readonly projectGroupPath: ProjectGroupPath }
 	| {
+			readonly kind: 'include-file';
+			readonly includeId: string;
+			/** Present when this file was loaded through a project declaration. */
+			readonly includeSite?: {
+				readonly projectBlockId: number;
+				readonly projectGroupPath: ProjectGroupPath;
+				readonly lineNumber: number;
+			};
+	  }
+	| {
 			readonly kind: 'include';
 			readonly includeId: string;
 			readonly symbolName: string;

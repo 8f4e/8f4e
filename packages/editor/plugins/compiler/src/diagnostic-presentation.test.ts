@@ -3,6 +3,45 @@ import { describe, expect, it } from 'vitest';
 import { diagnosticToCodeError } from './diagnostic-presentation';
 
 describe('diagnostic presentation', () => {
+	it('targets the include declaration for file-level validation failures', () => {
+		expect(
+			diagnosticToCodeError(
+				{
+					kind: 'source',
+					domain: 'syntax',
+					code: 2,
+					message: 'Too many arguments for #export.',
+					location: {
+						kind: 'include-file',
+						includeId: 'std/test',
+						lineNumber: 7,
+						includeSite: { projectBlockId: 23, projectGroupPath: 'audio', lineNumber: 2 },
+					},
+				},
+				createMockState()
+			)
+		).toEqual({
+			codeBlockId: 23,
+			lineNumber: 2,
+			message: 'std/test:8: Too many arguments for #export.',
+		});
+	});
+
+	it('retains the file and row when no project declaration is available', () => {
+		expect(
+			diagnosticToCodeError(
+				{
+					kind: 'source',
+					domain: 'syntax',
+					code: 2,
+					message: 'Too many arguments for #export.',
+					location: { kind: 'include-file', includeId: 'std/test', lineNumber: 7 },
+				},
+				createMockState()
+			)
+		).toEqual({ message: 'std/test:8: Too many arguments for #export.' });
+	});
+
 	it('targets an include declaration while retaining the included source in the message', () => {
 		expect(
 			diagnosticToCodeError(

@@ -1,5 +1,5 @@
 import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
-import type { ASTCache, ASTCacheEntry, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
+import type { ASTCache, ASTCacheEntry, CompilerASTLine, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
 
 export { createASTCache } from './cache';
 
@@ -47,6 +47,7 @@ function getASTCacheLookupResult<TAst>(
  * Compiles source into a validated source-block AST, using the optional cache when available.
  *
  * @param code - Source lines to process.
+ * @param source - Source owner attached to the returned AST and any syntax diagnostics.
  * @param cache - Optional compiler cache used to reuse parsed artifacts.
  * @param cacheKey - Optional cache key for the source block.
  * @returns Validated AST for the source block.
@@ -69,13 +70,26 @@ export function compileToAST(
 /** Cached syntax trees stay detached from each compilation's source ownership. */
 function bindSource(ast: ValidatedAST, diagnosticSource: DiagnosticSource): ValidatedAST {
 	if (diagnosticSource.kind === 'document') return ast;
-	const lines = new Map(ast.lines.map(line => [line, { ...line, diagnosticSource }]));
-	return Object.fromEntries(
-		Object.entries(ast).map(([key, value]) => [
-			key,
-			key === 'lines' ? ast.lines.map(line => lines.get(line)!) : (lines.get(value) ?? value),
-		])
-	) as ValidatedAST;
+	const boundLines = new Map(ast.lines.map(line => [line, { ...line, diagnosticSource }]));
+	const lines = ast.lines.map(line => boundLines.get(line)!);
+	const boundLine = <TLine extends CompilerASTLine>(line: TLine): TLine => boundLines.get(line) as TLine;
+	switch (ast.type) {
+		case 'module':
+			return { ...ast, lines, moduleLine: boundLine(ast.moduleLine) };
+		case 'constants':
+			return { ...ast, lines, constantsLine: boundLine(ast.constantsLine) };
+		case 'prototype':
+			return { ...ast, lines, prototypeLine: boundLine(ast.prototypeLine) };
+		case 'function':
+			return {
+				...ast,
+				lines,
+				functionLine: boundLine(ast.functionLine),
+				functionEndLine: boundLine(ast.functionEndLine),
+				...(ast.exportLine ? { exportLine: boundLine(ast.exportLine) } : {}),
+				...(ast.importLine ? { importLine: boundLine(ast.importLine) } : {}),
+			};
+	}
 }
 
 function parseSourceToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheKey?: string): ValidatedAST {

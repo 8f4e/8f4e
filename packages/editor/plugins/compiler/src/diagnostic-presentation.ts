@@ -18,6 +18,16 @@ export function diagnosticToCodeError(diagnostic: CompilerDiagnostic, state: Sta
 			codeBlockId: location.includeSite.projectBlockId,
 			lineNumber: location.includeSite.lineNumber,
 		};
+	if (location.kind === 'include-file') {
+		const fileMessage = `${location.includeId}:${location.lineNumber + 1}: ${message}`;
+		return location.includeSite
+			? {
+					message: fileMessage,
+					codeBlockId: location.includeSite.projectBlockId,
+					lineNumber: location.includeSite.lineNumber,
+				}
+			: { message: fileMessage };
+	}
 	if (location.kind === 'scope')
 		return { message, projectGroupPath: location.projectGroupPath, lineNumber: location.lineNumber };
 	const target = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject)({
