@@ -184,21 +184,21 @@ note
 ; @config textureRuntime.entry main
 noteEnd
 
-note handheldLcdColors
-; @pos -132 16
-; @config color.canvas #a3aa79
-; @config color.surface #c4c797
-; @config color.ink #28362a
-; @config color.primary #344c31
-; @config color.secondary #624a30
-; @config color.positive #385c37
-; @config color.warning #7c591f
-; @config color.negative #853e31
-; @config color.muted #4c5738
-; @config color.stroke rgba(48,65,37,0.4)
-; @config color.tertiary #4b563a
-; @config color.highlight #aa862d
-; @config color.detail #667741
+note radarRoomColors
+; @pos -132 13
+; @config color.canvas #071919
+; @config color.surface #0e2b29
+; @config color.ink #bfcec1
+; @config color.primary #72c699
+; @config color.secondary #d4b76c
+; @config color.positive #72c699
+; @config color.warning #d4b76c
+; @config color.negative #d57e66
+; @config color.muted #75968a
+; @config color.stroke rgba(114,198,153,0.26)
+; @config color.tertiary #89a897
+; @config color.highlight #e4ce8a
+; @config color.detail #4f997b
 noteEnd
 
 entry main

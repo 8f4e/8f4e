@@ -133,23 +133,6 @@ note
 ; @config textureRuntime.entry main
 noteEnd
 
-note radarRoomColors
-; @pos -118 30
-; @config color.canvas #071919
-; @config color.surface #0e2b29
-; @config color.ink #bfcec1
-; @config color.primary #72c699
-; @config color.secondary #d4b76c
-; @config color.positive #72c699
-; @config color.warning #d4b76c
-; @config color.negative #d57e66
-; @config color.muted #75968a
-; @config color.stroke rgba(114,198,153,0.26)
-; @config color.tertiary #89a897
-; @config color.highlight #e4ce8a
-; @config color.detail #4f997b
-noteEnd
-
 note
 ; @pos -118 15
 ; A fixed bottom-right cell starts the pattern.
@@ -158,6 +141,23 @@ note
 ;
 ; Move the rule slider while it scrolls.
 ; Earlier generations keep their history.
+noteEnd
+
+note plotterPaperColors
+; @pos -117 28
+; @config color.canvas #d8cbb4
+; @config color.surface #f0e5ce
+; @config color.ink #3f4038
+; @config color.primary #8a4434
+; @config color.secondary #3d6375
+; @config color.positive #546a43
+; @config color.warning #94661f
+; @config color.negative #a13f35
+; @config color.muted #6e6553
+; @config color.stroke rgba(88,69,47,0.38)
+; @config color.tertiary #6c6756
+; @config color.highlight #c49537
+; @config color.detail #8b8062
 noteEnd
 
 entry main
