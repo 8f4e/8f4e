@@ -8,18 +8,19 @@ Core has no compilation callback or built-in compilation effect.
 
 `state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
 toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
-Dragging advances it once on drop when the canonical left-to-right, top-to-bottom order of non-note blocks changes,
-including constants precedence and execution order inside nested project groups. It also advances when a drop changes
-resolved compiler configuration, including when moving a note changes which config directive wins.
+Dragging advances it once on drop when saving changed position directives, even when block order is preserved.
+This also covers constants precedence, execution order inside nested project groups, and which config directive wins.
 Group operations and multi-block paste advance it once after updating their inputs. The revision is monotonic across
 project loads and is not stored in project files.
 
-Selection, caret movement, navigation, favorites, and layout changes that preserve compiler inputs leave the revision
-unchanged. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
+Selection, caret movement, navigation, and layout changes without source edits leave the revision unchanged.
+Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state outside the source-edit helper.
 
-Config schema contributions can set `affectsCompilation: true` to mark their resolved root as a compiler input.
 `applyCodeBlockSourceEdits` emits `codeBlockSourcesChanged { codeBlocks }` to refresh source-derived state and directive
-diagnostics, then advances the revision once if either the source edit or a marked config root changed compiler inputs.
+diagnostics, then advances the revision once for the changed batch. All directive edits (including favorites and
+configuration), line insertions/deletions (including comments and blank lines), and changes to instruction positions
+invalidate compilation. The only exemption is an in-place change to the text of existing ordinary comment-only lines,
+with their positions unchanged. Directive continuation lines are directive source. Identical replacements are no-ops.
 
 Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
 without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the
@@ -29,11 +30,8 @@ plugin is installed.
 ## Published state and artifacts
 
 - `state.compiler.isCompiling` indicates compilation activity independently of the last accepted `state.compiler.result`.
-- `state.compiler.resultInputRevision` identifies the inputs of the last successful result, or is null before success.
+- `state.compiler.result.inputRevision` identifies the inputs of the last successful result, or is null before success.
   Source-line consumers compare it with `state.compilerInputRevision` to suppress outdated positions while edits compile.
-- `state.compiler.resultSourceCodeByBlockId` retains the exact module/function sources used by the accepted result,
-  including nested groups. Metadata-only edits can shift source positions without changing compiler inputs; consumers
-  compare these snapshots before using line metadata.
 - `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
 - `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
@@ -44,10 +42,16 @@ editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that
 together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
 The connectors plugin owns inherited declaration ordering, shape/paramShape labels, and connector presentation.
 
+`getCurrentCompiledLineForCodeBlock(block, state, sourceLineNumber = block.cursor.row)` supplies current parsed
+source and stack-analysis metadata to line-based views. It checks the accepted input revision and source owner,
+then looks up the requested compiler line number directly. Compiler line numbers remain authoritative;
+source-edit invalidation determines when compilation must refresh them. Views retain source-only documentation
+while a new compilation is pending. Stack-producers and tooltips share this accessor.
+
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays
-on the compiler getter. All compiler metadata is published atomically in one `state.compiler.result` replacement while
-`isCompiling` remains true. After metadata subscribers finish, `compiler.isCompiling` becomes false to resume runtimes.
+on the compiler getter. The input revision and all compiler metadata are published atomically
+in one `state.compiler.result` replacement while `isCompiling` remains true. After metadata subscribers finish, `compiler.isCompiling` becomes false to resume runtimes.
 `memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
 reloads its retained bytes into current targets before runtimes resume. Editor state stores no binary asset metadata.
 

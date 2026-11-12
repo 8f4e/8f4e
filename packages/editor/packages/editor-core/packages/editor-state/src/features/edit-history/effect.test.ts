@@ -70,11 +70,9 @@ describe('history tracking with real project mutations', () => {
 
 	function replaceLine(row: number, line: string) {
 		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) },
+		]);
 	}
 
 	function selectedBlockCode(): string[] {
@@ -252,7 +250,7 @@ describe('history tracking with real project mutations', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(loaded.code).toContain('; @pos 2 2');
-		expect(state.compilerInputRevision).toBe(compilerRevisionAfterLoad);
+		expect(state.compilerInputRevision).toBe(compilerRevisionAfterLoad + 1);
 		expect(state.historyStack).toHaveLength(1);
 
 		dispatch('undo');

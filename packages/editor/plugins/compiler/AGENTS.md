@@ -6,5 +6,5 @@
   before accepting artifacts or publishing diagnostics. Keep diagnostic reads detached and revision-aware.
 - Publish live artifacts and `compilationSucceeded` before atomically replacing `state.compiler.result`. Clear
   `isCompiling` after result subscribers have handled the memory plan so runtimes resume against current memory.
-- Publish raw errors as a contributor. Keep error presentation and layout in error-messages. Mark schemas
-  that change compiler inputs with `affectsCompilation`.
+- Publish raw errors as a contributor. Keep error presentation and layout in error-messages. Core's source-edit
+  helper invalidates compiler inputs for all directive edits, including configuration.

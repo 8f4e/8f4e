@@ -76,16 +76,27 @@ describe('favorites plugin', () => {
 		expect(test.block.code).toContain('; @favorite');
 	});
 
-	it('publishes one project change without announcing changed compilation inputs', () => {
+	it('publishes one project and compilation-input change when favoriting a block', () => {
 		const test = setup();
 		const onInputChanged = vi.fn();
 		test.events.on('compilationInputChanged', onInputChanged);
 		const revision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		expect(test.state.compilerInputRevision).toBe(revision);
+		expect(test.state.compilerInputRevision).toBe(revision + 1);
 		expect(test.state.projectChange.revision).toBe(projectRevision + 1);
-		expect(onInputChanged).not.toHaveBeenCalled();
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
+	});
+
+	it('announces compilation inputs when unfavoriting an inline directive without changing the line count', () => {
+		const test = setup(['module target', 'int value 1 ; @favorite', 'moduleEnd']);
+		const revision = test.state.compilerInputRevision;
+		const onInputChanged = vi.fn();
+		test.events.on('compilationInputChanged', onInputChanged);
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
+		expect(test.block.code).toEqual(['module target', 'int value 1', 'moduleEnd']);
+		expect(test.state.compilerInputRevision).toBe(revision + 1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
 	it('keeps favorite snapshots independent of later in-place source edits', async () => {

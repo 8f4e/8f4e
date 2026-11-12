@@ -48,31 +48,17 @@ describe('cached directive records', () => {
 			})
 		);
 		seen.length = 0;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[
-				{
-					codeBlock: block,
-					code: [
-						'note audio',
-						'; @pos 20 30',
-						'; @config export.fileName updated',
-						'; @config unknown value',
-						'noteEnd',
-					],
-				},
-			],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: block,
+				code: ['note audio', '; @pos 20 30', '; @config export.fileName updated', '; @config unknown value', 'noteEnd'],
+			},
+		]);
 		expect(seen.length).toBeGreaterThan(0);
 		for (const value of seen) expect(value).toEqual([20, 30, 'updated', 3]);
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] }],
-			{
-				affectsCompilation: false,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] },
+		]);
 		expect(state.editorConfig.export?.fileName).toBeUndefined();
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
@@ -106,11 +92,9 @@ describe('cached directive records', () => {
 		const block = audio();
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) },
+		]);
 		expect(seen.at(-1)).toEqual(['first', 'changed']);
 		events.dispatch('undo');
 		expect(matched(audio())[0].args).toEqual(['first']);
@@ -135,13 +119,9 @@ describe('cached directive records', () => {
 				if (codeBlock === block) seen.push(matched(codeBlock).flatMap(directive => directive.args));
 			})
 		);
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] }],
-			{
-				affectsCompilation: false,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] },
+		]);
 		expect(seen.at(-1)).toEqual(['edited']);
 		events.dispatch('goToParentProjectGroup');
 		events.dispatch('openProjectGroup', { codeBlock: group });

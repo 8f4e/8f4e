@@ -34,14 +34,12 @@ export function registerGroupActions(
 	};
 	const onRemove = ({ codeBlock }: BlockAction) => {
 		if (state.editorMode !== 'edit' || !getGroup(codeBlock.parsedDirectives)) return;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: removeDirective(codeBlock.code, 'group') }], {
-			affectsCompilation: false,
-		});
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: removeDirective(codeBlock.code, 'group') }]);
 	};
 	const onUngroup = ({ codeBlock }: BlockAction) => {
 		if (state.editorMode !== 'edit') return;
 		const edits = members(codeBlock).map(block => ({ codeBlock: block, code: removeDirective(block.code, 'group') }));
-		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: false });
+		applyCodeBlockSourceEdits({ store, events }, edits);
 	};
 	const onSetNonstick = ({ codeBlock, makeNonstick }: BlockAction & { makeNonstick: boolean }) => {
 		if (state.editorMode !== 'edit') return;
@@ -52,14 +50,14 @@ export function registerGroupActions(
 				return name ? (makeNonstick ? [name, 'nonstick'] : [name]) : args;
 			}),
 		}));
-		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: false });
+		applyCodeBlockSourceEdits({ store, events }, edits);
 	};
 	const onSkip = ({ codeBlock }: BlockAction) => {
 		if (state.editorMode !== 'edit') return;
 		const blocks = members(codeBlock).filter(block => block.blockType === 'module');
 		const allSkipped = blocks.every(block => block.code.some(isSkipExecutionDirective));
 		const edits = blocks.map(block => ({ codeBlock: block, code: setSkipExecution(block.code, !allSkipped).code }));
-		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, edits);
 	};
 	const onAlign = ({ codeBlock }: BlockAction) => {
 		if (state.editorMode !== 'edit') return;
@@ -84,7 +82,7 @@ export function registerGroupActions(
 			block.y = first.gridY * state.viewport.hGrid;
 			edits.push({ codeBlock: block, code: upsertDirective(block.code, 'pos', [String(x), String(first.gridY)]) });
 		}
-		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: false });
+		applyCodeBlockSourceEdits({ store, events }, edits);
 	};
 
 	events.on('copyGroupBlocks', onCopy);

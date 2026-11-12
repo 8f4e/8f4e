@@ -33,13 +33,33 @@ describe('keyboard editing', () => {
 		expect(test.state.projectChange.revision).toBe(before + 5);
 		expect(test.state.compilerInputRevision).toBe(compilerBefore + 5);
 	});
+	it('skips compilation for ordinary comment text but invalidates it when Enter adds a line', () => {
+		const test = setup(plugin);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: test.block, code: ['module main', '; explanation', 'push 1', 'drop', 'moduleEnd'] },
+		]);
+		test.block.cursor.row = 1;
+		test.block.cursor.col = test.block.code[1].length;
+		const revision = test.state.projectChange.revision;
+		const compilerRevision = test.state.compilerInputRevision;
+		const onInputChanged = vi.fn();
+		test.events.on('compilationInputChanged', onInputChanged);
+		test.key('x');
+		test.paste(' more');
+		expect(test.block.code[1]).toBe('; explanationx more');
+		expect(test.state.projectChange.revision).toBe(revision + 2);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(onInputChanged).not.toHaveBeenCalled();
+		test.key('Enter');
+		expect(test.block.code[3]).toBe('push 1');
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
+	});
 	it('moves the caret using visual tab columns without publishing a source change', () => {
 		const test = setup(plugin);
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] },
+		]);
 		test.block.cursor.row = 2;
 		test.block.cursor.col = 1;
 		const revision = test.state.projectChange.revision;

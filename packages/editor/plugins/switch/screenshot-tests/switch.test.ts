@@ -86,24 +86,20 @@ entryEnd`);
 	try {
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot();
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[
-				{
-					codeBlock,
-					code: [
-						'module controls',
-						'; @pos 4 2',
-						'int off 0',
-						'int on 1',
-						'push 0 ; @switch &off',
-						'drop ; @switch &on',
-						'moduleEnd',
-					],
-				},
-			],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock,
+				code: [
+					'module controls',
+					'; @pos 4 2',
+					'int off 0',
+					'int on 1',
+					'push 0 ; @switch &off',
+					'drop ; @switch &on',
+					'moduleEnd',
+				],
+			},
+		]);
 		// Source edits resolve project config again; reapply this drawing fixture's explicit palette.
 		store.set('editorConfig.color', colors);
 		renderer.renderFrame();

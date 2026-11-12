@@ -102,10 +102,9 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		compilerInputRevision: 0,
 		projectChange: { revision: 0, kind: 'replace' },
 		compiler: {
-			resultInputRevision: null,
-			resultSourceCodeByBlockId: {},
 			isCompiling: false,
 			result: {
+				inputRevision: null,
 				compiledModules: {},
 				memoryPlan: {
 					modules: {},

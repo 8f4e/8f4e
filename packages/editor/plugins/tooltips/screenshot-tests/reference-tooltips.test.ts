@@ -3,6 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type GlyphIds, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
+import { createCompilerResult } from '../src/__tests__/compilerResult';
 import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
 
@@ -74,8 +75,8 @@ entryEnd`);
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	store.set('editorMode', 'edit');
-	store.set('compiler.result', compiled);
 	store.set('initialProjectState', project);
+	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inspect')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);
 	store.set(

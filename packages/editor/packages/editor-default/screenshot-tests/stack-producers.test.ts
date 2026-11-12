@@ -50,9 +50,10 @@ entryEnd`);
 		const visible = editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'example');
 		store.set('codeBlockRendering.currentProject.blocks', visible);
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'example')!;
-		store.set('compiler.result', compiled);
-		store.set('compiler.resultSourceCodeByBlockId', { [block.creationIndex]: [...block.code] });
-		store.set('compiler.resultInputRevision', editor.state.compilerInputRevision);
+		store.set('compiler.result', {
+			...compiled,
+			inputRevision: editor.state.compilerInputRevision,
+		});
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 11);
 		editor.renderFrame();

@@ -1,6 +1,5 @@
 import type { CodeBlockGraphicData, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import compareCodeBlocksByPosition from '../../../../pureHelpers/compareCodeBlocksByPosition';
 import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import { applyCodeBlockSourceEdits } from '../../sourceEdits';
@@ -21,13 +20,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 	// and cleared on pointerup, so concurrent drags are not a concern (only one drag at a time).
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
-	let orderBeforeDrag: CodeBlockGraphicData[] = [];
-
-	function getCompilationOrder() {
-		return state.codeBlockRendering.currentProject.blocks
-			.filter(block => block.blockType !== 'note')
-			.toSorted(compareCodeBlocksByPosition);
-	}
 
 	function onPointerDown(event: InternalPointerEvent) {
 		const { x, y, altKey } = event;
@@ -42,7 +34,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			store.set('codeBlockRendering.selectedCodeBlock', undefined);
 			dragSet = [];
 			didDrag = false;
-			orderBeforeDrag = [];
 			return;
 		}
 		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.draggedCodeBlock);
@@ -55,7 +46,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		};
 		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
 		dragSet = dragTargets.targets;
-		orderBeforeDrag = getCompilationOrder();
 
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
@@ -69,7 +59,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			state.codeBlockRendering.draggedCodeBlock = undefined;
 			dragSet = [];
 			didDrag = false;
-			orderBeforeDrag = [];
 		}
 	}
 
@@ -97,7 +86,6 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		if (!didDrag) {
 			state.codeBlockRendering.draggedCodeBlock = undefined;
 			dragSet = [];
-			orderBeforeDrag = [];
 			return;
 		}
 
@@ -155,16 +143,11 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });
 		}
 
-		const orderAfterDrag = getCompilationOrder();
-		const orderChanged =
-			orderBeforeDrag.length !== orderAfterDrag.length ||
-			orderBeforeDrag.some((block, index) => block !== orderAfterDrag[index]);
-		applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: orderChanged });
+		applyCodeBlockSourceEdits({ store, events }, edits);
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		dragSet = [];
 		didDrag = false;
-		orderBeforeDrag = [];
 	}
 
 	events.on('pointerdown', onPointerDown);

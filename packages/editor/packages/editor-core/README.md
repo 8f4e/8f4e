@@ -320,11 +320,12 @@ API revisions, history, and session persistence share `state.projectChange`, a r
 editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation })` from
+Source-mutating plugin actions use `applyCodeBlockSourceEdits({ store, events }, edits)` from
 `@8f4e/editor-state`. Each edit supplies `{ codeBlock, code }` with the replacement source array. The helper skips
 unchanged source, emits `codeBlockSourcesChanged { codeBlocks }` for the changed batch, and publishes one project change
-after core has refreshed its derived metadata and layout. Source changes do not modify the selected block. Set
-`affectsCompilation: false` for metadata such as positions, favorites, and grouping; use `true` for compiler inputs.
+after core has refreshed its derived metadata and layout. Source changes do not modify the selected block. The helper
+also advances compiler inputs once for directive edits, line insertions/deletions, reordered instructions, and other
+source changes. Only changes confined to existing ordinary comment text at the same line positions skip compilation.
 `deleteCodeBlocks(store, blocks)` removes blocks from the visible project slice in place, clears references to
 deleted blocks, and publishes one project and compiler-input change. Both helpers return whether anything changed.
 Callers own edit-mode checks and source transformations; they do not separately publish the same operation.

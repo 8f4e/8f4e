@@ -16,7 +16,7 @@ export const stackProducersPlugin: EditorPlugin = {
 		};
 		const selectors = [
 			'codeBlockRendering.selectedCodeBlock',
-			'compiler',
+			'compiler.result',
 			'compilerInputRevision',
 			'featureFlags.codeLineSelection',
 		] as const;
@@ -24,11 +24,7 @@ export const stackProducersPlugin: EditorPlugin = {
 		const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
-		const onSourcesChanged = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
-			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
-		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
 		const unregister = drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
 			if (codeBlock !== selectedBlock) return;
 			for (const y of rows) {
@@ -40,7 +36,6 @@ export const stackProducersPlugin: EditorPlugin = {
 			unregister();
 			for (const selector of selectors) store.unsubscribe(selector, refresh);
 			events.off('codeBlockLayoutsChanged', onLayoutsChanged);
-			events.off('codeBlockSourcesChanged', onSourcesChanged);
 			selectedBlock = undefined;
 			rows = [];
 		};

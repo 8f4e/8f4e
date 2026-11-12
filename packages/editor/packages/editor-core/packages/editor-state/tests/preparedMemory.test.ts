@@ -35,7 +35,7 @@ async function setup(type = 'float') {
 	const project = parseProjectSource(source(type));
 	const compiled = await compileProject(project);
 	const state = createMockState();
-	state.compiler.result = compiled;
+	state.compiler.result = { ...state.compiler.result, ...compiled };
 	state.callbacks.getWordFromMemory = vi.fn();
 	const pages = Math.max(1, Math.ceil(compiled.requiredMemoryBytes / 65536));
 	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
@@ -156,7 +156,7 @@ describe('prepared memory bindings', () => {
 			cache: compiled.cache,
 			startingMemoryAllocationUnitAddress: 32,
 		});
-		state.compiler.result = replacement;
+		state.compiler.result = { ...state.compiler.result, ...replacement };
 		const next = prepareBuffer(state, scope, 'fixed', 'count(fixed)')!;
 		expect(next.samples.elementIndex).not.toBe(previous.samples.elementIndex);
 		expect(next.target.memory).toBe(replacement.memoryPlan.modules.storage.memory.samples);

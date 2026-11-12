@@ -11,7 +11,6 @@ export const recompileDebounceSchemaContribution: EditorConfigSchemaContribution
 
 export const compilerEditorConfigSchemaContribution: EditorConfigSchemaContribution = {
 	root: 'compiler',
-	affectsCompilation: true,
 	defaults: { memoryGuards: { enabled: true } },
 	schema: {
 		type: 'object',

@@ -86,6 +86,7 @@ async function setup({
 		hasCompilerMemory = true;
 		store.set('compiler.isCompiling', true);
 		store.set('compiler.result', {
+			...state.compiler.result,
 			compiledFunctions,
 			compiledModules,
 			projectMemoryExposuresByGroupPath,
@@ -161,15 +162,13 @@ async function setup({
 		editTextures: (directives: string) => {
 			const code = block.code.filter(line => !line.includes('@texture'));
 			code.splice(2, 0, ...directives.split('\n').filter(Boolean));
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
 		},
 		editConfig: (source: string) => {
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'config')!;
-			applyCodeBlockSourceEdits(
-				{ store, events },
-				[{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }],
-				{ affectsCompilation: false }
-			);
+			applyCodeBlockSourceEdits({ store, events }, [
+				{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] },
+			]);
 		},
 		release: async () =>
 			resolvePending(

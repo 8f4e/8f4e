@@ -1,5 +1,5 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { getCompiledFunctionForCodeBlock, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
+import { getCompiledModuleForCodeBlock, getCurrentCompiledLineForCodeBlock } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getSelectedLineTooltipContent } from '../helpers/content';
@@ -26,18 +26,15 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 			selectedCodeBlock.name && selectedCodeBlock.blockType !== 'function'
 				? getCompiledModuleForCodeBlock(selectedCodeBlock, state)
 				: undefined;
-		const compilation =
-			selectedCodeBlock.name && selectedCodeBlock.blockType === 'function'
-				? getCompiledFunctionForCodeBlock(selectedCodeBlock, state)
-				: module;
+		const compiledLine = getCurrentCompiledLineForCodeBlock(selectedCodeBlock, state);
 		const memoryTarget =
 			module && source.declaration
 				? resolveMemoryTarget(state, getCodeBlockMemoryScope(selectedCodeBlock), source.declaration.id)
 				: undefined;
 		const content = getSelectedLineTooltipContent({
 			source,
-			parsedLine: compilation?.ast.lines.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
-			stackAnalysisLine: compilation?.stackAnalysis?.find(line => line.lineNumber === selectedCodeBlock.cursor.row),
+			parsedLine: compiledLine?.parsedLine,
+			stackAnalysisLine: compiledLine?.stackAnalysisLine,
 			target: memoryTarget,
 			moduleExecutionOrder: source.sourceInstruction?.instruction === 'module' && module ? module.index + 1 : undefined,
 		});
@@ -48,7 +45,8 @@ export default function createTooltip(store: EditorPluginContext['store'], event
 		'codeBlockRendering.selectedCodeBlock',
 		'codeBlockRendering.currentProject.blocks',
 		'featureFlags.codeLineSelection',
-		'compiler',
+		'compiler.result',
+		'compilerInputRevision',
 		'viewport.vGrid',
 		'viewport.hGrid',
 	] as const;

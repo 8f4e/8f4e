@@ -108,7 +108,7 @@ describe('grouping plugin', () => {
 		expect(other.x).toBe(otherX);
 		expect(first.code).toContain(`; @pos ${first.gridX} ${first.gridY}`);
 		expect(test.state.projectChange.revision).toBe(revision + 1);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
 	it.each(editingActions)('does not edit in view mode: %s', async action => {
@@ -191,7 +191,7 @@ describe('grouping plugin', () => {
 	});
 
 	it.each(['removeFromGroupDirective', 'ungroupByName', 'setGroupNonstick'])(
-		'publishes one metadata edit and no compiler change: %s',
+		'publishes one project and compilation-input change: %s',
 		action => {
 			const test = setup();
 			const first = test.block('first');
@@ -199,7 +199,7 @@ describe('grouping plugin', () => {
 			const compilerRevision = test.state.compilerInputRevision;
 			test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
 			expect(test.state.projectChange.revision).toBe(revision + 1);
-			expect(test.state.compilerInputRevision).toBe(compilerRevision);
+			expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 			test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
 			expect(test.state.projectChange.revision).toBe(revision + 1);
 			if (action === 'removeFromGroupDirective') expect(test.block('second').code).toContain('; @group audio');
@@ -261,7 +261,7 @@ describe('grouping plugin', () => {
 		expect(second.code).toContain(`; @pos ${x} ${first.gridY}`);
 		expect(test.block('other').code).toEqual(otherCode);
 		expect(test.state.projectChange.revision).toBe(revision + 1);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('alignGroupBlocksInRow', { codeBlock: second });
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 	});

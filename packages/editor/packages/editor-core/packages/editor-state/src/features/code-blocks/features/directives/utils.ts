@@ -72,6 +72,15 @@ export function parseDirectiveLineRecords(line: string): ParsedDirectiveLineReco
 	return parseDirectiveCommentSegment(line.slice(commentStart + 1), true);
 }
 
+/** Ordinary comment text excludes directives and their continuation syntax. */
+export function isOrdinaryCommentLine(line: string): boolean {
+	return (
+		/^\s*;/.test(line) &&
+		parseDirectiveContinuationArgs(line) === undefined &&
+		parseDirectiveLineRecords(line).length === 0
+	);
+}
+
 export function parseDirectiveRecords(code: string[]): ParsedDirectiveRecord[] {
 	const records: ParsedDirectiveRecord[] = [];
 	let previousRecord: ParsedDirectiveRecord | undefined;

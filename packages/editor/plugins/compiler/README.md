@@ -29,8 +29,9 @@ plugin receives its worker and include dependencies directly.
 
 Core emits `compilationInputChanged` after `compilerInputRevision` advances. Source edits, project loading and
 undo/redo, block insertion/removal, execution changes, regenerated environment constants, and saved control defaults
-advance that revision after their derived state is updated. Visual edits that preserve compilation inputs and
-navigation leave the revision unchanged.
+advance that revision after their derived state is updated. Directive edits and source-line insertions, deletions,
+or reordering always invalidate compilation. In-place ordinary comment text edits, navigation, and layout changes
+without source edits leave the revision unchanged.
 
 The plugin listens to that event, debounces it, and serializes the latest root code-block tree, including nested
 projects. The default delay is 500ms; projects can set `; @config recompileDebounceDelay 120`. The plugin contributes an integer schema with a minimum of zero through

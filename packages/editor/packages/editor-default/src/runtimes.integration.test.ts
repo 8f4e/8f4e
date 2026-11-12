@@ -84,13 +84,9 @@ function setup() {
 	});
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
 	const edit = (from: string, to: string) =>
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: block.code.map(line => line.replace(from, to)) }],
-			{
-				affectsCompilation: true,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: block, code: block.code.map(line => line.replace(from, to)) },
+		]);
 	const compile = () => {
 		store.set('compiler.isCompiling', true);
 		memory = new WebAssembly.Memory({ initial: 1 });

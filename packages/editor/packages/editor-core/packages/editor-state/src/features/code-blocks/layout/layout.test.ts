@@ -90,9 +90,7 @@ describe('independent layout contributions', () => {
 		const calls = calculated.mock.calls.length;
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 		expect(calculated).toHaveBeenCalledTimes(calls);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }]);
 		expect(block.gaps.size).toBe(0);
 		expect(calculated).toHaveBeenLastCalledWith(block.height, 0);
 		const revision = state.projectChange.revision;

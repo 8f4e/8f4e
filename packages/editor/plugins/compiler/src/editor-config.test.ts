@@ -121,18 +121,16 @@ describe('compiler configuration directives', () => {
 
 		const codeBlock = store.getState().codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
 		const revision = store.getState().compilerInputRevision;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] }],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] },
+		]);
 		expect(store.getState().compilerInputRevision).toBe(revision + 1);
 		await vi.advanceTimersByTimeAsync(0);
 		expect(worker.postedMessages).toHaveLength(2);
 		expect(worker.postedMessages[1]).toHaveProperty('payload.compilerOptions', defaultOptions);
 	});
 
-	it.each([false, true])('announces a config edit once after its diagnostics settle (%s)', affectsCompilation => {
+	it('announces a config edit once after its diagnostics settle', () => {
 		const { store, events, load } = setup();
 		load(
 			undefined,
@@ -144,9 +142,7 @@ describe('compiler configuration directives', () => {
 		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
 		events.on('compilationInputChanged', errorsAtRevision);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: ['note config', 'noteEnd'] }], {
-			affectsCompilation,
-		});
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
 		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);
 	});
 

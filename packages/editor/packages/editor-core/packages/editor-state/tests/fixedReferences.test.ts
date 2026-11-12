@@ -37,7 +37,7 @@ entryEnd`;
 async function setup() {
 	const compiled = await compileProject(parseProjectSource(source()));
 	const state = createMockState();
-	state.compiler.result = compiled;
+	state.compiler.result = { ...state.compiler.result, ...compiled };
 	state.callbacks.getWordFromMemory = vi.fn(() => 0);
 	return { state, compiled };
 }
@@ -137,7 +137,7 @@ moduleEnd
 entryEnd`)
 		);
 		const state = createMockState();
-		state.compiler.result = compiled;
+		state.compiler.result = { ...state.compiler.result, ...compiled };
 		const access = prepareMemoryAccess(state, { kind: 'module', moduleId: 'audio' }, 'buffer')!;
 		expect(prepareAddressedRead(access)?.spec).toMatchObject({ valueType, elementByteSize });
 	});
@@ -146,7 +146,7 @@ entryEnd`)
 		const { state, compiled } = await setup();
 		const previous = resolveMemoryTarget(state, scope, 'buffer')!;
 		const replacement = await compileProject(parseProjectSource(source('int padding')), { cache: compiled.cache });
-		state.compiler.result = replacement;
+		state.compiler.result = { ...state.compiler.result, ...replacement };
 		const next = resolveMemoryTarget(state, scope, 'buffer')!;
 		expect(next.memory.byteAddress).not.toBe(previous.memory.byteAddress);
 		expect(next.memory).toBe(replacement.compiledModules['audio/sink'].referenceSlots.buffer.targetMemory);
