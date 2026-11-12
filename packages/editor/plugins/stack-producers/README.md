@@ -29,5 +29,6 @@ The plugin registers a generic text-background drawer. Code rendering invokes it
 and below the selected-line fill and source text, regardless of plugin installation order. Disposal removes
 all subscriptions, event listeners, and the drawer.
 
-Run `npx nx run @8f4e/editor-plugin-stack-producers:test|typecheck` and
-`npx nx run @8f4e/editor-plugin-stack-producers:test:screenshot`.
+Run `npx nx run @8f4e/editor-plugin-stack-producers:test|typecheck` for tests against core services and a draw mock,
+using real compiler reports. Combined rendering and screenshot coverage lives in
+`npx nx run @8f4e/editor-default:test:screenshot`.

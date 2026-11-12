@@ -2,8 +2,8 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { stackProducersPlugin } from '@8f4e/editor-plugin-stack-producers';
 import { expect, test } from 'vitest';
-import { stackProducersPlugin } from '../src/index';
 
 test('highlights immediate producers above nested shading and below instruction text', async () => {
 	const project = parseProjectSource(`8f4e/v1
