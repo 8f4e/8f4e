@@ -1,0 +1,81 @@
+function storeBitAt2D
+#export
+#impure
+; Writes an MSB-first packed pixel.
+; Rows occupy ceil(width/8) bytes.
+; Zero clears; nonzero sets the bit.
+; Other bits and padding are kept.
+; Out-of-bounds writes do nothing.
+; Dimensions must be non-negative;
+; the buffer must hold all rows.
+param int8u* buffer
+param int width
+param int height
+param int x
+param int y
+param int value
+
+local int mask
+
+push x
+push 0
+greaterOrEqual
+push x
+push width
+lessThan
+and
+push y
+push 0
+greaterOrEqual
+and
+push y
+push height
+lessThan
+and
+if
+; Advance to the containing byte.
+push buffer
+push y
+push width
+push 1
+sub
+push 8
+div
+push 1
+add
+mul
+push x
+push 3
+shiftRightUnsigned
+add
+add
+localSet buffer
+
+push 1
+push 7
+push x
+push 7
+and
+sub
+shiftLeft
+localSet mask
+
+push buffer
+push buffer
+load8u
+push mask
+push -1
+xor
+and
+
+push value
+if
+push mask
+else
+push 0
+ifEnd int
+or
+store
+ifEnd
+
+functionEnd

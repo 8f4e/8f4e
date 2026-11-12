@@ -61,3 +61,24 @@ perform IO and carry `#impure`; coordinate conversion is pure.
 Use the built-in [fill instruction](../../docs/instructions/memory.md#fill) to initialize byte ranges directly.
 Its stack order is destination address, byte value, then byte count. It uses WebAssembly `memory.fill` and repeats
 the low eight bits of the value.
+
+## Packed binary grids
+
+These helpers address pixels in the texture runtime's `1bit` layout: pixels run from the most-significant bit to
+the least-significant bit of each byte, and each row occupies `ceil(width / 8)` bytes. Dimensions are pixel counts,
+must be non-negative, and require a buffer holding `ceil(width / 8) * height` bytes.
+
+| Include | Signature | Behavior |
+| --- | --- | --- |
+| `std/memory/loadBitAt2D` | `(buffer, width, height, x, y) -> value` | Reads a pixel as 0 or 1; coordinates outside the grid return zero. |
+| `std/memory/storeBitAt2D` | `(buffer, width, height, x, y, value)` | Zero clears a pixel and nonzero sets it; coordinates outside the grid do nothing. |
+
+Both helpers accept `int8u*` buffers and carry `#impure`. Pixel writes preserve every other bit, including unused
+bits at the end of a row. Padding bits are outside the grid and cannot be addressed through these helpers.
+
+## Bit fields
+
+`std/bitwise/extractBits` accepts `(word, offset, count)` and returns the selected bits in the low bits of an integer.
+Offsets count from the least-significant bit. Callers provide `0 <= count <= 32` and `0 <= offset <= 32 - count`.
+A count of zero returns zero; a count of 32 returns the original word, including its signed integer representation.
+The function is pure and uses an unsigned right shift for fields narrower than 32 bits.

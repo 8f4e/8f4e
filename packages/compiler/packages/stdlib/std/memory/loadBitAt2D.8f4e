@@ -1,0 +1,60 @@
+function loadBitAt2D
+#export
+#impure
+; Reads an MSB-first packed pixel.
+; Rows occupy ceil(width/8) bytes.
+; Out-of-bounds pixels return zero.
+; Dimensions must be non-negative;
+; the buffer must hold all rows.
+param int8u* buffer
+param int width
+param int height
+param int x
+param int y
+
+push x
+push 0
+greaterOrEqual
+push x
+push width
+lessThan
+and
+push y
+push 0
+greaterOrEqual
+and
+push y
+push height
+lessThan
+and
+if
+push buffer
+push y
+push width
+push 1
+sub
+push 8
+div
+push 1
+add
+mul
+push x
+push 3
+shiftRightUnsigned
+add
+add
+load8u
+
+push 7
+push x
+push 7
+and
+sub
+shiftRightUnsigned
+push 1
+and
+else
+push 0
+ifEnd int
+
+functionEnd int

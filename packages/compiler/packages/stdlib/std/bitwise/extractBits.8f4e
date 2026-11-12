@@ -1,0 +1,28 @@
+function extractBits
+#export
+; Extracts count bits, starting at
+; the least-significant-bit offset.
+; Requires 0 <= count <= 32 and
+; 0 <= offset <= 32-count.
+; A count of zero returns zero.
+param int word
+param int offset
+param int count
+
+push count
+if
+push word
+push offset
+shiftRightUnsigned
+
+push -1
+push 32
+push count
+sub
+shiftRightUnsigned
+and
+else
+push 0
+ifEnd int
+
+functionEnd int

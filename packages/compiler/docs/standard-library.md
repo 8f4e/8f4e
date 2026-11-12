@@ -25,6 +25,7 @@ include std/math/trig/saw
 include std/math/trig/sine
 include std/math/trig/triangle
 include std/bitwise/extractBit
+include std/bitwise/extractBits
 include std/bitwise/extractByte
 include std/bitwise/extractNibble
 include std/events/gateToTrigger
@@ -36,9 +37,11 @@ include std/random/xorshift
 include std/memory/addAt
 include std/memory/advancePointer
 include std/memory/loadAt
+include std/memory/loadBitAt2D
 include std/memory/nearestValue
 include std/memory/readInterpolated
 include std/memory/storeAt
+include std/memory/storeBitAt2D
 include std/memory/wrapPointer
 include std/stack/dup
 include std/stack/swap
@@ -343,6 +346,37 @@ moduleEnd
 entryEnd
 ```
 
+## `std/memory/loadBitAt2D`
+
+Provides `loadBitAt2D`, which reads a pixel from a packed binary grid as `0` or `1`.
+
+Available overloads:
+
+- `loadBitAt2D(int8u* buffer, int width, int height, int x, int y) -> int`
+
+Pixels are stored in the texture runtime's `1bit` layout: the leftmost pixel occupies the most-significant bit of
+each byte, and every row starts on a byte boundary. A row occupies `ceil(width / 8)` bytes; unused bits at its end
+are padding. Coordinates outside the pixel dimensions return zero, including coordinates that fall on padding bits.
+
+Dimensions must be non-negative, and the buffer must hold `ceil(width / 8) * height` bytes. The helper performs
+memory IO and carries `#impure`.
+
+Example:
+
+```8f4e
+includes
+include std/memory/loadBitAt2D
+includesEnd
+
+entry test
+module packedPixelExample
+int8u[] pixels 2 0x80 0x40
+call loadBitAt2D &pixels 10 1 9 0
+; stack: 1
+moduleEnd
+entryEnd
+```
+
 ## `std/memory/nearestValue`
 
 Provides `nearestValue`, which scans a buffer and returns the element whose value is closest to the supplied value. It returns the value itself, not its index or address. The buffer is read without being modified, and it does not need to be sorted.
@@ -462,6 +496,39 @@ push 2
 push 99
 call storeAt
 ; buffer[2] is 99
+moduleEnd
+entryEnd
+```
+
+## `std/memory/storeBitAt2D`
+
+Provides `storeBitAt2D`, which sets or clears one pixel in a packed binary grid.
+
+Available overloads:
+
+- `storeBitAt2D(int8u* buffer, int width, int height, int x, int y, int value)`
+
+The layout matches `loadBitAt2D`: pixels are MSB first, with `ceil(width / 8)` bytes per row. A zero value clears
+the pixel; any nonzero value sets it. Writes preserve neighboring pixels and unused padding bits. Coordinates
+outside the pixel dimensions do nothing, including coordinates on padding bits.
+
+Dimensions must be non-negative, and the buffer must hold `ceil(width / 8) * height` bytes. The helper performs
+memory IO and carries `#impure`.
+
+Example:
+
+```8f4e
+includes
+include std/memory/storeBitAt2D
+includesEnd
+
+entry test
+module packedPixelExample
+int8u[] pixels 4 0 0x3F 0x80 0x15
+call storeBitAt2D &pixels 10 2 9 0 1
+; pixels[1] is now 0x7F; padding is preserved.
+call storeBitAt2D &pixels 10 2 0 1 0
+; pixels[2] is now zero.
 moduleEnd
 entryEnd
 ```
@@ -850,6 +917,33 @@ push 0b10100100
 push 2
 call extractBit
 ; stack: 1
+moduleEnd
+entryEnd
+```
+
+## `std/bitwise/extractBits`
+
+Provides `extractBits`, which extracts a bit field from a 32-bit integer into the low bits of the result.
+
+Available overloads:
+
+- `extractBits(int word, int offset, int count) -> int`
+
+Offsets count from the least-significant bit. Callers provide `0 <= count <= 32` and `0 <= offset <= 32 - count`.
+A count of zero returns zero, and a count of 32 returns the original word with its signed integer representation.
+Narrower fields are extracted with an unsigned shift and return non-negative integers. The helper is pure.
+
+Example:
+
+```8f4e
+includes
+include std/bitwise/extractBits
+includesEnd
+
+entry test
+module extractBitsExample
+call extractBits 0x89ABCDEF 4 12
+; stack: 0xCDE
 moduleEnd
 entryEnd
 ```

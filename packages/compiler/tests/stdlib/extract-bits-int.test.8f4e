@@ -1,0 +1,46 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/bitwise/extractBits
+includesEnd
+
+entry test
+module extractBitsAssertions
+; Fields can cross byte boundaries.
+call extractBits 0x89ABCDEF 4 12
+assertEqual 0xCDE
+call extractBits 0x89ABCDEF 8 8
+assertEqual 0xCD
+call extractBits 0xDA 1 3
+assertEqual 5
+call extractBits 0x89ABCDEF 28 4
+assertEqual 8
+call extractBits 0x80000000 31 1
+assertEqual 1
+call extractBits 0x80000000 0 31
+assertEqual 0
+call extractBits -1 0 31
+assertEqual 2147483647
+call extractBits -1 1 31
+assertEqual 2147483647
+
+; Empty and full-width fields must
+; not wrap Wasm's shift counts.
+call extractBits -1 0 0
+assertEqual 0
+call extractBits -1 32 0
+assertEqual 0
+call extractBits -1 0 32
+assertEqual -1
+call extractBits 123456789 0 32
+assertEqual 123456789
+call extractBits 0 0 32
+assertEqual 0
+call extractBits 0 7 19
+assertEqual 0
+moduleEnd
+entryEnd

@@ -1,0 +1,90 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/loadBitAt2D
+includesEnd
+
+entry test
+module paddedRows
+; Ten pixels occupy two bytes per
+; row. Padding deliberately has
+; nonzero bits to expose bad bounds.
+int8u[] buffer 4 0xA5 0xBF 0x5A 0x7F
+
+call loadBitAt2D &buffer 10 2 0 0
+assertEqual 1
+call loadBitAt2D &buffer 10 2 1 0
+assertEqual 0
+call loadBitAt2D &buffer 10 2 2 0
+assertEqual 1
+call loadBitAt2D &buffer 10 2 7 0
+assertEqual 1
+call loadBitAt2D &buffer 10 2 8 0
+assertEqual 1
+call loadBitAt2D &buffer 10 2 9 0
+assertEqual 0
+call loadBitAt2D &buffer 10 2 0 1
+assertEqual 0
+call loadBitAt2D &buffer 10 2 1 1
+assertEqual 1
+call loadBitAt2D &buffer 10 2 7 1
+assertEqual 0
+call loadBitAt2D &buffer 10 2 8 1
+assertEqual 0
+call loadBitAt2D &buffer 10 2 9 1
+assertEqual 1
+
+; Pixel bounds exclude padding,
+; other rows, and neighboring data.
+call loadBitAt2D &buffer 10 2 -1 1
+assertEqual 0
+call loadBitAt2D &buffer 10 2 10 0
+assertEqual 0
+call loadBitAt2D &buffer 10 2 16 0
+assertEqual 0
+call loadBitAt2D &buffer 10 2 0 -1
+assertEqual 0
+call loadBitAt2D &buffer 10 2 0 2
+assertEqual 0
+call loadBitAt2D &buffer 10 2 -2147483648 0
+assertEqual 0
+call loadBitAt2D &buffer 10 2 2147483647 2147483647
+assertEqual 0
+call loadBitAt2D &buffer 0 2 0 0
+assertEqual 0
+call loadBitAt2D &buffer 10 0 0 0
+assertEqual 0
+moduleEnd
+
+module alignedRows
+; Byte-aligned rows must not gain
+; an extra padding byte.
+int8u[] buffer 2 0x81 0x42
+call loadBitAt2D &buffer 8 2 0 0
+assertEqual 1
+call loadBitAt2D &buffer 8 2 7 0
+assertEqual 1
+call loadBitAt2D &buffer 8 2 0 1
+assertEqual 0
+call loadBitAt2D &buffer 8 2 1 1
+assertEqual 1
+call loadBitAt2D &buffer 8 2 6 1
+assertEqual 1
+moduleEnd
+
+module singlePixelRows
+int8u[] buffer 3 0xFF 0x7F 0x80
+call loadBitAt2D &buffer 1 3 0 0
+assertEqual 1
+call loadBitAt2D &buffer 1 3 0 1
+assertEqual 0
+call loadBitAt2D &buffer 1 3 0 2
+assertEqual 1
+call loadBitAt2D &buffer 1 3 1 0
+assertEqual 0
+moduleEnd
+entryEnd

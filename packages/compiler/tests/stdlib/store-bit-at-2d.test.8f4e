@@ -1,0 +1,118 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/storeBitAt2D
+includesEnd
+
+entry test
+module paddedRows
+; The first and last bytes guard
+; the four-byte 10x2 framebuffer.
+int8u[] storage 6 0x66 0x55 0x2A 0xAA 0x95 0x99
+int8u* buffer &storage
+push &buffer
+push buffer
+add 1
+store
+
+; Set and clear both ends of a byte.
+call storeBitAt2D buffer 10 2 0 0 1
+push buffer
+load8u
+assertEqual 0xD5
+call storeBitAt2D buffer 10 2 7 0 0
+push buffer
+load8u
+assertEqual 0xD4
+call storeBitAt2D buffer 10 2 0 0 0
+push buffer
+load8u
+assertEqual 0x54
+call storeBitAt2D buffer 10 2 7 0 -5
+push buffer
+load8u
+assertEqual 0x55
+
+; Cross byte and row boundaries
+; while preserving padding bits.
+call storeBitAt2D buffer 10 2 8 0 2
+call storeBitAt2D buffer 10 2 9 0 1
+call storeBitAt2D buffer 10 2 8 0 0
+call storeBitAt2D buffer 10 2 0 1 0
+call storeBitAt2D buffer 10 2 7 1 1
+call storeBitAt2D buffer 10 2 9 1 1
+call storeBitAt2D buffer 10 2 8 1 1
+
+; Invalid writes must leave the
+; image, padding, and guards intact.
+call storeBitAt2D buffer 10 2 -1 1 1
+call storeBitAt2D buffer 10 2 10 0 0
+call storeBitAt2D buffer 10 2 16 0 1
+call storeBitAt2D buffer 10 2 0 -1 1
+call storeBitAt2D buffer 10 2 0 2 1
+call storeBitAt2D buffer 10 2 -2147483648 0 1
+call storeBitAt2D buffer 10 2 2147483647 2147483647 1
+call storeBitAt2D buffer 0 2 0 0 1
+call storeBitAt2D buffer 10 0 0 0 0
+
+push &storage
+load8u
+assertEqual 0x66
+push &storage
+add 1
+load8u
+assertEqual 0x55
+push &storage
+add 2
+load8u
+assertEqual 0x6A
+push &storage
+add 3
+load8u
+assertEqual 0x2B
+push &storage
+add 4
+load8u
+assertEqual 0xD5
+push &storage
+add 5
+load8u
+assertEqual 0x99
+moduleEnd
+
+module alignedRows
+int8u[] buffer 2 0x01 0x80
+call storeBitAt2D &buffer 8 2 0 0 1
+call storeBitAt2D &buffer 8 2 0 1 0
+push &buffer
+load8u
+assertEqual 0x81
+push &buffer
+add 1
+load8u
+assertEqual 0
+moduleEnd
+
+module singlePixelRows
+int8u[] buffer 3 0x7F 0xFF 0
+call storeBitAt2D &buffer 1 3 0 0 1
+call storeBitAt2D &buffer 1 3 0 1 0
+call storeBitAt2D &buffer 1 3 0 2 -1
+call storeBitAt2D &buffer 1 3 1 1 0
+push &buffer
+load8u
+assertEqual 0xFF
+push &buffer
+add 1
+load8u
+assertEqual 0x7F
+push &buffer
+add 2
+load8u
+assertEqual 0x80
+moduleEnd
+entryEnd
