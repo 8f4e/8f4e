@@ -180,7 +180,7 @@ noteEnd
 entry main
 module screen
 ; @pos 80 -30
-; @home right
+; @home left
 
 const WIDTH 128
 const HEIGHT 128

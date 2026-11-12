@@ -148,13 +148,11 @@ module patternGenerator
 ; @home right
 use screen
 
-int rule 110
+int rule 110 ; @w
 ; @slider &rule 0 255
-; @w rule
 
-int seed 1
+int seed 1 ; @w
 ; @slider &seed 0 255
-; @w seed
 
 int8u* mono &screen:mono
 

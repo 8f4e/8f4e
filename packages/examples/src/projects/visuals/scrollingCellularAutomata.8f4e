@@ -164,9 +164,8 @@ module patternGenerator
 ; @home right
 use screen
 
-int rule 110
+int rule 110 ; @w
 ; @slider &rule 0 255
-; @w rule
 
 int initialized
 int8u* mono &screen:mono
