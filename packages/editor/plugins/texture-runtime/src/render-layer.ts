@@ -37,8 +37,8 @@ export function createTextureRenderLayer({
 				for (const texture of textures.viewsByBlock.get(block) ?? []) {
 					const x = block.x - state.viewport.x + texture.x;
 					const y = block.y - state.viewport.y + texture.y;
-					const width = texture.crop.width * texture.magnification;
-					const height = texture.crop.height * texture.magnification;
+					const width = texture.crop.width * texture.magnification.x;
+					const height = texture.crop.height * texture.magnification.y;
 					if (x + width <= 0 || y + height <= 0 || x >= state.viewport.width || y >= state.viewport.height) continue;
 					const address = bindings.resolveViewAddress(block, texture.address, memoryViews.int32);
 					const source = address === undefined ? undefined : sources.get(address);

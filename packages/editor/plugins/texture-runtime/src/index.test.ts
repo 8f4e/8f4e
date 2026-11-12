@@ -231,17 +231,50 @@ it('reserves declared view space before compiler memory exists', async () => {
 	test.editTextures('');
 	const sourceHeight = test.block.height;
 	test.editTextures(
-		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2 300 20\n; @textureUpload &other mono 1 17\n; @texture &other 1 1 17'
+		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2:4 300 20\n; @textureUpload &other mono 1 17\n; @texture &other 1 1 17'
 	);
 	expect(test.block.width).toBeGreaterThanOrEqual(
 		600 + (test.block.lineNumberColumnWidth + 3) * test.state.viewport.vGrid
 	);
-	expect(test.block.height).toBe(sourceHeight + 9 * test.state.viewport.hGrid);
+	expect(test.block.minGridWidth).toBe(
+		test.block.lineNumberColumnWidth + 3 + Math.ceil(600 / test.state.viewport.vGrid)
+	);
+	expect(test.block.height).toBe(sourceHeight + 11 * test.state.viewport.hGrid);
 	test.frame();
 	expect(test.gl.createTexture).not.toHaveBeenCalled();
 	test.editTextures('');
 	expect(test.block.minGridWidth).toBeUndefined();
 	expect(test.block.height).toBe(sourceHeight);
+});
+
+it.each([
+	['2', 2, 2],
+	['2:2', 2, 2],
+	['2:4', 2, 4],
+	['4:2', 4, 2],
+	['16:32', 16, 32],
+	['32:16', 32, 16],
+] as const)('lays out and renders cropped views with magnification %s', async (magnification, x, y) => {
+	const test = await setup({ config: '' });
+	test.editTextures(
+		`; @textureUpload &rgba mono 2 2 @texture &rgba ${magnification} 1 2 1 0 @texture &rgba ${magnification} 2 1 0 1`
+	);
+	test.frame();
+	const rectangles = test.gl.uniform4f.mock.calls
+		.filter(call => (call[0] as { name: string }).name === 'u_rectangle')
+		.map(call => call.slice(1));
+	expect(rectangles).toHaveLength(2);
+	expect(rectangles[0].slice(2)).toEqual([x, 2 * y]);
+	expect(rectangles[1]).toEqual([
+		rectangles[0][0],
+		Number(rectangles[0][1]) + Math.ceil((2 * y) / test.state.viewport.hGrid) * test.state.viewport.hGrid,
+		2 * x,
+		y,
+	]);
+	expect(test.block.minGridWidth).toBe(
+		test.block.lineNumberColumnWidth + 3 + Math.ceil((2 * x) / test.state.viewport.vGrid)
+	);
+	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
 });
 
 it('displays memory with execution disabled and can enable, disable, and restart the entry', async () => {

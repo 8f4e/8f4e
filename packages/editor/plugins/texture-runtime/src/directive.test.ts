@@ -18,15 +18,31 @@ it.each([
 it('requires view dimensions and defaults the source origin to zero', () => {
 	expect(parseTextureDirective(['pointer', '4', '8', '6'])).toEqual({
 		address: 'pointer',
-		magnification: 4,
+		magnification: { x: 4, y: 4 },
 		crop: { x: 0, y: 0, width: 8, height: 6 },
 	});
 	expect(parseTextureDirective(['&screen:pixels', '2', '4', '5', '1', '3'])).toEqual({
 		address: '&screen:pixels',
-		magnification: 2,
+		magnification: { x: 2, y: 2 },
 		crop: { x: 1, y: 3, width: 4, height: 5 },
 	});
 	expect(parseTextureUploadDirective(['pointer', 'mono', '2', '2'])?.address).toBe('pointer');
+});
+it.each([
+	['2:4', 2, 4],
+	['4:2', 4, 2],
+	['2:2', 2, 2],
+] as const)('parses independent magnification factors: %s', (magnification, x, y) => {
+	expect(parseTextureDirective(['&screen:pixels', magnification, '4', '5'])).toEqual({
+		address: '&screen:pixels',
+		magnification: { x, y },
+		crop: { x: 0, y: 0, width: 4, height: 5 },
+	});
+	expect(parseTextureDirective(['pointer', magnification, '4', '5', '1', '3'])).toEqual({
+		address: 'pointer',
+		magnification: { x, y },
+		crop: { x: 1, y: 3, width: 4, height: 5 },
+	});
 });
 it.each([
 	'&pixels rgba 2',
@@ -43,6 +59,20 @@ it.each([
 	'&pixels 2',
 	'&pixels 0 2 2',
 	'&pixels 1.5 2 2',
+	'&pixels 0:2 2 2',
+	'&pixels 2:0 2 2',
+	'&pixels -1:2 2 2',
+	'&pixels 2:-1 2 2',
+	'&pixels 1.5:2 2 2',
+	'&pixels 2:1.5 2 2',
+	'&pixels :2 2 2',
+	'&pixels 2: 2 2',
+	'&pixels 2:4:6 2 2',
+	'&pixels 2:four 2 2',
+	'&pixels 9007199254740992:1 1 1',
+	'&pixels 1:9007199254740992 1 1',
+	'&pixels 2:1 9007199254740991 1',
+	'&pixels 1:2 1 9007199254740991',
 	'&pixels 2 0 2',
 	'&pixels 2 2 -1',
 	'&pixels 2 2 2 -1 0',

@@ -20,11 +20,13 @@ export function createTextureLayout(layout: EditorLayoutRegistry) {
 		contribution.update(codeBlock, {
 			verticalSpaceAfterSourceLine: items.map(({ data, line }) => ({
 				sourceLineIndex: line,
-				heightInRows: Math.ceil((data.crop.height * data.magnification) / state.viewport.hGrid),
+				heightInRows: Math.ceil((data.crop.height * data.magnification.y) / state.viewport.hGrid),
 			})),
 			minGridWidth: items.length
 				? leftColumns +
-					Math.ceil(Math.max(...items.map(({ data }) => data.crop.width * data.magnification)) / state.viewport.vGrid) +
+					Math.ceil(
+						Math.max(...items.map(({ data }) => data.crop.width * data.magnification.x)) / state.viewport.vGrid
+					) +
 					1
 				: undefined,
 		});
@@ -33,7 +35,7 @@ export function createTextureLayout(layout: EditorLayoutRegistry) {
 			codeBlock,
 			items.map(({ data, line, displayRow }) => {
 				const preceding = usedRows.get(line) ?? 0;
-				usedRows.set(line, preceding + Math.ceil((data.crop.height * data.magnification) / state.viewport.hGrid));
+				usedRows.set(line, preceding + Math.ceil((data.crop.height * data.magnification.y) / state.viewport.hGrid));
 				return {
 					...data,
 					x: leftColumns * state.viewport.vGrid,
