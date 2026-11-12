@@ -173,6 +173,11 @@ With memory guards enabled, a negative byte count or any range outside linear me
 A zero byte count writes nothing. Disabling memory guards exposes WebAssembly's native out-of-bounds trap.
 Functions using fill require `#impure`.
 
+When the address and byte count are known, the compiler omits the guard if the range fits in the minimum imported
+WebAssembly memory size, including page padding. The range may span multiple 8f4e declarations or modules.
+Existing proven address-range metadata can also eliminate the guard when it covers a known byte count.
+Unknown ranges retain their runtime check; no additional language annotation is required for static ranges.
+
 Stack layout before call: `... , dstAddress , byteValue , byteCount`
 
 #### Examples

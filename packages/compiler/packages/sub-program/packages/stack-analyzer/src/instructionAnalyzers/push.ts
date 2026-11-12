@@ -53,7 +53,8 @@ function pushLiteralStackItems(line: LiteralPushLine, context: CompilationContex
 	}
 
 	const kind = resolveArgumentValueKind(argument);
-	const knownValue = kind === 'float32' ? Math.fround(argument.value) : argument.value;
+	const knownValue =
+		kind === 'int32' ? argument.value | 0 : kind === 'float32' ? Math.fround(argument.value) : argument.value;
 	const address = argument.address
 		? {
 				...argument.address,

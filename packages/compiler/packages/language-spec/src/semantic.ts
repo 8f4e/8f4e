@@ -154,7 +154,7 @@ export interface StackValue {
 	valueType: StackValueType;
 	/** A flag for the div operation to check if the divisor is zero. */
 	isNonZero?: boolean;
-	/** Exact scalar value when the compiler can still prove it at this stack position. */
+	/** Exact scalar value at this stack position; integers use signed WebAssembly i32 representation. */
 	knownValue?: number;
 }
 
@@ -170,7 +170,7 @@ export interface StackAddress {
 	pointsTo?: PointeeMetadata;
 	/** A flag for the div operation to check if the divisor is zero. */
 	isNonZero?: boolean;
-	/** Exact integer address when the compiler can still prove it at this stack position. */
+	/** Exact i32 address value; interpret its bits as unsigned for linear-memory bounds checks. */
 	knownValue?: number;
 }
 
@@ -242,6 +242,8 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame> {
 	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
 	enableMemoryGuards: boolean;
+	/** Minimum imported WebAssembly linear-memory size in bytes, including page padding. */
+	minimumMemoryBytes: number;
 }
 
 export type ResolvedMapValueArgument = ResolvedArgumentLiteral | ArgumentStringLiteral;

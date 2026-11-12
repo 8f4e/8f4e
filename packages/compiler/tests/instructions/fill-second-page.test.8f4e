@@ -1,0 +1,48 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Fills use the complete imported
+linear memory in modules and
+functions.
+noteEnd
+
+entry test
+module secondPageFillAssertions
+int8u[] padding 65536
+int first 1
+
+push 65536
+push 67
+push 4
+fill
+loop 4
+push 65536
+loopIndex
+add
+load8u
+assertEqual 67
+loopEnd
+
+call fillSecondPage
+loop 4
+push 65536
+loopIndex
+add
+load8u
+assertEqual 91
+loopEnd
+push first
+assertEqual 1
+moduleEnd
+entryEnd
+
+function fillSecondPage
+#export
+#impure
+push 65536
+push 91
+push 4
+fill
+functionEnd
