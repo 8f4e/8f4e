@@ -12,3 +12,17 @@ add
 load
 
 functionEnd int
+
+function loadAt
+#export
+#impure
+; Reads an unsigned-byte element.
+param int8u* buffer
+param int index
+
+push buffer
+push index
+add
+load8u
+
+functionEnd int

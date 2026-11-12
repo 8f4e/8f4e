@@ -1,0 +1,45 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/loadAt2D
+includesEnd
+
+entry test
+module loadAt2DAssertions
+int8u[] buffer 6 10 0 128 255 42 9
+
+; Non-square grids retain byte values
+; and distinguish both dimensions.
+call loadAt2D &buffer 3 2 0 0
+assertEqual 10
+call loadAt2D &buffer 3 2 2 0
+assertEqual 128
+call loadAt2D &buffer 3 2 0 1
+assertEqual 255
+call loadAt2D &buffer 3 2 2 1
+assertEqual 9
+call loadAt2D &buffer 3 2 1 0
+assertEqual 0
+
+; Edges do not wrap into nearby rows
+; or read neighboring declarations.
+call loadAt2D &buffer 3 2 -1 1
+assertEqual 0
+call loadAt2D &buffer 3 2 3 0
+assertEqual 0
+call loadAt2D &buffer 3 2 0 -1
+assertEqual 0
+call loadAt2D &buffer 3 2 0 2
+assertEqual 0
+call loadAt2D &buffer 3 2 2147483647 2147483647
+assertEqual 0
+call loadAt2D &buffer 0 2 0 0
+assertEqual 0
+call loadAt2D &buffer 3 0 0 0
+assertEqual 0
+moduleEnd
+entryEnd
