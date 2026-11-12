@@ -11,6 +11,7 @@ configuration with project scope.
 ; @textureUpload &screen:color rgba 64 64
 ; @texture &screen:color 4 64 64
 ; @texture &screen:color 4 32 32 16 16
+; @texture &screen:color 2:4 64 64
 ```
 
 `@textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>` describes the complete source texture.
@@ -18,6 +19,10 @@ configuration with project scope.
 Width and height are in source pixels; the optional source origin defaults to `(0, 0)`. Upload declarations reserve
 no image space. Each view reserves its own rows and minimum block width immediately, independent of compiler memory
 and matching uploads. Views retain the uploaded texture's row stride, including byte-aligned packed 1bit rows.
+
+Magnification accepts one positive integer for both axes, or `<horizontal>:<vertical>` factors. For example, `2:4`
+scales each source pixel to 2 pixels wide and 4 pixels tall; `2:2` and `2` both give uniform 2× magnification.
+The reserved block space follows the scaled width and height.
 
 Both directives accept pointer sources: `&pixels` or `&screen:pixels` uses the storage's byte address; a plain typed
 pointer such as `framebufferPointer` reads the current address from memory. Qualified names and group exposures use
@@ -30,7 +35,7 @@ Matching resolved byte addresses share one GPU texture and one upload per frame 
 regardless of the reference spelling, crop, magnification, or number of views. Identical upload declarations coalesce.
 Conflicting format/dimension declarations for one address suppress that resource and report an error in the editor
 console. The complete upload must fit current WASM memory; crop rectangles must fit the declared source dimensions.
-Dimensions and magnification are positive integers; source offsets are nonnegative integers. Pointer swaps never
+Dimensions and magnification factors are positive integers; source offsets are nonnegative integers. Pointer swaps never
 change the view geometry. Missing or undersized uploads skip drawing while the reserved space stays unchanged.
 
 | Type | Source layout |

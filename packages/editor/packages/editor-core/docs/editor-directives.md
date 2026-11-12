@@ -291,6 +291,7 @@ Declare a source upload once, then display full or cropped views of it:
 ; @textureUpload &screen:color rgba 64 64
 ; @texture &screen:color 4 64 64
 ; @texture &screen:color 4 32 32 16 16
+; @texture &screen:color 2:4 64 64
 ```
 
 Both addresses are `pointerSource` arguments. `&memory` uses its start byte address; a plain typed pointer reads its
@@ -301,7 +302,10 @@ including unopened groups; matching uses resolved addresses rather than names.
 The upload owns the format and full source dimensions. Every view specifies its width and height in source pixels;
 the optional `(x, y)` source origin defaults to `(0, 0)`. Views retain the original upload's row stride and reserve
 fixed rows and minimum block width immediately, before compiler memory or a matching upload exists. Pointer changes
-never resize the containing block. Dimensions and magnification are positive integers; source offsets are nonnegative.
+never resize the containing block. Magnification accepts one positive integer for both axes or
+`<horizontal>:<vertical>` factors: `2:4` makes each source pixel 2 pixels wide and 4 pixels tall, while `2:2` and `2`
+both give uniform 2× magnification. Reserved rows and block width follow the scaled dimensions.
+Dimensions and magnification factors are positive integers; source offsets are nonnegative.
 The view rectangle must fit the selected upload, and uploads must fit WASM memory; uploads can span declarations.
 Missing or undersized uploads skip drawing while keeping the reserved space unchanged.
 
