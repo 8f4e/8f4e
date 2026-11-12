@@ -1,0 +1,181 @@
+8f4e/v1
+
+includes
+; @pos -86 -31
+include std/bitwise/extractBit
+include std/grid/indexToXY
+include std/memory/loadBitAt2D
+include std/memory/storeBitAt2D
+includesEnd
+
+function evolveCell
+; @pos -47 -31
+param int neighborhood
+param int rule
+
+; The three-cell neighborhood selects
+; one bit from the rule number.
+push rule
+push neighborhood
+call extractBit
+functionEnd int
+
+function readNeighborhood
+; @pos -1 -31
+#impure
+use screen
+param int8u* buffer
+param int x
+param int y
+
+push y
+push 1
+sub
+localSet y
+
+; Read the left, center,
+; and right cells from the 
+; previous row.
+; Outside cells are zero.
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push 1
+sub
+push y
+call loadBitAt2D
+push 0b100
+mul
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push y
+call loadBitAt2D
+push 0b010
+mul
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push 1
+add
+push y
+call loadBitAt2D
+
+add
+add
+functionEnd int
+
+function drawPattern
+; @pos 35 -31
+#impure
+use screen
+param int8u* buffer
+param int rule
+
+local int x
+local int y
+
+; The caller supplies
+; the seeded first row.
+; Draw each remaining cell
+; from the row above.
+loop PIXEL_COUNT-WIDTH
+loopIndex
+push WIDTH
+add
+push WIDTH
+call indexToXY
+localSet y
+localSet x
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push y
+
+push buffer
+push x
+push y
+call readNeighborhood
+push rule
+call evolveCell
+call storeBitAt2D
+loopEnd
+
+functionEnd
+
+constants env
+; @pos -118 -5
+; Auto-generated environment constants
+; Changes will be overwritten
+
+
+constantsEnd
+
+note
+; @pos -118 -13
+; @config export.fileName elementaryCellularAutomata
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+entry main
+module screen
+; @pos 102 -29
+
+const WIDTH 256
+const HEIGHT 256
+const PIXEL_COUNT WIDTH*HEIGHT
+; WIDTH must be a multiple of eight.
+const ROW_BYTES WIDTH/8
+const BYTE_COUNT ROW_BYTES*HEIGHT
+
+; Packed black/white pixels, MSB first.
+int8u[] mono BYTE_COUNT
+
+; @textureUpload &mono 1bit 256 256
+; @texture &mono 2 256 256
+
+moduleEnd
+module patternGenerator
+; @pos 175 -29
+; @home right
+use screen
+
+int rule 110
+; @slider &rule 0 255
+; @w rule
+
+int seed 1
+; @slider &seed 0 255
+; @w seed
+
+int8u* mono &screen:mono
+
+; Clear only the first row.
+; Every later byte is overwritten.
+push mono
+push 0
+push ROW_BYTES
+fill
+
+; Seed the last eight cells
+; of the first row.
+push mono
+push ROW_BYTES-1
+add
+push seed
+store
+
+push mono
+push rule
+call drawPattern
+
+moduleEnd
+entryEnd

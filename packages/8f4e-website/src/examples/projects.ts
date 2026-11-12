@@ -213,10 +213,10 @@ export const projects = [
 		path: 'visuals/overlayTexture.8f4e',
 	},
 	{
-		id: 'rule110',
-		title: 'Rule 110',
-		description: 'Generate a monochrome cellular automaton using Rule 110 and experiment with alternative rule tables.',
-		path: 'visuals/rule110.8f4e',
+		id: 'elementary-cellular-automata',
+		title: 'Elementary cellular automata',
+		description: 'Explore one-dimensional cellular automata with adjustable rule and seed values.',
+		path: 'visuals/elementaryCellularAutomata.8f4e',
 	},
 ];
 
