@@ -86,6 +86,7 @@ async function setup({
 		hasCompilerMemory = true;
 		store.set('compiler.isCompiling', true);
 		store.set('compiler.result', {
+			...state.compiler.result,
 			compiledFunctions,
 			compiledModules,
 			projectMemoryExposuresByGroupPath,

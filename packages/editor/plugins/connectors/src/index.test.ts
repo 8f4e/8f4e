@@ -189,6 +189,7 @@ describe('connectors plugin', () => {
 			test.store.set('compiler.isCompiling', true);
 			const result = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject));
 			test.store.set('compiler.result', {
+				...test.state.compiler.result,
 				compiledModules: result.compiledModules,
 				compiledFunctions: result.compiledFunctions,
 				memoryPlan: result.memoryPlan,

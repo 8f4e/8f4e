@@ -5,6 +5,7 @@ import { createMockCodeBlock, createMockEventDispatcher, createMockState } from 
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createCompilerResult } from '../__tests__/compilerResult';
 import { createEvents } from '../__tests__/events';
 import createTooltip from './effect';
 
@@ -50,8 +51,15 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 			store.dispose();
 		});
 		events.dispatch('enterEditMode');
-		Object.assign(store.getState().compiler.result, compiled);
 		store.set('initialProjectState', project);
+		store.set(
+			'compiler.result',
+			createCompilerResult(
+				compiled,
+				store.getState().compilerInputRevision,
+				store.getState().codeBlockRendering.currentProject.blocks
+			)
+		);
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set(
@@ -62,6 +70,20 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		expect(tooltip.getState().text[0]).toBe(signature);
 		expect(tooltip.getState().text).toContain(before);
 		expect(tooltip.getState().text).toContain('after: [+int=5]');
+		const selectedRow = block.cursor.row;
+		applyCodeBlockSourceEdits(
+			{ store, events },
+			[{ codeBlock: block, code: [block.code[0], '; @favorite', ...block.code.slice(1)] }],
+			{ affectsCompilation: false }
+		);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', selectedRow + 1);
+		expect(tooltip.getState().text[0]).toBe(signature);
+		expect(tooltip.getState().text).toContain(before);
+		const changed = [...block.code];
+		changed[selectedRow + 1] = 'mul';
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: changed }], { affectsCompilation: true });
+		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');
+		expect(tooltip.getState().text.some(line => line.startsWith('before'))).toBe(false);
 	});
 });
 
@@ -84,8 +106,15 @@ entryEnd`);
 			store.dispose();
 		});
 		events.dispatch('enterEditMode');
-		store.set('compiler.result', compiled);
 		store.set('initialProjectState', project);
+		store.set(
+			'compiler.result',
+			createCompilerResult(
+				compiled,
+				store.getState().compilerInputRevision,
+				store.getState().codeBlockRendering.currentProject.blocks
+			)
+		);
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
@@ -116,6 +145,8 @@ entryEnd`);
 		const state = createMockState({
 			compiler: {
 				result: {
+					inputRevision: 0,
+					sourceCodeByBlockId: { [selectedBlock.creationIndex]: selectedBlock.code },
 					compiledModules: {
 						test: {
 							ast: { projectBlockId: 0, lines: [] },
@@ -201,6 +232,8 @@ entryEnd`);
 		const state = createMockState({
 			compiler: {
 				result: {
+					inputRevision: 0,
+					sourceCodeByBlockId: { [selectedBlock.creationIndex]: selectedBlock.code },
 					compiledFunctions: {
 						[createFunctionId('helper', ['float'])]: {
 							id: createFunctionId('helper', ['float']),
@@ -574,7 +607,10 @@ functionEnd int`;
 			code: ['module caller', 'call identity 1', 'drop', 'moduleEnd'],
 			cursor: { row: 1, col: 0, y: 0 },
 		});
-		const state = createMockState({ compiler: { result: first }, codeBlockRendering: { selectedCodeBlock: block } });
+		const state = createMockState({
+			compiler: { result: createCompilerResult(first, 0, [block]) },
+			codeBlockRendering: { selectedCodeBlock: block },
+		});
 		const store = createStateManager(state);
 		const tooltip = createTooltip(store, createEvents());
 		cleanups.push(() => {
@@ -582,7 +618,10 @@ functionEnd int`;
 			store.dispose();
 		});
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (value: int -- int)');
-		store.set('compiler.result', await compile(source.replaceAll('value', 'input')));
+		store.set(
+			'compiler.result',
+			createCompilerResult(await compile(source.replaceAll('value', 'input')), state.compilerInputRevision, [block])
+		);
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (input: int -- int)');
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		expect(tooltip.getState().text[0]).toBe('drop (T -- )');
@@ -625,7 +664,7 @@ entryEnd`);
 			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const state = createMockState({
-			compiler: { result: compiled },
+			compiler: { result: createCompilerResult(compiled, 0, [inactive, active]) },
 			codeBlockRendering: { selectedCodeBlock: inactive },
 		});
 		const store = createStateManager(state);
@@ -650,7 +689,10 @@ entryEnd`);
 		store.set('codeBlockRendering.selectedCodeBlock', inactive);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		project.execution.reverse();
-		store.set('compiler.result', await compile());
+		store.set(
+			'compiler.result',
+			createCompilerResult(await compile(), state.compilerInputRevision, [inactive, active])
+		);
 		expect(tooltip.getState().text).toContain('after: [+int=1]');
 	});
 });

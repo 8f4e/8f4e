@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { expect, test, vi } from 'vitest';
+import { createCompilerResult } from '../src/__tests__/compilerResult';
 import { createEvents } from '../src/__tests__/events';
 import { tooltipsPlugin } from '../src/index';
 
@@ -63,8 +64,11 @@ entryEnd`
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
-	Object.assign(state.compiler.result, compiled);
 	store.set('initialProjectState', project);
+	store.set(
+		'compiler.result',
+		createCompilerResult(compiled, state.compilerInputRevision, state.codeBlockRendering.currentProject.blocks)
+	);
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
 	codeBlock.gridX = 55;

@@ -29,11 +29,11 @@ plugin is installed.
 ## Published state and artifacts
 
 - `state.compiler.isCompiling` indicates compilation activity independently of the last accepted `state.compiler.result`.
-- `state.compiler.resultInputRevision` identifies the inputs of the last successful result, or is null before success.
+- `state.compiler.result.inputRevision` identifies the inputs of the last successful result, or is null before success.
   Source-line consumers compare it with `state.compilerInputRevision` to suppress outdated positions while edits compile.
-- `state.compiler.resultSourceCodeByBlockId` retains the exact module/function sources used by the accepted result,
+- `state.compiler.result.sourceCodeByBlockId` retains the exact module/function sources used by the accepted result,
   including nested groups. Metadata-only edits can shift source positions without changing compiler inputs; consumers
-  compare these snapshots before using line metadata.
+  use the current-line accessor below before using line metadata.
 - `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
 - `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.
@@ -44,10 +44,17 @@ editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that
 together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
 The connectors plugin owns inherited declaration ordering, shape/paramShape labels, and connector presentation.
 
+`getCurrentCompiledLineForCodeBlock(block, state, sourceLineNumber = block.cursor.row)` supplies current parsed
+source and stack-analysis metadata to line-based views. It checks the accepted input revision and source owner,
+then maps unchanged instruction lines across blank/comment-only edits. Its `currentSourceLineByCompiledLine` map
+converts compiled producer line numbers into current source positions. Views retain source-only documentation
+when inputs or instruction text change and compilation has not caught up. Stack-producers and tooltips share
+this accessor.
+
 The plugin updates its live artifact handles and emits `compilationSucceeded` with `ProgramArtifacts` (`memoryRef`)
 before publishing metadata and runtime readiness. Core consumes that event to refresh memory views; bytecode stays
-on the compiler getter. All compiler metadata is published atomically in one `state.compiler.result` replacement while
-`isCompiling` remains true. After metadata subscribers finish, `compiler.isCompiling` becomes false to resume runtimes.
+on the compiler getter. The input revision, source snapshots, and all compiler metadata are published atomically
+in one `state.compiler.result` replacement while `isCompiling` remains true. After metadata subscribers finish, `compiler.isCompiling` becomes false to resume runtimes.
 `memoryAction` distinguishes recreated and reused memory. The binary-assets plugin observes new memory plans and
 reloads its retained bytes into current targets before runtimes resume. Editor state stores no binary asset metadata.
 

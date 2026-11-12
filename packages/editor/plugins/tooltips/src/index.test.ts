@@ -3,6 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createCompilerResult } from './__tests__/compilerResult';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
 import { tooltipsPlugin } from './index';
@@ -43,8 +44,11 @@ entryEnd`);
 		store.dispose();
 	});
 	const state = store.getState();
-	Object.assign(state.compiler.result, compiled);
 	store.set('initialProjectState', project);
+	store.set(
+		'compiler.result',
+		createCompilerResult(compiled, state.compilerInputRevision, state.codeBlockRendering.currentProject.blocks)
+	);
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);

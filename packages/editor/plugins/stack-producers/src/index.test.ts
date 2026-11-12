@@ -23,8 +23,12 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const store = initState(events, { callbacks: {} });
 	store.set('initialProjectState', project);
 	const state = store.getState();
-	store.set('compiler.result', compiled);
-	store.set('compiler.resultInputRevision', state.compilerInputRevision);
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
+	store.set('compiler.result', {
+		...compiled,
+		inputRevision: state.compilerInputRevision,
+		sourceCodeByBlockId: { [block.creationIndex]: [...block.code] },
+	});
 	const drawers = createEditorDrawerRegistry();
 	const context = {
 		store,
@@ -36,8 +40,6 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 		loading: store.loading,
 	};
 	let disposeProducers = stackProducersPlugin.setup(context);
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
-	store.set('compiler.resultSourceCodeByBlockId', { [block.creationIndex]: [...block.code] });
 	const draw = { drawFill: vi.fn<DrawContext['drawFill']>() };
 	const drawBackground = () => {
 		draw.drawFill.mockClear();
@@ -118,13 +120,15 @@ it('clears outdated producer rows after edits, including when installed after an
 	test.reinstall();
 	test.select(6);
 	expect(test.drawBackground()).toEqual([]);
-	test.store.set('compiler.resultInputRevision', test.state.compilerInputRevision);
 	const updated = await compileProject(
 		parseProjectSource(`8f4e/v1\nentry main\n${test.block.code.join('\n')}\nentryEnd`),
 		{ includeStackAnalysis: true }
 	);
-	test.store.set('compiler.result', updated);
-	test.store.set('compiler.resultSourceCodeByBlockId', { [test.block.creationIndex]: [...test.block.code] });
+	test.store.set('compiler.result', {
+		...updated,
+		inputRevision: test.state.compilerInputRevision,
+		sourceCodeByBlockId: { [test.block.creationIndex]: [...test.block.code] },
+	});
 	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
 });
 

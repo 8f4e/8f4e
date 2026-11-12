@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createCompilerResult } from '../__tests__/compilerResult';
 import { createEvents } from '../__tests__/events';
 import { createDrawContextMock } from '../__tests__/rendering';
 import drawTooltip from '../drawer/draw';
@@ -23,8 +24,15 @@ async function setup(source: string) {
 		store.dispose();
 	});
 	store.set('editorMode', 'edit');
-	store.set('compiler.result', compiled);
 	store.set('initialProjectState', project);
+	store.set(
+		'compiler.result',
+		createCompilerResult(
+			compiled,
+			store.getState().compilerInputRevision,
+			store.getState().codeBlockRendering.currentProject.blocks
+		)
+	);
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);
@@ -154,7 +162,7 @@ entryEnd`);
 			const nextAddress = next.memoryPlan.modules[moduleId].memory[memoryId].byteAddress;
 			expect(nextAddress).not.toBe(originalAddress);
 			memory.float32[nextAddress / 4] = 2.75;
-			store.set('compiler.result', next);
+			store.set('compiler.result', { ...store.getState().compiler.result, ...next });
 			expect(renderValues()).toEqual([String(nextAddress), '2.7500']);
 		}
 	);

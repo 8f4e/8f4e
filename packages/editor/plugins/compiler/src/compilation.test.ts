@@ -220,22 +220,29 @@ describe('compilation scheduling and publication', () => {
 			'memoryDefaultsByModuleId',
 		] as const;
 		const observed: State['compiler'][] = [];
+		const allFields = [...fields, 'inputRevision', 'sourceCodeByBlockId'] as const;
 		const progress: boolean[] = [];
+		const accepted = vi.fn();
+		store.subscribe('compiler.result', accepted);
 		store.subscribe('compiler.isCompiling', value => progress.push(value));
-		for (const field of fields) {
+		for (const field of allFields) {
 			store.subscribe(`compiler.result.${field}`, () => observed.push({ ...mockState.compiler }));
 		}
 
 		await triggerCompile();
 
-		expect(observed).toHaveLength(fields.length);
+		expect(accepted).toHaveBeenCalledOnce();
+		expect(observed).toHaveLength(allFields.length);
 		for (const metadata of observed) {
 			expect(metadata.isCompiling).toBe(true);
+			expect(metadata.result).toBe(mockState.compiler.result);
+			expect(metadata.result.inputRevision).toBe(mockState.compilerInputRevision);
+			expect(metadata.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
 			for (const field of fields) expect(metadata.result[field]).toBe(result[field]);
 		}
 		expect(mockState.compiler.isCompiling).toBe(false);
-		expect(mockState.compiler.resultInputRevision).toBe(mockState.compilerInputRevision);
-		expect(mockState.compiler.resultSourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
+		expect(mockState.compiler.result.inputRevision).toBe(mockState.compilerInputRevision);
+		expect(mockState.compiler.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
 		expect(progress).toEqual([true, false]);
 	});
 
@@ -246,8 +253,8 @@ describe('compilation scheduling and publication', () => {
 			return result;
 		});
 		await triggerCompile();
-		expect(mockState.compiler.resultInputRevision).toBe(mockState.compilerInputRevision);
-		expect(mockState.compiler.resultSourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
+		expect(mockState.compiler.result.inputRevision).toBe(mockState.compilerInputRevision);
+		expect(mockState.compiler.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
 		expect(mockState.codeBlockRendering.rootProject.blocks[0].code).toContain('; @favorite');
 	});
 

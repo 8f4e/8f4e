@@ -8,10 +8,10 @@ export default function createDefaultState() {
 		compilerInputRevision: 0,
 		projectChange: { revision: 0, kind: 'replace' } satisfies ProjectChange,
 		compiler: {
-			resultInputRevision: null,
-			resultSourceCodeByBlockId: {},
 			isCompiling: false,
 			result: {
+				inputRevision: null,
+				sourceCodeByBlockId: {},
 				compiledModules: {},
 				memoryPlan: {
 					modules: {},
