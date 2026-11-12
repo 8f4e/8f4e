@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/wasm-ir-pruner",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Reachability and local-slot pruning for lowered Wasm IR",
   "type": "module",

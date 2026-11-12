@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-loading-indicators",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "private": true,
   "description": "Shared loading indicator overlay for the 8f4e editor",
   "type": "module",
