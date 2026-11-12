@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-pwa-updates",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "private": true,
   "description": "Page-owned PWA update notifications through the 8f4e editor dialog system",
   "type": "module",
