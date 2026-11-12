@@ -220,7 +220,7 @@ describe('compilation scheduling and publication', () => {
 			'memoryDefaultsByModuleId',
 		] as const;
 		const observed: State['compiler'][] = [];
-		const allFields = [...fields, 'inputRevision', 'sourceCodeByBlockId'] as const;
+		const allFields = [...fields, 'inputRevision'] as const;
 		const progress: boolean[] = [];
 		const accepted = vi.fn();
 		store.subscribe('compiler.result', accepted);
@@ -237,25 +237,11 @@ describe('compilation scheduling and publication', () => {
 			expect(metadata.isCompiling).toBe(true);
 			expect(metadata.result).toBe(mockState.compiler.result);
 			expect(metadata.result.inputRevision).toBe(mockState.compilerInputRevision);
-			expect(metadata.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
 			for (const field of fields) expect(metadata.result[field]).toBe(result[field]);
 		}
 		expect(mockState.compiler.isCompiling).toBe(false);
 		expect(mockState.compiler.result.inputRevision).toBe(mockState.compilerInputRevision);
-		expect(mockState.compiler.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
 		expect(progress).toEqual([true, false]);
-	});
-
-	it('retains the compiled source when a metadata edit shifts lines during compilation', async () => {
-		const result = createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })).payload;
-		mockCompileCode.mockImplementation(async () => {
-			mockState.codeBlockRendering.rootProject.blocks[0].code.splice(1, 0, '; @favorite');
-			return result;
-		});
-		await triggerCompile();
-		expect(mockState.compiler.result.inputRevision).toBe(mockState.compilerInputRevision);
-		expect(mockState.compiler.result.sourceCodeByBlockId[0]).toEqual(['function helper', 'push 1', 'functionEnd']);
-		expect(mockState.codeBlockRendering.rootProject.blocks[0].code).toContain('; @favorite');
 	});
 
 	it('stores compilation stats in state.info.compiler from successful compilation results', async () => {

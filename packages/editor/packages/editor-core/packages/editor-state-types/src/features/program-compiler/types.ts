@@ -12,8 +12,6 @@ export interface Compiler {
 	result: {
 		/** Input revision of this result; null before the first successful compilation. */
 		inputRevision: number | null;
-		/** Exact compiled module/function sources, keyed by project block identity. */
-		sourceCodeByBlockId: Readonly<Record<number, readonly string[]>>;
 	} & Pick<
 		CompileResult,
 		| 'compiledModules'

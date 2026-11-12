@@ -25,14 +25,7 @@ async function setup(source: string) {
 	});
 	store.set('editorMode', 'edit');
 	store.set('initialProjectState', project);
-	store.set(
-		'compiler.result',
-		createCompilerResult(
-			compiled,
-			store.getState().compilerInputRevision,
-			store.getState().codeBlockRendering.currentProject.blocks
-		)
-	);
+	store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);

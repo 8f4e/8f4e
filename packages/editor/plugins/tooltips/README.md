@@ -35,9 +35,8 @@ operands on `-` continuation lines, so their stack effects agree with the compil
 compilation or when an edit changes the instruction, signatures fall back to the current source description.
 Incomplete edits retain instruction documentation while accepted compiler metadata catches up.
 The shared editor-state `getCurrentCompiledLineForCodeBlock` accessor supplies parsed source and stack facts only
-for current input revisions and matching instructions. It remaps those facts across blank/comment-only source
-changes, including inserted favorite and position directives. Tooltips observe accepted results and input revisions
-rather than compilation-progress updates.
+for the current input revision and owning source block, using compiler line numbers directly. Tooltips observe
+accepted results and input revisions rather than compilation-progress updates.
 
 For `call` instructions, successful compilation supplies the selected overload's parameter names, types, and return
 types. The tooltip uses the callable name from the selected source line and wraps long signatures between parameters,

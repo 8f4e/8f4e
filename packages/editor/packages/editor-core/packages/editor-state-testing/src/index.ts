@@ -105,7 +105,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			isCompiling: false,
 			result: {
 				inputRevision: null,
-				sourceCodeByBlockId: {},
 				compiledModules: {},
 				memoryPlan: {
 					modules: {},

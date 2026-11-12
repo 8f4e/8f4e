@@ -52,14 +52,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		});
 		events.dispatch('enterEditMode');
 		store.set('initialProjectState', project);
-		store.set(
-			'compiler.result',
-			createCompilerResult(
-				compiled,
-				store.getState().compilerInputRevision,
-				store.getState().codeBlockRendering.currentProject.blocks
-			)
-		);
+		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set(
@@ -71,16 +64,8 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		expect(tooltip.getState().text).toContain(before);
 		expect(tooltip.getState().text).toContain('after: [+int=5]');
 		const selectedRow = block.cursor.row;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: [block.code[0], '; @favorite', ...block.code.slice(1)] }],
-			{ affectsCompilation: false }
-		);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', selectedRow + 1);
-		expect(tooltip.getState().text[0]).toBe(signature);
-		expect(tooltip.getState().text).toContain(before);
 		const changed = [...block.code];
-		changed[selectedRow + 1] = 'mul';
+		changed[selectedRow] = 'mul';
 		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: changed }], { affectsCompilation: true });
 		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');
 		expect(tooltip.getState().text.some(line => line.startsWith('before'))).toBe(false);
@@ -107,14 +92,7 @@ entryEnd`);
 		});
 		events.dispatch('enterEditMode');
 		store.set('initialProjectState', project);
-		store.set(
-			'compiler.result',
-			createCompilerResult(
-				compiled,
-				store.getState().compilerInputRevision,
-				store.getState().codeBlockRendering.currentProject.blocks
-			)
-		);
+		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
@@ -146,7 +124,6 @@ entryEnd`);
 			compiler: {
 				result: {
 					inputRevision: 0,
-					sourceCodeByBlockId: { [selectedBlock.creationIndex]: selectedBlock.code },
 					compiledModules: {
 						test: {
 							ast: { projectBlockId: 0, lines: [] },
@@ -233,7 +210,6 @@ entryEnd`);
 			compiler: {
 				result: {
 					inputRevision: 0,
-					sourceCodeByBlockId: { [selectedBlock.creationIndex]: selectedBlock.code },
 					compiledFunctions: {
 						[createFunctionId('helper', ['float'])]: {
 							id: createFunctionId('helper', ['float']),
@@ -608,7 +584,7 @@ functionEnd int`;
 			cursor: { row: 1, col: 0, y: 0 },
 		});
 		const state = createMockState({
-			compiler: { result: createCompilerResult(first, 0, [block]) },
+			compiler: { result: createCompilerResult(first, 0) },
 			codeBlockRendering: { selectedCodeBlock: block },
 		});
 		const store = createStateManager(state);
@@ -620,7 +596,7 @@ functionEnd int`;
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (value: int -- int)');
 		store.set(
 			'compiler.result',
-			createCompilerResult(await compile(source.replaceAll('value', 'input')), state.compilerInputRevision, [block])
+			createCompilerResult(await compile(source.replaceAll('value', 'input')), state.compilerInputRevision)
 		);
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (input: int -- int)');
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
@@ -664,7 +640,7 @@ entryEnd`);
 			cursor: { row: 2, col: 0, y: 0 },
 		});
 		const state = createMockState({
-			compiler: { result: createCompilerResult(compiled, 0, [inactive, active]) },
+			compiler: { result: createCompilerResult(compiled, 0) },
 			codeBlockRendering: { selectedCodeBlock: inactive },
 		});
 		const store = createStateManager(state);
@@ -689,10 +665,7 @@ entryEnd`);
 		store.set('codeBlockRendering.selectedCodeBlock', inactive);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		project.execution.reverse();
-		store.set(
-			'compiler.result',
-			createCompilerResult(await compile(), state.compilerInputRevision, [inactive, active])
-		);
+		store.set('compiler.result', createCompilerResult(await compile(), state.compilerInputRevision));
 		expect(tooltip.getState().text).toContain('after: [+int=1]');
 	});
 });

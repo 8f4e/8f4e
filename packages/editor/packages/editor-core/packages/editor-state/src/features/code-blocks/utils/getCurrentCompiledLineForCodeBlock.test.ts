@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits } from '../../../index';
+import initState, { applyCodeBlockSourceEdits, serializeProjectLevel } from '../../../index';
 import { getCurrentCompiledLineForCodeBlock } from './getCurrentCompiledLineForCodeBlock';
 
 const cleanups: Array<() => void> = [];
@@ -27,7 +27,6 @@ async function setup(blockType: 'module' | 'function') {
 	store.set('compiler.result', {
 		...compiled,
 		inputRevision: state.compilerInputRevision,
-		sourceCodeByBlockId: { [block.creationIndex]: [...block.code] },
 	});
 	return { store, events, state, block };
 }
@@ -38,26 +37,26 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		const line = getCurrentCompiledLineForCodeBlock(block, state, 3)!;
 		expect(line.parsedLine?.instruction).toBe('add');
 		expect(line.stackAnalysisLine?.consumedOperandProducerLines).toEqual([1, 2]);
-		expect(line.currentSourceLineByCompiledLine.get(1)).toBe(1);
 	});
 
-	it('maps source metadata and producer lines across comment-only edits', async () => {
+	it('uses newly compiled source positions after comment lines are inserted', async () => {
 		const test = await setup(blockType);
-		const revision = test.state.compilerInputRevision;
 		applyCodeBlockSourceEdits(
 			test,
-			[{ codeBlock: test.block, code: [test.block.code[0], '; @favorite', '', ...test.block.code.slice(1)] }],
-			{ affectsCompilation: false }
+			[{ codeBlock: test.block, code: [test.block.code[0], '; comment', '', ...test.block.code.slice(1)] }],
+			{ affectsCompilation: true }
 		);
 		test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 5);
+		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state)).toBeUndefined();
+		const compiled = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject), {
+			includeStackAnalysis: true,
+		});
+		test.store.set('compiler.result', { ...compiled, inputRevision: test.state.compilerInputRevision });
 		const line = getCurrentCompiledLineForCodeBlock(test.block, test.state)!;
-		expect(test.state.compilerInputRevision).toBe(revision);
-		expect(line.parsedLine?.instruction).toBe('add');
-		expect(line.stackAnalysisLine?.lineNumber).toBe(3);
-		expect(line.currentSourceLineByCompiledLine.get(1)).toBe(3);
-		expect(line.currentSourceLineByCompiledLine.get(2)).toBe(4);
-		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, 1)?.parsedLine).toBeUndefined();
+		expect(line.parsedLine?.lineNumber).toBe(5);
+		expect(line.stackAnalysisLine?.lineNumber).toBe(5);
+		expect(line.stackAnalysisLine?.consumedOperandProducerLines).toEqual([3, 4]);
 	});
 
 	it('rejects outdated compiler inputs while edited source waits for compilation', async () => {
@@ -68,9 +67,9 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, 3)).toBeUndefined();
 	});
 
-	it('returns no metadata when the accepted snapshot has no source for the block', async () => {
+	it('returns no metadata when accepted reports have no matching source definition', async () => {
 		const test = await setup(blockType);
-		test.store.set('compiler.result', { ...test.state.compiler.result, sourceCodeByBlockId: {} });
+		test.store.set('compiler.result', { ...test.state.compiler.result, compiledModules: {}, compiledFunctions: {} });
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, 3)).toBeUndefined();
 	});
 });

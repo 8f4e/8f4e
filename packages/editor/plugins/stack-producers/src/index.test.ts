@@ -27,7 +27,6 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	store.set('compiler.result', {
 		...compiled,
 		inputRevision: state.compilerInputRevision,
-		sourceCodeByBlockId: { [block.creationIndex]: [...block.code] },
 	});
 	const drawers = createEditorDrawerRegistry();
 	const context = {
@@ -127,7 +126,6 @@ it('clears outdated producer rows after edits, including when installed after an
 	test.store.set('compiler.result', {
 		...updated,
 		inputRevision: test.state.compilerInputRevision,
-		sourceCodeByBlockId: { [test.block.creationIndex]: [...test.block.code] },
 	});
 	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
 });
@@ -151,34 +149,6 @@ it('isolates producer state between editors', async () => {
 	second.select(5);
 	expect(first.drawBackground().map(([, y]) => y)).toEqual([16, 32]);
 	expect(second.drawBackground().map(([, y]) => y)).toEqual([48, 64]);
-});
-
-it('remaps producer rows across favorite and position edits without recompilation', async () => {
-	const test = await setup();
-	test.select(5);
-	expect(test.drawBackground()).toHaveLength(2);
-	const original = [...test.block.code];
-	const revision = test.state.compilerInputRevision;
-	applyCodeBlockSourceEdits(
-		test,
-		[{ codeBlock: test.block, code: [original[0], '; @favorite', ...original.slice(1)] }],
-		{ affectsCompilation: false }
-	);
-	expect(test.state.compilerInputRevision).toBe(revision);
-	test.select(6);
-	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
-	test.reinstall();
-	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
-	applyCodeBlockSourceEdits(
-		test,
-		[{ codeBlock: test.block, code: [original[0], '; @pos 20 5', '; @favorite', ...original.slice(1)] }],
-		{ affectsCompilation: false }
-	);
-	test.select(7);
-	expect(test.drawBackground().map(([, y]) => y)).toEqual([80, 96]);
-	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
-	test.select(5);
-	expect(test.drawBackground()).toHaveLength(2);
 });
 
 it('draws one highlight when two consumed values come from the same call', async () => {

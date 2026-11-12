@@ -76,10 +76,7 @@ entryEnd`);
 	state.viewport.height = canvas.height;
 	store.set('editorMode', 'edit');
 	store.set('initialProjectState', project);
-	store.set(
-		'compiler.result',
-		createCompilerResult(compiled, state.compilerInputRevision, state.codeBlockRendering.currentProject.blocks)
-	);
+	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inspect')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);
 	store.set(

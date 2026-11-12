@@ -45,10 +45,7 @@ entryEnd`);
 	});
 	const state = store.getState();
 	store.set('initialProjectState', project);
-	store.set(
-		'compiler.result',
-		createCompilerResult(compiled, state.compilerInputRevision, state.codeBlockRendering.currentProject.blocks)
-	);
+	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);

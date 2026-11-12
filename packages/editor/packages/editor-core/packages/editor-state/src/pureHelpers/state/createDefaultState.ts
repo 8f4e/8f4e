@@ -11,7 +11,6 @@ export default function createDefaultState() {
 			isCompiling: false,
 			result: {
 				inputRevision: null,
-				sourceCodeByBlockId: {},
 				compiledModules: {},
 				memoryPlan: {
 					modules: {},

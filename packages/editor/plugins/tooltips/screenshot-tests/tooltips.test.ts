@@ -65,10 +65,7 @@ entryEnd`
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	store.set('initialProjectState', project);
-	store.set(
-		'compiler.result',
-		createCompilerResult(compiled, state.compilerInputRevision, state.codeBlockRendering.currentProject.blocks)
-	);
+	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
 	codeBlock.gridX = 55;

@@ -8,9 +8,8 @@ export function deriveProducerRows(block: CodeBlockGraphicData, state: State): n
 	if (!line?.stackAnalysisLine) return [];
 	const rows: number[] = [];
 	for (const producer of new Set(line.stackAnalysisLine.consumedOperandProducerLines)) {
-		const sourceRow = line.currentSourceLineByCompiledLine.get(producer);
-		const displayRow = sourceRow === undefined ? undefined : block.displayModel.sourceLineIndexToDisplayRow[sourceRow];
-		if (sourceRow !== block.cursor.row && displayRow !== undefined) {
+		const displayRow = block.displayModel.sourceLineIndexToDisplayRow[producer];
+		if (producer !== block.cursor.row && displayRow !== undefined) {
 			rows.push(gapCalculator(displayRow, block.gaps) * state.viewport.hGrid);
 		}
 	}

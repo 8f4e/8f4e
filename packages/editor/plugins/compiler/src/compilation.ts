@@ -14,7 +14,6 @@ import {
 	getRecompileDebounceDelay,
 	recompileDebounceSchemaContribution,
 } from './editor-config';
-import { snapshotSourceCode } from './snapshotSourceCode';
 
 export interface CompilerDiagnostics {
 	inputRevision: number;
@@ -79,7 +78,6 @@ export default function installCompilation(
 
 		try {
 			const project = serializeProjectLevel(state.codeBlockRendering.rootProject);
-			const sourceCodeByBlockId = snapshotSourceCode(project);
 			const compilerOptions = {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,
@@ -101,7 +99,6 @@ export default function installCompilation(
 			events.dispatch('compilationSucceeded', { memoryRef: result.memoryRef });
 			store.set('compiler.result', {
 				inputRevision: revision,
-				sourceCodeByBlockId,
 				compiledFunctions: result.compiledFunctions,
 				compiledModules: result.compiledModules,
 				projectMemoryExposuresByGroupPath: result.projectMemoryExposuresByGroupPath,

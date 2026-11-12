@@ -53,7 +53,6 @@ entryEnd`);
 		store.set('compiler.result', {
 			...compiled,
 			inputRevision: editor.state.compilerInputRevision,
-			sourceCodeByBlockId: { [block.creationIndex]: [...block.code] },
 		});
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 11);
