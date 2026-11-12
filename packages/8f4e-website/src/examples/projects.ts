@@ -212,6 +212,12 @@ export const projects = [
 		description: 'Watch a WebAssembly-generated RGBA image animate in the center of the editor.',
 		path: 'visuals/overlayTexture.8f4e',
 	},
+	{
+		id: 'rule110',
+		title: 'Rule 110',
+		description: 'Generate a monochrome cellular automaton using Rule 110 and experiment with alternative rule tables.',
+		path: 'visuals/rule110.8f4e',
+	},
 ];
 
 export const projectCategories = [
