@@ -82,4 +82,140 @@ push 0
 push 0
 fill
 moduleEnd
+
+module provenFillAssertions
+int first 1
+int second 2
+
+; A known range can cross declarations.
+push &first
+push 67
+push 2
+push sizeof(first)
+mul
+fill
+push first
+assertEqual 0x43434343
+push second
+assertEqual 0x43434343
+
+; Page padding belongs to linear memory.
+push 65532
+push 67
+push 4
+fill
+loop 4
+push 65532
+loopIndex
+add
+load8u
+assertEqual 67
+loopEnd
+
+; An empty fill at the memory end is valid.
+push 65536
+push 0
+push 0
+fill
+push 65535
+load8u
+assertEqual 67
+
+; A dynamic address clamped for eight bytes
+; is safe for an eight-byte fill.
+push 69632
+call clampedFill
+loop 8
+push 65528
+loopIndex
+add
+load8u
+assertEqual 88
+loopEnd
+moduleEnd
+
+module invalidFillAssertions
+; Poison the whole page so every byte can
+; be checked after each skipped fill.
+push 0
+push 91
+push 65536
+fill
+
+push 65535
+push 0
+push 2
+fill
+call assertMemoryUnchanged
+
+push -1
+push 0
+push 1
+fill
+call assertMemoryUnchanged
+
+push 65537
+push 0
+push 0
+fill
+call assertMemoryUnchanged
+
+push 0
+push 0
+push -1
+fill
+call assertMemoryUnchanged
+
+; The unsigned shift still produces signed
+; i32 bits, so division yields -1.
+push 0
+push 0
+push -2147483648
+push 0
+shiftRightUnsigned
+push 2147483647
+div
+fill
+call assertMemoryUnchanged
+
+; Large literals wrap to i32 before
+; arithmetic: this count is one, not zero.
+push 65536
+push 0
+push 2^53
+push 1
+add
+push 2^53
+sub
+fill
+call assertMemoryUnchanged
+moduleEnd
 entryEnd
+
+function clampedFill
+#impure
+param int address
+push address
+clampGlobalAddress 8
+push 88
+push 8
+fill
+functionEnd
+
+function assertMemoryUnchanged
+#impure
+local int unchanged
+push 1
+localSet unchanged
+loop 65536
+push unchanged
+loopIndex
+load8u
+push 91
+equal
+and
+localSet unchanged
+loopEnd
+push unchanged
+assert
+functionEnd
