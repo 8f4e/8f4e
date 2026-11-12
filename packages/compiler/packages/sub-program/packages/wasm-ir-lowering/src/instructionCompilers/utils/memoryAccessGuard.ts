@@ -181,6 +181,34 @@ export function guardedMemoryCopy(context: CodegenContext, byteLength: number): 
 	];
 }
 
+/** Builds a guarded memory.fill that skips the entire fill when the byte range is out of bounds. */
+export function guardedMemoryFill(context: CodegenContext): WasmIRInstruction[] {
+	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
+	const valueLocalIndex = allocateLocal(context, { isInteger: true });
+	const lengthLocalIndex = allocateLocal(context, { isInteger: true });
+
+	return [
+		...localSet(lengthLocalIndex),
+		...localSet(valueLocalIndex),
+		...localSet(destinationLocalIndex),
+		...localGet(destinationLocalIndex),
+		...linearMemoryByteLength(),
+		WASM_I32_LE_U,
+		...localGet(lengthLocalIndex),
+		...linearMemoryByteLength(),
+		...localGet(destinationLocalIndex),
+		WASM_I32_SUB,
+		WASM_I32_LE_U,
+		WASM_I32_AND,
+		...ifelse(WASM_TYPE_VOID, [
+			...localGet(destinationLocalIndex),
+			...localGet(valueLocalIndex),
+			...localGet(lengthLocalIndex),
+			{ kind: 'memory.fill' },
+		]),
+	];
+}
+
 /**
  * Builds a guarded store using address and value locals already populated by surrounding bytecode.
  *

@@ -1,0 +1,43 @@
+function loadAt2D
+#export
+#impure
+; Reads an unsigned byte from a
+; row-major width-by-height buffer.
+; Coordinates outside the grid
+; return zero. The buffer must
+; contain width*height bytes.
+param int8u* buffer
+param int width
+param int height
+param int x
+param int y
+
+push x
+push 0
+lessThan
+push x
+push width
+greaterOrEqual
+or
+push y
+push 0
+lessThan
+or
+push y
+push height
+greaterOrEqual
+or
+if
+push 0
+else
+push buffer
+push y
+push width
+mul
+push x
+add
+add
+load8u
+ifEnd int
+
+functionEnd int

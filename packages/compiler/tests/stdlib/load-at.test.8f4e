@@ -29,4 +29,16 @@ push 3
 call loadAt
 assertEqual 44
 moduleEnd
+module loadAtByteAssertions
+int8u[] buffer 4 11 128 255 44
+
+call loadAt &buffer 0
+assertEqual 11
+call loadAt &buffer 1
+assertEqual 128
+call loadAt &buffer 2
+assertEqual 255
+call loadAt &buffer 3
+assertEqual 44
+moduleEnd
 entryEnd

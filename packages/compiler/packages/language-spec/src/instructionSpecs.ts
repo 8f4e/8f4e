@@ -222,6 +222,12 @@ export type MemoryOperationEffectSpec =
 	| {
 			kind: 'copy';
 			addressOperandIndex: number;
+	  }
+	| {
+			kind: 'fill';
+			addressOperandIndex: number;
+			valueOperandIndex: number;
+			lengthOperandIndex: number;
 	  };
 
 /** Additional semantic effects that are not expressed by stack validation alone. */
@@ -806,6 +812,15 @@ export const instructionSpecs = {
 		docs: { shortDescription: 'Copies memory from one pointer range to another.' },
 		stack: stack({ inputs: ['ptr', 'ptr'], outputs: [], effect: stackMutation(2) }),
 		effects: { memory: { kind: 'copy', addressOperandIndex: 0 } },
+	},
+	memoryFill: {
+		sourceArguments: noSourceArguments,
+		placement: moduleOrFunctionPlacement,
+		minOperands: 3,
+		operandTypes: 'int',
+		docs: { shortDescription: 'Fills a runtime-sized memory range with a byte value.' },
+		stack: stack({ inputs: ['ptr', 'int', 'int'], outputs: [], effect: stackMutation(3) }),
+		effects: { memory: { kind: 'fill', addressOperandIndex: 0, valueOperandIndex: 1, lengthOperandIndex: 2 } },
 	},
 	min: withDocsAndStack(binaryArithmeticSpec, {
 		shortDescription: 'Pushes the smaller of two values of the same type.',

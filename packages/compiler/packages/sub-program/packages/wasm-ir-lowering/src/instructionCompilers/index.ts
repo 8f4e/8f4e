@@ -38,6 +38,7 @@ import mapBegin from './mapBegin';
 import mapEnd from './mapEnd';
 import max from './max';
 import memoryCopy from './memoryCopy';
+import memoryFill from './memoryFill';
 import min from './min';
 import mul from './mul';
 import notEqual from './notEqual';
@@ -123,6 +124,7 @@ const instructions = {
 	mapEnd,
 	storeBytes,
 	memoryCopy,
+	memoryFill,
 } as const;
 
 export default instructions;

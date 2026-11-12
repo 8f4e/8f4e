@@ -1,0 +1,85 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+entry test
+module memoryFillAssertions
+int8u[] buffer 8 11 22 33 44 55 66 77 88
+int count 6
+
+; The runtime byte count selects only
+; the requested range. Values truncate
+; to their low eight bits.
+push &buffer
+push 1
+add
+push 511
+push count
+memoryFill
+push &buffer
+load8u
+assertEqual 11
+push &buffer
+push 7
+add
+load8u
+assertEqual 88
+loop 6
+push &buffer
+loopIndex
+add
+push 1
+add
+load8u
+assertEqual 255
+loopEnd
+
+; Empty, negative and oversized
+; ranges leave the memory unchanged.
+push &buffer
+push 0
+push 0
+memoryFill
+push &buffer
+push 0
+push -1
+memoryFill
+push &buffer
+push 0
+push 2147483647
+memoryFill
+push -1
+push 0
+push 1
+memoryFill
+push &buffer
+load8u
+assertEqual 11
+
+; A range crossing the end of linear
+; memory skips the entire fill.
+push 73
+push 65535
+storeBytes 1
+push 65535
+push 0
+push 2
+memoryFill
+push 65535
+load8u
+assertEqual 73
+push 65535
+push 257
+push 1
+memoryFill
+push 65535
+load8u
+assertEqual 1
+push 65536
+push 0
+push 0
+memoryFill
+moduleEnd
+entryEnd
