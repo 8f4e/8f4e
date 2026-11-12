@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-dialogs",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "private": true,
   "description": "Dialog layout and rendering for the 8f4e editor",
   "type": "module",
