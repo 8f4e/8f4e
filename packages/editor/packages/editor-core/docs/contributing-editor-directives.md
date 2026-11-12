@@ -138,11 +138,12 @@ Apply replacement source through the public state helper once the action has che
 ```ts
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 
-applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: false });
+applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }]);
 ```
 
-Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change;
-set `affectsCompilation: true` when the edit changes compiler inputs. It handles empty and unchanged batches.
+Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change.
+It invalidates compilation for directive edits and source-line changes; only in-place changes to ordinary comment
+text are exempt. Empty and unchanged batches are no-ops.
 
 ## Shared Types
 

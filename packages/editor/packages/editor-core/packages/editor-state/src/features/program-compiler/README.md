@@ -8,18 +8,19 @@ Core has no compilation callback or built-in compilation effect.
 
 `state.compilerInputRevision` advances after source edits, block creation/deletion/paste, execution or disabled-state
 toggles, regenerated environment constants, saved control defaults, memory connection removal, and project loading.
-Dragging advances it once on drop when the canonical left-to-right, top-to-bottom order of non-note blocks changes,
-including constants precedence and execution order inside nested project groups. It also advances when a drop changes
-resolved compiler configuration, including when moving a note changes which config directive wins.
+Dragging advances it once on drop when saving changed position directives, even when block order is preserved.
+This also covers constants precedence, execution order inside nested project groups, and which config directive wins.
 Group operations and multi-block paste advance it once after updating their inputs. The revision is monotonic across
 project loads and is not stored in project files.
 
-Selection, caret movement, navigation, favorites, and layout changes that preserve compiler inputs leave the revision
-unchanged. Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state.
+Selection, caret movement, navigation, and layout changes without source edits leave the revision unchanged.
+Call `incrementCompilerInputRevision(store)` after updating compiler inputs and their derived state outside the source-edit helper.
 
-Config schema contributions can set `affectsCompilation: true` to mark their resolved root as a compiler input.
 `applyCodeBlockSourceEdits` emits `codeBlockSourcesChanged { codeBlocks }` to refresh source-derived state and directive
-diagnostics, then advances the revision once if either the source edit or a marked config root changed compiler inputs.
+diagnostics, then advances the revision once for the changed batch. All directive edits (including favorites and
+configuration), line insertions/deletions (including comments and blank lines), and changes to instruction positions
+invalidate compilation. The only exemption is an in-place change to the text of existing ordinary comment-only lines,
+with their positions unchanged. Directive continuation lines are directive source. Identical replacements are no-ops.
 
 Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
 without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the

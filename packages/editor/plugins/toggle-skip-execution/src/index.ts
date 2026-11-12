@@ -13,7 +13,7 @@ export const toggleSkipExecutionPlugin: EditorPlugin = {
 
 			const skipExecution = !codeBlock.code.some(line => isSkipExecutionDirective(line));
 			const result = setSkipExecution(codeBlock.code, skipExecution);
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: result.code }], { affectsCompilation: true });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: result.code }]);
 		};
 
 		events.on(action, onToggle);

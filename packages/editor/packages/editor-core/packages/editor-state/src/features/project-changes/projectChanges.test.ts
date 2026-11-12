@@ -69,9 +69,9 @@ describe('project revision', () => {
 
 	it('announces changed source batches and ignores identical source', () => {
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
 		expect(state.projectChange.revision).toBe(1);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }]);
 		expect(state.projectChange.revision).toBe(1);
 	});
 
@@ -96,7 +96,7 @@ describe('project revision', () => {
 		expect(state.projectChange.revision).toBe(0);
 	});
 
-	it('advances once for a drag position commit, without advancing the compiler revision', () => {
+	it('advances project and compiler revisions once for a drag position commit', () => {
 		block.code.splice(1, 0, '; @pos 0 0');
 		rendering(
 			store,
@@ -111,7 +111,7 @@ describe('project revision', () => {
 		dispatch('pointerup');
 		expect(block.code).toContain('; @pos 2 2');
 		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(0);
+		expect(state.compilerInputRevision).toBe(1);
 	});
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
@@ -157,13 +157,9 @@ describe('project revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.projectChange.revision).toBe(0);
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
-			{
-				affectsCompilation: true,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] },
+		]);
 		expect(state.projectChange.revision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.projectChange.revision).toBe(1);

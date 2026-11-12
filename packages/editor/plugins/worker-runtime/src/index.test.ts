@@ -71,9 +71,7 @@ function setup(config = ['enabled true'], ready = true) {
 		getCodeBuffer,
 		cleanup,
 		configure: (settings: string[]) =>
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(settings) }], {
-				affectsCompilation: true,
-			}),
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(settings) }]),
 		compile: () => {
 			store.set('compiler.isCompiling', true);
 			memory = new WebAssembly.Memory({ initial: 1 });

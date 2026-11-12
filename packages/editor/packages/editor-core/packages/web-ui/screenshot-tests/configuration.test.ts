@@ -67,18 +67,14 @@ test('applies project appearance settings and restores defaults after project re
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('configured-appearance');
 		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[
-				{
-					codeBlock: settings,
-					code: settings.code.map(line =>
-						line.replace('x11miscfixed6x10', 'terminus10x18').replace('#361845', '#102432')
-					),
-				},
-			],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: settings,
+				code: settings.code.map(line =>
+					line.replace('x11miscfixed6x10', 'terminus10x18').replace('#361845', '#102432')
+				),
+			},
+		]);
 		await expect.poll(() => state.viewport.vGrid).toBe(10);
 		expect({ x: block.x, y: block.y }).toEqual({ x: 40, y: 36 });
 		renderer.renderFrame();

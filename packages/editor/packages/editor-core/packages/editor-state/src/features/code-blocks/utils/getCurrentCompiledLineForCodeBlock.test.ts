@@ -41,11 +41,9 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 
 	it('uses newly compiled source positions after comment lines are inserted', async () => {
 		const test = await setup(blockType);
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: test.block, code: [test.block.code[0], '; comment', '', ...test.block.code.slice(1)] }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: test.block, code: [test.block.code[0], '; comment', '', ...test.block.code.slice(1)] },
+		]);
 		test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 5);
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state)).toBeUndefined();
@@ -63,7 +61,7 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		const test = await setup(blockType);
 		const code = [...test.block.code];
 		code[3] = 'mul';
-		applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code }]);
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, 3)).toBeUndefined();
 	});
 

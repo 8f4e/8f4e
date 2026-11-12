@@ -198,18 +198,14 @@ describe('connectors plugin', () => {
 			});
 			test.store.set('compiler.isCompiling', false);
 		};
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: prototype, code: prototype.code.map(line => (line === 'int output' ? 'float output' : line)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: prototype, code: prototype.code.map(line => (line === 'int output' ? 'float output' : line)) },
+		]);
 		await recompile();
 		expect(test.drawLabels(func).map(label => label.text)).toEqual(['int** input', 'float* output']);
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: func, code: func.code.filter(line => !line.startsWith('paramShape')) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: func, code: func.code.filter(line => !line.startsWith('paramShape')) },
+		]);
 		await recompile();
 		expect(test.drawLabels(func)).toEqual([]);
 		expect(func.gaps.size).toBe(0);
@@ -222,9 +218,7 @@ describe('connectors plugin', () => {
 			const block = blocks.find(block => block.name === name)!;
 			const code = [...block.code];
 			for (const directive of ['; @disabled', '; @hide']) {
-				applyCodeBlockSourceEdits(test, [{ codeBlock: block, code: [code[0], directive, ...code.slice(1)] }], {
-					affectsCompilation: true,
-				});
+				applyCodeBlockSourceEdits(test, [{ codeBlock: block, code: [code[0], directive, ...code.slice(1)] }]);
 				expect(test.drawLabels(block)).toEqual([]);
 				expect(block.gaps.size).toBe(0);
 			}

@@ -85,7 +85,7 @@ export async function setup(
 		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
 	};
 	return {
 		store,

@@ -48,11 +48,9 @@ it('finishes anchored positions before notifying observers, including late contr
 	});
 	cleanups.push(contribution.dispose, unsubscribe);
 	expect(block.width).toBe(48 * state.viewport.vGrid);
-	applyCodeBlockSourceEdits(
-		{ store: test.store, events: test.events },
-		[{ codeBlock: block, code: [...block.code.slice(0, -1), 'another line', 'noteEnd'] }],
-		{ affectsCompilation: false }
-	);
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		{ codeBlock: block, code: [...block.code.slice(0, -1), 'another line', 'noteEnd'] },
+	]);
 	expect(notifications).toBeGreaterThanOrEqual(3);
 });
 
@@ -93,11 +91,9 @@ entryEnd`);
 	expect(nested.y + nested.height).toBe(320 + 768 - 2 * test.state.viewport.hGrid);
 	expect(rootBlock).toMatchObject(rootPosition);
 	expect(test.state.codeBlockRendering.entryBounds).toBe(entryBounds);
-	applyCodeBlockSourceEdits(
-		{ store: test.store, events: test.events },
-		[{ codeBlock: group, code: ['group renamed', 'groupEnd'] }],
-		{ affectsCompilation: true }
-	);
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		{ codeBlock: group, code: ['group renamed', 'groupEnd'] },
+	]);
 	expect(child.path).toBe('renamed');
 	expect(nested.projectPath).toBe('renamed');
 	completed.length = 0;
@@ -185,16 +181,12 @@ it('updates the anchored subset when source edits add or remove viewport anchori
 	test.load('8f4e/v1\nnote anchor\n; @pos 2 3\ncontent\nnoteEnd');
 	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'anchor')!;
 	const code = [...block.code];
-	applyCodeBlockSourceEdits(
-		{ store: test.store, events: test.events },
-		[{ codeBlock: block, code: [...code.slice(0, -1), '; @viewport top-left', 'noteEnd'] }],
-		{ affectsCompilation: false }
-	);
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		{ codeBlock: block, code: [...code.slice(0, -1), '; @viewport top-left', 'noteEnd'] },
+	]);
 	updateViewport(test.state, 160, 320, test.events);
 	expect(block).toMatchObject({ x: 176, y: 368 });
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [{ codeBlock: block, code }], {
-		affectsCompilation: false,
-	});
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [{ codeBlock: block, code }]);
 	expect(block).toMatchObject({ x: 16, y: 48 });
 	updateViewport(test.state, 400, 600, test.events);
 	expect(block).toMatchObject({ x: 16, y: 48 });

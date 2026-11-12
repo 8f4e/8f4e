@@ -160,7 +160,7 @@ describe('codeBlockDragger', () => {
 		expect(first.code).toContain('; @pos 6 6');
 		expect(second.code).toContain('; @pos 21 11');
 		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(0);
+		expect(state.compilerInputRevision).toBe(1);
 	});
 
 	describe('stopPropagation behavior', () => {

@@ -66,7 +66,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		const selectedRow = block.cursor.row;
 		const changed = [...block.code];
 		changed[selectedRow] = 'mul';
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: changed }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: changed }]);
 		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');
 		expect(tooltip.getState().text.some(line => line.startsWith('before'))).toBe(false);
 	});
@@ -100,7 +100,7 @@ entryEnd`);
 		const editLine = (line: string) => {
 			const code = [...block.code];
 			code[2] = line;
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
 		};
 		editLine('mul');
 		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');

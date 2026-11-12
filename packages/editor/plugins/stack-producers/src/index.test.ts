@@ -110,11 +110,9 @@ it('clears outdated producer rows after edits, including when installed after an
 	const test = await setup();
 	test.select(5);
 	expect(test.drawBackground()).toHaveLength(2);
-	applyCodeBlockSourceEdits(
-		test,
-		[{ codeBlock: test.block, code: [...test.block.code.slice(0, 1), '; inserted', ...test.block.code.slice(1)] }],
-		{ affectsCompilation: true }
-	);
+	applyCodeBlockSourceEdits(test, [
+		{ codeBlock: test.block, code: [...test.block.code.slice(0, 1), '; inserted', ...test.block.code.slice(1)] },
+	]);
 	expect(test.drawBackground()).toEqual([]);
 	test.reinstall();
 	test.select(6);

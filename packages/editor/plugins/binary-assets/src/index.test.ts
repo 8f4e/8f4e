@@ -60,9 +60,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 	const env = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
 	const editConfig = (update: (code: string[]) => string[]) => {
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'config')!;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: update(codeBlock.code) }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: update(codeBlock.code) }]);
 	};
 	return { events, store, state, memory, getMemoryBytes, disposePlugin, env, editConfig };
 }

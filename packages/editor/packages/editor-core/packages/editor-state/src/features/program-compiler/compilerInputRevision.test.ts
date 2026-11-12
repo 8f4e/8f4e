@@ -77,10 +77,10 @@ describe('compiler input revision', () => {
 		const sources: string[][] = [];
 		store.subscribe('compilerInputRevision', () => sources.push([...block.code]));
 		const code = ['module main', 'push 12', 'drop', 'moduleEnd'];
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
 		expect(state.compilerInputRevision).toBe(1);
 		expect(sources).toEqual([code]);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...code] }]);
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
@@ -106,17 +106,13 @@ describe('compiler input revision', () => {
 		expect(state.compilerInputRevision).toBe(0);
 		expect(onInputChanged).not.toHaveBeenCalled();
 
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }],
-			{
-				affectsCompilation: true,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] },
+		]);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
-	it('ignores dragging that preserves block order even though it saves a position directive in source', () => {
+	it('announces a saved position directive even when dragging preserves block order', () => {
 		store.set(
 			'editorConfigValidators.example',
 			createSchemaEditorConfigValidator({ root: 'example', schema: { type: 'integer' } })
@@ -138,8 +134,8 @@ describe('compiler input revision', () => {
 		expect(block.gridX).toBe(2);
 		expect(block.gridY).toBe(2);
 		expect(state.editorConfig.example).toBe(120);
-		expect(state.compilerInputRevision).toBe(0);
-		expect(onInputChanged).not.toHaveBeenCalled();
+		expect(state.compilerInputRevision).toBe(1);
+		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
 	it('announces changes after adding, disabling, enabling, and deleting a block', async () => {
@@ -193,13 +189,9 @@ describe('compiler input revision', () => {
 		dispatch('openProjectGroup', { codeBlock: block });
 		store.set('codeBlockRendering.selectedCodeBlock', child);
 		expect(state.compilerInputRevision).toBe(0);
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }],
-			{
-				affectsCompilation: true,
-			}
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] },
+		]);
 		expect(state.compilerInputRevision).toBe(1);
 		dispatch('goToParentProjectGroup');
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);

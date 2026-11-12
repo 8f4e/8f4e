@@ -99,7 +99,7 @@ describe('compilation after spatial order changes', () => {
 		expect(test.onInputChanged).toHaveBeenCalledTimes(2);
 	});
 
-	it('keeps repositioning and note-only order changes out of compilation', () => {
+	it('announces saved position directives for repositioning and note-only order changes', () => {
 		const test = setup(`8f4e/v1\n${presets}`);
 		const blocks = test.state.codeBlockRendering.currentProject.blocks;
 		const first = blocks.find(block => block.name === 'preset')!;
@@ -112,7 +112,7 @@ describe('compilation after spatial order changes', () => {
 		test.move(300);
 		test.drop();
 		expect(note.code).toContain('; @pos 300 30');
-		expect(test.onInputChanged).not.toHaveBeenCalled();
+		expect(test.onInputChanged).toHaveBeenCalledTimes(2);
 	});
 
 	it('announces a note reorder when it changes compiler config', () => {
@@ -126,7 +126,7 @@ note second
 ; @pos 80 0
 ; @config compileSetting 2
 noteEnd`,
-			{ compileSetting: { root: 'compileSetting', schema: { type: 'integer' }, affectsCompilation: true } }
+			{ compileSetting: { root: 'compileSetting', schema: { type: 'integer' } } }
 		);
 		const first = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'first')!;
 		expect(test.state.editorConfig.compileSetting).toBe(2);

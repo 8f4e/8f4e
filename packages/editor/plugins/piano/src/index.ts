@@ -41,7 +41,7 @@ export function createPianoPlugin({
 			} = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getPianoDefaultEdits(state, keyboardsByBlock.get(codeBlock) ?? []);
-				applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: true });
+				applyCodeBlockSourceEdits({ store, events }, edits);
 			};
 			events.on(saveAction, onSave);
 			return () => {

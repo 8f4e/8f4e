@@ -88,11 +88,9 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) },
+		]);
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 		const editing = createEditorEditingHandle(test.store, test.events);
 		cleanups.push(editing.dispose);
@@ -142,20 +140,16 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) },
+		]);
 		test.events.dispatch('undo');
 		const restored = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'retained')!;
 		test.storage.setItem.mockClear();
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		applyCodeBlockSourceEdits(test, [{ codeBlock: restored, code: [...restored.code] }], {
-			affectsCompilation: true,
-		});
+		applyCodeBlockSourceEdits(test, [{ codeBlock: restored, code: [...restored.code] }]);
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
 		expect(test.state.redoStack).toHaveLength(1);
@@ -238,7 +232,7 @@ describe('session persistence plugin', () => {
 		expect(test.state.historyStack).toHaveLength(0);
 	});
 
-	it('tracks position edits across all consumers while compilation stays separate', async () => {
+	it('shares position edits across consumers and keeps compiler-only requests separate', async () => {
 		vi.useFakeTimers();
 		const test = setup();
 		test.boot();
@@ -264,7 +258,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('pointerup');
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit' });
 		expect(editing.handle.getRevision()).not.toBe(token);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toEqual([
 			'module retained',

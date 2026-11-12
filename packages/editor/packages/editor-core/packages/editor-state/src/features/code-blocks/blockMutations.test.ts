@@ -25,64 +25,53 @@ afterEach(() => {
 });
 
 describe('block source edits', () => {
-	it.each([false, true])(
-		'refreshes changed blocks before publishing the whole batch: affectsCompilation=%s',
-		affectsCompilation => {
-			const { store, events, state, first, second, untouched } = setup();
-			state.codeBlockRendering.selectedCodeBlock = untouched;
-			const firstCode = ['module first', 'int value 1', 'moduleEnd'];
-			const secondCode = ['module second', 'int value 2', 'moduleEnd'];
-			const untouchedCode = untouched.code;
-			const refreshed: unknown[] = [];
-			const onCompilerChange = vi.fn(() => {
-				expect(first.code).toEqual(firstCode);
-				expect(second.code).toEqual(secondCode);
-			});
-			const onProjectChange = vi.fn(() => {
-				expect(refreshed).toEqual([first, second]);
-				expect(state.compilerInputRevision).toBe(affectsCompilation ? 1 : 0);
-			});
-			const onSourcesChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockSourcesChanged']) => {
-				refreshed.push(...codeBlocks);
-				expect(first.code).toEqual(firstCode);
-				expect(second.code).toEqual(secondCode);
-			});
-			events.on('codeBlockSourcesChanged', onSourcesChanged);
-			store.subscribe('compilerInputRevision', onCompilerChange);
-			store.subscribe('projectChange', onProjectChange);
-			expect(
-				applyCodeBlockSourceEdits(
-					{ store, events },
-					[
-						{ codeBlock: first, code: firstCode },
-						{ codeBlock: untouched, code: [...untouchedCode] },
-						{ codeBlock: second, code: secondCode },
-					],
-					{ affectsCompilation }
-				)
-			).toBe(true);
-			expect(first.lastUpdated).toBeGreaterThan(1);
-			expect(second.lastUpdated).toBeGreaterThan(1);
-			expect(untouched.lastUpdated).toBe(1);
-			expect(untouched.code).toBe(untouchedCode);
-			expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [first, second] });
-			expect(onCompilerChange).toHaveBeenCalledTimes(affectsCompilation ? 1 : 0);
-			expect(onProjectChange).toHaveBeenCalledTimes(1);
-			expect(state.projectChange.revision).toBe(1);
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(untouched);
-		}
-	);
+	it('refreshes changed blocks before publishing the whole batch', () => {
+		const { store, events, state, first, second, untouched } = setup();
+		state.codeBlockRendering.selectedCodeBlock = untouched;
+		const firstCode = ['module first', 'int value 1', 'moduleEnd'];
+		const secondCode = ['module second', 'int value 2', 'moduleEnd'];
+		const untouchedCode = untouched.code;
+		const refreshed: unknown[] = [];
+		const onCompilerChange = vi.fn(() => {
+			expect(first.code).toEqual(firstCode);
+			expect(second.code).toEqual(secondCode);
+		});
+		const onProjectChange = vi.fn(() => {
+			expect(refreshed).toEqual([first, second]);
+			expect(state.compilerInputRevision).toBe(1);
+		});
+		const onSourcesChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockSourcesChanged']) => {
+			refreshed.push(...codeBlocks);
+			expect(first.code).toEqual(firstCode);
+			expect(second.code).toEqual(secondCode);
+		});
+		events.on('codeBlockSourcesChanged', onSourcesChanged);
+		store.subscribe('compilerInputRevision', onCompilerChange);
+		store.subscribe('projectChange', onProjectChange);
+		expect(
+			applyCodeBlockSourceEdits({ store, events }, [
+				{ codeBlock: first, code: firstCode },
+				{ codeBlock: untouched, code: [...untouchedCode] },
+				{ codeBlock: second, code: secondCode },
+			])
+		).toBe(true);
+		expect(first.lastUpdated).toBeGreaterThan(1);
+		expect(second.lastUpdated).toBeGreaterThan(1);
+		expect(untouched.lastUpdated).toBe(1);
+		expect(untouched.code).toBe(untouchedCode);
+		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [first, second] });
+		expect(onCompilerChange).toHaveBeenCalledTimes(1);
+		expect(onProjectChange).toHaveBeenCalledTimes(1);
+		expect(state.projectChange.revision).toBe(1);
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(untouched);
+	});
 
 	it('does not refresh or publish empty and unchanged batches', () => {
 		const { store, events, state, first } = setup();
 		const onRefresh = vi.fn();
 		events.on('codeBlockSourcesChanged', onRefresh);
-		expect(applyCodeBlockSourceEdits({ store, events }, [], { affectsCompilation: true })).toBe(false);
-		expect(
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: first, code: [...first.code] }], {
-				affectsCompilation: true,
-			})
-		).toBe(false);
+		expect(applyCodeBlockSourceEdits({ store, events }, [])).toBe(false);
+		expect(applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: first, code: [...first.code] }])).toBe(false);
 		expect(first.lastUpdated).toBe(1);
 		expect(onRefresh).not.toHaveBeenCalled();
 		expect(state.projectChange.revision).toBe(0);

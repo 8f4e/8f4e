@@ -317,11 +317,9 @@ describe('public editor editing handle', () => {
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 1;
 		block.cursor.col = block.code[1].length;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}9` : line)) }],
-			{ affectsCompilation: true }
-		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}9` : line)) },
+		]);
 		expect(() =>
 			editing.applyEdits({
 				expectedRevision: revision,
@@ -481,11 +479,9 @@ describe('public editor editing handle', () => {
 			store.set('codeBlockRendering.selectedCodeBlock', block);
 			block.cursor.row = 1;
 			block.cursor.col = block.code[1].length;
-			applyCodeBlockSourceEdits(
-				{ store, events },
-				[{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}2` : line)) }],
-				{ affectsCompilation: true }
-			);
+			applyCodeBlockSourceEdits({ store, events }, [
+				{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}2` : line)) },
+			]);
 			editing.applyEdits({
 				expectedRevision: editing.getRevision(),
 				edits: [{ type: 'update', blockId: getEditorBlockId(block), code: [...block.code] }],

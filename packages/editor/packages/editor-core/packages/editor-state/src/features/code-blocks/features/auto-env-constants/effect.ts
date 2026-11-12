@@ -47,9 +47,7 @@ export function updateEnvConstantsBlock(store: StateManager<State>, events: Even
 	}
 	const newCode = generateEnvConstantsBlock(state, { x: targetBlock.gridX, y: targetBlock.gridY });
 
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: targetBlock, code: newCode }], {
-		affectsCompilation: true,
-	});
+	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: targetBlock, code: newCode }]);
 }
 
 /** Ensure environment source exists on load and refresh it when its contributions change. */
