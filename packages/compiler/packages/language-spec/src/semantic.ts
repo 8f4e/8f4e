@@ -116,6 +116,8 @@ export type CompilationMode = CompilerSourceCompilationMode;
 export interface CompilationContext extends BlockState {
 	namespace: Namespace;
 	locals: LocalMap;
+	/** Value facts for source locals in the current straight-line control-flow region. */
+	localValueFacts: Partial<Record<number, StackItem>>;
 	stack: Stack;
 	memoryPlan: MemoryLayoutPlan;
 	memoryAliases: ProjectMemoryAliasLookup;
@@ -160,8 +162,8 @@ export interface StackValue {
 
 /**
  * Type and value facts known about one address-like integer.
- * `pointsTo` describes how to interpret the address; only `address.safeRange` or
- * `address.safeAccessByteWidth` proves that a memory access is statically safe.
+ * `pointsTo` describes how to interpret the address. Bounds metadata or a known
+ * value checked against imported memory limits can prove an access safe.
  */
 export interface StackAddress {
 	kind: 'address';
@@ -202,6 +204,8 @@ export interface StackAnalysisClampFact {
 
 export interface StackAnalysisLineFacts {
 	stackAnalysis: StackAnalysisResult;
+	/** Proven input address for a dereference through a source local. */
+	pointerAddress?: StackItem;
 	targetFunctionId?: string;
 	numericOperandKind?: StackAnalysisNumericValueKind;
 	map?: StackAnalysisMapFact;
@@ -242,7 +246,7 @@ export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame> {
 	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
 	enableMemoryGuards: boolean;
-	/** Minimum imported WebAssembly linear-memory size in bytes, including page padding. */
+	/** Imported linear-memory size in bytes, including page padding; import minimum and maximum are equal. */
 	minimumMemoryBytes: number;
 }
 

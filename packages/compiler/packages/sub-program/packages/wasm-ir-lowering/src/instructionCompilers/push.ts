@@ -41,7 +41,7 @@ function isResolvedReferencePushLine(line: ResolvedPushLine): line is ResolvedRe
  * Instruction compiler for `push`.
  * @see [Instruction docs](../../docs/instructions/stack.md)
  */
-const push: InstructionCompiler<CodegenPushLine> = (line: CodegenPushLine, context) => {
+const push: InstructionCompiler<CodegenPushLine> = (line: CodegenPushLine, context, facts) => {
 	if (!('resolvedTarget' in line)) {
 		const argument = line.arguments[0];
 		return argument.type === ArgumentType.STRING_LITERAL
@@ -59,7 +59,7 @@ const push: InstructionCompiler<CodegenPushLine> = (line: CodegenPushLine, conte
 		return pushMemoryPointer(line, context);
 	}
 	if (isResolvedLocalPointerPushLine(line)) {
-		return pushLocalPointer(line, context);
+		return pushLocalPointer(line, context, facts.pointerAddress);
 	}
 	if (isResolvedLocalPushLine(line)) {
 		return pushLocal(line, context);

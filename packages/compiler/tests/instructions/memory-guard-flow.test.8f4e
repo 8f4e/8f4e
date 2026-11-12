@@ -1,0 +1,152 @@
+8f4e/v1
+
+entry test
+module source
+int value 42
+int* pointer &value
+
+push &pointer
+push -1
+store
+push 0
+push 19
+store
+
+push pointer
+call readClamped
+assertEqual 19
+push pointer
+call readReassigned
+assertEqual 0
+push pointer
+push 0
+call readConditional
+assertEqual 19
+push pointer
+push 1
+call readConditional
+assertEqual 0
+push pointer
+call readLoop
+assertEqual 0
+
+push 100
+push 73
+store
+push 1
+call conditionalFill
+push 100
+load
+assertEqual 73
+push 0
+call conditionalFill
+push 100
+load8u
+assertEqual 0
+
+push 1
+call conditionalDivisor
+assertEqual 10
+push 0
+call conditionalDivisor
+assertEqual 5
+
+; A forward branch may provide the block result.
+block
+push 65536
+branch 0
+drop
+push 100
+blockEnd int
+push 0
+push 1
+fill
+
+; An empty copy still consumes both addresses.
+push -1
+push -1
+memoryCopy 0
+push value
+assertEqual 42
+moduleEnd
+entryEnd
+
+function readClamped
+#impure
+param int* pointer
+local int* safe
+push pointer
+clampGlobalAddress 4
+localSet safe
+push *safe
+functionEnd int
+
+function readReassigned
+#impure
+param int* pointer
+local int* safe
+push pointer
+clampGlobalAddress 4
+localSet safe
+push pointer
+localSet safe
+push *safe
+functionEnd int
+
+function readConditional
+#impure
+param int* pointer
+param int change
+local int* safe
+push pointer
+clampGlobalAddress 4
+localSet safe
+push change
+if
+push pointer
+localSet safe
+ifEnd
+push *safe
+functionEnd int
+
+function readLoop
+#impure
+param int* pointer
+local int* current
+push &source:value
+localSet current
+loop 2
+push *current
+drop
+push pointer
+localSet current
+loopEnd
+push *current
+functionEnd int
+
+function conditionalFill
+#impure
+param int condition
+push condition
+if
+push 65536
+else
+push 100
+ifEnd int
+push 0
+push 1
+fill
+functionEnd
+
+function conditionalDivisor
+param int condition
+push 10
+push condition
+if
+push 0
+else
+push 2
+ifEnd int
+ensureNonZero
+div
+functionEnd int

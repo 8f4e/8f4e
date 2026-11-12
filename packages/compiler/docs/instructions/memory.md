@@ -9,6 +9,11 @@ their own memory.
 
 Memory access instructions are non-trapping for out-of-bounds addresses. When the compiler cannot prove that an address is within a safe memory range, it emits a runtime bounds guard. Guarded loads return `0` when the address is out of bounds, and guarded stores skip the write.
 
+Bounds cover the complete imported WebAssembly memory, including page padding. Accesses may cross 8f4e declarations
+and modules. Known addresses and proven access widths eliminate redundant guards for loads, stores, byte stores,
+copies, and fills. Each copy range is checked independently. The memory import has equal minimum and maximum page
+counts, so remaining guards compare against a constant memory size.
+
 ### load
 
 The load instruction consumes an address from the stack and pushes the 32-bit integer value stored at that address.

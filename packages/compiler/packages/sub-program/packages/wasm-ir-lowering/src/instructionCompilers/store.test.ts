@@ -1,3 +1,4 @@
+import { WASM_IF } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -183,6 +184,6 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 	});
 });

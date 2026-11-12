@@ -27,12 +27,10 @@ describe('blockEnd stack analysis', () => {
 		expect(facts.stackAnalysis).toEqual({
 			stackBefore: [{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(2.5) }],
 			consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(2.5) }],
-			producedStackItems: [{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(2.5) }],
-			stackAfter: [{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(2.5) }],
+			producedStackItems: [{ kind: 'value', valueType: 'float' }],
+			stackAfter: [{ kind: 'value', valueType: 'float' }],
 		});
-		expect(context.stack).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(2.5) },
-		]);
+		expect(context.stack).toEqual([{ kind: 'value', valueType: 'float' }]);
 	});
 
 	it('accepts and restores an integer result when int is expected', () => {
@@ -54,10 +52,8 @@ describe('blockEnd stack analysis', () => {
 			context
 		);
 
-		expect(facts.stackAnalysis.producedStackItems).toEqual([
-			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 7 },
-		]);
-		expect(context.stack).toEqual([{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 7 }]);
+		expect(facts.stackAnalysis.producedStackItems).toEqual([{ kind: 'value', valueType: 'int' }]);
+		expect(context.stack).toEqual([{ kind: 'value', valueType: 'int' }]);
 	});
 
 	it.each(['int', 'float64'] as const)('rejects a %s operand when float is expected', valueType => {

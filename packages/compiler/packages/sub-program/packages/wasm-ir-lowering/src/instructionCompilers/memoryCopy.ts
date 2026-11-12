@@ -1,7 +1,8 @@
+import { WASM_DROP } from '@8f4e/compiler-wasm-utils';
 import type { InstructionCompiler, ResolvedMemoryCopyLine } from '@8f4e/language-spec';
 import { getInstructionSpec } from '@8f4e/language-spec';
 import { i32const, memoryCopy as wasmMemoryCopy } from '../operations';
-import { guardedMemoryCopy, isSafeMemoryCopy } from './utils/memoryAccessGuard';
+import { guardedMemoryCopy, isSafeMemoryAccess } from './utils/memoryAccessGuard';
 import { saveByteCode } from './utils/saveByteCode';
 
 /**
@@ -17,14 +18,18 @@ const memoryCopy: InstructionCompiler<ResolvedMemoryCopyLine> = (line, context, 
 	const memoryCopyByteCode = wasmMemoryCopy();
 
 	if (byteLength === 0) {
-		return context;
+		return saveByteCode(context, [WASM_DROP, WASM_DROP]);
 	}
 
-	if (!context.enableMemoryGuards || isSafeMemoryCopy(destination, source, byteLength)) {
+	const safeRanges = {
+		destination: isSafeMemoryAccess(destination, byteLength, context.minimumMemoryBytes),
+		source: isSafeMemoryAccess(source, byteLength, context.minimumMemoryBytes),
+	};
+	if (!context.enableMemoryGuards || (safeRanges.destination && safeRanges.source)) {
 		return saveByteCode(context, [...i32const(byteLength), ...memoryCopyByteCode]);
 	}
 
-	return saveByteCode(context, guardedMemoryCopy(context, byteLength));
+	return saveByteCode(context, guardedMemoryCopy(context, byteLength, safeRanges));
 };
 
 export default memoryCopy;

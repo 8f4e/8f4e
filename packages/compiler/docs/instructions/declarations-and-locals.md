@@ -360,6 +360,11 @@ Floating-point assignments must match the destination local or parameter's decla
 Pointer assignments must exactly match the destination's pointee base type and pointer depth. A raw `int`, a different
 pointer type, or a pointer assigned to an `int` local is a compiler error.
 
+Assignments preserve known values, nonzero facts, and proven address bounds for subsequent reads in the same
+straight-line control-flow region. For example, saving a clamped pointer to a local preserves its safe access width.
+Reassignment replaces these facts. Branches, joins, and loops discard local value proofs until a later assignment
+establishes them again.
+
 #### Examples
 
 ```
