@@ -1,3 +1,4 @@
+import type { ResolvedPalette } from '@8f4e/editor-palette';
 import { logError } from '@8f4e/editor-state';
 import type { State } from '@8f4e/editor-state-types';
 import type { EditorRenderLayer } from '@8f4e/web-ui';
@@ -7,6 +8,7 @@ import { TextureDrawer } from './texture-drawer';
 
 interface TextureRenderLayerOptions {
 	gl: WebGL2RenderingContext;
+	palette: ResolvedPalette;
 	state: State;
 	bindings: ReturnType<typeof createTextureBindings>;
 	textures: ReturnType<typeof createTextureLayout>;
@@ -15,6 +17,7 @@ interface TextureRenderLayerOptions {
 /** Own GPU resources, visible uploads, and conflict reporting for the texture pass. */
 export function createTextureRenderLayer({
 	gl,
+	palette,
 	state,
 	bindings,
 	textures,
@@ -52,10 +55,13 @@ export function createTextureRenderLayer({
 							source.format
 						);
 					visibleAddresses.add(address);
-					drawer.drawTexture(address, x, y, width, height, crop);
+					drawer.drawTexture(address, x, y, width, height, crop, palette);
 				}
 			}
 			drawer?.retainTextures(visibleAddresses);
+		},
+		loadPalette: nextPalette => {
+			palette = nextPalette;
 		},
 		releaseMemory: () => drawer?.releaseMemory(),
 		destroy: () => drawer?.destroy(),
