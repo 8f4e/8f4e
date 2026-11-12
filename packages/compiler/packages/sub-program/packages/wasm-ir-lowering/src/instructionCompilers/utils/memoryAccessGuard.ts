@@ -181,6 +181,15 @@ export function guardedMemoryCopy(context: CodegenContext, byteLength: number): 
 	];
 }
 
+/** Proves a fill fits in linear memory without imposing 8f4e declaration boundaries. */
+export function isSafeMemoryFill(destination: StackItem, length: StackItem, minimumMemoryBytes: number): boolean {
+	const byteLength = length.knownValue;
+	if (byteLength === undefined || byteLength < 0) return false;
+	if (byteLength > 0 && isSafeMemoryAccess(destination, byteLength)) return true;
+	const address = destination.knownValue === undefined ? undefined : destination.knownValue >>> 0;
+	return address !== undefined && address <= minimumMemoryBytes && byteLength <= minimumMemoryBytes - address;
+}
+
 /** Builds a guarded memory.fill that skips the entire fill when the byte range is out of bounds. */
 export function guardedMemoryFill(context: CodegenContext): WasmIRInstruction[] {
 	const destinationLocalIndex = allocateLocal(context, { isInteger: true });

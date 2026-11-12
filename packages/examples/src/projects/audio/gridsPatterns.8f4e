@@ -379,13 +379,6 @@ entry main
 module sequencer
 ; @pos -163 0
 
-int& outputsBd &outputs:bd
-int& outputsSd &outputs:sd
-int& outputsHh &outputs:hh
-int& outputsAccentBD &outputs:accentBD
-int& outputsAccentSD &outputs:accentSD
-int& outputsAccentHH &outputs:accentHH
-
 int* trigger
 int step
 int nextStep
@@ -393,29 +386,10 @@ int previousTrigger
 int tick
 
 ; Trigger outputs last one sample.
-push outputsBd
+push &outputs:bd
 push 0
-store
-
-push outputsSd
-push 0
-store
-
-push outputsHh
-push 0
-store
-
-push outputsAccentBD
-push 0
-store
-
-push outputsAccentSD
-push 0
-store
-
-push outputsAccentHH
-push 0
-store
+push end(outputs:)-&outputs:bd
+fill
 
 push &tick
 push *trigger
