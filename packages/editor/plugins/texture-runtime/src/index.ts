@@ -81,8 +81,8 @@ export function createTextureRuntimePlugin({
 			store.set('editorConfigSchemaContributions.textureRuntime', TEXTURE_RUNTIME_CONFIG);
 			const bindings = createTextureBindings(store);
 			const textures = createTextureLayout(layout);
-			const unregisterLayer = drawers.registerRenderLayer(({ gl }) => {
-				const renderLayer = createTextureRenderLayer({ gl, state, bindings, textures });
+			const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
+				const renderLayer = createTextureRenderLayer({ gl, palette, state, bindings, textures });
 				return {
 					...renderLayer,
 					draw: frame => {

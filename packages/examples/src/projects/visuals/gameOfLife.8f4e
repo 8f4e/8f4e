@@ -215,7 +215,7 @@ const BYTE_COUNT ROW_BYTES*HEIGHT
 const SEED_WIDTH WIDTH/2
 const SEED_HEIGHT HEIGHT/2
 
-; Two packed black/white buffers, 
+; Two packed one-bit buffers,
 ; MSB first.
 int8u[] mono BYTE_COUNT
 int8u[] next BYTE_COUNT

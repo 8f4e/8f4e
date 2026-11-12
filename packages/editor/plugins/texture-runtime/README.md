@@ -35,10 +35,16 @@ change the view geometry. Missing or undersized uploads skip drawing while the r
 
 | Type | Source layout |
 | --- | --- |
-| `1bit` | Black/white bits, MSB first; each row occupies `ceil(width / 8)` bytes and unused trailing bits are ignored |
+| `1bit` | Packed bits, MSB first; each row occupies `ceil(width / 8)` bytes and unused trailing bits are ignored |
 | `mono` | One unsigned grayscale byte per pixel, 0 black through 255 white |
 | `rgb` | Three unsigned bytes per pixel, red/green/blue; opaque |
 | `rgba` | Four unsigned bytes per pixel, red/green/blue/alpha |
+
+One-bit views map `0` to the project's resolved `surfaceBase` color and `1` to `inkBase`, including their alpha.
+The colors follow `color.surface` and `color.ink` configuration changes immediately, using the editor's default
+palette when those colors are unspecified. The directive syntax and packed source bytes are unchanged.
+
+![Game of Life using its project's surface and ink colors](docs/screenshots/project-palette.png)
 
 All formats use top-to-bottom rows and nearest sampling. Multiple directives can display different buffers, or view
 the same buffer at different scales. One WebGL program and rectangle serve every view; a format uniform controls

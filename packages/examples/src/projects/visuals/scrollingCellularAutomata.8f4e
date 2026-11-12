@@ -170,7 +170,7 @@ const HEIGHT 256
 const ROW_BYTES WIDTH/8
 const BYTE_COUNT ROW_BYTES*HEIGHT
 
-; Packed black/white pixels, MSB first.
+; Packed one-bit pixels, MSB first.
 int8u[] mono BYTE_COUNT
 
 ; @textureUpload &mono 1bit 256 256

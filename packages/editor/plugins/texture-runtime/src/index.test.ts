@@ -147,6 +147,7 @@ async function setup({
 		events,
 		frame,
 		releaseMemory: layers.releaseMemory,
+		loadPalette: layers.loadPalette,
 		settle,
 		dispose,
 		instantiate,
@@ -181,6 +182,27 @@ async function setup({
 		},
 	};
 }
+
+it('uses the current palette for one-bit views and follows color edits without recreating GPU resources', async () => {
+	const test = await setup({ config: '' });
+	test.editTextures('; @textureUpload &rgba 1bit 1 1\n; @texture &rgba 32 1 1');
+	const first = resolvePalette({ surface: '#203040', ink: '#c0d0e0' });
+	test.loadPalette(first);
+	test.frame();
+	const colors = () =>
+		test.gl.uniform4f.mock.calls
+			.filter(call => ['u_bitZeroColor', 'u_bitOneColor'].includes((call[0] as { name: string }).name))
+			.slice(-2)
+			.map(call => call.slice(1));
+	expect(colors()).toEqual([first.rgba.surfaceBase, first.rgba.inkBase]);
+	const second = resolvePalette({ surface: '#c4c797', ink: '#28362a' });
+	test.loadPalette(second);
+	test.frame();
+	expect(colors()).toEqual([second.rgba.surfaceBase, second.rgba.inkBase]);
+	expect(test.gl.createProgram).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).toHaveBeenCalledOnce();
+	expect(test.instantiate).not.toHaveBeenCalled();
+});
 
 it('executes once per frame for multiple textures, uploads updated pixels, and follows block movement', async () => {
 	const test = await setup();
