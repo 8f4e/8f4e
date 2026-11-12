@@ -224,6 +224,12 @@ export const projects = [
 		description: 'Change the rule as new generations scroll upward, preserving the patterns already drawn.',
 		path: 'visuals/scrollingCellularAutomata.8f4e',
 	},
+	{
+		id: 'game-of-life',
+		title: 'Conway’s Game of Life',
+		description: 'Watch a seeded world evolve with Conway’s rules, and pause or restart the simulation.',
+		path: 'visuals/gameOfLife.8f4e',
+	},
 ];
 
 export const projectCategories = [

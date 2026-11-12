@@ -1,0 +1,264 @@
+8f4e/v1
+
+includes
+; @pos -132 -30
+include std/grid/indexToXY
+include std/memory/loadBitAt2D
+include std/memory/storeBitAt2D
+include std/random/xorshift
+includesEnd
+
+function evolveCell
+; @pos -81 -30
+param int alive
+param int neighbors
+
+; Birth with three neighbors.
+; Survive with two or three.
+push neighbors
+push 3
+equal
+push alive
+push neighbors
+push 2
+equal
+and
+or
+functionEnd int
+
+function countNeighbors
+; @pos -43 -30
+#impure
+use screen
+param int8u* buffer
+param int x
+param int y
+
+local int dx
+local int dy
+local int neighbors
+
+; Visit the surrounding 
+; 3 x 3 grid, excluding
+; the center cell.
+loop 9
+loopIndex
+push 4
+notEqual
+if
+loopIndex
+push 3
+call indexToXY
+localSet dy
+localSet dx
+
+push neighbors
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push dx
+add
+push 1
+sub
+push y
+push dy
+add
+push 1
+sub
+call loadBitAt2D
+add
+localSet neighbors
+ifEnd
+loopEnd
+
+push neighbors
+functionEnd int
+
+function drawGeneration
+; @pos -10 -30
+#impure
+use screen
+param int8u* current
+param int8u* next
+
+local int x
+local int y
+
+; Read only the current 
+; generation.
+; Write every cell into
+; the next one.
+loop PIXEL_COUNT
+loopIndex
+push WIDTH
+call indexToXY
+localSet y
+localSet x
+
+push next
+push WIDTH
+push HEIGHT
+push x
+push y
+
+push current
+push WIDTH
+push HEIGHT
+push x
+push y
+call loadBitAt2D
+
+push current
+push x
+push y
+call countNeighbors
+call evolveCell
+call storeBitAt2D
+loopEnd
+functionEnd
+
+function seedWorld
+; @pos 24 -30
+#impure
+use screen
+param int8u* buffer
+param int* randomState
+
+local int x
+local int y
+
+push buffer
+push 0
+push BYTE_COUNT
+fill
+
+; Fill the central patch at
+; 25% density.
+; The same seed recreates
+; the same world.
+loop SEED_WIDTH*SEED_HEIGHT
+loopIndex
+push SEED_WIDTH
+call indexToXY
+localSet y
+localSet x
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push WIDTH/4
+add
+push y
+push HEIGHT/4
+add
+push randomState
+call xorshift
+push 3
+and
+equalToZero
+call storeBitAt2D
+loopEnd
+functionEnd
+
+constants env
+; @pos -132 -5
+; Auto-generated environment constants
+; Changes will be overwritten
+
+
+constantsEnd
+
+note
+; @pos -132 4
+; @config export.fileName gameOfLife
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+entry main
+module screen
+; @pos 80 -30
+; @home right
+
+const WIDTH 128
+const HEIGHT 128
+const PIXEL_COUNT WIDTH*HEIGHT
+; WIDTH must be a multiple of eight.
+const ROW_BYTES WIDTH/8
+const BYTE_COUNT ROW_BYTES*HEIGHT
+const SEED_WIDTH WIDTH/2
+const SEED_HEIGHT HEIGHT/2
+
+; Two packed black/white buffers, 
+; MSB first.
+int8u[] mono BYTE_COUNT
+int8u[] next BYTE_COUNT
+
+; @textureUpload &mono 1bit 128 128
+; @texture &mono 2 128 128
+moduleEnd
+module simulation
+; @pos 126 -30
+use screen
+
+int running 1
+; @switch &running
+
+int seed 1 ; @w
+; @slider &seed 1 255
+
+int restart
+; @button &restart
+
+int generation ; @w
+
+int initialized
+int randomState
+int8u* current &screen:mono
+int8u* next &screen:next
+
+push initialized
+equalToZero
+push restart
+or
+if
+push &randomState
+push seed
+store
+push current
+push &randomState
+call seedWorld
+
+push &generation
+push 0
+store
+push &initialized
+push 1
+store
+push &restart
+push 0
+store
+else
+push running
+if
+push current
+push next
+call drawGeneration
+
+; Publish the completed 
+; generation.
+push current
+push next
+memoryCopy BYTE_COUNT
+
+push &generation
+push generation
+push 1
+add
+store
+ifEnd
+ifEnd
+moduleEnd
+entryEnd
