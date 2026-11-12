@@ -2,6 +2,7 @@ import type {
 	CodegenPushLine,
 	CompilationContext,
 	CompilerASTLine,
+	EnsureNonZeroLine,
 	MapEndLine,
 	ResolvedPushShapeLine,
 	SemanticAssertEqualLine,
@@ -18,7 +19,9 @@ import { analyzeClampAddress, analyzeLoadFloat } from './memory';
 import { analyzeAbs } from './numeric/abs';
 import { analyzeAdd } from './numeric/add';
 import { analyzeAnd } from './numeric/and';
+import { analyzeCastToInt } from './numeric/castToInt';
 import { analyzeDiv } from './numeric/div';
+import { analyzeEnsureNonZero } from './numeric/ensureNonZero';
 import { analyzeMul } from './numeric/mul';
 import { analyzeOr } from './numeric/or';
 import { analyzeRemainder } from './numeric/remainder';
@@ -79,6 +82,10 @@ export function analyzeByInstruction(line: CompilerASTLine, context: Compilation
 			return analyzeRemainder(line, context);
 		case 'abs':
 			return analyzeAbs(line, context);
+		case 'castToInt':
+			return analyzeCastToInt(line, context);
+		case 'ensureNonZero':
+			return analyzeEnsureNonZero(line as EnsureNonZeroLine, context);
 		case 'clampAddress':
 		case 'clampModuleAddress':
 		case 'clampGlobalAddress':

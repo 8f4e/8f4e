@@ -420,7 +420,7 @@ export const instructionSpecs = {
 		stack: stack({
 			inputs: ['float'],
 			outputs: ['int'],
-			effect: stackMutation(1, [{ kind: 'int', isNonZero: 'fromInput' }]),
+			effect: stackMutation(1, [{ kind: 'int', isNonZero: false }]),
 		}),
 	},
 	clampAddress: {
@@ -521,7 +521,7 @@ export const instructionSpecs = {
 			shortDescription: 'Ensures the top stack value is non-zero before continuing.',
 			inputs: ['T'],
 			outputs: ['T'],
-			effect: stackMutation(1, [{ kind: 'same', isNonZero: true }]),
+			effect: stackMutation(1, [{ kind: 'same', isNonZero: false }]),
 		}
 	),
 	equal: withDocsAndStack(binaryMatchingSpec, {
