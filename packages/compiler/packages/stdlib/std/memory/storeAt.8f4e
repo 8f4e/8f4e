@@ -15,3 +15,20 @@ push value
 store
 
 functionEnd
+
+function storeAt
+#export
+#impure
+; Writes an unsigned-byte element,
+; truncating value to its low byte.
+param int8u* buffer
+param int index
+param int value
+
+push buffer
+push index
+add
+push value
+store
+
+functionEnd

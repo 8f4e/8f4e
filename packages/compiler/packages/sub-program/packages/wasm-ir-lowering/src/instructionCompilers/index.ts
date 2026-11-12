@@ -20,6 +20,7 @@ import ensureNonZero from './ensureNonZero';
 import equal from './equal';
 import equalToZero from './equalToZero';
 import exitIfTrue from './exitIfTrue';
+import fill from './fill';
 import greaterOrEqual from './greaterOrEqual';
 import greaterOrEqualUnsigned from './greaterOrEqualUnsigned';
 import greaterThan from './greaterThan';
@@ -123,6 +124,7 @@ const instructions = {
 	mapEnd,
 	storeBytes,
 	memoryCopy,
+	fill,
 } as const;
 
 export default instructions;

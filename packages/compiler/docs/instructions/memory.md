@@ -163,6 +163,28 @@ push &source
 memoryCopy 20
 ```
 
+### fill
+
+The fill instruction consumes a destination address, integer byte value, and runtime byte count from the
+stack. It fills that many bytes with the low eight bits of the value using WebAssembly `memory.fill`.
+It takes no source arguments. The operation works in bytes regardless of the destination pointer type.
+
+With memory guards enabled, a negative byte count or any range outside linear memory skips the entire fill.
+A zero byte count writes nothing. Disabling memory guards exposes WebAssembly's native out-of-bounds trap.
+Functions using fill require `#impure`.
+
+Stack layout before call: `... , dstAddress , byteValue , byteCount`
+
+#### Examples
+
+```
+int8u[] pixels 256
+push &pixels
+push 0
+push count(pixels)
+fill
+```
+
 ### clampAddress
 
 The clampAddress instruction consumes an address and clamps it to the tracked address range carried by that stack value.

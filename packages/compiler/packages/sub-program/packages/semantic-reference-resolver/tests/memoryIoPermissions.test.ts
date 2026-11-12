@@ -52,6 +52,7 @@ const memoryIoBodies = [
 	{ name: 'store', body: ['push pointer', 'push 1', 'store'] },
 	{ name: 'storeBytes', body: ['push pointer', 'push "ab"', 'storeBytes 2'] },
 	{ name: 'memoryCopy', body: ['push pointer', 'push pointer', 'memoryCopy 4'] },
+	{ name: 'fill', body: ['push pointer', 'push 0', 'push 4', 'fill'] },
 	{ name: 'pointer dereference', body: ['push *pointer', 'drop'] },
 	{ name: 'inline pointer dereference', body: ['call consume *pointer'] },
 ];

@@ -1,0 +1,19 @@
+function indexToXY
+#export
+; Converts a non-negative row-major
+; index into x and y coordinates.
+; width must be positive.
+param int index
+param int width
+
+push index
+push width
+ensureNonZero
+remainder
+
+push index
+push width
+ensureNonZero
+div
+
+functionEnd int int
