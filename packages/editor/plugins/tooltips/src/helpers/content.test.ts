@@ -34,6 +34,7 @@ describe('selected line tooltip content', () => {
 			stackAnalysisLine: {
 				lineNumber: 2,
 				instruction: 'add',
+				consumedOperandProducerLines: [0, 1],
 				stackAnalysis: {
 					stackBefore: [
 						{ kind: 'value', valueType: 'int', knownValue: 1 },
@@ -75,6 +76,7 @@ describe('selected line tooltip content', () => {
 });
 
 const callAnalysis = {
+	consumedOperandProducerLines: [],
 	lineNumber: 1,
 	instruction: 'call',
 	resolvedCall: {

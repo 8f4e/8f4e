@@ -31,6 +31,10 @@ export interface EditorDrawerRegistry {
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
 	/** Draw inside each visible block, in registration order. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Register backgrounds drawn by the source-text painter above nested shading and below selection and text. */
+	registerCodeBlockTextBackgroundDrawer: (drawer: CodeBlockDrawer) => () => void;
+	/** Invoke registered text backgrounds from a source-text painter inside its ordinary block drawer. */
+	drawCodeBlockTextBackgrounds: CodeBlockDrawer;
 	/** Replace the offscreen drawer. Disposal clears the slot if this registration still owns it. */
 	registerOffscreenCodeBlockDrawer: (drawer: OffscreenCodeBlockDrawer) => () => void;
 	/** Draw below code blocks, using viewport coordinates. */
@@ -76,6 +80,7 @@ function createOrderedDrawerRegistry<Context>() {
 export function createEditorDrawerRegistry(): EditorDrawerHost {
 	let offscreenDrawer: OffscreenCodeBlockDrawer | undefined;
 	const blockDrawers = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
+	const textBackgrounds = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
 	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const canvas = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const canvasOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
@@ -84,6 +89,8 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	return {
 		...createRenderLayerRegistry(),
 		registerCodeBlockDrawer: blockDrawers.register,
+		registerCodeBlockTextBackgroundDrawer: textBackgrounds.register,
+		drawCodeBlockTextBackgrounds: textBackgrounds.draw,
 		registerOffscreenCodeBlockDrawer: drawer => {
 			offscreenDrawer = drawer;
 			return () => {

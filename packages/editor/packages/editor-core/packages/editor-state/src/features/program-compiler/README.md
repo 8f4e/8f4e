@@ -29,6 +29,11 @@ plugin is installed.
 ## Published state and artifacts
 
 - `state.compiler.isCompiling` indicates compilation activity independently of the last accepted `state.compiler.result`.
+- `state.compiler.resultInputRevision` identifies the inputs of the last successful result, or is null before success.
+  Source-line consumers compare it with `state.compilerInputRevision` to suppress outdated positions while edits compile.
+- `state.compiler.resultSourceCodeByBlockId` retains the exact module/function sources used by the accepted result,
+  including nested groups. Metadata-only edits can shift source positions without changing compiler inputs; consumers
+  compare these snapshots before using line metadata.
 - `state.compiler.result.compiledModules` and `compiledFunctions` provide compiler lookups.
 - `state.compiler.result.memoryPlan`, `memoryDefaultsByModuleId`, and `projectMemoryExposuresByGroupPath` support memory consumers.
 - `state.info.compiler` contains compilation duration, bytecode size, memory usage, and cache statistics.

@@ -12,6 +12,7 @@ describe('stack analysis tooltip text', () => {
 			getStackAnalysisTooltipText({
 				lineNumber: 3,
 				instruction: 'add',
+				consumedOperandProducerLines: [2],
 				stackAnalysis: {
 					stackBefore: [untouched, left],
 					consumedOperands: [left],
@@ -26,6 +27,7 @@ describe('stack analysis tooltip text', () => {
 		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 2,
 			instruction: 'add',
+			consumedOperandProducerLines: [0, 1],
 			stackAnalysis: {
 				stackBefore: [
 					{ kind: 'value', valueType: 'int', knownValue: 0 },
@@ -59,6 +61,7 @@ describe('stack analysis tooltip text', () => {
 		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 1,
 			instruction: 'push',
+			consumedOperandProducerLines: [],
 			stackAnalysis: {
 				stackBefore: [],
 				consumedOperands: [],
@@ -83,6 +86,7 @@ describe('stack analysis tooltip text', () => {
 		const stackAnalysisLine: CompiledStackAnalysisLine = {
 			lineNumber: 6,
 			instruction: 'drop',
+			consumedOperandProducerLines: [5],
 			stackAnalysis: {
 				stackBefore: [
 					{ kind: 'value', valueType: 'int' },

@@ -31,6 +31,7 @@ import {
 import { analyzeInstruction } from './analyzeInstruction';
 import { cloneStack } from './instructionAnalyzers/stack';
 import { validateMapValueKind } from './mapValueKind';
+import { recordStackProducers, type UnattributedStackAnalysisLine } from './recordStackProducers';
 
 export interface AnalyzeStackSubProgramInput {
 	semanticReferences: SemanticReferenceReport;
@@ -61,7 +62,7 @@ function toCompiledStackAnalysisLine(
 	line: CompilerASTLine,
 	facts: StackAnalysisLineFacts,
 	functions: FunctionRegistry
-): CompiledStackAnalysisLine {
+): UnattributedStackAnalysisLine {
 	return {
 		lineNumber: line.lineNumber,
 		instruction: line.instruction,
@@ -207,9 +208,9 @@ function analyzeBodyOperations(
 	sourceLines: readonly CompilerASTLine[],
 	body: readonly ResolvedOperation[],
 	context: CompilationContext
-): { operationFacts: StackAnalysisLineFacts[]; stackAnalysis: CompiledStackAnalysisLine[] } {
+): { operationFacts: StackAnalysisLineFacts[]; stackAnalysis: UnattributedStackAnalysisLine[] } {
 	const operationFacts: StackAnalysisLineFacts[] = [];
-	const stackAnalysis: CompiledStackAnalysisLine[] = [];
+	const stackAnalysis: UnattributedStackAnalysisLine[] = [];
 	let previousSourceLineIndex = -1;
 	let untouchedSourceValues = 0;
 	for (const { sourceLineIndex, line } of body) {
@@ -283,7 +284,7 @@ function analyzeModule(input: AnalyzeStackSubProgramInput, resolved: ModuleSeman
 			symbol: context.codeBlockId,
 			stack: context.stack,
 		});
-	return { operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+	return { operationFacts, stackAnalysis: recordStackProducers(stackAnalysis), finalStack: cloneStack(context.stack) };
 }
 
 function createFunctionContext(
@@ -321,7 +322,12 @@ function analyzeFunction(
 		const facts = analyzeInstruction(ast.functionEndLine, context);
 		stackAnalysis.push(toCompiledStackAnalysisLine(ast.functionEndLine, facts, input.functions));
 	}
-	return { functionId: metadata.id, operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+	return {
+		functionId: metadata.id,
+		operationFacts,
+		stackAnalysis: recordStackProducers(stackAnalysis),
+		finalStack: cloneStack(context.stack),
+	};
 }
 
 export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisSubProgramReport {

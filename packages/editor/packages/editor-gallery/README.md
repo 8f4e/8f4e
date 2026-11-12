@@ -25,7 +25,7 @@ at mount time and IBM VGA 8×16 on other devices. A project font directive takes
 a project without one restores the mount's default. This preference is kept outside project source and saved files.
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
-loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, and tooltips.
+loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, immediate stack producer highlights, and tooltips.
 Compiler coordination, file-session tracking, URL loading, block backgrounds, code rendering, and loading indicators are eager.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
