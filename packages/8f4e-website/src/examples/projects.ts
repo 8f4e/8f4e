@@ -218,6 +218,12 @@ export const projects = [
 		description: 'Explore one-dimensional cellular automata with adjustable rule and seed values.',
 		path: 'visuals/elementaryCellularAutomata.8f4e',
 	},
+	{
+		id: 'scrolling-cellular-automata',
+		title: 'Scrolling cellular automata',
+		description: 'Change the rule as new generations scroll upward, preserving the patterns already drawn.',
+		path: 'visuals/scrollingCellularAutomata.8f4e',
+	},
 ];
 
 export const projectCategories = [

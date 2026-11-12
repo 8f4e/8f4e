@@ -1,0 +1,206 @@
+8f4e/v1
+
+includes
+; @pos -86 -31
+include std/bitwise/extractBit
+include std/memory/loadBitAt2D
+include std/memory/storeBitAt2D
+includesEnd
+
+function evolveCell
+; @pos -47 -31
+param int neighborhood
+param int rule
+
+; The three-cell neighborhood selects
+; one bit from the rule number.
+push rule
+push neighborhood
+call extractBit
+functionEnd int
+
+function readNeighborhood
+; @pos -1 -31
+#impure
+use screen
+param int8u* buffer
+param int x
+param int y
+
+push y
+push 1
+sub
+localSet y
+
+; Read the left, center,
+; and right cells from the 
+; previous row.
+; Outside cells are zero.
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push 1
+sub
+push y
+call loadBitAt2D
+push 0b100
+mul
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push y
+call loadBitAt2D
+push 0b010
+mul
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push 1
+add
+push y
+call loadBitAt2D
+
+add
+add
+functionEnd int
+
+function drawRow
+; @pos 37 -31
+#impure
+use screen
+param int8u* buffer
+param int rule
+param int y
+
+local int x
+
+; Grow one generation 
+; from the row above.
+loop WIDTH
+loopIndex
+localSet x
+
+push buffer
+push WIDTH
+push HEIGHT
+push x
+push y
+
+push buffer
+push x
+push y
+call readNeighborhood
+push rule
+call evolveCell
+call storeBitAt2D
+loopEnd
+functionEnd
+
+function scrollUp
+; @pos 37 1
+#impure
+use screen
+param int8u* buffer
+
+; Move the existing generations
+; up one row.
+; Overlapping copies preserve
+; their order.
+push buffer
+push buffer
+push ROW_BYTES
+add
+memoryCopy BYTE_COUNT-ROW_BYTES
+functionEnd
+
+constants env
+; @pos -118 -5
+; Auto-generated environment constants
+; Changes will be overwritten
+
+
+constantsEnd
+
+note
+; @pos -118 -13
+; @config export.fileName scrollingCellularAutomata
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+note
+; @pos -118 15
+; A fixed bottom-right cell starts the pattern.
+; Each frame moves the history up one row
+; and grows a new generation at the bottom.
+;
+; Move the rule slider while it scrolls.
+; Earlier generations keep their history.
+noteEnd
+
+entry main
+module screen
+; @pos 102 -29
+
+const WIDTH 256
+const HEIGHT 256
+; WIDTH must be a multiple of eight.
+const ROW_BYTES WIDTH/8
+const BYTE_COUNT ROW_BYTES*HEIGHT
+
+; Packed black/white pixels, MSB first.
+int8u[] mono BYTE_COUNT
+
+; @textureUpload &mono 1bit 256 256
+; @texture &mono 2 256 256
+moduleEnd
+module patternGenerator
+; @pos 175 -29
+; @home right
+use screen
+
+int rule 110
+; @slider &rule 0 255
+; @w rule
+
+int initialized
+int8u* mono &screen:mono
+
+push initialized
+if
+; Retain history and 
+; append one new row.
+push mono
+call scrollUp
+
+push mono
+push rule
+push HEIGHT-1
+call drawRow
+else
+; Initialize once with a
+; bottom-right seed.
+push mono
+push 0
+push BYTE_COUNT
+fill
+
+push mono
+push WIDTH
+push HEIGHT
+push WIDTH-1
+push HEIGHT-1
+push 1
+call storeBitAt2D
+
+push &initialized
+push 1
+store
+ifEnd
+moduleEnd
+entryEnd
