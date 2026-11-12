@@ -32,6 +32,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
 		},
 		{
+			id: 'stack-producers',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-stack-producers').then(module => module.stackProducersPlugin),
+		},
+		{
 			id: 'tooltips',
 			scope: 'view',
 			matches: () => true,

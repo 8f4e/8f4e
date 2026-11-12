@@ -23,11 +23,13 @@ export const codeRenderingPlugin: EditorPlugin = {
 		events.on('codeBlockLayoutsChanged', refresh);
 		const project = store.getState().codeBlockRendering.currentProject;
 		refresh({ project, codeBlocks: project.blocks });
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(context => {
+			const { draw, state, codeBlock } = context;
 			const rendering = renderingByBlock.get(codeBlock)!;
 			if (!codeBlock.disabled) {
 				for (const { x, y, width, height, color } of rendering.highlights) draw.drawFill(x, y, color, width, height);
 			}
+			drawers.drawCodeBlockTextBackgrounds(context);
 			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
 				draw.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}

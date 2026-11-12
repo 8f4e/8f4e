@@ -38,6 +38,7 @@
     "@8f4e/editor-plugin-project-url-loader": "*",
     "@8f4e/editor-plugin-slider": "*",
     "@8f4e/editor-plugin-stack": "*",
+    "@8f4e/editor-plugin-stack-producers": "*",
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-watch": "*",

@@ -109,6 +109,10 @@ coordinates. Later registrations overwrite it; disposal clears only the current 
 `@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
 and is installed before code rendering.
 `@8f4e/editor-plugin-code-rendering` owns nested highlights, selected-line fill, text, and its private prepared data.
+Code rendering invokes `drawCodeBlockTextBackgrounds(context)` between nested shading and selected-line fill.
+Plugins can use `registerCodeBlockTextBackgroundDrawer(drawer)` for backgrounds below source text, even when installed
+after code rendering. These callbacks use the ordinary block context and run in registration order; disposal removes
+only the registered callback.
 Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
 there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
 Without a background plugin, web-ui draws no block surface.

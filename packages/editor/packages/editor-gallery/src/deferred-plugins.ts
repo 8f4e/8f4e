@@ -92,6 +92,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-assertion-markers').then(module => module.assertionMarkersPlugin),
 		},
 		{
+			id: 'stack-producers',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-stack-producers').then(module => module.stackProducersPlugin),
+		},
+		{
 			id: 'tooltips',
 			scope: 'view',
 			matches: () => true,

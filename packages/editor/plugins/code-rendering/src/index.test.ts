@@ -52,7 +52,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 		return drawRows.mock.calls.map(([, , cells]) => cells);
 	};
-	return { store, events, emitter, state, block, render, drawRows, drawFills };
+	return { store, events, emitter, state, block, render, drawRows, drawFills, drawers };
 }
 
 it('refreshes nested block highlights after edits, layout contributions, and grid changes', () => {
@@ -286,4 +286,25 @@ it('isolates prepared text and highlights between editors and unregisters drawin
 	expect(second.drawFills).not.toHaveBeenCalled();
 	expect(first.render()).toHaveLength(5);
 	expect(first.drawFills).toHaveBeenCalledOnce();
+});
+
+it('draws contributed text backgrounds above nested shading and below selection and text', () => {
+	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
+	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	const unregister = test.drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
+		draw.drawFill(0, 32, PALETTE_INDICES.secondarySoft, codeBlock.width, 16);
+	});
+	test.render();
+	expect(test.drawFills.mock.calls.map(([, , color]) => color)).toEqual([
+		PALETTE_INDICES.surfaceRaised1,
+		PALETTE_INDICES.secondarySoft,
+		PALETTE_INDICES.primarySoft,
+	]);
+	expect(test.drawFills.mock.invocationCallOrder.at(-1)!).toBeLessThan(test.drawRows.mock.invocationCallOrder[0]);
+	unregister();
+	test.render();
+	expect(test.drawFills.mock.calls.map(([, , color]) => color)).toEqual([
+		PALETTE_INDICES.surfaceRaised1,
+		PALETTE_INDICES.primarySoft,
+	]);
 });

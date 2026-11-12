@@ -8,6 +8,10 @@ export interface ProgramArtifacts {
 
 export interface Compiler {
 	isCompiling: boolean;
+	/** Input revision that produced the accepted result; null before the first successful compilation. */
+	resultInputRevision: number | null;
+	/** Source snapshots for accepted module/function line metadata, keyed by project block identity. */
+	resultSourceCodeByBlockId: Readonly<Record<number, readonly string[]>>;
 	result: Pick<
 		CompileResult,
 		| 'compiledModules'

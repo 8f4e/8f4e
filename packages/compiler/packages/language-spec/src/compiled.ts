@@ -18,6 +18,8 @@ export type CompiledStackAnalysisLine = {
 	lineNumber: number;
 	instruction: string;
 	stackAnalysis: StackAnalysisResult;
+	/** Zero-based, block-relative source line of each consumed operand's immediate producer, in operand order. */
+	consumedOperandProducerLines: number[];
 	resolvedCall?: ResolvedCall;
 };
 
