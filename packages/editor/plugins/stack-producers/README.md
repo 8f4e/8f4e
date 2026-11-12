@@ -21,8 +21,9 @@ Each installation owns its prepared rows. Selection, accepted compiler metadata,
 settled block layouts refresh those rows outside the frame loop. Source/display mappings and contributed gaps
 supply their positions. Missing or outdated compilation results, disabled blocks, and disabled line selection
 suppress the highlights. `compiler.resultInputRevision` must match `compilerInputRevision` before analysis is used. The accepted
-`compiler.resultSourceCodeByBlockId` snapshot must also match the selected source, since metadata-only edits
-can shift lines without requesting compilation. Highlights return when the matching source is restored or recompiled.
+`compiler.resultSourceCodeByBlockId` snapshot supplies the compiled source positions. The plugin aligns unchanged
+instruction lines across blank/comment-only edits, so inserting a favorite or moving a block preserves highlights
+without recompilation. Changed instruction text suppresses the highlights until matching source is restored or recompiled.
 
 The plugin registers a generic text-background drawer. Code rendering invokes it above nested block shading
 and below the selected-line fill and source text, regardless of plugin installation order. Disposal removes

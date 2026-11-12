@@ -166,7 +166,7 @@ it('isolates producer state between editors', async () => {
 	expect(second.render().map(([, y]) => y)).toEqual([48, 64]);
 });
 
-it('rejects shifted source metadata even when a favorite edit does not trigger compilation', async () => {
+it('remaps producer rows across favorite and position edits without recompilation', async () => {
 	const test = await setup();
 	test.select(5);
 	expect(test.render()).toHaveLength(2);
@@ -179,9 +179,16 @@ it('rejects shifted source metadata even when a favorite edit does not trigger c
 	);
 	expect(test.state.compilerInputRevision).toBe(revision);
 	test.select(6);
-	expect(test.render()).toEqual([]);
+	expect(test.render().map(([, y]) => y)).toEqual([64, 80]);
 	test.reinstall();
-	expect(test.render()).toEqual([]);
+	expect(test.render().map(([, y]) => y)).toEqual([64, 80]);
+	applyCodeBlockSourceEdits(
+		test,
+		[{ codeBlock: test.block, code: [original[0], '; @pos 20 5', '; @favorite', ...original.slice(1)] }],
+		{ affectsCompilation: false }
+	);
+	test.select(7);
+	expect(test.render().map(([, y]) => y)).toEqual([80, 96]);
 	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
 	test.select(5);
 	expect(test.render()).toHaveLength(2);
