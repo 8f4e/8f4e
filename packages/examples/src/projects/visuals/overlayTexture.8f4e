@@ -11,11 +11,19 @@ constantsEnd
 
 note colors
 ; @pos -118 -22
-; @config color.canvas #002
-; @config color.tertiary #666666
-; @config color.highlight rgba(255,255,255,0.45)
-; @config color.detail #ffffff
-; @config color.stroke rgba(255,255,255,0.3)
+; @config color.canvas #30343b
+; @config color.surface #41464e
+; @config color.ink #bdc2c8
+; @config color.primary #99aab9
+; @config color.secondary #b6aca0
+; @config color.positive #93a792
+; @config color.warning #b7aa83
+; @config color.negative #b28c8d
+; @config color.muted #8f969f
+; @config color.stroke rgba(164,174,186,0.28)
+; @config color.tertiary #a1a7af
+; @config color.highlight #b5bdc6
+; @config color.detail #7f96aa
 noteEnd
 
 note

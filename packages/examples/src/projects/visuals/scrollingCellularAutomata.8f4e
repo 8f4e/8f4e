@@ -133,6 +133,23 @@ note
 ; @config textureRuntime.entry main
 noteEnd
 
+note radarRoomColors
+; @pos -118 30
+; @config color.canvas #071919
+; @config color.surface #0e2b29
+; @config color.ink #bfcec1
+; @config color.primary #72c699
+; @config color.secondary #d4b76c
+; @config color.positive #72c699
+; @config color.warning #d4b76c
+; @config color.negative #d57e66
+; @config color.muted #75968a
+; @config color.stroke rgba(114,198,153,0.26)
+; @config color.tertiary #89a897
+; @config color.highlight #e4ce8a
+; @config color.detail #4f997b
+noteEnd
+
 note
 ; @pos -118 15
 ; A fixed bottom-right cell starts the pattern.

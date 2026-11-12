@@ -125,6 +125,23 @@ note
 ; @config textureRuntime.entry main
 noteEnd
 
+note plotterPaperColors
+; @pos -118 8
+; @config color.canvas #d8cbb4
+; @config color.surface #f0e5ce
+; @config color.ink #3f4038
+; @config color.primary #8a4434
+; @config color.secondary #3d6375
+; @config color.positive #546a43
+; @config color.warning #94661f
+; @config color.negative #a13f35
+; @config color.muted #6e6553
+; @config color.stroke rgba(88,69,47,0.38)
+; @config color.tertiary #6c6756
+; @config color.highlight #c49537
+; @config color.detail #8b8062
+noteEnd
+
 entry main
 module screen
 ; @pos 102 -29

@@ -41,6 +41,7 @@ local int neighbors
 ; Visit the surrounding 
 ; 3 x 3 grid, excluding
 ; the center cell.
+; Opposite edges connect.
 loop 9
 loopIndex
 push 4
@@ -56,16 +57,22 @@ push neighbors
 push buffer
 push WIDTH
 push HEIGHT
+; Offset before remainder
+; to avoid negative values.
 push x
 push dx
 add
-push 1
-sub
+push WIDTH-1
+add
+push WIDTH
+remainder
 push y
 push dy
 add
-push 1
-sub
+push HEIGHT-1
+add
+push HEIGHT
+remainder
 call loadBitAt2D
 add
 localSet neighbors
@@ -175,6 +182,23 @@ note
 ; @config export.fileName gameOfLife
 ; @config textureRuntime.enabled true
 ; @config textureRuntime.entry main
+noteEnd
+
+note handheldLcdColors
+; @pos -132 16
+; @config color.canvas #a3aa79
+; @config color.surface #c4c797
+; @config color.ink #28362a
+; @config color.primary #344c31
+; @config color.secondary #624a30
+; @config color.positive #385c37
+; @config color.warning #7c591f
+; @config color.negative #853e31
+; @config color.muted #4c5738
+; @config color.stroke rgba(48,65,37,0.4)
+; @config color.tertiary #4b563a
+; @config color.highlight #aa862d
+; @config color.detail #667741
 noteEnd
 
 entry main
