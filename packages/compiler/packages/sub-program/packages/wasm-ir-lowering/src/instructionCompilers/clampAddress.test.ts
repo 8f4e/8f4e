@@ -102,7 +102,7 @@ describe('clamp address instruction compilers', () => {
 			createStackFacts({ clamp: { accessByteWidth: 4 } })
 		);
 
-		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 		expect(context.instructions).toContain(WASM_SELECT);
 	});
 });

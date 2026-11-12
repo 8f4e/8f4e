@@ -47,8 +47,16 @@ function analyzeExpectedBlockResult(
 		return { consumed, produced: [] };
 	}
 
-	produce(context, consumed);
-	return { consumed, produced: consumed };
+	// A branch may supply a different value than the last path analyzed. Preserve
+	// its type, but do not reuse one path's bounds, constant, or nonzero proof.
+	const produced = consumed.map(
+		(item): StackItem =>
+			item.kind === 'address'
+				? { kind: 'address', valueType: 'int', address: {}, ...(item.pointsTo ? { pointsTo: item.pointsTo } : {}) }
+				: createStackValue(item.valueType)
+	);
+	produce(context, produced);
+	return { consumed, produced };
 }
 
 function resolveStackConsumeCount(

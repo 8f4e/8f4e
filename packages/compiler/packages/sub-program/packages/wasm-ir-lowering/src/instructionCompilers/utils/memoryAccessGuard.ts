@@ -1,10 +1,10 @@
 import {
-	WASM_I32_ADD,
 	WASM_I32_AND,
+	WASM_I32_EQZ,
+	WASM_I32_GE_S,
 	WASM_I32_LE_U,
-	WASM_I32_SHL,
+	WASM_I32_OR,
 	WASM_I32_SUB,
-	WASM_MEMORY_PAGE_SIZE,
 	WASM_TYPE_F32,
 	WASM_TYPE_F64,
 	type WASM_TYPE_I32,
@@ -40,56 +40,44 @@ type GuardedStoreOptions = {
  *
  * @param address - Resolved address metadata to inspect.
  * @param accessByteWidth - Byte width of the memory access being protected.
+ * @param memoryByteLength - Fixed imported memory size, including page padding.
  * @returns Whether the check succeeds.
  */
-export function isSafeMemoryAccess(address: StackItem, accessByteWidth: number): boolean {
-	if (address.kind !== 'address') {
-		return false;
+export function isSafeMemoryAccess(address: StackItem, accessByteWidth: number, memoryByteLength: number): boolean {
+	if (accessByteWidth < 0 || accessByteWidth > memoryByteLength) return false;
+	if (
+		address.kind === 'address' &&
+		((address.address.safeRange?.safeByteLength ?? -1) >= accessByteWidth ||
+			(address.address.safeAccessByteWidth ?? -1) >= accessByteWidth)
+	) {
+		return true;
 	}
-
-	return (
-		(address.address.safeRange?.safeByteLength ?? 0) >= accessByteWidth ||
-		(address.address.safeAccessByteWidth ?? 0) >= accessByteWidth
-	);
+	// An empty range still needs a destination at or before the memory end.
+	const byteAddress = address.knownValue === undefined ? undefined : address.knownValue >>> 0;
+	return byteAddress !== undefined && byteAddress <= memoryByteLength - accessByteWidth;
 }
 
 /**
  * Builds bytecode for the last valid start address for an access width in a linear memory.
  *
  * @param accessByteWidth - Byte width of the memory access being protected.
+ * @param memoryByteLength - Fixed imported memory size, including page padding.
  * @returns The computed result.
  */
-export function linearLastValidStartAddress(accessByteWidth: number): WasmIRInstruction[] {
-	return [
-		{ kind: 'memory.size' },
-		...i32const(1),
-		WASM_I32_SUB,
-		...i32const(16),
-		WASM_I32_SHL,
-		...i32const(WASM_MEMORY_PAGE_SIZE - accessByteWidth),
-		WASM_I32_ADD,
-	];
+export function linearLastValidStartAddress(accessByteWidth: number, memoryByteLength: number): WasmIRInstruction[] {
+	return i32const(memoryByteLength - accessByteWidth);
 }
 
-function linearMemoryByteLength(): WasmIRInstruction[] {
-	return [{ kind: 'memory.size' }, ...i32const(16), WASM_I32_SHL];
-}
-
-function addressWithinMemoryBounds(addressLocalIndex: number, accessByteWidth: number): WasmIRInstruction[] {
-	return [...localGet(addressLocalIndex), ...linearLastValidStartAddress(accessByteWidth), WASM_I32_LE_U];
-}
-
-function rangeWithinMemoryBounds(addressLocalIndex: number, byteLength: number): WasmIRInstruction[] {
+function addressWithinMemoryBounds(
+	context: CodegenContext,
+	addressLocalIndex: number,
+	accessByteWidth: number
+): WasmIRInstruction[] {
+	if (accessByteWidth > context.minimumMemoryBytes) return i32const(0);
 	return [
 		...localGet(addressLocalIndex),
-		...linearMemoryByteLength(),
+		...linearLastValidStartAddress(accessByteWidth, context.minimumMemoryBytes),
 		WASM_I32_LE_U,
-		...i32const(byteLength),
-		...linearMemoryByteLength(),
-		...localGet(addressLocalIndex),
-		WASM_I32_SUB,
-		WASM_I32_LE_U,
-		WASM_I32_AND,
 	];
 }
 
@@ -110,17 +98,18 @@ function zeroValue(type: NumericWasmValueType): WasmIRInstruction[] {
  */
 export function guardedLoad(context: CodegenContext, options: GuardedLoadOptions): WasmIRInstruction[] {
 	const index = allocateLocal(context, { isInteger: true });
-	return guardedLoadWithLocal(index, options);
+	return guardedLoadWithLocal(context, index, options);
 }
 
 /** Builds a guarded load using a caller-provided scratch slot for the stack address. */
 export function guardedLoadWithLocal(
+	context: CodegenContext,
 	addressLocalIndex: number,
 	{ accessByteWidth, resultType, loadByteCode }: GuardedLoadOptions
 ): WasmIRInstruction[] {
 	return [
 		...localSet(addressLocalIndex),
-		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),
+		...addressWithinMemoryBounds(context, addressLocalIndex, accessByteWidth),
 		...ifelse(resultType, [...localGet(addressLocalIndex), ...loadByteCode], zeroValue(resultType)),
 	];
 }
@@ -139,39 +128,41 @@ export function guardedStore(context: CodegenContext, options: GuardedStoreOptio
 	return [
 		...localSet(valueLocalIndex),
 		...localSet(addressLocalIndex),
-		...guardedStoreFromLocals(addressLocalIndex, valueLocalIndex, options.accessByteWidth, options.storeByteCode),
+		...guardedStoreFromLocals(
+			context,
+			addressLocalIndex,
+			valueLocalIndex,
+			options.accessByteWidth,
+			options.storeByteCode
+		),
 	];
 }
 
 /**
- * Returns whether stack analysis proves both memory-copy ranges are in bounds.
+ * Builds a copy guard for only the ranges that still need a runtime bounds check.
  *
- * @param destination - Destination address metadata for the memory copy.
- * @param source - Source address metadata for the memory copy.
- * @param byteLength - Number of bytes to materialize or validate.
- * @returns Whether the check succeeds.
- */
-export function isSafeMemoryCopy(destination: StackItem, source: StackItem, byteLength: number): boolean {
-	return byteLength > 0 && isSafeMemoryAccess(destination, byteLength) && isSafeMemoryAccess(source, byteLength);
-}
-
-/**
- * Builds a guarded memory.copy that skips copying when either range is out of bounds.
- *
- * @param context - Compilation context used by the operation.
+ * @param context - Compilation context providing the fixed memory size and scratch locals.
  * @param byteLength - Number of bytes to copy.
- * @returns The computed result.
+ * @param safeRanges - Ranges independently proven safe by stack analysis.
+ * @returns Guarded copy instructions.
  */
-export function guardedMemoryCopy(context: CodegenContext, byteLength: number): WasmIRInstruction[] {
+export function guardedMemoryCopy(
+	context: CodegenContext,
+	byteLength: number,
+	safeRanges: { destination: boolean; source: boolean }
+): WasmIRInstruction[] {
 	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
 	const sourceLocalIndex = allocateLocal(context, { isInteger: true });
+	const bounds = [
+		...(safeRanges.destination ? [] : addressWithinMemoryBounds(context, destinationLocalIndex, byteLength)),
+		...(safeRanges.source ? [] : addressWithinMemoryBounds(context, sourceLocalIndex, byteLength)),
+		...(!safeRanges.destination && !safeRanges.source ? [WASM_I32_AND] : []),
+	];
 
 	return [
 		...localSet(sourceLocalIndex),
 		...localSet(destinationLocalIndex),
-		...rangeWithinMemoryBounds(destinationLocalIndex, byteLength),
-		...rangeWithinMemoryBounds(sourceLocalIndex, byteLength),
-		WASM_I32_AND,
+		...bounds,
 		...ifelse(WASM_TYPE_VOID, [
 			...localGet(destinationLocalIndex),
 			...localGet(sourceLocalIndex),
@@ -181,33 +172,28 @@ export function guardedMemoryCopy(context: CodegenContext, byteLength: number): 
 	];
 }
 
-/** Proves a fill fits in linear memory without imposing 8f4e declaration boundaries. */
-export function isSafeMemoryFill(destination: StackItem, length: StackItem, minimumMemoryBytes: number): boolean {
-	const byteLength = length.knownValue;
-	if (byteLength === undefined || byteLength < 0) return false;
-	if (byteLength > 0 && isSafeMemoryAccess(destination, byteLength)) return true;
-	const address = destination.knownValue === undefined ? undefined : destination.knownValue >>> 0;
-	return address !== undefined && address <= minimumMemoryBytes && byteLength <= minimumMemoryBytes - address;
-}
-
 /** Builds a guarded memory.fill that skips the entire fill when the byte range is out of bounds. */
 export function guardedMemoryFill(context: CodegenContext): WasmIRInstruction[] {
 	const destinationLocalIndex = allocateLocal(context, { isInteger: true });
 	const valueLocalIndex = allocateLocal(context, { isInteger: true });
 	const lengthLocalIndex = allocateLocal(context, { isInteger: true });
 
+	// Above 2 GiB, reject negative i32 counts explicitly. At 4 GiB the
+	// memory-size constant wraps to zero, but every i32 address admits an empty fill.
 	return [
 		...localSet(lengthLocalIndex),
 		...localSet(valueLocalIndex),
 		...localSet(destinationLocalIndex),
-		...localGet(destinationLocalIndex),
-		...linearMemoryByteLength(),
-		WASM_I32_LE_U,
 		...localGet(lengthLocalIndex),
-		...linearMemoryByteLength(),
+		...(context.minimumMemoryBytes >= 0x8000_0000
+			? [...i32const(0), WASM_I32_GE_S]
+			: [...i32const(context.minimumMemoryBytes), WASM_I32_LE_U]),
 		...localGet(destinationLocalIndex),
+		...i32const(context.minimumMemoryBytes),
+		...localGet(lengthLocalIndex),
 		WASM_I32_SUB,
 		WASM_I32_LE_U,
+		...(context.minimumMemoryBytes === 0x1_0000_0000 ? [...localGet(lengthLocalIndex), WASM_I32_EQZ, WASM_I32_OR] : []),
 		WASM_I32_AND,
 		...ifelse(WASM_TYPE_VOID, [
 			...localGet(destinationLocalIndex),
@@ -228,13 +214,14 @@ export function guardedMemoryFill(context: CodegenContext): WasmIRInstruction[] 
  * @returns The computed result.
  */
 export function guardedStoreFromLocals(
+	context: CodegenContext,
 	addressLocalIndex: number,
 	valueLocalIndex: number,
 	accessByteWidth: number,
 	storeByteCode: WasmIRInstruction[]
 ): WasmIRInstruction[] {
 	return [
-		...addressWithinMemoryBounds(addressLocalIndex, accessByteWidth),
+		...addressWithinMemoryBounds(context, addressLocalIndex, accessByteWidth),
 		...ifelse(WASM_TYPE_VOID, [...localGet(addressLocalIndex), ...localGet(valueLocalIndex), ...storeByteCode]),
 	];
 }

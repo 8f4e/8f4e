@@ -1,3 +1,4 @@
+import { WASM_DROP, WASM_IF } from '@8f4e/compiler-wasm-utils';
 import type { ResolvedMemoryCopyLine } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
@@ -58,7 +59,7 @@ describe('memoryCopy instruction compiler', () => {
 		expect(context.instructions).toStrictEqual([{ kind: 'i32.const', value: 20 }, { kind: 'memory.copy' }]);
 	});
 
-	it('guards the copy when the length is not proven at compile time', () => {
+	it('guards the copy when its addresses are not proven safe', () => {
 		const context = createInstructionCompilerTestContext();
 
 		compileInstructionForTest(
@@ -73,7 +74,7 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 		expect(context.instructions).toContainEqual({ kind: 'memory.copy' });
 	});
 
@@ -95,6 +96,6 @@ describe('memoryCopy instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toStrictEqual([]);
+		expect(context.instructions).toStrictEqual([WASM_DROP, WASM_DROP]);
 	});
 });

@@ -18,6 +18,20 @@ import { validateInstruction } from './validateInstruction';
  * @returns The computed result.
  */
 export function analyzeInstruction(line: SemanticReferenceLine, context: CompilationContext): StackAnalysisLineFacts {
+	const spec = getInstructionSpec(line.instruction);
+	// Branches, joins, and loop backedges need dataflow merging before local facts can survive them.
+	if (
+		(spec?.placement && 'block' in spec.placement) ||
+		line.instruction === 'branch' ||
+		line.instruction === 'branchIfTrue' ||
+		line.instruction === 'exitIfTrue'
+	) {
+		context.localValueFacts = {};
+	}
+	const pointerAddress =
+		line.instruction === 'push' && 'resolvedTarget' in line && line.resolvedTarget.kind === 'local-pointer'
+			? context.localValueFacts[line.resolvedTarget.binding.id]
+			: undefined;
 	const stackBefore = cloneStack(context.stack);
 	validateInstruction(line, context);
 	const { consumed, produced, dropped, targetFunctionId, numericOperandKind, map, clamp } = analyzeByInstruction(
@@ -39,6 +53,7 @@ export function analyzeInstruction(line: SemanticReferenceLine, context: Compila
 
 	return {
 		stackAnalysis,
+		...(pointerAddress ? { pointerAddress: cloneStack([pointerAddress])[0] } : {}),
 		...(targetFunctionId ? { targetFunctionId } : {}),
 		...(derivedNumericOperandKind ? { numericOperandKind: derivedNumericOperandKind } : {}),
 		...(map ? { map } : {}),

@@ -1,4 +1,9 @@
-import type { CodegenContext, PointerLocalMetadata, ResolvedLocalPointerPushLine } from '@8f4e/language-spec';
+import type {
+	CodegenContext,
+	PointerLocalMetadata,
+	ResolvedLocalPointerPushLine,
+	StackItem,
+} from '@8f4e/language-spec';
 import { wasmLocalGet as localGet } from '@8f4e/language-spec';
 import { saveByteCode } from '../../utils/saveByteCode';
 import { buildPointerDereferenceByteCode } from '../shared';
@@ -10,11 +15,22 @@ import { buildPointerDereferenceByteCode } from '../shared';
  * @param context - Compilation context used by the operation.
  * @returns The computed result.
  */
-export default function pushLocalPointer(line: ResolvedLocalPointerPushLine, context: CodegenContext): CodegenContext {
+export default function pushLocalPointer(
+	line: ResolvedLocalPointerPushLine,
+	context: CodegenContext,
+	inputAddress?: StackItem
+): CodegenContext {
 	const { id } = line.resolvedTarget.binding;
 	const local = context.locals[id] as PointerLocalMetadata;
 	const { dereferenceDepth } = line.arguments[0];
-	const dereference = buildPointerDereferenceByteCode(context, local, localGet(id), 'pointer-value', dereferenceDepth);
+	const dereference = buildPointerDereferenceByteCode(
+		context,
+		local,
+		localGet(id),
+		'pointer-value',
+		dereferenceDepth,
+		inputAddress
+	);
 
 	return saveByteCode(context, dereference.byteCode);
 }

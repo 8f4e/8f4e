@@ -37,7 +37,7 @@ function createPointerMemoryItem(
 
 describe('pushMemoryPointer', () => {
 	it('dereferences double pointers once and returns the inner pointer value', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 12,
@@ -53,7 +53,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences double pointers twice and loads target kind', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 12,
@@ -69,7 +69,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int8* with i32load8s for the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 8,
@@ -84,7 +84,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int8u* with i32load8u for the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 8,
@@ -99,7 +99,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int8** once without the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const pptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 4,
@@ -114,7 +114,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int16* with i32load16s for the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 8,
@@ -129,7 +129,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int16u* with i32load16u for the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const ptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 8,
@@ -144,7 +144,7 @@ describe('pushMemoryPointer', () => {
 	});
 
 	it('dereferences int16** twice with i32load16s for the final load', () => {
-		const context = createInstructionCompilerTestContext();
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
 		const pptr = createPointerMemoryItem({
 			id: 0,
 			byteAddress: 4,

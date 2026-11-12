@@ -28,7 +28,8 @@ describe('native fill', () => {
 		// One fill initializes memory; the other implements the exported function.
 		expect(wat.match(/memory\.fill/g)).toHaveLength(2);
 		expect(wat).not.toContain('(loop');
-		expect(wat.includes('memory.size')).toBe(enableMemoryGuards);
+		expect(/^\s+if\b/m.test(wat)).toBe(enableMemoryGuards);
+		expect(wat).not.toContain('memory.size');
 	});
 
 	it('exposes native out-of-bounds traps when memory guards are disabled', async () => {
@@ -92,7 +93,7 @@ moduleEnd
 entryEnd`;
 		const result = await compileProject(parseProjectSource(program));
 		const wat = await disassembleWasm(result.codeBuffer);
-		expect(wat).not.toContain('memory.size');
+		expect(wat).not.toMatch(/^\s+if\b/m);
 	});
 
 	it('uses an existing clamp guarantee for a dynamic address', async () => {
@@ -112,6 +113,6 @@ ${body}`)
 		const wat = await compileClamped('push 67\npush 8\nfill\nfunctionEnd');
 		const clampWat = await compileClamped('functionEnd int');
 		// Fill adds no bounds checks beyond those already emitted for the clamp.
-		expect(wat.match(/memory\.size/g) ?? []).toHaveLength((clampWat.match(/memory\.size/g) ?? []).length);
+		expect(wat.match(/^\s+if\b/gm) ?? []).toHaveLength((clampWat.match(/^\s+if\b/gm) ?? []).length);
 	});
 });

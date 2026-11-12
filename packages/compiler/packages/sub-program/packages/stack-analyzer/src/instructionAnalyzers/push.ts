@@ -145,18 +145,16 @@ function pushResolvedTargetStackItems(line: ResolvedPushLine, context: Compilati
 		default: {
 			const local = context.locals[line.resolvedTarget.binding.id]!;
 			const pointsTo = getPointeeMetadata(local);
+			const value = context.localValueFacts[line.resolvedTarget.binding.id];
+			const address = value?.kind === 'address' ? value.address : local.pointeeBaseType ? {} : undefined;
 
 			return [
-				local.pointeeBaseType
-					? kindToStackItem('int32', {
-							isNonZero: false,
-							address: {},
-							...(pointsTo ? { pointsTo } : {}),
-						})
-					: {
-							...createStackValue(local.isInteger ? 'int' : local.isFloat64 ? 'float64' : 'float'),
-							isNonZero: false,
-						},
+				kindToStackItem(local.isInteger ? 'int32' : local.isFloat64 ? 'float64' : 'float32', {
+					isNonZero: value?.isNonZero ?? false,
+					...(value?.knownValue !== undefined ? { knownValue: value.knownValue } : {}),
+					...(address ? { address: { ...address } } : {}),
+					...(pointsTo ? { pointsTo } : {}),
+				}),
 			];
 		}
 	}

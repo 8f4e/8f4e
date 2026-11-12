@@ -60,6 +60,10 @@ the complete module allocation. Leading `&` selects start addresses. Circular bu
 - The pointer depth comes from the declared type (`int*`, `float*`, `int**`, `float**`).
 - The number of leading `*` characters in the `push` argument is the requested dereference depth. It must not exceed the declared pointer depth.
 
+With memory guards enabled, each unproven pointer dereference checks the complete accessed value against WebAssembly
+memory bounds and returns a zero of the result type if it is out of bounds. This applies to pointers stored in
+module memory and in locals. A declared pointer slot has a fixed safe address; its mutable target still needs proof.
+
 Example:
 
 ```

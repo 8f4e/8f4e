@@ -44,7 +44,7 @@ const store: InstructionCompiler<StoreLine> = (line, context, facts) => {
 		: valueIsFloat64
 			? f64store()
 			: f32store();
-	if (!context.enableMemoryGuards || isSafeMemoryAccess(operand2Address, accessByteWidth)) {
+	if (!context.enableMemoryGuards || isSafeMemoryAccess(operand2Address, accessByteWidth, context.minimumMemoryBytes)) {
 		return saveByteCode(context, instructions);
 	}
 

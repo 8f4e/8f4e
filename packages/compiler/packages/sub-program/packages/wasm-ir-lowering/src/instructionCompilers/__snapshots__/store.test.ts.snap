@@ -29,23 +29,9 @@ exports[`store instruction compiler > stores to an unsafe memory address with a 
       "kind": "local.get",
     },
     {
-      "kind": "memory.size",
-    },
-    {
-      "kind": "i32.const",
-      "value": 1,
-    },
-    107,
-    {
-      "kind": "i32.const",
-      "value": 16,
-    },
-    116,
-    {
       "kind": "i32.const",
       "value": 65532,
     },
-    106,
     77,
     {
       "kind": "block",

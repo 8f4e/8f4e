@@ -24,12 +24,8 @@ describe('ifEnd stack analysis', () => {
 			context
 		);
 
-		expect(facts.stackAnalysis.producedStackItems).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(3.5) },
-		]);
-		expect(context.stack).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(3.5) },
-		]);
+		expect(facts.stackAnalysis.producedStackItems).toEqual([{ kind: 'value', valueType: 'float' }]);
+		expect(context.stack).toEqual([{ kind: 'value', valueType: 'float' }]);
 	});
 
 	it('accepts and restores multi-result conditional values in order', () => {
@@ -55,12 +51,12 @@ describe('ifEnd stack analysis', () => {
 		);
 
 		expect(facts.stackAnalysis.producedStackItems).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(1.5) },
-			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 4 },
+			{ kind: 'value', valueType: 'float' },
+			{ kind: 'value', valueType: 'int' },
 		]);
 		expect(context.stack).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(1.5) },
-			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 4 },
+			{ kind: 'value', valueType: 'float' },
+			{ kind: 'value', valueType: 'int' },
 		]);
 	});
 

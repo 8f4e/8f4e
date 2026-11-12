@@ -1,7 +1,7 @@
 import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, ResolvedLocalSetLine, Stack } from '@8f4e/language-spec';
 import { ErrorCode, stackItemMatchesFunctionValueType } from '@8f4e/language-spec';
-import { consume } from './stack';
+import { cloneStack, consume } from './stack';
 
 /**
  * Consumes the assigned value and checks it against the resolved local binding type.
@@ -35,5 +35,6 @@ export function analyzeLocalSet(
 		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
 	}
 
+	context.localValueFacts[localName] = cloneStack(consumed)[0];
 	return { consumed, produced: [] };
 }

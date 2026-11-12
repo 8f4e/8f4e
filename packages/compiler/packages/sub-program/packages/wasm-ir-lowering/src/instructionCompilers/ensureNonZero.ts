@@ -25,6 +25,7 @@ import { saveByteCode } from './utils/saveByteCode';
  */
 const ensureNonZero: InstructionCompiler = (line, context, facts) => {
 	const [operand] = facts.stackAnalysis.consumedOperands;
+	if (operand.isNonZero) return context;
 
 	const isInteger = operand.valueType === 'int';
 	const isFloat64 = operand.valueType === 'float64';
