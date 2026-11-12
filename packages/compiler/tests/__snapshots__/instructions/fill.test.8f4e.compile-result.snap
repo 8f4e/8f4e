@@ -2,8 +2,8 @@
   "functionAst": {},
   "functionOverview": {},
   "moduleAst": {
-    "memoryFillAssertions": {
-      "id": "memoryFillAssertions",
+    "fillAssertions": {
+      "id": "fillAssertions",
       "lines": [
         {
           "arguments": [
@@ -11,7 +11,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "memoryFillAssertions",
+              "value": "fillAssertions",
             },
           ],
           "instruction": "module",
@@ -137,7 +137,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -301,7 +301,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -337,7 +337,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -373,7 +373,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -407,7 +407,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -497,7 +497,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -555,7 +555,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [
@@ -613,7 +613,7 @@
         },
         {
           "arguments": [],
-          "instruction": "memoryFill",
+          "instruction": "fill",
         },
         {
           "arguments": [],
@@ -624,7 +624,7 @@
     },
   },
   "moduleMemory": {
-    "memoryFillAssertions": {
+    "fillAssertions": {
       "memory": {
         "buffer": {
           "allocationUnitAddress": 1,
@@ -669,7 +669,7 @@
   "overview": {
     "compiledFunctions": [],
     "compiledModules": [
-      "memoryFillAssertions",
+      "fillAssertions",
     ],
     "requiredMemoryBytes": 16,
     "wasmExports": [

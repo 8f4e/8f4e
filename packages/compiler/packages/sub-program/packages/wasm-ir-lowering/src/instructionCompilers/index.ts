@@ -20,6 +20,7 @@ import ensureNonZero from './ensureNonZero';
 import equal from './equal';
 import equalToZero from './equalToZero';
 import exitIfTrue from './exitIfTrue';
+import fill from './fill';
 import greaterOrEqual from './greaterOrEqual';
 import greaterOrEqualUnsigned from './greaterOrEqualUnsigned';
 import greaterThan from './greaterThan';
@@ -38,7 +39,6 @@ import mapBegin from './mapBegin';
 import mapEnd from './mapEnd';
 import max from './max';
 import memoryCopy from './memoryCopy';
-import memoryFill from './memoryFill';
 import min from './min';
 import mul from './mul';
 import notEqual from './notEqual';
@@ -124,7 +124,7 @@ const instructions = {
 	mapEnd,
 	storeBytes,
 	memoryCopy,
-	memoryFill,
+	fill,
 } as const;
 
 export default instructions;

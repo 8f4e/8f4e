@@ -813,7 +813,7 @@ export const instructionSpecs = {
 		stack: stack({ inputs: ['ptr', 'ptr'], outputs: [], effect: stackMutation(2) }),
 		effects: { memory: { kind: 'copy', addressOperandIndex: 0 } },
 	},
-	memoryFill: {
+	fill: {
 		sourceArguments: noSourceArguments,
 		placement: moduleOrFunctionPlacement,
 		minOperands: 3,

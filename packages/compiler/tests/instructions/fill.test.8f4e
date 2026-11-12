@@ -5,7 +5,7 @@ note
 noteEnd
 
 entry test
-module memoryFillAssertions
+module fillAssertions
 int8u[] buffer 8 11 22 33 44 55 66 77 88
 int count 6
 
@@ -17,7 +17,7 @@ push 1
 add
 push 511
 push count
-memoryFill
+fill
 push &buffer
 load8u
 assertEqual 11
@@ -41,19 +41,19 @@ loopEnd
 push &buffer
 push 0
 push 0
-memoryFill
+fill
 push &buffer
 push 0
 push -1
-memoryFill
+fill
 push &buffer
 push 0
 push 2147483647
-memoryFill
+fill
 push -1
 push 0
 push 1
-memoryFill
+fill
 push &buffer
 load8u
 assertEqual 11
@@ -66,20 +66,20 @@ storeBytes 1
 push 65535
 push 0
 push 2
-memoryFill
+fill
 push 65535
 load8u
 assertEqual 73
 push 65535
 push 257
 push 1
-memoryFill
+fill
 push 65535
 load8u
 assertEqual 1
 push 65536
 push 0
 push 0
-memoryFill
+fill
 moduleEnd
 entryEnd

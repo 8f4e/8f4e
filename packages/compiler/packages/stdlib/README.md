@@ -54,9 +54,10 @@ The following helpers support row-major byte buffers:
 | --- | --- | --- |
 | `std/grid/indexToXY` | `(index, width) -> x, y` | Converts a non-negative element index using a positive width. |
 | `std/memory/loadAt2D` | `(buffer, width, height, x, y) -> value` | Reads an unsigned byte, returning zero for coordinates outside the grid. |
-| `std/memory/fill` | `(buffer, count, value)` | Fills unsigned-byte elements with the low eight bits of the value using `memoryFill`. |
 
 Grid dimensions must be non-negative, and the supplied buffer must hold `width * height` bytes. Memory helpers
-perform IO and carry `#impure`; coordinate conversion is pure. `fill` uses a byte count because each element is one
-byte. With memory guards enabled, a fill whose range extends outside linear memory is skipped; a count of zero
-writes nothing.
+perform IO and carry `#impure`; coordinate conversion is pure.
+
+Use the built-in [fill instruction](../../docs/instructions/memory.md#fill) to initialize byte ranges directly.
+Its stack order is destination address, byte value, then byte count. It uses WebAssembly `memory.fill` and repeats
+the low eight bits of the value.

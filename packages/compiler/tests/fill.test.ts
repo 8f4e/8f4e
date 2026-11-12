@@ -13,7 +13,7 @@ param int count
 push address
 push value
 push count
-memoryFill
+fill
 functionEnd
 entry main
 module buffer
@@ -21,7 +21,7 @@ int value 42
 moduleEnd
 entryEnd`;
 
-describe('native memoryFill', () => {
+describe('native fill', () => {
 	it.each([true, false])('emits memory.fill with memory guards %s', async enableMemoryGuards => {
 		const result = await compileProject(parseProjectSource(source), { enableMemoryGuards });
 		const wat = await disassembleWasm(result.codeBuffer);

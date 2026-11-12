@@ -76,7 +76,7 @@
   - [clampModuleAddress](instructions/memory.md#clampmoduleaddress)
   - [clampGlobalAddress](instructions/memory.md#clampglobaladdress)
   - [memoryCopy](instructions/memory.md#memorycopy)
-  - [memoryFill](instructions/memory.md#memoryfill)
+  - [fill](instructions/memory.md#fill)
 
 - [Declarations and locals](instructions/declarations-and-locals.md)
   - [const](instructions/declarations-and-locals.md#const)
