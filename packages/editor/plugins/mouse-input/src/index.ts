@@ -60,17 +60,7 @@ export function createMouseInputPlugin({
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
 
-				events.dispatch('pointermove', {
-					x: event.offsetX,
-					y: event.offsetY,
-					movementX,
-					movementY,
-					buttons: 1,
-					stopPropagation: false,
-					canvasWidth: inputTarget.clientWidth,
-					canvasHeight: inputTarget.clientHeight,
-					altKey: event.altKey,
-				} satisfies InternalPointerEvent);
+				events.dispatch('viewportscroll', { movementX, movementY });
 
 				if (wheelScrollEndTimeout) {
 					clearTimeout(wheelScrollEndTimeout);
