@@ -41,7 +41,7 @@ function getFunctionExportName(ast: ComposedFunctionAST): string | undefined {
 }
 
 /**
- * Registers function declarations and resolves their metadata once for later compiler stages.
+ * Selects the last declaration of each parameter signature and registers its metadata for later compiler stages.
  * This allows semantic reference resolution (e.g. `call` target validation) and
  * function-body codegen to rely on the same registry before full function
  * compilation completes.
@@ -58,7 +58,20 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const byId: FunctionMetadataLookup = {};
 	// Source names may also be Object.prototype property names.
 	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
-	const overloadCountsByName = asts.reduce<Record<string, number>>((counts, ast) => {
+	const selectedFunctions = new Map<
+		string,
+		{ id: string; ast: TFunction; functionMetadata: ReturnType<typeof getEffectiveFunctionMetadata> }
+	>();
+	for (const ast of asts) {
+		const functionMetadata = getEffectiveFunctionMetadata(ast, options.prototypeShapes);
+		const parameters = functionMetadata.signature.parameters.map(parameter => parameter.type);
+		const id = createFunctionId(ast.name, parameters);
+		const key = JSON.stringify([ast.name, parameters]);
+		// Keep the selected declarations in their own source order.
+		selectedFunctions.delete(key);
+		selectedFunctions.set(key, { id, ast, functionMetadata });
+	}
+	const overloadCountsByName = [...selectedFunctions.values()].reduce<Record<string, number>>((counts, { ast }) => {
 		counts[ast.name] = (counts[ast.name] ?? 0) + 1;
 		return counts;
 	}, Object.create(null));
@@ -66,13 +79,8 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const reservedFunctionNames = new Set(options.reservedFunctionIds);
 	const seenExportNames = new Set(options.reservedExportNames);
 
-	for (const ast of asts) {
+	for (const { id, ast, functionMetadata } of selectedFunctions.values()) {
 		const name = ast.name;
-		const functionMetadata = getEffectiveFunctionMetadata(ast, options.prototypeShapes);
-		const id = createFunctionId(
-			name,
-			functionMetadata.signature.parameters.map(parameter => parameter.type)
-		);
 		if (reservedFunctionNames.has(name)) {
 			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, {
 				details: {
@@ -82,12 +90,9 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 		}
 		if (seenFunctionIds.has(id)) {
 			throw getError(ErrorCode.DUPLICATE_FUNCTION_SIGNATURE, ast.functionLine, {
-				details: {
-					identifier: id,
-				},
+				details: { identifier: id },
 			});
 		}
-
 		const existingArity = arityByName[name];
 		const arity = functionMetadata.signature.parameters.length;
 		if (existingArity !== undefined) {

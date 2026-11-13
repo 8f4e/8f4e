@@ -1,0 +1,40 @@
+8f4e/v1
+
+includes
+include test/signature-overrides increment selected
+include test/signature-overrides twice selected
+includesEnd
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+entry test
+module assertions
+call selected 3
+assertEqual 6
+call selected 1.5
+assertEqual 2.5
+moduleEnd
+
+group localOverrides
+includes
+include test/signature-overrides increment selected
+includesEnd
+
+function selected
+param int value
+push value
+mul 3
+functionEnd int
+
+entry main
+module assertions
+call selected 3
+assertEqual 9
+call selected 1.5
+assertEqual 2.5
+moduleEnd
+entryEnd
+groupEnd
+entryEnd

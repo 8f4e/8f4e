@@ -1,0 +1,6 @@
+function selected
+#export
+param int value
+push value
+mul 10
+functionEnd int

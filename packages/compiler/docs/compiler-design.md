@@ -31,10 +31,11 @@ In short:
 
 ## Declaration and Execution Handoff
 
-Function registration resolves signatures, `paramShape` expansions, imports, exports, and impurity flags. Semantic
-reference resolution then assigns source binding identities and produces executable bodies. These bodies exclude
-parameter/local declarations, source block markers, memory declarations, and compiler directives. Loop defaults are
-already explicit, and module execution directives are recorded as metadata.
+Function registration resolves signatures and `paramShape` expansions, selects the last declaration for each scoped name
+and parameter signature, and collects its imports, exports, and impurity flags. Only selected functions proceed to constant
+and memory reference resolution. Semantic reference resolution then assigns source binding identities and produces
+executable bodies. These bodies exclude parameter/local declarations, source block markers, memory declarations, and
+compiler directives. Loop defaults are already explicit, and module execution directives are recorded as metadata.
 
 Source operand shorthand is normalized while producing executable bodies: arithmetic operands and inline call arguments become ordinary resolved pushes followed by stack-only instructions. Operations are identified by body position, separately from the source-line provenance they retain. This permits several executable operations for one source instruction without overwriting execution facts. Push operations contain only literals or resolved targets; deferred identifiers do not enter executable bodies.
 

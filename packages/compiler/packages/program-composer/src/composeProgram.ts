@@ -196,6 +196,13 @@ function appendUnit(
 		)
 	);
 	program.ast.functions.push(
+		...includedFunctions.map((func, index) => {
+			const ast = compileSourceToAST<ValidatedFunctionAST>(
+				createCompilerSource(func, projectPath, `include:function:${index}`),
+				program.cache
+			);
+			return qualify(renameIncludedFunction(ast, func.bindings), ast.name);
+		}),
 		...functions.map((func, index) =>
 			qualify(
 				compileSourceToAST<ValidatedFunctionAST>(
@@ -203,14 +210,7 @@ function appendUnit(
 					program.cache
 				)
 			)
-		),
-		...includedFunctions.map((func, index) => {
-			const ast = compileSourceToAST<ValidatedFunctionAST>(
-				createCompilerSource(func, projectPath, `include:function:${index}`),
-				program.cache
-			);
-			return qualify(renameIncludedFunction(ast, func.bindings), ast.name);
-		})
+		)
 	);
 
 	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);

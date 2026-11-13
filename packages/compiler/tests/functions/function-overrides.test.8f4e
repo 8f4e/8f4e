@@ -1,0 +1,127 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+The last enabled definition of each resolved parameter signature wins.
+Other overloads and functions in other groups remain independent.
+noteEnd
+
+prototype state
+int value
+prototypeEnd
+
+function convert
+#export oldConvert
+param int value
+use missingNamespace
+push &missingModule:value
+call missingFunction
+functionEnd int
+
+function convert
+param float value
+push value
+add 0.5
+functionEnd float
+
+function caller
+call convert 10
+functionEnd float
+
+function convert
+param int input
+push input
+castToFloat
+add 2.5
+functionEnd float
+
+function convert
+; @disabled
+param int value
+call missingDisabledFunction
+functionEnd int
+
+function selected
+#export obsolete
+call missingZeroParameterFunction
+functionEnd
+
+function selected
+#export
+push 7
+functionEnd int
+
+function read
+#impure
+param int* oldValue
+call missingPointerFunction
+functionEnd int
+
+function read
+#impure
+paramShape state
+push *value
+functionEnd int
+
+function __proto__
+push -1
+functionEnd int
+
+function __proto__
+push 3
+functionEnd int
+
+function constructor
+push -1
+functionEnd int
+
+function constructor
+push 4
+functionEnd int
+
+entry test
+module assertions
+int value 9
+call caller
+assertEqual 12.5
+call convert 1.5
+assertEqual 2.0
+call selected
+assertEqual 7
+push &value
+call read
+assertEqual 9
+call __proto__
+assertEqual 3
+call constructor
+assertEqual 4
+moduleEnd
+
+group independent
+function selected
+call missingChildFunction
+functionEnd
+
+function selected
+push 8
+functionEnd int
+
+entry main
+module assertions
+call selected
+assertEqual 8
+moduleEnd
+
+group forwarded
+pass selected
+entry main
+module assertions
+call selected
+assertEqual 8
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd

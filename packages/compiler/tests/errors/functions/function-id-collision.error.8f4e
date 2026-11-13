@@ -1,0 +1,12 @@
+8f4e/v1
+
+function selected
+param int first
+param float second
+push first
+functionEnd int
+
+function selected__int
+param float value
+push value
+functionEnd float

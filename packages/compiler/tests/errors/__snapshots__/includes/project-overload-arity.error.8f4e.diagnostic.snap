@@ -4,15 +4,10 @@
   "instruction": "function",
   "kind": "source",
   "location": {
-    "includeId": "test/overloads",
-    "includeSite": {
-      "lineNumber": 1,
-      "projectBlockId": 3,
-    },
-    "kind": "include",
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 8,
     "projectGroupPath": "",
-    "symbolName": "sameName",
   },
   "message": "Invalid function overload set: sameName. Function overloads must have the same positive parameter count; zero-parameter functions cannot be overloaded. (67)",
 }
