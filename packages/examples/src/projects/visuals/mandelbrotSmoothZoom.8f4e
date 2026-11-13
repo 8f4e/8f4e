@@ -1,0 +1,544 @@
+8f4e/v1
+
+includes
+; @pos -170 -30
+include std/grid/indexToXY
+include std/math/exp2
+include std/math/log2
+include std/math/lerp
+include std/math/fract
+include std/math/smoothstep
+include std/color/lerpRGB
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+include std/image/downsampleRGB2x
+include std/events/hasChanged
+include std/memory/storeRGB
+include std/memory/swapPointers
+includesEnd
+
+function mandelbrotStep
+; @pos -220 45
+param float64 real
+param float64 imaginary
+param float64 cx
+param float64 cy
+
+; One z = z*z + c step.
+; Both components use the old z.
+push real
+mul real
+push imaginary
+mul imaginary
+sub
+add cx
+
+push real
+mul imaginary
+mul 2.0f64
+add cy
+functionEnd float64 float64
+
+function fractionalEscapeCount
+; @pos -220 110
+param int iterations
+param float64 magnitudeSquared
+
+; mu = n + 1 - log2(ln(|z|)).
+; ln(|z|) = log2(|z|^2) * ln(2)/2.
+; n includes the refinement steps.
+push iterations
+castToFloat64
+add 1.0f64
+call log2 magnitudeSquared
+mul 0.34657359027997265f64
+call log2
+sub
+functionEnd float64
+
+function iterateUntilEscape
+; @pos -170 45
+use view
+param float64 cx
+param float64 cy
+param int limit
+
+local float64 real
+local float64 imaginary
+local int iterations
+
+; Start at z = 0. Stop when |z| > 2
+; or the iteration limit is reached.
+loop MAX_ITERATIONS
+push real
+mul real
+push imaginary
+mul imaginary
+add
+push 4.0f64
+greaterThan
+push iterations
+push limit
+greaterOrEqual
+or
+branchIfTrue 1
+
+call mandelbrotStep real imaginary cx cy
+localSet imaginary
+localSet real
+push iterations
+add 1
+localSet iterations
+loopEnd
+
+; Return the last z and its count.
+push real
+push imaginary
+push iterations
+functionEnd float64 float64 int
+
+function refineEscapedOrbit
+; @pos -170 110
+use view
+param float64 real
+param float64 imaginary
+param float64 cx
+param float64 cy
+
+; Extra steps reduce residual bands
+; in the fractional escape estimate.
+loop SMOOTHING_STEPS
+call mandelbrotStep real imaginary cx cy
+localSet imaginary
+localSet real
+loopEnd
+
+; Return the refined |z| squared.
+push real
+mul real
+push imaginary
+mul imaginary
+add
+functionEnd float64
+
+
+function smoothEscapeIterations
+; @pos -120 -30
+use view
+param float64 cx
+param float64 cy
+param int limit
+
+local float64 real
+local float64 imaginary
+local int iterations
+
+call iterateUntilEscape cx cy limit
+localSet iterations
+localSet imaginary
+localSet real
+
+; Unescaped points stay black.
+push iterations
+push limit
+greaterOrEqual
+if
+push -1.0f64
+return
+ifEnd
+
+; Refine only points that escaped.
+push iterations
+add SMOOTHING_STEPS
+push real
+push imaginary
+call refineEscapedOrbit cx cy
+call fractionalEscapeCount
+functionEnd float64
+
+function renderMandelbrotSamples
+; @pos -120 110
+#impure
+use view
+param int8u* pixels
+param float64 centerX
+param float64 centerY
+param float64 span
+param int limit
+
+local int x
+local int y
+
+loop SAMPLE_COUNT
+loopIndex
+call indexToXY SAMPLE_WIDTH
+localSet y
+localSet x
+
+push pixels
+loopIndex
+mul 3
+add
+
+; Map each subpixel sample into
+; the complex plane using float64.
+push x
+castToFloat64
+add 0.5f64
+push SAMPLE_WIDTH
+castToFloat64
+div
+sub 0.5f64
+mul span
+add centerX
+
+push 0.5f64
+push y
+castToFloat64
+add 0.5f64
+push SAMPLE_HEIGHT
+castToFloat64
+div
+sub
+mul span
+add centerY
+
+call smoothEscapeIterations limit
+call escapeColor
+call storeRGB
+loopEnd
+functionEnd
+
+function escapeColor
+; @pos -78 -30
+param float64 iterations
+local float64 phase
+local int segment
+local float64 amount
+
+push iterations
+push 0.0f64
+lessThan
+if
+push 0
+return
+ifEnd
+
+; Repeat every 64 iterations.
+; Keep the fractional part through
+; palette interpolation.
+push iterations
+div 64.0f64
+call fract
+mul 5.0f64
+localSet phase
+push phase
+castToInt
+localSet segment
+
+; Ease each transition so both its
+; color and slope join smoothly.
+call fract phase
+call smoothstep
+localSet amount
+
+call paletteStop segment
+push segment
+add 1
+call paletteStop
+call lerpRGB amount
+functionEnd int
+
+
+function paletteStop
+; @pos -36 -30
+param int index
+
+; Navy -> blue -> teal -> cream
+; -> gold -> the same navy.
+push index
+mapBegin int
+map 0x080c28
+map 0x2350b4
+map 0x28aab9
+map 0xf5ebb4
+map 0xeb962d
+default 0x080c28
+mapEnd int
+functionEnd int
+
+
+constants view
+; @pos -170 -8
+const WIDTH 512
+const HEIGHT 512
+const PIXEL_COUNT WIDTH*HEIGHT
+const AA_SCALE 2
+const SAMPLE_WIDTH WIDTH*AA_SCALE
+const SAMPLE_HEIGHT HEIGHT*AA_SCALE
+const SAMPLE_COUNT SAMPLE_WIDTH*SAMPLE_HEIGHT
+const SAMPLE_ROW_BYTES SAMPLE_WIDTH*3
+const MAX_ITERATIONS 1024
+const SMOOTHING_STEPS 2
+const TARGET_X -0.743643887037151f64
+const TARGET_Y 0.131825904205330f64
+constantsEnd
+
+constants env
+; @pos -170 14
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 30
+
+constantsEnd
+
+note
+; @pos -170 30
+; @config export.fileName mandelbrotSmoothZoom
+; @config workerRuntime.enabled true
+; @config workerRuntime.entry main
+; @config workerRuntime.sampleRate 30
+; @config textureRuntime.enabled false
+noteEnd
+
+note
+; @pos 0 -18
+; Camera -> renderer -> antialiasing -> screen.
+; Video processors publish an RGB buffer and frame counter.
+; Patch input to the previous stage's buffer, and
+; inputFrame to its frame counter.
+; Antialiasing takes 1024x1024 RGB and produces 512x512 RGB.
+; Its amount blends one sample with the full filter.
+; The screen accepts 512x512 RGB and publishes complete frames.
+; Small stage previews show center crops; the screen shows all.
+; Zoom, pan and detail control the Mandelbrot renderer.
+; Black pixels have not escaped at the chosen iteration limit.
+; The worker processes new frames while the editor stays live.
+noteEnd
+
+entry main
+module camera
+; @pos 9 0
+use view
+
+float zoom 1.05 ; @w
+; @slider &zoom 0.0 20.0 0.05
+
+float panX -0.01 ; @w
+; @slider &panX -1.0 1.0 0.01
+
+float panY 0.17 ; @w
+; @slider &panY -1.0 1.0 0.01
+
+int detail 512 ; @w
+; @slider &detail 64 1024 64
+
+float64 span 3.2f64
+float64 centerX TARGET_X
+float64 centerY TARGET_Y
+
+; A zoom level halves the view span.
+push &span
+push zoom
+mul -1.0
+call exp2
+castToFloat64
+mul 3.2f64
+store
+
+push &centerX
+push panX
+castToFloat64
+mul span
+add TARGET_X
+store
+push &centerY
+push panY
+castToFloat64
+mul span
+add TARGET_Y
+store
+moduleEnd
+module renderer
+; @pos 55 0
+use view
+
+; Output: 1024x1024 RGB 
+; and frame counter.
+int frame ; @w
+int8u[] samples SAMPLE_COUNT*3
+; @textureUpload &samples rgb 1024 1024
+; @texture &samples 1 256 256 384 384
+float64& centerX &camera:centerX
+float64& centerY &camera:centerY
+float64& span &camera:span
+int& detail &camera:detail
+
+float64 lastX
+float64 lastY
+float64 lastSpan -1.0f64
+int lastDetail
+
+; Keep the image while 
+; the view is still.
+push *centerX
+push lastX
+equal
+push *centerY
+push lastY
+equal
+and
+push *span
+push lastSpan
+equal
+and
+push *detail
+push lastDetail
+equal
+and
+exitIfTrue
+
+; Snapshot the view before drawing.
+; New detail changes will be picked
+; up on the following worker tick.
+push &lastX
+push *centerX
+store
+push &lastY
+push *centerY
+store
+push &lastSpan
+push *span
+store
+push &lastDetail
+push *detail
+store
+
+push &samples
+call renderMandelbrotSamples 
+- lastX lastY lastSpan lastDetail
+
+; Publish a new frame only 
+; after rendering.
+push &frame
+push frame
+add 1
+store
+moduleEnd
+module antialiasing
+; @pos 104 0
+use view
+
+; Input: 1024x1024 RGB 
+; and frame counter.
+int8u* input &renderer:samples
+int* inputFrame &renderer:frame
+
+; 0: one sample. 1: full 2x2 AA.
+float amount 1.0 ; @w
+; @slider &amount 0.0 1.0 0.01
+
+; Output: 512x512 RGB 
+; and frame counter.
+int frame ; @w
+int8u[] out PIXEL_COUNT*3
+; @textureUpload &out rgb 512 512
+; @texture &out 1 256 256 128 128
+
+int8u* lastInput
+int lastFrame -1
+float lastAmount -1.0
+local int8u* source
+local int incomingFrame
+local float currentAmount
+
+push input
+localSet source
+push *inputFrame
+localSet incomingFrame
+push amount
+max 0.0
+min 1.0
+localSet currentAmount
+
+; Process new frames and 
+; repatched buffers.
+push source
+push lastInput
+notEqual
+call hasChanged
+- incomingFrame &lastFrame
+or
+call hasChanged
+- currentAmount &lastAmount
+or
+equalToZero
+exitIfTrue
+
+push &lastInput
+push source
+store
+
+call downsampleRGB2x
+- source &out WIDTH HEIGHT
+- SAMPLE_ROW_BYTES WIDTH*3
+- currentAmount
+
+push &frame
+push frame
+add 1
+store
+moduleEnd
+module screen
+; @pos 146 0
+; @home right
+use view
+
+; Input: 512x512 RGB and frame counter.
+int8u* input &antialiasing:out
+int* inputFrame &antialiasing:frame
+
+int frame ; @w
+int8u[] rgb PIXEL_COUNT*3
+int8u[] spare PIXEL_COUNT*3
+int8u* display &rgb
+int8u* pixels &spare
+; @textureUpload display rgb 512 512
+; @texture display 1 512 512
+
+int8u* lastInput
+int lastFrame -1
+local int8u* source
+local int incomingFrame
+
+push input
+localSet source
+push *inputFrame
+localSet incomingFrame
+
+push source
+push lastInput
+notEqual
+call hasChanged
+- incomingFrame &lastFrame
+or
+equalToZero
+exitIfTrue
+
+push &lastInput
+push source
+store
+
+; Copy the completed input into the back buffer.
+push pixels
+push source
+memoryCopy PIXEL_COUNT*3
+call swapPointers &display &pixels
+
+push &frame
+push frame
+add 1
+store
+moduleEnd
+entryEnd

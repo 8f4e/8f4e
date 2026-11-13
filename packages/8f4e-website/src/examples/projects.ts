@@ -230,6 +230,30 @@ export const projects = [
 		description: 'Watch a seeded world evolve with Conway’s rules, and pause or restart the simulation.',
 		path: 'visuals/gameOfLife.8f4e',
 	},
+	{
+		id: 'modular-cellular-automata',
+		title: 'Modular cellular automata',
+		description: 'Patch a line through three rule stages with scrolling histories, bypass controls and feedback.',
+		path: 'visuals/modularCellularAutomata.8f4e',
+	},
+	{
+		id: 'mandelbrot-zoom-double-buffered',
+		title: 'Mandelbrot zoom (double buffering)',
+		description: 'Render into a spare buffer and display each completed frame with a buffer swap.',
+		path: 'visuals/mandelbrotZoomDoubleBuffered.8f4e',
+	},
+	{
+		id: 'mandelbrot-zoom-single-buffered',
+		title: 'Mandelbrot zoom (single buffering)',
+		description: 'Render directly into the displayed buffer and watch the image update progressively.',
+		path: 'visuals/mandelbrotZoomSingleBuffered.8f4e',
+	},
+	{
+		id: 'mandelbrot-smooth-zoom',
+		title: 'Mandelbrot smooth zoom',
+		description: 'Patch a Mandelbrot renderer through an antialiasing module into a buffered display.',
+		path: 'visuals/mandelbrotSmoothZoom.8f4e',
+	},
 ];
 
 export const projectCategories = [

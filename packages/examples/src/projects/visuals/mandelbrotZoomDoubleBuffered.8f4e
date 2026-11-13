@@ -1,0 +1,308 @@
+8f4e/v1
+
+includes
+; @pos -170 -30
+include std/grid/indexToXY
+include std/math/exp2
+include std/memory/storeRGB
+include std/memory/swapPointers
+includesEnd
+
+function escapeIterations
+; @pos -120 -30
+use view
+param float64 cx
+param float64 cy
+param int limit
+
+local float64 real
+local float64 imaginary
+local float64 realSquared
+local float64 imaginarySquared
+local int iterations
+
+; Iterate z = z*z + c from zero.
+; Stop once |z| > 2 or at the limit.
+loop MAX_ITERATIONS
+push realSquared
+add imaginarySquared
+push 4.0f64
+greaterThan
+push iterations
+push limit
+greaterOrEqual
+or
+branchIfTrue 1
+
+push real
+mul imaginary
+mul 2.0f64
+add cy
+localSet imaginary
+
+push realSquared
+sub imaginarySquared
+add cx
+localSet real
+
+push real
+mul real
+localSet realSquared
+push imaginary
+mul imaginary
+localSet imaginarySquared
+
+push iterations
+add 1
+localSet iterations
+loopEnd
+
+push iterations
+functionEnd int
+
+function drawMandelbrot
+; @pos -120 40
+#impure
+use view
+param int8u* pixels
+param float64 centerX
+param float64 centerY
+param float64 span
+param int limit
+
+local int x
+local int y
+
+loop PIXEL_COUNT
+loopIndex
+call indexToXY WIDTH
+localSet y
+localSet x
+
+push pixels
+loopIndex
+mul 3
+add
+
+; Map each pixel center into
+; the complex plane using float64.
+push x
+castToFloat64
+add 0.5f64
+push WIDTH
+castToFloat64
+div
+sub 0.5f64
+mul span
+add centerX
+
+push 0.5f64
+push y
+castToFloat64
+add 0.5f64
+push HEIGHT
+castToFloat64
+div
+sub
+mul span
+add centerY
+
+call escapeIterations limit
+call escapeColor limit
+call storeRGB
+loopEnd
+functionEnd
+
+function escapeColor
+; @pos -78 -30
+param int iterations
+param int limit
+local int phase
+
+push iterations
+push limit
+greaterOrEqual
+if
+; Unescaped points stay black.
+push 0
+return
+ifEnd
+
+; Repeating blue-to-gold bands.
+push iterations
+mul 7
+and 255
+localSet phase
+
+push phase
+sub 128
+max 0
+mul 2
+shiftLeft 16
+push phase
+shiftLeft 8
+or
+push 255
+push phase
+div 2
+sub
+or
+functionEnd int
+
+constants view
+; @pos -170 -17
+const WIDTH 512
+const HEIGHT 512
+const PIXEL_COUNT WIDTH*HEIGHT
+const MAX_ITERATIONS 1024
+const TARGET_X -0.743643887037151f64
+const TARGET_Y 0.131825904205330f64
+constantsEnd
+
+constants env
+; @pos -170 -3
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 30
+
+constantsEnd
+
+note
+; @pos -170 6
+; @config export.fileName mandelbrotZoomDoubleBuffered
+; @config workerRuntime.enabled true
+; @config workerRuntime.entry main
+; @config workerRuntime.sampleRate 30
+; @config textureRuntime.enabled false
+noteEnd
+
+note
+; @pos 40 -46
+; Explore the Mandelbrot set by iterating z = z*z + c.
+; Use the zoom slider to explore a detailed boundary region.
+; Each zoom level doubles the magnification.
+; Pan offsets are measured in current view widths.
+; Raise detail to resolve deeper boundaries.
+; Black pixels have not escaped at the chosen limit.
+; The worker draws into a spare buffer, then swaps it
+; with the displayed frame when the image is complete.
+noteEnd
+
+entry main
+module screen
+; @pos 40 -30
+use view
+
+int8u[] rgb PIXEL_COUNT*3
+int8u[] spare PIXEL_COUNT*3
+int8u* display &rgb
+; @textureUpload display rgb 512 512
+; @texture display 1 512 512
+moduleEnd
+module camera
+; @pos 117 -30
+; @home right
+use view
+
+float zoom 0.0 ; @w
+; @slider &zoom 0.0 20.0 0.05
+
+float panX 0.0
+; @slider &panX -1.0 1.0 0.01
+
+float panY 0.0
+; @slider &panY -1.0 1.0 0.01
+
+int detail 512 ; @w
+; @slider &detail 64 1024 64
+
+float64 span 3.2f64
+float64 centerX TARGET_X
+float64 centerY TARGET_Y
+
+; A zoom level halves the view span.
+push &span
+push zoom
+mul -1.0
+call exp2
+castToFloat64
+mul 3.2f64
+store
+
+push &centerX
+push panX
+castToFloat64
+mul span
+add TARGET_X
+store
+push &centerY
+push panY
+castToFloat64
+mul span
+add TARGET_Y
+store
+moduleEnd
+module renderer
+; @pos 164 -30
+
+int8u* pixels &screen:spare
+int8u** display &screen:display
+int renders ; @w
+float64& centerX &camera:centerX
+float64& centerY &camera:centerY
+float64& span &camera:span
+int& detail &camera:detail
+
+float64 lastX
+float64 lastY
+float64 lastSpan -1.0f64
+int lastDetail
+
+; Keep the image while the view is still.
+push *centerX
+push lastX
+equal
+push *centerY
+push lastY
+equal
+and
+push *span
+push lastSpan
+equal
+and
+push *detail
+push lastDetail
+equal
+and
+exitIfTrue
+
+; Snapshot the view before drawing.
+; New detail changes will be picked
+; up on the following worker tick.
+push &lastX
+push *centerX
+store
+push &lastY
+push *centerY
+store
+push &lastSpan
+push *span
+store
+push &lastDetail
+push *detail
+store
+
+call drawMandelbrot 
+- pixels lastX lastY lastSpan lastDetail
+
+; Publish the completed frame,
+; then reuse the previous buffer.
+call swapPointers display &pixels
+
+push &renders
+push renders
+add 1
+store
+moduleEnd
+entryEnd
