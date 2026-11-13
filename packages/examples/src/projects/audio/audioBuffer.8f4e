@@ -1,5 +1,10 @@
 8f4e/v1
 
+includes
+; @pos 7 1
+include std/math/trig/sine
+includesEnd
+
 function buffer
 ; @pos -120 23
 #export buffer
@@ -10,70 +15,6 @@ call main
 loopEnd
 functionEnd
 
-function sine
-; @pos 7 1
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-param float x
-
-use math
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
 
 constants env
 ; @pos -120 12

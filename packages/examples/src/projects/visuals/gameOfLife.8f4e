@@ -6,6 +6,7 @@ include std/grid/indexToXY
 include std/memory/loadBitAt2D
 include std/memory/storeBitAt2D
 include std/random/xorshift
+include std/memory/swapPointers
 includesEnd
 
 function evolveCell
@@ -219,9 +220,10 @@ const SEED_HEIGHT HEIGHT/2
 ; MSB first.
 int8u[] mono BYTE_COUNT
 int8u[] next BYTE_COUNT
+int8u* display &mono
 
-; @textureUpload &mono 1bit 128 128
-; @texture &mono 2 128 128
+; @textureUpload display 1bit 128 128
+; @texture display 2 128 128
 moduleEnd
 module simulation
 ; @pos 126 -30
@@ -271,11 +273,8 @@ push current
 push next
 call drawGeneration
 
-; Publish the completed 
-; generation.
-push current
-push next
-memoryCopy BYTE_COUNT
+; Reuse the previous front buffer next time.
+call swapPointers &current &next
 
 push &generation
 push generation
@@ -284,5 +283,10 @@ add
 store
 ifEnd
 ifEnd
+
+; The texture follows the completed world.
+push &screen:display
+push current
+store
 moduleEnd
 entryEnd

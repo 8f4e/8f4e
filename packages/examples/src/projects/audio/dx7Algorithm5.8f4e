@@ -1066,6 +1066,7 @@ includes
 ; @pos -25 -70
 include std/math/trig/sine
 include std/math/trig/advancePhase
+include std/math/log2
 includesEnd
 function wrapDx7Phase
 ; @pos 80 -80
@@ -1224,32 +1225,134 @@ return
 ifEnd
 push scale
 functionEnd int
-function frequencyToKey
-; @pos 150 -50
-; Nearest MIDI key for keyboard scaling only.
-; The oscillator frequency remains continuous.
+function frequencyToKeyBand
+; @pos -190 -180
+; Use log2 for a nearby eight-key band,
+; then retain the old exact comparisons.
 param float frequency
+local float firstBoundary
 local float boundary
-local int key
-; @hide
-push 8.4153681102195
+local int band
+local int firstKey
+
+call keyBandBoundary 0
+localSet firstBoundary
+push frequency
+push firstBoundary
+lessThan
+if
+push 0
+return
+ifEnd
+
+; Retain the original upper clamp.
+push frequency
+call keyBandBoundary
+- 2147483647
+lessThan
+equalToZero
+if
+push 127
+return
+ifEnd
+
+push frequency
+push firstBoundary
+ensureNonZero
+div
+call log2
+mul 12.0
+castToInt
+div 8
+max 0
+min 15
+localSet band
+
+; Correct either side of a band boundary.
+; The bounded correction makes the
+; result independent of estimate error.
+loop 16
+call keyBandBoundary band
 localSet boundary
-loop 127
+push frequency
+push boundary
+greaterOrEqual
+push frequency
+push band
+add 1
+call keyBandBoundary
+lessThan
+and
+branchIfTrue 1
+
 push frequency
 push boundary
 lessThan
 if
-push key
+push band
+sub 1
+localSet band
+else
+push band
+add 1
+localSet band
+ifEnd
+loopEnd
+
+push band
+mul 8
+localSet firstKey
+loop 8
+push frequency
+push boundary
+lessThan
+if
+push firstKey
+loopIndex
+add
 return
 ifEnd
 push boundary
 mul 1.0594630943592953
 localSet boundary
-push key
-add 1
-localSet key
 loopEnd
-push key
+push firstKey
+add 8
+min 127
+functionEnd int
+
+function keyBandBoundary
+; @pos -128 -180
+; Eight-key anchors retain rounding
+; from the original float32 walk.
+param int band
+push band
+mapBegin int
+map 0 8.41536808013916
+map 1 13.358569145202637
+map 2 21.205415725708008
+map 3 33.6615104675293
+map 4 53.43433380126953
+map 5 84.82174682617188
+map 6 134.64617919921875
+map 7 213.73753356933594
+map 8 339.2873229980469
+map 9 538.5852661132812
+map 10 854.951171875
+map 11 1357.15087890625
+map 12 2154.343505859375
+map 13 3419.80859375
+map 14 5428.609375
+map 15 8617.3837890625
+default 12186.82421875
+mapEnd float
+functionEnd float
+
+function frequencyToKey
+; @pos 150 -50
+; Nearest MIDI key for keyboard scaling.
+param float frequency
+call frequencyToKeyBand frequency
 functionEnd int
 function dx7Level
 ; @pos 150 22
@@ -1365,7 +1468,6 @@ function frequencyToRateKey
 ; Oscillator pitch stays unquantized.
 param float frequency
 local float boundary
-local int key
 
 ; The first band starts halfway
 ; between MIDI notes 23 and 24.
@@ -1376,18 +1478,15 @@ push frequency
 push boundary
 lessThan
 if
-push key
+loopIndex
 return
 ifEnd
 push boundary
 ; Quarter-octave steps: 2^(3/12).
 mul 1.189207115002721
 localSet boundary
-push key
-add 1
-localSet key
 loopEnd
-push key
+push 31
 functionEnd int
 note algorithm
 ; @pos 254 3
