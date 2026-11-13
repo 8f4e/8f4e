@@ -167,6 +167,23 @@ const SAMPLE_RATE 30
 
 constantsEnd
 
+note afterglowColors
+; @pos -230 -22
+; @config color.canvas #0e0b0a
+; @config color.surface #1b1513
+; @config color.ink #e7d8cc
+; @config color.primary #d49a7e
+; @config color.secondary #bea0c4
+; @config color.positive #a9b88a
+; @config color.warning #d7b277
+; @config color.negative #d17e7f
+; @config color.muted #a08c83
+; @config color.stroke rgba(194,142,112,0.34)
+; @config color.tertiary #b09b90
+; @config color.highlight #e4b69c
+; @config color.detail #96749d
+noteEnd
+
 note
 ; @pos -170 6
 ; @config export.fileName mandelbrotZoomSingleBuffered
