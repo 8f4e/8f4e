@@ -101,8 +101,22 @@ function indexPrototypeShapes(prototypes: readonly ComposedPrototypeAST[]): Reco
  * @returns The compiled sub-program artifacts.
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompileResult {
-	const { ast: subProgramAst, entries, cache } = program;
+	const { entries, cache } = program;
 	const entryNames = entries.map(entry => entry.id);
+	const prototypeShapesById = indexPrototypeShapes(program.ast.prototypes);
+	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
+	const registration = withCompilerStage('function registration', () =>
+		registerFunctions(program.ast.functions, {
+			reservedFunctionIds: entryNames,
+			reservedExportNames: [
+				...RESERVED_EXPORT_NAMES,
+				...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
+			],
+			prototypeShapes: prototypeShapesById,
+		})
+	);
+	const subProgramAst = { ...program.ast, functions: registration.declarations.map(({ ast }) => ast) };
+	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
 	const constantResolution = withCompilerStage('constant resolution', () =>
 		resolveConstants({
 			ast: subProgramAst,
@@ -133,26 +147,12 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 		})
 	);
 	const { pointerMetadataByModuleId } = memoryReferenceResolution.references;
-	const prototypeShapesById = indexPrototypeShapes(subProgramAst.prototypes);
 	const memoryDefaultsByModuleId = withCompilerStage('memory defaults', () =>
 		resolveMemoryDefaults({
 			memoryPlan,
 			memoryReferences: memoryReferenceResolution.references,
 		})
 	);
-
-	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
-	const registration = withCompilerStage('function registration', () =>
-		registerFunctions(subProgramAst.functions, {
-			reservedFunctionIds: entryNames,
-			reservedExportNames: [
-				...RESERVED_EXPORT_NAMES,
-				...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
-			],
-			prototypeShapes: prototypeShapesById,
-		})
-	);
-	const functionRegistry = mergeFunctionRegistries(entryFunctionMetadata, registration.registry);
 
 	const semanticReferences = withCompilerStage('semantic references', () =>
 		resolveSemanticReferences({

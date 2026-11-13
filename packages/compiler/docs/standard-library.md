@@ -90,9 +90,11 @@ the include-all form with a renamed selection. Each source is loaded once per re
 shared by all selections. Unselected exports remain private dependencies so calls inside included functions still work.
 
 Composition renames selected function declarations and their include-local call targets after syntax validation.
-Local names use the same overload and duplicate-signature rules as ordinary project functions, including when two exports
-or an included function and a project function share a name. The include resolver does not inspect project declarations
-or allocate alternative names to avoid collisions; ordinary namespace validation handles them.
+Local names use the same overload and signature override rules as ordinary project functions. Included source files follow
+the order of their first include declaration, with functions from each file in source order. A later included definition
+replaces an earlier implementation with the same local name and parameter types. Local project functions take precedence
+over included implementations with matching signatures; other overloads remain available. The include resolver does not
+inspect project declarations or allocate alternative names to avoid collisions.
 
 Includes are resolved during project loading. The CLI loads the shipped standard library files from the installed
 package, while browser-based tools load those same files lazily. The compiler receives the included source as ordinary

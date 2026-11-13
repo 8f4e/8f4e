@@ -1,0 +1,8 @@
+8f4e/v1
+
+function selected
+functionEnd
+
+function selected
+call missingFunction
+functionEnd

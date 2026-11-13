@@ -58,11 +58,45 @@ call convert
 
 Overload resolution is an exact match against the stack operand types. Return types do not distinguish overloads, and scalar types are not implicitly converted.
 
-Overload sets must use the same positive arity. A zero-parameter function name can only have one implementation. Duplicate parameter signatures are rejected, even when the return types differ.
+Overload sets must use the same positive arity. A zero-parameter function name can only have one selected implementation.
+When definitions in the same project or group share a name and parameter types, the last enabled definition wins, even
+when parameter names or return types differ. Other parameter signatures remain available as overloads.
 
 Pointer overloads require pointer type metadata. Known addresses such as `push &samples` carry their pointee type, but raw integer addresses are treated as integers.
 
 Overloaded functions cannot be exported directly. Use a uniquely named wrapper function when a host-visible export needs to call an overloaded helper.
+
+### Function overrides
+
+Selection follows function declaration order within each project or group. The editor serializes blocks from left to right,
+then top to bottom, so moving a matching definition to the right makes it take precedence. Disabled definitions do not hide
+earlier enabled definitions. Functions in different groups remain independent.
+
+```8f4e
+function offset
+param int value
+push value
+add 1
+functionEnd int
+
+function offset
+param int value
+push value
+add 2
+functionEnd int
+
+; call offset 10 returns 12.
+```
+
+Only the selected implementation contributes a body, import, or export. Calls from modules and other functions resolve
+against it regardless of where the caller is declared. Every enabled definition is syntax-checked, and its parameter
+signature is resolved, including `paramShape` expansion, before selection. Replaced bodies do not undergo further semantic
+checks or compilation.
+
+Included functions are applied before local function definitions. Included source files follow the order of their first
+include declaration; functions within each file follow that file's source order. A later included definition can replace
+a matching signature, and a local function can replace a matching included implementation while preserving its other
+overloads.
 
 ### `#impure`
 

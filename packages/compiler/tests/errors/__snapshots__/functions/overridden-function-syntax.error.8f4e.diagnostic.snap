@@ -1,0 +1,13 @@
+{
+  "code": 5,
+  "domain": "syntax",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Missing required argument for push.",
+}

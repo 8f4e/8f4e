@@ -279,28 +279,26 @@ describe('compile prototype validation', () => {
 		});
 	});
 
-	it('rejects same-name functions with duplicate parameter signatures', () => {
-		let thrownError: unknown;
+	it('keeps the last declaration and source identity for a parameter signature', () => {
+		const result = compile(
+			{
+				...emptyProjectFixture,
+				entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
+				functions: [
+					{ code: ['function convert', 'param int value', 'push value', 'functionEnd int'], projectBlockId: 20 },
+					{
+						code: ['function convert', 'param int input', 'push input', 'castToFloat', 'functionEnd float'],
+						projectBlockId: 21,
+					},
+				],
+			},
+			{}
+		);
 
-		try {
-			compile(
-				{
-					...emptyProjectFixture,
-					entries: { main: [{ code: ['module main', 'moduleEnd'] }] },
-					functions: [
-						{ code: ['function convert', 'param int value', 'push value', 'functionEnd int'] },
-						{ code: ['function convert', 'param int input', 'push input', 'functionEnd int'] },
-					],
-				},
-				{}
-			);
-		} catch (error) {
-			thrownError = error;
-		}
-
-		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
-			code: ErrorCode.DUPLICATE_FUNCTION_SIGNATURE,
-			instruction: 'function',
+		expect(Object.keys(result.compiledFunctions!)).toEqual([createFunctionId('convert', ['int'])]);
+		expect(result.compiledFunctions![createFunctionId('convert', ['int'])]).toMatchObject({
+			signature: { parameters: [{ name: 'input', type: 'int' }], returns: ['float'] },
+			ast: { functionLine: { diagnosticSource: { projectBlockId: 21 } } },
 		});
 	});
 
