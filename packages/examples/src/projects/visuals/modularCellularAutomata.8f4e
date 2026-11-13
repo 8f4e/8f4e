@@ -1,0 +1,379 @@
+8f4e/v1
+
+includes
+; @pos -210 -31
+include std/bitwise/extractBit
+include std/memory/loadBitAt2D
+include std/memory/storeBitAt2D
+includesEnd
+
+constants grid
+; @pos -210 -17
+const WIDTH 128
+const HISTORY_HEIGHT 128
+; WIDTH must be a multiple of eight.
+const ROW_BYTES WIDTH/8
+const HISTORY_BYTES ROW_BYTES*HISTORY_HEIGHT
+constantsEnd
+
+function readNeighborhood
+; @pos -164 -31
+#impure
+use grid
+param int8u* input
+param int x
+
+; The line wraps into a ring.
+; Left, center, right form
+; a three-bit lookup index.
+push input
+push WIDTH
+push 1
+push x
+push WIDTH-1
+add
+push WIDTH
+remainder
+push 0
+call loadBitAt2D
+push 0b100
+mul
+
+push input
+push WIDTH
+push 1
+push x
+push 0
+call loadBitAt2D
+push 0b010
+mul
+
+push input
+push WIDTH
+push 1
+push x
+push 1
+add
+push WIDTH
+remainder
+push 0
+call loadBitAt2D
+
+add
+add
+functionEnd int
+
+function transformRow
+; @pos -122 -31
+#impure
+use grid
+param int8u* input
+param int8u* output
+param int rule
+
+; Read each input cell and write
+; its successor into another row.
+; Input and output must be distinct.
+loop WIDTH
+push output
+push WIDTH
+push 1
+loopIndex
+push 0
+
+push rule
+push input
+loopIndex
+call readNeighborhood
+call extractBit
+call storeBitAt2D
+loopEnd
+functionEnd
+
+function appendHistory
+; @pos -80 -31
+#impure
+use grid
+param int8u* history
+param int8u* row
+
+; Scroll upward and append
+; the latest output at the bottom.
+push history
+push history
+push ROW_BYTES
+add
+memoryCopy HISTORY_BYTES-ROW_BYTES
+
+push history
+push HISTORY_BYTES-ROW_BYTES
+add
+push row
+memoryCopy ROW_BYTES
+functionEnd
+
+function processStage
+; @pos -38 -31
+#impure
+use grid
+param int8u* input
+param int8u* output
+param int8u* history
+param int rule
+param int bypass
+param int reset
+
+push reset
+if
+push history
+push 0
+push HISTORY_BYTES
+fill
+ifEnd
+
+push bypass
+if
+; Bypass passes the line through.
+push output
+push input
+memoryCopy ROW_BYTES
+else
+push input
+push output
+push rule
+call transformRow
+ifEnd
+
+push history
+push output
+call appendHistory
+functionEnd
+
+constants env
+; @pos -210 -5
+; Auto-generated environment constants
+; Changes will be overwritten
+constantsEnd
+
+note
+; @pos -210 5
+; @config export.fileName modularCellularAutomata
+; @config textureRuntime.enabled true
+; @config textureRuntime.entry main
+noteEnd
+
+note
+; @pos 0 -15
+; Patch a line through three cellular automata rules.
+; Source -> ruleA -> ruleB -> ruleC -> source.
+; The feedback returns on the next frame.
+;
+; Each stage transforms the previous stage's output.
+; Move rule sliders or toggle bypass while running.
+; Histories scroll upward without being cleared.
+; Choose a seed and restart to begin a new pattern.
+;
+; Reconnect input and feedback pointers to patch.
+; Backward patches add a one-frame delay.
+noteEnd
+
+entry main
+module source
+; @pos 0 0
+; @home left
+use grid
+
+int running 1
+; @switch &running
+
+int seed 1 ; @w
+; @slider &seed 0 255
+
+int restart
+; @button &restart
+
+int frame ; @w
+int tick
+int reset
+int initialized
+
+; Previous frame's final output.
+int8u* feedback &ruleC:out
+int8u[] out ROW_BYTES
+; @textureUpload &out 1bit 128 1
+; @texture &out 2 128 1
+
+push &tick
+push running
+store
+push &reset
+push 0
+store
+
+push initialized
+equalToZero
+push restart
+or
+if
+; Start with the seed in
+; the line's final eight cells.
+push &out
+push 0
+push ROW_BYTES
+fill
+push &out
+push ROW_BYTES-1
+add
+push seed
+store
+
+push &frame
+push 0
+store
+push &initialized
+push 1
+store
+push &tick
+push 1
+store
+push &reset
+push 1
+store
+push &restart
+push 0
+store
+else
+push running
+if
+; Capture feedback before the
+; stages write this frame's rows.
+push &out
+push feedback
+memoryCopy ROW_BYTES
+
+push &frame
+push frame
+push 1
+add
+store
+ifEnd
+ifEnd
+moduleEnd
+
+module ruleA
+; @pos 44 0
+use grid
+
+int8u* input &source:out
+int8u[] inputRow ROW_BYTES
+
+int rule 110 ; @w
+; @slider &rule 0 255
+
+int bypass
+; @switch &bypass
+
+int8u[] out ROW_BYTES
+int8u[] history HISTORY_BYTES
+; @textureUpload &history 1bit 128 128
+; @texture &history 2 128 128
+
+int& tick &source:tick
+int& reset &source:reset
+
+push *tick
+equalToZero
+exitIfTrue
+
+; Capture feedback before writing.
+push &inputRow
+push input
+memoryCopy ROW_BYTES
+
+push &inputRow
+push &out
+push &history
+push rule
+push bypass
+push *reset
+call processStage
+moduleEnd
+
+module ruleB
+; @pos 88 0
+use grid
+
+int8u* input &ruleA:out
+int8u[] inputRow ROW_BYTES
+
+int rule 90 ; @w
+; @slider &rule 0 255
+
+int bypass
+; @switch &bypass
+
+int8u[] out ROW_BYTES
+int8u[] history HISTORY_BYTES
+; @textureUpload &history 1bit 128 128
+; @texture &history 2 128 128
+
+int& tick &source:tick
+int& reset &source:reset
+
+push *tick
+equalToZero
+exitIfTrue
+
+; Capture feedback before writing.
+push &inputRow
+push input
+memoryCopy ROW_BYTES
+
+push &inputRow
+push &out
+push &history
+push rule
+push bypass
+push *reset
+call processStage
+moduleEnd
+
+module ruleC
+; @pos 132 0
+use grid
+
+int8u* input &ruleB:out
+int8u[] inputRow ROW_BYTES
+
+int rule 30 ; @w
+; @slider &rule 0 255
+
+int bypass
+; @switch &bypass
+
+int8u[] out ROW_BYTES
+int8u[] history HISTORY_BYTES
+; @textureUpload &history 1bit 128 128
+; @texture &history 2 128 128
+
+int& tick &source:tick
+int& reset &source:reset
+
+push *tick
+equalToZero
+exitIfTrue
+
+; Capture feedback before writing.
+push &inputRow
+push input
+memoryCopy ROW_BYTES
+
+push &inputRow
+push &out
+push &history
+push rule
+push bypass
+push *reset
+call processStage
+moduleEnd
+entryEnd
