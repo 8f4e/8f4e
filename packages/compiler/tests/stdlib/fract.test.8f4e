@@ -35,4 +35,45 @@ push 0.001
 lessOrEqual
 assert
 moduleEnd
+module fractDoubleAssertions
+call fract 0.0f64
+assertEqual 0.0f64
+call fract 3.25f64
+assertEqual 0.25f64
+call fract 3.75f64
+assertEqual 0.75f64
+call fract -3.25f64
+assertEqual -0.25f64
+call fract -3.75f64
+assertEqual -0.75f64
+call fract -3.0f64
+assertEqual 0.0f64
+; Half-integers retain their sign regardless of ties-to-even.
+call fract 1.5f64
+assertEqual 0.5f64
+call fract 2.5f64
+assertEqual 0.5f64
+call fract -1.5f64
+assertEqual -0.5f64
+call fract -2.5f64
+assertEqual -0.5f64
+; No saturation at the signed int32 boundary.
+call fract 2147483648.75f64
+assertEqual 0.75f64
+call fract -2147483649.25f64
+assertEqual -0.25f64
+call fract 4503599627370495.5f64
+assertEqual 0.5f64
+call fract -4503599627370495.5f64
+assertEqual -0.5f64
+call fract 1.7976931348623157e308f64
+assertEqual 0.0f64
+call fract -1.7976931348623157e308f64
+assertEqual 0.0f64
+call fract 5e-324f64
+assertEqual 5e-324f64
+call fract -5e-324f64
+assertEqual -5e-324f64
+moduleEnd
+
 entryEnd

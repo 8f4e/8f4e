@@ -1,0 +1,30 @@
+function srgbByteToLinear
+#export
+; Requires std/math/log2 and
+; std/math/exp2 under their names.
+; channel must be in 0..255.
+param int channel
+local float encoded
+
+push channel
+castToFloat
+div 255.0
+localSet encoded
+
+push encoded
+push 0.04045
+lessOrEqual
+if
+push encoded
+div 12.92
+return
+ifEnd
+
+; ((s + 0.055) / 1.055)^2.4.
+push encoded
+add 0.055
+div 1.055
+call log2
+mul 2.4
+call exp2
+functionEnd float

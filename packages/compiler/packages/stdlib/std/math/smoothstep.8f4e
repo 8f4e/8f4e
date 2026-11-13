@@ -16,3 +16,22 @@ sub
 mul
 
 functionEnd float
+
+function smoothstep
+#export
+; Smoothly maps amount in
+; 0..1 to an eased 0..1
+; curve.
+param float64 amount
+
+push amount
+push amount
+mul
+push 3.0f64
+push 2.0f64
+push amount
+mul
+sub
+mul
+
+functionEnd float64

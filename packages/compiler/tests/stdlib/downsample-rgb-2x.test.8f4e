@@ -1,0 +1,115 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/log2
+include std/math/exp2
+include std/math/lerp
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+include std/image/downsampleRGB2x
+includesEnd
+
+entry test
+module downsampleAssertions
+int8u[] source 12 255 0 0 0 255 0 0 0 255 255 255 255
+int8u[] destination 5 0xa5 0 0 0 0x5a
+int8u* pixels &destination
+push &pixels
+push &destination
+add 1
+store
+call downsampleRGB2x &source pixels 1 1 6 3 0.0
+push &destination
+add 1
+load8u
+assertEqual 255
+push &destination
+add 2
+load8u
+assertEqual 0
+push &destination
+add 3
+load8u
+assertEqual 0
+push &destination
+add 0
+load8u
+assertEqual 0xa5
+push &destination
+add 4
+load8u
+assertEqual 0x5a
+call downsampleRGB2x &source pixels 1 1 6 3 0.5
+push &destination
+add 1
+load8u
+assertEqual 225
+push &destination
+add 2
+load8u
+assertEqual 137
+push &destination
+add 3
+load8u
+assertEqual 137
+push &destination
+add 0
+load8u
+assertEqual 0xa5
+push &destination
+add 4
+load8u
+assertEqual 0x5a
+call downsampleRGB2x &source pixels 1 1 6 3 1.0
+push &destination
+add 1
+load8u
+assertEqual 188
+push &destination
+add 2
+load8u
+assertEqual 188
+push &destination
+add 3
+load8u
+assertEqual 188
+push &destination
+add 0
+load8u
+assertEqual 0xa5
+push &destination
+add 4
+load8u
+assertEqual 0x5a
+; Empty outputs do not touch memory.
+call downsampleRGB2x &source pixels 0 3 0 0 1.0
+call downsampleRGB2x &source pixels 3 0 18 9 1.0
+push &destination
+add 1
+load8u
+assertEqual 188
+push &destination
+add 2
+load8u
+assertEqual 188
+push &destination
+add 3
+load8u
+assertEqual 188
+push &destination
+add 0
+load8u
+assertEqual 0xa5
+push &destination
+add 4
+load8u
+assertEqual 0x5a
+push &source
+load8u
+assertEqual 255
+moduleEnd
+entryEnd

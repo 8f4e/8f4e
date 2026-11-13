@@ -12,3 +12,43 @@ castToFloat
 sub
 
 functionEnd float
+
+function fract
+#export
+; Signed fractional part of a
+; finite double, truncating toward
+; zero without an integer cast.
+param float64 value
+local float64 fraction
+
+push value
+push value
+round
+sub
+localSet fraction
+
+push value
+push 0.0f64
+greaterOrEqual
+if
+push fraction
+push 0.0f64
+lessThan
+if
+push fraction
+add 1.0f64
+localSet fraction
+ifEnd
+else
+push fraction
+push 0.0f64
+greaterThan
+if
+push fraction
+sub 1.0f64
+localSet fraction
+ifEnd
+ifEnd
+
+push fraction
+functionEnd float64

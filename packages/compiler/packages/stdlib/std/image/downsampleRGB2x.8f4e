@@ -1,0 +1,137 @@
+function downsampleRGB2x
+#export
+#impure
+; 2x2 RGB downsampling in linear light.
+; Dimensions are output pixel counts.
+; Buffers must be non-overlapping
+; and large enough. Byte strides are
+; at least 6*outputWidth for source
+; and 3*outputWidth for destination.
+; amount is finite and in 0..1.
+; Requires both sRGB conversions
+; and std/math/lerp by their names.
+param int8u* source
+param int8u* destination
+param int outputWidth
+param int outputHeight
+param int sourceStride
+param int destinationStride
+param float amount
+
+local int x
+local int y
+local int8u* firstSample
+local int8u* outputPixel
+
+push outputWidth
+push 0
+lessOrEqual
+push outputHeight
+push 0
+lessOrEqual
+or
+if
+return
+ifEnd
+
+; These guards cover every valid
+; non-negative signed-int dimension.
+loop 2147483647
+loopIndex
+push outputHeight
+greaterOrEqual
+branchIfTrue 1
+loopIndex
+localSet y
+
+loop 2147483647
+loopIndex
+push outputWidth
+greaterOrEqual
+branchIfTrue 1
+loopIndex
+localSet x
+
+push source
+push y
+mul 2
+mul sourceStride
+push x
+mul 6
+add
+add
+localSet firstSample
+
+push destination
+push y
+mul destinationStride
+push x
+mul 3
+add
+add
+localSet outputPixel
+
+loop 3
+push outputPixel
+loopIndex
+add
+push firstSample
+loopIndex
+add
+call resolveChannel sourceStride amount
+store
+loopEnd
+loopEnd
+loopEnd
+functionEnd
+
+function resolveChannel
+#impure
+param int8u* first
+param int sourceStride
+param float amount
+local float nearest
+local float filtered
+
+; Zero amount keeps one sample.
+push amount
+push 0.0
+lessOrEqual
+if
+push first
+load8u
+return
+ifEnd
+
+; Blend toward the 2x2 average
+; in linear light.
+push first
+load8u
+call srgbByteToLinear
+localSet nearest
+push nearest
+
+push first
+add 3
+load8u
+call srgbByteToLinear
+add
+
+push first
+add sourceStride
+load8u
+call srgbByteToLinear
+add
+
+push first
+add sourceStride
+add 3
+load8u
+call srgbByteToLinear
+add
+
+div 4.0
+localSet filtered
+call lerp nearest filtered amount
+call linearToSrgbByte
+functionEnd int

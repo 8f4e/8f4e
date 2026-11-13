@@ -17,3 +17,23 @@ mul
 add
 
 functionEnd float
+
+function lerp
+#export
+; Linearly interpolates between
+; start and end by amount.
+param float64 start
+param float64 end
+param float64 amount
+
+push start
+push 1.0f64
+push amount
+sub
+mul
+push end
+push amount
+mul
+add
+
+functionEnd float64

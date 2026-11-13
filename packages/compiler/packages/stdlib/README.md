@@ -43,6 +43,53 @@ In stdlib include context, `#export` means "make this function available to the 
 the project preparser and does not create a WebAssembly export. Private helper functions should omit `#export`; the
 preparser prefixes those helper names when expanding the include.
 
+## Floating-point math
+
+`std/math/lerp`, `std/math/smoothstep`, and `std/math/fract` have both `float` and `float64` overloads. Interpolation
+and easing retain the supplied precision. `fract` returns a signed fraction using truncation toward zero; its double
+overload accepts the full finite double range without an integer conversion.
+
+`std/math/log2` approximates the base-two logarithm for finite, strictly positive `float` and `float64` inputs,
+including subnormals. See the [standard-library reference](../../docs/standard-library.md#stdmathlog2) for the input
+contract and tested approximation bounds.
+
+## RGB colors
+
+`std/color/lerpRGB` blends two packed `0xRRGGBB` colors with a finite `float` or `float64` amount in `0..1`. It
+interpolates stored channel values and rounds each result to the nearest byte value, with halfway values rounded
+to even. Input high bytes are ignored, and the result's high byte is zero.
+
+`std/color/srgbByteToLinear` decodes an sRGB byte into a linear-light float in `0..1`.
+`std/color/linearToSrgbByte` clamps a finite linear float to `0..1`, encodes it, and rounds to a byte.
+Both require explicit includes of `std/math/log2` and `std/math/exp2` under their standard exported names.
+See the [conversion reference](../../docs/standard-library.md#stdcolorsrgbbytetolinear) for approximation bounds.
+
+`std/memory/storeRGB` writes a packed color as three consecutive R, G, B bytes through an `int8u*` pointer. Supply
+three writable bytes at any byte alignment. It carries `#impure` and leaves all other bytes unchanged.
+
+## RGB downsampling
+
+`std/image/downsampleRGB2x` resolves each 2x2 block of interleaved sRGB bytes to one RGB pixel in linear light.
+Pass source and destination pointers, output width and height, source and destination row strides in bytes, and a
+finite `float` amount in `0..1`. Zero selects the top-left sample, one averages all four, and intermediate amounts
+blend in linear light. Supply non-overlapping buffers; source data and destination row padding are preserved.
+Zero-sized outputs perform no memory access.
+
+Include `std/color/srgbByteToLinear`, `std/color/linearToSrgbByte`, `std/math/lerp`, `std/math/log2`, and `std/math/exp2`
+explicitly under their standard exported names. Includes do not load other sources recursively, and renaming a
+prerequisite does not rewrite calls from another source. See the
+[downsampling reference](../../docs/standard-library.md#stdimagedownsamplergb2x) for buffer sizes, strides, and an example.
+
+## Pointer swaps
+
+`std/memory/swapPointers` exchanges the addresses stored in two pointer variables of the same type. Pass their
+addresses, such as `call swapPointers &display &drawing`. Overloads cover pointers to `int`, `int8`, `int8u`,
+`int16`, `int16u`, `float`, and `float64`. Swapping a slot with itself is a no-op, and null pointer values are valid.
+
+The helper carries `#impure` and only accesses the pointer slots, leaving the pointed-to data unchanged. It writes
+the first slot and then the second with ordinary stores. See the
+[standard-library reference](../../docs/standard-library.md#stdmemoryswappointers) for the full contract and an example.
+
 ## Byte buffers and grids
 
 `std/memory/loadAt` and `std/memory/storeAt` accept both `int*` and `int8u*` buffers. Their index is an element

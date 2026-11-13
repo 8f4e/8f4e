@@ -1,0 +1,159 @@
+function log2
+#export
+; Approximate log2 for finite
+; positive inputs only.
+param float value
+local int exponent
+local float ratio
+local float squared
+
+; Normalize a finite positive input
+; into [1, 2), keeping its exponent.
+loop 150
+push value
+push 1.0
+greaterOrEqual
+push value
+push 2.0
+lessThan
+and
+branchIfTrue 1
+
+push value
+push 2.0
+greaterOrEqual
+if
+push value
+div 2.0
+localSet value
+push exponent
+add 1
+localSet exponent
+else
+push value
+mul 2.0
+localSet value
+push exponent
+sub 1
+localSet exponent
+ifEnd
+loopEnd
+
+; ln(value) = 2*(r + r^3/3 + ...).
+; Here 0 <= r < 1/3, so the series
+; converges rapidly.
+push value
+sub 1.0
+push value
+add 1.0
+ensureNonZero
+div
+localSet ratio
+push ratio
+push ratio
+mul
+localSet squared
+
+push 0.058823529411764705
+mul squared
+add 0.06666666666666667
+mul squared
+add 0.07692307692307693
+mul squared
+add 0.09090909090909091
+mul squared
+add 0.1111111111111111
+mul squared
+add 0.14285714285714285
+mul squared
+add 0.2
+mul squared
+add 0.3333333333333333
+mul squared
+add 1.0
+mul ratio
+mul 2.8853900817779268
+push exponent
+castToFloat
+add
+functionEnd float
+
+function log2
+#export
+; Approximate log2 for finite
+; positive inputs only.
+param float64 value
+local int exponent
+local float64 ratio
+local float64 squared
+
+; Normalize a finite positive input
+; into [1, 2), keeping its exponent.
+loop 1075
+push value
+push 1.0f64
+greaterOrEqual
+push value
+push 2.0f64
+lessThan
+and
+branchIfTrue 1
+
+push value
+push 2.0f64
+greaterOrEqual
+if
+push value
+div 2.0f64
+localSet value
+push exponent
+add 1
+localSet exponent
+else
+push value
+mul 2.0f64
+localSet value
+push exponent
+sub 1
+localSet exponent
+ifEnd
+loopEnd
+
+; ln(value) = 2*(r + r^3/3 + ...).
+; Here 0 <= r < 1/3, so the series
+; converges rapidly.
+push value
+sub 1.0f64
+push value
+add 1.0f64
+ensureNonZero
+div
+localSet ratio
+push ratio
+push ratio
+mul
+localSet squared
+
+push 0.058823529411764705f64
+mul squared
+add 0.06666666666666667f64
+mul squared
+add 0.07692307692307693f64
+mul squared
+add 0.09090909090909091f64
+mul squared
+add 0.1111111111111111f64
+mul squared
+add 0.14285714285714285f64
+mul squared
+add 0.2f64
+mul squared
+add 0.3333333333333333f64
+mul squared
+add 1.0f64
+mul ratio
+mul 2.8853900817779268f64
+push exponent
+castToFloat64
+add
+functionEnd float64

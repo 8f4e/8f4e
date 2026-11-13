@@ -33,4 +33,23 @@ call lerp
 castToInt
 assertEqual 20
 moduleEnd
+module lerpDoubleAssertions
+; Double precision is retained.
+call lerp 1.0000000000000002f64 1.0000000000000007f64 0.5f64
+assertEqual 1.0000000000000004f64
+call lerp 10.0f64 20.0f64 0.0f64
+assertEqual 10.0f64
+call lerp 10.0f64 20.0f64 1.0f64
+assertEqual 20.0f64
+call lerp 20.0f64 10.0f64 0.25f64
+assertEqual 17.5f64
+call lerp -10.0f64 10.0f64 0.5f64
+assertEqual 0.0f64
+; Like float lerp, amounts can extrapolate.
+call lerp 10.0f64 20.0f64 -1.0f64
+assertEqual 0.0f64
+call lerp 10.0f64 20.0f64 2.0f64
+assertEqual 30.0f64
+moduleEnd
+
 entryEnd

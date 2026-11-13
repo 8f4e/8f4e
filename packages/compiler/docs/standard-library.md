@@ -15,6 +15,7 @@ include std/math/clamp
 include std/math/exp2
 include std/math/fract
 include std/math/lerp
+include std/math/log2
 include std/math/moveTowards
 include std/math/normalize
 include std/math/pow2
@@ -24,6 +25,10 @@ include std/math/trig/cosine
 include std/math/trig/saw
 include std/math/trig/sine
 include std/math/trig/triangle
+include std/color/lerpRGB
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+include std/image/downsampleRGB2x
 include std/bitwise/extractBit
 include std/bitwise/extractBits
 include std/bitwise/extractByte
@@ -42,6 +47,7 @@ include std/memory/nearestValue
 include std/memory/readInterpolated
 include std/memory/storeAt
 include std/memory/storeBitAt2D
+include std/memory/storeRGB
 include std/memory/wrapPointer
 include std/stack/dup
 include std/stack/swap
@@ -99,6 +105,10 @@ inspect project declarations or allocate alternative names to avoid collisions.
 Includes are resolved during project loading. The CLI loads the shipped standard library files from the installed
 package, while browser-based tools load those same files lazily. The compiler receives the included source as ordinary
 function blocks, so overload resolution, stack typing, and `call` behavior are the same as user-defined functions.
+
+Some helpers call functions from other include sources. Include those prerequisites explicitly under their standard
+exported names; source inclusion does not load dependencies recursively. Each helper's reference lists its prerequisites.
+Renaming a prerequisite does not rewrite calls from a different include source.
 
 ## `std/stack/dup`
 
@@ -259,6 +269,44 @@ push &buffer
 push count(buffer)
 call decrementPointer
 ; pointer is end(buffer)-sizeof(buffer)
+moduleEnd
+entryEnd
+```
+
+## `std/memory/swapPointers`
+
+Provides `swapPointers`, which exchanges the addresses stored in two pointer variables of the same type.
+
+Available overloads:
+
+- `swapPointers(int** first, int** second) -> void`
+- `swapPointers(int8** first, int8** second) -> void`
+- `swapPointers(int8u** first, int8u** second) -> void`
+- `swapPointers(int16** first, int16** second) -> void`
+- `swapPointers(int16u** first, int16u** second) -> void`
+- `swapPointers(float** first, float** second) -> void`
+- `swapPointers(float64** first, float64** second) -> void`
+
+Pass the addresses of valid, writable pointer variables. The function reads and writes the four-byte pointer slots;
+it does not read or modify the pointed-to data. The slots may be the same, and null pointer values are preserved.
+The first slot is written before the second using ordinary stores; the pair is not an atomic operation.
+
+Examples:
+
+```8f4e
+includes
+include std/memory/swapPointers
+includesEnd
+
+entry main
+module buffers
+int8u[] firstFrame 16
+int8u[] secondFrame 16
+int8u* display &firstFrame
+int8u* drawing &secondFrame
+
+call swapPointers &display &drawing
+; display points to secondFrame; drawing points to firstFrame.
 moduleEnd
 entryEnd
 ```
@@ -535,6 +583,32 @@ moduleEnd
 entryEnd
 ```
 
+## `std/memory/storeRGB`
+
+Provides `storeRGB`, which writes a packed `0xRRGGBB` integer into three consecutive unsigned-byte elements.
+
+Available overloads:
+
+- `storeRGB(int8u* pixel, int color) -> void`
+
+The destination must have at least three writable bytes and may have any byte alignment. The function writes red,
+green, then blue using ordinary byte stores, ignores the color's high eight bits, and leaves every other byte and
+the supplied pointer variable unchanged. It carries `#impure`.
+
+```8f4e
+includes
+include std/memory/storeRGB
+includesEnd
+
+entry main
+module pixelExample
+int8u[] pixel 3
+call storeRGB &pixel 0x123456
+; pixel contains 0x12, 0x34, 0x56.
+moduleEnd
+entryEnd
+```
+
 ## `std/math/clamp`
 
 Provides `clamp`, which constrains a value to an inclusive minimum and maximum.
@@ -568,15 +642,52 @@ moduleEnd
 entryEnd
 ```
 
+## `std/math/log2`
+
+Provides `log2`, an approximation of the base-two logarithm for finite, strictly positive inputs.
+
+Available overloads:
+
+- `log2(float value) -> float`
+- `log2(float64 value) -> float64`
+
+Both overloads support their full positive finite range, including subnormal values. Callers must exclude zero,
+negative values, infinities, and NaN. The result is exact for representable powers of two. Range reduction normalizes
+the input to `[1, 2)`, followed by a truncated odd-power logarithm series.
+
+Numerical regression tests cover every representable power of two, four mantissa samples at each exponent, and
+8,193 evenly spaced inputs in `[1, 2]`. On those samples, the absolute error is below `1e-5` for `float` and `1.6e-10`
+for `float64`, with a monotonic result across the dense mantissa grid. These are tested approximation bounds, not a
+correct-rounding guarantee for every input.
+
+```8f4e
+includes
+include std/math/log2
+includesEnd
+
+entry main
+module logarithmExamples
+call log2 8.0
+; stack: 3.0
+call log2 0.5f64
+; stack: -1.0f64
+moduleEnd
+entryEnd
+```
+
 ## `std/math/fract`
 
-Provides `fract`, which returns the fractional part of a float by subtracting its integer-truncated value.
+Provides `fract`, which returns the signed fractional part by subtracting the value truncated toward zero.
 
 Available overloads:
 
 - `fract(float value) -> float`
+- `fract(float64 value) -> float64`
 
-This helper is intended for positive values, such as fractional sample offsets. For negative inputs, the result follows integer truncation rather than positive modulo wrapping.
+Inputs must be finite. For example, `3.25` returns `0.25`, while `-3.25` returns `-0.25`; this is truncation toward zero
+rather than positive modulo wrapping. The `float` overload converts the integer part through a signed 32-bit integer,
+so that part must fit in `int`. The `float64` overload uses floating-point rounding and accepts the full finite double
+range, including large integral values and subnormal fractions.
 
 Examples:
 
@@ -596,11 +707,12 @@ entryEnd
 
 ## `std/math/lerp`
 
-Provides `lerp`, which linearly interpolates between two float values.
+Provides `lerp`, which linearly interpolates between two values at the supplied floating-point precision.
 
 Available overloads:
 
 - `lerp(float start, float end, float amount) -> float`
+- `lerp(float64 start, float64 end, float64 amount) -> float64`
 
 Examples:
 
@@ -737,14 +849,16 @@ entryEnd
 
 ## `std/math/smoothstep`
 
-Provides `smoothstep`, which maps a float amount to a cubic eased curve. It is commonly used for fades and modulation
+Provides `smoothstep`, which maps a floating-point amount to a cubic eased curve. It is commonly used for fades and modulation
 shaping.
 
 Available overloads:
 
 - `smoothstep(float amount) -> float`
+- `smoothstep(float64 amount) -> float64`
 
-The usual input range is `0..1`, where `0` returns `0`, `0.5` returns `0.5`, and `1` returns `1`.
+The usual input range is `0..1`, where `0` returns `0`, `0.5` returns `0.5`, and `1` returns `1`. Both overloads evaluate
+`amount * amount * (3 - 2 * amount)` directly without clamping.
 
 Examples:
 
@@ -830,7 +944,7 @@ Available overloads:
 
 - `cosine(float x) -> float`
 
-`cosine` uses a self-contained 6th-order Taylor polynomial with folding to `[-PI/2, PI/2]`. Standard library files are independent include units, so this helper does not call `sine`.
+`cosine` uses a self-contained 6th-order Taylor polynomial with folding to `[-PI/2, PI/2]`. Include sources are resolved independently, so this helper does not require `sine`.
 
 Examples:
 
@@ -892,6 +1006,129 @@ module sawExamples
 push 0.0
 call saw
 ; stack: 0.0
+moduleEnd
+entryEnd
+```
+
+## `std/color/lerpRGB`
+
+Provides `lerpRGB`, which interpolates the channels of two packed `0xRRGGBB` colors and returns a packed color.
+
+Available overloads:
+
+- `lerpRGB(int start, int end, float amount) -> int`
+- `lerpRGB(int start, int end, float64 amount) -> int`
+
+The interpolation amount must be finite and in `0..1`. An amount of zero returns the start color, and one returns
+the end color. Only the low 24 bits of each color are used; the returned high byte is zero. Interpolation operates
+directly on the stored RGB channel values at the amount's floating-point precision. Each channel is rounded to the
+nearest integer, with halfway values rounded to even. The function is pure.
+
+```8f4e
+includes
+include std/color/lerpRGB
+includesEnd
+
+entry main
+module colorExample
+call lerpRGB 0xff0000 0x0000ff 0.5f64
+; stack: 0x800080
+moduleEnd
+entryEnd
+```
+
+## `std/color/srgbByteToLinear`
+
+Provides `srgbByteToLinear(int channel) -> float`, which decodes an sRGB channel byte into linear light.
+
+The channel must be in `0..255`. The pure function divides by 255, then applies the sRGB transfer function:
+`encoded / 12.92` at or below `0.04045`, otherwise `((encoded + 0.055) / 1.055)^2.4`.
+The result is in `0..1`. The nonlinear branch uses the standard-library logarithm and exponential approximations.
+Across all 256 byte inputs, tests require absolute error below `1e-6` against the reference formula and monotonic output.
+
+Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
+
+```8f4e
+includes
+include std/math/log2
+include std/math/exp2
+include std/color/srgbByteToLinear
+includesEnd
+
+; Inside a module or function:
+call srgbByteToLinear 128
+; stack: about 0.21586
+```
+
+## `std/color/linearToSrgbByte`
+
+Provides `linearToSrgbByte(float linear) -> int`, which encodes linear light as an sRGB channel byte.
+
+Supply a finite float. The pure function clamps it to `0..1`, then applies the sRGB transfer function:
+`linear * 12.92` at or below `0.0031308`, otherwise `1.055 * linear^(1/2.4) - 0.055`.
+The encoded value is scaled to `0..255`, clamped, and rounded to the nearest integer, with halfway values rounded to even.
+The nonlinear branch uses logarithm and exponential approximations. A monotonic sweep of 65,537 evenly spaced linear
+inputs is tested within one byte level of the reference formula; all 256 decoded sRGB bytes round-trip exactly.
+
+Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
+
+```8f4e
+includes
+include std/math/log2
+include std/math/exp2
+include std/color/linearToSrgbByte
+includesEnd
+
+; Inside a module or function:
+call linearToSrgbByte 0.5
+; stack: 188
+```
+
+## `std/image/downsampleRGB2x`
+
+Provides a linear-light 2x2 downsampler for interleaved sRGB byte buffers:
+
+```8f4e
+downsampleRGB2x(int8u* source, int8u* destination,
+                int outputWidth, int outputHeight,
+                int sourceStride, int destinationStride, float amount)
+```
+
+`outputWidth` and `outputHeight` are non-negative output dimensions in pixels. The source contains
+`2 * outputWidth` by `2 * outputHeight` pixels, each stored as consecutive R, G, B bytes. Both strides are in bytes
+and may include row padding independently: `sourceStride >= 6 * outputWidth` and
+`destinationStride >= 3 * outputWidth`. Buffers may start at any byte alignment.
+
+The finite `amount` must be in `0..1`. Zero copies the top-left sample of each 2x2 block. One decodes all four samples,
+averages their channels in linear light, and encodes the result back to sRGB. Intermediate values blend from the
+top-left sample toward that average in linear light. The destination always has half the source width and height.
+
+Supply non-overlapping buffers with enough storage. For nonzero dimensions, the source needs at least
+`(2 * outputHeight - 1) * sourceStride + 6 * outputWidth` bytes, and the destination needs at least
+`(outputHeight - 1) * destinationStride + 3 * outputWidth` bytes. Dimensions, strides, and computed offsets must fit
+signed 32-bit integers, and the resulting addresses must be valid. A zero `outputWidth` or `outputHeight` performs
+no reads or writes.
+The helper carries `#impure`; it preserves source bytes, destination padding, and all bytes outside the output pixels.
+
+Include both color conversions, `std/math/lerp`, and the conversions' math prerequisites explicitly under their
+standard exported names:
+
+```8f4e
+includes
+include std/math/log2
+include std/math/exp2
+include std/math/lerp
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+include std/image/downsampleRGB2x
+includesEnd
+
+entry main
+module downsampleExample
+int8u[] samples 12 255 0 0 0 255 0 0 0 255 255 255 255
+int8u[] output 3
+call downsampleRGB2x &samples &output 1 1 6 3 1.0
+; output: 188, 188, 188
 moduleEnd
 entryEnd
 ```
