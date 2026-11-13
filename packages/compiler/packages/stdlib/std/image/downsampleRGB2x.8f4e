@@ -2,17 +2,18 @@ function downsampleRGB2x
 #export
 #impure
 ; 2x2 RGB downsampling in linear light.
-; width and height are output pixels.
-; Strides are bytes; buffers must be
-; non-overlapping, large enough; strides
-; at least 6*width and 3*width.
+; Dimensions are output pixel counts.
+; Buffers must be non-overlapping
+; and large enough. Byte strides are
+; at least 6*outputWidth for source
+; and 3*outputWidth for destination.
 ; amount is finite and in 0..1.
 ; Requires both sRGB conversions
 ; and std/math/lerp by their names.
 param int8u* source
 param int8u* destination
-param int width
-param int height
+param int outputWidth
+param int outputHeight
 param int sourceStride
 param int destinationStride
 param float amount
@@ -22,10 +23,10 @@ local int y
 local int8u* firstSample
 local int8u* outputPixel
 
-push width
+push outputWidth
 push 0
 lessOrEqual
-push height
+push outputHeight
 push 0
 lessOrEqual
 or
@@ -37,7 +38,7 @@ ifEnd
 ; non-negative signed-int dimension.
 loop 2147483647
 loopIndex
-push height
+push outputHeight
 greaterOrEqual
 branchIfTrue 1
 loopIndex
@@ -45,7 +46,7 @@ localSet y
 
 loop 2147483647
 loopIndex
-push width
+push outputWidth
 greaterOrEqual
 branchIfTrue 1
 loopIndex

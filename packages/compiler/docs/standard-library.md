@@ -1087,22 +1087,25 @@ call linearToSrgbByte 0.5
 Provides a linear-light 2x2 downsampler for interleaved sRGB byte buffers:
 
 ```8f4e
-downsampleRGB2x(int8u* source, int8u* destination, int width, int height,
+downsampleRGB2x(int8u* source, int8u* destination,
+                int outputWidth, int outputHeight,
                 int sourceStride, int destinationStride, float amount)
 ```
 
-`width` and `height` are non-negative output dimensions in pixels. The source contains `2 * width` by `2 * height`
-pixels, each stored as consecutive R, G, B bytes. Both strides are in bytes and may include row padding independently:
-`sourceStride >= 6 * width` and `destinationStride >= 3 * width`. Buffers may start at any byte alignment.
+`outputWidth` and `outputHeight` are non-negative output dimensions in pixels. The source contains
+`2 * outputWidth` by `2 * outputHeight` pixels, each stored as consecutive R, G, B bytes. Both strides are in bytes
+and may include row padding independently: `sourceStride >= 6 * outputWidth` and
+`destinationStride >= 3 * outputWidth`. Buffers may start at any byte alignment.
 
 The finite `amount` must be in `0..1`. Zero copies the top-left sample of each 2x2 block. One decodes all four samples,
 averages their channels in linear light, and encodes the result back to sRGB. Intermediate values blend from the
 top-left sample toward that average in linear light. The destination always has half the source width and height.
 
 Supply non-overlapping buffers with enough storage. For nonzero dimensions, the source needs at least
-`(2 * height - 1) * sourceStride + 6 * width` bytes, and the destination needs at least
-`(height - 1) * destinationStride + 3 * width` bytes. Dimensions, strides, and computed offsets must fit signed 32-bit
-integers, and the resulting addresses must be valid. A zero width or height performs no reads or writes.
+`(2 * outputHeight - 1) * sourceStride + 6 * outputWidth` bytes, and the destination needs at least
+`(outputHeight - 1) * destinationStride + 3 * outputWidth` bytes. Dimensions, strides, and computed offsets must fit
+signed 32-bit integers, and the resulting addresses must be valid. A zero `outputWidth` or `outputHeight` performs
+no reads or writes.
 The helper carries `#impure`; it preserves source bytes, destination padding, and all bytes outside the output pixels.
 
 Include both color conversions, `std/math/lerp`, and the conversions' math prerequisites explicitly under their

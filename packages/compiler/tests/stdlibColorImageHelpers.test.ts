@@ -30,12 +30,12 @@ function downsample
 #impure
 param int8u* source
 param int8u* destination
-param int width
-param int height
+param int outputWidth
+param int outputHeight
 param int sourceStride
 param int destinationStride
 param float amount
-call downsampleRGB2x source destination width height sourceStride destinationStride amount
+call downsampleRGB2x source destination outputWidth outputHeight sourceStride destinationStride amount
 functionEnd
 `);
 	exports = program.instance.exports;
@@ -55,6 +55,79 @@ function encoded(value: number): number {
 	const clamped = Math.min(1, Math.max(0, value));
 	const encoded = clamped <= 0.0031308 ? clamped * 12.92 : 1.055 * clamped ** (1 / 2.4) - 0.055;
 	return Math.round(encoded * 255);
+}
+
+interface DownsampleCase {
+	outputWidth: number;
+	outputHeight: number;
+	sourcePadding: number;
+	destinationPadding: number;
+	sourceAlignment: number;
+	destinationAlignment: number;
+	amount: number;
+}
+
+const outputSizes = [1, 3, 7].flatMap(outputWidth => [1, 2, 4].map(outputHeight => ({ outputWidth, outputHeight })));
+const bufferLayouts = [
+	...[0, 5].flatMap(padding =>
+		[0, 1, 3].map(alignment => ({
+			sourcePadding: padding,
+			destinationPadding: padding,
+			sourceAlignment: alignment,
+			destinationAlignment: alignment,
+		}))
+	),
+	{ sourcePadding: 0, destinationPadding: 5, sourceAlignment: 1, destinationAlignment: 3 },
+	{ sourcePadding: 5, destinationPadding: 0, sourceAlignment: 3, destinationAlignment: 1 },
+	{ sourcePadding: 2, destinationPadding: 7, sourceAlignment: 0, destinationAlignment: 1 },
+];
+const downsampleCases: DownsampleCase[] = outputSizes.flatMap(size =>
+	bufferLayouts.flatMap(layout => [0, 0.37, 1].map(amount => ({ ...size, ...layout, amount })))
+);
+
+function createDownsampleFixture(testCase: DownsampleCase) {
+	const { outputWidth, outputHeight, sourcePadding, destinationPadding, sourceAlignment, destinationAlignment } =
+		testCase;
+	const bytes = new Uint8Array(memory.buffer);
+	const source = 64 + sourceAlignment;
+	const destination = 8192 + destinationAlignment;
+	const sourceStride = outputWidth * 6 + sourcePadding;
+	const destinationStride = outputWidth * 3 + destinationPadding;
+	bytes.fill(0xa5);
+	for (let y = 0; y < outputHeight * 2; y++) {
+		for (let x = 0; x < outputWidth * 2; x++) {
+			for (let channel = 0; channel < 3; channel++) {
+				bytes[source + y * sourceStride + x * 3 + channel] = (x * 53 + y * 17 + channel * 71) & 255;
+			}
+		}
+	}
+	return { ...testCase, bytes, source, destination, sourceStride, destinationStride, original: bytes.slice() };
+}
+
+function expectDownsampledImage(fixture: ReturnType<typeof createDownsampleFixture>) {
+	const { bytes, original, source, destination, sourceStride, destinationStride, outputWidth, outputHeight } = fixture;
+	const expected = original.slice();
+	const outputMask = new Uint8Array(bytes.length);
+	const amount = Math.fround(fixture.amount);
+	for (let y = 0; y < outputHeight; y++) {
+		for (let x = 0; x < outputWidth; x++) {
+			for (let channel = 0; channel < 3; channel++) {
+				const first = source + 2 * y * sourceStride + 6 * x + channel;
+				const neighbors = [first, first + 3, first + sourceStride, first + sourceStride + 3];
+				const average = neighbors.reduce((sum, address) => sum + linear(original[address]), 0) / 4;
+				const output = destination + y * destinationStride + x * 3 + channel;
+				expected[output] =
+					amount === 0 ? original[first] : encoded(linear(original[first]) * (1 - amount) + average * amount);
+				outputMask[output] = 1;
+			}
+		}
+	}
+	const tolerance = amount === 0 ? 0 : 1;
+	expect(
+		bytes.findIndex((value, index) =>
+			outputMask[index] ? Math.abs(value - expected[index]) > tolerance : value !== expected[index]
+		)
+	).toBe(-1);
 }
 
 describe('color and image stdlib helpers', () => {
@@ -93,57 +166,43 @@ describe('color and image stdlib helpers', () => {
 		expect(evaluate('encode', 2)).toBe(255);
 	});
 
-	test('downsampling handles independent byte strides and unaligned buffers without touching padding or source', () => {
-		const bytes = new Uint8Array(memory.buffer);
-		for (const width of [1, 3, 7])
-			for (const height of [1, 2, 4]) {
-				for (const padding of [0, 5])
-					for (const alignment of [0, 1, 3])
-						for (const amount of [0, 0.37, 1]) {
-							const source = 64 + alignment,
-								destination = 8192 + alignment;
-							const sourceStride = width * 6 + padding,
-								destinationStride = width * 3 + padding;
-							bytes.fill(0xa5);
-							for (let y = 0; y < height * 2; y++)
-								for (let x = 0; x < width * 2; x++) {
-									for (let c = 0; c < 3; c++)
-										bytes[source + y * sourceStride + x * 3 + c] = (x * 53 + y * 17 + c * 71) & 255;
-								}
-							const expected = bytes.slice();
-							const outputMask = new Uint8Array(bytes.length);
-							const a = Math.fround(amount);
-							for (let y = 0; y < height; y++)
-								for (let x = 0; x < width; x++)
-									for (let c = 0; c < 3; c++) {
-										const first = source + 2 * y * sourceStride + 6 * x + c;
-										const neighbors = [first, first + 3, first + sourceStride, first + sourceStride + 3];
-										const average = neighbors.reduce((sum, address) => sum + linear(bytes[address]), 0) / 4;
-										const output = destination + y * destinationStride + x * 3 + c;
-										expected[output] = a === 0 ? bytes[first] : encoded(linear(bytes[first]) * (1 - a) + average * a);
-										outputMask[output] = 1;
-									}
-							evaluate('downsample', source, destination, width, height, sourceStride, destinationStride, a);
-							expect(
-								bytes.findIndex((value, i) =>
-									outputMask[i] ? Math.abs(value - expected[i]) > 1 : value !== expected[i]
-								),
-								`${width}x${height}, padding ${padding}, alignment ${alignment}, amount ${a}`
-							).toBe(-1);
-						}
-			}
-	});
+	test.each(downsampleCases)(
+		'downsamples $outputWidth x $outputHeight, padding $sourcePadding/$destinationPadding, alignment $sourceAlignment/$destinationAlignment, amount $amount',
+		testCase => {
+			const fixture = createDownsampleFixture(testCase);
+			evaluate(
+				'downsample',
+				fixture.source,
+				fixture.destination,
+				testCase.outputWidth,
+				testCase.outputHeight,
+				fixture.sourceStride,
+				fixture.destinationStride,
+				testCase.amount
+			);
+			expectDownsampledImage(fixture);
+		}
+	);
 
 	test('zero-sized outputs leave the complete memory unchanged', () => {
 		const bytes = new Uint8Array(memory.buffer);
 		bytes.fill(0x5a);
 		const expected = bytes.slice();
-		for (const [width, height] of [
+		for (const [outputWidth, outputHeight] of [
 			[0, 4],
 			[4, 0],
 			[0, 0],
 		]) {
-			evaluate('downsample', bytes.length - 1, bytes.length - 1, width, height, width * 6, width * 3, 1);
+			evaluate(
+				'downsample',
+				bytes.length - 1,
+				bytes.length - 1,
+				outputWidth,
+				outputHeight,
+				outputWidth * 6,
+				outputWidth * 3,
+				1
+			);
 			expect(bytes).toEqual(expected);
 		}
 	});
