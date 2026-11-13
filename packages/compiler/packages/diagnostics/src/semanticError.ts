@@ -144,9 +144,9 @@ function formatSemanticMessage(
 			return 'Invalid function signature. Parameters and returns must be "int", "float", or "float64". (' + code + ')';
 		case ErrorCode.DUPLICATE_FUNCTION_SIGNATURE:
 			return (
-				'Duplicate function overload signature' +
+				'Generated function ID collision' +
 				(details?.identifier ? `: ${details.identifier}` : '') +
-				'. Function overloads must have unique parameter signatures. (' +
+				'. Rename one of the conflicting functions. (' +
 				code +
 				')'
 			);

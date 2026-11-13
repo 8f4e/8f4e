@@ -9,5 +9,5 @@
     "projectBlockId": 9,
     "projectGroupPath": "",
   },
-  "message": "Duplicate function overload signature: selected__int__float. Function overloads must have unique parameter signatures. (66)",
+  "message": "Generated function ID collision: selected__int__float. Rename one of the conflicting functions. (66)",
 }
