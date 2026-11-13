@@ -25,6 +25,6 @@
     "@8f4e/web-ui": "*",
     "@8f4e/editor-state-types": "*",
     "vitest": "4.1.12",
-    "@types/node": "24.13.2"
+    "@types/node": "24.19.2"
   }
 }

@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "devDependencies": {
-    "@types/node": "24.13.2"
+    "@types/node": "24.19.2"
   }
 }
