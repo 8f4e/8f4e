@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`audio example regression coverage > audio/audioBuffer.8f4e preserves the sine transfer function and audio samples > audio blocks 1`] = `"a71566369012460920e73f4d02dc80792ace3154864953ef46b598b07107a5e0"`;
+
+exports[`audio example regression coverage > audio/audioBuffer.8f4e preserves the sine transfer function and audio samples > sine samples 1`] = `"c9a939a7ea704eefaafab48369f6660b0ab84a26459dd511adfe25f0aaaced6f"`;
+
+exports[`audio example regression coverage > audio/keyboardControlledMonoSynth.8f4e preserves the sine transfer function and audio samples > audio blocks 1`] = `"728fd3743f85d6326ea8b812fa0eb5724c4235a568e7c2090d749d610553ad85"`;
+
+exports[`audio example regression coverage > audio/keyboardControlledMonoSynth.8f4e preserves the sine transfer function and audio samples > sine samples 1`] = `"c9a939a7ea704eefaafab48369f6660b0ab84a26459dd511adfe25f0aaaced6f"`;
+
+exports[`audio example regression coverage > audio/risen.8f4e preserves the sine transfer function and audio samples > audio blocks 1`] = `"86343937151a1619168e73800ba028a2c5bfdf8b96cadf18471050ec80729b1a"`;
+
+exports[`audio example regression coverage > audio/risen.8f4e preserves the sine transfer function and audio samples > sine samples 1`] = `"c9a939a7ea704eefaafab48369f6660b0ab84a26459dd511adfe25f0aaaced6f"`;
