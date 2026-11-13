@@ -1,0 +1,58 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/log2
+include std/math/exp2
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+includesEnd
+
+entry test
+module colorAssertions
+call srgbByteToLinear 0
+assertEqual 0.0
+call srgbByteToLinear 255
+assertEqual 1.0
+call srgbByteToLinear 10
+sub 0.003035269835488375
+abs
+push 0.000001
+lessOrEqual
+assert
+call srgbByteToLinear 11
+sub 0.003346535763899161
+abs
+push 0.000001
+lessOrEqual
+assert
+
+call linearToSrgbByte 0.0
+assertEqual 0
+call linearToSrgbByte 1.0
+assertEqual 255
+call linearToSrgbByte 0.5
+assertEqual 188
+call linearToSrgbByte 0.25
+assertEqual 137
+call linearToSrgbByte -1.0
+assertEqual 0
+call linearToSrgbByte 2.0
+assertEqual 255
+call linearToSrgbByte 0.0031308
+assertEqual 10
+
+; Every byte round-trips exactly.
+loop 256
+loopIndex
+call srgbByteToLinear
+call linearToSrgbByte
+loopIndex
+equal
+assert
+loopEnd
+moduleEnd
+entryEnd

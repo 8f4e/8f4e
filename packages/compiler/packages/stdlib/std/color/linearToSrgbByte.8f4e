@@ -1,0 +1,33 @@
+function linearToSrgbByte
+#export
+; Requires std/math/log2 and
+; std/math/exp2 under their names.
+; Finite input; clamp to 0..1.
+param float linear
+
+push linear
+max 0.0
+min 1.0
+localSet linear
+
+push linear
+push 0.0031308
+lessOrEqual
+if
+push linear
+mul 12.92
+else
+; 1.055 * linear^(1/2.4) - 0.055.
+call log2 linear
+div 2.4
+call exp2
+mul 1.055
+sub 0.055
+ifEnd float
+
+mul 255.0
+max 0.0
+min 255.0
+round
+castToInt
+functionEnd int

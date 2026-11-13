@@ -1,0 +1,28 @@
+function storeRGB
+#export
+#impure
+; Write packed 0xRRGGBB as three
+; consecutive R, G, B bytes.
+; pixel must have three writable
+; bytes; the high byte is ignored.
+param int8u* pixel
+param int color
+
+push pixel
+push color
+push 16
+shiftRightUnsigned
+store
+
+push pixel
+add 1
+push color
+push 8
+shiftRightUnsigned
+store
+
+push pixel
+add 2
+push color
+store
+functionEnd

@@ -1,0 +1,136 @@
+function downsampleRGB2x
+#export
+#impure
+; 2x2 RGB downsampling in linear light.
+; width and height are output pixels.
+; Strides are bytes; buffers must be
+; non-overlapping, large enough; strides
+; at least 6*width and 3*width.
+; amount is finite and in 0..1.
+; Requires both sRGB conversions
+; and std/math/lerp by their names.
+param int8u* source
+param int8u* destination
+param int width
+param int height
+param int sourceStride
+param int destinationStride
+param float amount
+
+local int x
+local int y
+local int8u* firstSample
+local int8u* outputPixel
+
+push width
+push 0
+lessOrEqual
+push height
+push 0
+lessOrEqual
+or
+if
+return
+ifEnd
+
+; These guards cover every valid
+; non-negative signed-int dimension.
+loop 2147483647
+loopIndex
+push height
+greaterOrEqual
+branchIfTrue 1
+loopIndex
+localSet y
+
+loop 2147483647
+loopIndex
+push width
+greaterOrEqual
+branchIfTrue 1
+loopIndex
+localSet x
+
+push source
+push y
+mul 2
+mul sourceStride
+push x
+mul 6
+add
+add
+localSet firstSample
+
+push destination
+push y
+mul destinationStride
+push x
+mul 3
+add
+add
+localSet outputPixel
+
+loop 3
+push outputPixel
+loopIndex
+add
+push firstSample
+loopIndex
+add
+call resolveChannel sourceStride amount
+store
+loopEnd
+loopEnd
+loopEnd
+functionEnd
+
+function resolveChannel
+#impure
+param int8u* first
+param int sourceStride
+param float amount
+local float nearest
+local float filtered
+
+; Zero amount keeps one sample.
+push amount
+push 0.0
+lessOrEqual
+if
+push first
+load8u
+return
+ifEnd
+
+; Blend toward the 2x2 average
+; in linear light.
+push first
+load8u
+call srgbByteToLinear
+localSet nearest
+push nearest
+
+push first
+add 3
+load8u
+call srgbByteToLinear
+add
+
+push first
+add sourceStride
+load8u
+call srgbByteToLinear
+add
+
+push first
+add sourceStride
+add 3
+load8u
+call srgbByteToLinear
+add
+
+div 4.0
+localSet filtered
+call lerp nearest filtered amount
+call linearToSrgbByte
+functionEnd int

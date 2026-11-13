@@ -1,0 +1,146 @@
+function swapPointers
+#export
+#impure
+; Exchanges two int pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param int** first
+param int** second
+
+local int* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two int8 pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param int8** first
+param int8** second
+
+local int8* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two int8u pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param int8u** first
+param int8u** second
+
+local int8u* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two int16 pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param int16** first
+param int16** second
+
+local int16* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two int16u pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param int16u** first
+param int16u** second
+
+local int16u* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two float pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param float** first
+param float** second
+
+local float* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd
+
+function swapPointers
+#export
+#impure
+; Exchanges two float64 pointer values.
+; Pass the addresses of the pointer
+; variables, not their pointees.
+param float64** first
+param float64** second
+
+local float64* previous
+
+push *first
+localSet previous
+push first
+push *second
+store
+push second
+push previous
+store
+functionEnd

@@ -1,0 +1,453 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/swapPointers
+includesEnd
+
+entry test
+module swapIntPointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+int[] left 2 123456789 123456789
+int[] right 2 -987654321 -987654321
+int* first &left
+int* second &right
+int* empty
+int* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual -987654321
+push *second
+assertEqual 123456789
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapInt8Pointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+int8[] left 2 -64 -64
+int8[] right 2 63 63
+int8* first &left
+int8* second &right
+int8* empty
+int8* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 63
+push *second
+assertEqual -64
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapInt8uPointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+int8u[] left 2 200 200
+int8u[] right 2 255 255
+int8u* first &left
+int8u* second &right
+int8u* empty
+int8u* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 255
+push *second
+assertEqual 200
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapInt16Pointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+int16[] left 2 -30000 -30000
+int16[] right 2 25000 25000
+int16* first &left
+int16* second &right
+int16* empty
+int16* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 25000
+push *second
+assertEqual -30000
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapInt16uPointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+int16u[] left 2 60000 60000
+int16u[] right 2 50000 50000
+int16u* first &left
+int16u* second &right
+int16u* empty
+int16u* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 50000
+push *second
+assertEqual 60000
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapFloatPointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+float[] left 2 1.25 1.25
+float[] right 2 2.5 2.5
+float* first &left
+float* second &right
+float* empty
+float* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 2.5
+push *second
+assertEqual 1.25
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module swapFloat64Pointers
+; Keep pointer values above one byte.
+int8u[] padding 300
+int guardBefore 0x12345678
+float64[] left 2 1.0000000000000002f64 1.0000000000000002f64
+float64[] right 2 2.0000000000000004f64 2.0000000000000004f64
+float64* first &left
+float64* second &right
+float64* empty
+float64* zero
+int guardAfter 0x76543210
+
+call swapPointers &first &second
+push first
+assertEqual &right
+push second
+assertEqual &left
+; Pointee contents stay unchanged.
+push *first
+assertEqual 2.0000000000000004f64
+push *second
+assertEqual 1.0000000000000002f64
+
+; A second swap restores the pair.
+call swapPointers &first &second
+push first
+assertEqual &left
+push second
+assertEqual &right
+
+; Aliased slots are safe.
+call swapPointers &first &first
+push first
+assertEqual &left
+
+; Null pointer values are swapped
+; without dereferencing a pointee.
+call swapPointers &first &empty
+push first
+push zero
+equal
+assert
+push empty
+assertEqual &left
+call swapPointers &first &empty
+push first
+assertEqual &left
+push empty
+push zero
+equal
+assert
+
+call swapPointers &empty &zero
+push empty
+push zero
+equal
+assert
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+entryEnd

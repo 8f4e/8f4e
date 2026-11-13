@@ -1,0 +1,6918 @@
+{
+  "functionAst": {
+    "swapPointers__float64_p_p__float64_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float64*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__float_p_p__float_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__int16_p_p__int16_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__int16u_p_p__int16u_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16u**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16u**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int16u*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__int8_p_p__int8_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__int8u_p_p__int8u_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8u**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8u**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8u*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+    "swapPointers__int_p_p__int_p_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "previous",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "swapPointers",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "swapPointers__float64_p_p__float64_p_p": {
+      "id": "swapPointers__float64_p_p__float64_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "float64**",
+          },
+          {
+            "name": "second",
+            "type": "float64**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__float_p_p__float_p_p": {
+      "id": "swapPointers__float_p_p__float_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "float**",
+          },
+          {
+            "name": "second",
+            "type": "float**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__int16_p_p__int16_p_p": {
+      "id": "swapPointers__int16_p_p__int16_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "int16**",
+          },
+          {
+            "name": "second",
+            "type": "int16**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__int16u_p_p__int16u_p_p": {
+      "id": "swapPointers__int16u_p_p__int16u_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "int16u**",
+          },
+          {
+            "name": "second",
+            "type": "int16u**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__int8_p_p__int8_p_p": {
+      "id": "swapPointers__int8_p_p__int8_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "int8**",
+          },
+          {
+            "name": "second",
+            "type": "int8**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__int8u_p_p__int8u_p_p": {
+      "id": "swapPointers__int8u_p_p__int8u_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "int8u**",
+          },
+          {
+            "name": "second",
+            "type": "int8u**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "swapPointers__int_p_p__int_p_p": {
+      "id": "swapPointers__int_p_p__int_p_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "first",
+            "type": "int**",
+          },
+          {
+            "name": "second",
+            "type": "int**",
+          },
+        ],
+        "returns": [],
+      },
+    },
+  },
+  "moduleAst": {
+    "swapFloat64Pointers": {
+      "id": "swapFloat64Pointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapFloat64Pointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.0000000000000002,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.0000000000000002,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.0000000000000004,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.0000000000000004,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "float64*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.0000000000000004,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.0000000000000002,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapFloatPointers": {
+      "id": "swapFloatPointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapFloatPointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "float[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.5,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.5,
+            },
+          ],
+          "instruction": "float[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.5,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.25,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapInt16Pointers": {
+      "id": "swapInt16Pointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapInt16Pointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -30000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -30000,
+            },
+          ],
+          "instruction": "int16[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 25000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 25000,
+            },
+          ],
+          "instruction": "int16[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "int16*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "int16*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "int16*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "int16*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 25000,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -30000,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapInt16uPointers": {
+      "id": "swapInt16uPointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapInt16uPointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 60000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 60000,
+            },
+          ],
+          "instruction": "int16u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 50000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 50000,
+            },
+          ],
+          "instruction": "int16u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "int16u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "int16u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "int16u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "int16u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 50000,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 60000,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapInt8Pointers": {
+      "id": "swapInt8Pointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapInt8Pointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -64,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -64,
+            },
+          ],
+          "instruction": "int8[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 63,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 63,
+            },
+          ],
+          "instruction": "int8[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "int8*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "int8*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "int8*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "int8*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 63,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -64,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapInt8uPointers": {
+      "id": "swapInt8uPointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapInt8uPointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 200,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 200,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "int8u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "int8u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "int8u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "int8u*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 200,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "swapIntPointers": {
+      "id": "swapIntPointers",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapIntPointers",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "padding",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 300,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "left",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 123456789,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 123456789,
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "right",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -987654321,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -987654321,
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "*first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -987654321,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "*second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 123456789,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "second",
+              "type": "identifier",
+              "value": "&second",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "second",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "right",
+              "type": "identifier",
+              "value": "&right",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "first",
+              "type": "identifier",
+              "value": "&first",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "first",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "left",
+              "type": "identifier",
+              "value": "&left",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "swapPointers",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "zero",
+              "type": "identifier",
+              "value": "&zero",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "zero",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardBefore",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 305419896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "guardAfter",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isHex": true,
+              "isInteger": true,
+              "type": "literal",
+              "value": 1985229328,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "swapFloat64Pointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 88,
+          "allocationUnitCount": 1,
+          "byteAddress": 352,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+        "first": {
+          "allocationUnitAddress": 86,
+          "allocationUnitCount": 1,
+          "byteAddress": 344,
+          "default": 312,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 90,
+          "allocationUnitCount": 1,
+          "byteAddress": 360,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 76,
+          "allocationUnitCount": 1,
+          "byteAddress": 304,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 78,
+          "allocationUnitCount": 5,
+          "byteAddress": 312,
+          "default": {
+            "0": 1.0000000000000002,
+            "1": 1.0000000000000002,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "padding": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 75,
+          "byteAddress": 4,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 82,
+          "allocationUnitCount": 4,
+          "byteAddress": 328,
+          "default": {
+            "0": 2.0000000000000004,
+            "1": 2.0000000000000004,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "second": {
+          "allocationUnitAddress": 87,
+          "allocationUnitCount": 1,
+          "byteAddress": 348,
+          "default": 328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+        "zero": {
+          "allocationUnitAddress": 89,
+          "allocationUnitCount": 1,
+          "byteAddress": 356,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float64",
+          "pointerDepth": 1,
+          "type": "float64*",
+        },
+      },
+    },
+    "swapFloatPointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 173,
+          "allocationUnitCount": 1,
+          "byteAddress": 692,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+        "first": {
+          "allocationUnitAddress": 171,
+          "allocationUnitCount": 1,
+          "byteAddress": 684,
+          "default": 668,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 175,
+          "allocationUnitCount": 1,
+          "byteAddress": 700,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 166,
+          "allocationUnitCount": 1,
+          "byteAddress": 664,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 167,
+          "allocationUnitCount": 2,
+          "byteAddress": 668,
+          "default": {
+            "0": 1.25,
+            "1": 1.25,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "padding": {
+          "allocationUnitAddress": 91,
+          "allocationUnitCount": 75,
+          "byteAddress": 364,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 169,
+          "allocationUnitCount": 2,
+          "byteAddress": 676,
+          "default": {
+            "0": 2.5,
+            "1": 2.5,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "second": {
+          "allocationUnitAddress": 172,
+          "allocationUnitCount": 1,
+          "byteAddress": 688,
+          "default": 676,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+        "zero": {
+          "allocationUnitAddress": 174,
+          "allocationUnitCount": 1,
+          "byteAddress": 696,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+      },
+    },
+    "swapInt16Pointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 256,
+          "allocationUnitCount": 1,
+          "byteAddress": 1024,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16",
+          "pointerDepth": 1,
+          "type": "int16*",
+        },
+        "first": {
+          "allocationUnitAddress": 254,
+          "allocationUnitCount": 1,
+          "byteAddress": 1016,
+          "default": 1008,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int16*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 258,
+          "allocationUnitCount": 1,
+          "byteAddress": 1032,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 251,
+          "allocationUnitCount": 1,
+          "byteAddress": 1004,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 252,
+          "allocationUnitCount": 1,
+          "byteAddress": 1008,
+          "default": {
+            "0": -30000,
+            "1": -30000,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int16",
+        },
+        "padding": {
+          "allocationUnitAddress": 176,
+          "allocationUnitCount": 75,
+          "byteAddress": 704,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 253,
+          "allocationUnitCount": 1,
+          "byteAddress": 1012,
+          "default": {
+            "0": 25000,
+            "1": 25000,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int16",
+        },
+        "second": {
+          "allocationUnitAddress": 255,
+          "allocationUnitCount": 1,
+          "byteAddress": 1020,
+          "default": 1012,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int16*",
+        },
+        "zero": {
+          "allocationUnitAddress": 257,
+          "allocationUnitCount": 1,
+          "byteAddress": 1028,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16",
+          "pointerDepth": 1,
+          "type": "int16*",
+        },
+      },
+    },
+    "swapInt16uPointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 339,
+          "allocationUnitCount": 1,
+          "byteAddress": 1356,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16u",
+          "pointerDepth": 1,
+          "type": "int16u*",
+        },
+        "first": {
+          "allocationUnitAddress": 337,
+          "allocationUnitCount": 1,
+          "byteAddress": 1348,
+          "default": 1340,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16u",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int16u*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 341,
+          "allocationUnitCount": 1,
+          "byteAddress": 1364,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 334,
+          "allocationUnitCount": 1,
+          "byteAddress": 1336,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 335,
+          "allocationUnitCount": 1,
+          "byteAddress": 1340,
+          "default": {
+            "0": 60000,
+            "1": 60000,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int16u",
+        },
+        "padding": {
+          "allocationUnitAddress": 259,
+          "allocationUnitCount": 75,
+          "byteAddress": 1036,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 336,
+          "allocationUnitCount": 1,
+          "byteAddress": 1344,
+          "default": {
+            "0": 50000,
+            "1": 50000,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int16u",
+        },
+        "second": {
+          "allocationUnitAddress": 338,
+          "allocationUnitCount": 1,
+          "byteAddress": 1352,
+          "default": 1344,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16u",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int16u*",
+        },
+        "zero": {
+          "allocationUnitAddress": 340,
+          "allocationUnitCount": 1,
+          "byteAddress": 1360,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16u",
+          "pointerDepth": 1,
+          "type": "int16u*",
+        },
+      },
+    },
+    "swapInt8Pointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 422,
+          "allocationUnitCount": 1,
+          "byteAddress": 1688,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8",
+          "pointerDepth": 1,
+          "type": "int8*",
+        },
+        "first": {
+          "allocationUnitAddress": 420,
+          "allocationUnitCount": 1,
+          "byteAddress": 1680,
+          "default": 1672,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int8*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 424,
+          "allocationUnitCount": 1,
+          "byteAddress": 1696,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 417,
+          "allocationUnitCount": 1,
+          "byteAddress": 1668,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 418,
+          "allocationUnitCount": 1,
+          "byteAddress": 1672,
+          "default": {
+            "0": -64,
+            "1": -64,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int8",
+        },
+        "padding": {
+          "allocationUnitAddress": 342,
+          "allocationUnitCount": 75,
+          "byteAddress": 1368,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 419,
+          "allocationUnitCount": 1,
+          "byteAddress": 1676,
+          "default": {
+            "0": 63,
+            "1": 63,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int8",
+        },
+        "second": {
+          "allocationUnitAddress": 421,
+          "allocationUnitCount": 1,
+          "byteAddress": 1684,
+          "default": 1676,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int8*",
+        },
+        "zero": {
+          "allocationUnitAddress": 423,
+          "allocationUnitCount": 1,
+          "byteAddress": 1692,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8",
+          "pointerDepth": 1,
+          "type": "int8*",
+        },
+      },
+    },
+    "swapInt8uPointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 505,
+          "allocationUnitCount": 1,
+          "byteAddress": 2020,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8u",
+          "pointerDepth": 1,
+          "type": "int8u*",
+        },
+        "first": {
+          "allocationUnitAddress": 503,
+          "allocationUnitCount": 1,
+          "byteAddress": 2012,
+          "default": 2004,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8u",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int8u*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 507,
+          "allocationUnitCount": 1,
+          "byteAddress": 2028,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 500,
+          "allocationUnitCount": 1,
+          "byteAddress": 2000,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 501,
+          "allocationUnitCount": 1,
+          "byteAddress": 2004,
+          "default": {
+            "0": 200,
+            "1": 200,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "padding": {
+          "allocationUnitAddress": 425,
+          "allocationUnitCount": 75,
+          "byteAddress": 1700,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 502,
+          "allocationUnitCount": 1,
+          "byteAddress": 2008,
+          "default": {
+            "0": 255,
+            "1": 255,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "second": {
+          "allocationUnitAddress": 504,
+          "allocationUnitCount": 1,
+          "byteAddress": 2016,
+          "default": 2008,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8u",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int8u*",
+        },
+        "zero": {
+          "allocationUnitAddress": 506,
+          "allocationUnitCount": 1,
+          "byteAddress": 2024,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int8u",
+          "pointerDepth": 1,
+          "type": "int8u*",
+        },
+      },
+    },
+    "swapIntPointers": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 590,
+          "allocationUnitCount": 1,
+          "byteAddress": 2360,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+        "first": {
+          "allocationUnitAddress": 588,
+          "allocationUnitCount": 1,
+          "byteAddress": 2352,
+          "default": 2336,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+        "guardAfter": {
+          "allocationUnitAddress": 592,
+          "allocationUnitCount": 1,
+          "byteAddress": 2368,
+          "default": 1985229328,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 8,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "guardBefore": {
+          "allocationUnitAddress": 583,
+          "allocationUnitCount": 1,
+          "byteAddress": 2332,
+          "default": 305419896,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "left": {
+          "allocationUnitAddress": 584,
+          "allocationUnitCount": 2,
+          "byteAddress": 2336,
+          "default": {
+            "0": 123456789,
+            "1": 123456789,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "padding": {
+          "allocationUnitAddress": 508,
+          "allocationUnitCount": 75,
+          "byteAddress": 2032,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 300,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "right": {
+          "allocationUnitAddress": 586,
+          "allocationUnitCount": 2,
+          "byteAddress": 2344,
+          "default": {
+            "0": -987654321,
+            "1": -987654321,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "second": {
+          "allocationUnitAddress": 589,
+          "allocationUnitCount": 1,
+          "byteAddress": 2356,
+          "default": 2344,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+        "zero": {
+          "allocationUnitAddress": 591,
+          "allocationUnitCount": 1,
+          "byteAddress": 2364,
+          "default": 0,
+          "elementWordSize": 4,
+          "id": 7,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "swapPointers__float_p_p__float_p_p",
+      "swapPointers__float64_p_p__float64_p_p",
+      "swapPointers__int_p_p__int_p_p",
+      "swapPointers__int16_p_p__int16_p_p",
+      "swapPointers__int16u_p_p__int16u_p_p",
+      "swapPointers__int8_p_p__int8_p_p",
+      "swapPointers__int8u_p_p__int8u_p_p",
+    ],
+    "compiledModules": [
+      "swapFloat64Pointers",
+      "swapFloatPointers",
+      "swapInt16Pointers",
+      "swapInt16uPointers",
+      "swapInt8Pointers",
+      "swapInt8uPointers",
+      "swapIntPointers",
+    ],
+    "requiredMemoryBytes": 2372,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

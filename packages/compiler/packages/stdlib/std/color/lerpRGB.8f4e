@@ -1,0 +1,101 @@
+function lerpRGB
+#export
+; Blend packed 0xRRGGBB channels.
+; amount must be finite and in 0..1.
+; Round channels to nearest, ties
+; to even; ignore the high byte.
+param int start
+param int end
+param float amount
+local int color
+local int shift
+local float first
+local float second
+
+loop 3
+loopIndex
+mul 8
+localSet shift
+push start
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat
+localSet first
+push end
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat
+localSet second
+
+push color
+push first
+push second
+push first
+sub
+mul amount
+add
+round
+castToInt
+push shift
+shiftLeft
+or
+localSet color
+loopEnd
+
+push color
+functionEnd int
+
+function lerpRGB
+#export
+; Blend packed 0xRRGGBB channels.
+; amount must be finite and in 0..1.
+; Round channels to nearest, ties
+; to even; ignore the high byte.
+param int start
+param int end
+param float64 amount
+local int color
+local int shift
+local float64 first
+local float64 second
+
+loop 3
+loopIndex
+mul 8
+localSet shift
+push start
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat64
+localSet first
+push end
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat64
+localSet second
+
+push color
+push first
+push second
+push first
+sub
+mul amount
+add
+round
+castToInt
+push shift
+shiftLeft
+or
+localSet color
+loopEnd
+
+push color
+functionEnd int
