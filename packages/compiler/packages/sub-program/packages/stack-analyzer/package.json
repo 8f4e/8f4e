@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/stack-analyzer",
-  "version": "3.2.4",
+  "version": "3.2.5",
   "private": true,
   "description": "Semantic stack validation and stack-effect analysis for 8f4e compiler lines",
   "type": "module",
