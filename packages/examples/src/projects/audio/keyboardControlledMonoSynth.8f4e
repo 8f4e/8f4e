@@ -15,7 +15,6 @@ call main
 loopEnd
 functionEnd
 
-
 function jankoMap
 ; @pos 210 48
 ; @group janko

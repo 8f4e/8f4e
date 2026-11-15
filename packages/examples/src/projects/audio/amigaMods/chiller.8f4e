@@ -683,15 +683,6 @@ constants mod
 ; @pos 230 -192
 ; @tab 30
 use env
-; Row layout (little-endian)
-const SAMPLE_HI_NIBBLE	0x000000F0
-const PERIOD_HI	0x0000000F
-const PERIOD_LO	0x0000FF00
-const PERIOD_SHIFT	8
-const SAMPLE_LO_NIBBLE	0x00F00000
-const SAMPLE_LO_NIBBLE_SHIFT	20
-const EFFECT_PARAM	0xFF000000
-const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
 const PAL_AMIGA_CLOCK	7093789.2
 const DEFAULT_TEMPO	125
@@ -1196,7 +1187,6 @@ add
 load
 store
 
-
 loopEnd
 
 moduleEnd
@@ -1245,7 +1235,6 @@ use env
 int[] _dat ASSET_CH2_SIZE/4
 ; @config bin.ch2.memory _dat
 
-
 loop 8
 push &this
 loopIndex
@@ -1261,7 +1250,6 @@ mul
 add
 load
 store
-
 
 loopEnd
 
@@ -1311,7 +1299,6 @@ use env
 int[] _dat ASSET_CH3_SIZE/4
 ; @config bin.ch3.memory _dat
 
-
 loop 8
 push &this
 loopIndex
@@ -1327,7 +1314,6 @@ mul
 add
 load
 store
-
 
 loopEnd
 
@@ -1377,7 +1363,6 @@ use env
 int[] _dat ASSET_CH4_SIZE/4
 ; @config bin.ch4.memory _dat
 
-
 loop 8
 push &this
 loopIndex
@@ -1393,7 +1378,6 @@ mul
 add
 load
 store
-
 
 loopEnd
 

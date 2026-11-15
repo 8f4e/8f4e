@@ -15,7 +15,6 @@ call main
 loopEnd
 functionEnd
 
-
 constants env
 ; @pos -120 12
 ; @favorite

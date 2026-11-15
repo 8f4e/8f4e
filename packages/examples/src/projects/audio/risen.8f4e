@@ -32,7 +32,6 @@ push currentValue
 store
 functionEnd int
 
-
 constants env
 ; @pos -242 -38
 ; @favorite
