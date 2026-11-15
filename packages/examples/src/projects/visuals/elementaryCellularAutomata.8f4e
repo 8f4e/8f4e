@@ -6,6 +6,7 @@ include std/bitwise/extractBit
 include std/grid/indexToXY
 include std/memory/loadBitAt2D
 include std/memory/storeBitAt2D
+include std/events/hasChanged
 includesEnd
 
 function evolveCell
@@ -173,6 +174,20 @@ int seed 1 ; @w
 
 int8u* mono &screen:mono
 
+int lastRule -1
+int lastSeed
+
+; Only eight rule bits affect the image.
+; -1 therefore forces the first draw.
+push rule
+and 255
+push &lastRule
+call hasChanged
+call hasChanged seed &lastSeed
+or
+equalToZero
+exitIfTrue
+
 ; Clear only the first row.
 ; Every later byte is overwritten.
 push mono
@@ -185,11 +200,11 @@ fill
 push mono
 push ROW_BYTES-1
 add
-push seed
+push lastSeed
 store
 
 push mono
-push rule
+push lastRule
 call drawPattern
 
 moduleEnd

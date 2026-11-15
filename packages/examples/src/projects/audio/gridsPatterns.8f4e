@@ -130,6 +130,7 @@ expose accentHH &outputs:accentHH
 includes
 ; @pos -244 0
 include std/events/risingEdge
+include std/bitwise/extractBits
 includesEnd
 function mapBalance
 ; @pos -286 0
@@ -227,10 +228,7 @@ param int shift
 
 push row
 load
-push shift
-shiftRightUnsigned
-push 255
-and
+call extractBits shift 8
 functionEnd int
 function mixByte
 ; @pos -243 23

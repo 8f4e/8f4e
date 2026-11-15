@@ -7,6 +7,8 @@ include std/events/hasChanged
 include std/bitwise/extractNibble
 include std/math/lerp
 include std/math/clamp
+include std/bitwise/extractBits
+include std/bitwise/extractByte
 includesEnd
 
 function buffer
@@ -43,31 +45,18 @@ functionEnd int
 
 function maskParam
 ; @pos 367 -124
-use mod
 param int row
-
-push row
-and EFFECT_PARAM
-push EFFECT_PARAM_SHIFT
-shiftRightUnsigned
-
+call extractByte row 3
 functionEnd int
 
 function maskPeriod
 ; @pos 367 -111
-use mod
+; Assemble the MOD period from two fields.
 param int row
-
-push row
-and PERIOD_HI
-push PERIOD_SHIFT
-shiftLeft
-push row
-and PERIOD_LO
-push PERIOD_SHIFT
-shiftRightUnsigned
+call extractBits row 0 4
+shiftLeft 8
+call extractByte row 1
 or
-
 functionEnd int
 
 function sampleNumberCanLoop
@@ -108,17 +97,12 @@ functionEnd float
 
 function maskSampleNumber
 ; @pos 401 -131
-use mod
+; Sample number nibbles live in separate bytes.
 param int row
-
-push row
-and SAMPLE_HI_NIBBLE
-push row
-and SAMPLE_LO_NIBBLE
-push SAMPLE_LO_NIBBLE_SHIFT
-shiftRightUnsigned
+call extractNibble row 1
+shiftLeft 4
+call extractNibble row 5
 or
-
 functionEnd int
 
 function maskParamHi
@@ -711,15 +695,6 @@ constants mod
 ; @pos 230 -192
 ; @tab 30
 use env
-; Row layout (little-endian)
-const SAMPLE_HI_NIBBLE	0x000000F0
-const PERIOD_HI	0x0000000F
-const PERIOD_LO	0x0000FF00
-const PERIOD_SHIFT	8
-const SAMPLE_LO_NIBBLE	0x00F00000
-const SAMPLE_LO_NIBBLE_SHIFT	20
-const EFFECT_PARAM	0xFF000000
-const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
 const PAL_AMIGA_CLOCK	7093789.2
 const DEFAULT_TEMPO	125
@@ -1226,28 +1201,22 @@ int* row &rowCount1:out
 use env
 int[] _dat ASSET_CH1_SIZE/4
 ; @config bin.ch1.memory _dat
-local int loopCounter
 
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1297,28 +1266,21 @@ use env
 int[] _dat ASSET_CH2_SIZE/4
 ; @config bin.ch2.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1368,28 +1330,21 @@ use env
 int[] _dat ASSET_CH3_SIZE/4
 ; @config bin.ch3.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1439,28 +1394,21 @@ use env
 int[] _dat ASSET_CH4_SIZE/4
 ; @config bin.ch4.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 

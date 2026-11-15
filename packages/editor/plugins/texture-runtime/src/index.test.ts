@@ -523,6 +523,52 @@ entryEnd`,
 	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
 });
 
+it('follows a changing pointer in another module without a separate display slot', async () => {
+	const test = await setup({
+		source: `8f4e/v1
+note config
+${settings}
+noteEnd
+entry main
+module screen
+; @pos 4 4
+int first 0x44332211
+int second 0x88776655
+; @textureUpload simulation:current rgba 1 1
+; @texture simulation:current 16 1 1
+moduleEnd
+module simulation
+int8u* current &screen:first
+push current
+push &screen:first
+equal
+if
+push &current
+push &screen:second
+store
+else
+push &current
+push &screen:first
+store
+ifEnd
+moduleEnd
+entryEnd`,
+	});
+	await test.settle();
+
+	for (const pixel of [
+		[85, 102, 119, 136],
+		[17, 34, 51, 68],
+		[85, 102, 119, 136],
+	]) {
+		test.frame();
+		const upload = test.gl.texImage2D.mock.calls.at(-1) ?? test.gl.texSubImage2D.mock.calls.at(-1);
+		expect(upload?.at(-1)).toEqual(Uint8Array.from(pixel));
+		test.gl.texImage2D.mockClear();
+		test.gl.texSubImage2D.mockClear();
+	}
+});
+
 it('rejects conflicting uploads at an address and recovers after the conflict is removed', async () => {
 	const test = await setup({ config: '' });
 	test.editTextures('; @textureUpload &rgba rgba 1 1\n; @textureUpload &rgba mono 1 1\n; @texture &rgba 16 1 1');
