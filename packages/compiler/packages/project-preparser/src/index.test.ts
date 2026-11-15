@@ -491,3 +491,35 @@ describe('parseProjectSource fixtures', () => {
 		await expect(project).toMatchFileSnapshot(getSnapshotPath(fixtureName, 'project'));
 	});
 });
+
+it('rejects the reserved root initializer entry with a located source diagnostic', () => {
+	try {
+		parseProjectSource(
+			['8f4e/v1', 'entry initDefaults', 'module voice', 'int value 7', 'moduleEnd', 'entryEnd'].join('\n')
+		);
+		throw new Error('expected a source diagnostic');
+	} catch (error) {
+		expect(error).toMatchObject({
+			message: expect.stringContaining('reserved'),
+			diagnostic: { kind: 'source', location: { kind: 'document', lineNumber: 1 } },
+		});
+	}
+});
+
+it('allows a group-local initializer-named entry', () => {
+	const project = parseProjectSource(
+		[
+			'8f4e/v1',
+			'entry main',
+			'group voice',
+			'entry initDefaults',
+			'module state',
+			'int value 7',
+			'moduleEnd',
+			'entryEnd',
+			'groupEnd',
+			'entryEnd',
+		].join('\n')
+	);
+	expect(project.execution[0]).toMatchObject({ type: 'group', entries: ['initDefaults'] });
+});

@@ -94,6 +94,8 @@ defines declaration order at each project level. A memory reference does
 not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. See the
 [compiler documentation](../packages/compiler/README.md) for recursive composition details.
 
+The root entry name `initDefaults` is reserved for the compiler-generated memory initializer. Group-local entries may use that name because they are not exported directly.
+
 Execution order is separate from memory layout. Modules are allocated in alphabetical order by qualified id, but address order does not choose which module executes first.
 
 For example, this complete project puts the consumer before the producer in the `main` entry:
