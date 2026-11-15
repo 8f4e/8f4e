@@ -54,8 +54,7 @@ async function loadExample(offset: number) {
 	const writeControl = (name: keyof typeof controls, value: number) =>
 		view.setInt32(controls[name].byteAddress, value, true);
 	const readControl = (name: keyof typeof controls) => view.getInt32(controls[name].byteAddress, true);
-	const frameAddress = () =>
-		screen.display ? view.getInt32(screen.display.byteAddress, true) : readControl('current');
+	const frameAddress = () => readControl('current');
 	const frame = () => bytes.slice(frameAddress(), frameAddress() + (WIDTH * HEIGHT) / 8);
 	return {
 		bytes,
@@ -256,7 +255,7 @@ describe('Game of Life example', () => {
 		expect(readControl('generation')).toBe(1);
 	});
 	it.each([0, 9])('publishes complete buffers without copying over the old frame at offset %i', async offset => {
-		const { bytes, screen, controls, frame, frameAddress, readControl, step } = await loadExample(offset);
+		const { bytes, controls, frame, frameAddress, readControl, step } = await loadExample(offset);
 		step();
 		for (let generation = 1; generation <= 4; generation++) {
 			const oldFront = frameAddress();
@@ -272,7 +271,6 @@ describe('Game of Life example', () => {
 			const expectedView = new DataView(expected.buffer);
 			expectedView.setInt32(controls.current.byteAddress, oldBack, true);
 			expectedView.setInt32(controls.next.byteAddress, oldFront, true);
-			expectedView.setInt32(screen.display.byteAddress, oldBack, true);
 			expectedView.setInt32(controls.generation.byteAddress, generation, true);
 			expect(bytes.findIndex((value, index) => value !== expected[index])).toBe(-1);
 		}

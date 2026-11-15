@@ -174,32 +174,19 @@ int seed 1 ; @w
 
 int8u* mono &screen:mono
 
-int lastRule
+int lastRule -1
 int lastSeed
-int initialized
-local int currentRule
-local int currentSeed
 
-; Cache the exact inputs used to draw.
+; Only eight rule bits affect the image.
+; -1 therefore forces the first draw.
 push rule
-localSet currentRule
-push seed
-localSet currentSeed
-
+and 255
+push &lastRule
 call hasChanged
-- currentRule &lastRule
-call hasChanged
-- currentSeed &lastSeed
-or
-push initialized
-equalToZero
+call hasChanged seed &lastSeed
 or
 equalToZero
 exitIfTrue
-
-push &initialized
-push 1
-store
 
 ; Clear only the first row.
 ; Every later byte is overwritten.
@@ -213,11 +200,11 @@ fill
 push mono
 push ROW_BYTES-1
 add
-push currentSeed
+push lastSeed
 store
 
 push mono
-push currentRule
+push lastRule
 call drawPattern
 
 moduleEnd

@@ -220,10 +220,9 @@ const SEED_HEIGHT HEIGHT/2
 ; MSB first.
 int8u[] mono BYTE_COUNT
 int8u[] next BYTE_COUNT
-int8u* display &mono
 
-; @textureUpload display 1bit 128 128
-; @texture display 2 128 128
+; @textureUpload simulation:current 1bit 128 128
+; @texture simulation:current 2 128 128
 moduleEnd
 module simulation
 ; @pos 126 -30
@@ -283,10 +282,5 @@ add
 store
 ifEnd
 ifEnd
-
-; The texture follows the completed world.
-push &screen:display
-push current
-store
 moduleEnd
 entryEnd
