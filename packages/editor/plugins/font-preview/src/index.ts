@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { resolveEditorConfig } from '@8f4e/editor-state';
 import { DEFAULT_FONT, FONT_NAMES, type Font } from '@8f4e/sprite-generator';
+import { installFontNotice } from './notice';
 
 /** Preview fonts without modifying project source or history. */
 export function createFontPreviewPlugin({
@@ -13,8 +14,10 @@ export function createFontPreviewPlugin({
 }): EditorPlugin {
 	return {
 		id: 'font-preview',
-		setup: ({ store, events }) => {
+		setup: context => {
+			const { store, events } = context;
 			const state = store.getState();
+			const disposeNotice = installFontNotice(context);
 			let previewFont: Font | undefined;
 			const retainPreview = () => {
 				if (previewFont !== undefined && state.editorConfig.font !== previewFont) {
@@ -26,7 +29,7 @@ export function createFontPreviewPlugin({
 			};
 			const onKeydown = (event: KeyboardEvent) => {
 				if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-				const direction = event.key === 'F18' ? -1 : event.key === 'F19' ? 1 : 0;
+				const direction = event.key === 'F8' ? -1 : event.key === 'F9' ? 1 : 0;
 				if (!direction) return;
 				event.preventDefault();
 				const currentFont = (state.editorConfig.font as Font | undefined) ?? defaultFont;
@@ -38,6 +41,7 @@ export function createFontPreviewPlugin({
 			events.on('loadProject', resetPreview, { capture: true });
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => {
+				disposeNotice();
 				inputTarget.removeEventListener('keydown', onKeydown);
 				events.off('loadProject', resetPreview);
 				store.unsubscribe('editorConfig.font', retainPreview);

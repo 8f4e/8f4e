@@ -71,6 +71,7 @@ export async function mountGalleryEditor(
 							includeKeyboardModeSwitching,
 							captureWheel,
 							touchNavigation,
+							defaultFont,
 						})
 					),
 			}),

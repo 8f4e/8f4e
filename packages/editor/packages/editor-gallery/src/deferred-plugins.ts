@@ -14,6 +14,7 @@ export function createDeferredEditorPlugin({
 	includeKeyboardModeSwitching = true,
 	captureWheel,
 	touchNavigation,
+	defaultFont,
 }: {
 	canvas: HTMLCanvasElement;
 	compiler: ReturnType<typeof createCompilerPlugin>;
@@ -22,6 +23,7 @@ export function createDeferredEditorPlugin({
 	includeKeyboardModeSwitching?: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: GalleryEditorMountOptions['touchNavigation'];
+	defaultFont?: GalleryEditorMountOptions['defaultFont'];
 }): EditorPlugin {
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
@@ -158,6 +160,15 @@ export function createDeferredEditorPlugin({
 			load: () =>
 				import('@8f4e/editor-plugin-keyboard-editing').then(module =>
 					module.createKeyboardEditingPlugin({ inputTarget: canvas })
+				),
+		},
+		{
+			id: 'font-preview',
+			scope: 'view',
+			matches: () => !hasCoarsePointer,
+			load: () =>
+				import('@8f4e/editor-plugin-font-preview').then(module =>
+					module.createFontPreviewPlugin({ inputTarget: canvas, defaultFont })
 				),
 		},
 		{

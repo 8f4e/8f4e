@@ -35,10 +35,11 @@ export function setup(defaultFont?: Font) {
 		editorConfigSchemaContributions: { font: { root: 'font', schema: { type: 'string' } } },
 	});
 	events.dispatch('loadProject', { project: project() });
+	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createFontPreviewPlugin({ inputTarget, defaultFont }).setup({
 		store,
 		events,
-		drawers: createEditorDrawerRegistry(),
+		drawers,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -51,5 +52,5 @@ export function setup(defaultFont?: Font) {
 		inputTarget.dispatchEvent(event);
 		return event;
 	};
-	return { state: store.getState(), store, events, key, disposePlugin };
+	return { state: store.getState(), store, events, drawCanvasOverlays: drawers.drawCanvasOverlays, key, disposePlugin };
 }

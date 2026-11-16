@@ -7,13 +7,13 @@ describe('font preview', () => {
 	it.each(['view', 'edit'] as const)('cycles forwards and backwards with wrapping in %s mode', mode => {
 		const test = setup();
 		test.store.set('editorMode', mode);
-		expect(test.key('F19').defaultPrevented).toBe(true);
+		expect(test.key('F9').defaultPrevented).toBe(true);
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[1]);
-		expect(test.key('F18').defaultPrevented).toBe(true);
+		expect(test.key('F8').defaultPrevented).toBe(true);
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
-		test.key('F18');
+		test.key('F8');
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES.at(-1));
-		test.key('F19');
+		test.key('F9');
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
 	});
 
@@ -24,7 +24,7 @@ describe('font preview', () => {
 		const compilerRevision = test.state.compilerInputRevision;
 		const seen = new Set();
 		for (const _font of FONT_NAMES) {
-			test.key('F19');
+			test.key('F9');
 			seen.add(test.state.editorConfig.font);
 		}
 		expect(seen).toEqual(new Set(FONT_NAMES));
@@ -35,7 +35,7 @@ describe('font preview', () => {
 
 	it('retains the preview across source edits and restores the current source setting when disposed', () => {
 		const test = setup();
-		test.key('F19');
+		test.key('F9');
 		const previewFont = test.state.editorConfig.font;
 		const codeBlock = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(test, [
@@ -46,15 +46,15 @@ describe('font preview', () => {
 		test.disposePlugin();
 		expect(test.state.editorConfig.font).toBe('terminus10x18');
 		expect(test.state.projectChange.revision).toBe(revision);
-		expect(test.key('F19').defaultPrevented).toBe(false);
+		expect(test.key('F9').defaultPrevented).toBe(false);
 	});
 
 	it('clears the preview before resolving a replacement project', () => {
 		const test = setup();
-		test.key('F19');
+		test.key('F9');
 		test.events.dispatch('loadProject', { project: project(FONT_NAMES.at(-1)) });
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES.at(-1));
-		test.key('F19');
+		test.key('F9');
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
 	});
 
@@ -63,8 +63,8 @@ describe('font preview', () => {
 		defaultFont => {
 			const test = setup(defaultFont);
 			test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-			test.key('F19');
-			test.key('F18');
+			test.key('F9');
+			test.key('F8');
 			expect(test.state.editorConfig.font).toBe(defaultFont);
 			test.disposePlugin();
 			expect(test.state.editorConfig.font).toBeUndefined();
@@ -73,24 +73,24 @@ describe('font preview', () => {
 
 	it.each(['altKey', 'ctrlKey', 'metaKey', 'shiftKey'])('leaves modified function keys alone (%s)', modifier => {
 		const test = setup();
-		for (const key of ['F18', 'F19']) expect(test.key(key, { [modifier]: true }).defaultPrevented).toBe(false);
+		for (const key of ['F8', 'F9']) expect(test.key(key, { [modifier]: true }).defaultPrevented).toBe(false);
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
 	});
 
 	it('ignores other keys and already handled events', () => {
 		const test = setup();
 		expect(test.key('F7').defaultPrevented).toBe(false);
-		test.key('F19', {}, true);
+		test.key('F9', {}, true);
 		expect(test.state.editorConfig.font).toBe(FONT_NAMES[0]);
 	});
 
 	it('isolates previews between editor instances', () => {
 		const first = setup();
 		const second = setup();
-		first.key('F19');
+		first.key('F9');
 		expect(second.state.editorConfig.font).toBe(FONT_NAMES[0]);
 		first.disposePlugin();
-		expect(second.key('F19').defaultPrevented).toBe(true);
+		expect(second.key('F9').defaultPrevented).toBe(true);
 		expect(second.state.editorConfig.font).toBe(FONT_NAMES[1]);
 	});
 });

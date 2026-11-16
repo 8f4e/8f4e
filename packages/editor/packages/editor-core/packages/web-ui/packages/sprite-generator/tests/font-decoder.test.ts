@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { FONT_NAMES, FONTS } from '../src/fonts/catalog.ts';
+import { FONT_CATALOG, FONT_NAMES } from '../src/fonts/catalog.ts';
 import decodeFontBase64 from '../src/fonts/font-decoder.ts';
 
 describe('packed font row decoding', () => {
 	it.each(FONT_NAMES)('preserves all 256 CP437 characters for %s', async font => {
 		const [{ default: glyphs }, { default: base64 }] = await Promise.all([
 			import(`../src/fonts/${font}/ascii.ts`),
-			FONTS[font].load(),
+			FONT_CATALOG[font].load(),
 		]);
-		const { width, height } = FONTS[font];
+		const { width, height } = FONT_CATALOG[font];
 		const decoded = decodeFontBase64(base64, width > 8 ? 2 : 1);
 		expect(decoded).toBeInstanceOf(width > 8 ? Uint16Array : Uint8Array);
 		const expected = (glyphs as string[][]).flatMap(glyph =>

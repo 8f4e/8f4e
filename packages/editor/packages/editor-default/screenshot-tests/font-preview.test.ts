@@ -52,7 +52,7 @@ test('previews fonts through the default composition without changing saved sour
 		};
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		for (let index = FONT_NAMES.indexOf(sourceFont); index < FONT_NAMES.length; index++) {
-			expect(key('F19').defaultPrevented).toBe(true);
+			expect(key('F9').defaultPrevented).toBe(true);
 		}
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
 		expect(editor.state.viewport.hGrid).toBe(10);
@@ -76,6 +76,12 @@ test('previews fonts through the default composition without changing saved sour
 		context.events.dispatch('loadProject', { project });
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		expect(editor.state.editorConfig.font).toBe(sourceFont);
+		editor.resize(240, 400);
+		context.store.set('editorConfig.font', 'departuremono7x14');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(14);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-credits-portrait');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

@@ -2,11 +2,11 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { GLYPH_COUNT } from '../src/characterSet.ts';
-import { FONTS } from '../src/fonts/catalog.ts';
+import { FONT_CATALOG } from '../src/fonts/catalog.ts';
 
 const output = new URL('../src/generated/', import.meta.url);
 mkdirSync(output, { recursive: true });
-for (const [name, { width, height }] of Object.entries(FONTS)) {
+for (const [name, { width, height }] of Object.entries(FONT_CATALOG)) {
 	const { default: glyphs } = await import(`../src/fonts/${name}/ascii.ts`);
 	const rows = glyphs.flatMap(glyph =>
 		glyph.map(row => {

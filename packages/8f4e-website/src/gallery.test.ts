@@ -95,6 +95,39 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test('cycles fonts with F8/F9 and shows credits without changing example source', async () => {
+	const view = setup({ fonts: async () => new Response(source) });
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	editor.pauseRendering();
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '640px';
+	canvas.style.height = '400px';
+	await expect.poll(() => editor.state.viewport.width).toBe(640);
+	const sources = editor.state.codeBlockRendering.rootProject.blocks.map(block => [...block.code]);
+	const revision = editor.editing.getRevision();
+	const key = (key: string) => {
+		const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
+		canvas.dispatchEvent(event);
+		return event;
+	};
+	expect(key('F8').defaultPrevented).toBe(true);
+	await expect.poll(() => editor.state.viewport.hGrid).toBe(12);
+	expect(editor.state.editorConfig.font).toBe('spleen6x12');
+	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
+	editor.state.loadingIndicators = [];
+	editor.resize(640, 400);
+	await expect(canvas).toMatchScreenshot('gallery-font-credits');
+	expect(key('F9').defaultPrevented).toBe(true);
+	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
+	expect(editor.state.editorConfig.font).toBe('ibmvga8x16');
+	expect(editor.state.codeBlockRendering.rootProject.blocks.map(block => block.code)).toEqual(sources);
+	expect(editor.editing.getRevision()).toBe(revision);
+	editor.dispose();
+	expect(key('F9').defaultPrevented).toBe(false);
+});
+
 test('one-finger gallery drags pan horizontally while vertical swipes scroll the page', async () => {
 	const input = cdp();
 	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
@@ -102,7 +135,9 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 	document.body.style.minHeight = '2000px';
 	window.scrollTo(0, 0);
 	try {
-		const view = setup({ touch: async () => new Response(source) });
+		// Keep the 40-pixel gesture on a grid boundary independently of the mobile default font.
+		const touchSource = source.replace('; @mode edit', '; @mode edit\n; @config font ibmvga8x16');
+		const view = setup({ touch: async () => new Response(touchSource) });
 		const editor = await view.mounted();
 		editor.pauseRendering();
 		const canvas = view.panel().querySelector('canvas')!;

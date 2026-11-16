@@ -395,7 +395,7 @@ describe('web-ui init', () => {
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
-		store.set('editorConfig.font', 'ibmvga8x16');
+		store.set('editorConfig.font', 'terminus8x16');
 		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(atlasUploads + 1));
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);

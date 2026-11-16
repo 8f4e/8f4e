@@ -84,8 +84,12 @@ text changes, and undo/redo shortcuts. View mode supports line selection and blo
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
+The independent `font-preview` plugin uses **F8** for the previous font and **F9** for the next. Each loaded font
+change shows its name and credits for three seconds without blocking editing. Previewing leaves project source,
+history and saved files unchanged; loading another project restores its configured font.
+
 After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
-with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
+with a coarse primary pointer receive none of these four plugins, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
 Coarse-pointer devices load `touch-input` for configurable viewport dragging and grid snapping. Taps
 remain available to controls, and dragging does not edit block positions.
