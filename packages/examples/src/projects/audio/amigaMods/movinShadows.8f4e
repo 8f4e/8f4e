@@ -900,31 +900,32 @@ note
 ; @pos 9 -115
 ; Assets
 ; @tab 22
-; @config bin.sample1.url https://static.8f4e.com/assets/mods/movinshadows/sample_1.pcm
-; @config bin.sample2.url https://static.8f4e.com/assets/mods/movinshadows/sample_2.pcm
-; @config bin.sample3.url https://static.8f4e.com/assets/mods/movinshadows/sample_3.pcm
-; @config bin.sample4.url https://static.8f4e.com/assets/mods/movinshadows/sample_4.pcm
-; @config bin.sample5.url https://static.8f4e.com/assets/mods/movinshadows/sample_5.pcm
-; @config bin.sample6.url https://static.8f4e.com/assets/mods/movinshadows/sample_6.pcm
-; @config bin.sample7.url https://static.8f4e.com/assets/mods/movinshadows/sample_7.pcm
-; @config bin.sample8.url https://static.8f4e.com/assets/mods/movinshadows/sample_8.pcm
-; @config bin.sample9.url https://static.8f4e.com/assets/mods/movinshadows/sample_9.pcm
-; @config bin.sample10.url https://static.8f4e.com/assets/mods/movinshadows/sample_10.pcm
-; @config bin.sample11.url https://static.8f4e.com/assets/mods/movinshadows/sample_11.pcm
-; @config bin.sample12.url https://static.8f4e.com/assets/mods/movinshadows/sample_12.pcm
-; @config bin.sample13.url https://static.8f4e.com/assets/mods/movinshadows/sample_13.pcm
-; @config bin.sample14.url https://static.8f4e.com/assets/mods/movinshadows/sample_14.pcm
-; @config bin.sample15.url https://static.8f4e.com/assets/mods/movinshadows/sample_15.pcm
-; @config bin.sample16.url https://static.8f4e.com/assets/mods/movinshadows/sample_16.pcm
-; @config bin.sample17.url https://static.8f4e.com/assets/mods/movinshadows/sample_17.pcm
-; @config bin.sample18.url https://static.8f4e.com/assets/mods/movinshadows/sample_18.pcm
-; @config bin.sample19.url https://static.8f4e.com/assets/mods/movinshadows/sample_19.pcm
-; @config bin.sample20.url https://static.8f4e.com/assets/mods/movinshadows/sample_20.pcm
-; @config bin.sample21.url https://static.8f4e.com/assets/mods/movinshadows/sample_21.pcm
-; @config bin.ch1.url https://static.8f4e.com/assets/mods/movinshadows/patterns_ch1.bin
-; @config bin.ch2.url https://static.8f4e.com/assets/mods/movinshadows/patterns_ch2.bin
-; @config bin.ch3.url https://static.8f4e.com/assets/mods/movinshadows/patterns_ch3.bin
-; @config bin.ch4.url https://static.8f4e.com/assets/mods/movinshadows/patterns_ch4.bin
+; @config bin.baseUrl https://static.8f4e.com/assets/mods/movinshadows/
+; @config bin.sample1.path sample_1.pcm
+; @config bin.sample2.path sample_2.pcm
+; @config bin.sample3.path sample_3.pcm
+; @config bin.sample4.path sample_4.pcm
+; @config bin.sample5.path sample_5.pcm
+; @config bin.sample6.path sample_6.pcm
+; @config bin.sample7.path sample_7.pcm
+; @config bin.sample8.path sample_8.pcm
+; @config bin.sample9.path sample_9.pcm
+; @config bin.sample10.path sample_10.pcm
+; @config bin.sample11.path sample_11.pcm
+; @config bin.sample12.path sample_12.pcm
+; @config bin.sample13.path sample_13.pcm
+; @config bin.sample14.path sample_14.pcm
+; @config bin.sample15.path sample_15.pcm
+; @config bin.sample16.path sample_16.pcm
+; @config bin.sample17.path sample_17.pcm
+; @config bin.sample18.path sample_18.pcm
+; @config bin.sample19.path sample_19.pcm
+; @config bin.sample20.path sample_20.pcm
+; @config bin.sample21.path sample_21.pcm
+; @config bin.ch1.path patterns_ch1.bin
+; @config bin.ch2.path patterns_ch2.bin
+; @config bin.ch3.path patterns_ch3.bin
+; @config bin.ch4.path patterns_ch4.bin
 
 noteEnd
 
