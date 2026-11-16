@@ -82,6 +82,12 @@ test('previews fonts through the default composition without changing saved sour
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('font-credits-portrait');
+		editor.resize(240, 256);
+		context.store.set('editorConfig.font', 'spleen16x32');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(32);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-characters-small-viewport');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

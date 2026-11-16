@@ -407,7 +407,8 @@ The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the defa
 font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change source or saved
 files; loading a project restores its configured font.
 Web-ui emits `fontChanged` with `{ font }` after installing a different font atlas and settling its grid. The
-font-preview plugin uses this notification to show the new font's name and credits for three seconds.
+font-preview plugin uses this notification to show the new font's name, credits and all 256 characters in a 16×16 grid
+for three seconds. The panel scales down to fit smaller viewports.
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Shared `state.info` records remain available as data; updates do not invalidate code-block layout or text render data. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 

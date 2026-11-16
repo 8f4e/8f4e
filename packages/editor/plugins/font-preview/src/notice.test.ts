@@ -9,7 +9,7 @@ afterEach(() => vi.useRealTimers());
 function setupNotice() {
 	const test = setup();
 	Object.assign(test.state.viewport, { width: 640, height: 480, vGrid: 8, hGrid: 16 });
-	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
+	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn(), drawSprite: vi.fn() };
 	const render = () => {
 		for (const method of Object.values(draw)) method.mockClear();
 		test.drawCanvasOverlays({
@@ -22,6 +22,16 @@ function setupNotice() {
 }
 
 describe('font credit notice', () => {
+	it('shows all 256 character slots exactly once in a 16 by 16 grid, including blank slots', () => {
+		const test = setupNotice();
+		test.events.dispatch('fontChanged', { font: 'ibmvga8x16' });
+		test.render();
+		const characters = test.draw.drawSprite.mock.calls;
+		expect(characters.map(call => call[2])).toEqual(Array.from({ length: 256 }, (_, index) => index));
+		expect(new Set(characters.map(call => call[0])).size).toBe(16);
+		expect(new Set(characters.map(call => call[1])).size).toBe(16);
+	});
+
 	it('shows the applied font and credits for three seconds without opening a modal', () => {
 		const test = setupNotice();
 		test.key('F9');
@@ -68,7 +78,32 @@ describe('font credit notice', () => {
 		test.state.viewport.vGrid = 16;
 		test.events.dispatch('gridSizeChanged');
 		test.render();
-		for (const [, , glyphs] of test.draw.drawGlyphs.mock.calls) expect(glyphs.length).toBeLessThanOrEqual(6);
+		expect(test.draw.drawFill.mock.calls[0][3]).toBeLessThanOrEqual(128);
+		expect(test.draw.drawSprite.mock.calls[0][4]).toBeLessThan(16);
+	});
+
+	it('keeps the complete grid and credits within a small viewport with a large font', () => {
+		const test = setupNotice();
+		Object.assign(test.state.viewport, { width: 240, height: 256, vGrid: 16, hGrid: 32 });
+		test.events.dispatch('fontChanged', { font: 'spleen16x32' });
+		test.render();
+		const [left, top] = test.draw.startGroup.mock.calls[0];
+		const [, , , width, height] = test.draw.drawFill.mock.calls[0];
+		expect(left).toBeGreaterThanOrEqual(0);
+		expect(top).toBeGreaterThanOrEqual(0);
+		expect(left + width).toBeLessThanOrEqual(240);
+		expect(top + height).toBeLessThanOrEqual(256);
+		for (const [x, y, , , cellWidth, cellHeight] of test.draw.drawSprite.mock.calls) {
+			expect(x).toBeGreaterThanOrEqual(0);
+			expect(y).toBeGreaterThanOrEqual(0);
+			expect(cellWidth).toBeGreaterThan(0);
+			expect(cellHeight).toBeGreaterThan(0);
+			expect(x + cellWidth).toBeLessThanOrEqual(width + 0.000001);
+			expect(y + cellHeight).toBeLessThanOrEqual(height + 0.000001);
+		}
+		expect(test.draw.drawSprite.mock.calls.slice(-256).map(call => call[2])).toEqual(
+			Array.from({ length: 256 }, (_, index) => index)
+		);
 	});
 
 	it('clears the notice on project replacement and releases timers, listeners and drawing on disposal', () => {

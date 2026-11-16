@@ -5,7 +5,9 @@
 
 After a different font finishes loading, a small, nonmodal panel shows its display name, creator credits and
 license for three seconds. Switching again replaces the panel and restarts the timer. This also covers changes
-from project configuration. The panel wraps to the viewport and uses the newly loaded font and current palette.
+from project configuration. The panel includes all 256 CP437 character slots in a 16×16 grid, retaining blank slots
+for missing glyphs. It uses the newly loaded font and current palette, wraps the credits, and scales down when
+needed to keep the entire panel inside the viewport.
 
 ```ts
 import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';

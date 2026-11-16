@@ -43,7 +43,7 @@ mode, including projects that start in edit mode. It buffers keys during that im
 The independent `font-preview` plugin uses F8 for the previous font and F9 for the next, wrapping through the
 available catalog. It previews without changing source, history, or saved files. Previewing persists across source
 edits; loading a project or disposing the plugin restores source configuration.
-Each loaded font change shows its name and credits in a small panel for three seconds without blocking editing.
+Each loaded font change shows its name, credits and a 16×16 character grid for three seconds without blocking editing.
 
 After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This

@@ -115,13 +115,13 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	expect(key('F8').defaultPrevented).toBe(true);
 	await expect.poll(() => editor.state.viewport.hGrid).toBe(12);
 	expect(editor.state.editorConfig.font).toBe('spleen6x12');
+	expect(key('F9').defaultPrevented).toBe(true);
+	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
+	expect(editor.state.editorConfig.font).toBe('ibmvga8x16');
 	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
 	editor.state.loadingIndicators = [];
 	editor.resize(640, 400);
 	await expect(canvas).toMatchScreenshot('gallery-font-credits');
-	expect(key('F9').defaultPrevented).toBe(true);
-	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
-	expect(editor.state.editorConfig.font).toBe('ibmvga8x16');
 	expect(editor.state.codeBlockRendering.rootProject.blocks.map(block => block.code)).toEqual(sources);
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
