@@ -1,0 +1,37 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/audio/tptLowPass
+includesEnd
+
+entry test
+module tptLowPassAssertions
+; Outputs: low, nextS1, nextS2.
+call tptLowPass 1.0 1.0 2.0 0.0 0.0
+assertEqual 0.5
+assertEqual 0.5
+assertEqual 0.25
+
+; Feed the returned state back in.
+call tptLowPass 1.0 1.0 2.0 0.5 0.5
+assertEqual 1.0
+assertEqual 0.0
+assertEqual 0.75
+
+; A settled DC signal is unchanged.
+call tptLowPass 1.0 1.0 2.0 0.0 1.0
+assertEqual 1.0
+assertEqual 0.0
+assertEqual 1.0
+
+; A zero frequency freezes state.
+call tptLowPass 1.0 0.0 2.0 0.125 0.25
+assertEqual 0.25
+assertEqual 0.125
+assertEqual 0.25
+moduleEnd
+entryEnd

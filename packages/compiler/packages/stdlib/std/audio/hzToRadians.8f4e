@@ -1,0 +1,17 @@
+function hzToRadians
+#export
+; Converts finite Hz to radians
+; per sample. sampleRate must be
+; a positive integer.
+param float frequencyHz
+param int sampleRate
+
+const TAU 6.283185307179586
+
+push frequencyHz
+mul TAU
+push sampleRate
+castToFloat
+ensureNonZero
+div
+functionEnd float

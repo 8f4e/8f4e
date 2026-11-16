@@ -11,6 +11,9 @@ Add an `includes` block near the top of the project, after the `8f4e/v1` header 
 8f4e/v1
 
 includes
+include std/audio/biquad
+include std/audio/hzToRadians
+include std/audio/tptLowPass
 include std/math/clamp
 include std/math/exp2
 include std/math/fract
@@ -872,6 +875,132 @@ module smoothstepExamples
 push 0.5
 call smoothstep
 ; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+## `std/audio/hzToRadians`
+
+Provides the pure conversion `hzToRadians(float frequencyHz, int sampleRate) -> float`, returning
+`TAU * frequencyHz / sampleRate` in radians per sample with float32 arithmetic. Supply a finite frequency and a
+positive sample rate. Signed frequencies are supported; the helper does not clamp to the audio frequency range
+and has no dependency on an `env` constants block.
+
+```8f4e
+includes
+include std/audio/hzToRadians
+includesEnd
+
+entry main
+module frequencyConversion
+call hzToRadians 1000.0 48000
+; stack: approximately 0.1308997 radians/sample
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/audio/tptLowPass`
+
+Provides a pure, single-sample trapezoidal state-variable low-pass filter:
+
+`tptLowPass(float input, float g, float damping, float s1, float s2) -> float low, float nextS1, float nextS2`
+
+The caller owns the two integrator states. Initialize `s1` and `s2` to zero once, pass the current states on each
+sample, and persist the returned next states for the next call. Results are pushed in the listed order, leaving
+`nextS2` at the top of the stack. The function performs no memory IO and uses locals for reused intermediate values.
+
+Supply finite arguments with `g >= 0` and `damping > 0`, keeping intermediate arithmetic within the float32 range.
+The frequency coefficient is
+`g = tan(PI * cutoffHz / sampleRate)`, with cutoff below half the sample rate. This helper takes `g` directly and
+has no prerequisite includes. Lower damping gives more resonance; the corresponding quality factor is
+`q = 1 / damping`. With `g = 0`, the output is the existing low-pass state `s2` and the states stay unchanged.
+The equations follow [Andrew Simper's trapezoidal SVF](https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf).
+
+```8f4e
+includes
+include std/audio/tptLowPass
+includesEnd
+
+entry main
+module lowPass
+float input
+float g 0.1
+float damping 1.0
+float s1
+float s2
+float out
+local float nextS1
+local float nextS2
+
+push &out
+call tptLowPass input g damping s1 s2
+localSet nextS2
+localSet nextS1
+store
+
+push &s1
+push nextS1
+store
+push &s2
+push nextS2
+store
+moduleEnd
+entryEnd
+```
+
+## `std/audio/biquad`
+
+Provides a pure Direct Form I processor for one biquad sample:
+
+`biquad(float input, float b0, float b1, float b2, float a1, float a2, float x1, float x2, float y1, float y2) -> float`
+
+Coefficients must be normalized so `a0 = 1`. If a design supplies a different `a0`, divide each of `b0`, `b1`, `b2`,
+`a1`, and `a2` by it before calling. The helper evaluates:
+
+```text
+output = b0*input + b1*x1 + b2*x2 - a1*y1 - a2*y2
+```
+
+`x1` and `x2` are the previous two inputs; `y1` and `y2` are the previous two outputs. Initialize histories to zero
+once, and advance them after each call. The helper returns only the output, performs no memory IO, and retains no
+history internally. Arguments and intermediate arithmetic must stay finite. Response and stability are determined
+by the caller's coefficients. The subtraction of feedback terms follows the
+[Audio EQ Cookbook convention](https://www.w3.org/TR/audio-eq-cookbook/).
+
+The same processor supports low-pass, high-pass, band-pass, notch, and EQ designs. It does not calculate
+frequency-dependent coefficients or require any other includes. This example uses a three-tap FIR average:
+
+```8f4e
+includes
+include std/audio/biquad
+includesEnd
+
+entry main
+module movingAverage
+float input
+float x1
+float x2
+float y1
+float y2
+float out
+
+push &out
+call biquad input 0.25 0.5 0.25 0.0 0.0 x1 x2 y1 y2
+store
+
+push &x2
+push x1
+store
+push &x1
+push input
+store
+push &y2
+push y1
+store
+push &y1
+push out
+store
 moduleEnd
 entryEnd
 ```

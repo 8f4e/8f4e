@@ -1,0 +1,62 @@
+function tptLowPass
+#export
+; Processes one low-pass sample
+; with a trapezoidal SVF.
+; g = tan(PI * cutoffHz / Fs).
+; Use finite values, g >= 0 and
+; damping > 0. State starts at zero.
+; Returns low, nextS1, nextS2.
+param float input
+param float g
+param float damping
+param float s1
+param float s2
+local float a1
+local float a2
+local float v3
+local float low
+
+; a1 = 1 / (1 + g * (g + k)).
+push 1.0
+push g
+add damping
+mul g
+add 1.0
+ensureNonZero
+div
+localSet a1
+push g
+mul a1
+localSet a2
+
+push input
+sub s2
+localSet v3
+
+; low = s2 + a2*s1 + g*a2*v3.
+push s2
+push a2
+mul s1
+add
+push g
+mul a2
+mul v3
+add
+localSet low
+
+push low
+
+; nextS1 = 2*band - s1.
+push a1
+mul s1
+push a2
+mul v3
+add
+mul 2.0
+sub s1
+
+; nextS2 = 2*low - s2.
+push low
+mul 2.0
+sub s2
+functionEnd float float float

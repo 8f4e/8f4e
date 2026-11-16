@@ -1,0 +1,32 @@
+function biquad
+#export
+; Processes one Direct Form I
+; biquad sample. Coefficients are
+; normalized so a0 = 1.
+; The caller owns sample history.
+param float input
+param float b0
+param float b1
+param float b2
+param float a1
+param float a2
+param float x1
+param float x2
+param float y1
+param float y2
+
+push input
+mul b0
+push x1
+mul b1
+add
+push x2
+mul b2
+add
+push y1
+mul a1
+sub
+push y2
+mul a2
+sub
+functionEnd float

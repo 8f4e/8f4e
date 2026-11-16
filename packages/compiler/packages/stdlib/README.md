@@ -53,6 +53,24 @@ overload accepts the full finite double range without an integer conversion.
 including subnormals. See the [standard-library reference](../../docs/standard-library.md#stdmathlog2) for the input
 contract and tested approximation bounds.
 
+## Audio helpers
+
+`std/audio/hzToRadians` converts a finite frequency in Hz to radians per sample, taking a positive integer sample
+rate explicitly. It supports signed frequencies and does not read project environment constants.
+
+`std/audio/tptLowPass` processes one low-pass sample from input, frequency coefficient `g`, damping, and two current
+integrator states. It returns the output and both next states on the stack, with no memory IO. The caller initializes
+and persists the state; reused intermediate calculations use locals. Supply finite values with `g >= 0` and
+`damping > 0`, using `g = tan(PI * cutoffHz / sampleRate)` for a cutoff below half the sample rate.
+
+`std/audio/biquad` is a pure Direct Form I sample processor. It accepts five normalized coefficients (`a0 = 1`)
+and the previous two input and output samples, returning the next output. The caller calculates coefficients and
+maintains all history; the helper performs no memory IO. Its feedback convention subtracts `a1*y1` and `a2*y2`.
+See the [biquad reference](../../docs/standard-library.md#stdaudiobiquad) for argument order and a usage example.
+
+See the [audio helper reference](../../docs/standard-library.md#stdaudiohztoradians) for signatures, return order,
+and an example that stores the next states in module memory.
+
 ## RGB colors
 
 `std/color/lerpRGB` blends two packed `0xRRGGBB` colors with a finite `float` or `float64` amount in `0..1`. It
