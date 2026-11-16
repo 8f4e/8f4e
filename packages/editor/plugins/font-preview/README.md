@@ -23,5 +23,7 @@ Previewing changes neither project source nor history, revision, session content
 active when source configuration is resolved again, including after edits. Loading another project clears it before
 that project's configuration is applied. Disposing the plugin removes its listeners and restores the current
 source-derived configuration through the generic `resolveEditorConfig` helper.
-Disposal also removes the credit panel, its timer and its subscriptions to web-ui's `fontChanged`, resize and grid
-notifications. Attribution comes from sprite-generator's `FONT_CATALOG`, based on the bundled font notices.
+Disposal also removes the credit panel, its timer and its subscriptions to web-ui's `fontChanged` and resize
+notifications. Font changes are prepared once after the new atlas and grid settle; the drawer consumes prepared
+sprite positions, sizes and palette indices. Attribution comes from sprite-generator's `FONT_CATALOG`, based on
+the bundled font notices.

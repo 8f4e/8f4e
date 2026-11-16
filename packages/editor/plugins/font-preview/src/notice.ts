@@ -17,9 +17,7 @@ interface FontNoticeLayout {
 	height: number;
 	cellWidth: number;
 	cellHeight: number;
-	title: GlyphIds[];
-	credits: GlyphIds[];
-	characters: { x: number; y: number; id: GlyphIds[number] }[];
+	sprites: { x: number; y: number; id: GlyphIds[number]; color: PaletteIndex }[];
 }
 
 /** Keep the transient font credit panel outside modal state, source and history. */
@@ -50,6 +48,34 @@ export function installFontNotice({ store, events, drawers }: EditorPluginContex
 		const panelHeight = panelRows * cellHeight;
 		const charactersX = (panelWidth - CHARACTER_COLUMNS * cellWidth) / 2;
 		const charactersY = (title.length + credits.length + 3) * cellHeight;
+		const sprites: FontNoticeLayout['sprites'] = [];
+		const prepareText = (x: number, y: number, glyphs: GlyphIds, color: PaletteIndex) => {
+			for (let index = 0; index < glyphs.length; index++) {
+				sprites.push({ x: x + index * cellWidth, y, id: glyphs[index], color });
+			}
+		};
+		for (const x of [0, panelWidth - cellWidth]) {
+			for (const y of [0, panelHeight - cellHeight]) prepareText(x, y, CORNER, PALETTE_INDICES.floatingMuted);
+		}
+		for (let index = 0; index < title.length; index++) {
+			prepareText(cellWidth, (index + 1) * cellHeight, textToGlyphIds(title[index]), PALETTE_INDICES.floatingAccent);
+		}
+		for (let index = 0; index < credits.length; index++) {
+			prepareText(
+				cellWidth,
+				(index + title.length + 2) * cellHeight,
+				textToGlyphIds(credits[index]),
+				PALETTE_INDICES.floatingInk
+			);
+		}
+		for (let index = 0; index < CHARACTER_IDS.length; index++) {
+			sprites.push({
+				x: charactersX + (index % CHARACTER_COLUMNS) * cellWidth,
+				y: charactersY + Math.floor(index / CHARACTER_COLUMNS) * cellHeight,
+				id: CHARACTER_IDS[index],
+				color: PALETTE_INDICES.floatingInk,
+			});
+		}
 		layout = {
 			x: Math.floor((width - panelWidth) / 2),
 			y: Math.floor(Math.min(hGrid, (height - panelHeight) / 2)),
@@ -57,13 +83,7 @@ export function installFontNotice({ store, events, drawers }: EditorPluginContex
 			height: panelHeight,
 			cellWidth,
 			cellHeight,
-			title: title.map(textToGlyphIds),
-			credits: credits.map(textToGlyphIds),
-			characters: CHARACTER_IDS.map((id, index) => ({
-				x: charactersX + (index % CHARACTER_COLUMNS) * cellWidth,
-				y: charactersY + Math.floor(index / CHARACTER_COLUMNS) * cellHeight,
-				id,
-			})),
+			sprites,
 		};
 	};
 	const hide = () => {
@@ -80,46 +100,20 @@ export function installFontNotice({ store, events, drawers }: EditorPluginContex
 	};
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!layout) return;
-		const { cellWidth, cellHeight } = layout;
-		const drawText = (x: number, y: number, glyphs: GlyphIds, color: PaletteIndex) => {
-			if (cellWidth === state.viewport.vGrid && cellHeight === state.viewport.hGrid) {
-				draw.drawGlyphs(x, y, glyphs, color);
-				return;
-			}
-			for (let index = 0; index < glyphs.length; index++) {
-				draw.drawSprite(x + index * cellWidth, y, glyphs[index], color, cellWidth, cellHeight);
-			}
-		};
 		draw.startGroup(layout.x, layout.y);
 		draw.drawFill(0, 0, PALETTE_INDICES.floatingSurface, layout.width, layout.height);
-		for (const x of [0, layout.width - cellWidth]) {
-			for (const y of [0, layout.height - cellHeight]) drawText(x, y, CORNER, PALETTE_INDICES.floatingMuted);
-		}
-		for (let index = 0; index < layout.title.length; index++) {
-			drawText(cellWidth, (index + 1) * cellHeight, layout.title[index], PALETTE_INDICES.floatingAccent);
-		}
-		for (let index = 0; index < layout.credits.length; index++) {
-			drawText(
-				cellWidth,
-				(index + layout.title.length + 2) * cellHeight,
-				layout.credits[index],
-				PALETTE_INDICES.floatingInk
-			);
-		}
-		for (const character of layout.characters) {
-			draw.drawSprite(character.x, character.y, character.id, PALETTE_INDICES.floatingInk, cellWidth, cellHeight);
+		for (const sprite of layout.sprites) {
+			draw.drawSprite(sprite.x, sprite.y, sprite.id, sprite.color, layout.cellWidth, layout.cellHeight);
 		}
 		draw.endGroup();
 	});
 	events.on('fontChanged', show);
-	events.on('gridSizeChanged', prepare);
 	events.on('resize', prepare);
 	events.on('loadProject', hide, { capture: true });
 	return () => {
 		hide();
 		removeDrawer();
 		events.off('fontChanged', show);
-		events.off('gridSizeChanged', prepare);
 		events.off('resize', prepare);
 		events.off('loadProject', hide);
 	};
