@@ -42,11 +42,12 @@ note
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
-; @config bin.kick.url https://static.8f4e.com/assets/samples/808-kick-48khz-s16le.pcm
+; @config bin.baseUrl https://static.8f4e.com/assets/samples/
+; @config bin.kick.path 808-kick-48khz-s16le.pcm
 ; @config bin.kick.memory kick:buffer
-; @config bin.snare.url https://static.8f4e.com/assets/samples/808-snare-48khz-s16le.pcm
+; @config bin.snare.path 808-snare-48khz-s16le.pcm
 ; @config bin.snare.memory snare:buffer
-; @config bin.hihat.url https://static.8f4e.com/assets/samples/808-hihat-48khz-s16le.pcm
+; @config bin.hihat.path 808-hihat-48khz-s16le.pcm
 ; @config bin.hihat.memory hiHat:buffer
 
 noteEnd

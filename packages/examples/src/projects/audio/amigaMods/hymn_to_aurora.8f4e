@@ -437,22 +437,23 @@ noteEnd
 note
 ; @pos -32 -109
 ; @tab 22
-; @config bin.sample1.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_1.bin
-; @config bin.sample2.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_2.bin
-; @config bin.sample3.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_3.bin
-; @config bin.sample4.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_4.bin
-; @config bin.sample5.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_5.bin
-; @config bin.sample6.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_6.bin
-; @config bin.sample7.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_7.bin
-; @config bin.sample8.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_8.bin
-; @config bin.sample9.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_9.bin
-; @config bin.sample10.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_10.bin
-; @config bin.sample11.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_11.bin
-; @config bin.sample12.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_12.bin
-; @config bin.ch1.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch1.bin
-; @config bin.ch2.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch2.bin
-; @config bin.ch3.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch3.bin
-; @config bin.ch4.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch4.bin
+; @config bin.baseUrl https://static.8f4e.com/assets/mods/hymn_to_aurora/
+; @config bin.sample1.path sample_1.bin
+; @config bin.sample2.path sample_2.bin
+; @config bin.sample3.path sample_3.bin
+; @config bin.sample4.path sample_4.bin
+; @config bin.sample5.path sample_5.bin
+; @config bin.sample6.path sample_6.bin
+; @config bin.sample7.path sample_7.bin
+; @config bin.sample8.path sample_8.bin
+; @config bin.sample9.path sample_9.bin
+; @config bin.sample10.path sample_10.bin
+; @config bin.sample11.path sample_11.bin
+; @config bin.sample12.path sample_12.bin
+; @config bin.ch1.path patterns_ch1.bin
+; @config bin.ch2.path patterns_ch2.bin
+; @config bin.ch3.path patterns_ch3.bin
+; @config bin.ch4.path patterns_ch4.bin
 
 noteEnd
 
