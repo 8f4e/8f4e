@@ -110,6 +110,12 @@ export const projects = [
 		path: 'audio/formantSynth.8f4e',
 	},
 	{
+		id: 'filter-bank',
+		title: 'Filter bank',
+		description: 'Mix low-pass, band-pass and high-pass outputs from seven filters driven by white noise.',
+		path: 'audio/filterBank.8f4e',
+	},
+	{
 		id: 'grids-patterns',
 		title: 'Grids patterns',
 		description:
