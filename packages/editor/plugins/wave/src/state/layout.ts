@@ -7,7 +7,7 @@ import {
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWaveDirectiveData } from '../helpers/data';
-import { createWaveformPeaks, MAX_WAVEFORM_SAMPLE_READS } from '../helpers/peaks';
+import { createWaveformPeaks } from '../helpers/peaks';
 import type { Wave } from '../types';
 
 export function registerWaveLayout(
@@ -47,9 +47,10 @@ export function registerWaveLayout(
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
 			const width = codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 			const columnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
-			const columnCount = Math.min(MAX_WAVEFORM_SAMPLE_READS, Math.max(1, Math.floor(width / columnWidth)));
+			const peaks = createWaveformPeaks(Math.max(1, Math.floor(width / columnWidth)));
 			waves.push({
 				width,
+				columnWidth: Math.max(1, Math.floor(width / peaks.minima.length)),
 				height: state.viewport.hGrid * heightRows,
 				x: (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				y: (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
@@ -59,7 +60,7 @@ export function registerWaveLayout(
 				minValue: spec.minValue,
 				maxValue: spec.maxValue,
 				inverseValueRange: 1 / (spec.maxValue - spec.minValue),
-				peaks: createWaveformPeaks(columnCount),
+				peaks,
 			});
 		});
 		wavesByBlock.set(codeBlock, waves);

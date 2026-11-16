@@ -41,8 +41,19 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 	const colors = PALETTE_INDICES;
 
 	for (const wave of waves) {
-		const { x, y, width, height, buffer, inverseElementByteSize, playhead, minValue, maxValue, inverseValueRange } =
-			wave;
+		const {
+			x,
+			y,
+			width,
+			columnWidth,
+			height,
+			buffer,
+			inverseElementByteSize,
+			playhead,
+			minValue,
+			maxValue,
+			inverseValueRange,
+		} = wave;
 		engine.startGroup(x, y);
 
 		const arrayLength = readElementCount(buffer.elementCount, memoryViews) ?? 0;
@@ -53,8 +64,6 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		}
 
 		const values = memoryViews[buffer.samples.spec.valueType];
-		const columnCount = wave.peaks.minima.length;
-		const columnWidth = Math.max(1, Math.floor(width / columnCount));
 		updateWaveformPeaks(wave.peaks, values, baseValueIndex, arrayLength);
 		engine.drawFill(0, 0, colors.darkSurface, width, height);
 		drawWaveform(engine, wave.peaks, height, columnWidth, minValue, maxValue, inverseValueRange, colors.highlightBase);

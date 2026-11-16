@@ -5,6 +5,7 @@ export interface Wave {
 	x: number;
 	y: number;
 	width: number;
+	columnWidth: number;
 	height: number;
 	buffer: PreparedBuffer;
 	playhead?: PreparedAddressBinding;

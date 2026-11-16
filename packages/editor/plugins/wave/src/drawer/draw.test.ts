@@ -25,6 +25,7 @@ function wave(): Wave {
 		x: 2,
 		y: 3,
 		width: 8,
+		columnWidth: 2,
 		height: 8,
 		buffer: {
 			target: {} as never,
