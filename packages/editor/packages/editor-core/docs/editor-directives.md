@@ -136,6 +136,7 @@ Supported paths:
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
+- `bin.baseUrl` / `bin.<id>.path` - shared URL prefix and per-asset path. `url` takes precedence over `path`.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
@@ -568,6 +569,19 @@ Notes:
 - Invalid paths/values are reported through config validation.
 - Binary payloads stay outside serialized project models; generated size constants are available to compilation.
 - Assets with a `url` but no load target are not fetched.
+
+Use `baseUrl` and per-asset `path` values for assets that share a URL prefix:
+
+```txt
+; @config bin.baseUrl https://example.com/samples/
+; @config bin.kick.path drums/kick.pcm
+; @config bin.kick.memory player:buffer
+```
+
+This fetches `https://example.com/samples/drums/kick.pcm`. The base and path are joined with one slash at their
+boundary, including when `path` starts with a slash. Without `baseUrl`, `path` is used directly and may be relative
+to the editor page. A configured `url` takes precedence over `path` and is used unchanged. Assets with a `path`
+also require a memory load target to be fetched.
 
 Multiple loads for one asset are supported with named load targets:
 
