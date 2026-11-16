@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler",
-  "version": "12.2.1",
+  "version": "12.2.2",
   "private": true,
   "description": "8f4e compiler package",
   "type": "module",
