@@ -3,6 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { readByteAddress, readElementCount, readElementIndex } from '@8f4e/editor-state/memory';
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { updateWaveformPeaks, type WaveformPeaks } from '../helpers/peaks';
 import type { Wave } from '../types';
 
 function clamp(value: number, min: number, max: number): number {
@@ -16,31 +17,17 @@ function valueToY(value: number, minValue: number, inverseValueRange: number, he
 
 function drawWaveform(
 	engine: DrawContext,
-	samples: ArrayLike<number>,
-	baseIndex: number,
-	arrayLength: number,
+	peaks: WaveformPeaks,
 	height: number,
 	columnWidth: number,
-	columnCount: number,
 	minValue: number,
 	maxValue: number,
 	inverseValueRange: number,
 	color: PaletteIndex
 ): void {
-	for (let column = 0; column < columnCount; column++) {
-		const sliceStart = Math.floor((column / columnCount) * arrayLength);
-		const sliceEnd = Math.max(sliceStart + 1, Math.floor(((column + 1) / columnCount) * arrayLength));
-		let sliceMin = Number.POSITIVE_INFINITY;
-		let sliceMax = Number.NEGATIVE_INFINITY;
-
-		for (let index = sliceStart; index < sliceEnd; index++) {
-			const sampleValue = samples[baseIndex + index];
-			sliceMin = Math.min(sliceMin, sampleValue);
-			sliceMax = Math.max(sliceMax, sampleValue);
-		}
-
-		const clampedMin = clamp(sliceMin, minValue, maxValue);
-		const clampedMax = clamp(sliceMax, minValue, maxValue);
+	for (let column = 0; column < peaks.minima.length; column++) {
+		const clampedMin = clamp(peaks.minima[column], minValue, maxValue);
+		const clampedMax = clamp(peaks.maxima[column], minValue, maxValue);
 		const minY = valueToY(clampedMin, minValue, inverseValueRange, height);
 		const maxY = valueToY(clampedMax, minValue, inverseValueRange, height);
 		const rectY = Math.min(minY, maxY);
@@ -53,18 +40,9 @@ function drawWaveform(
 export default function drawWaves(engine: DrawContext, state: State, waves: Wave[], memoryViews: MemoryViews): void {
 	const colors = PALETTE_INDICES;
 
-	for (const {
-		x,
-		y,
-		width,
-		height,
-		buffer,
-		inverseElementByteSize,
-		playhead,
-		minValue,
-		maxValue,
-		inverseValueRange,
-	} of waves) {
+	for (const wave of waves) {
+		const { x, y, width, height, buffer, inverseElementByteSize, playhead, minValue, maxValue, inverseValueRange } =
+			wave;
 		engine.startGroup(x, y);
 
 		const arrayLength = readElementCount(buffer.elementCount, memoryViews) ?? 0;
@@ -75,23 +53,11 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 		}
 
 		const values = memoryViews[buffer.samples.spec.valueType];
-		const waveformColumnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
-		const columnCount = Math.max(1, Math.floor(width / waveformColumnWidth));
+		const columnCount = wave.peaks.minima.length;
 		const columnWidth = Math.max(1, Math.floor(width / columnCount));
+		updateWaveformPeaks(wave.peaks, values, baseValueIndex, arrayLength);
 		engine.drawFill(0, 0, colors.darkSurface, width, height);
-		drawWaveform(
-			engine,
-			values,
-			baseValueIndex,
-			arrayLength,
-			height,
-			columnWidth,
-			columnCount,
-			minValue,
-			maxValue,
-			inverseValueRange,
-			colors.highlightBase
-		);
+		drawWaveform(engine, wave.peaks, height, columnWidth, minValue, maxValue, inverseValueRange, colors.highlightBase);
 
 		if (playhead) {
 			const startPointerValue = readByteAddress(buffer.samples.address, memoryViews.int32)!;

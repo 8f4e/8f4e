@@ -1,12 +1,13 @@
-import type { CodeBlockDrawer } from '@8f4e/editor-core';
+import type { CodeBlockDrawer, EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { getTabStopsByLine, getVisualColumnForRawIndex } from '@8f4e/editor-state';
-import type { CodeBlockLayoutsChangedEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
 const CARET = textToGlyphIds('_');
 
-export default function createCaretPresentation(state: State, events: EventDispatcher) {
+export default function createCaretPresentation({ store, events }: Pick<EditorPluginContext, 'store' | 'events'>) {
+	const state = store.getState();
 	let x = 0;
 	const prepare = () => {
 		const block = state.codeBlockRendering.selectedCodeBlock;
@@ -32,9 +33,13 @@ export default function createCaretPresentation(state: State, events: EventDispa
 			prepare();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
+	store.subscribe('codeBlockRendering.selectedCodeBlock', prepare);
 	prepare();
 	return {
 		drawCaret,
-		dispose: () => events.off('codeBlockLayoutsChanged', onLayoutsChanged),
+		dispose: () => {
+			events.off('codeBlockLayoutsChanged', onLayoutsChanged);
+			store.unsubscribe('codeBlockRendering.selectedCodeBlock', prepare);
+		},
 	};
 }

@@ -143,6 +143,8 @@ display rows and skips hidden lines. Each update replaces this contribution's co
 
 `layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
 layout, including source, compiler metadata, grid size, and contribution changes. It returns an unsubscribe function.
+Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or
+publish `codeBlockLayoutsChanged`. Plugins that follow the caret should subscribe to the selected block or its cursor.
 Subscribers may update their requests; core finishes pending recalculations synchronously before notifying the render
 projection. An unchanged submission is a no-op, allowing requests derived in subscriptions to settle without recursive
 refresh loops. Keep widget data private and use the final geometry for both drawing and hit testing.

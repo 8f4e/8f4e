@@ -15,11 +15,11 @@ import { getRawIndexForVisualColumn, getTabStopsByLine } from '../text-geometry/
 import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
-import { deriveDirectiveState } from './features/directives/registry';
 import { createLayoutCoordinator } from './layout/coordinator';
 import type { LayoutRegistry } from './layout/registry';
 import { reconstructProject } from './reconstructProject';
 import { refreshBlockSources } from './sourceUpdates';
+import { updateCursorY } from './updateCursorY';
 
 export default function codeBlockRendering(
 	store: StateManager<State>,
@@ -36,15 +36,7 @@ export default function codeBlockRendering(
 			return;
 		}
 
-		const directiveState = deriveDirectiveState(
-			codeBlock.code,
-			codeBlock.parsedDirectives,
-			{
-				isExpandedForEditing: !codeBlock.isCollapsed,
-			},
-			directives
-		);
-		const displayModel = directiveState.displayModel;
+		const displayModel = codeBlock.displayModel;
 		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
 		const row =
 			displayModel.displayRowToSourceLineIndex[
@@ -84,7 +76,8 @@ export default function codeBlockRendering(
 	};
 
 	const updateSelectedCodeBlock = () => {
-		updateEditedCodeBlock(state.codeBlockRendering.selectedCodeBlock);
+		const block = state.codeBlockRendering.selectedCodeBlock;
+		if (block) updateCursorY(block, state.viewport.hGrid);
 	};
 
 	const updateSelectedCodeBlockSource = () => {
@@ -140,7 +133,6 @@ export default function codeBlockRendering(
 	refreshCurrentProjectSources();
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('codeBlockPointerDown', ({ codeBlock }: CodeBlockPointerDownEvent) => refreshBlockLayouts([codeBlock]));
 	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
 	events.on('codeBlockSourcesChanged', onSourcesChanged);
 	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {

@@ -7,6 +7,7 @@ import {
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWaveDirectiveData } from '../helpers/data';
+import { createWaveformPeaks, MAX_WAVEFORM_SAMPLE_READS } from '../helpers/peaks';
 import type { Wave } from '../types';
 
 export function registerWaveLayout(
@@ -36,7 +37,7 @@ export function registerWaveLayout(
 				heightInRows: item.heightRows,
 			})),
 		});
-		wavesByBlock.set(codeBlock, []);
+		const waves: Wave[] = [];
 		items.forEach(({ data, heightRows }) => {
 			const scope = getCodeBlockMemoryScope(codeBlock);
 			const buffer = prepareBuffer(state, scope, data.startAddressMemoryId, data.length);
@@ -44,8 +45,11 @@ export function registerWaveLayout(
 			const spec = buffer.samples.spec;
 			const playhead = prepareMemoryAccess(state, scope, data.pointerMemoryId);
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
-			wavesByBlock.get(codeBlock)!.push({
-				width: codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+			const width = codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid;
+			const columnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
+			const columnCount = Math.min(MAX_WAVEFORM_SAMPLE_READS, Math.max(1, Math.floor(width / columnWidth)));
+			waves.push({
+				width,
 				height: state.viewport.hGrid * heightRows,
 				x: (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 				y: (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
@@ -55,8 +59,10 @@ export function registerWaveLayout(
 				minValue: spec.minValue,
 				maxValue: spec.maxValue,
 				inverseValueRange: 1 / (spec.maxValue - spec.minValue),
+				peaks: createWaveformPeaks(columnCount),
 			});
 		});
+		wavesByBlock.set(codeBlock, waves);
 	});
 	return () => {
 		unsubscribe();

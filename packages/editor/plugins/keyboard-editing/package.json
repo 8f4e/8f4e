@@ -26,6 +26,7 @@
     "@8f4e/config": "*",
     "vitest": "4.1.12",
     "@types/node": "24.13.2",
-    "@8f4e/editor-state-testing": "*"
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/state-manager": "*"
   }
 }

@@ -1,4 +1,5 @@
 import type { PreparedAddressBinding, PreparedBuffer } from '@8f4e/editor-state/memory';
+import type { WaveformPeaks } from './helpers/peaks';
 
 export interface Wave {
 	x: number;
@@ -11,4 +12,5 @@ export interface Wave {
 	minValue: number;
 	maxValue: number;
 	inverseValueRange: number;
+	peaks: WaveformPeaks;
 }

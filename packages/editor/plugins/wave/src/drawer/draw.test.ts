@@ -4,11 +4,12 @@ import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
+import { createWaveformPeaks, MAX_WAVEFORM_SAMPLE_READS } from '../helpers/peaks';
 import type { Wave } from '../types';
 import drawWaves from './draw';
 
-function memoryViews(): MemoryViews {
-	const buffer = new ArrayBuffer(64);
+function memoryViews(byteLength = 64): MemoryViews {
+	const buffer = new ArrayBuffer(byteLength);
 	return {
 		int8: new Int8Array(buffer),
 		uint8: new Uint8Array(buffer),
@@ -38,6 +39,7 @@ function wave(): Wave {
 		minValue: -128,
 		maxValue: 127,
 		inverseValueRange: 1 / 255,
+		peaks: createWaveformPeaks(4),
 	};
 }
 function state() {
@@ -78,5 +80,21 @@ describe('wave drawing', () => {
 		drawWaves(draw, state(), [data], memoryViews());
 		expect(draw.drawFill).not.toHaveBeenCalled();
 		expect(draw.endGroup).toHaveBeenCalledOnce();
+	});
+	it('keeps the playhead live while a large waveform is still being built', () => {
+		const draw = createDrawContextMock();
+		const length = MAX_WAVEFORM_SAMPLE_READS * 3;
+		const memory = memoryViews(length + 8);
+		const data = wave();
+		data.buffer.elementCount = length;
+		const pointerSlot = memory.int32.length - 1;
+		data.playhead = { kind: 'pointer', pointerSlotIndex: pointerSlot, byteOffset: 0 };
+		drawWaves(draw, state(), [data], memory);
+		expect(data.peaks.hasCompleteSweep).toBe(false);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
+		memory.int32[pointerSlot] = length - 1;
+		drawWaves(draw, state(), [data], memory);
+		expect(data.peaks.hasCompleteSweep).toBe(false);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(6, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
 	});
 });

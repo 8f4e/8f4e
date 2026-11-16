@@ -5,6 +5,7 @@ import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
+import { MAX_WAVEFORM_SAMPLE_READS } from './helpers/peaks';
 import { wavePlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -70,6 +71,25 @@ afterEach(() => {
 });
 
 describe('wave plugin', () => {
+	it('finishes a progressive scan while the caret moves between frames', async () => {
+		const length = MAX_WAVEFORM_SAMPLE_READS * 3 + 17;
+		const test = await setup([
+			'module audio',
+			`float[] samples ${length}`,
+			'; @wave &samples count(samples)',
+			'moduleEnd',
+		]);
+		test.store.set('codeBlockRendering.selectedCodeBlock', test.codeBlock);
+		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory.samples;
+		test.memoryViews.float32[memory.allocationUnitAddress + 1] = 1;
+		for (let frame = 0; frame < 4; frame++) {
+			test.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', frame);
+			test.render();
+		}
+		const columns = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+		expect(columns[0][1]).toBe(0);
+	});
+
 	it.each([
 		{ directive: 'wave', rows: 2 },
 		{ directive: 'wave2', rows: 4 },
