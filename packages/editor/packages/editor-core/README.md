@@ -143,6 +143,8 @@ display rows and skips hidden lines. Each update replaces this contribution's co
 
 `layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
 layout, including source, compiler metadata, grid size, and contribution changes. It returns an unsubscribe function.
+Each block retains `tabStopsByLine`, derived from its cached directive records when source changes. Caret movement,
+pointer placement, sizing and presentation reuse those tab stops. Block navigation also uses the settled display model.
 Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or
 publish `codeBlockLayoutsChanged`. Plugins that follow the caret should subscribe to the selected block or its cursor.
 Subscribers may update their requests; core finishes pending recalculations synchronously before notifying the render
@@ -259,7 +261,14 @@ Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.
 Block copy/paste belongs to `@8f4e/editor-plugin-code-block-copy-paste`. Its factory receives browser read/write functions; core has no clipboard callbacks or copy/paste actions. Grouping receives its own writer for Copy Group. Keyboard-editing separately handles native text pastes at the caret.
 
-`insertCodeBlocks(store, { x, y, blocks })` inserts a source batch at a viewport position, preserving relative positions, source names, references, group membership, and nested entry tables. Only `@pos` is rewritten for placement. `serializeCodeBlocks(blocks, anchor)` returns detached `SerializedCodeBlock` sources with relative coordinates and recursively owned project slices. These helpers contain no browser or clipboard format handling.
+`insertCodeBlock(store, { x, y, code })` inserts one source block with automatic entry assignment and returns its
+handle after source preparation and layout settle. In view mode it returns `undefined`.
+`insertCodeBlocks(store, { x, y, blocks })` inserts a source batch at a viewport position, preserving relative positions,
+source names, references, group membership, and nested entry tables. It returns the created blocks in input order,
+or an empty array in view mode. Only `@pos` is rewritten for placement. Callers can use the returned blocks' settled
+geometry to position subsequent insertions. `serializeCodeBlocks(blocks, anchor)` returns detached `SerializedCodeBlock`
+sources with relative coordinates and recursively owned project slices. These helpers contain no browser or clipboard
+format handling.
 
 The switch and button plugins own their directives, memory resolution, interaction, and drawing. Each keeps widget
 data in a per-instance WeakMap. Buttons write their on value while pressed and their off value on release.

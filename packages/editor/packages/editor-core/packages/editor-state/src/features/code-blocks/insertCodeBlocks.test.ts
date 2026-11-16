@@ -10,7 +10,7 @@ describe('insertCodeBlocks', () => {
 			createMockCodeBlock({ name: 'same', code: ['module same', 'moduleEnd'] })
 		);
 		state.codeBlockRendering.nextCodeBlockCreationIndex = 5;
-		insertCodeBlocks(createStateManager(state), {
+		const inserted = insertCodeBlocks(createStateManager(state), {
 			x: 80,
 			y: 64,
 			blocks: [
@@ -19,6 +19,8 @@ describe('insertCodeBlocks', () => {
 			],
 		});
 		const blocks = state.codeBlockRendering.currentProject.blocks.slice(1);
+		expect(inserted[0]).toBe(blocks[0]);
+		expect(inserted[1]).toBe(blocks[1]);
 		expect(blocks.map(block => block.name)).toEqual(['same', 'same']);
 		expect(blocks.map(block => block.creationIndex)).toEqual([5, 6]);
 		expect(blocks.map(block => [block.gridX, block.gridY])).toEqual([

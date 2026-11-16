@@ -6,10 +6,16 @@ describe('keyboard navigation', () => {
 	it('selects lines in view mode while leaving horizontal arrows unhandled', () => {
 		const test = setup(createKeyboardNavigationPlugin, 'view');
 		const revision = test.state.projectChange.revision;
+		const positions: { row: number; col: number }[] = [];
+		test.store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', () => {
+			const { row, col } = test.block.cursor;
+			positions.push({ row, col });
+		});
 		expect(test.key('ArrowDown').defaultPrevented).toBe(true);
 		expect(test.block.cursor.row).toBe(2);
 		expect(test.key('ArrowLeft').defaultPrevented).toBe(false);
 		expect(test.block.cursor.col).toBe(4);
+		expect(positions).toEqual([{ row: 2, col: 4 }]);
 		expect(test.state.projectChange.revision).toBe(revision);
 	});
 	it('leaves edit-mode caret movement to the editing plugin', () => {

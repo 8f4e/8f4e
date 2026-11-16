@@ -68,7 +68,7 @@ export function registerGroupActions(
 		let previous = first;
 		let previousX = first.gridX;
 		for (const block of remaining) {
-			const x = previousX + getCodeBlockGridWidth(previous.code, previous.minGridWidth) + 4;
+			const x = previousX + getCodeBlockGridWidth(previous.code, previous.tabStopsByLine, previous.minGridWidth) + 4;
 			positions.set(block, x);
 			previous = block;
 			previousX = x;

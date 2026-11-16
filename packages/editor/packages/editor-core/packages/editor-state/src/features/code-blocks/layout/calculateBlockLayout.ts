@@ -36,7 +36,7 @@ export function calculateBlockLayout(
 	};
 	block.minGridWidth = contribution.minGridWidth;
 	gaps(block, draft);
-	block.width = getCodeBlockGridWidth(block.code, block.minGridWidth) * state.viewport.vGrid;
+	block.width = getCodeBlockGridWidth(block.code, block.tabStopsByLine, block.minGridWidth) * state.viewport.vGrid;
 	const gapRows = [...block.gaps.values()].reduce((total, gap) => total + gap.size, 0);
 	block.height = (displayModel.lines.length + gapRows) * state.viewport.hGrid;
 	updateCursorY(block, state.viewport.hGrid);

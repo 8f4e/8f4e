@@ -2,7 +2,6 @@ import {
 	gapCalculator,
 	getCompiledFunctionForCodeBlock,
 	getCompiledModuleForCodeBlock,
-	getTabStopsByLine,
 	getVisualLineWidth,
 	matchEditorDirectives,
 } from '@8f4e/editor-state';
@@ -68,7 +67,7 @@ export function registerStackLayout(
 
 			const displayRow =
 				graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex] ?? directive.sourceLineIndex;
-			const tabStopsByLine = getTabStopsByLine(graphicData.code);
+			const tabStopsByLine = graphicData.tabStopsByLine;
 			const visualLineWidth = getVisualLineWidth(
 				graphicData.code[directive.sourceLineIndex] || '',
 				tabStopsByLine[directive.sourceLineIndex] || []

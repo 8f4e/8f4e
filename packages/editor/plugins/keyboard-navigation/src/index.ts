@@ -31,8 +31,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 					block.cursor.row + (direction === 'up' ? -1 : 1),
 					block.cursor.col
 				);
-				store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
-				store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
+				store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 			};
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => inputTarget.removeEventListener('keydown', onKeydown);

@@ -24,6 +24,29 @@ function setup() {
 }
 
 describe('independent layout contributions', () => {
+	it('navigates an expanded hidden block using its settled rows and contributed gaps', () => {
+		const { store, state, block, layout, events } = setup();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: block,
+				code: ['module audio', '; @hide', '; content', 'moduleEnd'],
+			},
+		]);
+		const contribution = layout.createContribution();
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		const displayModel = block.displayModel;
+		events.dispatch('navigateCodeBlock', { direction: 'down' });
+		expect(block.cursor.row).toBe(3);
+		expect(block.cursor.y).toBe(5 * state.viewport.hGrid);
+		events.dispatch('navigateCodeBlock', { direction: 'up' });
+		expect(block.cursor.row).toBe(0);
+		expect(block.cursor.y).toBe(0);
+		expect(block.displayModel).toBe(displayModel);
+		contribution.dispose();
+	});
+
 	it('moves the cursor through settled display gaps without rebuilding layout or publishing layout events', () => {
 		const { store, state, block, layout, events } = setup();
 		store.set('codeBlockRendering.selectedCodeBlock', block);

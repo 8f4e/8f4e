@@ -30,6 +30,32 @@ function matched(block: CodeBlockGraphicData) {
 }
 
 describe('cached directive records', () => {
+	it('shares prepared tab geometry across cursor and layout changes and refreshes it before source layouts', () => {
+		const { store, events, audio } = setup('8f4e/v1\nentry main\nmodule audio\n; @tab 8\n\tvalue\nmoduleEnd\nentryEnd');
+		const block = audio();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		const tabStops = block.tabStopsByLine;
+		expect(tabStops).toEqual([[], [8], [8], [8]]);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 1);
+		events.dispatch('gridSizeChanged');
+		expect(block.tabStopsByLine).toBe(tabStops);
+		const received: number[][][] = [];
+		cleanups.push(
+			store.layout.subscribe(({ codeBlock }) => {
+				if (codeBlock === block) received.push(codeBlock.tabStopsByLine);
+			})
+		);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: block,
+				code: ['module audio', '; inserted', '; @tab 40', '\tvalue', 'moduleEnd'],
+			},
+		]);
+		expect(received.at(-1)).toEqual([[], [], [40], [40], [40]]);
+		expect(block.width).toBe(51 * store.getState().viewport.vGrid);
+	});
+
 	it('updates metadata and configuration before publishing layouts, including diagnostic row changes', () => {
 		const { store, events, state, audio } = setup(
 			'8f4e/v1\nnote audio\n; @config export.fileName initial\n; @config unknown value\nnoteEnd'

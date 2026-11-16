@@ -33,9 +33,8 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	if (direction) {
 		if (!state.featureFlags.codeLineSelection) return;
 		event.preventDefault();
-		const [row, col] = moveCaret(block.code, block.cursor.row, block.cursor.col, direction);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
+		const [row, col] = moveCaret(block.code, block.tabStopsByLine, block.cursor.row, block.cursor.col, direction);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 		return;
 	}
 	let edit: ReturnType<typeof insertText>;
@@ -45,8 +44,7 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 		edit = insertText(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
 	} else return;
 	event.preventDefault();
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
+	store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: edit.row, col: edit.col });
 	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }]);
 }
 
@@ -59,7 +57,6 @@ export function handlePaste(event: ClipboardEvent, { store, events }: EditorPlug
 	if (text.length === 0) return;
 	event.preventDefault();
 	const edit = insertText(block.code, block.cursor.row, block.cursor.col, text);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
+	store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: edit.row, col: edit.col });
 	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }]);
 }

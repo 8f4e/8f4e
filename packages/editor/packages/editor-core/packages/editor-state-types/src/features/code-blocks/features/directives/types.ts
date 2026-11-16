@@ -25,8 +25,11 @@ export interface DirectiveDerivedState {
 	displayModel: CodeBlockDisplayModel;
 }
 
-export interface DirectiveDerivedStateDraft extends DirectiveDerivedState {
+/** Source and mutable directive contributions, before final display geometry is built. */
+export interface DirectiveDerivedStateDraft {
 	sourceCode: string[];
+	blockState: DirectiveBlockState;
+	displayState: DirectiveDisplayState;
 }
 
 export interface DirectiveDeriveOptions {

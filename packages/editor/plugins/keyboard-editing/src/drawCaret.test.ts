@@ -38,6 +38,10 @@ describe('editing caret presentation', () => {
 	it('updates prepared placement for source, cursor, gutter, and grid changes after layout', () => {
 		const block = createMockCodeBlock({
 			code: ['; @tab 4 12', '\tvalue'],
+			tabStopsByLine: [
+				[4, 12],
+				[4, 12],
+			],
 			lineNumberColumnWidth: 2,
 			cursor: { row: 1, col: 2, y: 96 },
 		});
@@ -55,6 +59,7 @@ describe('editing caret presentation', () => {
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(108, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code = ['; @tab 8', '\tvalue'];
+		block.tabStopsByLine = [[8], [8]];
 		events.dispatch('codeBlockLayoutsChanged', {
 			project: state.codeBlockRendering.currentProject,
 			codeBlocks: [block],
@@ -62,6 +67,7 @@ describe('editing caret presentation', () => {
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(156, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code[0] = '; @tab 16';
+		block.tabStopsByLine = [[16], [16]];
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
 		events.dispatch('codeBlockLayoutsChanged', {
@@ -74,7 +80,7 @@ describe('editing caret presentation', () => {
 
 	it('draws repeated unchanged frames without reading source and removes preparation on disposal', () => {
 		const code = ['; @tab 4', '\tvalue'];
-		const block = createMockCodeBlock({ code, cursor: { row: 1, col: 2, y: 16 } });
+		const block = createMockCodeBlock({ code, tabStopsByLine: [[4], [4]], cursor: { row: 1, col: 2, y: 16 } });
 		const readSource = vi.fn(() => code);
 		Object.defineProperty(block, 'code', { get: readSource });
 		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
@@ -105,7 +111,11 @@ describe('editing caret presentation', () => {
 	});
 
 	it('moves the caret on cursor changes without waiting for a layout refresh', () => {
-		const block = createMockCodeBlock({ code: ['; @tab 4', '\tvalue'], cursor: { row: 1, col: 1, y: 16 } });
+		const block = createMockCodeBlock({
+			code: ['; @tab 4', '\tvalue'],
+			tabStopsByLine: [[4], [4]],
+			cursor: { row: 1, col: 1, y: 16 },
+		});
 		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
 		const { store, draw, context, presentation } = setup(state, block);
 		presentation.drawCaret(context);

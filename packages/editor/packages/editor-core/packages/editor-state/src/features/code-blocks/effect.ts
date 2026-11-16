@@ -11,7 +11,7 @@ import incrementCompilerInputRevision from '../program-compiler/incrementCompile
 import { isRestoringProjectEdit } from '../project-changes';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
-import { getRawIndexForVisualColumn, getTabStopsByLine } from '../text-geometry/tabLayout';
+import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
 import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
@@ -43,7 +43,7 @@ export default function codeBlockRendering(
 				Math.min(displayRow, displayModel.displayRowToSourceLineIndex.length - 1)
 			] ?? 0;
 		const visualCol = Math.max(Math.floor(relativeX / state.viewport.vGrid) - (codeBlock.lineNumberColumnWidth + 2), 0);
-		const tabStopsByLine = getTabStopsByLine(codeBlock.code);
+		const tabStopsByLine = codeBlock.tabStopsByLine;
 		const col = getRawIndexForVisualColumn(
 			codeBlock.code[Math.min(row, codeBlock.code.length - 1)] || '',
 			visualCol,

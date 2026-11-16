@@ -1,6 +1,6 @@
 import type { CodeBlockDrawer, EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { getTabStopsByLine, getVisualColumnForRawIndex } from '@8f4e/editor-state';
+import { getVisualColumnForRawIndex } from '@8f4e/editor-state';
 import type { CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
@@ -13,7 +13,7 @@ export default function createCaretPresentation({ store, events }: Pick<EditorPl
 		const block = state.codeBlockRendering.selectedCodeBlock;
 		if (!block) return;
 		const { row, col } = block.cursor;
-		const tabStops = getTabStopsByLine(block.code)[row] || [];
+		const tabStops = block.tabStopsByLine[row] || [];
 		const visualColumn = getVisualColumnForRawIndex(block.code[row] || '', col, tabStops);
 		x = (visualColumn + block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	};

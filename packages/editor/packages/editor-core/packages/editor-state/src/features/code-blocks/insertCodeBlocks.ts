@@ -56,7 +56,7 @@ function createInsertedCodeBlock(
 	return codeBlock;
 }
 
-/** Insert a source batch into the current project with relative grid positions. */
+/** Insert a source batch and return its blocks in input order after source and layout settle. */
 export function insertCodeBlocks(
 	store: Pick<StateManager<State>, 'getState' | 'set'>,
 	{
@@ -68,11 +68,11 @@ export function insertCodeBlocks(
 		y: number;
 		blocks: readonly SerializedCodeBlock[];
 	}
-): void {
+): CodeBlockGraphicData[] {
 	const state = store.getState();
 
 	if (state.editorMode !== 'edit') {
-		return;
+		return [];
 	}
 	const projectPath = state.codeBlockRendering.currentProject.path;
 
@@ -106,4 +106,5 @@ export function insertCodeBlocks(
 		incrementCompilerInputRevision(store);
 		publishProjectChange(store);
 	}
+	return newBlocks;
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { parseBlockDirectives } from '../code-blocks/utils/parseBlockDirectives';
 import {
 	getRawIndexForVisualColumn,
 	getTabStopsByLine,
@@ -6,16 +7,29 @@ import {
 	getVisualLineWidth,
 } from './tabLayout';
 
+function tabStopsFor(code: string[]) {
+	return getTabStopsByLine(code.length, parseBlockDirectives(code));
+}
+
 describe('getTabStopsByLine', () => {
+	it('uses chained, inline and continued directives from the shared parser', () => {
+		expect(tabStopsFor(['; @tab 8', '; - 16', '\tvalue ; @tab 4 @hide', '\tother'])).toEqual([
+			[8, 16],
+			[8, 16],
+			[4],
+			[4],
+		]);
+	});
+
 	it('parses multiple stops from a single directive', () => {
-		expect(getTabStopsByLine(['; @tab 8 16 24', '\tfoo'])).toEqual([
+		expect(tabStopsFor(['; @tab 8 16 24', '\tfoo'])).toEqual([
 			[8, 16, 24],
 			[8, 16, 24],
 		]);
 	});
 
 	it('uses the most recent valid directive from that line onward', () => {
-		expect(getTabStopsByLine(['; @tab 4 8', '\tfoo', '; @tab 12 20', '\tbar'])).toEqual([
+		expect(tabStopsFor(['; @tab 4 8', '\tfoo', '; @tab 12 20', '\tbar'])).toEqual([
 			[4, 8],
 			[4, 8],
 			[12, 20],
@@ -24,7 +38,7 @@ describe('getTabStopsByLine', () => {
 	});
 
 	it('ignores malformed directives and keeps the previous active stops', () => {
-		expect(getTabStopsByLine(['; @tab 4 8', '\tfoo', '; @tab nope', '\tbar'])).toEqual([
+		expect(tabStopsFor(['; @tab 4 8', '\tfoo', '; @tab nope', '\tbar'])).toEqual([
 			[4, 8],
 			[4, 8],
 			[4, 8],
@@ -33,7 +47,7 @@ describe('getTabStopsByLine', () => {
 	});
 
 	it('starts with fallback width 1 before any valid directive appears', () => {
-		expect(getTabStopsByLine(['\tfoo', '; @tab 6 12', '\tbar'])).toEqual([[], [6, 12], [6, 12]]);
+		expect(tabStopsFor(['\tfoo', '; @tab 6 12', '\tbar'])).toEqual([[], [6, 12], [6, 12]]);
 	});
 });
 
