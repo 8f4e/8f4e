@@ -39,7 +39,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 				try {
 					const module = await import('./editing');
 					if (disposed) return;
-					caret = module.createCaretPresentation(store.getState(), context.events);
+					caret = module.createCaretPresentation(context);
 					editing = module;
 					// Replay through the input target so independent navigation and mode bindings retain their order.
 					for (const event of queued.splice(0)) replay(event);

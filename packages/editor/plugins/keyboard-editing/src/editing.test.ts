@@ -19,6 +19,22 @@ const plugin = ({ inputTarget }: { inputTarget: HTMLElement }) => ({
 });
 
 describe('keyboard editing', () => {
+	it.each([
+		{ input: 'ArrowDown', row: 2, col: 4 },
+		{ input: 'Enter', row: 2, col: 0 },
+		{ input: 'paste', row: 2, col: 1 },
+	])('publishes complete cursor coordinates together for $input', ({ input, row, col }) => {
+		const test = setup(plugin);
+		const positions: { row: number; col: number }[] = [];
+		test.store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', () => {
+			const { row, col } = test.block.cursor;
+			positions.push({ row, col });
+		});
+		if (input === 'paste') test.paste('\nx');
+		else test.key(input);
+		expect(positions).toEqual([{ row, col }]);
+	});
+
 	it('inserts text, tabs, newlines and deletes with one completed revision per change', () => {
 		const test = setup(plugin);
 		const before = test.state.projectChange.revision;

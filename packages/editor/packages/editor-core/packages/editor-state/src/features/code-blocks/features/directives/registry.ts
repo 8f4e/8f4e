@@ -56,7 +56,6 @@ export function deriveDirectiveState(
 			isHome: false,
 		},
 		displayState: {},
-		displayModel: buildDisplayModel(code),
 	};
 
 	for (const directive of directives) {

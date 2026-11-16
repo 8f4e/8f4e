@@ -31,6 +31,12 @@ references supply the target address without reading a runtime pointer slot, inc
 Source, sample type, and count are prepared through the shared `prepareBuffer` helper. Drawing uses shared address,
 typed-index, and count readers, including for the playhead; waveform geometry and colors remain local.
 
+Each waveform reads at most 262,144 samples per frame, spread across its display columns. Small buffers are scanned
+fully each frame. Large buffers build their per-column minimum and maximum over successive frames, visiting every
+sample so isolated peaks remain visible. The first overview refines progressively; later sweeps keep the last complete
+waveform visible while rebuilding it. The scan reads current memory every frame, so buffer changes appear as the
+next sweep completes, and playheads update every frame. There is no content-change detection or invalidation logic.
+
 The plugin uses the existing `waveformBackground`, `waveform`, and `scanLine` palette entries.
 
 ```bash

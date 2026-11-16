@@ -141,6 +141,7 @@ export {
 } from './features/code-blocks/features/directiveEditing';
 export { matchEditorDirectives } from './features/code-blocks/features/directives/utils';
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
+export { insertCodeBlock } from './features/code-blocks/insertCodeBlock';
 export { insertCodeBlocks } from './features/code-blocks/insertCodeBlocks';
 export { applyCodeBlockSourceEdits } from './features/code-blocks/sourceEdits';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';

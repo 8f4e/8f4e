@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import createStateManager from '@8f4e/state-manager';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createDrawingContext } from './__tests__/drawing';
@@ -15,9 +16,11 @@ afterEach(() => {
 function setup(state: State, block: CodeBlockGraphicData) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const presentation = createCaretPresentation(state, events);
+	const store = createStateManager(state);
+	const presentation = createCaretPresentation({ store, events });
+	cleanups.push(store.dispose);
 	cleanups.push(presentation.dispose);
-	return { state, ...createDrawingContext(state, block), presentation, events, emitter };
+	return { state, store, ...createDrawingContext(state, block), presentation, events, emitter };
 }
 
 describe('editing caret presentation', () => {
@@ -35,6 +38,10 @@ describe('editing caret presentation', () => {
 	it('updates prepared placement for source, cursor, gutter, and grid changes after layout', () => {
 		const block = createMockCodeBlock({
 			code: ['; @tab 4 12', '\tvalue'],
+			tabStopsByLine: [
+				[4, 12],
+				[4, 12],
+			],
 			lineNumberColumnWidth: 2,
 			cursor: { row: 1, col: 2, y: 96 },
 		});
@@ -52,6 +59,7 @@ describe('editing caret presentation', () => {
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(108, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code = ['; @tab 8', '\tvalue'];
+		block.tabStopsByLine = [[8], [8]];
 		events.dispatch('codeBlockLayoutsChanged', {
 			project: state.codeBlockRendering.currentProject,
 			codeBlocks: [block],
@@ -59,6 +67,7 @@ describe('editing caret presentation', () => {
 		presentation.drawCaret(context);
 		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(156, 144, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 		block.code[0] = '; @tab 16';
+		block.tabStopsByLine = [[16], [16]];
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
 		events.dispatch('codeBlockLayoutsChanged', {
@@ -71,7 +80,7 @@ describe('editing caret presentation', () => {
 
 	it('draws repeated unchanged frames without reading source and removes preparation on disposal', () => {
 		const code = ['; @tab 4', '\tvalue'];
-		const block = createMockCodeBlock({ code, cursor: { row: 1, col: 2, y: 16 } });
+		const block = createMockCodeBlock({ code, tabStopsByLine: [[4], [4]], cursor: { row: 1, col: 2, y: 16 } });
 		const readSource = vi.fn(() => code);
 		Object.defineProperty(block, 'code', { get: readSource });
 		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
@@ -99,6 +108,25 @@ describe('editing caret presentation', () => {
 			codeBlocks: [block],
 		});
 		expect(readSource).not.toHaveBeenCalled();
+	});
+
+	it('moves the caret on cursor changes without waiting for a layout refresh', () => {
+		const block = createMockCodeBlock({
+			code: ['; @tab 4', '\tvalue'],
+			tabStopsByLine: [[4], [4]],
+			cursor: { row: 1, col: 1, y: 16 },
+		});
+		const state = createMockState({ editorMode: 'edit', codeBlockRendering: { selectedCodeBlock: block } });
+		const { store, draw, context, presentation } = setup(state, block);
+		presentation.drawCaret(context);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(56, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 2);
+		presentation.drawCaret(context);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(64, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
+		presentation.dispose();
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 3);
+		presentation.drawCaret(context);
+		expect(draw.drawGlyphs).toHaveBeenLastCalledWith(64, 16, textToGlyphIds('_'), PALETTE_INDICES.inkBase);
 	});
 
 	it('keeps prepared positions and disposal independent between editor instances', () => {

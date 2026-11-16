@@ -1,5 +1,5 @@
 import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
-import { getBlockType, getCodeBlockGridWidth, getCodeBlockNameFromSource } from '@8f4e/editor-state';
+import { getBlockType, getCodeBlockNameFromSource, insertCodeBlock } from '@8f4e/editor-state';
 import { createModuleCatalog } from './catalog';
 import { ADD_EXAMPLE_MODULE, buildCategoryTree, EXAMPLE_MODULES_MENU, getCategoryMenuItems } from './categoryMenu';
 import extractPublicBlockFromModuleSource from './extractPublicBlockFromModuleSource';
@@ -51,10 +51,9 @@ export function createExampleModulesPlugin({
 				const source = await loadSource(slug);
 				if (disposed || state.editorMode !== 'edit') return;
 				const code = extractPublicBlockFromModuleSource(source);
-				events.dispatch('insertCodeBlock', { code, x, y });
+				const block = insertCodeBlock(store, { code, x, y })!;
 				const gap = 4;
-				const vGrid = state.viewport.vGrid;
-				let gridX = Math.round((state.viewport.x + x) / vGrid) + getCodeBlockGridWidth(code) + gap;
+				let gridX = block.gridX + block.width / state.viewport.vGrid + gap;
 				for (const dependency of catalog.getDependenciesFromSource(slug, source)) {
 					if (disposed || state.editorMode !== 'edit') return;
 					let dependencySource: string;
@@ -74,12 +73,12 @@ export function createExampleModulesPlugin({
 						)
 					)
 						continue;
-					events.dispatch('insertCodeBlock', {
+					const insertedDependency = insertCodeBlock(store, {
 						code: dependencyCode,
-						x: gridX * vGrid - state.viewport.x,
+						x: gridX * state.viewport.vGrid - state.viewport.x,
 						y,
-					});
-					gridX += getCodeBlockGridWidth(dependencyCode) + gap;
+					})!;
+					gridX = insertedDependency.gridX + insertedDependency.width / state.viewport.vGrid + gap;
 				}
 			};
 			events.on(ADD_EXAMPLE_MODULE, addModule);

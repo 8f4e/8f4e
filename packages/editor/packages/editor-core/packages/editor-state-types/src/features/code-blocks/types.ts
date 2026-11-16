@@ -59,6 +59,8 @@ export interface CodeBlockGraphicData {
 	width: number;
 	height: number;
 	code: string[];
+	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
+	tabStopsByLine: number[][];
 	/** True for the root project's directly owned project-scope source. */
 	isProjectScope?: boolean;
 	lineNumberColumnWidth: number;

@@ -1,4 +1,4 @@
-import { getTabStopsByLine, getVisualLineWidth } from '@8f4e/editor-state';
+import { getVisualLineWidth } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
 import { setup } from './__tests__/setup';
@@ -201,7 +201,7 @@ describe('watch plugin', () => {
 		const code = ['module audio', '; @tab 8 16', 'int\tvalue\t7 ; @watch', 'moduleEnd'];
 		const test = await setup(plugin, code);
 		test.render();
-		const width = getVisualLineWidth(code[2], getTabStopsByLine(code)[2]);
+		const width = getVisualLineWidth(code[2], test.block.tabStopsByLine[2]);
 		expect(test.draw.drawNumericText).toHaveBeenCalledWith(
 			test.state.viewport.vGrid * (4 + test.block.lineNumberColumnWidth + width),
 			expect.any(Number),

@@ -57,6 +57,7 @@ export function createMockCodeBlock(
 		cursor,
 		name,
 		code,
+		tabStopsByLine: code.map(() => []),
 		displayModel,
 		gaps: new Map(),
 		lineNumberColumnWidth: 1,

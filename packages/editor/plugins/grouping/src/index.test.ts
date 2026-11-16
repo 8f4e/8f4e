@@ -1,4 +1,4 @@
-import { getCodeBlockGridWidth, serializeToProject, upsertDirective } from '@8f4e/editor-state';
+import { serializeToProject, upsertDirective } from '@8f4e/editor-state';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setup as createEditor, source } from './__tests__/editor';
 
@@ -250,7 +250,7 @@ describe('grouping plugin', () => {
 		const test = setup();
 		const first = test.block('first');
 		const second = test.block('second');
-		const x = first.gridX + getCodeBlockGridWidth(first.code, first.minGridWidth) + 4;
+		const x = first.gridX + first.width / test.state.viewport.vGrid + 4;
 		const otherCode = [...test.block('other').code];
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;

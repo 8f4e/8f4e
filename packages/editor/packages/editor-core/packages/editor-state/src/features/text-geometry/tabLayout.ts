@@ -1,10 +1,6 @@
-function parseTabDirectiveStops(line: string): number[] | undefined {
-	const match = line.match(/^\s*;\s*@tab\s+(.+?)\s*$/);
-	if (!match) {
-		return undefined;
-	}
+import type { ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
-	const tokens = match[1].trim().split(/\s+/);
+function parseTabDirectiveStops(tokens: string[]): number[] | undefined {
 	if (tokens.length === 0) {
 		return undefined;
 	}
@@ -22,14 +18,18 @@ function parseTabDirectiveStops(line: string): number[] | undefined {
 	return [...positions].sort((a, b) => a - b);
 }
 
-export function getTabStopsByLine(code: string[]): number[][] {
+/** Derives source-line tab geometry from the central parser's source-ordered directive records. */
+export function getTabStopsByLine(lineCount: number, directives: readonly ParsedDirectiveRecord[]): number[][] {
 	const tabStopsByLine: number[][] = [];
 	let activeTabStops: number[] = [];
+	let directiveIndex = 0;
 
-	for (const line of code) {
-		const parsedStops = parseTabDirectiveStops(line);
-		if (parsedStops) {
-			activeTabStops = parsedStops;
+	for (let line = 0; line < lineCount; line++) {
+		while (directives[directiveIndex]?.sourceLineIndex === line) {
+			const directive = directives[directiveIndex++];
+			if (directive.name !== 'tab') continue;
+			const parsedStops = parseTabDirectiveStops(directive.args);
+			if (parsedStops) activeTabStops = parsedStops;
 		}
 
 		tabStopsByLine.push(activeTabStops);

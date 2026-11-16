@@ -2,7 +2,6 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import {
 	applyCodeBlockSourceEdits,
 	deleteCodeBlocks,
-	getCodeBlockGridWidth,
 	removeDirective,
 	serializeCodeBlocks,
 	setSkipExecution,
@@ -68,7 +67,7 @@ export function registerGroupActions(
 		let previous = first;
 		let previousX = first.gridX;
 		for (const block of remaining) {
-			const x = previousX + getCodeBlockGridWidth(previous.code, previous.minGridWidth) + 4;
+			const x = previousX + previous.width / state.viewport.vGrid + 4;
 			positions.set(block, x);
 			previous = block;
 			previousX = x;

@@ -1,4 +1,4 @@
-import { gapCalculator, getTabStopsByLine, getVisualLineWidth, matchEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator, getVisualLineWidth, matchEditorDirectives } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, getMemoryTargetAtSourceLine } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWatchDirectiveData } from '../helpers/data';
@@ -24,7 +24,7 @@ export function registerWatchLayout(
 			if (!display) return;
 
 			const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
-			const tabStopsByLine = getTabStopsByLine(graphicData.code);
+			const tabStopsByLine = graphicData.tabStopsByLine;
 			const visualLineWidth = getVisualLineWidth(
 				graphicData.code[data.lineNumber] || '',
 				tabStopsByLine[data.lineNumber] || []

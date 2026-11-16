@@ -1,0 +1,26 @@
+import { EventEmitter } from 'node:events';
+import { expect, it } from 'vitest';
+import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock } from '../../index';
+
+it('returns the created block after entry assignment, source preparation and layout settle', () => {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {} });
+	try {
+		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
+		events.dispatch('enterEditMode');
+		const block = insertCodeBlock(store, {
+			x: 80,
+			y: 64,
+			code: ['module added', '; @tab 40', '\tvalue', 'moduleEnd'],
+		})!;
+		const state = store.getState();
+		expect(state.codeBlockRendering.currentProject.blocks).toContain(block);
+		expect(block).toMatchObject({ entry: 'entry', gridX: 10, gridY: 4 });
+		expect(block.tabStopsByLine).toEqual([[], [], [40], [40], [40]]);
+		expect(block.width).toBe(51 * state.viewport.vGrid);
+		expect(block.height).toBe(5 * state.viewport.hGrid);
+	} finally {
+		store.dispose();
+	}
+});

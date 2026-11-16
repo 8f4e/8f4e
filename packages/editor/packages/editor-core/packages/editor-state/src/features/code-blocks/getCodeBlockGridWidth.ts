@@ -1,4 +1,4 @@
-import { getTabStopsByLine, getVisualLineWidth } from '../text-geometry/tabLayout';
+import { getVisualLineWidth } from '../text-geometry/tabLayout';
 import { CODE_BLOCK_MIN_GRID_WIDTH } from './utils/constants';
 
 /**
@@ -6,13 +6,17 @@ import { CODE_BLOCK_MIN_GRID_WIDTH } from './utils/constants';
  * Matches the sizing logic used by codeBlockRendering effect.
  *
  * @param code - Code block represented as an array of lines
+ * @param tabStopsByLine - Prepared tab stops for each raw source line
  * @param minGridWidth - Minimum grid width (defaults to CODE_BLOCK_MIN_GRID_WIDTH)
  * @returns The grid width in grid units
  */
-export default function getCodeBlockGridWidth(code: string[], minGridWidth = CODE_BLOCK_MIN_GRID_WIDTH): number {
+export default function getCodeBlockGridWidth(
+	code: string[],
+	tabStopsByLine: number[][],
+	minGridWidth = CODE_BLOCK_MIN_GRID_WIDTH
+): number {
 	// Calculate line number column width
 	const lineNumberColumnWidth = code.length.toString().length;
-	const tabStopsByLine = getTabStopsByLine(code);
 
 	// Prepare code with line numbers (matching codeBlockRendering logic)
 	const codeWithLineNumbers = code.map((line, index) => {

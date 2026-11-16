@@ -24,6 +24,62 @@ function setup() {
 }
 
 describe('independent layout contributions', () => {
+	it('navigates an expanded hidden block using its settled rows and contributed gaps', () => {
+		const { store, state, block, layout, events } = setup();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: block,
+				code: ['module audio', '; @hide', '; content', 'moduleEnd'],
+			},
+		]);
+		const contribution = layout.createContribution();
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		const displayModel = block.displayModel;
+		events.dispatch('navigateCodeBlock', { direction: 'down' });
+		expect(block.cursor.row).toBe(3);
+		expect(block.cursor.y).toBe(5 * state.viewport.hGrid);
+		events.dispatch('navigateCodeBlock', { direction: 'up' });
+		expect(block.cursor.row).toBe(0);
+		expect(block.cursor.y).toBe(0);
+		expect(block.displayModel).toBe(displayModel);
+		contribution.dispose();
+	});
+
+	it('moves the cursor through settled display gaps without rebuilding layout or publishing layout events', () => {
+		const { store, state, block, layout, events } = setup();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		const contribution = layout.createContribution();
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
+		const onLayout = vi.fn();
+		const unsubscribe = layout.subscribe(onLayout);
+		const onCompleted = vi.fn();
+		events.on('codeBlockLayoutsChanged', onCompleted);
+		onLayout.mockClear();
+		const displayModel = block.displayModel;
+		const height = block.height;
+		const revision = state.compilerInputRevision;
+
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 1);
+		expect(block.cursor).toEqual({ row: 2, col: 1, y: 4 * state.viewport.hGrid });
+		events.dispatch('codeBlockPointerDown', {
+			codeBlock: block,
+			relativeX: 40,
+			relativeY: state.viewport.hGrid,
+		});
+		expect(block.cursor.row).toBe(1);
+		expect(block.cursor.y).toBe(state.viewport.hGrid);
+		expect(block.displayModel).toBe(displayModel);
+		expect(block.height).toBe(height);
+		expect(state.compilerInputRevision).toBe(revision);
+		expect(onLayout).not.toHaveBeenCalled();
+		expect(onCompleted).not.toHaveBeenCalled();
+		unsubscribe();
+		contribution.dispose();
+	});
+
 	it('keeps info updates independent of block layout and compiler inputs', () => {
 		const { store, state, layout, events } = setup();
 		const onLayout = vi.fn();

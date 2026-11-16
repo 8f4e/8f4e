@@ -3,6 +3,7 @@ import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
 import resolveEditorConfig from '../global-editor-directives/resolve';
+import { getTabStopsByLine } from '../text-geometry/tabLayout';
 import { updateEnvConstantsBlock } from './features/auto-env-constants/effect';
 import parsePos from './features/directives/pos/data';
 import getBlockType from './utils/codeParsers/getBlockType';
@@ -23,6 +24,7 @@ function isProjectScopeSourceLine(line: string): boolean {
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
+	block.tabStopsByLine = getTabStopsByLine(block.code.length, block.parsedDirectives);
 	const previousName = block.name;
 	block.name = getCodeBlockNameFromSource(block.code);
 	if (block.childProject !== undefined && block.name !== previousName) {

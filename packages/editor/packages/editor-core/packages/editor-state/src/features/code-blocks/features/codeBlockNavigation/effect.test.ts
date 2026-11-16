@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import { advanceViewportAnimation } from '../../../viewport/animateViewport';
+import buildDisplayModel from '../../buildDisplayModel';
 import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
 describe('codeBlockNavigation', () => {
@@ -147,11 +148,13 @@ describe('codeBlockNavigation', () => {
 
 	it('should align the target highlighted line during horizontal navigation', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 2;
 		selectedBlock.cursor.col = 3;
 		selectedBlock.cursor.y = 2 * state.viewport.hGrid;
 
 		rightBlock.code = ['a', 'bb', 'ccc', 'dddd', 'eeeee'];
+		rightBlock.displayModel = buildDisplayModel(rightBlock.code, { isExpandedForEditing: true });
 		rightBlock.cursor.row = 0;
 		rightBlock.cursor.col = 0;
 
@@ -179,6 +182,7 @@ describe('codeBlockNavigation', () => {
 		// Initialize the effect
 		codeBlockNavigation(createStateManager(state), events);
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 3;
 		selectedBlock.cursor.y = 3 * state.viewport.hGrid;
 
@@ -188,6 +192,7 @@ describe('codeBlockNavigation', () => {
 
 	it('should move to the first line of the current block before navigating upward', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 2;
 		selectedBlock.cursor.col = 2;
 		selectedBlock.cursor.y = 2 * state.viewport.hGrid;
@@ -210,6 +215,7 @@ describe('codeBlockNavigation', () => {
 
 	it('should update the selected block cursor through the store during vertical navigation', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 2;
 		selectedBlock.cursor.col = 2;
 		selectedBlock.cursor.y = 2 * state.viewport.hGrid;
@@ -228,6 +234,7 @@ describe('codeBlockNavigation', () => {
 
 	it('should move to the last line of the current block before navigating downward', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 1;
 		selectedBlock.cursor.col = 1;
 		selectedBlock.cursor.y = state.viewport.hGrid;
@@ -250,11 +257,13 @@ describe('codeBlockNavigation', () => {
 
 	it('should select the bottom row of the block above after the current top row is highlighted', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 0;
 		selectedBlock.cursor.col = 2;
 		selectedBlock.cursor.y = 0;
 
 		upBlock.code = ['a', 'bb', 'ccc'];
+		upBlock.displayModel = buildDisplayModel(upBlock.code, { isExpandedForEditing: true });
 		upBlock.cursor.row = 0;
 		upBlock.cursor.col = 0;
 		upBlock.cursor.y = 0;
@@ -270,11 +279,13 @@ describe('codeBlockNavigation', () => {
 
 	it('should select the top row of the block below after the current bottom row is highlighted', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
+		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
 		selectedBlock.cursor.row = 3;
 		selectedBlock.cursor.col = 3;
 		selectedBlock.cursor.y = 3 * state.viewport.hGrid;
 
 		downBlock.code = ['a', 'bb', 'ccc'];
+		downBlock.displayModel = buildDisplayModel(downBlock.code, { isExpandedForEditing: true });
 		downBlock.cursor.row = 2;
 		downBlock.cursor.col = 1;
 		downBlock.cursor.y = 2 * state.viewport.hGrid;

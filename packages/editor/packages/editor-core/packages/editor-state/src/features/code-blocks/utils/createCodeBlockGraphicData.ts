@@ -1,5 +1,6 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
+import { getTabStopsByLine } from '../../text-geometry/tabLayout';
 import buildDisplayModel from '../buildDisplayModel';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
 import { parseBlockDirectives } from './parseBlockDirectives';
@@ -14,6 +15,7 @@ export function createCodeBlockGraphicData(
 	const width = overrides.width ?? 100;
 	const height = overrides.height ?? 100;
 	const code = overrides.code ?? [];
+	const parsedDirectives = overrides.parsedDirectives ?? parseBlockDirectives(code);
 	const name = (overrides.name ?? getCodeBlockNameFromSource(code)) || 'code-block';
 	const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
 
@@ -40,6 +42,7 @@ export function createCodeBlockGraphicData(
 		cursor,
 		name,
 		code,
+		tabStopsByLine: getTabStopsByLine(code.length, parsedDirectives),
 		displayModel: buildDisplayModel(code),
 		gaps: new Map(),
 		lineNumberColumnWidth: 1,
@@ -51,7 +54,7 @@ export function createCodeBlockGraphicData(
 		disabled: false,
 		isHome: false,
 		alwaysOnTop: false,
-		parsedDirectives: overrides.parsedDirectives ?? parseBlockDirectives(code),
+		parsedDirectives,
 	};
 
 	return { ...defaults, ...overrides };

@@ -6,7 +6,6 @@ import animateViewport from '../../../viewport/animateViewport';
 import centerViewportOnCodeBlock from '../../../viewport/centerViewportOnCodeBlock';
 import centerViewportOnCodeBlockCursor from '../../../viewport/centerViewportOnCodeBlockCursor';
 import findClosestCodeBlockInDirection from '../../utils/finders/findClosestCodeBlockInDirection';
-import { deriveDirectiveState } from '../directives/registry';
 
 type CodeBlockCursor = NonNullable<State['codeBlockRendering']['selectedCodeBlock']>['cursor'];
 type CodeBlockCursorUpdate = Partial<CodeBlockCursor> & Pick<CodeBlockCursor, 'row' | 'col'>;
@@ -37,15 +36,13 @@ function alignTargetBlockCursorForHorizontalNavigation(
 	const sourceAbsoluteCursorY = sourceBlock.y + sourceBlock.cursor.y;
 	const targetRelativeCursorY = sourceAbsoluteCursorY - targetBlock.y;
 	const targetPhysicalRow = Math.max(Math.floor(targetRelativeCursorY / state.viewport.hGrid), 0);
-	const targetDirectiveState = deriveDirectiveState(targetBlock.code, targetBlock.parsedDirectives, {
-		isExpandedForEditing: true,
-	});
+	const displayModel = targetBlock.displayModel;
 	const targetDisplayRow = reverseGapCalculator(targetPhysicalRow, targetBlock.gaps);
 	const boundedDisplayRow = Math.min(
 		Math.max(targetDisplayRow, 0),
-		Math.max(targetDirectiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0)
+		Math.max(displayModel.displayRowToSourceLineIndex.length - 1, 0)
 	);
-	const targetSourceLineIndex = targetDirectiveState.displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
+	const targetSourceLineIndex = displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
 
 	setSelectedCodeBlockCursor(store, targetBlock, {
 		row: targetSourceLineIndex,
@@ -61,12 +58,10 @@ function setBlockCursorToDisplayRow(
 	sourceCol?: number
 ): void {
 	const state = store.getState();
-	const directiveState = deriveDirectiveState(block.code, block.parsedDirectives, {
-		isExpandedForEditing: true,
-	});
-	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
+	const displayModel = block.displayModel;
+	const maxDisplayRow = Math.max(displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const boundedDisplayRow = Math.min(Math.max(displayRow, 0), maxDisplayRow);
-	const targetSourceLineIndex = directiveState.displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
+	const targetSourceLineIndex = displayModel.displayRowToSourceLineIndex[boundedDisplayRow] ?? 0;
 
 	setSelectedCodeBlockCursor(store, block, {
 		row: targetSourceLineIndex,
@@ -89,10 +84,8 @@ function moveSelectionToCurrentBlockVerticalEdge(
 	direction: 'up' | 'down'
 ): boolean {
 	const state = store.getState();
-	const directiveState = deriveDirectiveState(block.code, block.parsedDirectives, {
-		isExpandedForEditing: true,
-	});
-	const maxDisplayRow = Math.max(directiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
+	const displayModel = block.displayModel;
+	const maxDisplayRow = Math.max(displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const currentDisplayRow = getSelectedBlockDisplayRow(state, block);
 	const edgeDisplayRow = direction === 'up' ? 0 : maxDisplayRow;
 
@@ -110,10 +103,8 @@ function alignTargetBlockCursorForVerticalNavigation(
 	targetBlock: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
 	direction: 'up' | 'down'
 ): void {
-	const targetDirectiveState = deriveDirectiveState(targetBlock.code, targetBlock.parsedDirectives, {
-		isExpandedForEditing: true,
-	});
-	const maxDisplayRow = Math.max(targetDirectiveState.displayModel.displayRowToSourceLineIndex.length - 1, 0);
+	const displayModel = targetBlock.displayModel;
+	const maxDisplayRow = Math.max(displayModel.displayRowToSourceLineIndex.length - 1, 0);
 	const targetDisplayRow = direction === 'up' ? maxDisplayRow : 0;
 
 	setBlockCursorToDisplayRow(store, targetBlock, targetDisplayRow, sourceBlock.cursor.col);

@@ -1,5 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState, { getCodeBlockGridWidth } from '@8f4e/editor-state';
+import initState from '@8f4e/editor-state';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -56,7 +56,7 @@ function setup({
 	const state = store.getState();
 	const addModule = (slug = 'target', x = 100, y = 112) =>
 		on.mock.calls.find(([name]) => name === ADD_EXAMPLE_MODULE)![1]({ slug, x, y });
-	return { events, state, disposePlugin, addModule };
+	return { store, events, state, disposePlugin, addModule };
 }
 
 afterEach(() => {
@@ -65,6 +65,25 @@ afterEach(() => {
 });
 
 describe('example modules plugin', () => {
+	it("places dependencies after the inserted block's contributed width", async () => {
+		const test = setup();
+		const contribution = test.store.layout.createContribution();
+		const unsubscribe = test.store.layout.subscribe(({ codeBlock }) => {
+			if (codeBlock.name === 'target') {
+				contribution.update(codeBlock, { verticalSpaceAfterSourceLine: [], minGridWidth: 60 });
+			}
+		});
+		cleanups.push(() => {
+			unsubscribe();
+			contribution.dispose();
+		});
+		await test.addModule();
+		const target = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const dependency = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'dep')!;
+		expect(target.width).toBe(60 * test.state.viewport.vGrid);
+		expect(dependency.gridX).toBe(target.gridX + 60 + 4);
+	});
+
 	it('opens categories through contributed menu items, supports Back, and inserts the selected module and dependency', async () => {
 		const test = setup();
 		test.events.dispatch('contextmenu', { x: 100, y: 112 });
@@ -105,9 +124,7 @@ describe('example modules plugin', () => {
 		const [target, dep] = test.state.codeBlockRendering.currentProject.blocks.slice(1);
 		expect(target.code).not.toContain('; @public');
 		expect(target.gridX).toBe(Math.round((test.state.viewport.x + 100) / test.state.viewport.vGrid));
-		expect(dep.gridX).toBe(
-			target.gridX + getCodeBlockGridWidth(mainCode.split('\n').filter(line => line !== '; @public')) + 4
-		);
+		expect(dep.gridX).toBe(target.gridX + target.width / test.state.viewport.vGrid + 4);
 		expect(dep.gridY).toBe(target.gridY);
 	});
 
