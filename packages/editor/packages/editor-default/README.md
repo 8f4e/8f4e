@@ -40,9 +40,10 @@ text changes, and undo/redo shortcuts. View mode supports line selection and blo
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
-The independent `font-preview` plugin uses F18 for the previous font and F19 for the next, wrapping through the
+The independent `font-preview` plugin uses F8 for the previous font and F9 for the next, wrapping through the
 available catalog. It previews without changing source, history, or saved files. Previewing persists across source
 edits; loading a project or disposing the plugin restores source configuration.
+Each loaded font change shows its name, credits and a 16×16 character grid for three seconds without blocking editing.
 
 After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This

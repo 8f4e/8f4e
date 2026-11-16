@@ -32,7 +32,7 @@ export type {
 } from './render-layers';
 export { createSpriteCell, type SpriteCell } from './spriteCell';
 // Re-export types
-export type { MemoryViews } from './types';
+export type { FontChangedEvent, MemoryViews } from './types';
 
 export interface RenderStats {
 	timeToRenderMs: number;

@@ -1,3 +1,10 @@
+import type { Font } from '@8f4e/sprite-generator';
+
+/** Payload of `fontChanged`, emitted after a different font atlas and its grid are installed. */
+export interface FontChangedEvent {
+	font: Font;
+}
+
 /**
  * Typed array views for reading memory as integers or floats.
  */

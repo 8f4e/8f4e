@@ -3,6 +3,7 @@ import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, St
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { getConfiguredFont, getConfiguredPalette } from './config';
+import type { FontChangedEvent } from './types';
 
 export function updateGridSize(state: State, events: EventDispatcher, atlas: FontAtlas): void {
 	const { cellHeight, cellWidth } = atlas.grid;
@@ -24,17 +25,22 @@ export function subscribeToAppearance(
 	let disposed = false;
 	let generation = 0;
 	let fontLoading: LoadingIndicatorHandle | undefined;
+	let appliedFont = getConfiguredFont(state.editorConfig, defaultFont);
 	const updateFont = async () => {
 		const currentGeneration = ++generation;
 		fontLoading?.cancel();
+		fontLoading = undefined;
 		const font = getConfiguredFont(state.editorConfig, defaultFont);
+		if (font === appliedFont) return;
 		const indicator = loading.add({ id: 'font', message: `Loading font ${font}...` });
 		fontLoading = indicator;
 		try {
 			const atlas = await loadFontAtlas(font);
 			if (disposed || currentGeneration !== generation) return;
 			applyFont(atlas, font);
+			appliedFont = font;
 			updateGridSize(state, events, atlas);
+			events.dispatch('fontChanged', { font } satisfies FontChangedEvent);
 			indicator.done();
 		} catch (error) {
 			indicator.fail();

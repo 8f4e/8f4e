@@ -32,11 +32,14 @@ concurrent requests share the same promise. Returned atlases and pixel arrays ar
 as read-only. No canvas is needed. The default 8×16 font has a 128×272 atlas, with 257 cells on a 16-column grid.
 The remaining cells in its last row are transparent.
 
-Font names, cell dimensions, and lazy imports are defined once in `src/fonts/catalog.ts`. `FONT_NAMES` and the
-`Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`: `#` sets a pixel,
-and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
+`FONT_CATALOG` defines font display names, credits, cell dimensions and lazy imports in `src/fonts/catalog.ts`.
+`FONT_NAMES` and the `Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`:
+`#` sets a pixel, and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
 `src/characterSet.ts`. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
 These generated modules are ignored by Git. The runtime decoder retains typed arrays for the packed rows.
+
+The catalog's display `name` and multiline `credits` follow the bundled third-party notices and remain available
+without loading font bitmap payloads. Register each font in this catalog alongside its dimensions and loader.
 
 Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then register its dimensions and payload
 import in the catalog. The importer maps Unicode BDF encodings to CP437 and accepts BDFs explicitly marked

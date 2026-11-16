@@ -2,11 +2,11 @@ import type { SpriteAtlasGrid, SpriteAtlasImage, SpriteId } from 'glugglugglug';
 import { createAtlasLayout, FONT_COLUMNS } from './atlasLayout.ts';
 import { CP437_CHARACTERS, GLYPH_COUNT } from './characterSet.ts';
 import { writeGlyph } from './font.ts';
-import { DEFAULT_FONT, FONTS, type Font } from './fonts/catalog.ts';
+import { DEFAULT_FONT, FONT_CATALOG, type Font } from './fonts/catalog.ts';
 import decodeFontBase64 from './fonts/font-decoder.ts';
 
 export { CP437_CHARACTERS } from './characterSet.ts';
-export { DEFAULT_FONT, FONT_NAMES, type Font } from './fonts/catalog.ts';
+export { DEFAULT_FONT, FONT_CATALOG, FONT_NAMES, type Font } from './fonts/catalog.ts';
 
 export const FILL_SPRITE_ID = GLYPH_COUNT as SpriteId;
 
@@ -40,7 +40,7 @@ export default function loadFontAtlas(font: Font = DEFAULT_FONT): Promise<FontAt
 }
 
 async function buildFontAtlas(font: Font): Promise<FontAtlas> {
-	const { width, height, load } = FONTS[font];
+	const { width, height, load } = FONT_CATALOG[font];
 	const { default: base64 } = await load();
 	const bitmap = decodeFontBase64(base64, width > 8 ? 2 : 1);
 	const layout = createAtlasLayout(width, height);

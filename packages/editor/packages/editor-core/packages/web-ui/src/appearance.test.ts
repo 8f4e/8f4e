@@ -69,7 +69,10 @@ describe('appearance subscriptions', () => {
 		expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
 		expect(test.applyPalette).toHaveBeenCalledExactlyOnceWith(resolvePalette({ primary: '#00ff00' }));
 		expect(loadFontAtlas.mock.calls).toEqual([['terminus8x16'], ['x11miscfixed6x10']]);
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
+		expect(test.events.dispatch.mock.calls).toEqual([
+			['gridSizeChanged'],
+			['fontChanged', { font: 'x11miscfixed6x10' }],
+		]);
 	});
 
 	it('unsubscribes and ignores pending font work after disposal', async () => {
@@ -95,6 +98,30 @@ describe('appearance subscriptions', () => {
 		test.store.set('editorConfig.font', 'terminus8x16');
 		await Promise.resolve();
 		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'terminus8x16');
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('fontChanged', { font: 'terminus8x16' });
+	});
+
+	it('cancels a pending change when returning to the active font without loading or uploading it again', async () => {
+		const test = setup();
+		const pending = deferred<FontAtlas>();
+		loadFontAtlas.mockReturnValueOnce(pending.promise);
+		test.store.set('editorConfig.font', 'terminus8x16');
+		test.store.set('editorConfig.font', 'ibmvga8x16');
+		expect(test.loading.add.mock.results[0].value.cancel).toHaveBeenCalled();
+		pending.resolve({} as FontAtlas);
+		await pending.promise;
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('terminus8x16');
+		expect(test.loading.add).toHaveBeenCalledOnce();
+		expect(test.applyFont).not.toHaveBeenCalled();
+		expect(test.events.dispatch).not.toHaveBeenCalled();
+	});
+
+	it('ignores configuration resolving to the same active default font', () => {
+		const test = setup();
+		test.store.set('editorConfig', { color: { primary: '#00ff00' } });
+		expect(loadFontAtlas).not.toHaveBeenCalled();
+		expect(test.loading.add).not.toHaveBeenCalled();
+		expect(test.applyFont).not.toHaveBeenCalled();
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 	});
 });

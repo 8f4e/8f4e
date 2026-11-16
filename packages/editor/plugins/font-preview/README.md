@@ -1,7 +1,13 @@
 # Font preview
 
-`@8f4e/editor-plugin-font-preview` cycles through sprite-generator's font catalog with **F18** (previous) and **F19**
+`@8f4e/editor-plugin-font-preview` cycles through sprite-generator's font catalog with **F8** (previous) and **F9**
 (next), wrapping at either end. It works in view and edit modes and ignores modified or already handled keys.
+
+After a different font finishes loading, a small, nonmodal panel shows its display name, creator credits and
+license for three seconds. Switching again replaces the panel and restarts the timer. This also covers changes
+from project configuration. The panel includes all 256 CP437 character slots in a 16×16 grid, retaining blank slots
+for missing glyphs. It uses the newly loaded font and current palette, wraps the credits, and scales down when
+needed to keep the entire panel inside the viewport.
 
 ```ts
 import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';
@@ -17,3 +23,7 @@ Previewing changes neither project source nor history, revision, session content
 active when source configuration is resolved again, including after edits. Loading another project clears it before
 that project's configuration is applied. Disposing the plugin removes its listeners and restores the current
 source-derived configuration through the generic `resolveEditorConfig` helper.
+Disposal also removes the credit panel, its timer and its subscriptions to web-ui's `fontChanged` and resize
+notifications. Font changes are prepared once after the new atlas and grid settle; the drawer consumes prepared
+sprite positions, sizes and palette indices. Attribution comes from sprite-generator's `FONT_CATALOG`, based on
+the bundled font notices.
