@@ -1,0 +1,1077 @@
+8f4e/v1
+
+template pianoSampler
+template sampleVoice
+entry main
+module inputs
+; @pos 0 0
+; Public voice inputs.
+; Set on or off to 1 to send an
+; event; clear the opposite flag.
+; Velocity is separate, from 1-127.
+; Note is a chromatic note number.
+; @home left
+int on
+int off
+int note 60
+int velocity 127
+moduleEnd
+module sampleSelector
+; @pos 50 0
+; Map note and velocity to a
+; sample address and frame count.
+; Keep the selection until the
+; next trigger.
+int& note &inputs:note
+int& velocity &inputs:velocity
+int& trigger &inputs:on
+; -1 means no sample selected.
+int16* sampleAddress -1
+int sampleLength
+local int length
+
+push *trigger
+if
+push &sampleAddress
+call mapSample *velocity *note
+localSet length
+store
+push &sampleLength
+push length
+store
+ifEnd
+moduleEnd
+module envelope
+; @pos 100 0
+; Note-on resets gain immediately.
+; Note-off releases over
+; RELEASE_SECONDS.
+use env
+use pianoSettings
+int& trigger &inputs:on
+int& release &inputs:off
+int& velocity &inputs:velocity
+float level
+float velocityGain
+float out
+int finished
+int releasing
+
+push *trigger
+if
+push &level
+push 1.0
+store
+push &velocityGain
+push *velocity
+castToFloat
+div 127.0
+store
+push &releasing
+push 0
+store
+ifEnd
+push *release
+if
+push &releasing
+push 1
+store
+ifEnd
+
+push &out
+push level
+mul velocityGain
+store
+push &finished
+push out
+push 0.0
+equal
+store
+push releasing
+if
+push &level
+push level
+push 1.0
+div RELEASE_SECONDS
+push SAMPLE_RATE
+castToFloat
+div
+sub
+max 0.0
+store
+ifEnd
+moduleEnd
+module player
+; @pos 150 0
+; Play mono PCM from a byte
+; address and frame count.
+; Start immediately replaces
+; playback from frame zero.
+; Stop ends playback immediately.
+; Read one sample per output frame
+; at 48 kHz.
+int16** address &sampleSelector:sampleAddress
+int& length &sampleSelector:sampleLength
+int& start &inputs:on
+int& stop &envelope:finished
+int position
+int active
+float out
+
+push *start
+if
+push &active
+push *length
+push 0
+greaterThan
+store
+push &position
+push 0
+store
+ifEnd
+
+push &out
+push 0.0
+store
+push *stop
+if
+push &active
+push 0
+store
+ifEnd
+push active
+if
+push position
+push *length
+lessThan
+if
+push &out
+push *address
+push position
+mul 2
+add
+load16s
+castToFloat
+div 32768.0
+store
+push &position
+push position
+add 1
+store
+else
+push &active
+push 0
+store
+ifEnd
+ifEnd
+moduleEnd
+module amplifier
+; @pos 200 0
+; Apply the separate envelope to
+; the PCM output.
+float& in &player:out
+float& gain &envelope:out
+float out
+
+push &out
+push *in
+mul *gain
+store
+moduleEnd
+module consumeEvents
+; @pos 250 0
+; Clear events after all voice
+; modules have consumed them.
+push &inputs:on
+push 0
+store
+push &inputs:off
+push 0
+store
+moduleEnd
+entryEnd
+templateEnd
+includes
+; @pos 0 -12
+include std/memory/loadAt
+include std/memory/storeAt
+includesEnd
+function voiceDestination
+; @pos 350 -100
+#impure
+; The allocator depends only on
+; the public voice inputs.
+; Return on, off, note, and
+; velocity destination addresses.
+param int voice
+push voice
+mapBegin int
+map 0 &voice1:on
+map 1 &voice2:on
+map 2 &voice3:on
+map 3 &voice4:on
+map 4 &voice5:on
+map 5 &voice6:on
+map 6 &voice7:on
+map 7 &voice8:on
+map 8 &voice9:on
+map 9 &voice10:on
+map 10 &voice11:on
+map 11 &voice12:on
+map 12 &voice13:on
+map 13 &voice14:on
+map 14 &voice15:on
+map 15 &voice16:on
+mapEnd int
+push voice
+mapBegin int
+map 0 &voice1:off
+map 1 &voice2:off
+map 2 &voice3:off
+map 3 &voice4:off
+map 4 &voice5:off
+map 5 &voice6:off
+map 6 &voice7:off
+map 7 &voice8:off
+map 8 &voice9:off
+map 9 &voice10:off
+map 10 &voice11:off
+map 11 &voice12:off
+map 12 &voice13:off
+map 13 &voice14:off
+map 14 &voice15:off
+map 15 &voice16:off
+mapEnd int
+push voice
+mapBegin int
+map 0 &voice1:note
+map 1 &voice2:note
+map 2 &voice3:note
+map 3 &voice4:note
+map 4 &voice5:note
+map 5 &voice6:note
+map 6 &voice7:note
+map 7 &voice8:note
+map 8 &voice9:note
+map 9 &voice10:note
+map 10 &voice11:note
+map 11 &voice12:note
+map 12 &voice13:note
+map 13 &voice14:note
+map 14 &voice15:note
+map 15 &voice16:note
+mapEnd int
+push voice
+mapBegin int
+map 0 &voice1:velocity
+map 1 &voice2:velocity
+map 2 &voice3:velocity
+map 3 &voice4:velocity
+map 4 &voice5:velocity
+map 5 &voice6:velocity
+map 6 &voice7:velocity
+map 7 &voice8:velocity
+map 8 &voice9:velocity
+map 9 &voice10:velocity
+map 10 &voice11:velocity
+map 11 &voice12:velocity
+map 12 &voice13:velocity
+map 13 &voice14:velocity
+map 14 &voice15:velocity
+map 15 &voice16:velocity
+mapEnd int
+functionEnd int int int int
+constants polyphony
+; @pos 50 -75
+const VOICES 16
+constantsEnd
+entry main
+module eventInputs
+; @pos 0 0
+; Generic control inputs.
+; Events are consumed once.
+; @home left
+int* on
+int* off
+int* allOff
+int* note
+int* velocity
+moduleEnd
+entryEnd
+entry events
+module voiceState
+; @pos 65 0
+; Note ownership scales with the
+; configured voice count.
+use polyphony
+int[] keys VOICES
+moduleEnd
+entryEnd
+entry audio
+group voice1
+; @pos 120 80
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice2
+; @pos 120 104
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice3
+; @pos 120 128
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice4
+; @pos 120 152
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+entryEnd
+entry events
+module noteOn
+; @pos 130 0
+; Allocate the next voice for a
+; generic note-on event.
+use polyphony
+use pianoSettings
+int** trigger &eventInputs:on
+int** note &eventInputs:note
+int** velocity &eventInputs:velocity
+int& keys &voiceState:keys
+int nextVoice
+; @watch nextVoice
+
+push **trigger
+push **note
+push FIRST_NOTE
+greaterOrEqual
+and
+push **note
+push LAST_NOTE
+lessOrEqual
+and
+if
+push keys
+push nextVoice
+push **note
+add 1
+call storeAt
+call voiceDestination nextVoice
+; Store note and velocity, cancel
+; off, then publish on last.
+push **velocity
+store
+push **note
+store
+push 0
+store
+push 1
+store
+push &nextVoice
+push nextVoice
+add 1
+remainder VOICES
+store
+ifEnd
+moduleEnd
+entryEnd
+entry audio
+group voice5
+; @pos 180 80
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice6
+; @pos 180 104
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice7
+; @pos 180 128
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice8
+; @pos 180 152
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice9
+; @pos 240 80
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice10
+; @pos 240 104
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice11
+; @pos 240 128
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice12
+; @pos 240 152
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+entryEnd
+entry events
+module noteOff
+; @pos 260 0
+; Release matching voices, or all
+; voices on an all-off event.
+use polyphony
+int** trigger &eventInputs:off
+int** allOff &eventInputs:allOff
+int** note &eventInputs:note
+int& keys &voiceState:keys
+
+push **trigger
+or **allOff
+if
+loop VOICES
+push keys
+loopIndex
+call loadAt
+push **note
+add 1
+equal
+and **trigger
+or **allOff
+if
+loopIndex
+call voiceDestination
+drop
+drop
+push 1
+store
+push 0
+store
+push keys
+loopIndex
+push 0
+call storeAt
+ifEnd
+loopEnd
+ifEnd
+moduleEnd
+entryEnd
+entry audio
+group voice13
+; @pos 300 80
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice14
+; @pos 300 104
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice15
+; @pos 300 128
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+group voice16
+; @pos 300 152
+expose on &inputs:on
+expose off &inputs:off
+expose note &inputs:note
+expose velocity &inputs:velocity
+expose out &amplifier:out
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate sampleVoice
+groupEnd
+entryEnd
+entry main
+module dispatch
+; @pos 350 0
+; Route and consume control events,
+; otherwise render one audio frame.
+int** on &eventInputs:on
+int** off &eventInputs:off
+int** allOff &eventInputs:allOff
+
+push **on
+or **off
+or **allOff
+if
+call events
+push *on
+push 0
+store
+push *off
+push 0
+store
+push *allOff
+push 0
+store
+else
+call audio
+ifEnd
+moduleEnd
+entryEnd
+entry audio
+module voiceMixer
+; @pos 360 80
+; Sum all voices with adjustable
+; output headroom.
+float gain 0.25
+; @slider &gain 0 1 0.01
+float out
+float& in1 &voice1:out
+float& in2 &voice2:out
+float& in3 &voice3:out
+float& in4 &voice4:out
+float& in5 &voice5:out
+float& in6 &voice6:out
+float& in7 &voice7:out
+float& in8 &voice8:out
+float& in9 &voice9:out
+float& in10 &voice10:out
+float& in11 &voice11:out
+float& in12 &voice12:out
+float& in13 &voice13:out
+float& in14 &voice14:out
+float& in15 &voice15:out
+float& in16 &voice16:out
+
+push &out
+push *in1
+add *in2
+add *in3
+add *in4
+add *in5
+add *in6
+add *in7
+add *in8
+add *in9
+add *in10
+add *in11
+add *in12
+add *in13
+add *in14
+add *in15
+add *in16
+mul gain
+max -1.0
+min 1.0
+store
+moduleEnd
+entryEnd
+templateEnd
+function mapSample
+; @pos 100 -100
+#export
+#impure
+; Return a byte address and mono
+; frame count.
+; Zero length denotes an
+; unsupported note/velocity.
+use pianoSettings
+param int velocity
+param int note
+local int index
+
+push note
+push FIRST_NOTE
+greaterOrEqual
+push note
+push LAST_NOTE
+lessOrEqual
+and
+push velocity
+push 0
+greaterThan
+and
+push velocity
+push 127
+lessOrEqual
+and
+if
+push velocity
+push SOFT_MAX
+greaterThan
+push velocity
+push MEDIUM_MAX
+greaterThan
+add
+mul NOTES_PER_LAYER
+push note
+sub FIRST_NOTE
+add
+localSet index
+
+push index
+div NOTES_PER_LAYER
+mapBegin int
+map 0 &sampleBuffers:piano
+map 1 &sampleBuffers:mezzo
+map 2 &sampleBuffers:forte
+mapEnd int
+push &sampleMap:offsets
+push index
+mul 4
+add
+load
+add
+push &sampleMap:frames
+push index
+mul 4
+add
+load
+else
+push 0
+push 0
+ifEnd int int
+functionEnd int int
+
+function buffer
+; @pos 150 -100
+#export
+use env
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+function onMidiEvent
+; @pos 250 -100
+#export onMidiEvent
+#impure
+; Translate MIDI into generic
+; note events outside the sampler.
+use midiCodes
+param int status
+param int data1
+param int data2
+local int kind
+
+push status
+and STATUS_MASK
+localSet kind
+push &midiInput:on
+push kind
+push NOTE_ON
+equal
+push data2
+push 0
+greaterThan
+and
+store
+push &midiInput:off
+push kind
+push NOTE_OFF
+equal
+push kind
+push NOTE_ON
+equal
+push data2
+equalToZero
+and
+or
+store
+push &midiInput:allOff
+push kind
+push CONTROL_CHANGE
+equal
+push data1
+push ALL_NOTES_OFF
+equal
+and
+store
+push &midiInput:note
+push data1
+and DATA_MASK
+store
+push &midiInput:velocity
+push data2
+and DATA_MASK
+store
+
+push &midiInput:on
+load
+push &midiInput:off
+load
+or
+push &midiInput:allOff
+load
+or
+if
+call sampler
+ifEnd
+functionEnd
+
+constants env
+; @pos -74 -44
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+; Binary asset sizes in bytes
+; 'piano-48khz-16s.pcm'
+const ASSET_PIANO_SIZE 55301318
+; 'mezzo-48khz-16s.pcm'
+const ASSET_MEZZO_SIZE 47498866
+; 'forte-48khz-16s.pcm'
+const ASSET_FORTE_SIZE 55096884
+
+constantsEnd
+
+constants pianoSettings
+; @pos 50 -100
+const FIRST_NOTE 21
+const LAST_NOTE 108
+const NOTES_PER_LAYER 88
+const SOFT_MAX 42
+const MEDIUM_MAX 84
+const RELEASE_SECONDS 0.1
+constantsEnd
+
+constants midiCodes
+; @pos 300 -100
+const STATUS_MASK 0xf0
+const DATA_MASK 0x7f
+const NOTE_OFF 0x80
+const NOTE_ON 0x90
+const CONTROL_CHANGE 0xb0
+const ALL_NOTES_OFF 123
+constantsEnd
+
+note credits
+; @pos -31 88
+; Original recordings: Tom Guder.
+; Fuchs & Moehr Felt Piano, public domain.
+; https://www.polyphone.io/en/forum/your-creations/850-acoustic-felt-piano-upright-fuchs-mohr
+noteEnd
+
+note feltPiano
+; @pos 0 -100
+; A sixteen-voice felt piano
+; using 264 mono recordings in
+; three concatenated PCM files
+; from Tom Guder's Fuchs & Moehr
+; upright.
+; Play MIDI input port 0.
+; CC123 releases all notes.
+; All three velocity layers load
+; into shared memory
+; once: 157897068 bytes (about
+; 151 MiB).
+; Wait for the asset loading
+; indicators to finish.
+;
+; pianoSampler receives mapSample
+; and settings via pass.
+; Contract: (velocity, MIDI
+; note) ->
+; (sample byte address, mono
+; frame count).
+; Velocities 1-42 select piano,
+; 43-84 mezzo,
+; and 85-127 forte. Notes
+; outside 21-108 are ignored.
+; Files are 48 kHz signed 16-bit
+; little-endian PCM.
+; Filenames include -48khz-16s;
+; original tuning remains.
+; Source recordings released as
+; public domain:
+
+;
+; @config bin.baseUrl https://static.8f4e.com/assets/samples/piano/
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName feltPiano
+noteEnd
+
+entry midi
+module midiInput
+; @pos -13 0
+; @home left
+; MIDI input port 0, decoded into
+; generic note events.
+; @config midi.inputs.keys.port 0
+; @config midi.inputs.keys.callback onMidiEvent
+int on ; @watch
+int off ; @watch
+int allOff ; @watch
+int note ; @watch
+int velocity ; @watch
+moduleEnd
+entryEnd
+entry samples
+module sampleBuffers
+; @pos 22 53
+; Three mono velocity banks,
+; concatenated PCM at 48 kHz,
+; signed 16-bit little-endian.
+; Each holds MIDI notes 21-108.
+use env
+int16[] piano ASSET_PIANO_SIZE/2
+; @wave2 &piano count(piano)
+; @config bin.piano.path piano-48khz-16s.pcm
+; @config bin.piano.memory sampleBuffers:piano
+int16[] mezzo ASSET_MEZZO_SIZE/2
+; @wave2 &mezzo count(mezzo)
+; @config bin.mezzo.path mezzo-48khz-16s.pcm
+; @config bin.mezzo.memory sampleBuffers:mezzo
+int16[] forte ASSET_FORTE_SIZE/2
+; @wave2 &forte count(forte)
+; @config bin.forte.path forte-48khz-16s.pcm
+; @config bin.forte.memory sampleBuffers:forte
+moduleEnd
+entryEnd
+entry sampler
+group pianoSampler
+; @pos 60 0
+; Sixteen voices, note allocation,
+; envelopes, and mixing.
+expose on &eventInputs:on
+expose off &eventInputs:off
+expose allOff &eventInputs:allOff
+expose note &eventInputs:note
+expose velocity &eventInputs:velocity
+expose out &voiceMixer:out
+init &on &midiInput:on
+init &off &midiInput:off
+init &allOff &midiInput:allOff
+init &note &midiInput:note
+init &velocity &midiInput:velocity
+pass env
+pass pianoSettings
+pass mapSample
+useTemplate pianoSampler
+groupEnd
+entryEnd
+entry samples
+module sampleMap
+; @pos 78 53
+; Layer order: piano, mezzo,
+; forte. MIDI notes 21-108
+; within each layer. Start offsets
+; are bytes within each bank;
+; lengths are mono
+; frames from the bank manifest.
+
+int[] offsets 264
+- 0 1034096 2956352 3834928 5954938 8248798 9436484 11330226
+- 11916954 13014378 14382540 15312952 16362410 18314268 20043408 20847094
+- 21817800 22690600 23728534 24787574 26063586 27420230 28442804 29647736
+- 30672226 31441352 32665530 34002982 34989082 35769720 36757718 37517252
+- 38232620 39091992 39592322 40309612 41142104 42053318 42772532 43514774
+- 44210930 44880176 45783716 46360800 46993606 47722400 48017274 48412014
+- 48666590 48980684 49294782 49685680 50113058 50551954 51006210 51354854
+- 51530700 51833276 52128172 52348196 52633494 52790150 53113842 53354968
+- 53502016 53658674 53784610 53918230 54003852 54139392 54230772 54299112
+- 54375130 54447306 54529070 54589730 54673426 54736002 54798556 54843836
+- 54898740 54968974 54996956 55055654 55122082 55163524 55214580 55250272
+- 0 975066 1930932 2518158 4638660 6933008 7627746 9484082
+- 10046342 11123136 12207632 13057896 13944642 15395868 16637816 17392072
+- 18324868 19182798 20088744 20770034 21810378 22762394 23777778 24748982
+- 25737486 26487910 27620416 28499476 29470702 29936960 30831380 31464686
+- 32073026 32652568 33076588 33621570 34306714 35049458 35613644 36106780
+- 36667110 37200526 37889514 38426768 39015914 39512878 39808240 40097868
+- 40345254 40644480 40955226 41319732 41709198 42148584 42603330 42954388
+- 43303526 43614272 43926938 44149366 44437072 44682538 45048962 45344348
+- 45591732 45762318 45888744 46024770 46145438 46289144 46427092 46520880
+- 46631948 46706534 46834872 46911378 46991724 47056710 47110162 47161704
+- 47213252 47249426 47279846 47314104 47348376 47380716 47426500 47455004
+- 0 715866 1725492 2571910 4468576 7046840 9277560 11133906
+- 12494890 13859714 14877010 15767592 16708086 18132430 19245732 20055676
+- 20986562 21854086 22788834 23470130 24598794 25879088 26857992 27836898
+- 28852284 30027032 31555056 32608822 33555090 34474464 35443766 36151952
+- 36954218 37814084 38286096 39046112 39802266 40712054 41278160 42218666
+- 42919160 43669582 44368164 44945790 45594456 46319906 46615294 47010510
+- 47302038 47618528 47929270 48320658 48848364 49318464 50051608 50412268
+- 50784456 51256482 51590266 51843414 52129200 52376570 52742996 52978862
+- 53224330 53392996 53517504 53651606 53772272 53915972 54011678 54105464
+- 54224210 54300716 54444410 54522836 54587822 54635508 54679374 54730914
+- 54772846 54818632 54854814 54892920 54927178 55001766 55039872 55068378
+int[] frames 264
+- 517048 961128 439288 1060005 1146930 593843 946871 293364
+- 548712 684081 465206 524729 975929 864570 401843 485353
+- 436400 518967 529520 638006 678322 511287 602466 512245
+- 384563 612089 668726 493050 390319 493999 379767 357684
+- 429686 250165 358645 416246 455607 359607 371121 348078
+- 334623 451770 288542 316403 364397 147437 197370 127288
+- 157047 157049 195449 213689 219448 227128 174322 87923
+- 151288 147448 110012 142649 78328 161846 120563 73524
+- 78329 62968 66810 42811 67770 45690 34170 38009
+- 36088 40882 30330 41848 31288 31277 22640 27452
+- 35117 13991 29349 33214 20721 25528 17846 25523
+- 487533 477933 293613 1060251 1147174 347369 928168 281130
+- 538397 542248 425132 443373 725613 620974 377128 466398
+- 428965 452973 340645 520172 476008 507692 485602 494252
+- 375212 566253 439530 485613 233129 447210 316653 304170
+- 289771 212010 272491 342572 371372 282093 246568 280165
+- 266708 344494 268627 294573 248482 147681 144814 123693
+- 149613 155373 182253 194733 219693 227373 175529 174569
+- 155373 156333 111214 143853 122733 183212 147693 123692
+- 85293 63213 68013 60334 71853 68974 46894 55534
+- 37293 64169 38253 40173 32493 26726 25771 25774
+- 18087 15210 17129 17136 16170 22892 14252 21931
+- 357933 504813 423209 948333 1289132 1115360 928173 680492
+- 682412 508648 445291 470247 712172 556651 404972 465443
+- 433762 467374 340648 564332 640147 489452 489453 507693
+- 587374 764012 526883 473134 459687 484651 354093 401133
+- 429933 236006 380008 378077 454894 283053 470253 350247
+- 375211 349291 288813 324333 362725 147694 197608 145764
+- 158245 155371 195694 263853 235050 366572 180330 186094
+- 236013 166892 126574 142893 123685 183213 117933 122734
+- 84333 62254 67051 60333 71850 47853 46893 59373
+- 38253 71847 39213 32493 23843 21933 25770 20966
+- 22893 18091 19053 17129 37294 19053 14253 14253
+moduleEnd
+entryEnd
+entry main
+module renderSampler
+; @pos 60 30
+; Render through the same sampler
+; entry used for control events.
+call sampler
+moduleEnd
+module audioout
+; @pos 120 0
+; Write each frame and wrap at
+; the end of the output buffer.
+use env
+float& in &pianoSampler:out
+float[] buffer AUDIO_BUFFER_SIZE
+int pointer &buffer
+; @plot &buffer count(buffer)
+
+push pointer
+push *in
+store
+
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+
+push pointer
+push end(buffer)
+greaterOrEqual
+if
+push &pointer
+push &buffer
+store
+ifEnd
+moduleEnd
+entryEnd

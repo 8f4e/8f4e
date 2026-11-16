@@ -1,7 +1,7 @@
 # 8f4e Website
 
 `@8f4e/8f4e-website` contains a product homepage using
-[`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples and compiler test galleries using
+[`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples, unlisted examples, and compiler test galleries using
 [`@8f4e/editor-gallery`](../editor/packages/editor-gallery/README.md). Both embedded compositions keep live editing,
 controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, and slider;
 its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
@@ -32,7 +32,7 @@ The development server runs at `http://localhost:3001` so it can run alongside `
 Set the canvas's `data-project-path` attribute in `src/index.html` to a path relative to
 `packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/homepage-projects.ts`
 imports only the four homepage demo URLs; update its explicit imports when changing the homepage's project selection.
-The full project and preview URL catalogs in `src/example-projects.ts` are used only by the examples gallery.
+The full project and preview URL catalogs in `src/example-projects.ts` are used only by the examples galleries.
 The homepage fetches each demo's source when its editor becomes visible. Featured preview GIFs use `?no-inline`
 to remain external assets with native lazy loading, including images below Vite's default inline-size limit.
 The npm command refreshes the committed 64×64 GIF previews in `src/project-previews/` after gallery projects or
@@ -43,7 +43,7 @@ their `@home` blocks change. The compiler gallery reuses one shared preview gene
 The separate `/examples/` page lists curated projects from `src/examples/projects.ts`. Each entry supplies a stable ID,
 title, short description, and a path relative to `packages/examples/src/projects/`. The homepage footer links
 to the gallery. Previews are optional: examples without a generated preview load without a thumbnail, and the compiler
-test gallery also works without its shared preview. Vite builds the homepage and both galleries, including their
+test gallery also works without its shared preview. Vite builds the homepage and all three galleries, including their
 project source assets, so example projects
 need no separate deployment or precompiled WASM files. The `.8f4e` asset responses allow cross-origin requests through
 `src/_headers` so Open in editor links can load these sources from `editor.8f4e.com`.
@@ -57,7 +57,7 @@ and below, the same panels become an accordion: the selected editor appears bene
 Resizing keeps the active editor instance. Without a selected example in the URL, mobile starts collapsed and desktop
 opens the first example.
 
-Each example has a shareable hash URL using its stable ID, such as `/examples/#granular-sampler`. Selecting an example
+Each example has a shareable hash URL using its stable ID, such as `/examples/#dx7-algorithm-5`. Selecting an example
 updates the address and page title; Back and Forward restore selections. Direct links also expand the matching mobile
 accordion and scroll it into view. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back
 to the default desktop selection or the collapsed mobile list.
@@ -82,6 +82,15 @@ has loaded. The bridge and its search catalog stay outside the initial script gr
 replaced while that import is pending; a late import connects only to the current editor. Bridge loading or
 registration failures are logged independently of project loading.
 
+## Unlisted examples gallery
+
+The `/unlisted-examples/` page uses its own catalog in `src/unlisted-examples/projects.ts` and the same editor,
+layout, previews, and sharing behavior as the public examples gallery. It contains Felt piano, Granular sampler,
+and Cyclic time stretch, which are absent from the public catalog. The page is marked `noindex` and has no link
+from the public navigation. Direct links use the existing project IDs, such as `/unlisted-examples/#felt-piano`.
+Both example galleries use `src/example-gallery.ts` to resolve project assets and links; preview generation covers
+both catalogs.
+
 ## Compiler test gallery
 
 The `/tests/` page discovers `packages/compiler/tests/**/*.test.8f4e` through the Vite glob in `src/tests/projects.ts`.
@@ -92,7 +101,7 @@ Vite emits the original project files as downloadable assets, so this gallery ne
 Each project has a GitHub source link and an Open in editor link. Hash URLs use the relative fixture path without
 `.test.8f4e`, for example `/tests/#instructions/integer-arithmetic`.
 
-Both galleries use `src/gallery.ts` for selection, editor lifecycle, and the responsive layout. The test gallery uses
+All galleries use `src/gallery.ts` for selection, editor lifecycle, and the responsive layout. The test gallery uses
 the editor's default block positioning and keeps editors in edit mode with mode toggling disabled.
 Fixtures enable the test-runtime plugin with `; @config testRuntime.enabled true` and execute tests after successful compilation.
 The gallery does not supply the test harness's custom include resolver. Fixtures that need unavailable includes
@@ -101,4 +110,4 @@ can display compiler diagnostics while their source remains browsable.
 ## Typography
 
 Departure Mono is a pixel font. Use font sizes in whole multiples of 14px (14px, 28px, 42px, and so on).
-Both galleries use 14px text; the homepage uses 28px text. Keep these sizes explicit when adjusting typography.
+All galleries use 14px text; the homepage uses 28px text. Keep these sizes explicit when adjusting typography.

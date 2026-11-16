@@ -11,5 +11,8 @@
 /tests/
   Link: <https://cdn.polgarand.org/fonts/DepartureMono14-Regular.woff2>; rel=preload; as=font; type="font/woff2"; crossorigin
 
+/unlisted-examples/
+  Link: <https://cdn.polgarand.org/fonts/DepartureMono14-Regular.woff2>; rel=preload; as=font; type="font/woff2"; crossorigin
+
 /assets/*.8f4e
   Access-Control-Allow-Origin: *

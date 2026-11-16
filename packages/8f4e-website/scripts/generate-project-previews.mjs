@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { generateProjectPreview } from '../../../tools/project-preview/dist/index.js';
 
 import { projects as exampleProjects } from '../src/examples/projects.ts';
+import { projects as unlistedProjects } from '../src/unlisted-examples/projects.ts';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workspaceRoot = path.resolve(packageRoot, '../..');
@@ -55,7 +56,7 @@ const featuredProjectPositions = new Map([
 ]);
 
 const jobs = [
-	...exampleProjects.map(project => ({
+	...[...exampleProjects, ...unlistedProjects].map(project => ({
 		inputPath: path.join(exampleProjectRoot, project.path),
 		outputPath: path.join(previewRoot, 'examples', project.path.replace(/\.8f4e$/, '.gif')),
 	})),

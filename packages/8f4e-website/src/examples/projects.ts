@@ -73,12 +73,6 @@ export const projects = [
 		path: 'audio/samplePlayerVariableSpeed.8f4e',
 	},
 	{
-		id: 'cyclic-timestretch',
-		title: 'Cyclic time stretch',
-		description: 'Stretch a sample by repeating and crossfading short cycles while preserving their playback pitch.',
-		path: 'audio/cyclicTimestretch.8f4e',
-	},
-	{
 		id: 'minblep',
 		title: 'minBLEP smoothing',
 		description: 'Compare a pulse sample before and after a band-limited step correction smooths its discontinuities.',
@@ -127,12 +121,6 @@ export const projects = [
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
 		path: 'audio/reverb.8f4e',
-	},
-	{
-		id: 'granular-sampler',
-		title: 'Granular sampler',
-		description: 'Explore sample playback driven by a clock, random positions and modulation, with stereo reverb.',
-		path: 'audio/granularSampler.8f4e',
 	},
 	{
 		id: 'risen',
