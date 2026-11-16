@@ -75,6 +75,7 @@ test('reveals and switches editors while the bridge loads, then connects only th
 		expect(firstCanvas.isConnected).toBe(false);
 		expect(tools.size).toBe(0);
 		bridgeLoading.finish();
+		await vi.dynamicImportSettled();
 		await vi.waitFor(() => expect(tools.has('get_project')).toBe(true));
 		expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	} finally {
