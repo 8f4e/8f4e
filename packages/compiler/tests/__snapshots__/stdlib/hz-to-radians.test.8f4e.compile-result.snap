@@ -1,0 +1,332 @@
+{
+  "functionAst": {
+    "hzToRadians__float__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "frequencyHz",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sampleRate",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "TAU",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 6.283185307179586,
+            },
+          ],
+          "instruction": "const",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "frequencyHz",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "TAU",
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "sampleRate",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "castToFloat",
+        },
+        {
+          "arguments": [],
+          "instruction": "ensureNonZero",
+        },
+        {
+          "arguments": [],
+          "instruction": "div",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "hzToRadians",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "hzToRadians__float__int": {
+      "id": "hzToRadians__float__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "frequencyHz",
+            "type": "float",
+          },
+          {
+            "name": "sampleRate",
+            "type": "int",
+          },
+        ],
+        "returns": [
+          "float",
+        ],
+      },
+    },
+  },
+  "moduleAst": {
+    "angularFrequencyAssertions": {
+      "id": "angularFrequencyAssertions",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "angularFrequencyAssertions",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48000,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.570796326794896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": -1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": -1.570796326794896,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48000,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "hzToRadians",
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2000,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 96000,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "equal",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "angularFrequencyAssertions": {
+      "memory": {},
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "hzToRadians__float__int",
+    ],
+    "compiledModules": [
+      "angularFrequencyAssertions",
+    ],
+    "requiredMemoryBytes": 4,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}
