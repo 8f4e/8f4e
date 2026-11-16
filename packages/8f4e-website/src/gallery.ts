@@ -6,7 +6,7 @@ export interface GalleryProject {
 	title: string;
 	description: string;
 	projectUrl: string;
-	previewUrl: string;
+	previewUrl?: string;
 	githubUrl: string;
 }
 
@@ -58,16 +58,19 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 			const description = document.createElement('span');
 			description.className = 'example-description';
 			description.textContent = project.description;
-			const preview = document.createElement('img');
-			preview.className = 'example-preview';
-			preview.src = project.previewUrl;
-			preview.width = 64;
-			preview.height = 64;
-			preview.alt = '';
-			preview.loading = 'lazy';
-			preview.decoding = 'async';
-			preview.draggable = false;
-			toggle.append(preview, title, description);
+			if (project.previewUrl) {
+				const preview = document.createElement('img');
+				preview.className = 'example-preview';
+				preview.src = project.previewUrl;
+				preview.width = 64;
+				preview.height = 64;
+				preview.alt = '';
+				preview.loading = 'lazy';
+				preview.decoding = 'async';
+				preview.draggable = false;
+				toggle.append(preview);
+			}
+			toggle.append(title, description);
 			heading.append(toggle);
 
 			const panel = document.createElement('div');

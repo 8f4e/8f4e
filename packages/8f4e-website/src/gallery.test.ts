@@ -4,6 +4,7 @@ import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
+import { getExampleProjectPreviewUrl } from './example-projects';
 import { mountGallery } from './gallery';
 
 vi.mock('@8f4e/editor-gallery', { spy: true });
@@ -17,7 +18,12 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-function setup(responses: Record<string, () => Promise<Response>>) {
+function setup(
+	responses: Record<string, () => Promise<Response>>,
+	{ previewUrl }: { previewUrl?: string } = {
+		previewUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
+	}
+) {
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
 		const id = Object.keys(responses).find(id => input === `/gallery-${id}.8f4e`);
@@ -40,7 +46,7 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 					title: id,
 					description: 'A gallery fixture.',
 					projectUrl: `/gallery-${id}.8f4e`,
-					previewUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
+					previewUrl,
 					githubUrl: 'https://github.com/8f4e/8f4e',
 				})),
 			},
@@ -578,4 +584,15 @@ entryEnd`;
 	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'][0].value).toBe(1);
 	expect(reopened.state.codeErrors.compiler).toEqual([]);
 	expect(reopened.state.codeErrors['editor-directives']).toEqual([]);
+});
+
+test('loads an example without a generated preview and omits its image', async () => {
+	const previewUrl = getExampleProjectPreviewUrl('audio/not-yet-generated.8f4e');
+	expect(previewUrl).toBeUndefined();
+	const view = setup({ unpreviewed: async () => new Response(source) }, { previewUrl });
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
+	expect(view.gallery.querySelector('.example-preview')).toBeNull();
+	expect(view.gallery.querySelector('.example-title')?.textContent).toBe('unpreviewed');
+	expect(editor.state.initialProjectState?.execution[0].code.join('\n')).toContain('module galleryExample');
 });

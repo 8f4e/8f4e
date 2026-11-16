@@ -42,7 +42,9 @@ their `@home` blocks change. The compiler gallery reuses one shared preview gene
 
 The separate `/examples/` page lists curated projects from `src/examples/projects.ts`. Each entry supplies a stable ID,
 title, short description, and a path relative to `packages/examples/src/projects/`. The homepage footer links
-to the gallery. Vite builds the homepage and both galleries, including their project source assets, so example projects
+to the gallery. Previews are optional: examples without a generated preview load without a thumbnail, and the compiler
+test gallery also works without its shared preview. Vite builds the homepage and both galleries, including their
+project source assets, so example projects
 need no separate deployment or precompiled WASM files. The `.8f4e` asset responses allow cross-origin requests through
 `src/_headers` so Open in editor links can load these sources from `editor.8f4e.com`.
 
