@@ -1042,5 +1042,11 @@
 		"version": "12.2.0",
 		"benchmark": "sineGenerator.8f4e",
 		"emittedBytes": 427
+	},
+	{
+		"commit": "80365b436a7383f29065195ea9913b3d979811fb",
+		"version": "12.2.1",
+		"benchmark": "sineGenerator.8f4e",
+		"emittedBytes": 427
 	}
 ]
