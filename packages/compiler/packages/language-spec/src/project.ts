@@ -147,15 +147,15 @@ export interface ProjectObjectModel {
 	unknown: ProjectBlock[];
 }
 
-/** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
+/** A group-owned public memory name backed by a direct module's memory item or a child group's exposure. */
 export interface ProjectMemoryExposure {
 	/** Zero-based row in the owning group's code, after nested blocks have been extracted. */
 	lineNumber: number;
 	/** Public name used by the enclosing project. */
 	name: string;
-	/** Source-level name of the direct child module that owns the target memory item. */
+	/** Source-level name of the direct child module or group that supplies the target memory item. */
 	targetModuleName: string;
-	/** Source-level memory item name in the target module. */
+	/** Source-level memory item or exposure name in the target module or group. */
 	targetMemoryName: string;
 }
 

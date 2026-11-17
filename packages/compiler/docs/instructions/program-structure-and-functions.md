@@ -78,6 +78,10 @@ expose input &processor:input
 The alias uses the backing declaration's type and allocates no additional memory. Editors derive control types and
 connector direction from that declaration: pointers are inputs, and non-pointers are outputs.
 
+A group can forward a direct child group's public memory with the same `expose` syntax. For example,
+`expose out &sampler:out` forwards the child `sampler` group's `out` exposure. Forwarded names resolve to the
+original backing declaration, including its type and pointer metadata, without allocating extra memory.
+
 ### init
 
 Inside a group, `init` overrides the default value of an exposed scalar memory item. Values can be numeric literals

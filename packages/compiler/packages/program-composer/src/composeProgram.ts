@@ -24,6 +24,7 @@ import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
 import { resolveFunctionPasses } from './resolveFunctionPasses';
+import { resolveMemoryExposureAliases } from './resolveMemoryExposureAliases';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
@@ -264,6 +265,7 @@ export function composeProgram(
 	};
 
 	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
+	resolveMemoryExposureAliases(program);
 	resolveFunctionPasses(program);
 	return program;
 }

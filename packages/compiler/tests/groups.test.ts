@@ -196,6 +196,67 @@ entryEnd`);
 		expect(result.memoryPlan.modules['processing/audio']).toBeUndefined();
 	});
 
+	it('forwards nested group inputs and outputs to the same backing memory', async () => {
+		const result = await compileProject(
+			parseProjectSource(`8f4e/v1
+entry main
+module source
+int value 41
+moduleEnd
+group outer
+expose input &middle:input
+expose out &middle:out
+init &input &source:value
+entry main
+group middle
+expose input &inner:input
+expose out &inner:out
+entry main
+group inner
+expose input &processor:input
+expose out &processor:rendered
+entry main
+module processor
+int* input
+int rendered
+push &rendered
+push *input
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+module observed
+int& input &outer:out
+int value
+push &value
+push *input
+store
+moduleEnd
+entryEnd`)
+		);
+		const backing = result.memoryPlan.modules['outer/middle/inner/processor'].memory;
+		for (const groupPath of ['outer', 'outer/middle', 'outer/middle/inner']) {
+			const exposures = result.projectMemoryExposuresByGroupPath[groupPath];
+			expect(exposures.find(exposure => exposure.name === 'input')?.targetMemory).toBe(backing.input);
+			expect(exposures.find(exposure => exposure.name === 'out')?.targetMemory).toBe(backing.rendered);
+			expect(result.memoryPlan.modules[groupPath]).toBeUndefined();
+		}
+		const pages = Math.ceil(result.requiredMemoryBytes / 65536);
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		(instance.exports.main as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(result.memoryPlan.modules.observed.memory.value.byteAddress, true)).toBe(41);
+		expect(view.getInt32(backing.input.byteAddress, true)).toBe(
+			result.memoryPlan.modules.source.memory.value.byteAddress
+		);
+	});
+
 	it.each([
 		{ fixture: 'missing-exposure-module', targetModuleId: 'audio/missing', targetMemoryId: 'value' },
 		{ fixture: 'missing-exposure-memory', targetModuleId: 'audio/source', targetMemoryId: 'missing' },
