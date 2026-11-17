@@ -4,7 +4,7 @@ import type {
 	PointeeBaseType,
 	ScalarMemoryDeclarationInstruction,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, BASE_TYPE_METADATA } from '@8f4e/language-spec';
 import {
 	alignAbsoluteAllocationUnitOffset,
 	getAbsoluteAllocationUnitOffset,
@@ -22,23 +22,10 @@ function getScalarBaseType(instruction: ScalarMemoryDeclarationInstruction): Poi
 }
 
 function getArrayElementWordSize(instruction: ArrayDeclarationInstruction): number {
-	if (instruction.startsWith('float64') && !instruction.includes('*')) return 8;
+	if (instruction.startsWith('float64')) return 8;
 	if (instruction.includes('8')) return 1;
 	if (instruction.includes('16')) return 2;
 	return 4;
-}
-
-function getArrayPointeeBaseType(instruction: ArrayDeclarationInstruction): PointeeBaseType | undefined {
-	if (!instruction.includes('*')) {
-		return undefined;
-	}
-	if (instruction.startsWith('float64')) {
-		return 'float64';
-	}
-	if (instruction.startsWith('int')) {
-		return 'int';
-	}
-	return 'float';
 }
 
 /**
@@ -132,8 +119,10 @@ export function planArrayDeclarationLayout(input: {
 	instruction: ArrayDeclarationInstruction;
 	numberOfElements: number;
 }) {
-	const elementWordSize = getArrayElementWordSize(input.instruction);
+	const type = input.instruction.slice(0, -2) as MemoryType;
 	const pointerDepth = getPointerDepth(input.instruction);
+	const elementWordSize =
+		pointerDepth > 0 ? BASE_TYPE_METADATA.pointer.wordSize : getArrayElementWordSize(input.instruction);
 	const absoluteAllocationUnitOffset = getAbsoluteAllocationUnitOffset(
 		input.startingByteAddress,
 		input.localAllocationUnitOffset
@@ -145,7 +134,7 @@ export function planArrayDeclarationLayout(input: {
 	const alignmentPaddingUnitCount = alignedAbsoluteAllocationUnitOffset - absoluteAllocationUnitOffset;
 	const occupiedAllocationUnitCount = Math.ceil((input.numberOfElements * elementWordSize) / ALLOCATION_UNIT_BYTE_SIZE);
 	const allocationUnitCount = alignmentPaddingUnitCount + occupiedAllocationUnitCount;
-	const pointeeBaseType = getArrayPointeeBaseType(input.instruction);
+	const pointeeBaseType = pointerDepth > 0 ? getScalarBaseType(type) : undefined;
 	const byteAddress = getByteAddressFromAllocationUnitOffset(0, alignedAbsoluteAllocationUnitOffset);
 
 	return {
@@ -163,7 +152,7 @@ export function planArrayDeclarationLayout(input: {
 			...(input.instruction === 'float64[]' ? { isFloat64: true } : {}),
 			pointerDepth,
 			...(pointeeBaseType ? { pointeeBaseType } : {}),
-			type: input.instruction.slice(0, -2) as MemoryType,
+			type,
 			isUnsigned: input.instruction.endsWith('u[]'),
 		},
 		nextLocalAllocationUnitOffset: input.localAllocationUnitOffset + allocationUnitCount,

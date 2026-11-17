@@ -43,7 +43,7 @@ export function getDeclarationsByByteAddress(
 
 export interface MemoryAccessOptions {
 	showAddress?: boolean;
-	dereference?: boolean;
+	dereferenceDepth?: 0 | 1 | 2;
 	bufferPointer?: number;
 }
 
@@ -62,22 +62,19 @@ export interface ResolvedMemoryAccess extends MemoryIdentifier {
 export function resolveMemoryAccess(
 	state: State,
 	target: ResolvedMemoryTarget,
-	{ showAddress = false, dereference = false, bufferPointer = 0 }: MemoryAccessOptions = {}
+	{ showAddress = false, dereferenceDepth = 0, bufferPointer = 0 }: MemoryAccessOptions = {}
 ): ResolvedMemoryAccess | undefined {
 	const { memory, reference } = target;
-	if (reference) {
-		// A bare fixed reference is its target address; * reads the target without a runtime pointer load.
-		if (showAddress) return;
-		return { showAddress: !dereference, memory, bufferPointer, target };
-	}
-
-	if (dereference && memory.pointeeBaseType) {
+	if (reference && showAddress) return;
+	if (dereferenceDepth === 2 && (!reference || !memory.pointeeBaseType)) return;
+	const dereferenceMemory = dereferenceDepth > (reference ? 1 : 0);
+	if (dereferenceMemory && memory.pointeeBaseType) {
 		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
 		const pointee = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
 		return pointee && { showAddress, memory: pointee, bufferPointer, target };
 	}
 
-	return { showAddress, memory, bufferPointer, target };
+	return { showAddress: reference ? dereferenceDepth === 0 : showAddress, memory, bufferPointer, target };
 }
 
 /** Parses an access and resolves its declaration once; prepare again when compiler metadata or source changes. */
@@ -90,20 +87,11 @@ export function prepareMemoryAccess(
 		return;
 	}
 
-	let showAddress = false;
-	let operator: '&' | '*' | undefined;
+	const operator = /^(&|\*{1,2})/.exec(memoryIdentifier)?.[0] ?? '';
+	const showAddress = operator === '&';
+	const dereferenceDepth = operator === '**' ? 2 : operator === '*' ? 1 : 0;
+	memoryIdentifier = memoryIdentifier.slice(operator.length);
 	let bufferPointer = 0;
-
-	if (memoryIdentifier.startsWith('&')) {
-		operator = '&';
-		showAddress = true;
-		memoryIdentifier = memoryIdentifier.substring(1);
-	}
-
-	if (memoryIdentifier.startsWith('*')) {
-		operator = '*';
-		memoryIdentifier = memoryIdentifier.substring(1);
-	}
 
 	if (/.+\[(\d+)\]/.test(memoryIdentifier)) {
 		const match = memoryIdentifier.match(/.+\[(\d+)\]/) as [never, string];
@@ -113,7 +101,7 @@ export function prepareMemoryAccess(
 
 	const target = resolveMemoryTarget(state, scope, memoryIdentifier);
 	if (!target) return;
-	return { target, options: { showAddress, dereference: operator === '*', bufferPointer } };
+	return { target, options: { showAddress, dereferenceDepth, bufferPointer } };
 }
 
 /** Resolves a named access, including the current target of a dereferenced runtime pointer. */

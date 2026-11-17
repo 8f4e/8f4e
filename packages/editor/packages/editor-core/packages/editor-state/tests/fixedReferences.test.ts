@@ -47,7 +47,7 @@ describe('shared fixed reference resolution', () => {
 		const { state, compiled } = await setup();
 		const prepared = prepareMemoryAccess(state, scope, '*pointer[2]')!;
 		expect(prepared.target.memory).toBe(compiled.memoryPlan.modules['audio/sink'].memory.pointer);
-		expect(prepared.options).toEqual({ showAddress: false, dereference: true, bufferPointer: 2 });
+		expect(prepared.options).toEqual({ showAddress: false, dereferenceDepth: 1, bufferPointer: 2 });
 		expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
 
 		const samples = compiled.memoryPlan.modules['audio/bank/source'].memory.samples;

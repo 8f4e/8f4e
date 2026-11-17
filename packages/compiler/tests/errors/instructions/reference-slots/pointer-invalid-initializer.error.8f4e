@@ -1,0 +1,6 @@
+8f4e/v1
+entry main
+module invalid
+float*& ref -1
+moduleEnd
+entryEnd

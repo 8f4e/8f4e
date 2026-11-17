@@ -139,6 +139,36 @@ entryEnd`);
 	);
 
 	it.each([
+		{ type: 'int16', view: 'int16', firstValue: -32768, secondValue: 32767, expected: ['-32768', '32767'] },
+		{ type: 'float', view: 'float32', firstValue: -2.75, secondValue: 1.25, expected: ['-2.7500', '1.2500'] },
+	] as const)(
+		'shows the slot, live pointer and $type pointee',
+		async ({ type, view, firstValue, secondValue, expected }) => {
+			const { compiled, memory, renderValues } = await setup(`8f4e/v1
+entry main
+module source
+${type}[] first 1
+${type}[] second 1
+${type}* selected &first
+moduleEnd
+module sink
+${type}*& input &source:selected
+moduleEnd
+entryEnd`);
+			const { first, second, selected } = compiled.memoryPlan.modules.source.memory;
+			memory[view][first.byteAddress / first.elementWordSize] = firstValue;
+			memory[view][second.byteAddress / second.elementWordSize] = secondValue;
+
+			memory.int32[selected.allocationUnitAddress] = first.byteAddress;
+			expect(renderValues()).toEqual([String(selected.byteAddress), String(first.byteAddress), expected[0]]);
+			memory.int32[selected.allocationUnitAddress] = second.byteAddress;
+			expect(renderValues()).toEqual([String(selected.byteAddress), String(second.byteAddress), expected[1]]);
+			memory.int32[selected.allocationUnitAddress] = -1;
+			expect(renderValues()).toEqual([String(selected.byteAddress), '-1', '?']);
+		}
+	);
+
+	it.each([
 		{ declaration: 'float& input &source:output', moduleId: 'source', memoryId: 'output' },
 		{ declaration: 'float input 1.5', moduleId: 'sink', memoryId: 'input' },
 	])(

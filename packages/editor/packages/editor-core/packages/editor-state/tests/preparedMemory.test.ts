@@ -33,6 +33,7 @@ ${type}[] samples 4
 ${type}[] alternate 4
 ${type}& fixed &samples
 ${type}* pointer &samples
+${['int', 'int16', 'float'].includes(type) ? `${type}*& fixedPointer &pointer` : ''}
 ${type}** indirect &pointer
 int*[] pointers 2
 int length 3
@@ -93,6 +94,17 @@ describe('prepared memory bindings', () => {
 			expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
 		}
 	);
+
+	it('prepares the current samples behind a fixed pointer slot', async () => {
+		const { state, views, memory } = await setup('int16');
+		const buffer = prepareBuffer(state, scope, '*fixedPointer', 'length')!;
+		expect(buffer.samples.spec).toMatchObject({ valueType: 'int16', elementByteSize: 2 });
+		views.int16[memory.samples.byteAddress / 2] = -32768;
+		views.int16[memory.alternate.byteAddress / 2] = 32767;
+		expect(readNumericValue(buffer.samples, views)).toBe(-32768);
+		views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
+		expect(readNumericValue(buffer.samples, views)).toBe(32767);
+	});
 
 	it('resolves indexed intermediate pointers and skips unavailable indirect storage', async () => {
 		const { access, views, memory } = await setup('int16');

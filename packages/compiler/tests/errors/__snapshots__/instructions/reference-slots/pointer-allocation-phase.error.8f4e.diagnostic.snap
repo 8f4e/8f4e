@@ -1,0 +1,13 @@
+{
+  "code": 5,
+  "domain": "semantic",
+  "instruction": "int[]",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Unable to resolve memory declaration size.",
+}

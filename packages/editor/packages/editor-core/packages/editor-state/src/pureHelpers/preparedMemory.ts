@@ -36,16 +36,19 @@ export interface PreparedBuffer {
 
 /** Whether the expression itself denotes an address rather than the numeric value stored there. */
 export function isAddressAccess({ target, options }: PreparedMemoryAccess): boolean {
-	return Boolean(options.showAddress || (target.reference && !options.dereference));
+	return Boolean(options.showAddress || (target.reference && !options.dereferenceDepth));
 }
 
 /** Prepares &samples, a fixed reference, a typed pointer, or an explicitly dereferenced double pointer. */
 export function prepareAddressBinding({ target, options }: PreparedMemoryAccess): PreparedAddressBinding | undefined {
 	const { memory, reference } = target;
 	const index = options.bufferPointer ?? 0;
-	if (options.dereference) {
-		if (reference || !memory.pointeeBaseType || memory.pointerDepth < 2) return;
-		return { kind: 'indirect', pointerSlotIndex: memory.allocationUnitAddress, byteOffset: index * 4 };
+	if (options.dereferenceDepth) {
+		if (options.dereferenceDepth !== 1 || !memory.pointeeBaseType) return;
+		if (reference) return { kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress + index, byteOffset: 0 };
+		if (memory.pointerDepth > 1)
+			return { kind: 'indirect', pointerSlotIndex: memory.allocationUnitAddress, byteOffset: index * 4 };
+		return;
 	}
 	if (reference && options.showAddress) return;
 	if (reference || options.showAddress)
@@ -78,7 +81,9 @@ export function prepareNumericRead({ target, options }: PreparedMemoryAccess): P
 	const { memory, reference } = target;
 	if (reference && options.showAddress) return;
 	const index = options.bufferPointer ?? 0;
-	const pointee = options.dereference && !reference ? getPointeeValueSpec(memory) : undefined;
+	const depth = options.dereferenceDepth ?? 0;
+	if (depth === 2 && (!reference || !memory.pointeeBaseType)) return;
+	const pointee = depth > (reference ? 1 : 0) ? getPointeeValueSpec(memory) : undefined;
 	if (pointee)
 		return prepareRead(
 			{ kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress, byteOffset: index * pointee.elementByteSize },

@@ -1,0 +1,14 @@
+{
+  "code": 19,
+  "domain": "semantic",
+  "instruction": "float*&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 2,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Type mismatch. (19)",
+  "symbol": "invalid",
+}

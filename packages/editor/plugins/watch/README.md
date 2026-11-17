@@ -22,6 +22,8 @@ Watch also accepts `@w`. With no target name, an inline watch reads the compiled
 including anonymous declarations. Format and access modifiers such as `0x` or `*[1]` can be used without a name.
 Fixed references work inline and by name: `@watch buffer` shows the fixed target address, while `@watch *buffer`
 shows its current value. `@watch *buffer[1]` reads the second target element. A reference has no slot for `&buffer`.
+For a fixed reference to a pointer slot, `@watch ref` shows the slot address, `@watch *ref` shows the pointer value,
+and `@watch **ref` follows the pointer to read the current typed value. The inline form `@watch **` follows the same rule.
 Fixed-reference accesses are prepared during layout and retained until layout or compilation changes; drawing reads
 their live values without repeating target lookup.
 The plugin parses `0b`/`0x` display prefixes and retains the compiler parser's structured `end()` targets until layout.

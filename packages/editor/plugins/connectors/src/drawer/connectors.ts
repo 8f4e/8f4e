@@ -4,7 +4,7 @@ import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { ConnectorWidgets } from '../types';
 
-const [LEFT_BRACKET, MARKER, RIGHT_BRACKET] = textToGlyphIds('[*]');
+const [LEFT_BRACKET, MARKER, RIGHT_BRACKET, ADDRESS_MARKER] = textToGlyphIds('[*]&');
 
 const OUTPUT_COLORS = [
 	'primaryDark3',
@@ -24,12 +24,13 @@ function drawConnector(
 	height: number,
 	background: PaletteIndex,
 	bracketColor: PaletteIndex,
-	markerColor?: PaletteIndex
+	markerColor?: PaletteIndex,
+	markerGlyph = MARKER
 ): void {
 	engine.drawFill(x, y, background, width * 3, height);
 	engine.drawSprite(x, y, LEFT_BRACKET, bracketColor, width, height);
 	if (markerColor !== undefined) {
-		engine.drawSprite(x + width, y, MARKER, markerColor, width, height);
+		engine.drawSprite(x + width, y, markerGlyph, markerColor, width, height);
 	}
 	engine.drawSprite(x + width * 2, y, RIGHT_BRACKET, bracketColor, width, height);
 }
@@ -45,6 +46,11 @@ export default function drawConnectors(
 
 	for (const output of widgets.outputs) {
 		const { x, y, memory } = output;
+		if (memory.pointerDepth > 0) {
+			const color = PALETTE_INDICES.secondaryBase;
+			drawConnector(engine, x, y, width, height, background, color, color, ADDRESS_MARKER);
+			continue;
+		}
 
 		const rawValue = memory.isInteger
 			? memoryViews.int32[memory.allocationUnitAddress]

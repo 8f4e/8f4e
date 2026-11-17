@@ -23,6 +23,8 @@ Fixed reference slots such as `float& input &source:output` also produce input c
 declaration rows. Their wires use the target byte address already resolved in the compiler's reference-slot metadata, without
 reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no
 fixed declarations. Target type and buffer metadata come from the backing declaration in the allocation plan.
+When a fixed reference targets a pointer, the pointer row or its group exposure also shows an `[&]` output for the
+slot address. The input on that row still follows the live pointer.
 
 Connectors use the existing code-block drawer. Wires use `drawers.registerRenderLayer`: the renderer supplies its
 WebGL context and resolved palette after initialization, draws the pass above sprites and below configured RGBA

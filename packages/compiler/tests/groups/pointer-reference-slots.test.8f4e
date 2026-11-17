@@ -1,0 +1,33 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Fixed pointer references resolve exposed and local bindings.
+noteEnd
+
+entry test
+group audio
+expose selected &source:pointer
+entry main
+module source
+int16[] samples 2 -32768 4
+int16* pointer &samples
+int16*& localSlot &pointer
+push **localSlot
+assertEqual -32768
+moduleEnd
+entryEnd
+groupEnd
+
+module consumer
+int16*& exposed &audio:selected
+push **exposed
+assertEqual -32768
+push sizeof(*exposed)
+assertEqual 4
+push count(*exposed)
+assertEqual 1
+push end(*exposed)
+assertEqual end(audio:selected)
+moduleEnd
+entryEnd
