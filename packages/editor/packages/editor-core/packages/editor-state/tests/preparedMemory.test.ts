@@ -46,9 +46,9 @@ int8u[] narrowLength 1 3
 moduleEnd
 entryEnd`;
 
-async function setup(type = 'float') {
+async function setup(type = 'float', startingMemoryAllocationUnitAddress?: number) {
 	const project = parseProjectSource(source(type));
-	const compiled = await compileProject(project);
+	const compiled = await compileProject(project, { startingMemoryAllocationUnitAddress });
 	const state = createMockState();
 	state.compiler.result = { ...state.compiler.result, ...compiled };
 	state.callbacks.getWordFromMemory = vi.fn();
@@ -111,7 +111,7 @@ describe('prepared memory bindings', () => {
 	});
 
 	it('uses the same typed dereferences for allocated and fixed pointers', async () => {
-		const { state, views, access, memory } = await setup('int16');
+		const { state, views, access, memory } = await setup('int16', 0);
 		state.callbacks.getWordFromMemory = index => views.int32[index];
 		const direct = prepareNumericRead(access('**indirect[1]'))!;
 		const fixed = prepareNumericRead(access('**fixedPointer[1]'))!;
@@ -126,6 +126,7 @@ describe('prepared memory bindings', () => {
 		views.int16[memory.alternate.byteAddress / 2 + 1] = 32767;
 		expect(resolve('*indirect')?.memory).toBe(memory.pointer);
 		expect(resolve('**indirect')?.memory).toBe(memory.samples);
+		expect(memory.samples.byteAddress).toBe(0);
 		expect(resolve('**fixedPointer')?.memory).toBe(memory.samples);
 		expect(readNumericValue(direct, views)).toBe(-32768);
 		expect(readNumericValue(fixed, views)).toBe(-32768);
@@ -135,7 +136,7 @@ describe('prepared memory bindings', () => {
 		expect(readNumericValue(direct, views)).toBe(32767);
 		expect(readNumericValue(fixed, views)).toBe(32767);
 
-		views.int32[memory.indirect.allocationUnitAddress] = -1;
+		views.int32[memory.indirect.allocationUnitAddress] = views.int32.byteLength;
 		expect(resolve('**indirect')).toBeUndefined();
 		expect(readNumericValue(direct, views)).toBeUndefined();
 		expect(readNumericValue(fixed, views)).toBe(32767);

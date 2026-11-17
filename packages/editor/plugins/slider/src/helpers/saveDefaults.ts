@@ -73,5 +73,8 @@ function getSliderDefaults(sliders: Slider[], read: (address: number) => number)
 export function getSliderDefaultEdits(state: State, sliders: Slider[]): MemoryDefaultEdit[] {
 	const read = state.callbacks.getWordFromMemory;
 	if (!read) return [];
-	return getMemoryDefaultEdits(state, getSliderDefaults(sliders, read));
+	return getMemoryDefaultEdits(
+		state,
+		getSliderDefaults(sliders, address => read(address) ?? 0)
+	);
 }

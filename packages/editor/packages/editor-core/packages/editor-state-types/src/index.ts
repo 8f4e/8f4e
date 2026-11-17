@@ -132,8 +132,8 @@ export type EditorMode = 'view' | 'edit';
 
 // Core-provided memory callbacks.
 export interface Callbacks {
-	// Memory manipulation callback
-	getWordFromMemory?: (allocationUnitAddress: number) => number;
+	/** Reads a 32-bit word or returns undefined when the index is outside the current memory. */
+	getWordFromMemory?: (allocationUnitAddress: number) => number | undefined;
 }
 
 // Options interface for editor initialization (top-level public API)

@@ -47,7 +47,8 @@ export function createSwitchPlugin({
 					);
 				if (!control) return;
 				event.stopPropagation = true;
-				const value = state.callbacks.getWordFromMemory?.(control.allocationUnitAddress);
+				const readWord = state.callbacks.getWordFromMemory;
+				const value = readWord && (readWord(control.allocationUnitAddress) ?? 0);
 				writeMemory(
 					control.allocationUnitAddress,
 					value === control.offValue ? control.onValue : control.offValue,
