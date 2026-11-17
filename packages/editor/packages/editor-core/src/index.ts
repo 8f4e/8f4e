@@ -168,9 +168,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		store = initState(events, {
 			...options,
 			callbacks: {
-				getWordFromMemory: (allocationUnitAddress: number) => {
-					return memoryViews.int32[allocationUnitAddress] || 0;
-				},
+				getWordFromMemory: (allocationUnitAddress: number) => memoryViews.int32[allocationUnitAddress],
 			},
 		});
 		cleanups.push(() => store.dispose());

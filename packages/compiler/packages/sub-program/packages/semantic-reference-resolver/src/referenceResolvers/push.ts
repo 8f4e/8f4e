@@ -1,10 +1,8 @@
 import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ArgumentType,
-	BASE_TYPE_METADATA,
 	type CodegenPushLine,
 	ErrorCode,
-	getMemoryBaseType,
 	getPointerDepthFromMetadata,
 	type LocalValueMetadata,
 	type MemoryPointerIdentifier,
@@ -99,8 +97,9 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const pointerArgument = argument as MemoryPointerIdentifier;
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
-				validateDereferenceDepth(pointerArgument, 1, line, context);
-				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[getMemoryBaseType(slot.targetMemory)].wordSize) {
+				const memory = slot.targetMemory;
+				validateDereferenceDepth(pointerArgument, memory.pointerDepth + 1, line, context);
+				if (memory.allocatedByteLength < memory.elementWordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 				}
 				return { ...line, arguments: [pointerArgument], resolvedTarget: { kind: 'reference', slot } };

@@ -248,6 +248,33 @@ describe('connectors plugin', () => {
 		expect(gl.drawArraysInstanced).toHaveBeenCalledOnce();
 	});
 
+	it('connects a double pointer to a pointer slot without a fixed reference', async () => {
+		const drawLine = vi.spyOn(LineDrawer.prototype, 'drawLine');
+		const { state, render } = await setup(`8f4e/v1
+entry main
+module source
+; @pos 30 2
+int value 42
+int* slot &value
+moduleEnd
+module sink
+; @pos 2 12
+int** input &source:slot
+moduleEnd
+entryEnd`);
+		const sourceBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const { vGrid, hGrid, x, y } = state.viewport;
+		render();
+		expect(drawLine).toHaveBeenCalledTimes(2);
+		expect(drawLine.mock.calls[1].slice(0, 4)).toEqual([
+			sink.x + Math.round(vGrid * 1.5) - x,
+			sink.y + Math.round(hGrid * 2.5) - y,
+			sourceBlock.x + Math.round(sourceBlock.width - vGrid * 1.5) - x,
+			sourceBlock.y + Math.round(hGrid * 3.5) - y,
+		]);
+	});
+
 	it('hides wires during dialogs and highlights connections for the selected input block', async () => {
 		const { state, gl, render } = await setup();
 		state.dialogStack.push({ id: 'test', title: 'Test', text: '', buttons: [] });

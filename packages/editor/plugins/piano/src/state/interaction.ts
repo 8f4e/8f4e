@@ -1,10 +1,4 @@
-import type {
-	CodeBlockGraphicData,
-	CodeBlockPointerDownEvent,
-	EventDispatcher,
-	InternalPointerEvent,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockPointerDownEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { PianoKeyboard } from '../types';
 
@@ -67,7 +61,7 @@ export function registerPianoInteraction(
 
 		event.stopPropagation = true;
 		const noteNumber = keyboard.startingMidiNote + key;
-		const pressedKeys = readRuntimePressedKeys(keyboard, getWordFromMemory);
+		const pressedKeys = readRuntimePressedKeys(keyboard, address => getWordFromMemory(address) ?? 0);
 		if (pressedKeys.has(noteNumber)) {
 			pressedKeys.delete(noteNumber);
 		} else {

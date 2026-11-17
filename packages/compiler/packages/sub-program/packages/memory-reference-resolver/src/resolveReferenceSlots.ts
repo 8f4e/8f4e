@@ -5,7 +5,7 @@ import {
 	isReferenceSlotLine,
 	type ModuleAST,
 	type ResolvedReferenceSlot,
-	referenceSlotBaseTypes,
+	referenceSlotTargetTypes,
 } from '@8f4e/language-spec';
 import type { MemoryReferenceResolutionContext } from './context';
 import { resolveMemoryTarget } from './resolveMemoryTarget';
@@ -27,8 +27,9 @@ export function resolveReferenceSlots(ast: ModuleAST, context: MemoryReferenceRe
 			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, { symbol: ast.id, details: { identifier: target.value } });
 		}
 		const memory = resolved.targetMemory;
-		const baseType = referenceSlotBaseTypes[line.instruction];
-		if (memory.pointerDepth !== 0 || getMemoryBaseType(memory) !== baseType) {
+		const targetType = referenceSlotTargetTypes[line.instruction];
+		const baseType = memory.pointeeBaseType ?? getMemoryBaseType(memory);
+		if (memory.pointerDepth !== targetType.pointerDepth || baseType !== targetType.baseType) {
 			throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: ast.id });
 		}
 		slots[name.value] = {

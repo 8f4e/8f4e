@@ -4,7 +4,8 @@
 
 The push instruction pushes a literal, constant, local, memory value, or address onto the stack.
 For a [fixed reference slot](declarations-and-locals.md#fixed-reference-slots), `push slot` pushes its compile-time
-target address and `push *slot` reads the current target value with one typed load.
+target address and `push *slot` reads the current target value with one load. For `int*&`, `int16*&`, and
+`float*&`, that first load returns a pointer, and `push **slot` follows the pointer and reads the selected value.
 For identifier prefixes and metadata queries that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
 Float64 literals use the `f64` suffix; unsuffixed float literals default to float32.

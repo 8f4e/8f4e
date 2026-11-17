@@ -20,8 +20,9 @@ Disposal removes its subscriptions, sprite-reload listener, and drawer contribut
 Module-specific stack analysis, execution order, and live-memory details belong only to the active source definition.
 Overridden blocks retain instruction documentation without displaying another definition's compiler metadata.
 
-Fixed reference declarations (`int&`, `int8&`, `int8u&`, `int16&`, `int16u&`, `float&`, and `float64&`) show their
-resolved target byte address as `value` and the live target value as `deref`. Buffer targets show their first element.
+Fixed reference declarations show their resolved target byte address as `value` and the live target value as
+`deref`. Buffer targets show their first element. For `int*&`, `int16*&`, and `float*&`, `deref` shows the pointer
+value and `deref twice` shows the typed value at its current address.
 Fixed references allocate no pointer storage. Both fixed references and allocated declarations resolve targets
 through the shared editor-state memory resolver during preparation. Rows contain static text or a shared prepared
 numeric read, which can use fixed storage or a live pointer. The shared memory API owns view selection, typed indices,

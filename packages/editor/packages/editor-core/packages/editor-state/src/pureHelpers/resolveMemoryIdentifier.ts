@@ -1,5 +1,11 @@
 import type { MemoryIdentifier, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
+import {
+	getStorageDereferenceDepth,
+	isAddressAccess,
+	prepareStorageAddress,
+	readByteAddress,
+} from './memoryAddressBinding';
 import resolveMemoryTarget, { type MemoryScope, type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
 type MemoryPlanLookup = State['compiler']['result']['memoryPlan'];
@@ -43,7 +49,7 @@ export function getDeclarationsByByteAddress(
 
 export interface MemoryAccessOptions {
 	showAddress?: boolean;
-	dereference?: boolean;
+	dereferenceDepth?: 0 | 1 | 2;
 	bufferPointer?: number;
 }
 
@@ -62,22 +68,23 @@ export interface ResolvedMemoryAccess extends MemoryIdentifier {
 export function resolveMemoryAccess(
 	state: State,
 	target: ResolvedMemoryTarget,
-	{ showAddress = false, dereference = false, bufferPointer = 0 }: MemoryAccessOptions = {}
+	options: MemoryAccessOptions = {}
 ): ResolvedMemoryAccess | undefined {
-	const { memory, reference } = target;
-	if (reference) {
-		// A bare fixed reference is its target address; * reads the target without a runtime pointer load.
-		if (showAddress) return;
-		return { showAddress: !dereference, memory, bufferPointer, target };
-	}
+	const access = { target, options };
+	const depth = getStorageDereferenceDepth(access);
+	if (depth === undefined) return;
 
-	if (dereference && memory.pointeeBaseType) {
-		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
-		const pointee = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
-		return pointee && { showAddress, memory: pointee, bufferPointer, target };
-	}
+	const { memory } = target;
+	const bufferPointer = options.bufferPointer ?? 0;
+	const showAddress = isAddressAccess(access);
+	if (depth === 0) return { showAddress, memory, bufferPointer, target };
 
-	return { showAddress, memory, bufferPointer, target };
+	const readWord = state.callbacks.getWordFromMemory;
+	if (!readWord) return;
+	const address = readByteAddress(prepareStorageAddress(memory, depth), readWord);
+	const pointee =
+		address === undefined ? undefined : getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(address);
+	return pointee && { showAddress, memory: pointee, bufferPointer, target };
 }
 
 /** Parses an access and resolves its declaration once; prepare again when compiler metadata or source changes. */
@@ -90,20 +97,11 @@ export function prepareMemoryAccess(
 		return;
 	}
 
-	let showAddress = false;
-	let operator: '&' | '*' | undefined;
+	const operator = /^(&|\*{1,2})/.exec(memoryIdentifier)?.[0] ?? '';
+	const showAddress = operator === '&';
+	const dereferenceDepth = operator === '**' ? 2 : operator === '*' ? 1 : 0;
+	memoryIdentifier = memoryIdentifier.slice(operator.length);
 	let bufferPointer = 0;
-
-	if (memoryIdentifier.startsWith('&')) {
-		operator = '&';
-		showAddress = true;
-		memoryIdentifier = memoryIdentifier.substring(1);
-	}
-
-	if (memoryIdentifier.startsWith('*')) {
-		operator = '*';
-		memoryIdentifier = memoryIdentifier.substring(1);
-	}
 
 	if (/.+\[(\d+)\]/.test(memoryIdentifier)) {
 		const match = memoryIdentifier.match(/.+\[(\d+)\]/) as [never, string];
@@ -113,7 +111,7 @@ export function prepareMemoryAccess(
 
 	const target = resolveMemoryTarget(state, scope, memoryIdentifier);
 	if (!target) return;
-	return { target, options: { showAddress, dereference: operator === '*', bufferPointer } };
+	return { target, options: { showAddress, dereferenceDepth, bufferPointer } };
 }
 
 /** Resolves a named access, including the current target of a dereferenced runtime pointer. */

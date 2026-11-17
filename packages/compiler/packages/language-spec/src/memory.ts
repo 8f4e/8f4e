@@ -30,6 +30,7 @@ export const arrayMemoryDeclarationInstructions = [
 	'int8[]',
 	'int8u[]',
 	'int16[]',
+	'int16*[]',
 	'int16u[]',
 	'int32[]',
 	'float*[]',

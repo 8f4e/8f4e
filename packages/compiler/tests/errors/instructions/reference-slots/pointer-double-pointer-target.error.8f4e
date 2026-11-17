@@ -1,0 +1,7 @@
+8f4e/v1
+entry main
+module invalid
+int16** target
+int16*& ref &target
+moduleEnd
+entryEnd

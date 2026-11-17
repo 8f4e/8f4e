@@ -1,5 +1,5 @@
+import { referenceSlotInstructions } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-
 import { describeSourceLine } from './sourceLine';
 
 describe('tooltip source line helpers', () => {
@@ -26,7 +26,7 @@ describe('tooltip source line helpers', () => {
 		expect(describeSourceLine('add').declaration).toBeUndefined();
 	});
 
-	it.each(['int&', 'int8&', 'int8u&', 'int16&', 'int16u&', 'float&', 'float64&'])(
+	it.each(referenceSlotInstructions)(
 		'extracts %s identifiers without treating them as allocated memory',
 		instruction => {
 			const line = `  ${instruction} input &source:0 ; fixed target`;

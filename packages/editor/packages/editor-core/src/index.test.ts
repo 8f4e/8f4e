@@ -86,15 +86,21 @@ describe('editor init', () => {
 			releaseCompiler.mock.invocationCallOrder[0]
 		);
 	});
-	it('refreshes memory views from accepted compilation events', async () => {
+	it('distinguishes unavailable memory words from zero in accepted memory views', async () => {
 		const { default: init } = await import('./index');
+		const { default: initState } = await import('@8f4e/editor-state');
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
 		const accept = events.on.mock.calls.find(([name]) => name === 'compilationSucceeded')![1];
+		const readWord = vi.mocked(initState).mock.lastCall![1].callbacks!.getWordFromMemory!;
+		expect(readWord(0)).toBeUndefined();
 		const memoryRef = new WebAssembly.Memory({ initial: 1 });
 		new Int32Array(memoryRef.buffer)[1] = 22;
 		const artifacts: ProgramArtifacts = { memoryRef };
 		accept(artifacts);
 		expect(editor.getMemoryViews().int32[1]).toBe(22);
+		expect(readWord(0)).toBe(0);
+		expect(readWord(1)).toBe(22);
+		expect(readWord(editor.getMemoryViews().int32.length)).toBeUndefined();
 		editor.dispose();
 		expect(events.off).toHaveBeenCalledWith('compilationSucceeded', accept);
 	});

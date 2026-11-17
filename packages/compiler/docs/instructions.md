@@ -86,6 +86,7 @@
   - [int[]](instructions/declarations-and-locals.md#int-1)
   - [float[]](instructions/declarations-and-locals.md#float-1)
   - [float64[]](instructions/declarations-and-locals.md#float64-1)
+  - [Fixed reference slots](instructions/declarations-and-locals.md#fixed-reference-slots)
   - [local](instructions/declarations-and-locals.md#local)
   - [localSet](instructions/declarations-and-locals.md#localset)
 

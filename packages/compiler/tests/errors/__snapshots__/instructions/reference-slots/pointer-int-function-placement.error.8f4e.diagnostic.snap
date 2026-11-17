@@ -1,0 +1,13 @@
+{
+  "code": 12,
+  "domain": "syntax",
+  "instruction": "int*&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 1,
+    "projectBlockId": 2,
+    "projectGroupPath": "",
+  },
+  "message": "Instruction is not allowed in this block.",
+}

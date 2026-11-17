@@ -1,0 +1,14 @@
+{
+  "code": 80,
+  "domain": "semantic",
+  "instruction": "localSet",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 4,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Fixed reference slot "ref" cannot be rebound. (80)",
+  "symbol": "invalid",
+}

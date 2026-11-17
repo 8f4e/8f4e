@@ -243,7 +243,7 @@ entryEnd
 
 ### int[]
 
-The int[] instruction declares a buffer of integers in module memory. Variants include `int8[]`, `int8u[]`, `int16[]`, `int16u[]`, `int32[]`, `int*[]`, and `int**[]`.
+The int[] instruction declares a buffer of integers in module memory. Variants include `int8[]`, `int8u[]`, `int16[]`, `int16u[]`, `int32[]`, `int*[]`, `int16*[]`, and `int**[]`.
 
 Unsigned variants (`int8u[]`, `int16u[]`) interpret values as unsigned integers (0-255 for int8u, 0-65535 for int16u) in debuggers, plotters, and when using min/max prefixes.
 Buffer size arguments also support constant expressions with exactly one operator (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`). Fractional results can be converted explicitly with `round(...)`, `floor(...)`, or `ceil(...)`.
@@ -314,8 +314,8 @@ push max(*samples)
 push min(*samples)
 ```
 
-A fixed slot reserves no memory and needs no runtime initialization. It resolves after memory allocation, and reading
-through it emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
+A fixed reference reserves no memory and needs no runtime initialization. Its binding resolves after memory
+allocation. Dereferencing a scalar reference emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
 and a float value followed by `store` updates `oscillator:output`.
 
 Targets can be selected by name or by their zero-based declaration index: `&memories:0` selects the first memory
@@ -330,13 +330,41 @@ local names and follow the same non-constant naming convention as memory declara
 
 Fixed slots have no addressable storage of their own: `&slot` and `end(slot)` report this explicitly. Use `push slot` for
 the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
-Initializers must select an allocated, non-pointer memory item by name or declaration index. Numeric addresses,
+Initializers must select an allocated memory declaration of the matching type. Numeric addresses,
 address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
 Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
 
 The editor draws an input connector at each fixed declaration and resolves its wire from the compiled target.
-Use allocated pointers such as `float*` for connections that must change during execution. Direct intermodular
-operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+Direct intermodular operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+
+#### Fixed references to pointer slots
+
+`int*&`, `int16*&`, and `float*&` bind to allocations of `int*`, signed `int16*`, and `float*` respectively.
+Each form accepts a single pointer slot or the start of an array of matching pointer slots. The scalar reference
+forms above require non-pointer targets.
+
+```8f4e
+int16*& selected &sampleSelector:current
+
+push selected    ; address of current, typed int16**
+drop
+push *selected   ; address currently stored in current, typed int16*
+drop
+push **selected  ; signed sample at the current address, typed int
+drop
+
+push selected
+push &sampleSelector:nextBuffer
+store            ; writes a four-byte pointer to current
+```
+
+The first dereference reads one four-byte pointer word. The second follows that live pointer and reads an integer
+word, signed 16-bit value, or float32 value according to the declaration. With memory guards enabled, the compiler
+bounds-checks accesses through the live pointer. To write a sample, push `*selected` and a value, then use `store`.
+
+`sizeof(*selected)` is `4`, and `count(*selected)` is the number of pointer elements in the bound allocation.
+`end(*selected)` gives the end of that allocation. Supply the current buffer's length separately.
+In the editor, the fixed wire ends at the pointer slot's `[&]` connector. The pointer's own wire follows its current address.
 
 ### local
 

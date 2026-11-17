@@ -160,14 +160,16 @@ unresolved because a fixed reference allocates no addressable slot. Buffer displ
 
 Consumers prepare names once with `prepareMemoryAccess`. Its `PreparedMemoryAccess` retains the resolved declaration
 and parsed address/dereference/index options without reading runtime memory. `prepareAddressBinding` turns an address
-source into a fixed byte address or a runtime pointer-slot index plus a byte offset. An explicit dereference of a
-double pointer prepares two live pointer loads. `readByteAddress` accepts the binding and the current 32-bit pointer
-view; it performs no name lookup or allocation.
+source into a fixed byte address or a plan for up to two pointer loads. `readByteAddress` reads the current
+32-bit pointer words using that plan.
 
-`prepareNumericRead` describes scalar storage or an explicit dereference. `prepareAddressedRead` describes samples
-at an address source, following a typed pointer implicitly or both pointer levels for `*doublePointer`.
-The sample type comes from the final pointee after those loads. Both produce `PreparedNumericRead`: the typed-view kind,
-element byte size, default display bounds, and a fixed typed-element index or live address binding. `readNumericValue`
+`prepareNumericRead` describes scalar storage or an explicit dereference. Each `*` follows one allocated pointer.
+For a fixed reference, the first `*` selects the bound declaration, and additional dereferences follow its live
+pointers. For example, `**doublePointer` follows two live pointers, while `**fixedPointer` follows one pointer stored
+in the bound slot. The declaration determines the resulting type and supported depth.
+`prepareAddressedRead` describes samples at an address source, following a typed pointer implicitly or both pointer
+levels for `*doublePointer`. Both produce `PreparedNumericRead`, which holds the typed-view kind, element byte size,
+default display bounds, and a fixed typed-element index or live address binding. `readNumericValue`
 reads current structural numeric views; `readElementIndex` supplies the index for buffer drawing loops. These helpers
 depend on no renderer and retain no runtime views. Plugins keep radix, precision, text, colors, and overload behavior.
 

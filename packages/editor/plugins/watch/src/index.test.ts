@@ -42,6 +42,43 @@ describe('watch plugin', () => {
 			]);
 		}
 	);
+	it('reads the bound pointer slot and follows its live pointee in named and inline watches', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int16[] first 2 -32768 123',
+			'int16[] second 2 32767 -123',
+			'int16* selected &first',
+			'int16** indirect &selected',
+			'int16*& ref &selected ; @watch **[1]',
+			'; @watch ref',
+			'; @watch *ref',
+			'; @watch **ref',
+			'; @watch **indirect',
+			'; @watch &ref',
+			'moduleEnd',
+		]);
+		const { first, second, selected } = test.compiled.memoryPlan.modules.audio.memory;
+		const renderValues = () => {
+			test.render();
+			return vi.mocked(test.draw.drawNumericText).mock.calls.map(([, , value]) => value);
+		};
+
+		expect(renderValues()).toEqual([
+			'123',
+			String(selected.byteAddress),
+			String(first.byteAddress),
+			'-32768',
+			'-32768',
+		]);
+		test.memoryViews.int32[selected.allocationUnitAddress] = second.byteAddress;
+		expect(renderValues()).toEqual([
+			'-123',
+			String(selected.byteAddress),
+			String(second.byteAddress),
+			'32767',
+			'32767',
+		]);
+	});
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {
 		const test = await setup(plugin, ['module audio', `int 7 ; @${directive}`, 'moduleEnd']);
 		test.render();

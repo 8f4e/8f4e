@@ -15,6 +15,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 	const height = state.viewport.hGrid;
 	const isProjectGroup = codeBlock.childProject !== undefined;
 	const addConnector = (memory: PlannedMemoryDeclaration, row: number) => {
+		if (memory.pointerDepth > 0 && memory.numberOfElements === 0) return;
 		const y = row * height;
 		const wireY = Math.round(y + height / 2);
 		if (isInputMemoryDeclaration(memory)) {
@@ -25,7 +26,8 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 				wireY,
 				source: { kind: 'pointer', allocationUnitAddress: memory.allocationUnitAddress },
 			});
-		} else if (isProjectGroup || isOutputMemoryDeclaration(memory)) {
+		}
+		if (isProjectGroup || isOutputMemoryDeclaration(memory)) {
 			const x = codeBlock.width - width;
 			widgets.outputs.push({
 				codeBlock,

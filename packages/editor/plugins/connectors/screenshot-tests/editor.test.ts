@@ -1,5 +1,10 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor, type EditorPlugin, type EditorPluginContext } from '@8f4e/editor-core';
+import initEditor, {
+	type Editor,
+	type EditorPlugin,
+	type EditorPluginContext,
+	getEditorBlockId,
+} from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
@@ -31,12 +36,16 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
+async function initDefaults(codeBuffer: Uint8Array, memory: WebAssembly.Memory) {
+	const { instance } = await WebAssembly.instantiate(new Uint8Array(codeBuffer), { host: { memory } });
+	(instance.exports.initDefaults as CallableFunction)();
+}
+
 async function setup(text = source) {
 	const project = parseProjectSource(text);
 	const compiled = await compileProject(project);
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
-	const { instance } = await WebAssembly.instantiate(new Uint8Array(compiled.codeBuffer), { host: { memory } });
-	(instance.exports.initDefaults as CallableFunction)();
+	await initDefaults(compiled.codeBuffer, memory);
 	const canvas = document.createElement('canvas');
 	canvas.width = 800;
 	canvas.height = 400;
@@ -77,7 +86,28 @@ async function setup(text = source) {
 		editor.renderFrame();
 	};
 	render();
-	return { editor, canvas, render, events: editorEvents!, context, memory };
+	return { editor, canvas, render, events: editorEvents!, context, memory, project, compiled };
+}
+
+function registerSourceText(context: EditorPluginContext) {
+	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
+	const removePreparation = context.layout.subscribe(({ codeBlock }) => {
+		glyphsByBlock.set(
+			codeBlock,
+			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
+		);
+	});
+	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+		codeBlock.displayModel.lines.forEach((line, row) =>
+			draw.drawGlyphs(
+				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+				glyphsByBlock.get(codeBlock)![row],
+				PALETTE_INDICES.inkBase
+			)
+		);
+	});
+	cleanups.push(removeText, removePreparation);
 }
 
 test('renders expanded shape and paramShape declarations with aligned connectors', async () => {
@@ -106,24 +136,7 @@ moduleEnd
 entryEnd`);
 	const plan = editor.state.compiler.result.memoryPlan.modules;
 	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
-	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
-	const removePreparation = context.layout.subscribe(({ codeBlock }) => {
-		glyphsByBlock.set(
-			codeBlock,
-			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
-		);
-	});
-	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
-		codeBlock.displayModel.lines.forEach((line, row) =>
-			draw.drawGlyphs(
-				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
-				glyphsByBlock.get(codeBlock)![row],
-				PALETTE_INDICES.inkBase
-			)
-		);
-	});
-	cleanups.push(removeText, removePreparation);
+	registerSourceText(context);
 	render();
 	await expect(canvas).toMatchScreenshot('expanded-declarations');
 });
@@ -154,6 +167,77 @@ test('renders fixed reference wires without allocated pointer slots and restores
 	editor.resize(800, 400);
 	render();
 	await expect(canvas).toMatchScreenshot('fixed-reference-wires');
+});
+
+test('keeps the fixed wire on the exposed pointer slot as its live wire moves', async () => {
+	const { editor, canvas, render, context, project, compiled, memory } = await setup(`8f4e/v1
+constants env
+; @pos 100 100
+constantsEnd
+entry main
+group storage
+; @pos 32 10
+expose selected &selector:address
+entry main
+module samples
+; @pos 2 2
+int16[] buffer 2 -32768 123
+moduleEnd
+module selector
+; @pos 34 8
+int16* address &samples:buffer
+moduleEnd
+module monitor
+; @pos 12 18
+int16*& input &selector:address
+moduleEnd
+entryEnd
+groupEnd
+module firstBuffer
+; @pos 2 2
+int16[] samples 2 -32768 123
+moduleEnd
+module secondBuffer
+; @pos 49 2
+int16[] samples 2 32767 -123
+moduleEnd
+module player
+; @pos 5 18
+int16*& input &storage:selected
+moduleEnd
+entryEnd`);
+	const words = new Int32Array(memory.buffer);
+	const slot = compiled.memoryPlan.modules['storage/selector'].memory.address;
+	registerSourceText(context);
+	const first = compiled.memoryPlan.modules.firstBuffer.memory.samples;
+	const second = compiled.memoryPlan.modules.secondBuffer.memory.samples;
+
+	words[slot.allocationUnitAddress] = first.byteAddress;
+	render();
+	await expect(canvas).toMatchScreenshot('pointer-reference-first-buffer');
+
+	words[slot.allocationUnitAddress] = second.byteAddress;
+	render();
+	await expect(canvas).toMatchScreenshot('pointer-reference-second-buffer');
+
+	const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'storage')!;
+	words[slot.allocationUnitAddress] = compiled.memoryPlan.modules['storage/samples'].memory.buffer.byteAddress;
+	editor.navigation.openGroup(getEditorBlockId(group));
+	render();
+	await expect(canvas).toMatchScreenshot('pointer-reference-inside-group');
+	editor.navigation.goToRoot();
+
+	const relocated = await compileProject(project, { cache: compiled.cache, startingMemoryAllocationUnitAddress: 32 });
+	words.fill(0);
+	await initDefaults(relocated.codeBuffer, memory);
+	context.store.set('compiler.result', { ...editor.state.compiler.result, ...relocated });
+	context.store.set('compiler.isCompiling', true);
+	context.store.set('compiler.isCompiling', false);
+	const relocatedSlot = relocated.memoryPlan.modules['storage/selector'].memory.address;
+	expect(relocatedSlot.byteAddress).not.toBe(slot.byteAddress);
+	words[relocatedSlot.allocationUnitAddress] = relocated.memoryPlan.modules.secondBuffer.memory.samples.byteAddress;
+	render();
+	await expect(canvas).toMatchScreenshot('pointer-reference-second-buffer');
 });
 
 test('keeps wires on the active override after selecting same-named modules', async () => {

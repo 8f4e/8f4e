@@ -329,6 +329,7 @@ entryEnd`);
 										byteAddress: 4,
 										allocationUnitAddress: 1,
 										elementWordSize: 4,
+										pointerDepth: 0,
 										isInteger: true,
 										isUnsigned: false,
 									},

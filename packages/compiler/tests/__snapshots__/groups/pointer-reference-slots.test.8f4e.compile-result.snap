@@ -1,0 +1,303 @@
+{
+  "functionAst": {},
+  "functionOverview": {},
+  "moduleAst": {
+    "audio/source": {
+      "id": "audio/source",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "audio/source",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "samples",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -32768,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "int16[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pointer",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "samples",
+              "type": "identifier",
+              "value": "&samples",
+            },
+          ],
+          "instruction": "int16*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "localSlot",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "pointer",
+              "type": "identifier",
+              "value": "&pointer",
+            },
+          ],
+          "instruction": "int16*&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 2,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "localSlot",
+              "type": "identifier",
+              "value": "**localSlot",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -32768,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "consumer": {
+      "id": "consumer",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "consumer",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "exposed",
+            },
+            {
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "selected",
+              "targetModuleId": "audio",
+              "type": "identifier",
+              "value": "&audio:selected",
+            },
+          ],
+          "instruction": "int16*&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 2,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "exposed",
+              "type": "identifier",
+              "value": "**exposed",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": -32768,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-word-size",
+              "scope": "local",
+              "targetMemoryId": "exposed",
+              "type": "identifier",
+              "value": "sizeof(*exposed)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-count",
+              "scope": "local",
+              "targetMemoryId": "exposed",
+              "type": "identifier",
+              "value": "count(*exposed)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "exposed",
+              "type": "identifier",
+              "value": "end(*exposed)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "selected",
+              "targetModuleId": "audio",
+              "type": "identifier",
+              "value": "end(audio:selected)",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "audio/source": {
+      "memory": {
+        "pointer": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 4,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int16",
+          "pointeeElementCount": 2,
+          "pointerDepth": 1,
+          "type": "int16*",
+        },
+        "samples": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": {
+            "0": -32768,
+            "1": 4,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "int16",
+        },
+      },
+    },
+    "consumer": {
+      "memory": {},
+    },
+  },
+  "overview": {
+    "compiledFunctions": [],
+    "compiledModules": [
+      "audio/source",
+      "consumer",
+    ],
+    "requiredMemoryBytes": 12,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

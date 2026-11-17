@@ -49,7 +49,7 @@ export function getLiveTooltipContent(
 			maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
 			source: {
 				kind: 'numericRead',
-				read: prepareNumericRead({ target, options: { dereference: true } })!,
+				read: prepareNumericRead({ target, options: { dereferenceDepth: 1 } })!,
 			},
 		});
 	}
@@ -67,21 +67,27 @@ export function getLiveReferenceTooltipContent(
 	}
 	const memory = target.memory;
 
-	return getLiveLinesContent(
-		[
-			{
-				label: 'value: ',
-				maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
-				source: { kind: 'staticText', text: String(memory.byteAddress) },
-			},
-			{
-				label: 'deref: ',
-				maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
-				source: { kind: 'numericRead', read: prepareNumericRead({ target, options: { dereference: true } })! },
-			},
-		],
-		firstLineIndex
-	);
+	const lines: LiveTooltipLine[] = [
+		{
+			label: 'value: ',
+			maxLineLength: 'value: '.length + maxLiveMemoryAddressLength,
+			source: { kind: 'staticText', text: String(memory.byteAddress) },
+		},
+		{
+			label: 'deref: ',
+			maxLineLength: 'deref: '.length + maxLiveMemoryValueLength,
+			source: { kind: 'numericRead', read: prepareNumericRead({ target, options: { dereferenceDepth: 1 } })! },
+		},
+	];
+	if (memory.pointerDepth > 0) {
+		const label = 'deref twice: ';
+		lines.push({
+			label,
+			maxLineLength: label.length + maxLiveMemoryValueLength,
+			source: { kind: 'numericRead', read: prepareNumericRead({ target, options: { dereferenceDepth: 2 } })! },
+		});
+	}
+	return getLiveLinesContent(lines, firstLineIndex);
 }
 
 function getLiveLinesContent(lines: LiveTooltipLine[], firstLineIndex: number): LiveTooltipContent {
