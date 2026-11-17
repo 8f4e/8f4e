@@ -23,6 +23,15 @@ describe('editor directive argument types', () => {
 		expect(isPointerSource('&buffer')).toBe(true);
 		expect(isPointerSource('&buffer[1]')).toBe(false);
 	});
+	it('accepts a single dereferenced pointer name only when enabled', () => {
+		expect(isPointerSource('*address')).toBe(false);
+		for (const value of ['*address', '*player:address', '*sampler/player:address']) {
+			expect(isPointerSource(value, { allowDereference: true })).toBe(true);
+		}
+		for (const value of ['*', '**address', '*&address', '*address[1]', '*address extra']) {
+			expect(isPointerSource(value, { allowDereference: true })).toBe(false);
+		}
+	});
 
 	it('parses finite decimal numbers and exact integers', () => {
 		expect(parseFiniteNumber('-0.5')).toBe(-0.5);

@@ -13,12 +13,20 @@ export function isMemoryAddress(value: string | undefined): value is string {
 	return Boolean(value?.startsWith('&') && isMemoryId(value.slice(1)));
 }
 
-export function isPointerSource(value: string | undefined): value is string {
+/** Validates address sources, optionally allowing one explicit pointer dereference. */
+export function isPointerSource(
+	value: string | undefined,
+	{ allowDereference = false }: { allowDereference?: boolean } = {}
+): value is string {
 	if (!value) {
 		return false;
 	}
 
-	return isMemoryAddress(value) || isMemoryId(value);
+	return (
+		(allowDereference && value.startsWith('*') && isMemoryId(value.slice(1))) ||
+		isMemoryAddress(value) ||
+		isMemoryId(value)
+	);
 }
 
 export function parseFiniteNumber(value: string | undefined): number | undefined {

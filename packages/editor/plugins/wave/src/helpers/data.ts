@@ -10,8 +10,8 @@ export interface WaveDirectiveData {
 export function createWaveDirectiveData(args: string[], lineNumber: number): WaveDirectiveData | undefined {
 	if (
 		(args.length !== 2 && args.length !== 3) ||
-		!isPointerSource(args[0]) ||
-		(args[2] !== undefined && !isPointerSource(args[2]))
+		!isPointerSource(args[0], { allowDereference: true }) ||
+		(args[2] !== undefined && !isPointerSource(args[2], { allowDereference: true }))
 	) {
 		return undefined;
 	}

@@ -6,6 +6,8 @@ describe('wave arguments', () => {
 		{ args: ['start', '16', 'playhead'], length: 16, pointerMemoryId: 'playhead' },
 		{ args: ['&samples', 'length'], length: 'length', pointerMemoryId: undefined },
 		{ args: ['&samples', 'count(samples)'], length: 'count(samples)', pointerMemoryId: undefined },
+		{ args: ['*address', 'length'], length: 'length', pointerMemoryId: undefined },
+		{ args: ['*player:address', 'length', '*playhead'], length: 'length', pointerMemoryId: '*playhead' },
 	])('reads pointer and count arguments from $args', ({ args, length, pointerMemoryId }) => {
 		expect(createWaveDirectiveData(args, 7)).toEqual({
 			startAddressMemoryId: args[0],
@@ -19,8 +21,9 @@ describe('wave arguments', () => {
 		{ args: ['start'] },
 		{ args: ['start', '0'] },
 		{ args: ['start', '-1'] },
-		{ args: ['*start', '16'] },
-		{ args: ['start', '16', '*playhead'] },
+		{ args: ['**start', '16'] },
+		{ args: ['*&start', '16'] },
+		{ args: ['start', '16', '**playhead'] },
 		{ args: ['start', '16', 'playhead', 'extra'] },
 	])('rejects invalid arguments $args', ({ args }) => {
 		expect(createWaveDirectiveData(args, 0)).toBeUndefined();

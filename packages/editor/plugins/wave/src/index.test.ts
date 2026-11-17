@@ -175,6 +175,53 @@ describe('wave plugin', () => {
 		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
 
+	it.each(['wave', 'wave2', 'wave4'] as const)(
+		'draws %s through live double pointers with the final sample type',
+		async directive => {
+			const test = await setup([
+				'module samples',
+				'int16[] values 2 -32768 32767',
+				'int16[] alternate 2 32767 -32768',
+				'int length 2',
+				'moduleEnd',
+				'module audio',
+				'int16* start &samples:values',
+				'int16* next &samples:alternate',
+				'int16* cursor &samples:values',
+				'int16** address &start',
+				'int16** playhead &cursor',
+				'int& length &samples:length',
+				`; @${directive} *address length *playhead`,
+				'moduleEnd',
+			]);
+			const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
+			const samples = test.state.compiler.result.memoryPlan.modules.samples.memory;
+			const height = { wave: 32, wave2: 64, wave4: 128 }[directive]!;
+			const columns = () =>
+				vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+			test.render();
+			expect(columns()[0][1]).toBe(height - 1);
+			expect(columns().at(-1)![1]).toBe(0);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 4, height);
+			// Retarget the outer pointer and playhead without a layout refresh.
+			test.memoryViews.int32[memory.address.allocationUnitAddress] = memory.next.byteAddress;
+			test.memoryViews.int32[memory.cursor.allocationUnitAddress] = samples.alternate.byteAddress + 2;
+			test.render();
+			expect(columns()[0][1]).toBe(0);
+			expect(columns().at(-1)![1]).toBe(height - 1);
+			const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(width - 4, 0, PALETTE_INDICES.secondaryReadable, 4, height);
+			// Retarget the inner pointer through the same prepared binding.
+			test.memoryViews.int32[memory.next.allocationUnitAddress] = samples.values.byteAddress;
+			test.render();
+			expect(columns()[0][1]).toBe(height - 1);
+			expect(columns().at(-1)![1]).toBe(0);
+			test.memoryViews.int32[memory.address.allocationUnitAddress] = -1;
+			test.render();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
+		}
+	);
+
 	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
 		'draws a %s& buffer with a referenced count and playhead',
 		async type => {

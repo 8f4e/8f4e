@@ -13,6 +13,10 @@ pointer memory or a fixed reference such as `float& buffer &samples`. Use its ba
 The count can be a positive integer, a live memory value, or `count(samples)` / `count(buffer)`. The optional third
 argument supplies an absolute playhead address.
 
+For a double pointer such as `int16** address`, use `; @wave *address length`. The display follows both live
+pointer values and reads samples using the final pointee type (`int16` in this case). The optional playhead
+also accepts a dereferenced double pointer. All three waveform height variants support this syntax.
+
 ```ts
 import { wavePlugin } from '@8f4e/editor-plugin-wave';
 
