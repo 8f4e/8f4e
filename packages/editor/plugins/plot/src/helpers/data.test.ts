@@ -5,6 +5,7 @@ describe('plot directive data', () => {
 	it.each([
 		{ args: ['buffer', 'arrayLength'], length: 'arrayLength' },
 		{ args: ['buffer', '128'], length: 128 },
+		{ args: ['*address', 'length'], length: 'length' },
 		{
 			args: ['buffer', 'arrayLength', '-10', '10'],
 			length: 'arrayLength',
@@ -12,7 +13,7 @@ describe('plot directive data', () => {
 			maxValueOverride: 10,
 		},
 	])('interprets element counts and ranges for $args', ({ args, ...values }) => {
-		expect(createPlotDirectiveData(args, 3)).toEqual({ startAddressMemoryId: 'buffer', lineNumber: 3, ...values });
+		expect(createPlotDirectiveData(args, 3)).toEqual({ startAddressMemoryId: args[0], lineNumber: 3, ...values });
 	});
 
 	it.each([['buffer'], ['buffer', '-1', '1']])('rejects a missing count or incomplete range: %s', (...args) => {

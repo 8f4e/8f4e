@@ -13,20 +13,14 @@ export function isMemoryAddress(value: string | undefined): value is string {
 	return Boolean(value?.startsWith('&') && isMemoryId(value.slice(1)));
 }
 
-/** Validates address sources, optionally allowing one explicit pointer dereference. */
-export function isPointerSource(
-	value: string | undefined,
-	{ allowDereference = false }: { allowDereference?: boolean } = {}
-): value is string {
-	if (!value) {
-		return false;
-	}
+/** Validates a named declaration/reference or an explicit declaration address for memory controls. */
+export function isMemoryTarget(value: string | undefined): value is string {
+	return isMemoryAddress(value) || isMemoryId(value);
+}
 
-	return (
-		(allowDereference && value.startsWith('*') && isMemoryId(value.slice(1))) ||
-		isMemoryAddress(value) ||
-		isMemoryId(value)
-	);
+/** Validates a buffer address, typed pointer, or explicitly dereferenced double pointer. */
+export function isPointerSource(value: string | undefined): value is string {
+	return Boolean(value?.startsWith('*') && isMemoryId(value.slice(1))) || isMemoryTarget(value);
 }
 
 export function parseFiniteNumber(value: string | undefined): number | undefined {

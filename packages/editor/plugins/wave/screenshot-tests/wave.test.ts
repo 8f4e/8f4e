@@ -5,7 +5,9 @@ import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { wavePlugin } from '../src/index';
 
-async function drawWaveFixture(indirect = false) {
+type WaveMemory = Awaited<ReturnType<typeof compileProject>>['memoryPlan']['modules'][string]['memory'];
+
+async function drawWaveFixture(source: string, initialize: (views: MemoryViews, memory: WaveMemory) => void) {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 512;
@@ -15,23 +17,7 @@ async function drawWaveFixture(indirect = false) {
 entry main
 module audio
 ; @pos 4 3
-${
-	indirect
-		? `int16[] samples 64
-int16* selected &samples
-int16** buffer &selected
-int16* playhead &samples
-int16** cursor &playhead
-; @wave &samples count(samples) playhead
-; @wave2 *buffer count(samples) *cursor
-; @wave4 *buffer count(samples) *cursor`
-		: `float[] samples 64
-float& buffer &samples
-float* playhead &samples
-; @wave &samples count(samples) playhead
-; @wave2 buffer count(buffer) playhead
-; @wave4 buffer count(buffer) playhead`
-}
+${source}
 moduleEnd
 entryEnd`);
 	const compiled = await compileProject(project);
@@ -70,18 +56,7 @@ entryEnd`);
 		float32: new Float32Array(buffer),
 		float64: new Float64Array(buffer),
 	};
-	const memory = compiled.memoryPlan.modules.audio.memory;
-	for (let index = 0; index < 64; index++) {
-		const value = Math.sin((index * Math.PI * 4) / 63);
-		if (indirect) memoryViews.int16[memory.samples.byteAddress / 2 + index] = Math.round(value * 32767);
-		else memoryViews.float32[memory.samples.allocationUnitAddress + index] = value;
-	}
-	memoryViews.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * (indirect ? 2 : 4);
-	if (indirect) {
-		memoryViews.int32[memory.selected.allocationUnitAddress] = memory.samples.byteAddress;
-		memoryViews.int32[memory.buffer.allocationUnitAddress] = memory.selected.byteAddress;
-		memoryViews.int32[memory.cursor.allocationUnitAddress] = memory.playhead.byteAddress;
-	}
+	initialize(memoryViews, compiled.memoryPlan.modules.audio.memory);
 
 	const renderer = await initView(store, events, canvas, memoryViews, {
 		loading: store.loading,
@@ -99,5 +74,37 @@ entryEnd`);
 	}
 }
 
-test('wave plugin draws all heights with a live playhead', () => drawWaveFixture());
-test('wave plugin follows double pointers to int16 samples', () => drawWaveFixture(true));
+test('wave plugin draws all heights with a live playhead', () =>
+	drawWaveFixture(
+		`float[] samples 64
+float& buffer &samples
+float* playhead &samples
+; @wave &samples count(samples) playhead
+; @wave2 buffer count(buffer) playhead
+; @wave4 buffer count(buffer) playhead`,
+		(views, memory) => {
+			for (let index = 0; index < 64; index++)
+				views.float32[memory.samples.byteAddress / 4 + index] = Math.sin((index * Math.PI * 4) / 63);
+			views.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
+		}
+	));
+
+test('wave plugin follows double pointers to int16 samples', () =>
+	drawWaveFixture(
+		`int16[] samples 64
+int16* selected &samples
+int16** buffer &selected
+int16* playhead &samples
+int16** cursor &playhead
+; @wave &samples count(samples) playhead
+; @wave2 *buffer count(samples) *cursor
+; @wave4 *buffer count(samples) *cursor`,
+		(views, memory) => {
+			for (let index = 0; index < 64; index++)
+				views.int16[memory.samples.byteAddress / 2 + index] = Math.round(Math.sin((index * Math.PI * 4) / 63) * 32767);
+			views.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 2;
+			views.int32[memory.selected.allocationUnitAddress] = memory.samples.byteAddress;
+			views.int32[memory.buffer.allocationUnitAddress] = memory.selected.byteAddress;
+			views.int32[memory.cursor.allocationUnitAddress] = memory.playhead.byteAddress;
+		}
+	));

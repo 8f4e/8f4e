@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	isMemoryAddress,
 	isMemoryId,
+	isMemoryTarget,
 	isPointerSource,
 	parseElementCount,
 	parseFiniteNumber,
@@ -23,13 +24,18 @@ describe('editor directive argument types', () => {
 		expect(isPointerSource('&buffer')).toBe(true);
 		expect(isPointerSource('&buffer[1]')).toBe(false);
 	});
-	it('accepts a single dereferenced pointer name only when enabled', () => {
-		expect(isPointerSource('*address')).toBe(false);
+	it('separates control targets from dereferenced pointer sources', () => {
+		for (const value of ['address', '&address', 'player:address', '&sampler/player:address']) {
+			expect(isMemoryTarget(value)).toBe(true);
+			expect(isPointerSource(value)).toBe(true);
+		}
 		for (const value of ['*address', '*player:address', '*sampler/player:address']) {
-			expect(isPointerSource(value, { allowDereference: true })).toBe(true);
+			expect(isMemoryTarget(value)).toBe(false);
+			expect(isPointerSource(value)).toBe(true);
 		}
 		for (const value of ['*', '**address', '*&address', '*address[1]', '*address extra']) {
-			expect(isPointerSource(value, { allowDereference: true })).toBe(false);
+			expect(isMemoryTarget(value)).toBe(false);
+			expect(isPointerSource(value)).toBe(false);
 		}
 	});
 

@@ -39,14 +39,15 @@ describe('bars plugin', () => {
 			expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeGreaterThan(1);
 		}
 	);
-	it('reads an indirect buffer and a runtime length on each frame', async () => {
+	it.each(['pointer', '*address'])('reads %s and a runtime length on each frame', async source => {
 		const test = await setup(barsPlugin, [
 			'module audio',
 			'int8[] samples 4 0 1 2 3',
 			'int8[] alternate 4 3 2 1 0',
 			'int8* pointer &samples',
+			'int8** address &pointer',
 			'int length 4',
-			'; @bars pointer length 0 3',
+			`; @bars ${source} length 0 3`,
 			'moduleEnd',
 		]);
 		test.render();

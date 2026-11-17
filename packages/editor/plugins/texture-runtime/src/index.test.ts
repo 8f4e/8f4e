@@ -493,9 +493,11 @@ entryEnd`,
 	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
 });
 
-it('resolves pointers after entry execution and follows double buffering', async () => {
-	const test = await setup({
-		source: `8f4e/v1
+it.each(['pointer', '*address'])(
+	'resolves %s after entry execution and follows double buffering',
+	async addressSource => {
+		const test = await setup({
+			source: `8f4e/v1
 note config
 ${settings}
 noteEnd
@@ -505,23 +507,25 @@ module screen
 int first 0x44332211
 int second 0x88776655
 int8u* pointer &first
+int8u** address &pointer
 int frames 0
-; @textureUpload pointer rgba 1 1
-; @texture pointer 16 1 1
+; @textureUpload ${addressSource} rgba 1 1
+; @texture ${addressSource} 16 1 1
 push &pointer
 push &second
 store
 moduleEnd
 entryEnd`,
-	});
-	await test.settle();
-	test.frame();
-	expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([85, 102, 119, 136]);
-	// A view may use a different pointer symbol as long as its current address matches.
-	test.editTextures('; @textureUpload &second rgba 1 1\n; @texture pointer 16 1 1');
-	test.frame();
-	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
-});
+		});
+		await test.settle();
+		test.frame();
+		expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([85, 102, 119, 136]);
+		// A view may use a different pointer symbol as long as its current address matches.
+		test.editTextures(`; @textureUpload &second rgba 1 1\n; @texture ${addressSource} 16 1 1`);
+		test.frame();
+		expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
+	}
+);
 
 it('follows a changing pointer in another module without a separate display slot', async () => {
 	const test = await setup({

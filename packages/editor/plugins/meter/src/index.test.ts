@@ -57,12 +57,13 @@ describe('meter plugin', () => {
 			test.state.viewport.hGrid
 		);
 	});
-	it('reads pointer sources and honors explicit ranges', async () => {
+	it.each(['pointer', '*address'])('reads %s and honors explicit ranges', async source => {
 		const test = await setup(meterPlugin, [
 			'module audio',
 			'float level 0.5',
 			'float* pointer &level',
-			'; @meter pointer 0 1',
+			'float** address &pointer',
+			`; @meter ${source} 0 1`,
 			'moduleEnd',
 		]);
 		test.render();

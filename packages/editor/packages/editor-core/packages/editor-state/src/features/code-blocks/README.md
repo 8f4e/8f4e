@@ -186,6 +186,8 @@ result includes storage and access flags plus the original source target; frame 
 
 Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
 fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
+Directive arguments use `isMemoryTarget` for control targets and `isPointerSource` for display sources. Pointer
+sources additionally accept `*address` to follow a double pointer; controls use declaration addresses and references.
 `getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory.
 It returns `undefined` for rows without a memory declaration and `{ target: undefined }` for declarations awaiting
 matching accepted compiler metadata, allowing widgets to reserve layout space while compilation is pending.

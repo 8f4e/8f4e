@@ -27,6 +27,8 @@ it('requires view dimensions and defaults the source origin to zero', () => {
 		crop: { x: 1, y: 3, width: 4, height: 5 },
 	});
 	expect(parseTextureUploadDirective(['pointer', 'mono', '2', '2'])?.address).toBe('pointer');
+	expect(parseTextureUploadDirective(['*pointer', 'mono', '2', '2'])?.address).toBe('*pointer');
+	expect(parseTextureDirective(['*pointer', '4', '8', '6'])?.address).toBe('*pointer');
 });
 it.each([
 	['2:4', 2, 4],

@@ -1,4 +1,4 @@
-import { isPointerSource, parseFiniteNumber } from '@8f4e/editor-state';
+import { isMemoryTarget, parseFiniteNumber } from '@8f4e/editor-state';
 
 export interface SliderDirectiveData {
 	memoryId: string;
@@ -9,7 +9,7 @@ export interface SliderDirectiveData {
 }
 
 export function createSliderDirectiveData(args: string[], sourceLineIndex: number): SliderDirectiveData | undefined {
-	if (args.length < 1 || args.length > 4 || !isPointerSource(args[0])) {
+	if (args.length < 1 || args.length > 4 || !isMemoryTarget(args[0])) {
 		return undefined;
 	}
 

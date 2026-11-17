@@ -15,6 +15,16 @@ import {
 import { getDeclarationsByByteAddress, prepareMemoryAccess } from '~/pureHelpers/resolveMemoryIdentifier';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 
+const sampleTypes = [
+	{ type: 'int8', view: 'int8', size: 1, first: -12, second: 34 },
+	{ type: 'int8u', view: 'uint8', size: 1, first: 200, second: 255 },
+	{ type: 'int16', view: 'int16', size: 2, first: -1234, second: 2345 },
+	{ type: 'int16u', view: 'uint16', size: 2, first: 40000, second: 65535 },
+	{ type: 'int', view: 'int32', size: 4, first: -123456, second: 234567 },
+	{ type: 'float', view: 'float32', size: 4, first: 1.5, second: 2.75 },
+	{ type: 'float64', view: 'float64', size: 8, first: Math.PI, second: Math.E },
+] as const;
+
 const scope = { kind: 'module', moduleId: 'storage' } as const;
 const source = (type = 'float') => `8f4e/v1
 entry main
@@ -64,30 +74,25 @@ describe('prepared memory bindings', () => {
 		expect(read.spec).toMatchObject({ valueType: 'int32', elementByteSize: 4, isInteger: true });
 		expect(readNumericValue(read, views)).toBe(memory.samples.byteAddress);
 	});
-	it.each([
-		{ type: 'int8', view: 'int8', size: 1, first: -12, second: 34 },
-		{ type: 'int8u', view: 'uint8', size: 1, first: 200, second: 255 },
-		{ type: 'int16', view: 'int16', size: 2, first: -1234, second: 2345 },
-		{ type: 'int16u', view: 'uint16', size: 2, first: 40000, second: 65535 },
-		{ type: 'int', view: 'int32', size: 4, first: -123456, second: 234567 },
-		{ type: 'float', view: 'float32', size: 4, first: 1.5, second: 2.75 },
-		{ type: 'float64', view: 'float64', size: 8, first: Math.PI, second: Math.E },
-	] as const)('follows both live pointers to $type buffer samples', async ({ type, view, size, first, second }) => {
-		const { state, views, memory } = await setup(type);
-		views[view][memory.samples.byteAddress / size] = first;
-		views[view][memory.alternate.byteAddress / size] = second;
-		const buffer = prepareBuffer(state, scope, '*indirect', 'length')!;
-		expect(buffer.samples.spec).toMatchObject({ valueType: view, elementByteSize: size });
-		expect(readByteAddress(buffer.samples.address, views.int32)).toBe(memory.samples.byteAddress);
-		expect(readNumericValue(buffer.samples, views)).toBe(first);
-		views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
-		expect(readNumericValue(buffer.samples, views)).toBe(second);
-		views.int32[memory.indirect.allocationUnitAddress] = memory.pointers.byteAddress;
-		expect(readNumericValue(buffer.samples, views)).toBe(first);
-		views.int32[memory.pointers.allocationUnitAddress] = memory.alternate.byteAddress;
-		expect(readNumericValue(buffer.samples, views)).toBe(second);
-		expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
-	});
+	it.each(sampleTypes)(
+		'follows both live pointers to $type buffer samples',
+		async ({ type, view, size, first, second }) => {
+			const { state, views, memory } = await setup(type);
+			views[view][memory.samples.byteAddress / size] = first;
+			views[view][memory.alternate.byteAddress / size] = second;
+			const buffer = prepareBuffer(state, scope, '*indirect', 'length')!;
+			expect(buffer.samples.spec).toMatchObject({ valueType: view, elementByteSize: size });
+			expect(readByteAddress(buffer.samples.address, views.int32)).toBe(memory.samples.byteAddress);
+			expect(readNumericValue(buffer.samples, views)).toBe(first);
+			views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
+			expect(readNumericValue(buffer.samples, views)).toBe(second);
+			views.int32[memory.indirect.allocationUnitAddress] = memory.pointers.byteAddress;
+			expect(readNumericValue(buffer.samples, views)).toBe(first);
+			views.int32[memory.pointers.allocationUnitAddress] = memory.alternate.byteAddress;
+			expect(readNumericValue(buffer.samples, views)).toBe(second);
+			expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
+		}
+	);
 
 	it('resolves indexed intermediate pointers and skips unavailable indirect storage', async () => {
 		const { access, views, memory } = await setup('int16');
@@ -107,38 +112,33 @@ describe('prepared memory bindings', () => {
 		expect(prepareAddressBinding(access('*fixed'))).toBeUndefined();
 		expect(prepareAddressBinding(access('*samples'))).toBeUndefined();
 	});
-	it.each([
-		{ type: 'int8', view: 'int8', size: 1, first: -12, second: 34 },
-		{ type: 'int8u', view: 'uint8', size: 1, first: 200, second: 255 },
-		{ type: 'int16', view: 'int16', size: 2, first: -1234, second: 2345 },
-		{ type: 'int16u', view: 'uint16', size: 2, first: 40000, second: 65535 },
-		{ type: 'int', view: 'int32', size: 4, first: -123456, second: 234567 },
-		{ type: 'float', view: 'float32', size: 4, first: 1.5, second: 2.75 },
-		{ type: 'float64', view: 'float64', size: 8, first: Math.PI, second: Math.E },
-	] as const)('normalizes $type fixed, indexed and live-pointer reads', async ({ type, view, size, first, second }) => {
-		const { state, views, access, memory } = await setup(type);
-		views[view][memory.samples.byteAddress / size + 1] = first;
-		views[view][memory.alternate.byteAddress / size + 1] = second;
-		const direct = prepareAddressBinding(access('&samples[1]'))!;
-		const reference = prepareAddressBinding(access('fixed[1]'))!;
-		expect(direct).toEqual({ kind: 'fixed', byteAddress: memory.samples.byteAddress + size });
-		expect(reference).toEqual(direct);
-		const read = prepareNumericRead(access('*pointer[1]'))!;
-		expect(read.spec).toMatchObject({ valueType: view, elementByteSize: size });
-		expect(readNumericValue(read, views)).toBe(first);
-		expect(readNumericValue(prepareNumericRead(access('*fixed[1]'))!, views)).toBe(first);
-		expect(readElementIndex(read, views.int32)).toBe(memory.samples.byteAddress / size + 1);
-		expect(readByteAddress(prepareAddressBinding(access('pointers[1]'))!, views.int32)).toBe(
-			memory.alternate.byteAddress
-		);
-		expect(readByteAddress(prepareAddressBinding(access('&pointers[1]'))!, views.int32)).toBe(
-			memory.pointers.byteAddress + 4
-		);
-		views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
-		expect(readNumericValue(read, views)).toBe(second);
-		expect(readNumericValue(prepareNumericRead(access('pointer'))!, views)).toBe(memory.alternate.byteAddress);
-		expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
-	});
+	it.each(sampleTypes)(
+		'normalizes $type fixed, indexed and live-pointer reads',
+		async ({ type, view, size, first, second }) => {
+			const { state, views, access, memory } = await setup(type);
+			views[view][memory.samples.byteAddress / size + 1] = first;
+			views[view][memory.alternate.byteAddress / size + 1] = second;
+			const direct = prepareAddressBinding(access('&samples[1]'))!;
+			const reference = prepareAddressBinding(access('fixed[1]'))!;
+			expect(direct).toEqual({ kind: 'fixed', byteAddress: memory.samples.byteAddress + size });
+			expect(reference).toEqual(direct);
+			const read = prepareNumericRead(access('*pointer[1]'))!;
+			expect(read.spec).toMatchObject({ valueType: view, elementByteSize: size });
+			expect(readNumericValue(read, views)).toBe(first);
+			expect(readNumericValue(prepareNumericRead(access('*fixed[1]'))!, views)).toBe(first);
+			expect(readElementIndex(read, views.int32)).toBe(memory.samples.byteAddress / size + 1);
+			expect(readByteAddress(prepareAddressBinding(access('pointers[1]'))!, views.int32)).toBe(
+				memory.alternate.byteAddress
+			);
+			expect(readByteAddress(prepareAddressBinding(access('&pointers[1]'))!, views.int32)).toBe(
+				memory.pointers.byteAddress + 4
+			);
+			views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
+			expect(readNumericValue(read, views)).toBe(second);
+			expect(readNumericValue(prepareNumericRead(access('pointer'))!, views)).toBe(memory.alternate.byteAddress);
+			expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
+		}
+	);
 
 	it('retains buffer ownership and prepares literal, metadata and live typed counts', async () => {
 		const { state, views, memory } = await setup();
