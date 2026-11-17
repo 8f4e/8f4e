@@ -51,19 +51,7 @@ export function resolveMetadataTarget(
 	}
 	const referenceSlot = context.referenceSlots[request.targetMemoryId];
 	if (referenceSlot && request.dereferenceDepth > 0) {
-		const { targetMemory } = referenceSlot;
-		return targetMemory.pointerDepth === 0
-			? { kind: 'memory', memory: targetMemory }
-			: {
-					kind: 'pointer',
-					pointers: [
-						{
-							pointeeBaseType: targetMemory.pointeeBaseType,
-							pointerDepth: targetMemory.pointerDepth + 1,
-							pointeeElementCount: targetMemory.numberOfElements,
-						},
-					],
-				};
+		return { kind: 'memory', memory: referenceSlot.targetMemory };
 	}
 	if (request.dereferenceDepth === 0) {
 		return memory ? { kind: 'memory', memory } : undefined;
