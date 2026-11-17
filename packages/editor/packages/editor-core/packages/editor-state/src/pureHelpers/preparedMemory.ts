@@ -6,14 +6,17 @@ import {
 	getPointeeValueSpec,
 	type TypedValueSpec,
 } from '../features/code-blocks/features/directives/shared/typedValueSpec';
+import {
+	getStorageDereferenceDepth,
+	isAddressAccess,
+	type PreparedAddressBinding,
+	prepareStorageAddress,
+	readByteAddress,
+} from './memoryAddressBinding';
 import { type PreparedMemoryAccess, prepareMemoryAccess } from './resolveMemoryIdentifier';
 import type { MemoryScope, ResolvedMemoryTarget } from './resolveMemoryTarget';
 
-/** A fixed byte address or one/two live pointer loads, with element offsets converted to bytes. */
-export type PreparedAddressBinding =
-	| { kind: 'fixed'; byteAddress: number }
-	| { kind: 'pointer'; pointerSlotIndex: number; byteOffset: number }
-	| { kind: 'indirect'; pointerSlotIndex: number; byteOffset: number };
+export { isAddressAccess, type PreparedAddressBinding, readByteAddress } from './memoryAddressBinding';
 
 /** Only numeric views; ownership and allocation remain with the runtime/renderer. */
 export type NumericMemoryViews = Readonly<Record<TypedValueKind, ArrayLike<number>>>;
@@ -34,38 +37,28 @@ export interface PreparedBuffer {
 	elementCount: PreparedElementCount;
 }
 
-/** Whether the expression itself denotes an address rather than the numeric value stored there. */
-export function isAddressAccess({ target, options }: PreparedMemoryAccess): boolean {
-	return Boolean(options.showAddress || (target.reference && !options.dereferenceDepth));
-}
+/** Prepares the address of an allocation or the address stored in a pointer-valued expression. */
+export function prepareAddressBinding(access: PreparedMemoryAccess): PreparedAddressBinding | undefined {
+	const depth = getStorageDereferenceDepth(access);
+	if (depth === undefined) return;
 
-/** Prepares &samples, a fixed reference, a typed pointer, or an explicitly dereferenced double pointer. */
-export function prepareAddressBinding({ target, options }: PreparedMemoryAccess): PreparedAddressBinding | undefined {
-	const { memory, reference } = target;
+	const {
+		target: { memory },
+		options,
+	} = access;
 	const index = options.bufferPointer ?? 0;
-	if (options.dereferenceDepth) {
-		if (options.dereferenceDepth !== 1 || !memory.pointeeBaseType) return;
-		if (reference) return { kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress + index, byteOffset: 0 };
-		if (memory.pointerDepth > 1)
-			return { kind: 'indirect', pointerSlotIndex: memory.allocationUnitAddress, byteOffset: index * 4 };
-		return;
-	}
-	if (reference && options.showAddress) return;
-	if (reference || options.showAddress)
-		return { kind: 'fixed', byteAddress: memory.byteAddress + index * memory.elementWordSize };
-	if (memory.pointeeBaseType)
-		return { kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress + index, byteOffset: 0 };
-}
+	if (isAddressAccess(access)) return prepareStorageAddress(memory, depth, index * memory.elementWordSize);
+	if (depth === memory.pointerDepth) return;
 
-/** Reads the current byte address without parsing, declaration lookup, or allocation. */
-export function readByteAddress(binding: PreparedAddressBinding, pointers: ArrayLike<number>): number | undefined {
-	if (binding.kind === 'fixed') return binding.byteAddress;
-	const pointer = pointers[binding.pointerSlotIndex];
-	if (pointer === undefined) return;
-	const address = (pointer >>> 0) + binding.byteOffset;
-	if (binding.kind === 'pointer') return address;
-	const indirect = pointers[address / 4];
-	return indirect === undefined ? undefined : indirect >>> 0;
+	// For address sources the index selects the pointer element to load.
+	return depth === 0
+		? { kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress + index, byteOffset: 0 }
+		: {
+				kind: 'indirect',
+				pointerSlotIndex: memory.allocationUnitAddress,
+				pointerByteOffset: index * memory.elementWordSize,
+				byteOffset: 0,
+			};
 }
 
 function prepareRead(address: PreparedAddressBinding, spec: TypedValueSpec): PreparedNumericRead {
@@ -77,20 +70,18 @@ function prepareRead(address: PreparedAddressBinding, spec: TypedValueSpec): Pre
 }
 
 /** Prepares a scalar expression; dereferenced pointers follow live values and other expressions read backing storage. */
-export function prepareNumericRead({ target, options }: PreparedMemoryAccess): PreparedNumericRead | undefined {
-	const { memory, reference } = target;
-	if (reference && options.showAddress) return;
-	const index = options.bufferPointer ?? 0;
-	const depth = options.dereferenceDepth ?? 0;
-	if (depth === 2 && (!reference || !memory.pointeeBaseType)) return;
-	const pointee = depth > (reference ? 1 : 0) ? getPointeeValueSpec(memory) : undefined;
-	if (pointee)
-		return prepareRead(
-			{ kind: 'pointer', pointerSlotIndex: memory.allocationUnitAddress, byteOffset: index * pointee.elementByteSize },
-			pointee
-		);
-	const spec = getMemoryValueSpec(memory);
-	return prepareRead({ kind: 'fixed', byteAddress: memory.byteAddress + index * spec.elementByteSize }, spec);
+export function prepareNumericRead(access: PreparedMemoryAccess): PreparedNumericRead | undefined {
+	const depth = getStorageDereferenceDepth(access);
+	if (depth === undefined) return;
+
+	const {
+		target: { memory },
+		options,
+	} = access;
+	const spec = depth === 0 ? getMemoryValueSpec(memory) : getPointeeValueSpec(memory, depth);
+	if (!spec) return;
+	const offset = (options.bufferPointer ?? 0) * spec.elementByteSize;
+	return prepareRead(prepareStorageAddress(memory, depth, offset), spec);
 }
 
 /** Prepares samples at an address source, including the final pointee of an explicitly dereferenced double pointer. */

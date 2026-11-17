@@ -33,7 +33,8 @@ compiler. Inline `end()` and `end(*)` select the declaration or fixed target on 
 Formatting choices remain private to watch.
 
 Dereferenced watches such as `; @watch *pointer` follow the current pointer target and its value on every rendered frame,
-without requiring a selection change. Indexed and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
+without requiring a selection change. Use `; @watch **pointer` to follow both levels of a double pointer. Indexed
+and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
 Named pointer declarations, element indices, and access options are prepared during layout. Drawing reads the live
 pointer through shared numeric-read primitives, without parsing, resolving declarations, or constructing access
 objects. The shared layer selects storage and applies element offsets; watch retains radix and precision formatting.

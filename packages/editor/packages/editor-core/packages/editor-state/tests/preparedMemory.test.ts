@@ -12,7 +12,11 @@ import {
 	readElementIndex,
 	readNumericValue,
 } from '~/pureHelpers/preparedMemory';
-import { getDeclarationsByByteAddress, prepareMemoryAccess } from '~/pureHelpers/resolveMemoryIdentifier';
+import {
+	getDeclarationsByByteAddress,
+	prepareMemoryAccess,
+	resolveMemoryAccess,
+} from '~/pureHelpers/resolveMemoryIdentifier';
 import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 
 const sampleTypes = [
@@ -104,6 +108,42 @@ describe('prepared memory bindings', () => {
 		expect(readNumericValue(buffer.samples, views)).toBe(-32768);
 		views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
 		expect(readNumericValue(buffer.samples, views)).toBe(32767);
+	});
+
+	it('uses the same typed dereferences for allocated and fixed pointers', async () => {
+		const { state, views, access, memory } = await setup('int16');
+		state.callbacks.getWordFromMemory = index => views.int32[index];
+		const direct = prepareNumericRead(access('**indirect[1]'))!;
+		const fixed = prepareNumericRead(access('**fixedPointer[1]'))!;
+		expect(direct.spec).toMatchObject({ valueType: 'int16', elementByteSize: 2 });
+		expect(fixed.spec).toEqual(direct.spec);
+		const resolve = (expression: string) => {
+			const { target, options } = access(expression);
+			return resolveMemoryAccess(state, target, options);
+		};
+
+		views.int16[memory.samples.byteAddress / 2 + 1] = -32768;
+		views.int16[memory.alternate.byteAddress / 2 + 1] = 32767;
+		expect(resolve('*indirect')?.memory).toBe(memory.pointer);
+		expect(resolve('**indirect')?.memory).toBe(memory.samples);
+		expect(resolve('**fixedPointer')?.memory).toBe(memory.samples);
+		expect(readNumericValue(direct, views)).toBe(-32768);
+		expect(readNumericValue(fixed, views)).toBe(-32768);
+
+		views.int32[memory.pointer.allocationUnitAddress] = memory.alternate.byteAddress;
+		expect(resolve('**indirect')?.memory).toBe(memory.alternate);
+		expect(readNumericValue(direct, views)).toBe(32767);
+		expect(readNumericValue(fixed, views)).toBe(32767);
+
+		views.int32[memory.indirect.allocationUnitAddress] = -1;
+		expect(resolve('**indirect')).toBeUndefined();
+		expect(readNumericValue(direct, views)).toBeUndefined();
+		expect(readNumericValue(fixed, views)).toBe(32767);
+
+		for (const expression of ['*samples', '**pointer', '**fixed']) {
+			expect(resolve(expression)).toBeUndefined();
+			expect(prepareNumericRead(access(expression))).toBeUndefined();
+		}
 	});
 
 	it('resolves indexed intermediate pointers and skips unavailable indirect storage', async () => {

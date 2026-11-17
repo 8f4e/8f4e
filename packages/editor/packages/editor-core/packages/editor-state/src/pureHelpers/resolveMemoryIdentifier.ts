@@ -1,5 +1,11 @@
 import type { MemoryIdentifier, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
+import {
+	getStorageDereferenceDepth,
+	isAddressAccess,
+	prepareStorageAddress,
+	readByteAddress,
+} from './memoryAddressBinding';
 import resolveMemoryTarget, { type MemoryScope, type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
 type MemoryPlanLookup = State['compiler']['result']['memoryPlan'];
@@ -62,19 +68,23 @@ export interface ResolvedMemoryAccess extends MemoryIdentifier {
 export function resolveMemoryAccess(
 	state: State,
 	target: ResolvedMemoryTarget,
-	{ showAddress = false, dereferenceDepth = 0, bufferPointer = 0 }: MemoryAccessOptions = {}
+	options: MemoryAccessOptions = {}
 ): ResolvedMemoryAccess | undefined {
-	const { memory, reference } = target;
-	if (reference && showAddress) return;
-	if (dereferenceDepth === 2 && (!reference || !memory.pointeeBaseType)) return;
-	const dereferenceMemory = dereferenceDepth > (reference ? 1 : 0);
-	if (dereferenceMemory && memory.pointeeBaseType) {
-		const pointerAddress = state.callbacks?.getWordFromMemory?.(memory.allocationUnitAddress) || 0;
-		const pointee = getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(pointerAddress);
-		return pointee && { showAddress, memory: pointee, bufferPointer, target };
-	}
+	const access = { target, options };
+	const depth = getStorageDereferenceDepth(access);
+	if (depth === undefined) return;
 
-	return { showAddress: reference ? dereferenceDepth === 0 : showAddress, memory, bufferPointer, target };
+	const { memory } = target;
+	const bufferPointer = options.bufferPointer ?? 0;
+	const showAddress = isAddressAccess(access);
+	if (depth === 0) return { showAddress, memory, bufferPointer, target };
+
+	const readWord = state.callbacks.getWordFromMemory;
+	if (!readWord) return;
+	const address = readByteAddress(prepareStorageAddress(memory, depth), readWord);
+	const pointee =
+		address === undefined ? undefined : getDeclarationsByByteAddress(state.compiler.result.memoryPlan)?.get(address);
+	return pointee && { showAddress, memory: pointee, bufferPointer, target };
 }
 
 /** Parses an access and resolves its declaration once; prepare again when compiler metadata or source changes. */

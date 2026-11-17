@@ -6,25 +6,6 @@ import { isInputMemoryDeclaration, isOutputMemoryDeclaration } from './connector
 import { getProjectMemoryExposureConnectors } from './connectors/projectMemoryExposures';
 import { getMemoryDeclarationRows } from './getMemoryDeclarationRows';
 
-const pointerSlotAddresses = new WeakMap<State['compiler']['result']['compiledModules'], ReadonlySet<number>>();
-
-function getReferencedPointerSlots(
-	compiledModules: State['compiler']['result']['compiledModules']
-): ReadonlySet<number> {
-	let addresses = pointerSlotAddresses.get(compiledModules);
-	if (!addresses) {
-		const slots = new Set<number>();
-		for (const module of Object.values(compiledModules)) {
-			for (const { targetMemory } of Object.values(module.referenceSlots)) {
-				if (targetMemory.pointerDepth > 0) slots.add(targetMemory.byteAddress);
-			}
-		}
-		pointerSlotAddresses.set(compiledModules, slots);
-		addresses = slots;
-	}
-	return addresses;
-}
-
 /** Derive both connector lists from one ordered traversal of the block's memory declarations. */
 export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state: State): ConnectorWidgets {
 	const widgets: ConnectorWidgets = { inputs: [], outputs: [] };
@@ -33,8 +14,8 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 	const width = state.viewport.vGrid * 3;
 	const height = state.viewport.hGrid;
 	const isProjectGroup = codeBlock.childProject !== undefined;
-	const referencedPointerSlots = getReferencedPointerSlots(state.compiler.result.compiledModules);
 	const addConnector = (memory: PlannedMemoryDeclaration, row: number) => {
+		if (memory.pointerDepth > 0 && memory.numberOfElements === 0) return;
 		const y = row * height;
 		const wireY = Math.round(y + height / 2);
 		if (isInputMemoryDeclaration(memory)) {
@@ -46,11 +27,7 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 				source: { kind: 'pointer', allocationUnitAddress: memory.allocationUnitAddress },
 			});
 		}
-		if (
-			memory.pointerDepth > 0
-				? referencedPointerSlots.has(memory.byteAddress)
-				: isProjectGroup || isOutputMemoryDeclaration(memory)
-		) {
+		if (isProjectGroup || isOutputMemoryDeclaration(memory)) {
 			const x = codeBlock.width - width;
 			widgets.outputs.push({
 				codeBlock,

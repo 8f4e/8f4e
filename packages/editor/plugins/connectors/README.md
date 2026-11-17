@@ -11,8 +11,9 @@ block drawer registry. Inherited declaration labels and connector endpoints use 
 disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
 the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
 
-The plugin derives pointer inputs and public non-pointer outputs from the compiler memory plan, including inherited
-shape declarations and exposed memory on nested project groups. One derivation pass produces both connector lists.
+The plugin derives pointer inputs, pointer-slot address outputs, and public value outputs from the compiler memory
+plan, including inherited shape declarations and exposed memory on nested project groups. One derivation pass
+produces both connector lists.
 Module connectors belong only to the block selected by the compiler's `projectBlockId`, so overridden definitions do
 not add duplicate endpoints and selecting a same-named block cannot redirect wires.
 Layout subscriptions keep geometry private in a per-editor WeakMap. After a completed layout batch whose `project`
@@ -23,8 +24,8 @@ Fixed reference slots such as `float& input &source:output` also produce input c
 declaration rows. Their wires use the target byte address already resolved in the compiler's reference-slot metadata, without
 reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no
 fixed declarations. Target type and buffer metadata come from the backing declaration in the allocation plan.
-When a fixed reference targets a pointer, the pointer row or its group exposure also shows an `[&]` output for the
-slot address. The input on that row still follows the live pointer.
+Allocated pointer rows and their group exposures show an `[&]` output for the slot address. Fixed references and
+live pointers to that slot can both connect to it. The input on the pointer row follows its live value.
 
 Connectors use the existing code-block drawer. Wires use `drawers.registerRenderLayer`: the renderer supplies its
 WebGL context and resolved palette after initialization, draws the pass above sprites and below configured RGBA

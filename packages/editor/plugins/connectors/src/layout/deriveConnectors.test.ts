@@ -70,9 +70,9 @@ describe('deriveConnectors', () => {
 			{ y: 64, source: { kind: 'reference', byteAddress: 80 } },
 			{ y: 96, source: { kind: 'pointer', allocationUnitAddress: 5 } },
 		]);
-		expect(widgets.outputs).toHaveLength(0);
+		expect(widgets.outputs).toMatchObject([{ y: 96, memory: { name: 'dynamic' } }]);
 	});
-	it('partitions scalar and array declarations into ordered inputs and outputs', () => {
+	it('gives pointer declarations both input and output connectors', () => {
 		const state = createMockState();
 		const block = createMockCodeBlock({ name: 'test-block', width: 100, gaps: new Map([[1, { size: 1 }]]) });
 		const output = createMemory({ name: 'output', lineNumber: 3 });
@@ -99,11 +99,13 @@ describe('deriveConnectors', () => {
 			{ x: 0, y: 80, wireX: 12, wireY: 88, source: { kind: 'pointer', allocationUnitAddress: 2 } },
 		]);
 		expect(widgets.outputs).toMatchObject([
+			{ x: 76, y: 16, wireX: 88, wireY: 24, memory: { name: 'input' } },
 			{ x: 76, y: 64, wireX: 88, wireY: 72, calibratedMin: 0, calibratedMax: 0 },
+			{ x: 76, y: 80, wireX: 88, wireY: 88, memory: { name: '_arrayInput' } },
 			{ x: 76, y: 96, wireX: 88, wireY: 104 },
 		]);
-		expect(widgets.outputs[0].memory).toBe(output);
-		expect(widgets.outputs[1].memory).toBe(buffer);
+		expect(widgets.outputs[1].memory).toBe(output);
+		expect(widgets.outputs[3].memory).toBe(buffer);
 		expect(widgets.outputs[0].codeBlock).toBe(block);
 	});
 
@@ -115,6 +117,12 @@ describe('deriveConnectors', () => {
 		const state = createMockState();
 		setMemories(state, [createMemory({ name })]);
 		expect(deriveConnectors(createMockCodeBlock(), state).outputs).toHaveLength(count);
+	});
+
+	it('omits the endpoints of empty pointer arrays', () => {
+		const state = createMockState();
+		setMemories(state, [createMemory({ type: 'int*', pointerDepth: 1, numberOfElements: 0 })]);
+		expect(deriveConnectors(createMockCodeBlock(), state)).toEqual({ inputs: [], outputs: [] });
 	});
 
 	it('returns no connectors before compilation or while the block name is incomplete', () => {
@@ -136,7 +144,7 @@ describe('deriveConnectors', () => {
 		const widgets = deriveConnectors(block, state);
 
 		expect(widgets.inputs[0].y).toBe(32);
-		expect(widgets.outputs[0].y).toBe(48);
+		expect(widgets.outputs.map(output => output.y)).toEqual([32, 48]);
 	});
 
 	it('rounds wire anchors to whole pixels for odd font dimensions', () => {
@@ -192,8 +200,11 @@ describe('deriveConnectors', () => {
 		expect(widgets.inputs).toEqual([
 			{ x: 0, y: 16, wireX: 12, wireY: 24, source: { kind: 'pointer', allocationUnitAddress: 9 } },
 		]);
-		expect(widgets.outputs).toHaveLength(1);
-		expect(widgets.outputs[0]).toMatchObject({ x: 76, y: 32, wireX: 88, wireY: 40 });
-		expect(widgets.outputs[0].memory).toBe(output);
+		expect(widgets.outputs).toMatchObject([
+			{ x: 76, y: 16, wireX: 88, wireY: 24 },
+			{ x: 76, y: 32, wireX: 88, wireY: 40 },
+		]);
+		expect(widgets.outputs[0].memory).toBe(input);
+		expect(widgets.outputs[1].memory).toBe(output);
 	});
 });
