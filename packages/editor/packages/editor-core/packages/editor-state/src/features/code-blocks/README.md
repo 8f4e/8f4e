@@ -160,11 +160,13 @@ unresolved because a fixed reference allocates no addressable slot. Buffer displ
 
 Consumers prepare names once with `prepareMemoryAccess`. Its `PreparedMemoryAccess` retains the resolved declaration
 and parsed address/dereference/index options without reading runtime memory. `prepareAddressBinding` turns an address
-source into a fixed byte address or a runtime pointer-slot index plus a byte offset. `readByteAddress` accepts that
-binding and the current 32-bit pointer view; it performs no name lookup or allocation.
+source into a fixed byte address or a runtime pointer-slot index plus a byte offset. An explicit dereference of a
+double pointer prepares two live pointer loads. `readByteAddress` accepts the binding and the current 32-bit pointer
+view; it performs no name lookup or allocation.
 
 `prepareNumericRead` describes scalar storage or an explicit dereference. `prepareAddressedRead` describes samples
-at an address source, following a typed pointer implicitly. Both produce `PreparedNumericRead`: the typed-view kind,
+at an address source, following a typed pointer implicitly or both pointer levels for `*doublePointer`.
+The sample type comes from the final pointee after those loads. Both produce `PreparedNumericRead`: the typed-view kind,
 element byte size, default display bounds, and a fixed typed-element index or live address binding. `readNumericValue`
 reads current structural numeric views; `readElementIndex` supplies the index for buffer drawing loops. These helpers
 depend on no renderer and retain no runtime views. Plugins keep radix, precision, text, colors, and overload behavior.
@@ -184,6 +186,8 @@ result includes storage and access flags plus the original source target; frame 
 
 Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
 fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
+Directive arguments use `isMemoryTarget` for control targets and `isPointerSource` for display sources. Pointer
+sources additionally accept `*address` to follow a double pointer; controls use declaration addresses and references.
 `getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory.
 It returns `undefined` for rows without a memory declaration and `{ target: undefined }` for declarations awaiting
 matching accepted compiler metadata, allowing widgets to reserve layout space while compilation is pending.

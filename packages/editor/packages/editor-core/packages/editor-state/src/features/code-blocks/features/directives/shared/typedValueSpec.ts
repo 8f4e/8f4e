@@ -43,9 +43,12 @@ export function getMemoryValueSpec(
 	return getTypeSpec(getMemoryBaseType(memory));
 }
 
-/** Describes one pointer dereference; double pointers yield another 32-bit pointer value. */
+/** Describes the value after the requested pointer loads; remaining indirection uses 32-bit pointer storage. */
 export function getPointeeValueSpec(
-	memory: Pick<PlannedMemoryDeclaration, 'pointeeBaseType' | 'pointerDepth'>
+	memory: Pick<PlannedMemoryDeclaration, 'pointeeBaseType' | 'pointerDepth'>,
+	dereferenceDepth = 1
 ): TypedValueSpec | undefined {
-	return memory.pointeeBaseType ? getTypeSpec(memory.pointerDepth > 1 ? 'int' : memory.pointeeBaseType) : undefined;
+	return memory.pointeeBaseType
+		? getTypeSpec(memory.pointerDepth > dereferenceDepth ? 'int' : memory.pointeeBaseType)
+		: undefined;
 }

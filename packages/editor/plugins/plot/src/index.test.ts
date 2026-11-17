@@ -40,13 +40,14 @@ describe('plot plugin', () => {
 			expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeGreaterThan(1);
 		}
 	);
-	it('reads an indirect buffer and a runtime length on each frame', async () => {
+	it.each(['pointer', '*address'])('reads %s and a runtime length on each frame', async source => {
 		const test = await setup(plotPlugin, [
 			'module audio',
 			'int8[] samples 4 0 1 2 3',
 			'int8* pointer &samples',
+			'int8** address &pointer',
 			'int length 4',
-			'; @plot pointer length 0 3',
+			`; @plot ${source} length 0 3`,
 			'moduleEnd',
 		]);
 		const lengthAddress = test.compiled.memoryPlan.modules.audio.memory.length.allocationUnitAddress;

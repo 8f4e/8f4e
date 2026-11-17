@@ -25,7 +25,8 @@ scales each source pixel to 2 pixels wide and 4 pixels tall; `2:2` and `2` both 
 The reserved block space follows the scaled width and height.
 
 Both directives accept pointer sources: `&pixels` or `&screen:pixels` uses the storage's byte address; a plain typed
-pointer such as `framebufferPointer` reads the current address from memory. Qualified names and group exposures use
+pointer such as `framebufferPointer` reads the current address from memory. `*address` follows a double pointer to
+the current framebuffer. Qualified names and group exposures use
 the containing block's scope. Addresses are resolved after entry execution each frame, so pointer swaps affect the
 same frame. Uploads are discovered throughout the project, including unopened groups.
 Address sources are prepared through the shared editor-state memory API. Each frame uses its allocation-free byte

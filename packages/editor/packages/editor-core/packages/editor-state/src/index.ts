@@ -196,6 +196,7 @@ export {
 export {
 	isMemoryAddress,
 	isMemoryId,
+	isMemoryTarget,
 	isPointerSource,
 	parseElementCount,
 	parseFiniteNumber,
