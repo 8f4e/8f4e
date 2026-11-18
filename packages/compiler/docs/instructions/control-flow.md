@@ -125,11 +125,9 @@ ifEnd int int
 
 ### loop
 
-The loop instruction begins a loop block. The loop body repeats until a branch exits the loop.
+The `loop` instruction begins a loop block. The body repeats until it reaches the iteration bound or a branch exits the loop.
 
-An optional non-negative integer compile-time value sets the cap for this loop's infinite-loop guard. The cap can be a literal, constant, or constant expression. When omitted, the effective cap is determined by the ambient prologue `#loopCap` directive in the current block, or the built-in default of `1000` if no directive is active.
-
-**Precedence:** explicit `loop <int>` > ambient `#loopCap` > built-in default `1000`
+An explicit bound can be a non-negative integer literal, constant, or constant expression, or a runtime integer value. The loop reads a runtime bound once on entry. A runtime bound of zero or less skips the body. An explicit bound takes precedence over `#loopCap`. With no argument, `loop` uses the current block's `#loopCap` or the built-in default of `1000`.
 
 #### Examples
 
@@ -169,6 +167,17 @@ use env
 loop AUDIO_BUFFER_SIZE
  call main
 loopEnd
+```
+
+Loop with a runtime bound from a function parameter:
+
+```8f4e
+function processNotes
+param int noteCount
+loop noteCount
+ ; Process the note at loopIndex.
+loopEnd
+functionEnd
 ```
 
 Loop cap set for loops in the block via the `#loopCap` prologue directive:

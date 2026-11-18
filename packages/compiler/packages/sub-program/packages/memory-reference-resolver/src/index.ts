@@ -288,7 +288,7 @@ function isReferenceValuePosition(line: CompilerASTLine, index: number): boolean
 		rule === 'pushValue' ||
 		rule === 'compileTimeValue' ||
 		rule === 'mapValue' ||
-		rule === 'nonNegativeIntegerCompileTimeValue' ||
+		rule === 'loopBound' ||
 		rule === 'nonNegativeCompileTimeValue'
 	);
 }
