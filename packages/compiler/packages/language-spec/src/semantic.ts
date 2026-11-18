@@ -264,9 +264,8 @@ export type ResolvedMemoryCopyLine = Omit<MemoryCopyLine, 'arguments'> & {
 	arguments: [ResolvedArgumentLiteral];
 };
 
-export type ResolvedLoopLine = Omit<LoopLine, 'arguments'> & {
-	arguments: [ResolvedArgumentLiteral];
-};
+export type ResolvedLoopLine = Omit<LoopLine, 'arguments' | 'runtimeBound'> &
+	({ arguments: [ResolvedArgumentLiteral]; runtimeBound?: never } | { arguments: []; runtimeBound: true });
 
 export type ArrayDeclarationInitializerArgument =
 	| ArgumentCompileTimeExpression

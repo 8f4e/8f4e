@@ -18,7 +18,7 @@ export type SourceArgumentShapeRule =
 	| 'constantIdentifier'
 	| 'literal'
 	| 'nonNegativeIntegerLiteral'
-	| 'nonNegativeIntegerCompileTimeValue'
+	| 'loopBound'
 	| 'nonNegativeCompileTimeValue'
 	| 'compileTimeValue'
 	| 'mapValue'
@@ -695,7 +695,7 @@ export const instructionSpecs = {
 		stack: stack({ inputs: ['T'], outputs: [] }),
 	},
 	loop: {
-		sourceArguments: { maxArguments: 1, argumentTypes: 'nonNegativeIntegerCompileTimeValue' },
+		sourceArguments: { maxArguments: 1, argumentTypes: 'loopBound' },
 		placement: {
 			...moduleOrFunctionPlacement,
 			block: {
@@ -706,7 +706,7 @@ export const instructionSpecs = {
 				stackBlock: true,
 			},
 		},
-		docs: { shortDescription: 'Starts a loop block that repeats until a branch exits it.' },
+		docs: { shortDescription: 'Starts a loop with an optional integer iteration bound.' },
 		stack: stack({ inputs: [], outputs: [] }),
 	},
 	'#loopCap': {

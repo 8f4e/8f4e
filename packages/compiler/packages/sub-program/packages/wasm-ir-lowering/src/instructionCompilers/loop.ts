@@ -11,10 +11,15 @@ import { saveByteCode } from './utils/saveByteCode';
  * @see [Instruction docs](../../docs/instructions/control-flow.md)
  */
 const loop: InstructionCompiler<ResolvedLoopLine> = (line, context) => {
-	const capArg = line.arguments[0];
-	const effectiveCap = capArg.value;
-
 	const loopCounterIndex = allocateLocal(context, { isInteger: true });
+	let readBound;
+	if (line.runtimeBound) {
+		const boundIndex = allocateLocal(context, { isInteger: true });
+		saveByteCode(context, localSet(boundIndex));
+		readBound = localGet(boundIndex);
+	} else {
+		readBound = i32const(line.arguments[0].value);
+	}
 
 	const loopBlock: CodegenLoopBlockStackFrame = {
 		expectedResultTypes: [],
@@ -30,7 +35,7 @@ const loop: InstructionCompiler<ResolvedLoopLine> = (line, context) => {
 		{ kind: 'block', opcode: WASM_BLOCK, results: [] },
 		{ kind: 'block', opcode: WASM_LOOP, results: [] },
 		...localGet(loopCounterIndex),
-		...i32const(effectiveCap),
+		...readBound,
 		WASM_I32_GE_S,
 		{ kind: 'block', opcode: WASM_IF, results: [] },
 		...br(2),

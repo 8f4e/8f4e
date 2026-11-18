@@ -1,0 +1,14 @@
+{
+  "code": 19,
+  "domain": "semantic",
+  "instruction": "loop",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
+  },
+  "message": "Type mismatch. (19)",
+  "symbol": "example",
+}

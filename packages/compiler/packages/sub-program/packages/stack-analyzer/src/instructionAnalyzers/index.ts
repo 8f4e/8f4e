@@ -11,7 +11,7 @@ import type {
 import { getInstructionSpec } from '@8f4e/language-spec';
 import { analyzeAssertEqual } from './assertEqual';
 import { analyzeCall } from './call';
-import { analyzeExitIfTrue } from './controlFlow';
+import { analyzeExitIfTrue, analyzeLoop } from './controlFlow';
 import { analyzeFunctionEnd } from './functionEnd';
 import { analyzeLocalSet } from './localSet';
 import { analyzeMapEnd } from './mapEnd';
@@ -94,6 +94,8 @@ export function analyzeByInstruction(line: CompilerASTLine, context: Compilation
 			return analyzeLoadFloat(context);
 		case 'localSet':
 			return analyzeLocalSet(line, context);
+		case 'loop':
+			return analyzeLoop(line, context);
 		case 'exitIfTrue':
 			return analyzeExitIfTrue(line, context);
 		case 'functionEnd':

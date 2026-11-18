@@ -136,7 +136,9 @@ type CompilerDirectivePrologueMetadata = {
 	isBlockPrologue?: true;
 };
 
-export type LoopLine = ASTLineBase<'loop', [] | [CompileTimeValueArgument]>;
+export type LoopLine =
+	| (ASTLineBase<'loop', [] | [CompileTimeValueArgument]> & { runtimeBound?: never })
+	| (ASTLineBase<'loop', []> & { runtimeBound: true });
 export type LoopEndLine = ASTLineBase<'loopEnd', []>;
 export type LoopIndexLine = ASTLineBase<'loopIndex', []>;
 export type ElseLine = ASTLineBase<'else', []>;
