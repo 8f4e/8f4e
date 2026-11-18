@@ -6,6 +6,12 @@ export const projects = [
 		path: 'audio/cyclicTimestretch.8f4e',
 	},
 	{
+		id: 'filter-bank',
+		title: 'Filter bank',
+		description: 'Mix low-pass, band-pass and high-pass outputs from seven filters driven by white noise.',
+		path: 'audio/filterBank.8f4e',
+	},
+	{
 		id: 'granular-sampler',
 		title: 'Granular sampler',
 		description: 'Explore sample playback driven by a clock, random positions and modulation, with stereo reverb.',

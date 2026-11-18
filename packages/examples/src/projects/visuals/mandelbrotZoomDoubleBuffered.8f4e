@@ -20,18 +20,19 @@ local float64 imaginary
 local float64 realSquared
 local float64 imaginarySquared
 local int iterations
+local int iterationLimit
+
+push limit
+min MAX_ITERATIONS
+localSet iterationLimit
 
 ; Iterate z = z*z + c from zero.
 ; Stop once |z| > 2 or at the limit.
-loop MAX_ITERATIONS
+loop iterationLimit
 push realSquared
 add imaginarySquared
 push 4.0f64
 greaterThan
-push iterations
-push limit
-greaterOrEqual
-or
 branchIfTrue 1
 
 push real

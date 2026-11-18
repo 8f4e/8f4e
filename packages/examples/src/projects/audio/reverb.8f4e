@@ -255,7 +255,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& mod &lfo1:out
 float out
@@ -304,7 +304,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& in &modulatedDelayTap:out
 
@@ -467,7 +467,7 @@ module tank1ModulatedTap
 use cloudsReverb
 
 float& buffer &tank1DelayRead:buffer
-float** pointer
+float*& pointer
 - &tank1DelayRead:pointer
 float& mod &tank1DelayLfo:out
 float out
@@ -682,7 +682,7 @@ module tank2DelayWrite
 ; Writes Clouds del2.
 
 float& buffer &tank1DelayRead:buffer
-float** pointer &tank1DelayRead:pointer
+float*& pointer &tank1DelayRead:pointer
 float& in &tank2AllpassB:out
 
 push *pointer
@@ -699,7 +699,7 @@ module tank1DelayWrite
 ; Writes Clouds del1.
 
 float& buffer &tank2DelayRead:buffer
-float** pointer &tank2DelayRead:pointer
+float*& pointer &tank2DelayRead:pointer
 float& in &tank1AllpassB:out
 
 push *pointer

@@ -2,6 +2,7 @@
 
 includes
 ; @pos -38 -9
+include std/audio/hzToRadians
 include std/events/risingEdge
 includesEnd
 
@@ -270,17 +271,10 @@ float out
 
 use math
 
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
+; Advance phase in radians.
 push &phase
 push phase
-push TAU
-push *frequency
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
+call hzToRadians *frequency SAMPLE_RATE
 add
 store
 

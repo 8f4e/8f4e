@@ -1,8 +1,8 @@
 # DX7 algorithm 5 presets
 
 Each `.8f4em` file exposes a single `constants preset` block through `; @public`, so it can be inserted from
-**Add Built-in Block → Presets → Dx7 Algorithm 5**. The block keeps the `preset` namespace: moving it furthest
-right selects it for the voice in `projects/audio/dx7Algorithm5.8f4e`. These are parameter blocks, not complete voices.
+**Add Built-in Block → Presets → Dx7 Algorithm 5**. In the [eight-voice MIDI example](../../../projects/midi/dx7Algorithm5EightVoices.8f4e),
+open the `dx7` group and move the `preset` block furthest right to select it for all voices.
 
 The library contains factory, song-inspired, and ambient preset blocks. Source tuning and gains are unchanged.
 Hold notes to hear the ambient patches' slow attacks.
@@ -23,5 +23,5 @@ per-operator amplitude sensitivity and independent LFO key sync. Whether those s
 the consuming voice implementation. The factory E.PIANO 1 block retains zero LFO depths, a flat pitch envelope,
 and the original keyboard scaling parameters for operator 6.
 
-The example remains an approximate monophonic voice, retaining its existing operator gain normalization.
+Each voice in the MIDI example applies the patch's operator gain normalization.
 See [the converter documentation](../../../../../../tools/dx7-to-8f4e/README.md) for tuning calibration and scope.

@@ -56,8 +56,8 @@ and below, the same panels become an accordion: the selected editor appears bene
 Resizing keeps the active editor instance. Without a selected example in the URL, mobile starts collapsed and desktop
 opens the first example.
 
-Each example has a shareable hash URL using its stable ID, such as `/examples/#dx7-algorithm-5`. Selecting an example
-updates the address and page title; Back and Forward restore selections. Direct links also expand the matching mobile
+Each example has a shareable hash URL using its stable ID, such as `/examples/#dx7-algorithm-5-eight-voices`. Selecting
+an example updates the address and page title; Back and Forward restore selections. Direct links also expand the matching mobile
 accordion and scroll it into view. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back
 to the default desktop selection or the collapsed mobile list.
 

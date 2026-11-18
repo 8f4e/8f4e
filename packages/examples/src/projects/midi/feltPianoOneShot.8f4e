@@ -247,7 +247,7 @@ module player
 ; A new trigger replaces playback
 ; immediately, at its start address.
 ; Hold the final value at the end.
-int16** address &sampleSelector:sampleAddress
+int16*& address &sampleSelector:sampleAddress
 int16*& sampleEnd &sampleSelector:sampleEnd
 int& length &sampleSelector:sampleLength
 int& trigger &inputs:trigger
@@ -392,7 +392,7 @@ module dispatch
 ; @pos 100 61
 ; Consume a generic trigger,
 ; then render one audio frame.
-int** trigger &eventInputs:trigger
+int*& trigger &eventInputs:trigger
 
 push **trigger
 if

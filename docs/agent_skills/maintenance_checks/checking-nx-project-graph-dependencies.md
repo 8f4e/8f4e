@@ -110,7 +110,9 @@ Nx uses the project graph to decide task ordering, affected projects, and cache 
    npx nx show target inputs @8f4e/sprite-generator:test --json
    ```
 
-   A dev dependency still creates an Nx graph edge. Prefer local sample fixtures when the dependency only supplies test data. Keep real implementation dependencies and affected-test coverage; do not remove edges solely because their imports live in tests. See `docs/build-input-audit.md` for shipped-asset exceptions and package-boundary follow-ups.
+   A dev dependency still creates an Nx graph edge. Prefer local sample fixtures when the dependency only supplies
+   test data. Keep real implementation dependencies and affected-test coverage. A test-only import can still justify
+   a dependency edge.
 
 7. Verify after changes.
 
