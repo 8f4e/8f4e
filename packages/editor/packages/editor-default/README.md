@@ -100,6 +100,7 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-wave` for waveform displays, `@8f4e/editor-plugin-piano` for piano keyboards,
 `@8f4e/editor-plugin-slider` for sliders,
 `@8f4e/editor-plugin-error-messages` for inline errors and their reserved rows,
+`@8f4e/editor-plugin-stack-connections` for drawing links from operand producers to the selected instruction beside the block,
 `@8f4e/editor-plugin-stack-producers` for highlighting the immediate producers of the selected instruction’s operands,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,

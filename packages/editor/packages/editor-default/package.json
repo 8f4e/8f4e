@@ -70,6 +70,7 @@
     "@8f4e/editor-plugin-session-persistence": "*",
     "@8f4e/editor-plugin-slider": "*",
     "@8f4e/editor-plugin-stack": "*",
+    "@8f4e/editor-plugin-stack-connections": "*",
     "@8f4e/editor-plugin-stack-producers": "*",
     "@8f4e/editor-plugin-switch": "*",
     "@8f4e/editor-plugin-test-runtime": "*",

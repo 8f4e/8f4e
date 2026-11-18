@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getStackOperandProducerRows } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
-import { deriveProducerRows } from './deriveProducerRows';
 
 /** Highlights the source instructions that immediately produced the selected instruction's stack operands. */
 export const stackProducersPlugin: EditorPlugin = {
@@ -12,7 +12,9 @@ export const stackProducersPlugin: EditorPlugin = {
 		let rows: number[] = [];
 		const refresh = () => {
 			selectedBlock = state.codeBlockRendering.selectedCodeBlock;
-			rows = selectedBlock ? deriveProducerRows(selectedBlock, state) : [];
+			rows = selectedBlock
+				? getStackOperandProducerRows(selectedBlock, state).map(row => row * state.viewport.hGrid)
+				: [];
 		};
 		const selectors = [
 			'codeBlockRendering.selectedCodeBlock',

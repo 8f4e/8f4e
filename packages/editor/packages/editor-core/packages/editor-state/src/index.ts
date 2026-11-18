@@ -157,6 +157,7 @@ export {
 	type CurrentCompiledLine,
 	getCurrentCompiledLineForCodeBlock,
 } from './features/code-blocks/utils/getCurrentCompiledLineForCodeBlock';
+export { getStackOperandProducerRows } from './features/code-blocks/utils/getStackOperandProducerRows';
 export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
