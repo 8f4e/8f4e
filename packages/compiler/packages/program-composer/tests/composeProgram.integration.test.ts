@@ -71,6 +71,7 @@ entryEnd`);
 				lineNumber: 2,
 				groupPath: 'outer/inner',
 				targetModuleId: 'outer/inner/source',
+				targetMemoryId: 'value',
 				diagnosticSource: { kind: 'scope', projectGroupPath: 'outer/inner' },
 				instruction: 'expose',
 			},

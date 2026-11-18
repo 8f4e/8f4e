@@ -239,8 +239,22 @@ moduleEnd
 entryEnd`)
 		);
 		const backing = result.memoryPlan.modules['outer/middle/inner/processor'].memory;
-		for (const groupPath of ['outer', 'outer/middle', 'outer/middle/inner']) {
+		for (const [groupPath, sourceModule, sourceOut] of [
+			['outer', 'middle', 'out'],
+			['outer/middle', 'inner', 'out'],
+			['outer/middle/inner', 'processor', 'rendered'],
+		]) {
 			const exposures = result.projectMemoryExposuresByGroupPath[groupPath];
+			expect(exposures.find(exposure => exposure.name === 'input')).toMatchObject({
+				targetModuleName: sourceModule,
+				targetMemoryName: 'input',
+				targetModuleId: 'outer/middle/inner/processor',
+			});
+			expect(exposures.find(exposure => exposure.name === 'out')).toMatchObject({
+				targetModuleName: sourceModule,
+				targetMemoryName: sourceOut,
+				targetModuleId: 'outer/middle/inner/processor',
+			});
 			expect(exposures.find(exposure => exposure.name === 'input')?.targetMemory).toBe(backing.input);
 			expect(exposures.find(exposure => exposure.name === 'out')?.targetMemory).toBe(backing.rendered);
 			expect(result.memoryPlan.modules[groupPath]).toBeUndefined();

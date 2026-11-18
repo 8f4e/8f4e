@@ -14,6 +14,7 @@ import {
 	type ProjectMemoryInitializerLine,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
+	resolveProjectMemoryAlias,
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
@@ -24,7 +25,6 @@ import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
 import { resolveFunctionPasses } from './resolveFunctionPasses';
-import { resolveMemoryExposureAliases } from './resolveMemoryExposureAliases';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
@@ -64,15 +64,19 @@ function appendMemoryExposureAliases(
 	const groupAliases = new Map(aliases.get(groupPath));
 
 	for (const exposure of exposures) {
-		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
+		const target = resolveProjectMemoryAlias(
+			aliases,
+			createProjectModuleId(groupPath, exposure.targetModuleName),
+			exposure.targetMemoryName
+		);
 		program.memoryExposures.push({
 			...exposure,
+			...target,
 			groupPath,
-			targetModuleId,
 			diagnosticSource: { kind: 'scope', projectGroupPath: groupPath },
 			instruction: 'expose',
 		});
-		groupAliases.set(exposure.name, { targetModuleId, targetMemoryId: exposure.targetMemoryName });
+		groupAliases.set(exposure.name, target);
 	}
 
 	aliases.set(groupPath, groupAliases);
@@ -218,8 +222,8 @@ function appendUnit(
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
-			appendMemoryExposureAliases(program, groupPath, block.exposures);
 			const childEntries = appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
+			appendMemoryExposureAliases(program, groupPath, block.exposures);
 			const childMain = childEntries.get('main');
 			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
 			const childInit = childEntries.get('init');
@@ -265,7 +269,6 @@ export function composeProgram(
 	};
 
 	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
-	resolveMemoryExposureAliases(program);
 	resolveFunctionPasses(program);
 	return program;
 }

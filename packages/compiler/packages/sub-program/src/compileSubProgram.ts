@@ -37,15 +37,15 @@ function resolveProjectMemoryExposures(
 	memoryPlan: MemoryLayoutPlan
 ): ProjectMemoryExposuresByGroupPath {
 	const result: ProjectMemoryExposuresByGroupPath = {};
-	for (const exposure of program.memoryExposures) {
-		const targetMemory = memoryPlan.modules[exposure.targetModuleId]?.memory[exposure.targetMemoryName];
+	for (const { targetMemoryId, ...exposure } of program.memoryExposures) {
+		const targetMemory = memoryPlan.modules[exposure.targetModuleId]?.memory[targetMemoryId];
 		if (!targetMemory) {
 			throw getError(ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET, exposure, {
 				details: {
 					projectGroupPath: exposure.groupPath,
 					projectMemoryExposureName: exposure.name,
 					targetModuleId: exposure.targetModuleId,
-					targetMemoryId: exposure.targetMemoryName,
+					targetMemoryId,
 				},
 			});
 		}
