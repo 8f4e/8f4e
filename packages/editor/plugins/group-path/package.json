@@ -1,0 +1,23 @@
+{
+  "name": "@8f4e/editor-plugin-group-path",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Active project group path overlay for the 8f4e editor",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-palette": "*",
+    "@8f4e/web-ui": "*"
+  }
+}
