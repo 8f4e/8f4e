@@ -7,6 +7,7 @@ declare global {
 	interface Window {
 		state: DefaultEditorInstance['state'];
 		pwaTools: Map<string, WebMcpTool>;
+		pwaUpdateChecks: number;
 	}
 }
 
@@ -33,6 +34,12 @@ async function insert(page: Page, code: string, entry?: string) {
 test.beforeEach(async ({ context, page }) => {
 	await context.addInitScript(() => {
 		window.pwaTools = new Map();
+		window.pwaUpdateChecks = 0;
+		const update = ServiceWorkerRegistration.prototype.update;
+		ServiceWorkerRegistration.prototype.update = function () {
+			window.pwaUpdateChecks++;
+			return update.call(this);
+		};
 		Object.defineProperty(document, 'modelContext', {
 			value: { registerTool: (tool: WebMcpTool) => window.pwaTools.set(tool.name, tool) },
 		});
@@ -119,28 +126,58 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 	await offlinePage.screenshot({ path: '.playwright-results/offline-editor.png' });
 });
 
-test('waits for a requested update and preserves the saved project and binary cache', async ({ context, page }) => {
+test('announces an update on opening and preserves the saved project and binary cache on reload', async ({
+	context,
+	page,
+}) => {
 	await insert(page, 'module savedBeforeUpdate\nint value 7\nmoduleEnd');
 	const otherPage = await context.newPage();
 	await otherPage.goto('/');
 	await waitForEditor(otherPage);
+	await expect.poll(() => otherPage.evaluate(() => window.pwaUpdateChecks)).toBe(1);
 	await page.evaluate(async () => {
 		const binaryCache = await caches.open('8f4e-binary-assets');
 		await binaryCache.put('/sample.bin', new Response(new Uint8Array([1, 2, 3])));
 	});
 	const worker = await readFile('dist/sw.js', 'utf8');
 	try {
-		await writeFile('dist/sw.js', `${worker}\n// Update test ${Date.now()}\n`);
-		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update());
-		await expect.poll(() => page.evaluate(() => window.state.dialog.id)).toBe('pwa-update');
+		await writeFile(
+			'dist/sw.js',
+			worker +
+				`
+self.addEventListener('install', event => {
+	event.waitUntil(new Promise(resolve => {
+		self.addEventListener('message', event => {
+			if (event.data === 'finish-update-test') resolve();
+		});
+	}));
+});
+`
+		);
+		await page.reload();
+		await expect.poll(() => page.evaluate(() => window.state.dialog.text)).toContain('Downloading the update');
 		expect(await page.evaluate(() => window.state.dialog.title)).toBe('Update available');
+		expect(await page.evaluate(() => window.state.dialog.buttons.map(button => button.title))).toEqual(['Later']);
+		if (test.info().project.name === 'chromium') {
+			const { width, height } = page.viewportSize()!;
+			await expect(page).toHaveScreenshot('update-downloading-dialog.png', {
+				clip: { x: width / 2 - 320, y: height / 2 - 72, width: 640, height: 144 },
+			});
+		}
+		await page.evaluate(async () => {
+			const registration = (await navigator.serviceWorker.getRegistration())!;
+			registration.installing!.postMessage('finish-update-test');
+		});
+		await expect.poll(() => page.evaluate(() => window.state.dialog.text)).toContain('An update is ready');
 		await page.locator('#glcanvas').screenshot({ path: '.playwright-results/update-dialog.png' });
 		expect(await page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.waiting)).toBe(true);
 		expect(await call(page, 'get_project')).toContain('module savedBeforeUpdate');
 		expect(await call(otherPage, 'get_project')).toContain('module savedBeforeUpdate');
 		// Click Later in the centered canvas dialog, then reopen with the update still waiting in the other window.
 		const viewport = page.viewportSize()!;
-		await page.locator('#glcanvas').click({ position: { x: viewport.width * 0.7, y: viewport.height * 0.55 } });
+		const mobile = test.info().project.use.isMobile;
+		const buttonY = viewport.height * (mobile ? 0.54 : 0.55);
+		await page.locator('#glcanvas').click({ position: { x: viewport.width * (mobile ? 0.86 : 0.7), y: buttonY } });
 		await expect.poll(() => page.evaluate(() => window.state.dialogStack.length)).toBe(0);
 		expect(await page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.waiting)).toBe(true);
 		await page.reload();
@@ -149,7 +186,7 @@ test('waits for a requested update and preserves the saved project and binary ca
 		await Promise.all([
 			page.waitForEvent('load'),
 			otherPage.waitForEvent('load'),
-			page.locator('#glcanvas').click({ position: { x: viewport.width * 0.62, y: viewport.height * 0.55 } }),
+			page.locator('#glcanvas').click({ position: { x: viewport.width * (mobile ? 0.64 : 0.62), y: buttonY } }),
 		]);
 		await waitForEditor(page);
 		await waitForEditor(otherPage);

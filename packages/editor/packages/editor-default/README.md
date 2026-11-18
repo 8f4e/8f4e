@@ -80,7 +80,7 @@ Hosts may also provide a custom `Storage` implementation or an
 `initialProjectUrl`; interpreting page URLs remains the host's responsibility.
 
 PWA hosts can pass `pwaUpdates: navigator.serviceWorker` to load the independent `pwa-updates` plugin after
-the first render. It shows an editor dialog for waiting updates and adds **Reload to update** to the main menu.
+the first render. It shows a dialog when a new version starts downloading and offers **Reload** when it is ready.
 First installation is silent. The host retains service-worker registration, caching, and controller-change reloads.
 
 Use `onInitialProjectLoaded()` to reveal installed initial content and `onInitialProjectLoadError(error)` to report
