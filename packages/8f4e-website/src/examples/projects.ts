@@ -73,6 +73,13 @@ export const projects = [
 		path: 'audio/samplePlayerVariableSpeed.8f4e',
 	},
 	{
+		id: 'self-playing-piano',
+		title: 'Self-playing piano',
+		description:
+			'Choose notes on the on-screen keyboard and shape a felt piano melody with tempo, pitch and velocity controls.',
+		path: 'audio/selfPlayingPiano.8f4e',
+	},
+	{
 		id: 'minblep',
 		title: 'minBLEP smoothing',
 		description: 'Compare a pulse sample before and after a band-limited step correction smooths its discontinuities.',
