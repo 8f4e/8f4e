@@ -93,28 +93,10 @@ export const projects = [
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
 	},
 	{
-		id: 'dx7-algorithm-5',
-		title: 'DX7 Algorithm 5',
-		description: 'Play a six-operator DX7-style voice with movable factory presets.',
-		path: 'audio/dx7Algorithm5.8f4e',
-	},
-	{
-		id: 'dx7-stg-crescendo',
-		title: 'DX7 STG CRSNDO',
-		description: 'Hold a keyboard note to swell a DX7-style string voice with delayed vibrato and stereo reverb.',
-		path: 'audio/dx7StgCrescendo.8f4e',
-	},
-	{
 		id: 'formant-synth',
 		title: 'Formant synthesizer',
 		description: 'Cycle through vowel sounds with a sawtooth oscillator and three formant filters.',
 		path: 'audio/formantSynth.8f4e',
-	},
-	{
-		id: 'filter-bank',
-		title: 'Filter bank',
-		description: 'Mix low-pass, band-pass and high-pass outputs from seven filters driven by white noise.',
-		path: 'audio/filterBank.8f4e',
 	},
 	{
 		id: 'grids-patterns',

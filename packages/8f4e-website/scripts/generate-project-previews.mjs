@@ -14,7 +14,7 @@ const compilerTestRoot = path.join(workspaceRoot, 'packages', 'compiler', 'tests
 const exampleProjectRoot = path.join(workspaceRoot, 'packages', 'examples', 'src', 'projects');
 const compilerTestPreviewSource = path.join(compilerTestRoot, 'argument-continuation.test.8f4e');
 const featuredProjectIds = [
-	'dx7-algorithm-5',
+	'dx7-algorithm-5-eight-voices',
 	'reverb',
 	'hymn-to-aurora',
 	'lower-intentions',

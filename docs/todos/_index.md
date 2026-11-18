@@ -71,6 +71,7 @@ Active todo files are listed below.
 | 520 | Explore performance controls and custom banks for Grids | 🟡 | TBD | 2026-11-10 | Start with momentary fills and Snap/Morph playback, then explore density, timing, velocity, and MIDI-derived banks. |
 | 521 | Benchmark Wasm IR simplifications | 🟡 | TBD | 2026-11-10 | Compare local fusion, literal propagation and integer folding, dead local writes, and conditional branch simplification on the DX7. |
 | 522 | Add composable Wasm IR passes | 🟡 | TBD | 2026-11-11 | Let usage sites lazily load ordered IR passes and separate inlining from subsequent pruning through read-only reachability analysis. |
+| 523 | Investigate sharing source across projects | 🟡 | TBD | 2026-11-18 | Explore how projects can share user-owned functions and group templates across the CLI and editor. |
 
 ### 🟢 Low Priority
 

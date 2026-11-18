@@ -219,7 +219,7 @@ produces fractional delay-array sizes; that existing issue is independent of the
 | [packages/examples/src/projects/audio/audioLoopback.8f4e](../packages/examples/src/projects/audio/audioLoopback.8f4e) | 2 | 8 |
 | [packages/examples/src/projects/audio/audioLoopbackWithDelay.8f4e](../packages/examples/src/projects/audio/audioLoopbackWithDelay.8f4e) | 2 | 8 |
 | [packages/examples/src/projects/audio/cyclicTimestretch.8f4e](../packages/examples/src/projects/audio/cyclicTimestretch.8f4e) | 2 | 8 |
-| [packages/examples/src/projects/audio/dx7StgCrescendo.8f4e](../packages/examples/src/projects/audio/dx7StgCrescendo.8f4e) | 174 | 696 |
+| [packages/examples/src/projects/audio/dx7StgCrescendo.8f4e](https://github.com/8f4e/8f4e/blob/f285ead946fea7b934920a609ae2e77c0798130b/packages/examples/src/projects/audio/dx7StgCrescendo.8f4e) | 174 | 696 |
 | [packages/examples/src/projects/audio/formantSynth.8f4e](../packages/examples/src/projects/audio/formantSynth.8f4e) | 14 | 56 |
 | [packages/examples/src/projects/audio/granularSampler.8f4e](../packages/examples/src/projects/audio/granularSampler.8f4e) | 55 | 220 |
 | [packages/examples/src/projects/audio/gridsPatterns.8f4e](../packages/examples/src/projects/audio/gridsPatterns.8f4e) | 20 | 80 |
