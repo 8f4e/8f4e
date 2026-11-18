@@ -1,4 +1,4 @@
-import type { CompilerASTLine, PushArgument, PushLine } from '@8f4e/language-spec';
+import type { CompilerASTLine, PushArgument, PushLine, RuntimeLoopLine } from '@8f4e/language-spec';
 import { ArgumentType, getInstructionSpec } from '@8f4e/language-spec';
 
 function pushOperand(line: CompilerASTLine, argument: PushArgument): PushLine {
@@ -11,7 +11,7 @@ function pushOperand(line: CompilerASTLine, argument: PushArgument): PushLine {
 }
 
 /** Expands source operand shorthand once; each operation keeps the physical source line. */
-export function normalizeOperands(line: CompilerASTLine): CompilerASTLine[] {
+export function normalizeOperands(line: CompilerASTLine): (CompilerASTLine | RuntimeLoopLine)[] {
 	if (line.instruction === 'call') {
 		return [
 			...line.arguments.slice(1).map(argument => pushOperand(line, argument)),

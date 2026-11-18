@@ -1,11 +1,11 @@
 import { getError } from '@8f4e/compiler-diagnostics';
-import type { CompilationContext, CompilerASTLine, LoopLine } from '@8f4e/language-spec';
+import type { CompilationContext, CompilerASTLine, ResolvedLoopLine } from '@8f4e/language-spec';
 import { ErrorCode } from '@8f4e/language-spec';
 import { cloneStack, consume } from './stack';
 import type { InstructionAnalysisResult } from './types';
 
 /** Consumes a normalized loop bound and checks that it is a scalar integer. */
-export function analyzeLoop(line: LoopLine, context: CompilationContext): InstructionAnalysisResult {
+export function analyzeLoop(line: ResolvedLoopLine, context: CompilationContext): InstructionAnalysisResult {
 	if (!line.runtimeBound) return { consumed: [], produced: [] };
 
 	const consumed = consume(context, 1);

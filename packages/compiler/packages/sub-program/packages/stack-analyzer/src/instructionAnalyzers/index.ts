@@ -1,12 +1,12 @@
 import type {
 	CodegenPushLine,
 	CompilationContext,
-	CompilerASTLine,
 	EnsureNonZeroLine,
 	MapEndLine,
 	ResolvedPushShapeLine,
 	SemanticAssertEqualLine,
 	SemanticCallLine,
+	SemanticReferenceLine,
 } from '@8f4e/language-spec';
 import { getInstructionSpec } from '@8f4e/language-spec';
 import { analyzeAssertEqual } from './assertEqual';
@@ -42,7 +42,10 @@ import type { InstructionAnalysisResult } from './types';
  * @param context - Compilation context used by the operation.
  * @returns The stack-analysis result for the instruction.
  */
-export function analyzeByInstruction(line: CompilerASTLine, context: CompilationContext): InstructionAnalysisResult {
+export function analyzeByInstruction(
+	line: SemanticReferenceLine,
+	context: CompilationContext
+): InstructionAnalysisResult {
 	switch (line.instruction) {
 		case 'assertEqual':
 			return analyzeAssertEqual(line as SemanticAssertEqualLine, context);

@@ -1,5 +1,5 @@
 import { getError } from '@8f4e/compiler-diagnostics';
-import type { LoopLine, ResolvedArgumentLiteral, ResolvedLoopLine } from '@8f4e/language-spec';
+import type { LoopLine, ResolvedArgumentLiteral, ResolvedLoopLine, RuntimeLoopLine } from '@8f4e/language-spec';
 import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import type { ReferenceResolutionContext } from '../context';
 import { validateValueArguments } from './helpers';
@@ -11,8 +11,11 @@ import { validateValueArguments } from './helpers';
  * @param context - Compilation context used by the operation.
  * @returns Loop line with resolved cap metadata.
  */
-export default function resolveLoopReferences(line: LoopLine, context: ReferenceResolutionContext): ResolvedLoopLine {
-	if (line.runtimeBound) {
+export default function resolveLoopReferences(
+	line: LoopLine | RuntimeLoopLine,
+	context: ReferenceResolutionContext
+): ResolvedLoopLine {
+	if ('runtimeBound' in line) {
 		return line;
 	}
 	if (line.arguments.length === 0) {
