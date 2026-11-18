@@ -1,6 +1,7 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';
+import { createGroupPathPlugin } from '@8f4e/editor-plugin-group-path';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -10,6 +11,7 @@ vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-font-preview', { spy: true });
+vi.mock('@8f4e/editor-plugin-group-path', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 
 async function loadDeferredPlugins() {
@@ -56,6 +58,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	const deferredPlugins = await loadDeferredPlugins();
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(createFontPreviewPlugin).toHaveBeenCalledWith({ inputTarget: canvas, defaultFont: undefined });
+	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 1 });
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
@@ -76,6 +79,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'stack-connections',
 			'keyboard-navigation',
 			'keyboard-mode-switching',
+			'group-path',
 			'keyboard-editing',
 			'font-preview',
 		])
@@ -96,7 +100,10 @@ it('omits all keyboard plugins on coarse-pointer browsers', async () => {
 	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
 	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 	const plugins = await loadDeferredPlugins();
-	expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
+	expect(plugins.map(plugin => plugin.id)).toEqual(
+		expect.arrayContaining(['mouse-input', 'touch-input', 'group-path'])
+	);
+	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 0 });
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
 		expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	expect(createFontPreviewPlugin).not.toHaveBeenCalled();
@@ -111,6 +118,7 @@ it('omits mode switching while retaining navigation and editing', async () => {
 	const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 	expect(ids).not.toContain('keyboard-mode-switching');
 	expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing', 'font-preview']));
+	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 0 });
 });
 
 it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {

@@ -28,6 +28,7 @@ export function createDeferredEditorPlugin({
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
+	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
 	return createLazyPluginLoaderPlugin([
 		{
 			id: 'block-authoring',
@@ -180,10 +181,19 @@ export function createDeferredEditorPlugin({
 		{
 			id: 'keyboard-mode-switching',
 			scope: 'view',
-			matches: () => !hasCoarsePointer && includeKeyboardModeSwitching,
+			matches: () => hasModeHint,
 			load: () =>
 				import('@8f4e/editor-plugin-keyboard-mode-switching').then(module =>
 					module.createKeyboardModeSwitchingPlugin({ inputTarget: canvas })
+				),
+		},
+		{
+			id: 'group-path',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-group-path').then(module =>
+					module.createGroupPathPlugin({ topRow: hasModeHint ? 1 : 0 })
 				),
 		},
 		...createLazyPluginRegistry({

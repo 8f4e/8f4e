@@ -80,6 +80,10 @@ layout, visibility management, and any WebMCP bridge.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
 from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, and history. Keyboard bindings belong to plugins.
 
+After the first render, the gallery loads `group-path` to show the active group and its ancestors as an indented tree.
+The tree appears below the mode hint when it is available and starts on the first row otherwise. It is hidden at the
+project root.
+
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,
 text changes, and undo/redo shortcuts. View mode supports line selection and block navigation, with history shortcuts left unhandled.
