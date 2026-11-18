@@ -45,8 +45,11 @@ include std/random/xorshift
 include std/memory/addAt
 include std/memory/advancePointer
 include std/memory/loadAt
+include std/memory/loadRangeAt
 include std/memory/loadBitAt2D
 include std/memory/nearestValue
+include std/memory/queuePush
+include std/memory/queuePop
 include std/memory/readInterpolated
 include std/memory/storeAt
 include std/memory/storeBitAt2D
@@ -276,6 +279,62 @@ moduleEnd
 entryEnd
 ```
 
+## `std/memory/queuePush`
+
+Provides `queuePush(int** writePointer, int* buffer, int itemCount, int value) -> void` for a zero-marked integer FIFO.
+The buffer starts filled with zeroes, and queued values are nonzero integers. Pass the address of the write cursor,
+the buffer's start address, and its positive element count. Initialize the cursor to the buffer's start.
+
+The helper writes the value and advances the cursor when its slot is empty. If the slot is occupied, it drops the
+new value and leaves the cursor unchanged. Queue state stays in caller-owned memory; the producer owns the write
+cursor and the consumer owns a separate read cursor.
+
+Include `std/memory/advancePointer` under its standard name as a prerequisite.
+
+```8f4e
+includes
+include std/memory/advancePointer
+include std/memory/queuePush
+includesEnd
+
+entry main
+module producer
+int[] buffer 3
+int* writePointer &buffer
+
+call queuePush &writePointer &buffer count(buffer) 17
+call queuePush &writePointer &buffer count(buffer) 23
+; buffer starts with 17, 23, 0.
+moduleEnd
+entryEnd
+```
+
+## `std/memory/queuePop`
+
+Provides `queuePop(int** readPointer, int* buffer, int itemCount) -> int`, which consumes one word from a zero-marked
+integer FIFO. Initialize the read cursor to the buffer's start and supply its positive element count.
+
+An empty slot returns zero without moving the cursor. Otherwise the helper copies the word, clears its slot,
+advances the cursor, and returns the copied value. Include `std/memory/advancePointer` under its standard name as
+a prerequisite.
+
+```8f4e
+includes
+include std/memory/advancePointer
+include std/memory/queuePop
+includesEnd
+
+entry main
+module consumer
+int[] buffer 3 17 23 0
+int* readPointer &buffer
+
+call queuePop &readPointer &buffer count(buffer)
+; stack: 17
+moduleEnd
+entryEnd
+```
+
 ## `std/memory/swapPointers`
 
 Provides `swapPointers`, which exchanges the addresses stored in two pointer variables of the same type.
@@ -395,6 +454,31 @@ push &buffer
 push 2
 call loadAt
 ; stack: 33
+moduleEnd
+entryEnd
+```
+
+## `std/memory/loadRangeAt`
+
+Provides `loadRangeAt(int* offsets, int index) -> int int`, returning the start and length of a range described
+by two adjacent offsets. The start is pushed first, leaving the length on top of the stack.
+
+The result is `offsets[index]` and `offsets[index + 1] - offsets[index]`, in the same units as the supplied offsets.
+Supply a valid adjacent pair; equal offsets produce a zero-length range. Include `std/memory/loadAt` under its
+standard name as a prerequisite.
+
+```8f4e
+includes
+include std/memory/loadAt
+include std/memory/loadRangeAt
+includesEnd
+
+entry main
+module ranges
+int[] offsets 4 0 10 25 25
+
+call loadRangeAt &offsets 1
+; stack: 10, 15
 moduleEnd
 entryEnd
 ```

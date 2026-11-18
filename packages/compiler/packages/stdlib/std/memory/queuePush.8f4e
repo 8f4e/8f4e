@@ -1,0 +1,24 @@
+function queuePush
+#export
+#impure
+; Pushes a nonzero word into a
+; zero-marked integer FIFO.
+; Drops new arrivals when full.
+; Requires advancePointer.
+param int** writePointer
+param int* buffer
+param int itemCount
+param int value
+local int* slot
+
+push *writePointer
+localSet slot
+push *slot
+equalToZero
+if
+push slot
+push value
+store
+call advancePointer writePointer buffer itemCount
+ifEnd
+functionEnd

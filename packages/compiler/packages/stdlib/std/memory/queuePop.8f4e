@@ -1,0 +1,23 @@
+function queuePop
+#export
+#impure
+; Pops a nonzero word from a
+; zero-marked integer FIFO.
+; Returns zero when empty.
+; Requires advancePointer.
+param int** readPointer
+param int* buffer
+param int itemCount
+local int value
+
+push **readPointer
+localSet value
+push value
+if
+push *readPointer
+push 0
+store
+call advancePointer readPointer buffer itemCount
+ifEnd
+push value
+functionEnd int

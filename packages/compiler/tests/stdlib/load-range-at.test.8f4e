@@ -1,0 +1,45 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/loadAt
+include std/memory/loadRangeAt
+includesEnd
+
+entry test
+module loadRangeAtAssertions
+int[] offsets 5 -10 0 12 12 100
+
+; Results are start then length, leaving length on top.
+call loadRangeAt &offsets 0
+assertEqual 10
+assertEqual -10
+call loadRangeAt &offsets 1
+assertEqual 12
+assertEqual 0
+
+; Equal boundaries describe an empty range.
+call loadRangeAt &offsets 2
+assertEqual 0
+assertEqual 12
+
+; The final boundary closes the final range.
+call loadRangeAt &offsets 3
+assertEqual 88
+assertEqual 12
+call loadAt &offsets 0
+assertEqual -10
+call loadAt &offsets 4
+assertEqual 100
+moduleEnd
+
+module singleRangeAssertions
+int[] offsets 2 700 812
+call loadRangeAt &offsets 0
+assertEqual 112
+assertEqual 700
+moduleEnd
+entryEnd
