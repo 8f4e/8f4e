@@ -29,10 +29,12 @@ the app is backgrounded or the screen is locked.
 
 ## Updates and storage
 
-New versions download while online. An **Update available** dialog appears inside the editor and waits for
-**Reload**, or for the old app windows to close, before activating the new version. Reload updates all open editor
-windows. Choose **Later** to continue the current session; **Reload to update** in the main menu reopens the dialog.
-Updates do not force an immediate reload when they finish downloading.
+The editor checks for a new version when it opens online. An **Update available** dialog opens while the
+update downloads. **Reload** appears when the download finishes and updates all open editor windows. The update
+can also activate after all editor windows close.
+
+Choose **Later** to keep working during or after the download. Reopen the dialog from the main menu with
+**Update status** while the download is in progress or **Reload to update** when it is ready.
 Project autosaves remain separate from the versioned app cache.
 
 Offline availability depends on browser storage. Clearing site data removes the saved session and offline files;

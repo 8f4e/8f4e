@@ -1,8 +1,10 @@
 # PWA updates
 
 `@8f4e/editor-plugin-pwa-updates` observes a page-owned service worker and presents pending updates through
-the editor's dialog system. First installation is silent. A waiting update opens **Update available** with
-**Reload** and **Later** buttons. The **Reload to update** main-menu item reopens a postponed update.
+the editor's dialog system. First installation is silent. Detecting a new version opens **Update available**
+with a download message and a **Later** button. **Reload** becomes available when the download finishes.
+The main menu reopens a postponed update through **Update status** during the download or **Reload to update**
+when the update is ready.
 
 Create the plugin with `createPwaUpdatesPlugin({ serviceWorker: navigator.serviceWorker })` and install it
 alongside the dialog-rendering plugin. It can load through a deferred registry after the first render.
