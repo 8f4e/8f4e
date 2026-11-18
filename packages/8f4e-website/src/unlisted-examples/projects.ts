@@ -17,6 +17,12 @@ export const projects = [
 		description: 'Play sixteen MIDI voices from a 158 MB mono sample bank, with three velocity layers.',
 		path: 'midi/feltPiano.8f4e',
 	},
+	{
+		id: 'felt-piano-one-shot',
+		title: 'Felt piano (one-shot)',
+		description: 'Trigger sixteen piano voices that play to the sample end, replacing the oldest voice when reused.',
+		path: 'midi/feltPianoOneShot.8f4e',
+	},
 ];
 
 export const projectCategories = [
