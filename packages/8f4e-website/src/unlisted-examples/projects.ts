@@ -12,6 +12,13 @@ export const projects = [
 		path: 'audio/granularSampler.8f4e',
 	},
 	{
+		id: 'make-noise-function',
+		title: 'Make Noise Function',
+		description:
+			'Explore a float-based envelope, cycling LFO, bipolar slew limiter and hold, inspired by Make Noise FUNCTION.',
+		path: 'audio/makeNoiseFunction.8f4e',
+	},
+	{
 		id: 'felt-piano',
 		title: 'Felt piano',
 		description: 'Play sixteen MIDI voices from a 158 MB mono sample bank, with three velocity layers.',

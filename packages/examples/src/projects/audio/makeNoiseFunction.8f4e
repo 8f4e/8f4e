@@ -1,0 +1,657 @@
+8f4e/v1
+
+includes
+; @pos -104 -25
+include std/memory/advancePointer
+includesEnd
+
+constants env
+; @pos -104 -14
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 1000
+
+constantsEnd
+
+note runtime
+; @pos -104 0
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRate 1000
+; @config export.fileName makeNoiseFunction
+noteEnd
+
+note about
+; @pos -60 -28
+; Make Noise FUNCTION-inspired
+; envelope, cycling LFO, bipolar slew
+; limiter, and track-and-hold.
+;
+; All patch ports use floats.
+; TRIGGER/HANG/CYCLE: 0 low, +1 high.
+; RISE/FALL: 0 short, +1 long.
+; RESPONSE: 0 LOG, 0.5 linear, 1 EXP.
+; SIGNAL and rise/fall/BOTH CV:
+; -1..+1, with zero at the center.
+; OUT/INVERTED also support -1..+1.
+; Envelopes cycle from 0 to +1;
+; inverted is the negative of out.
+; EOR/EOC are sustained 0/+1 gates.
+;
+; This digital model follows the
+; musical behavior, approximating
+; the analog curves and CV scaling.
+; Reference: Make Noise FUNCTION
+; manual, PANEL CONTROLS and
+; MORE PATCH IDEAS.
+; https://www.makenoisemusic.com/
+; wp-content/uploads/2024/03/FUNCTIONmanual.pdf
+noteEnd
+
+note patches
+; @pos -60 7
+; Starts as a cycling LFO.
+; Switch CYCLE off for these patches:
+;
+; AD envelope: press TRIGGER.
+; Triggers during rise are ignored;
+; during fall they rise from the
+; current level without resetting.
+;
+; ASR: raise SIGNAL, then lower it.
+; Slew: move SIGNAL through -1..+1.
+; Hold: HANG freezes the output and
+; EOR/EOC until released.
+; S&H: patch a mostly-high clock
+; to hang, with short low intervals.
+;
+; Patch another float output to the
+; functionGenerator group inputs
+; using its init lines to replace
+; the manual controls.
+; The worker runs at 1 kHz for CV.
+noteEnd
+
+entry main
+module controls
+; @pos 0 0
+; @home left
+; FUNCTION / manual patch inputs
+float signal 0.0
+; SIGNAL / bipolar slew input
+; @slider &signal -1 1 0.01
+float trigger 0.0
+; TRIGGER / momentary AD envelope
+; @button &trigger 0 1
+float hang 0.0
+; HANG / hold while high
+; @switch &hang 0 1
+float cycle 1.0
+; CYCLE / free-running LFO
+; @switch &cycle 0 1
+
+float rise 0.375
+; RISE / short to long
+; @slider &rise 0 1 0.01
+float fall 0.45
+; FALL / short to long
+; @slider &fall 0 1 0.01
+float response 0.5
+; RESPONSE / 0 LOG, 0.5 LIN, 1 EXP
+; @slider &response 0 1 0.01
+
+float riseCV 0.0
+; RISE CV / positive slows rise
+; @slider &riseCV -1 1 0.01
+float fallCV 0.0
+; FALL CV / positive slows fall
+; @slider &fallCV -1 1 0.01
+float bothCV 0.0
+; BOTH CV / positive speeds both
+; @slider &bothCV -1 1 0.01
+moduleEnd
+group functionGenerator
+; @pos 51 0
+; FUNCTION / float ports
+; SIGNAL and CV: -1..+1
+; Gates, RISE/FALL/RESPONSE: 0..+1
+expose signal &target:signal
+expose trigger &triggerEdge:in
+expose hang &runGate:in
+expose cycle &phase:cycle
+expose rise &timeControl:rise
+expose fall &timeControl:fall
+expose response &curve:response
+expose riseCV &timeControl:riseCV
+expose fallCV &timeControl:fallCV
+expose bothCV &timeControl:bothCV
+
+; OUT / inverted / end-of-rise / end-of-cycle
+expose out &slew:out
+; @watch out
+expose inverted &inverter:out
+; @watch inverted
+expose eor &gates:eor
+; @watch eor
+expose eoc &gates:eoc
+; @watch eoc
+
+; Repatch inputs to external floats.
+init &signal &controls:signal
+init &trigger &controls:trigger
+init &hang &controls:hang
+init &cycle &controls:cycle
+init &rise &controls:rise
+init &fall &controls:fall
+init &response &controls:response
+init &riseCV &controls:riseCV
+init &fallCV &controls:fallCV
+init &bothCV &controls:bothCV
+
+pass env
+
+
+
+
+includes
+; @pos -50 -10
+include std/math/exp2
+include std/events/risingEdge
+includesEnd
+function functionRate
+; @pos -68 0
+; Panel 0..+1 spans 1 ms..750 s
+; per unit at linear response.
+; Rise/fall CV changes time linearly:
+; -1 removes it, +1 doubles it.
+; BOTH spans +/-6 octaves of speed;
+; positive is faster. Final times
+; are limited to 1 ms..750 s.
+; The compiler requires ensureNonZero
+; on both computed divisors.
+use env
+param float panel
+param float cv
+param float both
+local float seconds
+
+push panel
+mul -19.51653107
+call exp2
+localSet seconds
+
+push 0.001
+push seconds
+ensureNonZero 0.00000001
+div
+push cv
+add 1.0
+mul
+push both
+mul -6.0
+call exp2
+mul
+max 0.001
+min 750.0
+push SAMPLE_RATE
+castToFloat
+mul
+localSet seconds
+
+push 1.0
+push seconds
+ensureNonZero 0.001
+div
+functionEnd float
+function functionStep
+; @pos -50 70
+; Distance-dependent speed blends
+; logarithmic (0), linear (0.5),
+; exponential, and sharply
+; accelerating exponential (1).
+; Response also changes duration,
+; as on the analog instrument.
+param float distance
+param float rate
+param float response
+local float remaining
+local float progress
+local float shape
+
+; Signed distance from the linear
+; midpoint selects the curve blend.
+push response
+mul 2.0
+sub 1.0
+localSet shape
+
+; Bipolar steps can span two units;
+; cap only the curve's distance term.
+push distance
+min 1.0
+localSet remaining
+push 1.0
+sub remaining
+localSet progress
+
+push shape
+push 0.0
+lessThan
+if
+push 1.0
+push progress
+mul 0.9
+mul shape
+add
+else
+push 1.0
+push progress
+mul 7.8
+sub 0.8
+mul shape
+add
+push progress
+mul progress
+mul shape
+mul shape
+mul 32.0
+add
+ifEnd float
+mul rate
+min distance
+functionEnd float
+entry main
+module runGate
+; @pos 0 0
+; @home left
+; HANG disables state advancement.
+float* in
+int out 1
+
+push &out
+push 1.0
+sub *in
+castToInt
+store
+moduleEnd
+module triggerEdge
+; @pos 1 16
+; Consume edges even during HANG.
+float* in
+float previous 0.0
+int out 0
+
+push &out
+push *in
+call risingEdge &previous
+store
+moduleEnd
+module phase
+; @pos 59 6
+; Envelope phase: track, rise, fall.
+; Completion feeds back from the
+; previous sample before new events.
+float* cycle
+int& run &runGate:out
+int& trigger &triggerEdge:out
+int& rose &completion:rose
+int& fell &completion:fell
+int out 0
+
+push *run
+if
+push out
+push 1
+equal
+push *rose
+and
+if
+push &out
+push 2
+store
+ifEnd
+
+push out
+push 2
+equal
+push *fell
+and
+if
+push &out
+push 0
+store
+ifEnd
+
+; Ignore triggers while rising.
+push *trigger
+push out
+push 1
+notEqual
+and
+if
+push &out
+push 1
+store
+ifEnd
+
+; Restart only after a full cycle.
+push out
+equalToZero
+push *cycle
+castToInt
+and
+if
+push &out
+push 1
+store
+ifEnd
+ifEnd
+moduleEnd
+module target
+; @pos 118 -4
+; Track SIGNAL, rise to +1, or
+; fall to zero according to phase.
+float* signal
+int& phase &phase:out
+float out 0.0
+
+push &out
+push *signal
+store
+push *phase
+push 1
+equal
+if
+push &out
+push 1.0
+store
+ifEnd
+push *phase
+push 2
+equal
+if
+push &out
+push 0.0
+store
+ifEnd
+moduleEnd
+module distance
+; @pos 165 6
+; Measure before this sample's slew.
+float& target &target:out
+float& signal &slew:out
+float out
+
+push &out
+push *target
+sub *signal
+store
+moduleEnd
+module timeControl
+; @pos 165 22
+; Convert panel settings and CV
+; to separate per-sample slew rates.
+float* rise
+float* fall
+float* riseCV
+float* fallCV
+float* bothCV
+float riseRate
+float fallRate
+
+push &riseRate
+call functionRate *rise *riseCV *bothCV
+store
+push &fallRate
+call functionRate *fall *fallCV *bothCV
+store
+moduleEnd
+module curve
+; @pos 228 14
+; Shape the signed slew increment.
+float* response
+float& distance &distance:out
+float& riseRate &timeControl:riseRate
+float& fallRate &timeControl:fallRate
+float out
+local float rate
+
+push *distance
+push 0.0
+greaterThan
+if
+push *riseRate
+else
+push *fallRate
+ifEnd float
+localSet rate
+
+push &out
+push *distance
+abs
+call functionStep rate *response
+push *distance
+push 0.0
+lessThan
+if
+push -1.0
+else
+push 1.0
+ifEnd float
+mul
+store
+moduleEnd
+module slew
+; @pos 290 0
+; Integrate without overshooting.
+; Residual preserves tiny increments
+; on long ramps at audio rates.
+int& run &runGate:out
+float& distance &distance:out
+float& target &target:out
+float& step &curve:out
+float out 0.0
+float residual 0.0
+local float amount
+local float next
+
+push *run
+if
+push out
+localSet next
+push 0.0
+localSet amount
+push *distance
+notZero
+if
+push *step
+add residual
+localSet amount
+push *distance
+push 0.0
+greaterThan
+if
+push out
+add amount
+min *target
+else
+push out
+add amount
+max *target
+ifEnd float
+localSet next
+ifEnd
+
+push &residual
+push amount
+push next
+sub out
+sub
+store
+push &out
+push next
+store
+push out
+push *target
+equal
+if
+push &residual
+push 0.0
+store
+ifEnd
+ifEnd
+moduleEnd
+module completion
+; @pos 343 1
+; Detect arrival at the selected
+; target, including zero-length legs.
+float& signal &slew:out
+float& target &target:out
+float& distance &distance:out
+int& phase &phase:out
+int reached 0
+int rose 0
+int fell 0
+
+push &reached
+push *signal
+push *target
+equal
+store
+push &rose
+push reached
+push *distance
+push 0.0
+greaterThan
+push *phase
+push 1
+equal
+or
+and
+store
+push &fell
+push reached
+push *distance
+push 0.0
+lessThan
+push *phase
+push 2
+equal
+or
+and
+store
+moduleEnd
+module inverter
+; @pos 345 46
+; Opposite-polarity signal output.
+float& in &slew:out
+float out 0.0
+
+push &out
+push *in
+mul -1.0
+store
+moduleEnd
+module gates
+; @pos 400 1
+; Sustain complementary EOR/EOC
+; gates between slope completions.
+int& run &runGate:out
+float& distance &distance:out
+int& rose &completion:rose
+int& fell &completion:fell
+float eor 0.0
+float eoc 1.0
+
+push *run
+if
+push *distance
+notZero
+if
+push &eor
+push *distance
+push 0.0
+lessThan
+castToFloat
+store
+ifEnd
+push *rose
+if
+push &eor
+push 1.0
+store
+else
+push *fell
+if
+push &eor
+push 0.0
+store
+ifEnd
+ifEnd
+push &eoc
+push 1.0
+sub eor
+store
+ifEnd
+moduleEnd
+entryEnd
+groupEnd
+module scope
+; @pos 108 0
+float& in &functionGenerator:out
+float& inverse &functionGenerator:inverted
+float& eor &functionGenerator:eor
+float& eoc &functionGenerator:eoc
+float[] signal 128
+float[] inverted 128
+float[] endOfRise 128
+float[] endOfCycle 128
+float* signalPointer &signal
+float* invertedPointer &inverted
+float* risePointer &endOfRise
+float* cyclePointer &endOfCycle
+int divider 0
+
+; OUT / -1..+1
+; @plot &signal count(signal) -1 1
+; INVERTED / -1..+1
+; @plot &inverted count(inverted) -1 1
+; EOR / high through fall
+; @plot &endOfRise count(endOfRise) 0 1
+; EOC / high through rise and idle
+; @plot &endOfCycle count(endOfCycle) 0 1
+
+push &divider
+push divider
+add 1
+store
+push divider
+push 8
+greaterOrEqual
+if
+push &divider
+push 0
+store
+push signalPointer
+push *in
+store
+push invertedPointer
+push *inverse
+store
+push risePointer
+push *eor
+store
+push cyclePointer
+push *eoc
+store
+call advancePointer
+- &signalPointer &signal count(signal)
+call advancePointer
+- &invertedPointer &inverted count(inverted)
+call advancePointer
+- &risePointer &endOfRise count(endOfRise)
+call advancePointer
+- &cyclePointer &endOfCycle count(endOfCycle)
+ifEnd
+moduleEnd
+entryEnd
