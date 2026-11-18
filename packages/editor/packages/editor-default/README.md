@@ -34,8 +34,9 @@ unique declaration start in view mode. Set `includeKeyboardModeSwitching: false`
 plugin and its hint. This controls imports and installation, with no corresponding core feature flag. The directive
 still selects the initial mode when the plugin is omitted.
 
-The `group-path` plugin displays the names of the current project group and its ancestors as an indented tree.
-It appears below the mode hint, or in the first row when the hint is disabled. At the project root, the tree is hidden.
+After the first render, the default editor loads `group-path` to show the current project group and its ancestors as
+an indented tree. It appears below the mode hint, or in the first row when the hint is disabled. At the project root,
+the tree is hidden.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,
