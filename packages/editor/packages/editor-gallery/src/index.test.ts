@@ -73,6 +73,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'block-authoring',
 			'entry-outlines',
 			'offscreen-block-arrows',
+			'stack-connections',
 			'keyboard-navigation',
 			'keyboard-mode-switching',
 			'keyboard-editing',
