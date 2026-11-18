@@ -1,4 +1,4 @@
-import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
+import { getError, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import {
 	type CallLine,
 	type CompilerCache,
@@ -6,6 +6,7 @@ import {
 	type ComposedEntry,
 	createChildProjectGroupPath,
 	createProjectModuleId,
+	ErrorCode,
 	type FunctionLine,
 	type IncludedFunctionBindings,
 	type ProjectConstantNamespacePassLine,
@@ -14,7 +15,6 @@ import {
 	type ProjectMemoryInitializerLine,
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
-	resolveProjectMemoryAlias,
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
@@ -54,7 +54,8 @@ function collectProjectScopePasses(
 function appendMemoryExposureAliases(
 	program: ComposedProgram,
 	groupPath: ProjectGroupPath,
-	exposures: ProjectMemoryExposure[]
+	exposures: readonly ProjectMemoryExposure[],
+	groupTargets: ReadonlySet<string>
 ): void {
 	if (exposures.length === 0) {
 		return;
@@ -64,18 +65,28 @@ function appendMemoryExposureAliases(
 	const groupAliases = new Map(aliases.get(groupPath));
 
 	for (const exposure of exposures) {
-		const target = resolveProjectMemoryAlias(
-			aliases,
-			createProjectModuleId(groupPath, exposure.targetModuleName),
-			exposure.targetMemoryName
-		);
-		program.memoryExposures.push({
+		const source = {
 			...exposure,
-			...target,
 			groupPath,
-			diagnosticSource: { kind: 'scope', projectGroupPath: groupPath },
-			instruction: 'expose',
-		});
+			diagnosticSource: { kind: 'scope' as const, projectGroupPath: groupPath },
+			instruction: 'expose' as const,
+		};
+		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
+		const targetMemoryId = exposure.targetMemoryName;
+		const target = groupTargets.has(exposure.targetModuleName)
+			? aliases.get(targetModuleId)?.get(targetMemoryId)
+			: { targetModuleId, targetMemoryId };
+		if (!target) {
+			throw getError(ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET, source, {
+				details: {
+					projectGroupPath: groupPath,
+					projectMemoryExposureName: exposure.name,
+					targetModuleId,
+					targetMemoryId,
+				},
+			});
+		}
+		program.memoryExposures.push({ ...source, ...target });
 		groupAliases.set(exposure.name, target);
 	}
 
@@ -130,7 +141,8 @@ function appendUnit(
 	projectPath: ProjectGroupPath,
 	parentProjectPath: ProjectGroupPath | undefined,
 	program: ComposedProgram,
-	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath
+	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath,
+	exposures: readonly ProjectMemoryExposure[] = []
 ): Map<string, ComposedEntry> {
 	const entries = new Map<string, ComposedEntry>();
 	const ensureEntry = (name: string): ComposedEntry => {
@@ -219,11 +231,20 @@ function appendUnit(
 	);
 
 	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);
+	// Only names whose last enabled declaration is a group can forward a child exposure.
+	const groupTargets = new Set<string>();
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
-			const childEntries = appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
-			appendMemoryExposureAliases(program, groupPath, block.exposures);
+			const childEntries = appendUnit(
+				block,
+				groupPath,
+				projectPath,
+				program,
+				includedFunctionsByProjectPath,
+				block.exposures
+			);
+			groupTargets.add(block.name);
 			const childMain = childEntries.get('main');
 			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
 			const childInit = childEntries.get('init');
@@ -232,6 +253,7 @@ function appendUnit(
 		}
 		const moduleAst = selectedModules.get(block);
 		if (!moduleAst) continue;
+		groupTargets.delete(moduleAst.id);
 		const entry = entries.get(block.entry)!;
 		const ast = {
 			...qualify(moduleAst),
@@ -241,6 +263,7 @@ function appendUnit(
 		program.ast.modules.push(ast);
 		entry.steps.push({ type: 'module', id: ast.id });
 	}
+	appendMemoryExposureAliases(program, projectPath, exposures, groupTargets);
 	return entries;
 }
 

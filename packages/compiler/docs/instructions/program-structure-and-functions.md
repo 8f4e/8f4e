@@ -82,6 +82,9 @@ A group can forward a direct child group's public memory with the same `expose` 
 `expose out &sampler:out` forwards the child `sampler` group's `out` exposure. Forwarded names resolve to the
 original backing declaration, including its type and pointer metadata, without allocating extra memory.
 
+When a direct module and child group share the target name, the last enabled declaration in the group's execution
+order wins. The selected module must declare the requested memory item, or the selected group must expose it.
+
 ### init
 
 Inside a group, `init` overrides the default value of an exposed scalar memory item. Values can be numeric literals
