@@ -88,6 +88,12 @@ export function createDeferredEditorPlugin(
 			load: () => import('@8f4e/editor-plugin-assertion-markers').then(module => module.assertionMarkersPlugin),
 		},
 		{
+			id: 'stack-connections',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-stack-connections').then(module => module.stackConnectionsPlugin),
+		},
+		{
 			id: 'stack-producers',
 			scope: 'view',
 			matches: () => true,

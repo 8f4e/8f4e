@@ -117,6 +117,7 @@ describe('default editor plugins', () => {
 				'block-authoring',
 				'entry-outlines',
 				'offscreen-block-arrows',
+				'stack-connections',
 				'stack-producers',
 				'tooltips',
 				'favorites',

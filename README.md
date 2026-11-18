@@ -104,6 +104,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/session-persistence">session-persistence</a> (Browser session restoration and project autosaving)
     │       ├── <a href="./packages/editor/plugins/slider">slider</a> (Interactive slider controls)
     │       ├── <a href="./packages/editor/plugins/stack">stack</a> (Stack analysis overlays)
+    │       ├── <a href="./packages/editor/plugins/stack-connections/README.md">stack-connections</a> (Stack operand links in the code-block gutter)
     │       ├── <a href="./packages/editor/plugins/stack-producers/README.md">stack-producers</a> (Highlights immediate stack operand producer lines)
     │       ├── <a href="./packages/editor/plugins/switch">switch</a> (Memory toggle controls)
     │       ├── <a href="./packages/editor/plugins/test-runtime">test-runtime</a> (Test execution, assertion results, and failure reporting)
