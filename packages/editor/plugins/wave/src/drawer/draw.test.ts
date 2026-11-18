@@ -68,7 +68,7 @@ describe('wave drawing', () => {
 		memory.int32[4] = 2;
 		data.playhead = { kind: 'pointer', pointerSlotIndex: 4, byteOffset: 0 };
 		drawWaves(draw, state(), [data], memory);
-		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
 	});
 	it('skips a waveform while its live element count is zero', () => {
 		const draw = createDrawContextMock();
@@ -92,10 +92,10 @@ describe('wave drawing', () => {
 		data.playhead = { kind: 'pointer', pointerSlotIndex: pointerSlot, byteOffset: 0 };
 		drawWaves(draw, state(), [data], memory);
 		expect(data.peaks.hasCompleteSweep).toBe(false);
-		expect(draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
 		memory.int32[pointerSlot] = length - 1;
 		drawWaves(draw, state(), [data], memory);
 		expect(data.peaks.hasCompleteSweep).toBe(false);
-		expect(draw.drawFill).toHaveBeenLastCalledWith(6, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(6, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
 	});
 });

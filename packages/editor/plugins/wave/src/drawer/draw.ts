@@ -80,7 +80,7 @@ export default function drawWaves(engine: DrawContext, state: State, waves: Wave
 			const scanlineWidth = state.viewport.vGrid / 2;
 			const scanlineX = arrayLength <= 1 ? 0 : Math.floor((clampedIndex / (arrayLength - 1)) * (width - scanlineWidth));
 
-			engine.drawFill(scanlineX, 0, colors.secondaryReadable, scanlineWidth, height);
+			engine.drawFill(scanlineX, 0, colors.onDarkAccent, scanlineWidth, height);
 		}
 
 		engine.endGroup();

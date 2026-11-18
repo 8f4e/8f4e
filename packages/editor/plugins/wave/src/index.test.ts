@@ -163,7 +163,7 @@ describe('wave plugin', () => {
 		expect(test.draw.drawFill).toHaveBeenLastCalledWith(
 			Math.floor((2 / 3) * (width - 4)),
 			0,
-			PALETTE_INDICES.secondaryReadable,
+			PALETTE_INDICES.onDarkAccent,
 			4,
 			32
 		);
@@ -202,7 +202,7 @@ describe('wave plugin', () => {
 			test.render();
 			expect(columns()[0][1]).toBe(height - 1);
 			expect(columns().at(-1)![1]).toBe(0);
-			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 4, height);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 4, height);
 			// Retarget the outer pointer and playhead without a layout refresh.
 			test.memoryViews.int32[memory.address.allocationUnitAddress] = memory.next.byteAddress;
 			test.memoryViews.int32[memory.cursor.allocationUnitAddress] = samples.alternate.byteAddress + 2;
@@ -210,7 +210,7 @@ describe('wave plugin', () => {
 			expect(columns()[0][1]).toBe(0);
 			expect(columns().at(-1)![1]).toBe(height - 1);
 			const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
-			expect(test.draw.drawFill).toHaveBeenLastCalledWith(width - 4, 0, PALETTE_INDICES.secondaryReadable, 4, height);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(width - 4, 0, PALETTE_INDICES.onDarkAccent, 4, height);
 			// Retarget the inner pointer through the same prepared binding.
 			test.memoryViews.int32[memory.next.allocationUnitAddress] = samples.values.byteAddress;
 			test.render();
@@ -244,7 +244,7 @@ describe('wave plugin', () => {
 				.mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
 			expect(columns.length).toBeGreaterThan(0);
 			expect(columns.every(call => Number.isFinite(call[1]) && Number.isFinite(call[4]))).toBe(true);
-			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.secondaryReadable, 4, 32);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 4, 32);
 			const length = test.state.compiler.result.memoryPlan.modules.samples.memory.length;
 			test.memoryViews.int32[length.allocationUnitAddress] = 0;
 			test.render();

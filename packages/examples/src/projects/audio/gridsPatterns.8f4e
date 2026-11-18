@@ -35,6 +35,23 @@ const ASSET_HIHAT_SIZE 21500
 
 constantsEnd
 
+note drumMachineColors
+; @pos -156 -16
+; @config color.canvas #070809
+; @config color.surface #141619
+; @config color.ink #e4dfd3
+; @config color.primary #ed9865
+; @config color.secondary #df7b73
+; @config color.positive #9fbd94
+; @config color.warning #e8b968
+; @config color.negative #dc7878
+; @config color.muted #8e969f
+; @config color.stroke rgba(228,148,94,0.30)
+; @config color.tertiary #a4abb2
+; @config color.highlight #f0c383
+; @config color.detail #c5795d
+noteEnd
+
 note
 ; @pos -156 -37
 ; @config export.fileName gridsPatterns

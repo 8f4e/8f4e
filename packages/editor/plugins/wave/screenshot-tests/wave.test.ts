@@ -1,4 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import type { PaletteConfig } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { expect, test } from 'vitest';
@@ -7,7 +8,11 @@ import { wavePlugin } from '../src/index';
 
 type WaveMemory = Awaited<ReturnType<typeof compileProject>>['memoryPlan']['modules'][string]['memory'];
 
-async function drawWaveFixture(source: string, initialize: (views: MemoryViews, memory: WaveMemory) => void) {
+async function drawWaveFixture(
+	source: string,
+	initialize: (views: MemoryViews, memory: WaveMemory) => void,
+	colors: PaletteConfig = {}
+) {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 512;
@@ -46,6 +51,7 @@ entryEnd`);
 	store.set('initialProjectState', project);
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
+	store.set('editorConfig.color', colors);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -106,5 +112,26 @@ int16** cursor &playhead
 			views.int32[memory.selected.allocationUnitAddress] = memory.samples.byteAddress;
 			views.int32[memory.buffer.allocationUnitAddress] = memory.selected.byteAddress;
 			views.int32[memory.cursor.allocationUnitAddress] = memory.playhead.byteAddress;
+		}
+	));
+
+test('wave playhead remains visible with dark code colors on a gray theme', () =>
+	drawWaveFixture(
+		`float[] samples 64
+float* playhead &samples
+; @wave4 &samples count(samples) playhead`,
+		(views, memory) => {
+			for (let index = 0; index < 64; index++)
+				views.float32[memory.samples.byteAddress / 4 + index] = Math.sin((index * Math.PI * 4) / 63);
+			views.int32[memory.playhead.allocationUnitAddress] = memory.samples.byteAddress + 40 * 4;
+		},
+		{
+			canvas: '#818c8e',
+			surface: '#96a1a3',
+			ink: '#1d282e',
+			primary: '#5b1a29',
+			secondary: '#09324f',
+			highlight: '#80d2dc',
+			warning: '#efb567',
 		}
 	));

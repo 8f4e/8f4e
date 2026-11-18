@@ -41,7 +41,8 @@ sample so isolated peaks remain visible. The first overview refines progressivel
 waveform visible while rebuilding it. The scan reads current memory every frame, so buffer changes appear as the
 next sweep completes, and playheads update every frame. There is no content-change detection or invalidation logic.
 
-The plugin uses the existing `waveformBackground`, `waveform`, and `scanLine` palette entries.
+The display uses `darkSurface` for its background, `highlightBase` for the waveform, and `onDarkAccent` for the
+playhead. The playhead color is chosen for the dark display independently of the code text colors.
 
 ```bash
 npx nx run @8f4e/editor-plugin-wave:build
