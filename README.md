@@ -79,6 +79,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/example-modules">example-modules</a> (Built-in module browsing and dependency insertion)
     │       ├── <a href="./packages/editor/plugins/favorites">favorites</a> (Favorite directives, editing, and navigation)
     │       ├── <a href="./packages/editor/plugins/font-preview">font-preview</a> (Temporary keyboard font previews)
+    │       ├── <a href="./packages/editor/plugins/group-path">group-path</a> (Active project group and ancestor names)
     │       ├── <a href="./packages/editor/plugins/grouping">grouping</a> (Visual block grouping, group actions, dragging, and copying)
     │       ├── <a href="./packages/editor/plugins/jump-to-error">jump-to-error</a> (Navigation to the first error with a source location)
     │       ├── <a href="./packages/editor/plugins/keyboard-editing">keyboard-editing</a> (Text editing, caret movement, and drawing)

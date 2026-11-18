@@ -102,6 +102,7 @@ describe('default editor plugins', () => {
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
 				'keyboard-mode-switching',
+				'group-path',
 				'keyboard-navigation',
 				'keyboard-editing',
 				'font-preview',
@@ -235,7 +236,7 @@ describe('default editor plugins', () => {
 		});
 		const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 		expect(ids).not.toContain('keyboard-mode-switching');
-		expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
+		expect(ids).toEqual(expect.arrayContaining(['group-path', 'keyboard-navigation', 'keyboard-editing']));
 	});
 
 	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
@@ -279,7 +280,9 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		});
 		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 		const plugins = await loadDeferredPlugins();
-		expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
+		expect(plugins.map(plugin => plugin.id)).toEqual(
+			expect.arrayContaining(['mouse-input', 'touch-input', 'group-path'])
+		);
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
 			expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	} finally {

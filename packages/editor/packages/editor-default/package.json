@@ -45,6 +45,7 @@
     "@8f4e/editor-plugin-example-modules": "*",
     "@8f4e/editor-plugin-favorites": "*",
     "@8f4e/editor-plugin-font-preview": "*",
+    "@8f4e/editor-plugin-group-path": "*",
     "@8f4e/editor-plugin-grouping": "*",
     "@8f4e/editor-plugin-jump-to-error": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
