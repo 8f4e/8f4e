@@ -1,0 +1,20 @@
+function loadRangeAt
+#export
+#impure
+; Reads neighboring offsets and
+; returns the start and length.
+; Requires loadAt.
+param int* offsets
+param int index
+local int start
+
+call loadAt offsets index
+localSet start
+push start
+push offsets
+push index
+add 1
+call loadAt
+push start
+sub
+functionEnd int int

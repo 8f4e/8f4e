@@ -1,0 +1,106 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/advancePointer
+include std/memory/queuePush
+include std/memory/queuePop
+includesEnd
+
+entry test
+module queueAssertions
+int8u[] padding 300
+int guardBefore 0x12345678
+int[] buffer 3
+int guardAfter 0x76543210
+int* readPointer &buffer
+int* writePointer &buffer
+
+; Empty reads leave the cursor alone.
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 0
+push readPointer
+assertEqual &buffer
+
+; All slots are usable, including after the writer wraps.
+call queuePush &writePointer &buffer count(buffer) 17
+call queuePush &writePointer &buffer count(buffer) -7
+call queuePush &writePointer &buffer count(buffer) 2147483647
+push writePointer
+assertEqual &buffer
+
+; A full queue keeps the unread words and its write cursor.
+call queuePush &writePointer &buffer count(buffer) 99
+push writePointer
+assertEqual &buffer
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 17
+push *readPointer
+assertEqual -7
+
+; A freed slot can be reused before the remaining words are read.
+call queuePush &writePointer &buffer count(buffer) 123
+call queuePop &readPointer &buffer count(buffer)
+assertEqual -7
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 2147483647
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 123
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 0
+push readPointer
+push writePointer
+equal
+assert
+
+; Repeated wraps preserve order and clear consumed slots.
+loop 11
+push &writePointer
+push &buffer
+push count(buffer)
+loopIndex
+add 1
+call queuePush
+call queuePop &readPointer &buffer count(buffer)
+loopIndex
+add 1
+equal
+assert
+loopEnd
+loop count(buffer)
+push &buffer
+loopIndex
+mul sizeof(buffer)
+add
+load
+assertEqual 0
+loopEnd
+push guardBefore
+assertEqual 0x12345678
+push guardAfter
+assertEqual 0x76543210
+moduleEnd
+
+module singleSlotQueueAssertions
+int[] buffer 1
+int* readPointer &buffer
+int* writePointer &buffer
+
+call queuePush &writePointer &buffer count(buffer) 1
+call queuePush &writePointer &buffer count(buffer) 2
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 1
+call queuePush &writePointer &buffer count(buffer) -2147483648
+call queuePop &readPointer &buffer count(buffer)
+assertEqual -2147483648
+call queuePop &readPointer &buffer count(buffer)
+assertEqual 0
+push readPointer
+assertEqual &buffer
+push writePointer
+assertEqual &buffer
+moduleEnd
+entryEnd
