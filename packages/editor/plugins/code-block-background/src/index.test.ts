@@ -25,8 +25,8 @@ function setup() {
 it.each([
 	['normal', false, false, PALETTE_INDICES.surfaceBase],
 	['disabled', true, false, PALETTE_INDICES.surfaceSubdued],
-	['dragged', false, true, PALETTE_INDICES.surfaceRaised1],
-	['dragged disabled', true, true, PALETTE_INDICES.surfaceRaised1],
+	['dragged', false, true, PALETTE_INDICES.surfaceBase],
+	['dragged disabled', true, true, PALETTE_INDICES.surfaceSubdued],
 ] as const)('draws the %s block surface', (_name, disabled, dragged, color) => {
 	const test = setup();
 	test.codeBlock.disabled = disabled;

@@ -1,7 +1,7 @@
 # Code block background
 
-`codeBlockBackgroundPlugin` draws normal, disabled, and dragged code-block base rectangles and corner markers
-through `drawers.registerCodeBlockDrawer`. Dragged styling takes precedence over disabled styling. Selected blocks
+`codeBlockBackgroundPlugin` draws normal and disabled code-block base rectangles and corner markers
+through `drawers.registerCodeBlockDrawer`. Blocks keep their background color while being dragged. Selected blocks
 use the secondary color for their corners. Coordinates and dimensions come from the shared block/grid geometry;
 the plugin owns palette selection and its drawer registration.
 
