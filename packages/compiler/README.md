@@ -132,12 +132,15 @@ every parent-to-child boundary and preserves the local namespace name; each cons
 ordinary `use <namespace>` instruction. The compiler resolves passes as qualified namespace aliases, so it does not
 copy constants or inject declarations into block ASTs.
 
-Groups may publish direct-module memory items to their enclosing project with
-`expose <name> &<module>:<memory>`. Exposures are symbolic aliases: references such as `&audio:level` resolve through
-the alias table to the backing declaration, so aliases allocate no memory and source references remain unchanged.
-Group names and exposure target-module names follow the source module-name rules so canonical paths remain referenceable.
-Each exposure inherits its backing declaration's type. `CompileResult.projectMemoryExposuresByGroupPath`
-retains each resolved exposure together with its backing `PlannedMemoryDeclaration` for editors and other hosts.
+Groups publish memory to their enclosing project with `expose <name> &<child>:<memory>`. The target can be a memory
+item on a direct module or a public exposure on a direct child group. If a module and child group share the target
+name, the last enabled declaration in the group's execution order wins. The selected declaration must provide the
+requested memory item or public exposure.
+
+Exposures are symbolic aliases. References such as `&audio:level` resolve to the original backing declaration and
+allocate no additional memory. Group and target names follow the source module-name rules.
+`CompileResult.projectMemoryExposuresByGroupPath` retains the source target names, the canonical backing module ID,
+and the backing `PlannedMemoryDeclaration` for editors and other hosts.
 
 Inside a group, `init &<exposed-memory> <number>` overrides a scalar declaration's default without changing its source.
 An address value, as in `init &input &source:output`, resolves against the immediate parent project. Initializers share

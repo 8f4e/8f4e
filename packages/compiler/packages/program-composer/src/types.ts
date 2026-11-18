@@ -10,9 +10,9 @@ import type {
 	ProjectConstantNamespaceScope,
 	ProjectGroupPath,
 	ProjectMemoryAliasLookup,
+	ProjectMemoryAliasTarget,
 	ProjectMemoryExposure,
 	ProjectMemoryInitializerScope,
-	ProjectModuleId,
 	SourceMetadata,
 } from '@8f4e/language-spec';
 
@@ -31,11 +31,10 @@ export type IncludedFunctionsByProjectGroupPath = ReadonlyMap<
 >;
 
 /** A group memory exposure with its canonical group and backing-module identities. */
-export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure {
+export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure, ProjectMemoryAliasTarget {
 	readonly diagnosticSource: Extract<DiagnosticSource, { kind: 'scope' }>;
 	readonly instruction: 'expose';
 	groupPath: ProjectGroupPath;
-	targetModuleId: ProjectModuleId;
 }
 
 /** One globally planned AST assembled from a recursive project tree. */
