@@ -2,6 +2,7 @@
 
 includes
 ; @pos -160 -15
+include std/audio/hzToRadians
 include std/math/exp2
 include std/math/trig/sine
 includesEnd
@@ -27,15 +28,9 @@ function advanceWrappedPhase
 param float* phase
 param float frequency
 param int sampleRate
-use math
 push phase
 push *phase
-push frequency
-mul TAU
-push sampleRate
-castToFloat
-ensureNonZero
-div
+call hzToRadians frequency sampleRate
 add
 call wrapPhase
 store
@@ -774,7 +769,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -794,7 +789,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -1068,7 +1063,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -1088,7 +1083,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -1362,7 +1357,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -1382,7 +1377,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -1640,7 +1635,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -1660,7 +1655,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -1950,7 +1945,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -1970,7 +1965,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -2228,7 +2223,7 @@ module dx7KeyLevelScaling
 ; @pos 110 0
 ; STG CRSNDO uses negative linear
 ; key-level scaling above a breakpoint.
-int** note &dx7PitchRateScaling:note
+int*& note &dx7PitchRateScaling:note
 int& breakpoint &dx7Settings:breakpoint
 int& depth &dx7Settings:rightDepth
 int out
@@ -2248,7 +2243,7 @@ module dx7OutputLevel
 ; Latch the scaled output level on note-on.
 int& in &dx7Settings:outputLevel
 int& attenuation &dx7KeyLevelScaling:out
-int** trigger &envelope4Stage:trigger
+int*& trigger &envelope4Stage:trigger
 float out
 
 push **trigger
@@ -2571,7 +2566,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& mod &lfo1:out
 float out
@@ -2628,7 +2623,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& in &modulatedDelayTap:out
 
@@ -2655,7 +2650,7 @@ use cloudsReverb
 
 const DELAY_SIZE round(113*CLOUDS_RATIO)
 
-float** in &reverbInput:in
+float*& in &reverbInput:in
 float out
 float[] buffer DELAY_SIZE
 float* pointer &buffer
@@ -2892,7 +2887,7 @@ module tank1ModulatedTap
 use cloudsReverb
 
 float& buffer &tank1DelayRead:buffer
-float** pointer
+float*& pointer
 - &tank1DelayRead:pointer
 float& mod &tank1DelayLfo:out
 float out
@@ -3221,7 +3216,7 @@ module tank1DelayWrite
 ; Writes Clouds del1.
 
 float& buffer &tank2DelayRead:buffer
-float** pointer &tank2DelayRead:pointer
+float*& pointer &tank2DelayRead:pointer
 float& in &tank1AllpassB:out
 
 push *pointer
@@ -3240,7 +3235,7 @@ module tank2DelayWrite
 ; Writes Clouds del2.
 
 float& buffer &tank1DelayRead:buffer
-float** pointer &tank1DelayRead:pointer
+float*& pointer &tank1DelayRead:pointer
 float& in &tank2AllpassB:out
 
 push *pointer
@@ -3257,7 +3252,7 @@ module tank1OutputMix
 ; @pos 762 -60
 ; @group tank1
 
-float** dry &reverbInput:in
+float*& dry &reverbInput:in
 float& wet &tank1AllpassB:out
 float& amount &controlValues:amount
 float out
@@ -3279,7 +3274,7 @@ module tank2OutputMix
 ; @pos 763 -6
 ; @group tank2
 
-float** dry &reverbInput:in
+float*& dry &reverbInput:in
 float& wet &tank2AllpassB:out
 float& amount &controlValues:amount
 float out

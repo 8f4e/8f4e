@@ -1428,7 +1428,7 @@ module dx7PitchRateScaling
 ; Pitch-dependent DX7 speed offset.
 int* key
 use dx7EnvelopeFields
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 int out
 
 push &out
@@ -1443,7 +1443,7 @@ module dx7KeyboardLevelScaling
 ; Three-key scaling changes level, not pitch.
 int* key
 use dx7EnvelopeFields
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 int out
 ; @hide
 push &out
@@ -1461,7 +1461,7 @@ module dx7OutputLevel
 ; Keep the base offset for gain normalization.
 ; Velocity and key scaling remain audible.
 use dx7EnvelopeFields
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 int* velocityCurve
 int& keyScaling &dx7KeyboardLevelScaling:out
 float base
@@ -1540,7 +1540,7 @@ module dx7Rate
 ; Current raw rate to log step/sample.
 use env
 int& stage &envelope4Stage:out
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 int& scaling &dx7PitchRateScaling:out
 float out
 local int qrate
@@ -1574,7 +1574,7 @@ module dx7Target
 ; Current raw level to log target.
 int& stage &envelope4Stage:out
 use dx7EnvelopeFields
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 float& offset &dx7OutputLevel:out
 float out
 
@@ -1642,7 +1642,7 @@ module dx7AmplitudeModulation
 ; Sensitivities measured in Hexter.
 float* in
 use dx7EnvelopeFields
-int** settings &dx7Settings:in
+int*& settings &dx7Settings:in
 float out
 ; @hide
 push &out
