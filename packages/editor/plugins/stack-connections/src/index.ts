@@ -28,7 +28,7 @@ function prepareConnection(block: CodeBlockGraphicData, state: State): Array<{ y
 	return rows;
 }
 
-/** Draws immediate stack operand connections in the selected code block's left gutter. */
+/** Draws immediate stack operand connections just outside the selected code block's left edge. */
 export const stackConnectionsPlugin: EditorPlugin = {
 	id: 'stack-connections',
 	setup: ({ store, events, drawers }) => {
@@ -50,9 +50,17 @@ export const stackConnectionsPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
-			if (codeBlock !== selectedBlock) return;
-			for (const { y, glyphs } of rows) draw.drawGlyphs(0, y, glyphs, PALETTE_INDICES.secondaryReadable);
+		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, state: { viewport } }) => {
+			if (!selectedBlock || !rows.length) return;
+			const left = selectedBlock.x - viewport.x;
+			const x = left - viewport.vGrid;
+			if (left <= 0 || x >= viewport.width) return;
+			const top = selectedBlock.y - viewport.y;
+			for (const { y, glyphs } of rows) {
+				const screenY = top + y;
+				if (screenY >= viewport.height) break;
+				if (screenY + viewport.hGrid > 0) draw.drawGlyphs(x, screenY, glyphs, PALETTE_INDICES.secondaryReadable);
+			}
 		});
 		refresh();
 		return () => {

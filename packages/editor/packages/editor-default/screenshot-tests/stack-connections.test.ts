@@ -6,7 +6,7 @@ import { stackConnectionsPlugin } from '@8f4e/editor-plugin-stack-connections';
 import { stackProducersPlugin } from '@8f4e/editor-plugin-stack-producers';
 import { expect, test } from 'vitest';
 
-test('connects operand producers across inline layout gaps and follows the selected instruction', async () => {
+test('connects operand producers outside the block across layout gaps and viewport movement', async () => {
 	const project = parseProjectSource(`8f4e/v1
 entry main
 module example
@@ -59,7 +59,7 @@ functionEnd int`);
 	});
 	editor.pauseRendering();
 	try {
-		const { store, layout } = context;
+		const { store, layout, events } = context;
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'example')!;
 		store.set('codeBlockRendering.currentProject.blocks', [block]);
 		store.set('compiler.result', { ...compiled, inputRevision: editor.state.compilerInputRevision });
@@ -72,9 +72,12 @@ functionEnd int`);
 			contribution.update(block, {
 				verticalSpaceAfterSourceLine: [{ sourceLineIndex: block.code.indexOf('push 7'), heightInRows: 1 }],
 			});
+			events.dispatch('pointermove', { buttons: 1, movementX: 16, movementY: -16 });
+			expect(editor.state.viewport).toMatchObject({ x: -16, y: 16 });
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot('three-producers-with-gap');
 
+			events.dispatch('pointermove', { buttons: 1, movementX: -16, movementY: 16 });
 			select('push 2');
 			editor.renderFrame();
 			await expect(canvas).toMatchScreenshot('instruction-without-producers');
