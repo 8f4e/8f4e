@@ -96,7 +96,7 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 }
 
 describe('drawPianoKeyboards', () => {
-	const pressedOverlay = textToGlyphIds('░░');
+	const pressedOverlay = textToGlyphIds('▓▓');
 
 	it('draws piano keys as fill-color rectangles', () => {
 		const engine = createMockEngine();
