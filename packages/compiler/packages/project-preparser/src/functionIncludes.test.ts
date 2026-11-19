@@ -1,11 +1,8 @@
 import { IncludeErrorCode } from '@8f4e/language-spec';
 import { parseLine } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
-import {
-	collectProjectIncludeIdsFromBlock,
-	collectProjectIncludeIdsFromText,
-	resolveProjectIncludesAsync,
-} from './functionIncludes';
+import { resolveProjectIncludesAsync } from './functionIncludes';
+import { parseProjectSource } from './parseProjectSource';
 
 const selectableSource = [
 	'function originalFirst',
@@ -311,24 +308,35 @@ describe('include export selections', () => {
 		});
 	});
 
-	it('collects source ids from selected and renamed includes', () => {
-		expect(
-			collectProjectIncludeIdsFromText(
-				'8f4e/v1\nincludes\ninclude std/test first a\ninclude std/other second\nincludesEnd'
-			)
-		).toEqual(['std/test', 'std/other']);
+	it('resolves selected and renamed includes without treating note text as declarations', async () => {
+		const project = parseProjectSource(`8f4e/v1
+note
+includes
+include std/notAnImport
+includesEnd
+noteEnd
+includes
+include std/test first renamed
+include std/other second
+includesEnd
+`);
+		const loaded: string[] = [];
+		const functions = await resolveProjectIncludesAsync(project.includes, id => {
+			loaded.push(id);
+			return selectableSource;
+		});
+		expect(loaded).toEqual(['std/test', 'std/other']);
+		expect(functions.map(func => func.bindings.functionName)).toEqual(expect.arrayContaining(['renamed', 'second']));
 	});
 
-	it.each(['include', 'include std/test first alias extra'])('rejects malformed declarations: %s', line => {
-		expect(() => collectProjectIncludeIdsFromBlock(includeBlock(line))).toThrow(
-			expect.objectContaining({
-				message: 'include expects <path> [exportedName [localName]]',
-				diagnostic: expect.objectContaining({
-					code: IncludeErrorCode.INVALID_DECLARATION,
-					location: { kind: 'block', projectBlockId: 42, projectGroupPath: '', lineNumber: 1 },
-				}),
-			})
-		);
+	it.each(['include', 'include std/test first alias extra'])('rejects malformed declarations: %s', async line => {
+		await expect(resolveProjectIncludesAsync([includeBlock(line)], () => undefined)).rejects.toMatchObject({
+			message: 'include expects <path> [exportedName [localName]]',
+			diagnostic: {
+				code: IncludeErrorCode.INVALID_DECLARATION,
+				location: { kind: 'block', projectBlockId: 42, projectGroupPath: '', lineNumber: 1 },
+			},
+		});
 	});
 });
 

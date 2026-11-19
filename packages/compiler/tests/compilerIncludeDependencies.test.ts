@@ -41,28 +41,46 @@ functionEnd float
 	).rejects.toThrow('Undefined function');
 });
 
-test('requires a library file to declare dependencies even when the project defines the target', async () => {
-	await expect(
-		compileProject(
-			parseProjectSource(`8f4e/v1
+test('reports an undeclared call in a nested dependency at the original file and line', async () => {
+	const project = parseProjectSource(`8f4e/v1
 includes
 include test/wrapper
 includesEnd
 function helper
 push 42
 functionEnd int
-`),
-			{
-				resolveInclude: () => `function wrapper
+`);
+	const sources = new Map([
+		[
+			'test/wrapper',
+			`includes
+include test/dependency
+includesEnd
+
+function wrapper
+#export
+call dependency
+functionEnd int`,
+		],
+		[
+			'test/dependency',
+			`; A dependency cannot call a function defined only in the project.
+
+function dependency
 #export
 call helper
 functionEnd int`,
-			}
-		)
-	).rejects.toMatchObject({
+		],
+	]);
+	await expect(compileProject(project, { resolveInclude: id => sources.get(id) })).rejects.toMatchObject({
 		diagnostic: {
 			code: IncludeErrorCode.UNBOUND_CALL_TARGET,
-			location: { kind: 'include', includeId: 'test/wrapper', lineNumber: 2 },
+			location: {
+				kind: 'include-file',
+				includeId: 'test/dependency',
+				lineNumber: 4,
+				includeSite: { projectBlockId: project.includes[0]!.id, projectGroupPath: '', lineNumber: 1 },
+			},
 		},
 	});
 });

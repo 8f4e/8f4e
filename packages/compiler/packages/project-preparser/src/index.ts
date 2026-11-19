@@ -1,10 +1,6 @@
 export { getDocumentProjectBlockType, getProjectBlockType } from './blockClassification';
 export { BLOCK_DELIMITERS, FORMAT_HEADER, INCLUDES_BLOCK_DELIMITER } from './delimiters';
-export {
-	collectProjectIncludeIdsFromBlock,
-	collectProjectIncludeIdsFromText,
-	resolveProjectIncludesAsync,
-} from './functionIncludes';
+export { resolveProjectIncludesAsync } from './functionIncludes';
 export { parseProjectSource } from './parseProjectSource';
 export { getExpectedProjectCloserPrefix, getProjectCloserKeyword, getProjectOpenerKeyword } from './projectKeywords';
 export {

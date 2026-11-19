@@ -271,44 +271,6 @@ function getPublicNames(functions: IncludeFunction[]): Set<string> {
 	return new Set(functions.flatMap(func => (func.export ? [func.export.publicName] : [])));
 }
 
-export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>, projectGroupPath = '') {
-	return collectIncludeDeclarations(block.code, lineNumber => ({
-		kind: 'block',
-		projectBlockId: block.id,
-		projectGroupPath,
-		lineNumber,
-	}));
-}
-
-export function collectProjectIncludeIdsFromText(text: string): string[] {
-	const includeIds: string[] = [];
-	const lines = text.split('\n');
-
-	for (let i = 1; i < lines.length; i += 1) {
-		const trimmed = lines[i].trim();
-		if (trimmed !== INCLUDES_BLOCK_DELIMITER.opener) {
-			continue;
-		}
-
-		const blockLines = [lines[i]];
-		const blockStartLineNumber = i + 1;
-		for (i += 1; i < lines.length; i += 1) {
-			blockLines.push(lines[i]);
-			if (lines[i].trim() === INCLUDES_BLOCK_DELIMITER.closer) {
-				break;
-			}
-		}
-
-		includeIds.push(
-			...collectProjectIncludeIdsFromBlock({ id: blockStartLineNumber, code: blockLines }).map(
-				({ includeId }) => includeId
-			)
-		);
-	}
-
-	return includeIds;
-}
-
 function collectProjectIncludeDeclarations(
 	includeBlocks: readonly Pick<ProjectBlock, 'code' | 'id' | 'disabled'>[],
 	projectGroupPath: string
@@ -318,7 +280,13 @@ function collectProjectIncludeDeclarations(
 		if (block.disabled) {
 			continue;
 		}
-		for (const declaration of collectProjectIncludeIdsFromBlock(block, projectGroupPath)) {
+		const blockDeclarations = collectIncludeDeclarations(block.code, lineNumber => ({
+			kind: 'block',
+			projectBlockId: block.id,
+			projectGroupPath,
+			lineNumber,
+		}));
+		for (const declaration of blockDeclarations) {
 			const declarations = declarationsByIncludeId.get(declaration.includeId) ?? [];
 			declarations.push({ ...declaration, projectBlockId: block.id });
 			declarationsByIncludeId.set(declaration.includeId, declarations);
