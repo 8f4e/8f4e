@@ -16,6 +16,7 @@
     "glugglugglug": "*"
   },
   "devDependencies": {
-    "@8f4e/config": "*"
+    "@8f4e/config": "*",
+    "vitest": "4.1.12"
   }
 }

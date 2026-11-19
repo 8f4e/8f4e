@@ -31,4 +31,4 @@ loader does not know about session storage, and the session plugin does not know
 replacement path, which also clears file associations appropriately. Disposal unregisters listeners and prevents a
 pending request from replacing the project after the editor closes.
 
-Run the package's `build`, `test`, `typecheck`, and `test:screenshot` Nx targets to verify it.
+Run the package's `build`, `test`, and `typecheck` Nx targets to verify it.

@@ -1,9 +1,9 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
+import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
-import { createBinaryAssetsPlugin } from '../src/index';
 
 test('contributes a loading indicator, loads bytes, and publishes size constants', async () => {
 	const canvas = document.createElement('canvas');

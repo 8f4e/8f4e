@@ -1,9 +1,9 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
-import { createSessionPersistencePlugin } from '../src/index';
 
 test('restores a retained project in a new editor instance', async () => {
 	const canvas = document.createElement('canvas');

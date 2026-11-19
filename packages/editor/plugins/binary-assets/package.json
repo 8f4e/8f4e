@@ -21,13 +21,9 @@
     "@8f4e/editor-state-types": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-code-rendering": "*",
-    "@8f4e/web-ui-testing": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui": "*",
-    "vitest": "4.1.12",
-    "@vitest/browser-playwright": "4.1.12",
-    "@vitest/browser": "4.1.12"
+    "vitest": "4.1.12"
   }
 }

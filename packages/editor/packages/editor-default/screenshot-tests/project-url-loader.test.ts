@@ -1,8 +1,8 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
-import { createProjectUrlLoaderPlugin } from '../src/index';
 
 test('loads an initial project URL after generic editor startup', async () => {
 	const canvas = document.createElement('canvas');
