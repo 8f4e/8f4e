@@ -10,6 +10,7 @@ type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextS
 // One cell before the orbit and one blank cell before the text panel's own padding.
 const GUTTER_COLUMNS = ORBIT_COLUMNS + 2;
 const MIN_TEXT_COLUMNS = 16;
+const ORBIT_LINGER_MS = 1000;
 const ORBIT_GLYPH_FRAMES = ORBIT_FRAMES.map(frame => frame.map(textToGlyphIds));
 
 function formatElapsedTime(elapsed: number): string {
@@ -45,7 +46,7 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 	return { indicator, y, width: (message.length + statusText.length + durationText.length + 2) * grid, spans };
 }
 
-/** Prepare the overlay layout outside drawing; show the orbit only while work is pending. */
+/** Prepare the overlay layout outside drawing; let the orbit linger briefly after pending work settles. */
 export function installPresentation(
 	{ store, events, drawers }: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>,
 	options: Required<LoadingIndicatorsPluginOptions>
@@ -59,7 +60,7 @@ export function installPresentation(
 	let grid = 0;
 	let gutterWidth = 0;
 	let orbitY = 0;
-	let showOrbit = false;
+	let orbitVisibleUntil = 0;
 	let elapsedTimer: ReturnType<typeof setInterval> | undefined;
 	const updateElapsed = () => {
 		const now = Date.now();
@@ -82,8 +83,11 @@ export function installPresentation(
 			availableColumns && state.featureFlags.canvasOverlays
 				? state.loadingIndicators.filter(visibility.isVisible).slice(0, Math.min(options.maxVisibleRows, availableRows))
 				: [];
-		showOrbit =
-			gutterColumns > 0 && indicators.length > 0 && state.loadingIndicators.some(row => row.status === 'loading');
+		if (state.loadingIndicators.some(indicator => indicator.status === 'loading')) {
+			orbitVisibleUntil = Infinity;
+		} else if (orbitVisibleUntil === Infinity) {
+			orbitVisibleUntil = performance.now() + ORBIT_LINGER_MS;
+		}
 		const groupRows = gutterColumns && indicators.length ? Math.max(indicators.length, ORBIT_ROWS) : indicators.length;
 		const textY = (groupRows - indicators.length) * rowHeight;
 		orbitY = (groupRows - ORBIT_ROWS) * rowHeight;
@@ -101,9 +105,10 @@ export function installPresentation(
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!rows.length) return;
 		draw.startGroup(0, top);
-		if (showOrbit) {
+		const frameTime = gutterWidth ? performance.now() : 0;
+		if (gutterWidth && frameTime < orbitVisibleUntil) {
 			// A project switch can replace the editor, but not the page's clock.
-			const step = motionPreference?.matches ? 0 : Math.floor(performance.now() / ORBIT_STEP_MS);
+			const step = motionPreference?.matches ? 0 : Math.floor(frameTime / ORBIT_STEP_MS);
 			const frame = ORBIT_GLYPH_FRAMES[step % ORBIT_GLYPH_FRAMES.length];
 			for (const [index, glyphs] of frame.entries()) {
 				draw.drawGlyphs(grid, orbitY + index * rowHeight, glyphs, PALETTE_INDICES.floatingInk);

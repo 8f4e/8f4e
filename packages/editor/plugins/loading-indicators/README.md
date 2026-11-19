@@ -10,9 +10,9 @@ On viewports with room for the 8×4 loader and at least 16 text columns, the tex
 orbit with shrinking circles following a square path. The orbit and the bottom message share the last full row
 of the editor grid, even when only one message remains. The orbit has no background fill, and a blank column
 separates it from the text panels. Its phase follows the page's clock, so remounting an editor does not restart
-the loop. The orbit disappears when the last pending operation settles. Completed messages stay aligned in
-place during their grace period. With reduced motion the orbit shows a stationary frame. Narrow or short
-viewports keep the text-only layout.
+the loop. The orbit disappears one second after the last pending operation settles. Completed messages stay
+aligned in place during their grace period. With reduced motion the orbit shows a stationary frame. Narrow or
+short viewports keep the text-only layout.
 
 Install `loadingIndicatorsPlugin` through the ordinary plugin contract. This default instance is created by
 `createLoadingIndicatorsPlugin()` and keeps existing usage unchanged. Install it eagerly before the deferred

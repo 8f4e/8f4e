@@ -5,7 +5,7 @@ import { expect, test, vi } from 'vitest';
 test('draws contributor messages, elapsed times and terminal results with independent visibility', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
-	vi.spyOn(performance, 'now').mockReturnValue(0);
+	const frameTime = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
@@ -45,9 +45,15 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		compilation.done();
 		loading.add({ id: 'cancelled', message: 'Starting a superseded operation with a long message...' }).cancel();
 		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('loading-indicators-settling');
+		now.mockReturnValue(3400);
+		frameTime.mockReturnValue(1000);
+		await vi.advanceTimersByTimeAsync(1000);
+		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(5501);
-		await vi.advanceTimersByTimeAsync(3101);
+		frameTime.mockReturnValue(3101);
+		await vi.advanceTimersByTimeAsync(2101);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-failures-retained');
 		expect(editor.state.loadingIndicators).toHaveLength(5);

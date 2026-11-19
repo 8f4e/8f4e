@@ -185,7 +185,7 @@ it('limits messages and lists to the viewport while reserving room for elapsed t
 	expect(test.store.getState().loadingIndicators).toHaveLength(22);
 });
 
-it('draws the square orbit while loading and leaves settled messages in place without it', () => {
+it('draws the square orbit for one second after loading and leaves settled messages in place', () => {
 	vi.useFakeTimers();
 	const test = setup();
 	const pending = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
@@ -213,7 +213,7 @@ it('draws the square orbit while loading and leaves settled messages in place wi
 	vi.advanceTimersByTime(18 * 78);
 	expect(orbit()).toEqual(first);
 	pending.done();
-	expect(orbit()).toEqual([]);
+	expect(orbit()).toEqual(first);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		TEXT_X_WITH_ORBIT,
 		48,
@@ -221,8 +221,10 @@ it('draws the square orbit while loading and leaves settled messages in place wi
 		PALETTE_INDICES.floatingInk
 	);
 	vi.advanceTimersByTime(78);
-	expect(orbit()).toEqual([]);
-	vi.advanceTimersByTime(3000 - 78);
+	expect(orbit()).toEqual(second);
+	vi.advanceTimersByTime(999 - 78);
+	expect(orbit()).toHaveLength(4);
+	vi.advanceTimersByTime(1);
 	expect(orbit()).toEqual([]);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		TEXT_X_WITH_ORBIT,
@@ -230,12 +232,15 @@ it('draws the square orbit while loading and leaves settled messages in place wi
 		textToGlyphIds('Compiling...'),
 		PALETTE_INDICES.floatingInk
 	);
+	vi.advanceTimersByTime(2000);
+	expect(orbit()).toEqual([]);
+	expect(test.draw.drawGlyphs).toHaveBeenCalled();
 	vi.advanceTimersByTime(1);
 	expect(orbit()).toEqual([]);
 	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 });
 
-it('keeps the orbit until the last pending operation settles, even if its row is clipped', () => {
+it('restarts the one-second linger when another operation loads, even if its row is clipped', () => {
 	vi.useFakeTimers();
 	const test = setup(320, 160, createLoadingIndicatorsPlugin({ maxVisibleRows: 1 }));
 	const first = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
@@ -255,9 +260,16 @@ it('keeps the orbit until the last pending operation settles, even if its row is
 		PALETTE_INDICES.floatingInk
 	);
 	second.cancel();
-	expect(orbit()).toHaveLength(0);
-	test.store.loading.add({ id: 'next', message: 'Starting another task...' });
 	expect(orbit()).toHaveLength(4);
+	vi.advanceTimersByTime(500);
+	const next = test.store.loading.add({ id: 'next', message: 'Starting another task...' });
+	vi.advanceTimersByTime(500);
+	expect(orbit()).toHaveLength(4);
+	next.fail();
+	vi.advanceTimersByTime(999);
+	expect(orbit()).toHaveLength(4);
+	vi.advanceTimersByTime(1);
+	expect(orbit()).toHaveLength(0);
 });
 
 it('keeps the orbit and message stack bottom-aligned as messages are added and expire', () => {
