@@ -5,7 +5,6 @@ import { expect, test, vi } from 'vitest';
 test('draws contributor messages, elapsed times and terminal results with independent visibility', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
-	const frameTime = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
@@ -17,7 +16,7 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 	try {
 		editor = await initEditor(canvas, {
 			plugins: [
-				createLoadingIndicatorsPlugin({ prefersReducedMotion: () => false }),
+				createLoadingIndicatorsPlugin({ prefersReducedMotion: () => true }),
 				{
 					id: 'test-contributor',
 					setup: context => {
@@ -35,6 +34,12 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		vi.advanceTimersByTime(100);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-pending');
+		canvas.style.width = '192px';
+		editor.resize(192, 320);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('loading-indicators-orbit-only');
+		canvas.style.width = '512px';
+		editor.resize(512, 320);
 		now.mockReturnValue(1760);
 		download.done();
 		missing.fail();
@@ -47,12 +52,10 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-settling');
 		now.mockReturnValue(2900);
-		frameTime.mockReturnValue(500);
 		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(5501);
-		frameTime.mockReturnValue(3101);
 		await vi.advanceTimersByTimeAsync(2601);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-failures-retained');

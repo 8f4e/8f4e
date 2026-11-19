@@ -7,12 +7,11 @@ import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { expect, test, vi } from 'vitest';
 
-const loadingIndicatorsPlugin = createLoadingIndicatorsPlugin({ prefersReducedMotion: () => false });
+const loadingIndicatorsPlugin = createLoadingIndicatorsPlugin({ prefersReducedMotion: () => true });
 
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
-	const frameTime = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
@@ -110,7 +109,6 @@ entryEnd`);
 		);
 		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual(['done', 'done', 'failed']);
 		now.mockReturnValue(2850);
-		frameTime.mockReturnValue(500);
 		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
@@ -126,7 +124,6 @@ entryEnd`);
 test('shows the initial deferred import through an eagerly installed loading drawer', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
-	vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 160;

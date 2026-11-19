@@ -1,6 +1,7 @@
+import { textToGlyphIds } from '@8f4e/web-ui';
+
 export const ORBIT_COLUMNS = 8;
 export const ORBIT_ROWS = 4;
-export const ORBIT_STEP_MS = 78;
 
 // The full 8×4 perimeter occupies a square with the standard 8×16 VGA cells.
 const PATH = [
@@ -36,5 +37,3 @@ export const ORBIT_GLYPH_FRAMES = PATH.map((_, head) => {
 	}
 	return rows.map(row => textToGlyphIds(row.join('')));
 });
-
-import { textToGlyphIds } from '@8f4e/web-ui';
