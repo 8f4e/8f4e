@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockLayoutsChangedEvent,
+	EventDispatcher,
+	State,
+} from '@8f4e/editor-state-types';
+import deriveConnectors from './layout/deriveConnectors';
 import type { ConnectorWidgets, Output } from './types';
 
 /** Receives the viewport-relative pixel endpoints for an input and its matching output. */
@@ -15,20 +21,41 @@ interface ConnectorGeometry {
 	outputsByByteAddress: ReadonlyMap<number, Output>;
 }
 
-const geometryByState = new WeakMap<State, ConnectorGeometry>();
-
-export function registerConnectorGeometry(state: State, geometry: ConnectorGeometry): () => void {
-	geometryByState.set(state, geometry);
-	return () => {
-		if (geometryByState.get(state) === geometry) geometryByState.delete(state);
+/** Track settled connection geometry for one renderer, independently of connector presentation. */
+export function createConnectorConnections(state: State, events: EventDispatcher) {
+	const widgetsByBlock = new WeakMap<CodeBlockGraphicData, ConnectorWidgets>();
+	const outputsByByteAddress = new Map<number, Output>();
+	const geometry = { widgetsByBlock, outputsByByteAddress };
+	const refresh = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (project !== state.codeBlockRendering.currentProject) return;
+		for (const block of codeBlocks) widgetsByBlock.set(block, deriveConnectors(block, state));
+		outputsByByteAddress.clear();
+		for (const block of project.blocks) {
+			for (const output of widgetsByBlock.get(block)?.outputs ?? []) {
+				outputsByByteAddress.set(output.memory.byteAddress, output);
+			}
+		}
+	};
+	const project = state.codeBlockRendering.currentProject;
+	refresh({ project, codeBlocks: project.blocks });
+	events.on('codeBlockLayoutsChanged', refresh);
+	return {
+		/** Visit active connections, including offscreen endpoints, using current pointer values. */
+		visit: (memory: Int32Array, visitor: ConnectorConnectionVisitor) =>
+			visitConnections(state, memory, geometry, visitor),
+		dispose: () => {
+			events.off('codeBlockLayoutsChanged', refresh);
+			outputsByByteAddress.clear();
+		},
 	};
 }
 
-/** Visit active connections from the installed connectors plugin, including offscreen endpoints. */
-export function visitConnectorConnections(state: State, memory: Int32Array, visit: ConnectorConnectionVisitor): void {
-	const geometry = geometryByState.get(state);
-	if (!geometry) return;
-	const { widgetsByBlock, outputsByByteAddress } = geometry;
+export function visitConnections(
+	state: State,
+	memory: Int32Array,
+	{ widgetsByBlock, outputsByByteAddress }: ConnectorGeometry,
+	visit: ConnectorConnectionVisitor
+): void {
 	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
 

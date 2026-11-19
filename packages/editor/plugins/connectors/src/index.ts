@@ -1,35 +1,23 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
-import { registerConnectorGeometry } from './connections';
 import drawConnectors from './drawer/connectors';
 import deriveConnectors from './layout/deriveConnectors';
 import { getParamShapeDeclarations } from './layout/param-shape';
 import { getShapeDeclarations } from './layout/shape';
-import type { ConnectorWidgets, Output } from './types';
+import type { ConnectorWidgets } from './types';
 
-export { type ConnectorConnectionVisitor, visitConnectorConnections } from './connections';
+export { type ConnectorConnectionVisitor, createConnectorConnections } from './connections';
 
-/** Owns expanded declaration labels, input/output sprites, and connection geometry for one editor. */
+/** Owns expanded declaration labels and input/output sprite presentation for one editor. */
 export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',
-	setup: ({ store, events, layout, drawers }) => {
+	setup: ({ layout, drawers }) => {
 		const widgetsByBlock = new WeakMap<CodeBlockGraphicData, ConnectorWidgets>();
 		const labelsByBlock = new WeakMap<CodeBlockGraphicData, Array<{ x: number; y: number; glyphs: GlyphIds }>>();
 		const contribution = layout.createContribution();
-		const outputsByByteAddress = new Map<number, Output>();
-		const rebuildOutputIndex = ({ project }: CodeBlockLayoutsChangedEvent) => {
-			if (project !== store.getState().codeBlockRendering.currentProject) return;
-			outputsByByteAddress.clear();
-			for (const block of project.blocks) {
-				for (const output of widgetsByBlock.get(block)?.outputs ?? []) {
-					outputsByByteAddress.set(output.memory.byteAddress, output);
-				}
-			}
-		};
-		events.on('codeBlockLayoutsChanged', rebuildOutputIndex);
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
 			const declarations = [
 				...getShapeDeclarations(codeBlock, state),
@@ -64,15 +52,10 @@ export const connectorsPlugin: EditorPlugin = {
 			const widgets = widgetsByBlock.get(codeBlock);
 			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
 		});
-		const unregisterGeometry = registerConnectorGeometry(store.getState(), { widgetsByBlock, outputsByByteAddress });
-
 		return () => {
-			unregisterGeometry();
 			unsubscribeLayout();
-			events.off('codeBlockLayoutsChanged', rebuildOutputIndex);
 			unregisterDrawer();
 			contribution.dispose();
-			outputsByByteAddress.clear();
 		};
 	},
 };

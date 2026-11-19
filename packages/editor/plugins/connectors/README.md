@@ -11,15 +11,14 @@ block drawer registry. Inherited declaration labels and connector endpoints use 
 disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
 the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
 
-The plugin derives pointer inputs, pointer-slot address outputs, and public value outputs from the compiler memory
-plan, including inherited shape declarations and exposed memory on nested project groups. One derivation pass
-produces both connector lists.
+The shared geometry code derives pointer inputs, pointer-slot address outputs, and public value outputs from the
+compiler memory plan, including inherited shape declarations and exposed memory on nested project groups. One
+derivation pass produces both connector lists.
 Module connectors belong only to the block selected by the compiler's `projectBlockId`, so overridden definitions do
 not add duplicate endpoints and selecting a same-named block cannot redirect wires.
-Layout subscriptions keep geometry private in a per-editor WeakMap. After a completed layout batch whose `project`
-is the current `ProjectLevel`, the plugin rebuilds its byte-address index from that group's blocks. Batches in other
-groups leave the active index unchanged. Runtime pointer values are read on every frame, so wires follow live memory
-without recompilation.
+Each connection tracker keeps its own geometry cache. After a completed layout batch for the current `ProjectLevel`,
+it rebuilds its byte-address index from that group's blocks. Batches in other groups leave the active index unchanged.
+Runtime pointer values are read when visiting connections, so wires follow live memory without recompilation.
 Fixed reference slots such as `float& input &source:output` also produce input connectors, positioned at their
 declaration rows. Their wires use the target byte address already resolved in the compiler's reference-slot metadata, without
 reading a pointer slot from runtime memory. Every compiled module supplies a reference-slot map, empty when it has no
@@ -27,9 +26,9 @@ fixed declarations. Target type and buffer metadata come from the backing declar
 Allocated pointer rows and their group exposures show an `[&]` output for the slot address. Fixed references and
 live pointers to that slot can both connect to it. The input on the pointer row follows its live value.
 
-`visitConnectorConnections(state, memoryViews.int32, visit)` provides the active input/output endpoints in
-viewport-relative pixels, including offscreen endpoints. It resolves live or fixed targets independently of
-sprite drawing and visits nothing if the connector plugin is not installed for that state.
+`createConnectorConnections(state, events)` tracks the settled layout independently of the connector presentation
+plugin. Its `visit(memoryViews.int32, visitor)` method resolves live or fixed targets and supplies the active
+input/output endpoints in viewport-relative pixels, including offscreen endpoints. Dispose it with the owning renderer.
 
 Input `[ ]` and output `[*]` connectors are composed at runtime from the shared fill and font sprites. Both use a
 three-cell `surfaceOverlay` background; input brackets use `primaryBase`, and output brackets use `secondaryBase`.

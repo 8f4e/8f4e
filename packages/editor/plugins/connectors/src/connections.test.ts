@@ -1,9 +1,9 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
-import { registerConnectorGeometry, visitConnectorConnections } from './connections';
+import { visitConnections } from './connections';
 import type { ConnectorWidgets, Input, Output } from './types';
 
-describe('visitConnectorConnections', () => {
+describe('visitConnections', () => {
 	it.each([
 		{ kind: 'pointer', address: 0 },
 		{ kind: 'pointer', address: 80 },
@@ -56,16 +56,9 @@ describe('visitConnectorConnections', () => {
 				selectedCodeBlock: inputBlock,
 			},
 		});
-		const unregister = registerConnectorGeometry(state, { widgetsByBlock, outputsByByteAddress });
 		const visit = vi.fn();
 		const memory = Int32Array.from(kind === 'reference' ? [] : [0, 0, outputAddress]);
-		visitConnectorConnections(state, memory, visit);
+		visitConnections(state, memory, { widgetsByBlock, outputsByByteAddress }, visit);
 		expect(visit).toHaveBeenCalledExactlyOnceWith(110, 236, 450, 454, true);
-		visit.mockClear();
-		visitConnectorConnections({ ...state }, memory, visit);
-		expect(visit).not.toHaveBeenCalled();
-		unregister();
-		visitConnectorConnections(state, memory, visit);
-		expect(visit).not.toHaveBeenCalled();
 	});
 });

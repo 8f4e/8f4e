@@ -113,6 +113,7 @@ describe('default editor plugins', () => {
 				'code-block-background',
 				'code-rendering',
 				'connectors',
+				'wires',
 				'error-messages',
 				'jump-to-error',
 				'loading-indicators',

@@ -81,7 +81,13 @@ export function createDeferredEditorPlugin(
 			id: 'connectors',
 			scope: 'view',
 			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-wires').then(module => module.connectorsWithWiresPlugin),
+			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
+		},
+		{
+			id: 'wires',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-wires').then(module => module.wiresPlugin),
 		},
 		{
 			id: 'assertion-markers',

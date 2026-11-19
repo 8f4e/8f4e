@@ -25,7 +25,6 @@
     "@8f4e/compiler": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state": "*",
-    "@8f4e/editor-state-types": "*",
     "@types/node": "24.13.2",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",
