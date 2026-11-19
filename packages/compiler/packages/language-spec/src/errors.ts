@@ -65,6 +65,7 @@ export const ErrorCode = {
 	DUPLICATE_TEMPLATE: 82,
 	RECURSIVE_TEMPLATE: 83,
 	END_QUERY_REQUIRES_FIXED_REFERENCE: 84,
+	POINTEE_ADDRESS_REQUIRES_POINTER: 85,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];

@@ -102,6 +102,11 @@ export function parseArgument(argument: string): Argument {
 		return roundingExpression;
 	}
 
+	// &*name is a pointer-value read, not a compile-time multiplication expression.
+	if (argument.startsWith('&*')) {
+		return classifyIdentifier(argument);
+	}
+
 	// Try to fold literal-only mul/div expressions (handles *, /, and integer/integer fractions)
 	const mulDivResult = parseLiteralMulDivExpression(argument);
 	if (mulDivResult !== null) {

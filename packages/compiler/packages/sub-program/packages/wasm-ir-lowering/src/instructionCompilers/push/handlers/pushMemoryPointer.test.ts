@@ -157,4 +157,20 @@ describe('pushMemoryPointer', () => {
 
 		expect(context.instructions).toEqual([...i32const(4), ...i32load(), ...i32load(), ...i32load16s()]);
 	});
+
+	it('pushes the pointer value for &*ptr without loading the pointee', () => {
+		const context = createInstructionCompilerTestContext({ enableMemoryGuards: false });
+		const ptr = createPointerMemoryItem({
+			id: 0,
+			byteAddress: 12,
+			pointeeBaseType: 'int',
+			pointerDepth: 1,
+			type: 'int*',
+		});
+
+		pushMemoryPointer(createResolvedMemoryPointerPushLine('ptr', ptr, 0), context);
+
+		expect(context.instructions).toEqual([...i32const(12), ...i32load()]);
+	});
+
 });

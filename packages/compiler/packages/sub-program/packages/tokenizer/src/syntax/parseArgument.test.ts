@@ -818,4 +818,28 @@ describe('parseArgument', () => {
 			expect(() => parseArgument('2^3^4')).toThrow('Invalid numeric literal or expression');
 		});
 	});
+
+	it('parses &*name as a zero-depth pointer-value identifier before arithmetic', () => {
+		expect(classifyIdentifier('&*buffer')).toEqual({
+			type: ArgumentType.IDENTIFIER,
+			value: '&*buffer',
+			referenceKind: 'memory-pointer',
+			scope: 'local',
+			targetMemoryId: 'buffer',
+			dereferenceDepth: 0,
+		});
+		expect(parseArgument('&*ptr')).toEqual({
+			type: ArgumentType.IDENTIFIER,
+			value: '&*ptr',
+			referenceKind: 'memory-pointer',
+			scope: 'local',
+			targetMemoryId: 'ptr',
+			dereferenceDepth: 0,
+		});
+	});
+
+	it('rejects a missing &* pointer target', () => {
+		expect(() => parseArgument('&*')).toThrow('Memory pointer target is missing');
+	});
+
 });
