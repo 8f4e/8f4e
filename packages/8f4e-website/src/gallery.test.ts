@@ -3,7 +3,7 @@ import { type GalleryEditorInstance, mountGalleryEditor } from '@8f4e/editor-gal
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
-import { cdp } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 import { getExampleProjectPreviewUrl } from './example-projects';
 import { mountGallery } from './gallery';
 
@@ -68,6 +68,35 @@ function setup(
 	return { gallery, panel, started, mounted, dispose };
 }
 
+test('keeps sidebar selection in place but scrolls when following a fragment link', async () => {
+	const view = setup({ first: async () => new Response(source), second: async () => new Response(source) });
+	cleanups.push(() => window.scrollTo(0, 0));
+	// Match the desktop layout: switching editors doesn't change the list height.
+	view.panel('first').style.position = 'fixed';
+	view.panel('second').style.position = 'fixed';
+	view.gallery.style.paddingBottom = '100vh';
+	const button = view.gallery.querySelector<HTMLButtonElement>('button#example-second')!;
+	const target = document.getElementById('second')!;
+	target.style.marginTop = '200vh';
+	window.scrollTo(0, window.scrollY + target.getBoundingClientRect().top - window.innerHeight / 2);
+	const sidebarScroll = window.scrollY;
+	expect(sidebarScroll).toBeGreaterThan(0);
+
+	button.focus({ preventScroll: true });
+	await userEvent.keyboard(' ');
+	expect(window.location.hash).toBe('#second');
+	expect(button.getAttribute('aria-expanded')).toBe('true');
+	expect(view.panel('first').hidden).toBe(true);
+	await new Promise(requestAnimationFrame);
+	expect(window.scrollY).toBe(sidebarScroll);
+
+	const first = document.getElementById('first')!;
+	expect(first.getBoundingClientRect().bottom).toBeLessThan(0);
+	window.location.hash = '#first';
+	await expect.poll(() => view.panel('first').hidden).toBe(false);
+	expect(first.getBoundingClientRect().bottom).toBeGreaterThan(0);
+});
+
 test('keeps the loading canvas while mounting waits for the project and reveals it on completion', async () => {
 	let finish!: (response: Response) => void;
 	const pending = new Promise<Response>(resolve => {
@@ -126,6 +155,27 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
 	expect(key('F9').defaultPrevented).toBe(false);
+});
+
+test('uses Departure Mono for touch devices unless the project sets its own font', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
+	try {
+		const view = setup({
+			default: async () => new Response(source),
+			override: async () => new Response(source.replace('; @mode edit', '; @mode edit\n; @config font ibmvga8x16')),
+		});
+		const editor = await view.mounted();
+		expect(editor.state.editorConfig.font).toBeUndefined();
+		expect(editor.state.viewport).toMatchObject({ vGrid: 7, hGrid: 14 });
+
+		view.gallery.querySelector<HTMLButtonElement>('#example-override')!.click();
+		const overriddenEditor = await view.mounted(1);
+		expect(overriddenEditor.state.editorConfig.font).toBe('ibmvga8x16');
+		expect(overriddenEditor.state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+	} finally {
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
 });
 
 test('one-finger gallery drags pan horizontally while vertical swipes scroll the page', async () => {

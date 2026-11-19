@@ -240,13 +240,13 @@ export const projects = [
 ];
 
 export const projectCategories = [
-	{ path: 'misc', title: 'Basics' },
-	{ path: 'audio', title: 'Audio' },
-	{ path: 'audio/amigaMods', title: 'Amiga MODs' },
-	{ path: 'digital', title: 'Digital logic' },
-	{ path: 'midi', title: 'MIDI' },
-	{ path: 'machine-learning', title: 'Machine learning' },
-	{ path: 'visuals', title: 'Visuals' },
+	{ path: 'misc', title: 'Basic examples' },
+	{ path: 'audio', title: 'Audio examples' },
+	{ path: 'audio/amigaMods', title: 'Amiga MOD examples' },
+	{ path: 'digital', title: 'Digital logic examples' },
+	{ path: 'midi', title: 'MIDI examples' },
+	{ path: 'machine-learning', title: 'Machine learning examples' },
+	{ path: 'visuals', title: 'Visual examples' },
 ].map(category => ({
 	...category,
 	projects: projects.filter(project => project.path.slice(0, project.path.lastIndexOf('/')) === category.path),

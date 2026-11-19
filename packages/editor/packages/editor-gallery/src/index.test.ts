@@ -98,11 +98,11 @@ it('starts without storage and reports empty-project readiness after initializat
 	editor.dispose();
 });
 
-it('omits all keyboard plugins on coarse-pointer browsers', async () => {
+it('defaults to Departure Mono and omits keyboard plugins on coarse-pointer browsers', async () => {
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' }) };
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountGalleryEditor({ ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement);
-	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
+	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('departuremono7x14');
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining(['mouse-input', 'touch-input', 'group-path'])

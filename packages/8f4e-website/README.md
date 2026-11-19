@@ -47,9 +47,10 @@ test gallery also works without its shared preview. Vite builds the homepage and
 source assets, so example projects need no separate deployment or precompiled WASM files. The `.8f4e` asset responses allow cross-origin requests through
 `src/_headers` so Open in editor links can load these sources from `editor.8f4e.com`.
 
-`projectCategories` in the same file defines category headings and their order. Projects are grouped by their
-containing directory, with Amiga MODs listed separately from other audio examples. Category headings use `h2`
-and individual example headings use `h3` on both desktop and mobile.
+The list starts with the “Basic examples” category directly below the logo. `projectCategories` in the same file
+defines category headings and their order. Projects are grouped by their containing directory, with Amiga MODs
+listed separately from other audio examples. Category headings use `h2` and individual example headings use `h3`
+on both desktop and mobile.
 
 Above 800px, the list scrolls with the document while the selected editor stays fixed in the right column. At 800px
 and below, the same panels become an accordion: the selected editor appears beneath its title and can be collapsed.
@@ -57,9 +58,10 @@ Resizing keeps the active editor instance. Without a selected example in the URL
 opens the first example.
 
 Each example has a shareable hash URL using its stable ID, such as `/examples/#dx7-algorithm-5-eight-voices`. Selecting
-an example updates the address and page title; Back and Forward restore selections. Direct links also expand the matching mobile
-accordion and scroll it into view. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back
-to the default desktop selection or the collapsed mobile list.
+an example from the list updates the address and page title without jumping to the anchor. Back and Forward restore
+selections. Opening a direct link uses the browser’s anchor navigation to bring the selected item into view on desktop
+and mobile. Collapsing a mobile example removes the selection from the URL. Unknown IDs fall back to the default desktop
+selection or the collapsed mobile list.
 
 Selecting a different example creates a fresh editor and disposes the previous selection. Each selection owns its
 editor, WebMCP bridge, canvas, loading timeout, and reveal callback through `src/gallery-editor-session.ts`. Pending
