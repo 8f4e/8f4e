@@ -1,5 +1,7 @@
-/** Optional presentation and visibility settings; all durations are in milliseconds. */
+/** Presentation and visibility settings; all durations are in milliseconds. */
 export interface LoadingIndicatorsPluginOptions {
+	/** Live reduced-motion preference supplied by the host. */
+	prefersReducedMotion: () => boolean;
 	/** Maximum visible rows, further limited by the viewport. Defaults to 20. */
 	maxVisibleRows?: number;
 	/** Refresh interval for elapsed labels on visible pending rows. Defaults to 100. */

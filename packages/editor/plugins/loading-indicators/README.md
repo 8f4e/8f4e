@@ -14,17 +14,19 @@ the loop. The orbit disappears 500 ms after the last pending operation settles. 
 aligned in place during their grace period. With reduced motion the orbit shows a stationary frame. Narrow or
 short viewports keep the text-only layout.
 
-Install `loadingIndicatorsPlugin` through the ordinary plugin contract. This default instance is created by
-`createLoadingIndicatorsPlugin()` and keeps existing usage unchanged. Install it eagerly before the deferred
-loader so the initial feature imports can be shown. `canvasOverlays` controls drawing. There is no configuration
-schema or project directive.
+Create the plugin with `createLoadingIndicatorsPlugin` and install it eagerly before the deferred loader so
+initial feature imports can be shown. Supply a live `prefersReducedMotion` callback from the host; the plugin
+reads it when drawing the orbit. `canvasOverlays` controls drawing. There is no configuration schema or
+project directive.
 
 Pass optional settings to the factory for custom limits and timings; omitted settings keep their defaults:
 
 ```ts
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const loadingPlugin = createLoadingIndicatorsPlugin({
+	prefersReducedMotion: () => motionPreference.matches,
 	maxVisibleRows: 10,
 	hideIntervalMs: 50,
 });

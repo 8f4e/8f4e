@@ -1,5 +1,5 @@
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { expect, test, vi } from 'vitest';
 
 test('draws contributor messages, elapsed times and terminal results with independent visibility', async () => {
@@ -17,7 +17,7 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 	try {
 		editor = await initEditor(canvas, {
 			plugins: [
-				loadingIndicatorsPlugin,
+				createLoadingIndicatorsPlugin({ prefersReducedMotion: () => false }),
 				{
 					id: 'test-contributor',
 					setup: context => {

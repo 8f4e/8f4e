@@ -10,6 +10,7 @@ export function createDeferredEditorPlugin({
 	canvas,
 	compiler,
 	fileSession,
+	prefersReducedMotion,
 	sharedAudioContext,
 	includeKeyboardModeSwitching = true,
 	captureWheel,
@@ -19,6 +20,7 @@ export function createDeferredEditorPlugin({
 	canvas: HTMLCanvasElement;
 	compiler: ReturnType<typeof createCompilerPlugin>;
 	fileSession: ProjectFileSession;
+	prefersReducedMotion: () => boolean;
 	sharedAudioContext?: AudioContext;
 	includeKeyboardModeSwitching?: boolean;
 	captureWheel?: boolean;
@@ -26,7 +28,6 @@ export function createDeferredEditorPlugin({
 	defaultFont?: GalleryEditorMountOptions['defaultFont'];
 }): EditorPlugin {
 	const browserWindow = canvas.ownerDocument.defaultView!;
-	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
 	return createLazyPluginLoaderPlugin([
@@ -198,7 +199,7 @@ export function createDeferredEditorPlugin({
 		},
 		...createLazyPluginRegistry({
 			inputTarget: canvas,
-			prefersReducedMotion: () => motionPreference.matches,
+			prefersReducedMotion,
 			navigator: browserWindow.navigator,
 			writeMemory: compiler.writeMemory,
 			getMemory: compiler.getMemory,

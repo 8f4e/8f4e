@@ -2,7 +2,7 @@ import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import type { LoadingIndicatorsPluginOptions } from './options';
-import { ORBIT_COLUMNS, ORBIT_FRAMES, ORBIT_ROWS, ORBIT_STEP_MS } from './orbit';
+import { ORBIT_COLUMNS, ORBIT_GLYPH_FRAMES, ORBIT_ROWS, ORBIT_STEP_MS } from './orbit';
 import { installVisibility } from './visibility';
 
 type TextSpan = { x: number; glyphs: GlyphIds; color: PaletteIndex };
@@ -11,7 +11,6 @@ type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextS
 const GUTTER_COLUMNS = ORBIT_COLUMNS + 2;
 const MIN_TEXT_COLUMNS = 16;
 const ORBIT_LINGER_MS = 500;
-const ORBIT_GLYPH_FRAMES = ORBIT_FRAMES.map(frame => frame.map(textToGlyphIds));
 
 function formatElapsedTime(elapsed: number): string {
 	return elapsed < 1000 ? `${Math.floor(elapsed)} ms` : `${(elapsed / 1000).toFixed(1)} s`;
@@ -52,7 +51,6 @@ export function installPresentation(
 	options: Required<LoadingIndicatorsPluginOptions>
 ): () => void {
 	const state = store.getState();
-	const motionPreference = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
 	let rows: Row[] = [];
 	let top = 0;
 	let rowHeight = 0;
@@ -108,7 +106,7 @@ export function installPresentation(
 		const frameTime = gutterWidth ? performance.now() : 0;
 		if (gutterWidth && frameTime < orbitVisibleUntil) {
 			// A project switch can replace the editor, but not the page's clock.
-			const step = motionPreference?.matches ? 0 : Math.floor(frameTime / ORBIT_STEP_MS);
+			const step = options.prefersReducedMotion() ? 0 : Math.floor(frameTime / ORBIT_STEP_MS);
 			const frame = ORBIT_GLYPH_FRAMES[step % ORBIT_GLYPH_FRAMES.length];
 			for (const [index, glyphs] of frame.entries()) {
 				draw.drawGlyphs(grid, orbitY + index * rowHeight, glyphs, PALETTE_INDICES.floatingInk);

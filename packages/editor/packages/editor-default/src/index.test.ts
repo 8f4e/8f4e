@@ -93,6 +93,9 @@ describe('default editor plugins', () => {
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
 		const deferredPlugins = await loadDeferredPlugins();
+		expect(
+			vi.mocked(window.matchMedia).mock.calls.filter(([query]) => query === '(prefers-reduced-motion: reduce)')
+		).toHaveLength(1);
 		expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds).toContain('mouse-input');

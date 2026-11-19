@@ -27,11 +27,14 @@ const PATH = [
 ] as const;
 const TAPER = '○•∙·';
 
-/** Space-padded CP437 text rows for each clockwise step of the 8×4 loader. */
-export const ORBIT_FRAMES = PATH.map((_, head) => {
+/** Cached CP437 glyph rows for each clockwise step of the 8×4 loader. */
+export const ORBIT_GLYPH_FRAMES = PATH.map((_, head) => {
 	const rows = Array.from({ length: ORBIT_ROWS }, () => Array<string>(ORBIT_COLUMNS).fill(' '));
-	for (const [index, [x, y]] of PATH.entries()) {
-		rows[y][x] = TAPER[(head + PATH.length - index) % PATH.length] ?? ' ';
+	for (let distance = 0; distance < TAPER.length; distance++) {
+		const [x, y] = PATH[(head + PATH.length - distance) % PATH.length];
+		rows[y][x] = TAPER[distance];
 	}
-	return rows.map(row => row.join(''));
+	return rows.map(row => textToGlyphIds(row.join('')));
 });
+
+import { textToGlyphIds } from '@8f4e/web-ui';

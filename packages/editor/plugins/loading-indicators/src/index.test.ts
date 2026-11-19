@@ -3,18 +3,18 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
-import { createLoadingIndicatorsPlugin, loadingIndicatorsPlugin } from './index';
+import { createLoadingIndicatorsPlugin } from './index';
 
+const pluginWithMotion = createLoadingIndicatorsPlugin({ prefersReducedMotion: () => false });
 const cleanups: Array<() => void> = [];
 const TEXT_X_WITH_ORBIT = 88;
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 	vi.useRealTimers();
 	vi.restoreAllMocks();
-	vi.unstubAllGlobals();
 });
 
-function setup(width = 320, height = 160, plugin = loadingIndicatorsPlugin) {
+function setup(width = 320, height = 160, plugin = pluginWithMotion) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
@@ -242,7 +242,7 @@ it('draws the square orbit for 500 ms after loading and leaves settled messages 
 
 it('restarts the linger when another operation loads, even if its row is clipped', () => {
 	vi.useFakeTimers();
-	const test = setup(320, 160, createLoadingIndicatorsPlugin({ maxVisibleRows: 1 }));
+	const test = setup(320, 160, createLoadingIndicatorsPlugin({ prefersReducedMotion: () => false, maxVisibleRows: 1 }));
 	const first = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
 	const second = test.store.loading.add({ id: 'asset', message: 'Fetching sound...' });
 	const orbit = () => {
@@ -346,13 +346,10 @@ it('aligns glyphs and text fills to whole cells on a viewport with partial rows 
 	checkGrid(5, 11);
 });
 
-it('freezes the orbit for reduced motion and falls back to text on a narrow or short viewport', () => {
+it('follows live reduced motion and falls back to text on a narrow or short viewport', () => {
 	vi.useFakeTimers();
-	vi.stubGlobal(
-		'matchMedia',
-		vi.fn(() => ({ matches: true }))
-	);
-	const test = setup();
+	let reducedMotion = true;
+	const test = setup(320, 160, createLoadingIndicatorsPlugin({ prefersReducedMotion: () => reducedMotion }));
 	test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
 	const render = () => {
 		test.draw.drawGlyphs.mockClear();
@@ -363,6 +360,10 @@ it('freezes the orbit for reduced motion and falls back to text on a narrow or s
 	const initial = render();
 	expect(initial).toHaveLength(4);
 	vi.advanceTimersByTime(260);
+	expect(render()).toEqual(initial);
+	reducedMotion = false;
+	expect(render()).not.toEqual(initial);
+	reducedMotion = true;
 	expect(render()).toEqual(initial);
 	for (const [width, height] of [
 		[223, 160],
@@ -381,6 +382,7 @@ it('applies custom row limits, refresh intervals, and result visibility timings'
 		320,
 		160,
 		createLoadingIndicatorsPlugin({
+			prefersReducedMotion: () => false,
 			maxVisibleRows: 2,
 			elapsedUpdateIntervalMs: 40,
 			hideIntervalMs: 15,
