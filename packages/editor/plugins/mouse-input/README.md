@@ -11,9 +11,12 @@ const plugin = createMouseInputPlugin({ inputTarget: canvas, captureWheel: true 
 ```
 
 The plugin can load after the first render on fine- and coarse-pointer devices. It also forwards browser-generated mouse
-events from touch taps. `captureWheel: false` leaves wheel scrolling to the surrounding page. Wheel input is captured
-only while `viewportDragging` is enabled; after scrolling pauses for 120 ms, the plugin emits `viewportscrollend` and
-core snaps the viewport to the grid. Disposal removes listeners and cancels pending timer work.
+events from touch taps. A press that starts on the canvas keeps tracking movement and release in its browser window,
+even outside the canvas. If the window loses focus, the plugin ends the gesture.
+
+`captureWheel: false` leaves wheel scrolling to the surrounding page. Wheel input is captured only while
+`viewportDragging` is enabled; after scrolling pauses for 120 ms, the plugin emits `viewportscrollend` and core snaps the
+viewport to the grid. Disposal removes listeners and cancels pending timer work.
 
 Run the Nx `build`, `test`, `typecheck`, and `test:screenshot` targets. Unit tests cover translation and cleanup;
 native browser tests cover focusing, viewport panning, and page scrolling.

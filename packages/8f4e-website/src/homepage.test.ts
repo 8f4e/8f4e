@@ -1,5 +1,7 @@
 import { mountLandingEditor } from '@8f4e/editor-landing';
+import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
+import { cdp } from 'vitest/browser';
 import { mountHomepageEditors } from './homepage';
 import { getHomepageProjectUrl } from './homepage-projects';
 
@@ -82,6 +84,47 @@ test('reveals an initialized empty editor when no project URL is supplied', asyn
 	view.canvas.dispatchEvent(enterEdit);
 	expect(enterEdit.defaultPrevented).toBe(false);
 	expect(editor.state.editorMode).toBe('view');
+});
+
+test('continues panning a homepage demo outside its canvas until the mouse is released', async () => {
+	const view = setup();
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
+	await vi.dynamicImportSettled();
+
+	const { x, y, vGrid, hGrid } = editor.state.viewport;
+	const rect = view.canvas.getBoundingClientRect();
+	const frame = window.frameElement!.getBoundingClientRect();
+	const point = (dx: number, dy: number) => ({
+		x: frame.left + rect.right - 35 + dx,
+		y: frame.top + rect.top + 80 + dy,
+	});
+	const mouse = cdp();
+	await mouse.send('Input.dispatchMouseEvent', {
+		type: 'mousePressed',
+		button: 'left',
+		buttons: 1,
+		clickCount: 1,
+		...point(0, 0),
+	});
+	try {
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 1, ...point(20, 5) });
+		expect(editor.state.viewport).toMatchObject({ x: x - 20, y: y - 5 });
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 1, ...point(74, 11) });
+		expect(editor.state.viewport).toMatchObject({ x: x - 74, y: y - 11 });
+	} finally {
+		await mouse.send('Input.dispatchMouseEvent', {
+			type: 'mouseReleased',
+			button: 'left',
+			buttons: 0,
+			clickCount: 1,
+			...point(74, 11),
+		});
+	}
+	const snapped = { x: Math.round((x - 74) / vGrid) * vGrid, y: Math.round((y - 11) / hGrid) * hGrid };
+	expect(editor.state.viewport).toMatchObject(snapped);
+	await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 0, ...point(10, 50) });
+	expect(editor.state.viewport).toMatchObject(snapped);
 });
 
 test('runs landing-page projects without opening an invisible context menu', async () => {
