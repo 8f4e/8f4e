@@ -3,7 +3,6 @@ import type { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import type { LandingEditorMountOptions } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
-import { createViewportMouseInputPlugin } from './viewport-mouse-input';
 
 export function createDeferredEditorPlugin({
 	canvas,
@@ -19,7 +18,6 @@ export function createDeferredEditorPlugin({
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
-	const hasFinePointer = browserWindow.matchMedia('(pointer: fine)').matches;
 	return createLazyPluginLoaderPlugin([
 		{
 			id: 'error-messages',
@@ -52,19 +50,13 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-tooltips').then(module => module.tooltipsPlugin),
 		},
 		{
-			id: 'mouse-input',
+			id: 'viewport-mouse-input',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
-				import('@8f4e/editor-plugin-mouse-input').then(module =>
-					module.createMouseInputPlugin({ inputTarget: canvas, captureWheel })
+				import('@8f4e/editor-plugin-viewport-mouse-input').then(module =>
+					module.createViewportMouseInputPlugin({ inputTarget: canvas, captureWheel })
 				),
-		},
-		{
-			id: 'viewport-mouse-input',
-			scope: 'view',
-			matches: () => hasFinePointer,
-			load: async () => createViewportMouseInputPlugin(canvas),
 		},
 		{
 			id: 'touch-input',

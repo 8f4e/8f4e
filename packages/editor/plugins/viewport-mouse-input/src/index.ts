@@ -1,11 +1,25 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 
-/** Keeps desktop mouse gestures on the landing canvas that received the press. */
-export function createViewportMouseInputPlugin(canvas: HTMLCanvasElement): EditorPlugin {
+/** Provides canvas mouse input with outside-canvas dragging on devices with a fine primary pointer. */
+export function createViewportMouseInputPlugin({
+	inputTarget: canvas,
+	captureWheel,
+}: {
+	inputTarget: HTMLCanvasElement;
+	captureWheel?: boolean;
+}): EditorPlugin {
+	const mouseInput = createMouseInputPlugin({ inputTarget: canvas, captureWheel });
 	return {
 		id: 'viewport-mouse-input',
-		setup: ({ events }) => {
+		setup: context => {
 			const browserWindow = canvas.ownerDocument.defaultView!;
+			const hasFinePointer = browserWindow.matchMedia('(pointer: fine)').matches;
+			const disposeMouseInput = mouseInput.setup(context);
+			if (!hasFinePointer) return disposeMouseInput;
+
+			const { events } = context;
 			let pressedPointer: PointerEvent | undefined;
 
 			const onPointerDown = (event: PointerEvent) => {
@@ -36,7 +50,7 @@ export function createViewportMouseInputPlugin(canvas: HTMLCanvasElement): Edito
 					canvasWidth: canvas.clientWidth,
 					canvasHeight: canvas.clientHeight,
 					altKey: event.altKey,
-				});
+				} satisfies InternalPointerEvent);
 			};
 			const onLostPointerCapture = (event: PointerEvent) => {
 				if (event.pointerId === pressedPointer?.pointerId) finishInterruptedDrag(event);
@@ -54,6 +68,7 @@ export function createViewportMouseInputPlugin(canvas: HTMLCanvasElement): Edito
 				canvas.removeEventListener('pointerup', onPointerUp);
 				canvas.removeEventListener('lostpointercapture', onLostPointerCapture);
 				browserWindow.removeEventListener('blur', onBlur);
+				disposeMouseInput();
 				releaseCapture();
 			};
 		},

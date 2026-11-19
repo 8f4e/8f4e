@@ -1,13 +1,13 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
+import { createViewportMouseInputPlugin } from '@8f4e/editor-plugin-viewport-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountLandingEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('glugglugglug', () => ({ Engine: class {} }));
-vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
+vi.mock('@8f4e/editor-plugin-viewport-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 
@@ -56,7 +56,6 @@ it('starts without storage and reports empty-project readiness after initializat
 		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
 		'viewport-mouse-input',
 		'touch-input',
 		'keyboard-navigation',
@@ -67,7 +66,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'slider',
 		'worker-runtime',
 	]);
-	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
+	expect(createViewportMouseInputPlugin).toHaveBeenCalledExactlyOnceWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toEqual([
 		'lazy-loader',
 		'error-messages',
@@ -75,7 +74,6 @@ it('starts without storage and reports empty-project readiness after initializat
 		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
 		'viewport-mouse-input',
 		'keyboard-navigation',
 		'keyboard-editing',
@@ -103,7 +101,7 @@ it('selects touch input on coarse-pointer browsers', async () => {
 		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
+		'viewport-mouse-input',
 		'touch-input',
 	]);
 });

@@ -112,6 +112,7 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/toggle-skip-execution">toggle-skip-execution</a> (Single-module execution toggling)
     │       ├── <a href="./packages/editor/plugins/tooltips">tooltips</a> (Selected-line tooltips)
     │       ├── <a href="./packages/editor/plugins/touch-input">touch-input</a> (Touch input and viewport gestures)
+    │       ├── <a href="./packages/editor/plugins/viewport-mouse-input">viewport-mouse-input</a> (Desktop mouse drag capture outside the canvas)
     │       ├── <a href="./packages/editor/plugins/wasm-export">wasm-export</a> (WebAssembly export action)
     │       ├── <a href="./packages/editor/plugins/watch">watch</a> (Inline memory value overlays)
     │       ├── <a href="./packages/editor/plugins/wave">wave</a> (Live waveform displays)
