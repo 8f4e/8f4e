@@ -82,6 +82,7 @@
     "@8f4e/editor-plugin-wasm-export": "*",
     "@8f4e/editor-plugin-watch": "*",
     "@8f4e/editor-plugin-wave": "*",
+    "@8f4e/editor-plugin-wires": "*",
     "@8f4e/editor-plugin-worker-runtime": "*",
     "@8f4e/editor-state-types": "*",
     "@8f4e/examples": "*",

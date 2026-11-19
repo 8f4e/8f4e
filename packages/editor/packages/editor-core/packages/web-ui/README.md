@@ -16,8 +16,9 @@ Web-ui owns the procedural background under `src/plugins/background`. It precomp
 when the palette changes and draws one triangle before sprites. Glugglugglug owns sprite rendering.
 
 Canvas-wide editor layers run after sprites in registration order and before render statistics are sampled.
-Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal. The connectors plugin
-owns wires; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer views in the overlay, their optional WASM execution, and shared GPU resources.
+Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal.
+`@8f4e/editor-plugin-wires` owns the WebGL wire pass; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer
+views in the overlay, their optional WASM execution, and shared GPU resources.
 
 ## API
 
@@ -146,7 +147,8 @@ The startup rendering sequence and initial font readiness remain unchanged.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 
-Input/output connector sprites and wires belong to `@8f4e/editor-plugin-connectors`.
+Input/output connector sprites belong to `@8f4e/editor-plugin-connectors`. The optional WebGL wire pass belongs to
+`@8f4e/editor-plugin-wires`.
 
 `@8f4e/editor-plugin-assertion-markers` uses the generic code-block drawer hook to draw passed/failed assertion
 indicators after source text. The renderer has no assertion-specific drawer or marker fields.

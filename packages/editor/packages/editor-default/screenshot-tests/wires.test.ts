@@ -5,13 +5,13 @@ import initEditor, {
 	type EditorPluginContext,
 	getEditorBlockId,
 } from '@8f4e/editor-core';
-
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
+import { wiresPlugin } from '@8f4e/editor-plugin-wires';
 import { gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { afterEach, expect, test } from 'vitest';
-import { connectorsPlugin } from '../src/index';
 
 const source = `8f4e/v1
 constants env
@@ -43,7 +43,7 @@ async function initDefaults(codeBuffer: Uint8Array, memory: WebAssembly.Memory) 
 	(instance.exports.initDefaults as CallableFunction)();
 }
 
-async function setup(text = source) {
+async function setup(text = source, plugins: readonly EditorPlugin[] = [connectorsPlugin, wiresPlugin]) {
 	const project = parseProjectSource(text);
 	const compiled = await compileProject(project);
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
@@ -73,10 +73,11 @@ async function setup(text = source) {
 			return () => {};
 		},
 	};
+	const renderer = new Engine(canvas);
 	const editor: Editor = await initEditor(canvas, {
-		renderer: new Engine(canvas),
+		renderer,
 		initialProject: project,
-		plugins: [connectorsPlugin, installArtifacts],
+		plugins: [...plugins, installArtifacts],
 	});
 	cleanups.push(() => {
 		editor.dispose();
@@ -89,7 +90,7 @@ async function setup(text = source) {
 		editor.renderFrame();
 	};
 	render();
-	return { editor, canvas, render, events: editorEvents!, context, memory, project, compiled };
+	return { editor, canvas, render, events: editorEvents!, context, memory, project, compiled, gl: renderer.gl };
 }
 
 function registerSourceText(context: EditorPluginContext) {
@@ -142,6 +143,38 @@ entryEnd`);
 	registerSourceText(context);
 	render();
 	await expect(canvas).toMatchScreenshot('expanded-declarations');
+});
+
+test('draws a live wire with the connector presentation plugin omitted', async () => {
+	const { editor, canvas, gl, render, memory, compiled } = await setup(
+		`8f4e/v1
+entry main
+module oscillator
+; @pos 2 2
+float output 0.5
+moduleEnd
+module amplifier
+; @pos 45 2
+float* input &oscillator:output
+moduleEnd
+entryEnd`,
+		[wiresPlugin]
+	);
+	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const outputBlock = blocks.find(block => block.name === 'oscillator')!;
+	const inputBlock = blocks.find(block => block.name === 'amplifier')!;
+	const { hGrid } = editor.state.viewport;
+	const x = Math.floor((outputBlock.x + outputBlock.width + inputBlock.x) / 2);
+	const y = inputBlock.y + Math.round(2.5 * hGrid);
+	const readPixel = () => {
+		const pixel = new Uint8Array(4);
+		gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+		return [...pixel];
+	};
+	const connected = readPixel();
+	new Int32Array(memory.buffer)[compiled.memoryPlan.modules.amplifier.memory.input.allocationUnitAddress] = -1;
+	render();
+	expect(connected).not.toEqual(readPixel());
 });
 
 test('renders connectors and wires through the editor and restores them after GPU memory release', async () => {

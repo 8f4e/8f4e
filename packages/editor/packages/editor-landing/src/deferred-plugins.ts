@@ -32,6 +32,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
 		},
 		{
+			id: 'wires',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-wires').then(module => module.wiresPlugin),
+		},
+		{
 			id: 'stack-connections',
 			scope: 'view',
 			matches: () => true,

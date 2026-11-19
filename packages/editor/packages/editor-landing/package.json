@@ -44,6 +44,7 @@
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-watch": "*",
+    "@8f4e/editor-plugin-wires": "*",
     "@8f4e/editor-plugin-worker-runtime": "*"
   },
   "devDependencies": {

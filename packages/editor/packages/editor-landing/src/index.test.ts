@@ -53,6 +53,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(entries.map(entry => entry.id)).toEqual([
 		'error-messages',
 		'connectors',
+		'wires',
 		'stack-connections',
 		'stack-producers',
 		'tooltips',
@@ -71,6 +72,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'lazy-loader',
 		'error-messages',
 		'connectors',
+		'wires',
 		'stack-connections',
 		'stack-producers',
 		'tooltips',
@@ -98,6 +100,7 @@ it('selects touch input on coarse-pointer browsers', async () => {
 		'lazy-loader',
 		'error-messages',
 		'connectors',
+		'wires',
 		'stack-connections',
 		'stack-producers',
 		'tooltips',

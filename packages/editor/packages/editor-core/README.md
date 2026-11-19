@@ -228,10 +228,10 @@ Palette changes and memory release are forwarded to the layer. Registration may 
 arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
-`@8f4e/editor-plugin-connectors` owns input/output connectors, expanded `shape`/`paramShape` declaration labels,
-their row reservations, and the complete wire renderer through these hooks. Prepared labels and endpoint data stay
-private to the plugin; core has no widget presentation fields. Compiler semantics remain independent of this plugin.
-Core keeps memory semantics independent of connector data and has no connector-specific fields or GPU resources.
+`@8f4e/editor-plugin-connectors` owns input/output connector sprites, expanded `shape`/`paramShape` declaration
+labels, their row reservations, and resolved connection geometry. `@8f4e/editor-plugin-wires` consumes that geometry
+in a separate WebGL layer. Core has no connector-specific state or GPU resources, and compiler semantics do not
+depend on either plugin.
 `@8f4e/editor-plugin-texture-runtime` owns editor-frame WASM execution and block-bound `@texture` framebuffer views through the same overlay hook.
 
 Both input adapters emit normalized `pointerdown`, `pointermove`, `pointerup`, and `pointercancel` events.

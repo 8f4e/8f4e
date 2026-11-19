@@ -8,7 +8,7 @@ const DEFAULT_INITIAL_CAPACITY = 1_024;
 /**
  * Plugin-owned renderer that batches Bresenham pixel lines above all sprites.
  *
- * The connectors plugin resets, fills, and flushes one reusable buffer per pass.
+ * The wires plugin resets, fills, and flushes one reusable buffer per pass.
  * It owns all GPU resources and releases them through the editor render-layer lifecycle.
  */
 export class LineDrawer {
