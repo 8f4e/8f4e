@@ -45,7 +45,7 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 	return { indicator, y, width: (message.length + statusText.length + durationText.length + 2) * grid, spans };
 }
 
-/** Prepare the overlay layout outside drawing; animate for as long as it has visible rows. */
+/** Prepare the overlay layout outside drawing; show the orbit only while work is pending. */
 export function installPresentation(
 	{ store, events, drawers }: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>,
 	options: Required<LoadingIndicatorsPluginOptions>
@@ -59,6 +59,7 @@ export function installPresentation(
 	let grid = 0;
 	let gutterWidth = 0;
 	let orbitY = 0;
+	let showOrbit = false;
 	let elapsedTimer: ReturnType<typeof setInterval> | undefined;
 	const updateElapsed = () => {
 		const now = Date.now();
@@ -81,6 +82,8 @@ export function installPresentation(
 			availableColumns && state.featureFlags.canvasOverlays
 				? state.loadingIndicators.filter(visibility.isVisible).slice(0, Math.min(options.maxVisibleRows, availableRows))
 				: [];
+		showOrbit =
+			gutterColumns > 0 && indicators.length > 0 && state.loadingIndicators.some(row => row.status === 'loading');
 		const groupRows = gutterColumns && indicators.length ? Math.max(indicators.length, ORBIT_ROWS) : indicators.length;
 		const textY = (groupRows - indicators.length) * rowHeight;
 		orbitY = (groupRows - ORBIT_ROWS) * rowHeight;
@@ -98,7 +101,7 @@ export function installPresentation(
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!rows.length) return;
 		draw.startGroup(0, top);
-		if (gutterWidth) {
+		if (showOrbit) {
 			// A project switch can replace the editor, but not the page's clock.
 			const step = motionPreference?.matches ? 0 : Math.floor(performance.now() / ORBIT_STEP_MS);
 			const frame = ORBIT_GLYPH_FRAMES[step % ORBIT_GLYPH_FRAMES.length];

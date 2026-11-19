@@ -185,7 +185,7 @@ it('limits messages and lists to the viewport while reserving room for elapsed t
 	expect(test.store.getState().loadingIndicators).toHaveLength(22);
 });
 
-it('keeps one square orbit to the left of the rows until the last result expires', () => {
+it('draws the square orbit while loading and leaves settled messages in place without it', () => {
 	vi.useFakeTimers();
 	const test = setup();
 	const pending = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
@@ -213,7 +213,7 @@ it('keeps one square orbit to the left of the rows until the last result expires
 	vi.advanceTimersByTime(18 * 78);
 	expect(orbit()).toEqual(first);
 	pending.done();
-	expect(orbit()).toEqual(first);
+	expect(orbit()).toEqual([]);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		TEXT_X_WITH_ORBIT,
 		48,
@@ -221,12 +221,43 @@ it('keeps one square orbit to the left of the rows until the last result expires
 		PALETTE_INDICES.floatingInk
 	);
 	vi.advanceTimersByTime(78);
-	expect(orbit()).toEqual(second);
+	expect(orbit()).toEqual([]);
 	vi.advanceTimersByTime(3000 - 78);
-	expect(orbit()).toHaveLength(4);
+	expect(orbit()).toEqual([]);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+		TEXT_X_WITH_ORBIT,
+		48,
+		textToGlyphIds('Compiling...'),
+		PALETTE_INDICES.floatingInk
+	);
 	vi.advanceTimersByTime(1);
 	expect(orbit()).toEqual([]);
 	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+});
+
+it('keeps the orbit until the last pending operation settles, even if its row is clipped', () => {
+	vi.useFakeTimers();
+	const test = setup(320, 160, createLoadingIndicatorsPlugin({ maxVisibleRows: 1 }));
+	const first = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
+	const second = test.store.loading.add({ id: 'asset', message: 'Fetching sound...' });
+	const orbit = () => {
+		test.draw.drawGlyphs.mockClear();
+		test.render();
+		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8);
+	};
+	expect(orbit()).toHaveLength(4);
+	first.done();
+	expect(orbit()).toHaveLength(4);
+	expect(test.draw.drawGlyphs).not.toHaveBeenCalledWith(
+		TEXT_X_WITH_ORBIT,
+		48,
+		textToGlyphIds('Fetching sound...'),
+		PALETTE_INDICES.floatingInk
+	);
+	second.cancel();
+	expect(orbit()).toHaveLength(0);
+	test.store.loading.add({ id: 'next', message: 'Starting another task...' });
+	expect(orbit()).toHaveLength(4);
 });
 
 it('keeps the orbit and message stack bottom-aligned as messages are added and expire', () => {
@@ -279,7 +310,7 @@ it('keeps the orbit phase when a new editor is mounted', () => {
 it('aligns glyphs and text fills to whole cells on a viewport with partial rows and columns', () => {
 	vi.useFakeTimers();
 	const test = setup(327, 173);
-	test.store.loading.add({ id: 'compiler', message: 'Compiling...' }).done();
+	test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
 	const checkGrid = (cellWidth: number, cellHeight: number) => {
 		test.draw.drawFill.mockClear();
 		test.draw.drawGlyphs.mockClear();
