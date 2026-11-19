@@ -86,7 +86,7 @@ test('reveals an initialized empty editor when no project URL is supplied', asyn
 	expect(editor.state.editorMode).toBe('view');
 });
 
-test('continues panning a homepage demo outside its canvas until the mouse is released', async () => {
+test.each(['release', 'blur'])('continues panning a homepage demo outside its canvas until %s', async end => {
 	const view = setup();
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
@@ -100,6 +100,8 @@ test('continues panning a homepage demo outside its canvas until the mouse is re
 		y: frame.top + rect.top + 80 + dy,
 	});
 	const mouse = cdp();
+	const snapped = { x: Math.round((x - 74) / vGrid) * vGrid, y: Math.round((y - 11) / hGrid) * hGrid };
+	await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 0, ...point(0, 0) });
 	await mouse.send('Input.dispatchMouseEvent', {
 		type: 'mousePressed',
 		button: 'left',
@@ -108,10 +110,14 @@ test('continues panning a homepage demo outside its canvas until the mouse is re
 		...point(0, 0),
 	});
 	try {
-		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 1, ...point(20, 5) });
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...point(20, 5) });
 		expect(editor.state.viewport).toMatchObject({ x: x - 20, y: y - 5 });
-		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 1, ...point(74, 11) });
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...point(74, 11) });
 		expect(editor.state.viewport).toMatchObject({ x: x - 74, y: y - 11 });
+		if (end === 'blur') {
+			window.dispatchEvent(new Event('blur'));
+			expect(editor.state.viewport).toMatchObject(snapped);
+		}
 	} finally {
 		await mouse.send('Input.dispatchMouseEvent', {
 			type: 'mouseReleased',
@@ -121,10 +127,36 @@ test('continues panning a homepage demo outside its canvas until the mouse is re
 			...point(74, 11),
 		});
 	}
-	const snapped = { x: Math.round((x - 74) / vGrid) * vGrid, y: Math.round((y - 11) / hGrid) * hGrid };
 	expect(editor.state.viewport).toMatchObject(snapped);
 	await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 0, ...point(10, 50) });
 	expect(editor.state.viewport).toMatchObject(snapped);
+});
+
+test('keeps touch panning horizontal on the homepage', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+	try {
+		const view = setup();
+		const editor = await view.mounted();
+		await expect.poll(() => view.canvas.style.touchAction).toBe('pan-y');
+		const { x, y, vGrid } = editor.state.viewport;
+		const rect = view.canvas.getBoundingClientRect();
+		const frame = window.frameElement!.getBoundingClientRect();
+		const point = (dx: number, dy: number) => ({
+			x: frame.left + rect.left + 100 + dx,
+			y: frame.top + rect.top + 100 + dy,
+		});
+		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(0, 0)] });
+		try {
+			await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(40, 4)] });
+			expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		} finally {
+			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		}
+		expect(editor.state.viewport).toMatchObject({ x: Math.round((x - 40) / vGrid) * vGrid, y });
+	} finally {
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
 });
 
 test('runs landing-page projects without opening an invisible context menu', async () => {

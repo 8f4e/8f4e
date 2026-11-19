@@ -39,6 +39,8 @@ The compiler, URL loader, block backgrounds, and code rendering load eagerly. Co
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and the worker runtime throughout the project. Font payloads remain lazy.
 Keyboard input follows pointer capabilities; the host owns scrolling, visibility, loading UI, and canvas layout.
+On devices with a fine primary pointer, the landing-only `viewport-mouse-input` plugin keeps a primary-button mouse
+drag on its starting demo even when the pointer leaves the canvas. Touch gestures and wheel scrolling are unchanged.
 Plain-text paste at the caret remains available through keyboard editing. The composition does not intercept
 Cmd/Ctrl+S. The galleries continue to use `editor-gallery` with entry outlines, arrows, context menus, project
 saving/export, and block copy/paste.

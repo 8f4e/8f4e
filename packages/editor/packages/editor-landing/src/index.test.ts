@@ -26,7 +26,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			finish = resolve;
 		})
 	);
-	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
+	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: fine)' }) };
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
 	const onInitialProjectLoaded = vi.fn();
 	const mounting = mountLandingEditor(canvas, {
@@ -57,6 +57,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'stack-producers',
 		'tooltips',
 		'mouse-input',
+		'viewport-mouse-input',
 		'touch-input',
 		'keyboard-navigation',
 		'keyboard-editing',
@@ -75,6 +76,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'stack-producers',
 		'tooltips',
 		'mouse-input',
+		'viewport-mouse-input',
 		'keyboard-navigation',
 		'keyboard-editing',
 	]);

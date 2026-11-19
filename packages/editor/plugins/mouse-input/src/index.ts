@@ -20,84 +20,38 @@ export function createMouseInputPlugin({
 		id: 'mouse-input',
 		setup: ({ store, events }) => {
 			const state = store.getState();
-			const browserWindow = inputTarget.ownerDocument.defaultView;
 			let previousX = 0;
 			let previousY = 0;
-			let trackingPress = false;
 			let wheelScrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
 
-			function dispatchPointer(
-				type: (typeof POINTER_EVENTS)[keyof typeof POINTER_EVENTS],
-				x: number,
-				y: number,
-				buttons: number,
-				altKey: boolean
-			) {
-				const pointer: InternalPointerEvent = {
-					x,
-					y,
-					movementX: x - previousX,
-					movementY: y - previousY,
+			function onMouseEvent(event: MouseEvent) {
+				if (event.type === 'mousedown') {
+					inputTarget.focus({ preventScroll: true });
+				}
+
+				const movementX = event.offsetX - previousX;
+				const movementY = event.offsetY - previousY;
+				previousX = event.offsetX;
+				previousY = event.offsetY;
+
+				const { offsetX, offsetY, buttons, altKey } = event;
+				const type = POINTER_EVENTS[event.type as keyof typeof POINTER_EVENTS];
+
+				event.preventDefault();
+
+				const eventObject: InternalPointerEvent = {
+					x: offsetX,
+					y: offsetY,
+					movementX,
+					movementY,
 					buttons,
 					stopPropagation: false,
 					canvasWidth: inputTarget.clientWidth,
 					canvasHeight: inputTarget.clientHeight,
 					altKey,
 				};
-				previousX = x;
-				previousY = y;
-				events.dispatch(type, pointer);
-			}
 
-			function startTrackingPress() {
-				if (trackingPress) return;
-				trackingPress = true;
-				browserWindow?.addEventListener('mousemove', onMouseEvent, { capture: true });
-				browserWindow?.addEventListener('mouseup', onMouseEvent, { capture: true });
-				browserWindow?.addEventListener('blur', onWindowBlur);
-			}
-
-			function stopTrackingPress() {
-				if (!trackingPress) return;
-				trackingPress = false;
-				browserWindow?.removeEventListener('mousemove', onMouseEvent, { capture: true });
-				browserWindow?.removeEventListener('mouseup', onMouseEvent, { capture: true });
-				browserWindow?.removeEventListener('blur', onWindowBlur);
-			}
-
-			function onWindowBlur() {
-				stopTrackingPress();
-				dispatchPointer('pointerup', previousX, previousY, 0, false);
-			}
-
-			function onMouseEvent(event: MouseEvent) {
-				const onTarget = event.currentTarget === inputTarget;
-				// Within the canvas, let the target listener process the event once.
-				if (!onTarget && event.composedPath().includes(inputTarget)) return;
-				let type = POINTER_EVENTS[event.type as keyof typeof POINTER_EVENTS];
-
-				if (type === 'pointerdown') {
-					if (event.buttons) startTrackingPress();
-					inputTarget.focus({ preventScroll: true });
-				} else if (type === 'pointermove') {
-					// Ignore drags started elsewhere, and recover if the browser missed a release.
-					if (!trackingPress && event.buttons) return;
-					if (trackingPress && !event.buttons) type = 'pointerup';
-				}
-				if (type === 'pointerup') {
-					if (!trackingPress) return;
-					stopTrackingPress();
-				}
-
-				event.preventDefault();
-				if (onTarget) {
-					dispatchPointer(type, event.offsetX, event.offsetY, event.buttons, event.altKey);
-				} else {
-					const rect = inputTarget.getBoundingClientRect();
-					const x = event.clientX - rect.left - inputTarget.clientLeft;
-					const y = event.clientY - rect.top - inputTarget.clientTop;
-					dispatchPointer(type, x, y, event.buttons, event.altKey);
-				}
+				events.dispatch(type, eventObject);
 			}
 
 			function onWheelEvent(event: WheelEvent) {
@@ -137,7 +91,6 @@ export function createMouseInputPlugin({
 			inputTarget.addEventListener('contextmenu', onMouseEvent);
 
 			return () => {
-				stopTrackingPress();
 				if (wheelScrollEndTimeout) {
 					clearTimeout(wheelScrollEndTimeout);
 				}

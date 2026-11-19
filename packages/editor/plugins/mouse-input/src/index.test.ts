@@ -11,14 +11,10 @@ afterEach(() => {
 });
 beforeEach(() => vi.useFakeTimers());
 
-function setup(captureWheel = true, viewportDragging = true, browserWindow = new EventTarget()) {
+function setup(captureWheel = true, viewportDragging = true) {
 	const inputTarget = Object.assign(new EventTarget(), {
-		ownerDocument: { defaultView: browserWindow },
 		clientWidth: 640,
 		clientHeight: 480,
-		clientLeft: 0,
-		clientTop: 0,
-		getBoundingClientRect: () => ({ left: 100, top: 200 }),
 		focus: vi.fn(),
 	}) as unknown as HTMLElement;
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
@@ -34,86 +30,41 @@ function setup(captureWheel = true, viewportDragging = true, browserWindow = new
 	});
 	events.dispatch.mockClear();
 	cleanups.push(store.dispose, dispose);
-	const mouse = (type: string, values = {}, target: EventTarget = inputTarget) => {
+	const mouse = (type: string, values = {}) => {
 		const event = Object.assign(new Event(type, { cancelable: true }), {
 			offsetX: 20,
 			offsetY: 40,
-			clientX: 120,
-			clientY: 240,
-			buttons: type === 'mousedown' ? 1 : 0,
+			buttons: 1,
 			altKey: false,
 			...values,
 		});
-		target.dispatchEvent(event);
+		inputTarget.dispatchEvent(event);
 		return event;
 	};
-	const outside = (type: string, values = {}) => mouse(type, values, browserWindow);
 	const wheel = (deltaX = 3, deltaY = 5) => mouse('wheel', { deltaX, deltaY });
-	return { store, events, inputTarget, mouse, outside, wheel, dispose };
+	return { store, events, inputTarget, mouse, wheel, dispose };
 }
 
 describe('mouse input', () => {
 	it.each([
-		['mousedown', 'pointerdown', 1],
-		['mousemove', 'pointermove', 0],
-		['mouseup', 'pointerup', 0],
-		['contextmenu', 'contextmenu', 0],
-	])('translates %s into %s', (type, translatedType, buttons) => {
+		['mousedown', 'pointerdown'],
+		['mousemove', 'pointermove'],
+		['mouseup', 'pointerup'],
+		['contextmenu', 'contextmenu'],
+	])('translates %s into %s', (type, translatedType) => {
 		const test = setup();
-		if (type === 'mouseup') {
-			test.mouse('mousedown', { offsetX: 0, offsetY: 0 });
-			test.events.dispatch.mockClear();
-		}
 		expect(test.mouse(type).defaultPrevented).toBe(true);
 		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith(translatedType, {
 			x: 20,
 			y: 40,
 			movementX: 20,
 			movementY: 40,
-			buttons,
+			buttons: 1,
 			altKey: false,
 			stopPropagation: false,
 			canvasWidth: 640,
 			canvasHeight: 480,
 		});
-	});
-
-	it('tracks a press outside the owning canvas without moving another editor', () => {
-		const browserWindow = new EventTarget();
-		const first = setup(false, true, browserWindow);
-		const second = setup(false, true, browserWindow);
-		first.mouse('mousedown');
-		const position = { clientX: 760, clientY: 190 };
-		expect(first.outside('mousemove', { ...position, buttons: 1 }).defaultPrevented).toBe(true);
-		expect(first.events.dispatch).toHaveBeenLastCalledWith(
-			'pointermove',
-			expect.objectContaining({ x: 660, y: -10, movementX: 640, movementY: -50 })
-		);
-		expect(second.mouse('mousemove', { buttons: 1 }).defaultPrevented).toBe(false);
-		expect(second.events.dispatch).not.toHaveBeenCalled();
-
-		first.outside('mouseup', position);
-		expect(first.events.dispatch).toHaveBeenLastCalledWith(
-			'pointerup',
-			expect.objectContaining({ x: 660, y: -10, buttons: 0 })
-		);
-		expect(second.mouse('mouseup').defaultPrevented).toBe(false);
-		expect(second.events.dispatch).not.toHaveBeenCalled();
-		first.events.dispatch.mockClear();
-		expect(first.outside('mousemove').defaultPrevented).toBe(false);
-		expect(first.events.dispatch).not.toHaveBeenCalled();
-	});
-
-	it.each(['blur', 'mousemove'])('ends an interrupted press on window %s', type => {
-		const test = setup();
-		test.mouse('mousedown');
-		test.outside(type);
-		expect(test.events.dispatch).toHaveBeenLastCalledWith(
-			'pointerup',
-			expect.objectContaining({ movementX: 0, movementY: 0, buttons: 0 })
-		);
-		expect(test.outside('mousemove', { buttons: 1 }).defaultPrevented).toBe(false);
-		expect(test.events.dispatch).toHaveBeenCalledTimes(2);
 	});
 
 	it('tracks movement and focuses the owning canvas when pressed', () => {
@@ -171,15 +122,12 @@ describe('mouse input', () => {
 	it('removes listeners and clears pending wheel work on disposal', () => {
 		const test = setup();
 		test.wheel();
-		test.mouse('mousedown');
 		test.store.set('featureFlags.viewportDragging', false);
 		test.dispose();
 		vi.runAllTimers();
-		expect(test.mouse('mousedown').defaultPrevented).toBe(false);
-		expect(test.outside('mousemove', { buttons: 1 }).defaultPrevented).toBe(false);
-		test.outside('blur');
+		test.mouse('mousedown');
 		expect(test.wheel().defaultPrevented).toBe(false);
-		expect(test.events.dispatch).toHaveBeenCalledTimes(2);
+		expect(test.events.dispatch).toHaveBeenCalledOnce();
 	});
 
 	it('keeps movement history separate for each editor', () => {
