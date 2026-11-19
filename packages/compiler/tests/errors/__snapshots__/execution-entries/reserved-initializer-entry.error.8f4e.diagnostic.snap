@@ -1,0 +1,11 @@
+{
+  "code": 9,
+  "domain": "syntax",
+  "instruction": "entry",
+  "kind": "source",
+  "location": {
+    "kind": "document",
+    "lineNumber": 1,
+  },
+  "message": "Root entry name "initDefaults" is reserved for the compiler-generated memory initializer",
+}

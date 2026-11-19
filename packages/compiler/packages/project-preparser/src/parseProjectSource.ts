@@ -128,6 +128,13 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 				{ lineNumber: node.start.lineNumber - 1 }
 			);
 		const name = getProjectBlockName(node.start.text, node.start.lineNumber, 'entry');
+		if (context.kind === 'root' && name === 'initDefaults')
+			throw syntaxErrorAt(
+				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				'Root entry name "initDefaults" is reserved for the compiler-generated memory initializer',
+				{ kind: 'document' },
+				{ lineNumber: node.start.lineNumber - 1, instruction: 'entry' }
+			);
 		if (!project.entries.includes(name)) project.entries.push(name);
 		readScope(node.children, { kind: 'entry', project, name });
 		return;

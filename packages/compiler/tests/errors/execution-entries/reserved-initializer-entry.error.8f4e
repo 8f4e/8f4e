@@ -1,0 +1,6 @@
+8f4e/v1
+entry initDefaults
+module voice
+int value 7
+moduleEnd
+entryEnd
