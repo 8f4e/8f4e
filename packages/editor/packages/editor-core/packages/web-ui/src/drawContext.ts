@@ -1,23 +1,29 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
 import { FILL_SPRITE_ID, type GlyphIds } from '@8f4e/sprite-generator';
-import type { SpriteId } from 'glugglugglug';
-import { DrawContext as SpriteDrawContext, type SpriteTarget } from 'glugglugglug/utils';
 import type { SpriteCell } from './spriteCell';
 
-/** Editor text/fill primitives bind shared shapes to explicit palette indices without per-frame allocations. */
+/** Receives viewport-relative sprite positions in pixels and optional destination sizes. */
+export interface SpriteTarget {
+	drawSprite(x: number, y: number, spriteId: number, color: PaletteIndex, width?: number, height?: number): void;
+}
+
+/** Translates editor-relative coordinates and submits glyphs, fills, and sprites to a target. */
 export class DrawContext {
-	private readonly sprites: SpriteDrawContext;
+	private offsetX = 0;
+	private offsetY = 0;
+	private groupDepth = 0;
+	private readonly groupX: number[] = [];
+	private readonly groupY: number[] = [];
+
 	constructor(
-		target: SpriteTarget,
+		private readonly target: SpriteTarget,
 		private characterWidth: number
-	) {
-		this.sprites = new SpriteDrawContext(target);
-	}
+	) {}
 	setCharacterWidth(width: number): void {
 		this.characterWidth = width;
 	}
-	drawSprite(x: number, y: number, spriteId: SpriteId, color: PaletteIndex, width?: number, height?: number): void {
-		this.sprites.drawSprite(x, y, spriteId, color, width, height);
+	drawSprite(x: number, y: number, spriteId: number, color: PaletteIndex, width?: number, height?: number): void {
+		this.target.drawSprite(x + this.offsetX, y + this.offsetY, spriteId, color, width, height);
 	}
 	drawFill(x: number, y: number, color: PaletteIndex, width: number, height: number): void {
 		this.drawSprite(x, y, FILL_SPRITE_ID, color, width, height);
@@ -36,19 +42,28 @@ export class DrawContext {
 	drawNumericText(x: number, y: number, text: string, color: PaletteIndex): void {
 		for (let index = 0; index < text.length; index++) {
 			const character = text.charCodeAt(index);
-			if (character !== 32) this.drawSprite(x + index * this.characterWidth, y, character as SpriteId, color);
+			if (character !== 32) this.drawSprite(x + index * this.characterWidth, y, character, color);
 		}
 	}
 	drawResolvedText(x: number, y: number, cells: readonly (SpriteCell | null)[]): void {
 		for (let index = 0; index < cells.length; index++) {
 			const cell = cells[index];
-			if (cell !== null) this.drawSprite(x + index * this.characterWidth, y, (cell & 0xffff) as SpriteId, cell >>> 16);
+			if (cell !== null) this.drawSprite(x + index * this.characterWidth, y, cell & 0xffff, cell >>> 16);
 		}
 	}
+	/** Adds a translation to the current group until the matching {@link endGroup}. */
 	startGroup(x: number, y: number): void {
-		this.sprites.startGroup(x, y);
+		// Retain stack storage across groups and frames.
+		this.groupX[this.groupDepth] = this.offsetX;
+		this.groupY[this.groupDepth] = this.offsetY;
+		this.groupDepth++;
+		this.offsetX += x;
+		this.offsetY += y;
 	}
+	/** Restores the previous translation. Requires a matching {@link startGroup}. */
 	endGroup(): void {
-		this.sprites.endGroup();
+		this.groupDepth--;
+		this.offsetX = this.groupX[this.groupDepth];
+		this.offsetY = this.groupY[this.groupDepth];
 	}
 }

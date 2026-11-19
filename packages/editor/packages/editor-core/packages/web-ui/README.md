@@ -127,6 +127,8 @@ cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
+`DrawContext` owns nested coordinate groups and sends viewport-relative sprite positions to a `SpriteTarget`.
+The browser renderer uses the Glugglugglug engine as that target.
 `DrawContext.drawFill()` uses the shared fill mask, and `drawGlyphs()` draws prepared CP437 glyph IDs.
 Use the pure `textToGlyphIds()` helper during state/layout preparation and keep its result in the owning plugin.
 Fixed symbols can be prepared once, and their IDs remain valid across font changes. `drawResolvedText()` consumes

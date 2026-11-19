@@ -1,5 +1,4 @@
 import { textToGlyphIds } from '@8f4e/sprite-generator';
-import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it, vi } from 'vitest';
 import { DrawContext } from './drawContext';
 import { createSpriteCell } from './spriteCell';
@@ -8,14 +7,24 @@ describe('DrawContext', () => {
 	it('forwards separate shared shape and color indices through nested offsets', () => {
 		const target = { drawSprite: vi.fn() };
 		const draw = new DrawContext(target, 8);
-		draw.startGroup(10, 20);
+		draw.startGroup(-10, -20);
+		draw.startGroup(20, 40);
 		draw.drawFill(1, 2, 0, 30, 40);
 		draw.drawGlyphs(3, 4, textToGlyphIds('AB'), 5);
 		draw.endGroup();
+		draw.drawSprite(1, 2, 7, 2);
+		draw.startGroup(40, 60);
+		draw.drawSprite(1, 2, 8, 2);
+		draw.endGroup();
+		draw.endGroup();
+		draw.drawSprite(1, 2, 9, 2);
 		expect(target.drawSprite.mock.calls).toEqual([
 			[11, 22, 256, 0, 30, 40],
 			[13, 24, 65, 5, undefined, undefined],
 			[21, 24, 66, 5, undefined, undefined],
+			[-9, -18, 7, 2, undefined, undefined],
+			[31, 42, 8, 2, undefined, undefined],
+			[1, 2, 9, 2, undefined, undefined],
 		]);
 	});
 	it('skips spaces, resolves Unicode to CP437, and updates font metrics', () => {
@@ -47,7 +56,7 @@ describe('DrawContext', () => {
 	it('uses packed shape/color cells and the fixed fill ID', () => {
 		const target = { drawSprite: vi.fn() };
 		const draw = new DrawContext(target, 8);
-		draw.drawResolvedText(2, 3, [createSpriteCell(0 as SpriteId, 0), null, createSpriteCell(2 as SpriteId, 4)]);
+		draw.drawResolvedText(2, 3, [createSpriteCell(0, 0), null, createSpriteCell(2, 4)]);
 
 		draw.drawFill(0, 0, 5, 10, 20);
 		expect(target.drawSprite.mock.calls).toEqual([
