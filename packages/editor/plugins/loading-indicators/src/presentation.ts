@@ -82,7 +82,7 @@ export function installPresentation(
 				? state.loadingIndicators.filter(visibility.isVisible).slice(0, Math.min(options.maxVisibleRows, availableRows))
 				: [];
 		const groupRows = gutterColumns && indicators.length ? Math.max(indicators.length, ORBIT_ROWS) : indicators.length;
-		const textY = Math.floor((groupRows - indicators.length) / 2) * rowHeight;
+		const textY = (groupRows - indicators.length) * rowHeight;
 		orbitY = (groupRows - ORBIT_ROWS) * rowHeight;
 		top = (availableRows - groupRows) * rowHeight;
 		const now = Date.now();

@@ -200,7 +200,7 @@ it('keeps one square orbit to the left of the rows until the last result expires
 	expect(test.draw.startGroup).toHaveBeenLastCalledWith(0, 96);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		TEXT_X_WITH_ORBIT,
-		16,
+		48,
 		textToGlyphIds('Compiling...'),
 		PALETTE_INDICES.floatingInk
 	);
@@ -216,7 +216,7 @@ it('keeps one square orbit to the left of the rows until the last result expires
 	expect(orbit()).toEqual(first);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 		TEXT_X_WITH_ORBIT,
-		16,
+		48,
 		textToGlyphIds('Compiling...'),
 		PALETTE_INDICES.floatingInk
 	);
@@ -229,7 +229,7 @@ it('keeps one square orbit to the left of the rows until the last result expires
 	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 });
 
-it('pins the orbit to the bottom left without a fill as messages are added and expire', () => {
+it('keeps the orbit and message stack bottom-aligned as messages are added and expire', () => {
 	vi.useFakeTimers();
 	const test = setup();
 	test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
@@ -245,14 +245,18 @@ it('pins the orbit to the bottom left without a fill as messages are added and e
 			[8, 128],
 			[8, 144],
 		]);
-		expect(test.draw.drawFill.mock.calls.map(([x]) => x)).toEqual(Array(visibleRows).fill(80));
+		expect(test.draw.drawFill.mock.calls.map(([x, y]) => [left + x, top + y])).toEqual(
+			Array.from({ length: visibleRows }, (_, index) => [80, 160 - (visibleRows - index) * 16])
+		);
 	};
 	checkLayout(1);
 	for (let index = 0; index < 5; index++) {
 		test.store.loading.add({ id: `task-${index}`, message: 'Loading asset...' }).done();
 	}
 	checkLayout(6);
-	vi.advanceTimersByTime(1101);
+	vi.advanceTimersByTime(1076);
+	checkLayout(2);
+	vi.advanceTimersByTime(25);
 	checkLayout(1);
 });
 

@@ -7,11 +7,11 @@ neutral label. Elapsed time stops at completion. Messages are clipped to the vie
 and time. By default, the list shows at most 20 rows, or fewer when the viewport cannot fit them.
 
 On viewports with room for the 8×4 loader and at least 16 text columns, the text sits to the right of a shared
-orbit with shrinking circles following a square path. Both sit on whole cells in the editor grid, down to the last
-full row. The orbit has no background fill, and a blank column separates it from the text panels. Its phase follows
-the page's clock, so remounting an editor does not restart the loop. It runs until the last visible message disappears,
-including finished results during their grace period. With reduced motion it shows a stationary frame. Narrow or
-short viewports keep the text-only layout.
+orbit with shrinking circles following a square path. The orbit and the bottom message share the last full row
+of the editor grid, even when only one message remains. The orbit has no background fill, and a blank column
+separates it from the text panels. Its phase follows the page's clock, so remounting an editor does not restart
+the loop. It runs until the last visible message disappears, including finished results during their grace period.
+With reduced motion it shows a stationary frame. Narrow or short viewports keep the text-only layout.
 
 Install `loadingIndicatorsPlugin` through the ordinary plugin contract. This default instance is created by
 `createLoadingIndicatorsPlugin()` and keeps existing usage unchanged. Install it eagerly before the deferred
