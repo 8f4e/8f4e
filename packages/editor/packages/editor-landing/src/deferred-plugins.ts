@@ -56,12 +56,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-tooltips').then(module => module.tooltipsPlugin),
 		},
 		{
-			id: 'mouse-input',
+			id: 'viewport-mouse-input',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
-				import('@8f4e/editor-plugin-mouse-input').then(module =>
-					module.createMouseInputPlugin({ inputTarget: canvas, captureWheel })
+				import('@8f4e/editor-plugin-viewport-mouse-input').then(module =>
+					module.createViewportMouseInputPlugin({ inputTarget: canvas, captureWheel })
 				),
 		},
 		{

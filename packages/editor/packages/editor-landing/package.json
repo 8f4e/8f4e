@@ -34,7 +34,6 @@
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-navigation": "*",
     "@8f4e/editor-plugin-lazy-loader": "*",
-    "@8f4e/editor-plugin-mouse-input": "*",
     "@8f4e/editor-plugin-plot": "*",
     "@8f4e/editor-plugin-project-url-loader": "*",
     "@8f4e/editor-plugin-slider": "*",
@@ -43,6 +42,7 @@
     "@8f4e/editor-plugin-stack-producers": "*",
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-touch-input": "*",
+    "@8f4e/editor-plugin-viewport-mouse-input": "*",
     "@8f4e/editor-plugin-watch": "*",
     "@8f4e/editor-plugin-wires": "*",
     "@8f4e/editor-plugin-worker-runtime": "*"
