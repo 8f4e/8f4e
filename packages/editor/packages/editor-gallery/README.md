@@ -20,8 +20,8 @@ editor.dispose();
 ```
 
 Pass `defaultFont` (for example, `defaultFont: 'pixelcode6x12'`) to choose the font used by projects without
-a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12 when `(pointer: coarse)` matches
-at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
+a `; @config font` directive. Otherwise, the composition chooses Departure Mono 14 (7×14) when `(pointer: coarse)`
+matches at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
 a project without one restores the mount's default. This preference is kept outside project source and saved files.
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL

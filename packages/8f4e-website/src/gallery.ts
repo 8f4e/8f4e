@@ -42,13 +42,12 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 		gallery.append(section);
 
 		return category.projects.map(project => {
-			const item = document.createElement('section');
-			item.className = 'example-item';
 			const heading = document.createElement('h3');
 			heading.className = 'example-heading';
+			heading.id = project.id;
 			const toggle = document.createElement('button');
-			toggle.className = 'example-toggle';
 			toggle.type = 'button';
+			toggle.className = 'example-toggle';
 			toggle.id = `example-${project.id}`;
 			toggle.setAttribute('aria-expanded', 'false');
 			toggle.setAttribute('aria-controls', `panel-${project.id}`);
@@ -100,14 +99,15 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 			actions.append(openLink, githubLink);
 			frame.append(status);
 			panel.append(frame, actions);
-			item.append(heading, panel);
-			section.append(item);
+			section.append(heading, panel);
 			toggle.addEventListener('click', () => {
 				const id = activeId === project.id && mobileLayout.matches ? null : project.id;
-				if (id !== activeId) {
-					window.history.pushState(null, '', withProjectId(new URL(window.location.href), id));
-					selectExample(id);
+				const url = new URL(window.location.href);
+				const nextUrl = withProjectId(url, id);
+				if (nextUrl.href !== url.href) {
+					window.history.pushState(null, '', nextUrl);
 				}
+				selectExample(id);
 			});
 			return { project, toggle, panel, frame, status, projectUrl };
 		});
@@ -143,9 +143,12 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 	function onUrlChange(): void {
 		const url = new URL(window.location.href);
 		const id = getProjectId(url, mobileLayout.matches, projects);
-		const nextUrl = withProjectId(url, id);
-		if (nextUrl.href !== url.href) {
-			window.history.replaceState(window.history.state, '', nextUrl);
+		// Keep a plain gallery URL at the top even when desktop shows the first editor.
+		if (url.hash) {
+			const nextUrl = withProjectId(url, id);
+			if (nextUrl.href !== url.href) {
+				window.history.replaceState(window.history.state, '', nextUrl);
+			}
 		}
 		selectExample(id);
 	}
@@ -159,9 +162,6 @@ export function mountGallery({ title, categories, includeKeyboardModeSwitching }
 	window.addEventListener('popstate', onUrlChange);
 	window.addEventListener('hashchange', onUrlChange);
 	onUrlChange();
-	if (mobileLayout.matches && activeId !== null) {
-		items.find(item => item.project.id === activeId)?.toggle.scrollIntoView({ block: 'start' });
-	}
 
 	function dispose(): void {
 		disposed = true;

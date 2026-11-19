@@ -39,8 +39,8 @@ export const projects = [
 ];
 
 export const projectCategories = [
-	{ path: 'audio', title: 'Audio' },
-	{ path: 'midi', title: 'MIDI' },
+	{ path: 'audio', title: 'Audio examples' },
+	{ path: 'midi', title: 'MIDI examples' },
 ].map(category => ({
 	...category,
 	projects: projects.filter(project => project.path.slice(0, project.path.lastIndexOf('/')) === category.path),
