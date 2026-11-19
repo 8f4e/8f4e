@@ -20,6 +20,7 @@
 		"@8f4e/editor-webmcp": "*"
 	},
 	"devDependencies": {
+		"@8f4e/web-ui-testing": "*",
 		"@8f4e/config": "*",
 		"@8f4e/editor-core": "*",
 		"@vitest/browser": "4.1.12",

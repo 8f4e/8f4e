@@ -28,4 +28,4 @@ A pending project URL may leave an empty project saved until fetching succeeds. 
 leave that empty session persisted. The plugin performs no coordination with pending URL fetches. Disposal releases
 all listeners and subscriptions.
 
-Run the package's `build`, `test`, `typecheck`, and `test:screenshot` Nx targets to verify it.
+Run the package's `build`, `test`, and `typecheck` Nx targets to verify it.

@@ -1,4 +1,5 @@
 import initEditor from '@8f4e/editor-core';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { dialogsPlugin } from '../src/index';
 
@@ -11,6 +12,7 @@ test.each([
 	canvas.height = height;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		featureFlags: { canvasOverlays: false },
 		plugins: [
 			{
@@ -31,7 +33,7 @@ test.each([
 	try {
 		editor.pauseRendering();
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot(`dialog-${name}`);
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(`./__snapshots__/dialog-${name}.viewport.snap`);
 	} finally {
 		editor.dispose();
 		canvas.remove();

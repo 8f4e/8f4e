@@ -1,0 +1,20 @@
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                      call mix (left: float                                                     
+                      right: float -- float)                                                    
+                      Calls a function, consuming its                                           
+                      parameters and pushing its                                                
+                      return values.                                                            
+                      before []                                                                 
+                      after: [+float]                                                           
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                

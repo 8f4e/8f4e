@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 test('coordinates independent keyboard plugins across cold editing, navigation, history and mode changes', async () => {
@@ -30,6 +31,7 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'
 			),

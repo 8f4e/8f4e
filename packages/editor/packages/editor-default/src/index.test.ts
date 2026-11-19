@@ -20,6 +20,7 @@ const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('glugglugglug', () => ({ Engine: class {} }));
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 vi.mock('@8f4e/editor-plugin-session-persistence', () => ({

@@ -9,9 +9,11 @@ Construct it before dependent plugins, then install its `plugin` first:
 import initEditor from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createButtonPlugin } from '@8f4e/editor-plugin-button';
+import { Engine } from 'glugglugglug';
 
 const compiler = createCompilerPlugin({ resolveInclude });
 const editor = await initEditor(canvas, {
+    renderer: new Engine(canvas),
     plugins: [compiler.plugin, createButtonPlugin({ writeMemory: compiler.writeMemory })],
 });
 ```

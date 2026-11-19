@@ -33,6 +33,7 @@
     "glugglugglug": "*"
   },
   "devDependencies": {
+    "@8f4e/web-ui-testing": "*",
     "@8f4e/editor-state-testing": "*",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",

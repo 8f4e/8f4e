@@ -2,6 +2,7 @@ import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { selectionAnimationPlugin } from '../src/index';
 
@@ -11,6 +12,7 @@ test('renders two phases of the selection animation', async () => {
 	canvas.height = 240;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],

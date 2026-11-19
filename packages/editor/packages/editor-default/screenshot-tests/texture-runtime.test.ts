@@ -4,6 +4,7 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { gapCalculator } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -57,6 +58,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(projectSource),
 			plugins: [
 				compiler.plugin,
@@ -199,6 +201,7 @@ test.each([
 		let editor: Editor | undefined;
 		try {
 			editor = await initEditor(canvas, {
+				renderer: new Engine(canvas),
 				initialProject: parseProjectSource(`8f4e/v1
 constants env
 ; @pos 150 100

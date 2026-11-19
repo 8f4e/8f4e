@@ -2,6 +2,7 @@ import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { codeBlockBackgroundPlugin } from '../src/index';
 
@@ -11,6 +12,7 @@ test('draws normal, disabled, and dragged block backgrounds below registered fix
 	canvas.height = 384;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],

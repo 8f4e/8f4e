@@ -1,0 +1,32 @@
+ You're in view mode, press e to edit                                                           
+ ?? group nested                                                                                
+                                                                                                
+    +0 module values               +                                                            
+     1 ; @pos 4 3                                                                               
+     2 int first 7 ; @watch [7]  [*]                                                            
+     3 int second 9 ; @w [9]     [*]                                                            
+     4 push 3 ; @stack [3]                                                                      
+     5 push 4 ; @s [3, 4]                                                                       
+     6 add                                                                                      
+     7 drop                                                                                     
+    +8 moduleEnd                   +                                                            
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                

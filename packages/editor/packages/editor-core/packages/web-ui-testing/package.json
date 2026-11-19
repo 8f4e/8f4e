@@ -1,0 +1,22 @@
+{
+  "name": "@8f4e/web-ui-testing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-free renderer for editor scene snapshot tests",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@8f4e/sprite-generator": "*",
+    "glugglugglug": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "vitest": "4.1.12"
+  }
+}

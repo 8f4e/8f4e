@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { createLazyPluginLoaderPlugin, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -42,6 +43,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 		let context!: EditorPluginContext;
 		try {
 			editor = await initEditor(canvas, {
+				renderer: new Engine(canvas),
 				initialProject:
 					trigger === 'source edit'
 						? parseProjectSource(source.replace('; @plot &points count(points) -1 1\n', ''))

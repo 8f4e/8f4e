@@ -2,6 +2,7 @@ import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
 test('draws blocks entering the viewport during navigation and culls blocks leaving it', async () => {
@@ -13,6 +14,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 	let context!: EditorPluginContext;
 	const visible: string[] = [];
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 300 100', 'constantsEnd'] }],
@@ -61,7 +63,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		expect(state.viewportAnimation.active).toBe(true);
 		expect(state.viewport).toMatchObject({ x: Math.round(targetX / 2), y: Math.round(targetY / 2) });
 		expect(visible).toEqual(['middle']);
-		await expect(canvas).toMatchScreenshot('mid-navigation');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/mid-navigation.viewport.snap');
 
 		now.mockReturnValue(1500);
 		visible.length = 0;

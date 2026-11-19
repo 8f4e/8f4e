@@ -1,3 +1,5 @@
 *.png filter=lfs diff=lfs merge=lfs -text
 *.8f4e linguist-language=Assembly
 *.snap linguist-generated=true
+# Spaces and space-only rows are viewport cells, not formatting.
+*.viewport.snap text eol=lf whitespace=-blank-at-eol,-blank-at-eof

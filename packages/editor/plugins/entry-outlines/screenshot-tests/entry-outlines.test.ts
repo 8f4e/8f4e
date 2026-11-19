@@ -2,6 +2,7 @@ import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { entryOutlinesPlugin } from '../src/index';
 
@@ -11,6 +12,7 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	canvas.height = 400;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			entries: ['audio', 'checks'],

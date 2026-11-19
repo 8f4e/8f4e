@@ -4,6 +4,7 @@ import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-backgr
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
 test('creates and deletes a block through authoring contributions and menu presentation', async () => {
@@ -13,6 +14,7 @@ test('creates and deletes a block through authoring contributions and menu prese
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 60', 'constantsEnd'] }],
@@ -38,7 +40,9 @@ test('creates and deletes a block through authoring contributions and menu prese
 		context.events.dispatch('contextmenu', { x: 160, y: 112 });
 		await expect.poll(() => editor.state.contextMenu.items.some(item => item.title === 'New Module')).toBe(true);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('block-authoring-new-menu');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/block-authoring-new-menu.viewport.snap'
+		);
 		context.events.dispatch('activateContextMenuItem', {
 			index: editor.state.contextMenu.items.findIndex(item => item.title === 'New Module'),
 			x: 160,
@@ -51,7 +55,9 @@ test('creates and deletes a block through authoring contributions and menu prese
 		context.events.dispatch('contextmenu', { x, y });
 		await expect.poll(() => editor.state.contextMenu.items.some(item => item.action === 'deleteCodeBlock')).toBe(true);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('block-authoring-delete-menu');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/block-authoring-delete-menu.viewport.snap'
+		);
 		context.events.dispatch('activateContextMenuItem', {
 			index: editor.state.contextMenu.items.findIndex(item => item.action === 'deleteCodeBlock'),
 			x,

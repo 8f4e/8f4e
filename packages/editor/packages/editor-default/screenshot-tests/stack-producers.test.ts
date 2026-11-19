@@ -3,6 +3,7 @@ import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { stackProducersPlugin } from '@8f4e/editor-plugin-stack-producers';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 
 test('highlights immediate producers above nested shading and below instruction text', async () => {
@@ -30,6 +31,7 @@ entryEnd`);
 	document.body.append(canvas);
 	let context: EditorPluginContext;
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		plugins: [
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,

@@ -3,6 +3,7 @@ import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import type {} from '@vitest/browser-playwright';
 import { expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
@@ -30,6 +31,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 			writeMemory: () => {},
 		});
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: {
 				...EMPTY_DEFAULT_PROJECT,
 				constants: [{ id: 0, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
@@ -82,7 +84,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 			.toBe('done');
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('before-touch-pan');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/before-touch-pan.viewport.snap');
 		await expect
 			.poll(async () => {
 				await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
@@ -97,7 +99,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('after-touch-pan');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/after-touch-pan.viewport.snap');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock?.name).toBe('target');
 		// Check source-line navigation and input layers through the real touch adapter.
@@ -143,6 +145,7 @@ entryEnd`);
 	let context!: EditorPluginContext;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: project,
 			featureFlags: { moduleDragging: false },
 			plugins: [
@@ -227,7 +230,7 @@ entryEnd`);
 		expect(state.contextMenu.open).toBe(true);
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('portrait-context-menu');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/portrait-context-menu.viewport.snap');
 		context.events.dispatch('closeContextMenu');
 		const allowAudio = vi.fn();
 		context.events.on('testAllowAudio', allowAudio);
@@ -239,7 +242,7 @@ entryEnd`);
 		});
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('portrait-audio-dialog');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/portrait-audio-dialog.viewport.snap');
 		// Tap the Allow button shown in the fixed portrait screenshot fixture.
 		await input.send('Input.dispatchTouchEvent', {
 			type: 'touchStart',

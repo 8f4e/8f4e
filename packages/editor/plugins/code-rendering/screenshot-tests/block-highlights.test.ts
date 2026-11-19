@@ -1,5 +1,6 @@
 import initEditor from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { codeRenderingPlugin } from '../src/index';
 
@@ -9,6 +10,7 @@ test('renders nested block highlights below selection and text with disabled and
 	canvas.height = 480;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		plugins: [codeRenderingPlugin],
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,

@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
+    "glugglugglug": "*",
     "@8f4e/editor-core": "*",
     "@8f4e/editor-plugin-code-block-background": "*",
     "@8f4e/editor-plugin-code-rendering": "*",

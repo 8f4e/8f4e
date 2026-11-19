@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -49,6 +50,7 @@ test('shows the active group ancestry below the mode hint as the editor moves th
 			getAssertionSites: () => undefined,
 		});
 		const instance = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: parseProjectSource(source),
 			plugins: [
 				...plugins,
@@ -72,7 +74,7 @@ test('shows the active group ancestry below the mode hint as the editor moves th
 		const matchFrame = async (name: string) => {
 			context.store.set('loadingIndicators', []);
 			instance.renderFrame();
-			await expect(canvas).toMatchScreenshot(name);
+			await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(`./__snapshots__/${name}.viewport.snap`);
 		};
 		await matchFrame('nested-group-path');
 		instance.navigation.goToParentGroup();

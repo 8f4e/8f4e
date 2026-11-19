@@ -1,0 +1,25 @@
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                   module inspect                                   
+                                                   ; @pos 50 4                                      
+                                                   float& input &source:output                      
+                     float* ( -- )                 float* pointer &source:output                    
+                     Declares memory storage for   moduleEnd                                        
+                     values used by the module.                                                     
+                     address: 4                                                                     
+                     value: 8                                                                       
+                     deref: 1.5000                                                                  
+                                                                                                    
+                                                                                                    
+                                                   module source                                    
+                                                   ; @pos 50 15                                     
+                                                   float[] output 2 1.5 2.5                         
+                                                   moduleEnd                                        
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
