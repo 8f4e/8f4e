@@ -52,6 +52,8 @@ const view = {
 	destroy: vi.fn(),
 };
 
+const renderer = vi.hoisted(() => ({ destroy: vi.fn() }));
+
 const requestFrame = vi.fn((_callback: FrameRequestCallback) => 23);
 const cancelFrame = vi.fn();
 
@@ -65,6 +67,13 @@ vi.mock('@8f4e/web-ui', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/web-ui')>()),
 	default: vi.fn(async () => view),
 	registerWebUiConfig: vi.fn(),
+}));
+
+vi.mock('glugglugglug', () => ({
+	// biome-ignore lint/complexity/useArrowFunction: editor-core constructs the engine with new.
+	Engine: vi.fn(function () {
+		return renderer;
+	}),
 }));
 
 vi.mock('./events', () => ({
@@ -138,14 +147,18 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
 		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
+		const { Engine } = await import('glugglugglug');
 		const drawer = vi.fn();
 		const plugins = [
 			{ id: 'test', setup: vi.fn(({ drawers }: EditorPluginContext) => drawers.registerCodeBlockDrawer(drawer)) },
 		];
-		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
+		const editor = await init(canvas, {
 			plugins,
 			defaultFont: 'pixelcode6x12',
 		});
+		expect(Engine).toHaveBeenLastCalledWith(canvas);
+		expect(vi.mocked(initView).mock.lastCall?.[2]).toBe(renderer);
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
 			events,

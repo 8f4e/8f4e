@@ -1,8 +1,8 @@
 # Web UI Package
 
-This package provides the browser renderer for the editor. It owns font and color configuration, font atlas loading,
-and palette updates. Drawing reads editor state and memory views; font changes update the shared layout grid.
-It is designed to be replaceable by renderers for other platforms.
+This package composes editor frames using a renderer supplied by the host. It owns font and color configuration,
+font atlas loading, and palette updates. Drawing reads editor state and memory views; font changes update the shared
+layout grid. The browser editor supplies a Glugglugglug engine.
 
 Rendering is backed by `glugglugglug`. Glyph IDs are CP437 slots 0–255 and fill is 256, so
 per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
@@ -50,15 +50,16 @@ Registers schema-backed validators for `; @config font <name>` and `; @config co
 configuration registry. Editor-core calls this before installing plugins and loading the initial project.
 Editor-state parses and resolves configuration generically; web-ui owns supported fonts, color validation, and defaults.
 
-### `init(store, events, canvas, memoryViews, options)`
+### `init(store, events, renderer, memoryViews, options)`
 
-Initializes the web UI renderer without drawing or scheduling frames. Editor-core owns the frame loop.
+Initializes the web UI without drawing or scheduling frames. Editor-core owns the browser frame loop. Web-ui takes
+ownership of the supplied renderer and destroys it on disposal or startup failure.
 
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
 - `events: EventDispatcher` - Announces layout grid size changes
-- `canvas: HTMLCanvasElement` - The canvas element to render to
+- `renderer: WebUiRenderer` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. It is preloaded alongside project preparation and remains the default for later configuration changes.
 - `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`

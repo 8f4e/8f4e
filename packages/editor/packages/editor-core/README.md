@@ -9,7 +9,7 @@ that consume their events. Other platform renderers can replace web-ui.
 
 - Initialize the editor-state store and event dispatcher for the web runtime.
 - Make the canvas focusable for installed input plugins.
-- Initialize the UI renderer with state and memory views, and forward resize events.
+- Create the browser sprite engine, pass it to web-ui with state and memory views, and forward resize events.
 - Own the single animation-frame loop, advancing viewport animation before asking web-ui to draw each frame.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension

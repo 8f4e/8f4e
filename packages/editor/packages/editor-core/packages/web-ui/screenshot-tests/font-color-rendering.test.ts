@@ -4,6 +4,7 @@ import { CP437_CHARACTERS } from '@8f4e/sprite-generator';
 import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
 import { page as browserPage } from '@vitest/browser/context';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -55,10 +56,16 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
 
-	const renderer = await init(createStateManager(state), createMockEventDispatcher(), canvas, createMockMemoryViews(), {
-		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
-		drawers,
-	});
+	const renderer = await init(
+		createStateManager(state),
+		createMockEventDispatcher(),
+		new Engine(canvas),
+		createMockMemoryViews(),
+		{
+			loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
+			drawers,
+		}
+	);
 	try {
 		const characterLines = Array.from({ length: 16 }, (_, row) => CP437_CHARACTERS.slice(row * 16, (row + 1) * 16));
 		for (const [index, token] of tokens.entries()) {

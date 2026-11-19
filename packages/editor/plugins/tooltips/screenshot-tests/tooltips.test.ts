@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createCompilerResult } from '../src/__tests__/compilerResult';
 import { createEvents } from '../src/__tests__/events';
@@ -86,7 +87,7 @@ entryEnd`
 	};
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 
-	const renderer = await initView(store, events, canvas, memoryViews, {
+	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
