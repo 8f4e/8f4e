@@ -5,13 +5,13 @@ import initEditor, {
 	type EditorPluginContext,
 	getEditorBlockId,
 } from '@8f4e/editor-core';
-
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { afterEach, expect, test } from 'vitest';
-import { connectorsPlugin } from '../src/index';
+import { wiresPlugin } from '../src/index';
 
 const source = `8f4e/v1
 constants env
@@ -76,7 +76,7 @@ async function setup(text = source) {
 	const editor: Editor = await initEditor(canvas, {
 		renderer: new Engine(canvas),
 		initialProject: project,
-		plugins: [connectorsPlugin, installArtifacts],
+		plugins: [connectorsPlugin, wiresPlugin, installArtifacts],
 	});
 	cleanups.push(() => {
 		editor.dispose();

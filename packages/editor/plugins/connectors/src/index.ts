@@ -3,16 +3,16 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { gapCalculator } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
-import drawConnections from './drawer/connections';
+import { registerConnectorGeometry } from './connections';
 import drawConnectors from './drawer/connectors';
 import deriveConnectors from './layout/deriveConnectors';
 import { getParamShapeDeclarations } from './layout/param-shape';
 import { getShapeDeclarations } from './layout/shape';
-import { LineDrawer } from './line-drawer';
 import type { ConnectorWidgets, Output } from './types';
-import { resolveWireColors } from './wire-colors';
 
-/** Owns expanded declaration labels, input/output presentation, and the GPU wire pass for one editor. */
+export { type ConnectorConnectionVisitor, visitConnectorConnections } from './connections';
+
+/** Owns expanded declaration labels, input/output sprites, and connection geometry for one editor. */
 export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',
 	setup: ({ store, events, layout, drawers }) => {
@@ -29,24 +29,6 @@ export const connectorsPlugin: EditorPlugin = {
 				}
 			}
 		};
-		const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
-			const lines = new LineDrawer(gl);
-			let wireColors = resolveWireColors(palette);
-			return {
-				draw: ({ state, memoryViews }) => {
-					lines.reset();
-					if (state.dialogStack.length === 0) {
-						drawConnections(lines, wireColors, state, memoryViews, widgetsByBlock, outputsByByteAddress);
-					}
-					lines.flush();
-				},
-				loadPalette: nextPalette => {
-					wireColors = resolveWireColors(nextPalette);
-				},
-				releaseMemory: () => lines.releaseMemory(),
-				destroy: () => lines.destroy(),
-			};
-		});
 		events.on('codeBlockLayoutsChanged', rebuildOutputIndex);
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
 			const declarations = [
@@ -82,14 +64,15 @@ export const connectorsPlugin: EditorPlugin = {
 			const widgets = widgetsByBlock.get(codeBlock);
 			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
 		});
+		const unregisterGeometry = registerConnectorGeometry(store.getState(), { widgetsByBlock, outputsByByteAddress });
 
 		return () => {
+			unregisterGeometry();
 			unsubscribeLayout();
 			events.off('codeBlockLayoutsChanged', rebuildOutputIndex);
 			unregisterDrawer();
 			contribution.dispose();
 			outputsByByteAddress.clear();
-			unregisterLayer();
 		};
 	},
 };

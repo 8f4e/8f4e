@@ -29,7 +29,7 @@ export function createDeferredEditorPlugin({
 			id: 'connectors',
 			scope: 'view',
 			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
+			load: () => import('@8f4e/editor-plugin-wires').then(module => module.connectorsWithWiresPlugin),
 		},
 		{
 			id: 'stack-connections',

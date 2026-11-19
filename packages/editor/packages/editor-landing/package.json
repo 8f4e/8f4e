@@ -29,7 +29,6 @@
     "@8f4e/editor-plugin-code-block-background": "*",
     "@8f4e/editor-plugin-code-rendering": "*",
     "@8f4e/editor-plugin-compiler": "*",
-    "@8f4e/editor-plugin-connectors": "*",
     "@8f4e/editor-plugin-error-messages": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",
     "@8f4e/editor-plugin-keyboard-navigation": "*",
@@ -44,6 +43,7 @@
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-touch-input": "*",
     "@8f4e/editor-plugin-watch": "*",
+    "@8f4e/editor-plugin-wires": "*",
     "@8f4e/editor-plugin-worker-runtime": "*"
   },
   "devDependencies": {
