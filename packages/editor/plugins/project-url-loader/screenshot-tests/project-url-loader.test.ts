@@ -1,4 +1,6 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { createProjectUrlLoaderPlugin } from '../src/index';
 
@@ -15,7 +17,11 @@ test('loads an initial project URL after generic editor startup', async () => {
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
-			plugins: [createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' })],
+			renderer: createAsciiCanvasRenderer(canvas),
+			plugins: [
+				codeRenderingPlugin,
+				createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' }),
+			],
 		});
 		await vi.waitFor(() =>
 			expect(
@@ -28,7 +34,7 @@ test('loads an initial project URL after generic editor startup', async () => {
 		editor.state.editorMode = 'edit';
 		editor.pauseRendering();
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('loaded-project-url');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/loaded-project-url.viewport.snap');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

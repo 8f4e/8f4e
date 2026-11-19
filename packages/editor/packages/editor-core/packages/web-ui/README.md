@@ -151,6 +151,18 @@ Input/output connector sprites and wires belong to `@8f4e/editor-plugin-connecto
 `@8f4e/editor-plugin-assertion-markers` uses the generic code-block drawer hook to draw passed/failed assertion
 indicators after source text. The renderer has no assertion-specific drawer or marker fields.
 
+## Scene snapshot tests
+
+The test-only `AsciiRenderer` from `@8f4e/web-ui-testing` plugs into `init()` and renders the normal sprite sequence to a
+fixed-width text grid. Cells sample sprite rectangles at their centers: later visible sprites overwrite earlier ones,
+visible fills write spaces, and non-ASCII glyphs appear as `?`. This covers scene composition and clipping without a
+browser; font masks, partial alpha blending, the dotted backdrop, and GPU wires are not represented in the text output.
+
+Viewport baselines live in `__snapshots__/*.viewport.snap` next to the tests. They store the entire viewport as plain
+text, with one fixed-width line per row. Keep trailing spaces and empty rows: they are part of the viewport. Tests
+that use a real canvas for input can use `createAsciiCanvasRenderer(canvas)` and `readAsciiViewport(canvas)` from
+the testing package without changing how input or resizing is exercised.
+
 ## Docs
 
 - [Drawer best practices](docs/drawer-best-practices.md)

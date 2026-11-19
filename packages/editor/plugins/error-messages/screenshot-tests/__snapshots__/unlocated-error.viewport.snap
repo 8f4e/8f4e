@@ -1,0 +1,30 @@
+ Error: Internal compiler error: worker unavailable                             
+                                                                                
+                                                                                
+     module checks                                                              
+     ; @pos 4 3                                                                 
+     push 10                                                                    
+     assertEqual 9                                                              
+     drop                                                                       
+     moduleEnd                                                                  
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                

@@ -21,6 +21,9 @@
     "@8f4e/editor-state-types": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-plugin-code-rendering": "*",
+    "@8f4e/web-ui-testing": "*",
+    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui": "*",

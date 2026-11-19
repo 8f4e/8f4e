@@ -3,6 +3,7 @@ import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } f
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
 import { FONT_NAMES } from '@8f4e/sprite-generator';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 test('previews fonts through the default composition without changing saved source', async () => {
@@ -29,6 +30,7 @@ test('previews fonts through the default composition without changing saved sour
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: project,
 			plugins: [
 				...plugins,

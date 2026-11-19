@@ -18,8 +18,8 @@ import initView, {
 	type RenderStats,
 	registerWebUiConfig,
 	type WebUiOptions,
+	type WebUiRenderer,
 } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
@@ -74,6 +74,7 @@ export type {
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
 	OffscreenCodeBlockDrawer,
+	WebUiRenderer,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
@@ -95,6 +96,8 @@ export interface Editor {
 }
 
 export interface EditorOptions {
+	/** Renderer supplied by the host. The editor takes ownership, including on initialization failure. */
+	renderer: WebUiRenderer;
 	/** Initial project content; defaults to an empty project. */
 	initialProject?: ProjectObjectModel;
 	/** Font used when the project does not select one. Defaults to ibmvga8x16. */
@@ -134,8 +137,16 @@ function toGraphicsInfoRecord(stats: RenderStats): InfoRecord {
 	};
 }
 
-export default async function init(canvas: HTMLCanvasElement, options: EditorOptions): Promise<Editor> {
-	const cleanups: Array<() => void> = [];
+export default async function init(
+	canvas: HTMLCanvasElement,
+	{ renderer, ...options }: EditorOptions
+): Promise<Editor> {
+	let rendererOwnedByView = false;
+	const cleanups: Array<() => void> = [
+		() => {
+			if (!rendererOwnedByView) renderer.destroy();
+		},
+	];
 	let beforeDispose = () => {};
 	let disposed = false;
 	const dispose = () => {
@@ -196,9 +207,9 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		};
 		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
-		const renderer = new Engine(canvas);
 		const initialProjectReady = events.dispatchAsync('init');
 
+		rendererOwnedByView = true;
 		view = await initView(store, events, renderer, memoryViews, {
 			loading: store.loading,
 			defaultFont: options.defaultFont,

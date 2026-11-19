@@ -8,8 +8,9 @@ Install it before the first render so source text is visible immediately.
 ```ts
 import initEditor from '@8f4e/editor-core';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { Engine } from 'glugglugglug';
 
-const editor = await initEditor(canvas, { plugins: [codeRenderingPlugin] });
+const editor = await initEditor(canvas, { renderer: new Engine(canvas), plugins: [codeRenderingPlugin] });
 ```
 
 Each installation prepares its own sprite cells and nested block highlight rectangles for the blocks supplied

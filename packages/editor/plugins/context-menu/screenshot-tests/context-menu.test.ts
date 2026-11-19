@@ -2,6 +2,7 @@ import initEditor from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { contextMenuPlugin } from '../src/index';
 
@@ -17,6 +18,7 @@ test.each([
 	document.body.append(canvas);
 	let events!: EventDispatcher;
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		plugins: [
 			contextMenuPlugin,
 			{
@@ -48,11 +50,13 @@ test.each([
 		await vi.waitFor(() => expect(editor.state.contextMenu.items).toHaveLength(5));
 		editor.state.featureFlags.canvasOverlays = false;
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot(`context-menu-${width}`);
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(`./__snapshots__/context-menu-${width}.viewport.snap`);
 		if (width === 768) {
 			editor.state.featureFlags.canvasOverlays = true;
 			editor.renderFrame();
-			await expect(canvas).toMatchScreenshot('context-menu-above-overlay');
+			await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+				'./__snapshots__/context-menu-above-overlay.viewport.snap'
+			);
 		}
 	} finally {
 		editor.dispose();

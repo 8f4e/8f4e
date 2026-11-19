@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createGroupingPlugin } from '../src/index';
 
@@ -15,6 +16,7 @@ test('contributes group menus and drag behavior through the real editor', async 
 	const plugin = createGroupingPlugin({ writeClipboardText: async () => {} });
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			plugins: [
 				{
 					...plugin,

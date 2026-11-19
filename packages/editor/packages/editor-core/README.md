@@ -9,7 +9,7 @@ that consume their events. Other platform renderers can replace web-ui.
 
 - Initialize the editor-state store and event dispatcher for the web runtime.
 - Make the canvas focusable for installed input plugins.
-- Create the browser sprite engine, pass it to web-ui with state and memory views, and forward resize events.
+- Pass the host-supplied renderer to web-ui with state and memory views, and forward resize events.
 - Own the single animation-frame loop, advancing viewport animation before asking web-ui to draw each frame.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension
@@ -43,12 +43,17 @@ import initEditor from '@8f4e/editor-core';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createSwitchPlugin } from '@8f4e/editor-plugin-switch';
 import { toggleSkipExecutionPlugin } from '@8f4e/editor-plugin-toggle-skip-execution';
+import { Engine } from 'glugglugglug';
 
 const editor = await initEditor(canvas, {
 	...options,
+	renderer: new Engine(canvas),
 	plugins: [createMouseInputPlugin({ inputTarget: canvas }), toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
 });
 ```
+
+The browser compositions supply a Glugglugglug `Engine`; other hosts can supply any `WebUiRenderer`. Core owns it
+once supplied and passes ownership to web-ui at initialization. The canvas still supplies browser focus and sizing.
 
 A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, layout, loading, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.

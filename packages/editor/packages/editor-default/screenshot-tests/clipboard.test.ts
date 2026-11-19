@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { afterEach, expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -29,6 +30,7 @@ async function setup() {
 		writeMemory: () => {},
 	});
 	editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
@@ -83,7 +85,7 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
 	context.store.set('loadingIndicators', []);
 	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('text-pasted');
+	await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/text-pasted.viewport.snap');
 });
 
 test('the block paste menu changes placement while preserving duplicate names, groups and references', async () => {

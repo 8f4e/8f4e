@@ -1,5 +1,5 @@
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 import { createWatchPlugin } from '../src/index';
@@ -30,14 +30,14 @@ test('watch plugin renders its directive', async () => {
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 
-	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
+	const renderer = await initView(test.store, test.events, createAsciiCanvasRenderer(canvas), test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});
 
 	try {
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/watch.viewport.snap');
 	} finally {
 		renderer.destroy();
 		canvas.remove();
@@ -68,16 +68,20 @@ test('dereferenced watch follows runtime pointer changes without selection', asy
 	);
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
-	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
+	const renderer = await initView(test.store, test.events, createAsciiCanvasRenderer(canvas), test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});
 	try {
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot('dereferenced-watch-before-execution');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/dereferenced-watch-before-execution.viewport.snap'
+		);
 		test.run();
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot('dereferenced-watch-after-execution');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/dereferenced-watch-after-execution.viewport.snap'
+		);
 	} finally {
 		renderer.destroy();
 		canvas.remove();

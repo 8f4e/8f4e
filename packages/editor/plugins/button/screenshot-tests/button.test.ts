@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { createButtonPlugin } from '../src/index';
@@ -69,14 +69,14 @@ entryEnd`);
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 
-	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
+	const renderer = await initView(store, events, createAsciiCanvasRenderer(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
 
 	try {
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/button-values.viewport.snap');
 	} finally {
 		renderer.destroy();
 		disposePlugin();

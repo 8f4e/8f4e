@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { createCompilerResult } from '../src/__tests__/compilerResult';
 import { createEvents } from '../src/__tests__/events';
@@ -13,7 +13,7 @@ test.each([
 	{ name: 'inline arithmetic operand', row: 3, inline: true, call: false },
 	{ name: 'continued arithmetic operand', row: 3, inline: true, call: false, continued: true },
 	{ name: 'named call signature', row: 1, inline: false, call: true },
-])('tooltips plugin draws $name', async ({ row, inline, call, continued }) => {
+])('tooltips plugin draws $name', async ({ name, row, inline, call, continued }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
@@ -87,7 +87,7 @@ entryEnd`
 	};
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 
-	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
+	const renderer = await initView(store, events, createAsciiCanvasRenderer(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
@@ -95,7 +95,9 @@ entryEnd`
 	now.mockReturnValue(1000);
 	try {
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			`./__snapshots__/${name.replaceAll(' ', '-')}.viewport.snap`
+		);
 	} finally {
 		renderer.destroy();
 		disposePlugin();

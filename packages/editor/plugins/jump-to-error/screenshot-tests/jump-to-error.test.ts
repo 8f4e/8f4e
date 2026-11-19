@@ -5,6 +5,7 @@ import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { createJumpToErrorPlugin } from '../src/index';
 
@@ -18,6 +19,7 @@ async function setup(source: string) {
 
 	const blockPressed = vi.fn();
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: parseProjectSource(source),
 		plugins: [
 			{
@@ -109,7 +111,7 @@ entryEnd`);
 		expect(editor.editing.getRevision()).toBe(revision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('jump-to-error-target');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/jump-to-error-target.viewport.snap');
 		context.store.set('codeErrors.fixture', []);
 		expect(fixture.press().stopPropagation).toBe(false);
 	} finally {

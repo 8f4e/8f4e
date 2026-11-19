@@ -8,6 +8,7 @@ import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indic
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
@@ -139,6 +140,7 @@ export async function mountDefaultEditor(
 		],
 		defaultFont,
 		featureFlags,
+		renderer: new Engine(canvas),
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 

@@ -4,6 +4,7 @@ import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-backgr
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { stackConnectionsPlugin } from '@8f4e/editor-plugin-stack-connections';
 import { stackProducersPlugin } from '@8f4e/editor-plugin-stack-producers';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 
 test('connects operand producers outside the block across layout gaps and viewport movement', async () => {
@@ -42,6 +43,7 @@ functionEnd int`);
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: project,
 		plugins: [
 			codeBlockBackgroundPlugin,

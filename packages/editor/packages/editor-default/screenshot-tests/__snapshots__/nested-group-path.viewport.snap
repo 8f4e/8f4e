@@ -1,0 +1,12 @@
+ You're in view mode, press e to edit                       
+ ?? group audio                                             
+    ?? group voices                                         
+       ?? group envelope                                    
+                                                            
+    +0 module attack               +                        
+     1 ; @pos 4 5                                           
+     2 int level 0                                          
+    +3 moduleEnd                   +                        
+                                                            
+                                                            
+                                                            

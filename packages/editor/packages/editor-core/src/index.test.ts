@@ -1,6 +1,6 @@
 import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock } from '@8f4e/editor-state';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ProgramArtifacts } from './index';
+import type { ProgramArtifacts, WebUiRenderer } from './index';
 import type { EditorPluginContext } from './plugins';
 
 const events = {
@@ -52,7 +52,20 @@ const view = {
 	destroy: vi.fn(),
 };
 
-const renderer = vi.hoisted(() => ({ destroy: vi.fn() }));
+const noop = () => {};
+const renderer = {
+	gl: {} as WebGL2RenderingContext,
+	hooks: { preDraw: [], postDraw: [] },
+	frameStats: { spriteCount: 0, uploadedInstanceBytes: 0 },
+	setPalette: noop,
+	setSpriteAtlas: noop,
+	drawSprite: noop,
+	resize: noop,
+	renderFrame: noop,
+	releaseRenderingMemory: noop,
+	restoreRenderingMemory: noop,
+	destroy: vi.fn(),
+} satisfies WebUiRenderer;
 
 const requestFrame = vi.fn((_callback: FrameRequestCallback) => 23);
 const cancelFrame = vi.fn();
@@ -69,13 +82,6 @@ vi.mock('@8f4e/web-ui', async importOriginal => ({
 	registerWebUiConfig: vi.fn(),
 }));
 
-vi.mock('glugglugglug', () => ({
-	// biome-ignore lint/complexity/useArrowFunction: editor-core constructs the engine with new.
-	Engine: vi.fn(function () {
-		return renderer;
-	}),
-}));
-
 vi.mock('./events', () => ({
 	default: vi.fn(() => events),
 }));
@@ -86,6 +92,7 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const releaseCompiler = vi.fn();
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			renderer,
 			plugins: [{ id: 'compiler', setup: () => releaseCompiler }],
 		});
 		editor.dispose();
@@ -98,7 +105,7 @@ describe('editor init', () => {
 	it('distinguishes unavailable memory words from zero in accepted memory views', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
-		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, { renderer });
 		const accept = events.on.mock.calls.find(([name]) => name === 'compilationSucceeded')![1];
 		const readWord = vi.mocked(initState).mock.lastCall![1].callbacks!.getWordFromMemory!;
 		expect(readWord(0)).toBeUndefined();
@@ -133,6 +140,7 @@ describe('editor init', () => {
 		} as unknown as HTMLCanvasElement;
 		await expect(
 			init(canvas, {
+				renderer,
 				plugins: [{ id: 'startup-cleanup', setup }],
 			})
 		).rejects.toBe(error);
@@ -140,24 +148,44 @@ describe('editor init', () => {
 		expect(cleanup).toHaveBeenCalledOnce();
 		expect(events.dispose).toHaveBeenCalledOnce();
 		expect(view.destroy).not.toHaveBeenCalled();
+		expect(renderer.destroy).not.toHaveBeenCalled();
 		expect(canvas.removeAttribute).toHaveBeenCalledWith('tabindex');
+	});
+
+	it('destroys the renderer if a plugin throws before web-ui takes ownership', async () => {
+		const { default: init } = await import('./index');
+		const error = new Error('plugin setup failed');
+		await expect(
+			init({ width: 640, height: 480 } as HTMLCanvasElement, {
+				renderer,
+				plugins: [
+					{
+						id: 'broken',
+						setup: () => {
+							throw error;
+						},
+					},
+				],
+			})
+		).rejects.toBe(error);
+		expect(renderer.destroy).toHaveBeenCalledOnce();
+		expect(view.destroy).not.toHaveBeenCalled();
 	});
 
 	it('sets up plugins with state and drawing services before dispatching lifecycle events', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
 		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
-		const { Engine } = await import('glugglugglug');
 		const drawer = vi.fn();
 		const plugins = [
 			{ id: 'test', setup: vi.fn(({ drawers }: EditorPluginContext) => drawers.registerCodeBlockDrawer(drawer)) },
 		];
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
+			renderer,
 			plugins,
 			defaultFont: 'pixelcode6x12',
 		});
-		expect(Engine).toHaveBeenLastCalledWith(canvas);
 		expect(vi.mocked(initView).mock.lastCall?.[2]).toBe(renderer);
 		expect(plugins[0].setup).toHaveBeenCalledWith({
 			store,
@@ -192,6 +220,7 @@ describe('editor init', () => {
 	});
 
 	beforeEach(() => {
+		renderer.destroy.mockClear();
 		events.dispatch.mockClear();
 		events.dispatchAsync.mockClear();
 		events.on.mockClear();
@@ -219,7 +248,7 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 300, height: 150, clientWidth: 640, clientHeight: 480 } as HTMLCanvasElement;
 
-		await init(canvas, {});
+		await init(canvas, { renderer });
 
 		expect(events.dispatch.mock.calls.slice(0, 3)).toEqual([
 			['resize', { canvasWidth: 640, canvasHeight: 480 }],
@@ -236,6 +265,7 @@ describe('editor init', () => {
 		const { default: init } = await import('./index');
 		const project = { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note initial', 'noteEnd'] }] };
 		await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			renderer,
 			initialProject: project,
 		});
 		const load = events.dispatch.mock.calls.findIndex(([name]) => name === 'loadProject');
@@ -276,6 +306,7 @@ describe('editor init', () => {
 			return view;
 		});
 		const mounting = init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			renderer,
 			plugins: [
 				{
 					id: 'project-preparation',
@@ -311,7 +342,7 @@ describe('editor init', () => {
 	it('exposes rendering lifecycle controls for this editor instance', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const editor = await init(canvas, {});
+		const editor = await init(canvas, { renderer });
 
 		expect(requestFrame).toHaveBeenCalledOnce();
 		editor.pauseRendering();
@@ -332,7 +363,7 @@ describe('editor init', () => {
 	it('defers drawing when the view cannot apply a resize while rendering resources are released', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const editor = await init(canvas, {});
+		const editor = await init(canvas, { renderer });
 
 		view.resize.mockReturnValueOnce(false);
 		view.renderFrame.mockClear();
@@ -355,6 +386,7 @@ describe('editor init', () => {
 		let context!: EditorPluginContext;
 		const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
 		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {
+			renderer,
 			initialProject: {
 				...EMPTY_DEFAULT_PROJECT,
 				notes: [{ id: 0, code: ['note target', '; @pos 140 20', 'noteEnd'] }],
@@ -401,7 +433,7 @@ describe('editor init', () => {
 
 	it('cancels the frame loop before releasing renderer resources', async () => {
 		const { default: init } = await import('./index');
-		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, { renderer });
 		editor.releaseRenderingResources();
 		expect(cancelFrame).toHaveBeenCalledExactlyOnceWith(23);
 		expect(cancelFrame.mock.invocationCallOrder[0]).toBeLessThan(
@@ -420,11 +452,11 @@ describe('editor init', () => {
 		view.renderFrame.mockImplementationOnce(() => {
 			throw error;
 		});
-		await expect(init({ width: 640, height: 480 } as HTMLCanvasElement, {})).rejects.toBe(error);
+		await expect(init({ width: 640, height: 480 } as HTMLCanvasElement, { renderer })).rejects.toBe(error);
 		expect(view.destroy).toHaveBeenCalledOnce();
 		expect(requestFrame).not.toHaveBeenCalled();
 
-		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, { renderer });
 		view.renderFrame.mockImplementationOnce(() => {
 			throw error;
 		});
@@ -459,7 +491,7 @@ describe('editor init', () => {
 			},
 		} as unknown as HTMLCanvasElement;
 
-		const editor = await init(canvas, {});
+		const editor = await init(canvas, { renderer });
 
 		expect(observe).toHaveBeenCalledWith(canvas);
 
@@ -496,7 +528,7 @@ describe('editor init', () => {
 			}),
 		} as unknown as HTMLCanvasElement;
 
-		const editor = await init(canvas, {});
+		const editor = await init(canvas, { renderer });
 
 		expect(canvas.tabIndex).toBe(0);
 
@@ -507,7 +539,7 @@ describe('editor init', () => {
 	it('disposes state, events, and view exactly once', async () => {
 		const { default: init } = await import('./index');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
-		const editor = await init(canvas, {});
+		const editor = await init(canvas, { renderer });
 
 		editor.dispose();
 		editor.dispose();
@@ -519,7 +551,7 @@ describe('editor init', () => {
 
 	it('exposes immediate rendering without a browser-specific plugin service', async () => {
 		const { default: init } = await import('./index');
-		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, {});
+		const editor = await init({ width: 640, height: 480 } as HTMLCanvasElement, { renderer });
 		view.renderFrame.mockClear();
 
 		editor.renderFrame();
@@ -534,6 +566,7 @@ describe('editor init', () => {
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 
 		await init(canvas, {
+			renderer,
 			renderStatsIntervalFrames: 12,
 		});
 

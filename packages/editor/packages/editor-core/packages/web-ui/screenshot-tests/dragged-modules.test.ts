@@ -1,7 +1,7 @@
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -24,7 +24,7 @@ test('dragged module', async () => {
 	const renderer = await init(
 		createStateManager(mockState),
 		createMockEventDispatcher(),
-		new Engine(canvas),
+		createAsciiCanvasRenderer(canvas),
 		memoryViews,
 		{
 			loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
@@ -56,7 +56,7 @@ test('dragged module', async () => {
 		mockState.codeBlockRendering.currentProject.blocks.push(codeBlockMock);
 		codeBlocks.set(codeBlockMock.creationIndex, codeToRender);
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/dragged-module.viewport.snap');
 	} finally {
 		renderer.destroy();
 	}

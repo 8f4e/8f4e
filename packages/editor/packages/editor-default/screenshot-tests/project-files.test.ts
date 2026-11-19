@@ -7,6 +7,7 @@ import { errorMessagesPlugin } from '@8f4e/editor-plugin-error-messages';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
 test('opens a saved project while regenerating environment source and reserving error rows', async () => {
@@ -31,6 +32,7 @@ noteEnd`;
 	try {
 		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			plugins: [
 				fileSession.plugin,
 				codeRenderingPlugin,
@@ -57,7 +59,9 @@ noteEnd`;
 		expect(env.displayModel.lines.map(line => line.text)).toEqual(env.code);
 		expect(blocks.find(block => block.name === 'imported')!.gaps.size).toBeGreaterThan(0);
 		expect(() => editor!.renderFrame()).not.toThrow();
-		await expect(canvas).toMatchScreenshot('project-import-with-diagnostic');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/project-import-with-diagnostic.viewport.snap'
+		);
 	} finally {
 		editor?.dispose();
 		canvas.remove();
@@ -97,6 +101,7 @@ noteEnd`;
 	try {
 		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: parseProjectSource(source),
 			plugins: [
 				contextMenuPlugin,
@@ -135,7 +140,7 @@ noteEnd`;
 		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 16, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(true));
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('project-file-menu');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/project-file-menu.viewport.snap');
 		const menu = state.contextMenu;
 		const index = menu.items.findIndex(item => item.action === 'exportProject');
 		const x = 24;

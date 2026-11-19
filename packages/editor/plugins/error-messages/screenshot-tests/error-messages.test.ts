@@ -2,6 +2,7 @@ import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { errorMessagesPlugin } from '../src/index';
 
@@ -12,6 +13,7 @@ test('draws wrapped contributor messages between source rows and clears their re
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
@@ -73,14 +75,14 @@ test('draws wrapped contributor messages between source rows and clears their re
 			},
 		]);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('contributor-errors');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/contributor-errors.viewport.snap');
 		context.store.set('codeErrors.fixture-one', []);
 		context.store.set('codeErrors.fixture-two', []);
 		expect(block.gaps.size).toBe(0);
 		expect(block.height).toBe(height);
 		context.store.set('codeErrors.fixture-global', [{ message: 'Internal compiler error: worker unavailable' }]);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('unlocated-error');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/unlocated-error.viewport.snap');
 	} finally {
 		editor.dispose();
 		canvas.remove();

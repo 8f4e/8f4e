@@ -6,8 +6,9 @@ and edit modes. It follows the block's current dimensions and font grid, using t
 ```ts
 import initEditor from '@8f4e/editor-core';
 import { selectionAnimationPlugin } from '@8f4e/editor-plugin-selection-animation';
+import { Engine } from 'glugglugglug';
 
-const editor = await initEditor(canvas, { plugins: [selectionAnimationPlugin] });
+const editor = await initEditor(canvas, { renderer: new Engine(canvas), plugins: [selectionAnimationPlugin] });
 ```
 
 Add it to a composition's plugin registry to enable it. The plugin registers a block drawer and unregisters it on

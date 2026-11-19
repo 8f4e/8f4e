@@ -1,5 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { createSessionPersistencePlugin } from '../src/index';
 
@@ -20,6 +22,7 @@ test('restores a retained project in a new editor instance', async () => {
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: parseProjectSource(
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 3\nRetained across editor instances.\nnoteEnd'
 			),
@@ -29,7 +32,11 @@ test('restores a retained project in a new editor instance', async () => {
 		expect(values.has('session')).toBe(true);
 		editor.dispose();
 		editor = await initEditor(canvas, {
-			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
+			renderer: createAsciiCanvasRenderer(canvas),
+			plugins: [
+				codeRenderingPlugin,
+				createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true }),
+			],
 		});
 		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
@@ -41,7 +48,7 @@ test('restores a retained project in a new editor instance', async () => {
 		);
 		editor.pauseRendering();
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('restored-session');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/restored-session.viewport.snap');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

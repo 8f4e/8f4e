@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createScreenshotPlugin } from '../src/index';
 
@@ -37,6 +38,7 @@ noteEnd`);
 	let imageUrl: string | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: project,
 			plugins: [
 				{

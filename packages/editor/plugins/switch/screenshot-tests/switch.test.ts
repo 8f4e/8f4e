@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { createSwitchPlugin } from '../src/index';
 
@@ -80,13 +80,13 @@ entryEnd`);
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 
-	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
+	const renderer = await initView(store, events, createAsciiCanvasRenderer(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
 	try {
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/switch-values.viewport.snap');
 		applyCodeBlockSourceEdits({ store, events }, [
 			{
 				codeBlock,
@@ -104,7 +104,7 @@ entryEnd`);
 		// Source edits resolve project config again; reapply this drawing fixture's explicit palette.
 		store.set('editorConfig.color', colors);
 		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot('trailing-switches');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/trailing-switches.viewport.snap');
 	} finally {
 		renderer.destroy();
 		disposePlugin();

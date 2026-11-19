@@ -8,6 +8,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { mountGalleryEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('glugglugglug', () => ({ Engine: class {} }));
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-font-preview', { spy: true });

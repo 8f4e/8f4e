@@ -5,6 +5,7 @@ import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plu
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { Engine } from 'glugglugglug';
 
 export type LandingEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
@@ -62,6 +63,7 @@ export async function mountLandingEditor(
 		],
 		defaultFont,
 		featureFlags: { projectCreation: false, ...featureFlags, contextMenu: false },
+		renderer: new Engine(canvas),
 	});
 	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });

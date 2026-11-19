@@ -1,5 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 import { createBinaryAssetsPlugin } from '../src/index';
 
@@ -43,8 +45,10 @@ entryEnd`);
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: project,
 			plugins: [
+				codeRenderingPlugin,
 				{
 					...plugin,
 					setup: context => {
@@ -76,7 +80,7 @@ entryEnd`);
 			'const ASSET_SOUND_SIZE 6'
 		);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('binary-assets-loaded');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/binary-assets-loaded.viewport.snap');
 	} finally {
 		editor?.dispose();
 		canvas.remove();
