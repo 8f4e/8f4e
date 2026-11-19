@@ -23,7 +23,7 @@ functionEnd int
 function external
 param int value
 push value
-push 5
+push 50
 add
 functionEnd int
 
@@ -40,8 +40,10 @@ call descend 3
 assertEqual 100
 call countdown 3
 assertEqual 200
+call external 10
+assertEqual 60
 
-; A target outside the included source stays unchanged.
+; A declared dependency uses its own binding, not the project's function.
 call delegated 10
 assertEqual 15
 moduleEnd

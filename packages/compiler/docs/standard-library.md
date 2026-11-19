@@ -16,18 +16,23 @@ include std/audio/hzToRadians
 include std/audio/tptLowPass
 include std/math/clamp
 include std/math/exp2
+include std/math/fastSigmoid
 include std/math/fract
 include std/math/lerp
 include std/math/log2
+include std/math/mapRange
 include std/math/moveTowards
 include std/math/normalize
 include std/math/pow2
 include std/math/smoothstep
+include std/math/softsign
+include std/math/wrapIndex
 include std/math/trig/advancePhase
 include std/math/trig/cosine
 include std/math/trig/saw
 include std/math/trig/sine
 include std/math/trig/triangle
+include std/midi/midiNoteToHz
 include std/color/lerpRGB
 include std/color/srgbByteToLinear
 include std/color/linearToSrgbByte
@@ -112,9 +117,13 @@ Includes are resolved during project loading. The CLI loads the shipped standard
 package, while browser-based tools load those same files lazily. The compiler receives the included source as ordinary
 function blocks, so overload resolution, stack typing, and `call` behavior are the same as user-defined functions.
 
-Some helpers call functions from other include sources. Include those prerequisites explicitly under their standard
-exported names; source inclusion does not load dependencies recursively. Each helper's reference lists its prerequisites.
-Renaming a prerequisite does not rewrite calls from a different include source.
+An included library can declare its own `includes` block before its functions. The compiler resolves those imports
+recursively. Each library can call its own functions and the exports it imports directly. To call a dependency from
+your project, include it there as well. Library calls to dependencies use the bindings declared by the library
+even when the project renames or overrides a direct import.
+
+For example, `std/math/fastSigmoid` imports `std/math/softsign` in its source, so a project can include
+`std/math/fastSigmoid` on its own. The compiler reports missing dependencies and cycles at their declaration sites.
 
 ## `std/stack/dup`
 
@@ -289,11 +298,8 @@ The helper writes the value and advances the cursor when its slot is empty. If t
 new value and leaves the cursor unchanged. Queue state stays in caller-owned memory; the producer owns the write
 cursor and the consumer owns a separate read cursor.
 
-Include `std/memory/advancePointer` under its standard name as a prerequisite.
-
 ```8f4e
 includes
-include std/memory/advancePointer
 include std/memory/queuePush
 includesEnd
 
@@ -315,12 +321,10 @@ Provides `queuePop(int** readPointer, int* buffer, int itemCount) -> int`, which
 integer FIFO. Initialize the read cursor to the buffer's start and supply its positive element count.
 
 An empty slot returns zero without moving the cursor. Otherwise the helper copies the word, clears its slot,
-advances the cursor, and returns the copied value. Include `std/memory/advancePointer` under its standard name as
-a prerequisite.
+advances the cursor, and returns the copied value.
 
 ```8f4e
 includes
-include std/memory/advancePointer
 include std/memory/queuePop
 includesEnd
 
@@ -464,12 +468,10 @@ Provides `loadRangeAt(int* offsets, int index) -> int int`, returning the start 
 by two adjacent offsets. The start is pushed first, leaving the length on top of the stack.
 
 The result is `offsets[index]` and `offsets[index + 1] - offsets[index]`, in the same units as the supplied offsets.
-Supply a valid adjacent pair; equal offsets produce a zero-length range. Include `std/memory/loadAt` under its
-standard name as a prerequisite.
+Supply a valid adjacent pair. Equal offsets produce a zero-length range.
 
 ```8f4e
 includes
-include std/memory/loadAt
 include std/memory/loadRangeAt
 includesEnd
 
@@ -819,6 +821,33 @@ moduleEnd
 entryEnd
 ```
 
+## `std/math/mapRange`
+
+Provides `mapRange(float value, float inputStart, float inputEnd, float outputStart, float outputEnd) -> float`.
+It maps the input endpoints to the output endpoints using linear interpolation. Either range may descend,
+and values outside the input range are extrapolated. Supply finite values and distinct input endpoints, and
+keep intermediate results within the float32 range.
+
+```8f4e
+includes
+include std/math/mapRange
+includesEnd
+
+entry main
+module rangeExample
+call mapRange 0.5 -1.0 1.0 0.0 100.0
+; stack: 75.0
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/math/wrapIndex`
+
+Provides `wrapIndex(int index, int size) -> int`. For a positive `size`, the result is the index modulo
+that size, expressed in `0..size-1`. It accepts negative indices and indices more than one full turn away.
+For example, `call wrapIndex -1 8` returns `7`, and `call wrapIndex 19 8` returns `3`.
+
 ## `std/math/moveTowards`
 
 Provides `moveTowards`, which moves a float value toward a target by at most a given step without overshooting.
@@ -959,6 +988,50 @@ module smoothstepExamples
 push 0.5
 call smoothstep
 ; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+## `std/math/softsign`
+
+Provides `softsign(x) = x / (1 + abs(x))` for finite inputs, with `float` and `float64` overloads.
+It returns a value in `[-1, 1]` at the input precision. For example, `call softsign -3.0` returns `-0.75`.
+
+## `std/math/fastSigmoid`
+
+Provides `fastSigmoid(x) = 0.5 * softsign(x) + 0.5` for finite inputs, with `float` and `float64` overloads.
+It maps softsign to `[0, 1]`.
+
+```8f4e
+includes
+include std/math/fastSigmoid
+includesEnd
+
+entry main
+module activationExample
+call fastSigmoid -3.0f64
+; stack: 0.125f64
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/midi/midiNoteToHz`
+
+Provides `midiNoteToHz(int note) -> float` and `midiNoteToHz(float note) -> float`. For MIDI notes from
+`0` to `127`, it computes `440 * 2^((note - 69) / 12)` with float32 arithmetic. Pass a float for
+fractional notes.
+
+```8f4e
+includes
+include std/midi/midiNoteToHz
+includesEnd
+
+entry main
+module tuningExample
+call midiNoteToHz 69
+; stack: 440.0 Hz
+drop
 moduleEnd
 entryEnd
 ```
@@ -1259,12 +1332,8 @@ The channel must be in `0..255`. The pure function divides by 255, then applies 
 The result is in `0..1`. The nonlinear branch uses the standard-library logarithm and exponential approximations.
 Across all 256 byte inputs, tests require absolute error below `1e-6` against the reference formula and monotonic output.
 
-Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
 include std/color/srgbByteToLinear
 includesEnd
 
@@ -1283,12 +1352,8 @@ The encoded value is scaled to `0..255`, clamped, and rounded to the nearest int
 The nonlinear branch uses logarithm and exponential approximations. A monotonic sweep of 65,537 evenly spaced linear
 inputs is tested within one byte level of the reference formula; all 256 decoded sRGB bytes round-trip exactly.
 
-Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
 include std/color/linearToSrgbByte
 includesEnd
 
@@ -1323,16 +1388,8 @@ signed 32-bit integers, and the resulting addresses must be valid. A zero `outpu
 no reads or writes.
 The helper carries `#impure`; it preserves source bytes, destination padding, and all bytes outside the output pixels.
 
-Include both color conversions, `std/math/lerp`, and the conversions' math prerequisites explicitly under their
-standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
-include std/math/lerp
-include std/color/srgbByteToLinear
-include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x
 includesEnd
 

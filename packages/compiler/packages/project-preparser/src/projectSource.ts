@@ -1,4 +1,5 @@
 import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
+import type { DiagnosticSource } from '@8f4e/language-spec';
 import { SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
 import { ENTRY_BLOCK_DELIMITER, GROUP_BLOCK_DELIMITER } from './delimiters';
 import {
@@ -54,7 +55,8 @@ class ProjectSourceReader {
 
 	constructor(
 		source: string,
-		private readonly additionalScopes: readonly ScopeDelimiter[] = []
+		private readonly additionalScopes: readonly ScopeDelimiter[] = [],
+		private readonly diagnosticSource?: DiagnosticSource
 	) {
 		this.lines = source.split('\n').map((text, index) => ({ text, lineNumber: index + 1 }));
 		this.scopeClosers = new Map(
@@ -77,12 +79,27 @@ class ProjectSourceReader {
 	}
 
 	private fail(line: SourceLine, message: string, owner?: SourceLine): never {
-		return syntaxError(
+		return this.syntaxError(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 			line,
 			`Parse error at line ${line.lineNumber}: ${message}`,
 			owner
 		);
+	}
+
+	private syntaxError(
+		code: Parameters<typeof syntaxErrorMessage>[0],
+		line: SourceLine,
+		message?: string,
+		owner?: SourceLine
+	): never {
+		if (this.diagnosticSource) {
+			throw syntaxErrorAt(code, message ?? syntaxErrorMessage(code), this.diagnosticSource, {
+				lineNumber: line.lineNumber - 1,
+				instruction: instruction(line).split(/\s+/)[0],
+			});
+		}
+		return syntaxError(code, line, message, owner);
 	}
 
 	readScope(expectedCloser?: string, owner?: SourceLine): SourceNode[] {
@@ -126,7 +143,7 @@ class ProjectSourceReader {
 							startsWithInstruction(instruction(line), pair.closer)
 					)
 				) {
-					syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, line, undefined, start);
+					this.syntaxError(SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK, line, undefined, start);
 				}
 				if (closer) {
 					if (closer !== expectedCloser) this.fail(line, `closer "${closer}" does not match opener "${opener}"`, start);
@@ -144,21 +161,25 @@ class ProjectSourceReader {
 		}
 		const end = this.lines[this.position++];
 		if (!end)
-			syntaxError(
+			this.syntaxError(
 				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 				start,
 				`Parse error: unclosed block with ${scopeCloser ? `closer "${scopeCloser}"` : `opener "${opener}"`}`,
 				start
 			);
 		if (this.additionalScopes.some(pair => pair.opener === opener) && instruction(end) !== expectedCloser)
-			syntaxError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, end, undefined, start);
+			this.syntaxError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, end, undefined, start);
 		return { opener, start, children, end };
 	}
 }
 
 /** Read structural boundaries while keeping document blocks, especially notes, opaque. */
-export function readProjectSource(source: string, additionalScopes: readonly ScopeDelimiter[] = []): SourceNode[] {
-	return new ProjectSourceReader(source, additionalScopes).readScope();
+export function readProjectSource(
+	source: string,
+	additionalScopes: readonly ScopeDelimiter[] = [],
+	diagnosticSource?: DiagnosticSource
+): SourceNode[] {
+	return new ProjectSourceReader(source, additionalScopes, diagnosticSource).readScope();
 }
 
 export function sourceLines(nodes: SourceNode[]): string[] {

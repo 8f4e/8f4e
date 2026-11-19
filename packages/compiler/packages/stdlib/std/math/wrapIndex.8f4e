@@ -1,0 +1,23 @@
+function wrapIndex
+#export
+; Wraps a signed index into
+; 0..size-1 for a positive size.
+param int index
+param int size
+
+push index
+push size
+ensureNonZero
+remainder
+localSet index
+
+push index
+push 0
+lessThan
+if
+push index
+add size
+else
+push index
+ifEnd int
+functionEnd int

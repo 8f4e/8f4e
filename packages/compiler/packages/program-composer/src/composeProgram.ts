@@ -1,4 +1,4 @@
-import { getError, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
+import { getError, includeErrorAt, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import {
 	type CallLine,
 	type CompilerCache,
@@ -9,6 +9,7 @@ import {
 	ErrorCode,
 	type FunctionLine,
 	type IncludedFunctionBindings,
+	IncludeErrorCode,
 	type ProjectConstantNamespacePassLine,
 	type ProjectGroupPath,
 	type ProjectMemoryExposure,
@@ -125,12 +126,21 @@ function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFun
 			if (line === ast.functionLine) return functionLine;
 			if (line.instruction !== 'call') return line;
 			const target = line.arguments[0];
+			const boundName = bindings.callTargets.get(target.value);
+			if (boundName === null || boundName === undefined) {
+				const { fileLocation } = bindings;
+				const ambiguous = boundName === null;
+				throw includeErrorAt(
+					ambiguous ? IncludeErrorCode.AMBIGUOUS_CALL_TARGET : IncludeErrorCode.UNBOUND_CALL_TARGET,
+					ambiguous
+						? `include "${fileLocation.includeId}" call target "${target.value}" is ambiguous because that function name expands to multiple public/internal include names`
+						: `call target "${target.value}" is not defined or imported by this include`,
+					{ ...fileLocation, lineNumber: fileLocation.lineNumber + line.lineNumber }
+				);
+			}
 			return {
 				...line,
-				arguments: [
-					{ ...target, value: bindings.callTargets.get(target.value) ?? target.value },
-					...line.arguments.slice(1),
-				],
+				arguments: [{ ...target, value: boundName }, ...line.arguments.slice(1)],
 			} as CallLine;
 		}),
 	};

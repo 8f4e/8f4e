@@ -1,0 +1,7 @@
+function external
+#export
+param int value
+push value
+push 5
+add
+functionEnd int

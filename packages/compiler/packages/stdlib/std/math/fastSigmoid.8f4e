@@ -1,0 +1,22 @@
+includes
+include std/math/softsign
+includesEnd
+
+function fastSigmoid
+#export
+; Maps softsign's output to 0..1.
+param float value
+
+call softsign value
+mul 0.5
+add 0.5
+functionEnd float
+
+function fastSigmoid
+#export
+param float64 value
+
+call softsign value
+mul 0.5f64
+add 0.5f64
+functionEnd float64

@@ -2,6 +2,7 @@ import type { FunctionType, WasmTypeValue } from '@8f4e/compiler-wasm-utils';
 import type { AssertionSite } from './assertions';
 import type { ComposedFunctionAST, ComposedModuleAST, FunctionAST, ValidatedAST, ValidatedFunctionAST } from './ast';
 import type { ASTCache } from './cache';
+import type { DiagnosticLocation } from './diagnostics';
 import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
@@ -84,7 +85,10 @@ export interface RegisteredFunction<TFunction extends FunctionAST = ValidatedFun
 /** Final declaration and include-local call names applied during program composition. */
 export interface IncludedFunctionBindings {
 	functionName: string;
-	callTargets: ReadonlyMap<string, string>;
+	/** An ambiguous call target maps to null; an unbound target has no entry. */
+	callTargets: ReadonlyMap<string, string | null>;
+	/** File-relative location of the function opener. */
+	fileLocation: Extract<DiagnosticLocation, { kind: 'include-file' }>;
 }
 
 /** Function metadata indexed by compiler id, plus source-name arity metadata for calls. */

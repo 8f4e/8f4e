@@ -1,10 +1,13 @@
+includes
+include std/memory/advancePointer
+includesEnd
+
 function queuePop
 #export
 #impure
 ; Pops a nonzero word from a
 ; zero-marked integer FIFO.
 ; Returns zero when empty.
-; Requires advancePointer.
 param int** readPointer
 param int* buffer
 param int itemCount

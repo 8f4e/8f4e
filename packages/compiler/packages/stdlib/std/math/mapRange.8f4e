@@ -1,0 +1,22 @@
+function mapRange
+#export
+; Remaps a value between ranges.
+; Values outside the input range
+; are extrapolated.
+param float value
+param float inputStart
+param float inputEnd
+param float outputStart
+param float outputEnd
+
+push value
+sub inputStart
+push inputEnd
+sub inputStart
+ensureNonZero
+div
+push outputEnd
+sub outputStart
+mul
+add outputStart
+functionEnd float

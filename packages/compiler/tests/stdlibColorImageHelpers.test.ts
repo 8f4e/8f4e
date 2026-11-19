@@ -8,9 +8,6 @@ let memory: WebAssembly.Memory;
 beforeAll(async () => {
 	const program = await instantiateFixtureProgramSource(`8f4e/v1
 includes
-include std/math/log2
-include std/math/exp2
-include std/math/lerp
 include std/color/srgbByteToLinear
 include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x

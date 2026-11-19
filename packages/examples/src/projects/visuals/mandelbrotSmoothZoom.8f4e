@@ -5,12 +5,9 @@ includes
 include std/grid/indexToXY
 include std/math/exp2
 include std/math/log2
-include std/math/lerp
 include std/math/fract
 include std/math/smoothstep
 include std/color/lerpRGB
-include std/color/srgbByteToLinear
-include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x
 include std/events/hasChanged
 include std/memory/storeRGB

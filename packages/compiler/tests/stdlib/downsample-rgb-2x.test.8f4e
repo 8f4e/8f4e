@@ -5,11 +5,6 @@ note
 noteEnd
 
 includes
-include std/math/log2
-include std/math/exp2
-include std/math/lerp
-include std/color/srgbByteToLinear
-include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x
 includesEnd
 

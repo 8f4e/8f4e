@@ -2,7 +2,6 @@
 
 includes
 ; @pos -49 -8
-include std/memory/advancePointer
 include std/memory/queuePush
 include std/memory/queuePop
 includesEnd
@@ -950,7 +949,6 @@ entryEnd
 templateEnd
 includes
 ; @pos 45 10
-include std/memory/loadAt
 include std/memory/loadRangeAt
 includesEnd
 function mapSample

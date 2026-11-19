@@ -1,3 +1,9 @@
+includes
+include std/color/linearToSrgbByte
+include std/color/srgbByteToLinear
+include std/math/lerp
+includesEnd
+
 function downsampleRGB2x
 #export
 #impure

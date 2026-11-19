@@ -1,7 +1,10 @@
+includes
+include std/math/exp2
+include std/math/log2
+includesEnd
+
 function srgbByteToLinear
 #export
-; Requires std/math/log2 and
-; std/math/exp2 under their names.
 ; channel must be in 0..255.
 param int channel
 local float encoded
