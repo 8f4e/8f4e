@@ -8,7 +8,6 @@ function queuePush
 ; Pushes a nonzero word into a
 ; zero-marked integer FIFO.
 ; Drops new arrivals when full.
-; Requires advancePointer.
 param int** writePointer
 param int* buffer
 param int itemCount

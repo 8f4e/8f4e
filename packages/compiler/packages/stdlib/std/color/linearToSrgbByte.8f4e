@@ -5,8 +5,6 @@ includesEnd
 
 function linearToSrgbByte
 #export
-; Requires std/math/log2 and
-; std/math/exp2 under their names.
 ; Finite input; clamp to 0..1.
 param float linear
 

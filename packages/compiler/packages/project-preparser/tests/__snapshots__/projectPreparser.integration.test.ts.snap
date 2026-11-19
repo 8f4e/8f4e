@@ -8,6 +8,16 @@ exports[`project-preparser integration > parses project source into typed collec
         "callTargets": Map {
           "risingEdge" => "risingEdge",
         },
+        "fileLocation": {
+          "includeId": "std/events/risingEdge",
+          "includeSite": {
+            "lineNumber": 1,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 0,
+        },
         "functionName": "risingEdge",
       },
       "code": [
@@ -28,6 +38,16 @@ exports[`project-preparser integration > parses project source into typed collec
         "callTargets": Map {
           "wrapPointer" => "wrapPointer",
         },
+        "fileLocation": {
+          "includeId": "std/memory/wrapPointer",
+          "includeSite": {
+            "lineNumber": 2,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 0,
+        },
         "functionName": "wrapPointer",
       },
       "code": [
@@ -47,6 +67,16 @@ exports[`project-preparser integration > parses project source into typed collec
       "bindings": {
         "callTargets": Map {
           "wrapPointer" => "wrapPointer",
+        },
+        "fileLocation": {
+          "includeId": "std/memory/wrapPointer",
+          "includeSite": {
+            "lineNumber": 2,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 4,
         },
         "functionName": "wrapPointer",
       },

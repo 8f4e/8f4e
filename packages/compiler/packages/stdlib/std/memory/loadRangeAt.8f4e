@@ -7,7 +7,6 @@ function loadRangeAt
 #impure
 ; Reads neighboring offsets and
 ; returns the start and length.
-; Requires loadAt.
 param int* offsets
 param int index
 local int start

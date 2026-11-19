@@ -62,9 +62,8 @@ within a project scope and gives dependencies private function identities shared
 Direct project imports have separate bindings, so a project rename or local override cannot change an imported
 library's dependency. Missing files and cycles retain the importing file's row and the originating project include.
 
-Early include export and binding failures retain the included file id and its zero-based source row. Project
-resolution also records the declaration that loaded the file, including its project group. Standalone
-`resolveFunctionIncludeSource` parsing keeps the file identity without inventing a project declaration.
+Include export and binding failures retain the included file id and the declaration that loaded the file, including
+its project group. The program composer uses the parsed `call` instructions to check for ambiguous or unbound targets.
 Include failures use named `IncludeErrorCode` values, and all stored include rows are zero-based. Their messages
 describe the failure while hosts format the supplied source coordinates.
 

@@ -120,6 +120,14 @@ functionEnd`,
 			lineNumber: 2,
 			domain: 'include',
 		},
+		{
+			name: 'ambiguous calls with a continued target',
+			code: IncludeErrorCode.AMBIGUOUS_CALL_TARGET,
+			source:
+				'function first\n#export\nfunctionEnd\n\nfunction caller\n#export\ncall; target below\n- convert 1\nfunctionEnd int\nfunction convert\n#export\nparam int value\nfunctionEnd int\nfunction convert\nparam float value\nfunctionEnd float',
+			lineNumber: 6,
+			domain: 'include',
+		},
 	])('keeps include-file ownership during $name validation', async ({ source, lineNumber, domain, code }) => {
 		const project = parseProjectSource(`8f4e/v1
 entry main

@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import {
 	collectProjectIncludeIdsFromBlock,
 	collectProjectIncludeIdsFromText,
-	resolveFunctionIncludeSource,
 	resolveProjectIncludesAsync,
 } from './functionIncludes';
 
@@ -40,9 +39,11 @@ function includeBlock(...declarations: string[]) {
 }
 
 describe('include function expansion', () => {
-	it('preserves source text and records bindings for each body and its dependencies', () => {
-		const functions = resolveFunctionIncludeSource(
-			'std/test',
+	const resolveInclude = (source: string) =>
+		resolveProjectIncludesAsync([includeBlock('include std/test')], () => source);
+
+	it('preserves source text and records bindings for each body and its dependencies', async () => {
+		const functions = await resolveInclude(
 			[
 				'function first',
 				'#export',
@@ -60,18 +61,14 @@ describe('include function expansion', () => {
 		expect(functions[1]!.bindings.functionName).toBe('__8f4e_std_test__nonexported__helper');
 	});
 
-	it('uses include-local export aliases as the public binding names', () => {
-		const functions = resolveFunctionIncludeSource(
-			'std/test',
-			['function internalName', '#export publicName', 'functionEnd'].join('\n')
-		);
+	it('uses include-local export aliases as the public binding names', async () => {
+		const functions = await resolveInclude('function internalName\n#export publicName\nfunctionEnd');
 		expect(functions[0]!.bindings.functionName).toBe('publicName');
 		expect(functions[0]!.code).toEqual(['function internalName', '', 'functionEnd']);
 	});
 
-	it('allows partially exported overload families when calls are unambiguous', () => {
-		const functions = resolveFunctionIncludeSource(
-			'std/test',
+	it('keeps partially exported overloads distinct and marks their shared name as ambiguous', async () => {
+		const functions = await resolveInclude(
 			[
 				'function convert',
 				'#export',
@@ -87,45 +84,26 @@ describe('include function expansion', () => {
 			'__8f4e_std_test__nonexported__convert',
 		]);
 		expect(new Set(functions.map(func => func.source.symbolName)).size).toBe(2);
+		expect(functions[0]!.bindings.callTargets.get('convert')).toBeNull();
 	});
 
-	it('rejects sources without exported functions', () => {
-		expect(() => resolveFunctionIncludeSource('std/test', 'function helper\nfunctionEnd')).toThrow(
+	it('rejects sources without exported functions', async () => {
+		await expect(resolveInclude('function helper\nfunctionEnd')).rejects.toThrow(
 			'include "std/test" must export at least one function'
 		);
 	});
 
-	it('keeps the file identity when standalone include syntax fails', () => {
-		expect(() =>
-			resolveFunctionIncludeSource('std/test', 'function helper\n#export first second\nfunctionEnd')
-		).toThrow(
-			expect.objectContaining({
-				diagnostic: expect.objectContaining({
-					location: { kind: 'include-file', includeId: 'std/test', lineNumber: 1 },
-				}),
-			})
-		);
-	});
-
-	it('rejects ambiguous mixed public/private overload calls', () => {
-		expect(() =>
-			resolveFunctionIncludeSource(
-				'std/test',
-				[
-					'function caller',
-					'#export',
-					'call convert 1',
-					'functionEnd int',
-					'function convert',
-					'#export',
-					'param int value',
-					'functionEnd int',
-					'function convert',
-					'param float value',
-					'functionEnd float',
-				].join('\n')
-			)
-		).toThrow('call target "convert" is ambiguous');
+	it('keeps the file identity and project include site when include syntax fails', async () => {
+		await expect(resolveInclude('function helper\n#export first second\nfunctionEnd')).rejects.toMatchObject({
+			diagnostic: {
+				location: {
+					kind: 'include-file',
+					includeId: 'std/test',
+					lineNumber: 1,
+					includeSite: { projectBlockId: 42, projectGroupPath: '', lineNumber: 1 },
+				},
+			},
+		});
 	});
 });
 

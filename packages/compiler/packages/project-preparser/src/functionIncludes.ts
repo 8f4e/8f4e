@@ -14,7 +14,7 @@ import { INCLUDES_BLOCK_DELIMITER } from './delimiters';
 import { isProjectGapLine } from './projectLines';
 import { isBlock, readProjectSource, sourceLines } from './projectSource';
 
-export type ResolvedFunctionSource = {
+type ResolvedFunctionSource = {
 	code: string[];
 	bindings: IncludedFunctionBindings;
 	source: SourceMetadata;
@@ -123,10 +123,6 @@ function getIncludeExport(source: IncludeFileSource, block: FunctionIncludeBlock
 	return includeExport;
 }
 
-function getLineFirstArgument(line: string): string {
-	return line.trim().split(/\s+/)[1] ?? '';
-}
-
 function createIncludeFunctions(source: IncludeFileSource, blocks: FunctionIncludeBlock[]): IncludeFunction[] {
 	const { includeId } = source;
 	const functions = blocks.map(block => {
@@ -150,12 +146,10 @@ function createIncludeFunctions(source: IncludeFileSource, blocks: FunctionInclu
 	return functions;
 }
 
-function createCallTargetRewriteMap(
-	source: IncludeFileSource,
+function createCallTargetBindings(
 	functions: BoundIncludeFunction[],
 	imports: ReadonlyMap<string, string>
-): Map<string, string> {
-	const { includeId } = source;
+): ReadonlyMap<string, string | null> {
 	const finalNamesByOriginalName = new Map<string, Set<string>>();
 
 	for (const func of functions) {
@@ -174,35 +168,11 @@ function createCallTargetRewriteMap(
 		}
 	}
 
-	const rewriteMap = new Map(imports);
-	const ambiguousNames = new Set<string>();
-
+	const callTargets = new Map<string, string | null>(imports);
 	for (const [originalName, finalNames] of finalNamesByOriginalName) {
-		if (finalNames.size === 1) {
-			rewriteMap.set(originalName, [...finalNames][0]!);
-		} else {
-			rewriteMap.delete(originalName);
-			ambiguousNames.add(originalName);
-		}
+		callTargets.set(originalName, finalNames.size === 1 ? [...finalNames][0]! : null);
 	}
-
-	for (const func of functions) {
-		for (const [lineIndex, line] of func.code.entries()) {
-			if (!startsWithInstruction(line, 'call')) {
-				continue;
-			}
-			const targetName = getLineFirstArgument(line);
-			if (ambiguousNames.has(targetName)) {
-				throw includeErrorAt(
-					IncludeErrorCode.AMBIGUOUS_CALL_TARGET,
-					`include "${includeId}" call target "${targetName}" is ambiguous because that function name expands to multiple public/internal include names`,
-					{ ...source, lineNumber: func.startLineNumber + lineIndex }
-				);
-			}
-		}
-	}
-
-	return rewriteMap;
+	return callTargets;
 }
 
 function expandIncludeFunctions(
@@ -219,12 +189,13 @@ function expandIncludeFunctions(
 			? (bindings.get(func.export.publicName) ?? privateExportName(prefix, func.export.publicName))
 			: `${prefix}nonexported__${func.originalName}`,
 	}));
-	const callTargetRewriteMap = createCallTargetRewriteMap(source, renamedFunctions, imports);
+	const callTargets = createCallTargetBindings(renamedFunctions, imports);
 	return renamedFunctions.map(func => ({
 		code: func.code.map((line, index) => (index === func.export?.lineIndex ? '' : line)),
 		bindings: {
 			functionName: func.finalName,
-			callTargets: callTargetRewriteMap,
+			callTargets,
+			fileLocation: { ...source, lineNumber: func.startLineNumber },
 		},
 		source: { kind: 'include' as const, includeId, symbolName: func.finalName },
 	}));
@@ -298,21 +269,6 @@ function parseIncludeSource(source: IncludeFileSource, text: string) {
 
 function getPublicNames(functions: IncludeFunction[]): Set<string> {
 	return new Set(functions.flatMap(func => (func.export ? [func.export.publicName] : [])));
-}
-
-/** Expands a self-contained include without a project or source resolver. */
-export function resolveFunctionIncludeSource(includeId: string, text: string): ResolvedFunctionSource[] {
-	const source: IncludeFileSource = { kind: 'include-file', includeId };
-	const { functions, dependencies } = parseIncludeSource(source, text);
-	const firstDependency = dependencies[0];
-	if (firstDependency) {
-		throw includeErrorAt(IncludeErrorCode.UNRESOLVED_INCLUDE, `unresolved include "${firstDependency.includeId}"`, {
-			...source,
-			lineNumber: firstDependency.lineNumber,
-		});
-	}
-	const bindings = new Map([...getPublicNames(functions)].map(name => [name, name]));
-	return expandIncludeFunctions(source, functions, bindings, new Map());
 }
 
 export function collectProjectIncludeIdsFromBlock(block: Pick<ProjectBlock, 'code' | 'id'>, projectGroupPath = '') {

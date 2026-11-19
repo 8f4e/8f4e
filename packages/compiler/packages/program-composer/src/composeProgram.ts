@@ -127,6 +127,14 @@ function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFun
 			if (line.instruction !== 'call') return line;
 			const target = line.arguments[0];
 			const boundName = bindings.callTargets.get(target.value);
+			if (boundName === null) {
+				const { fileLocation } = bindings;
+				throw includeErrorAt(
+					IncludeErrorCode.AMBIGUOUS_CALL_TARGET,
+					`include "${fileLocation.includeId}" call target "${target.value}" is ambiguous because that function name expands to multiple public/internal include names`,
+					{ ...fileLocation, lineNumber: fileLocation.lineNumber + line.lineNumber }
+				);
+			}
 			if (boundName === undefined) {
 				throw includeErrorAt(
 					IncludeErrorCode.UNBOUND_CALL_TARGET,
