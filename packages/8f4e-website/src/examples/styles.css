@@ -47,11 +47,11 @@ body {
 }
 
 .example-category + .example-category {
-	margin-top: 0.75rem;
+	margin-top: 1rem;
 }
 
 .example-category-heading {
-	margin: 0 0 0.375rem;
+	margin: 0 0 0.5rem;
 	font-size: 1rem;
 	font-weight: normal;
 	line-height: 1;
@@ -227,7 +227,7 @@ body {
 	.example-panel {
 		position: static;
 		width: auto;
-		padding-bottom: 0.375rem;
+		padding-bottom: 0.5rem;
 	}
 
 	.example-panel .editor-frame {
