@@ -7,10 +7,10 @@ neutral label. Elapsed time stops at completion. Messages are clipped to the vie
 and time. By default, the list shows at most 20 rows, or fewer when the viewport cannot fit them.
 
 The 8×4 orbit and the bottom message share the last full row of the editor grid. Shrinking circles move along
-the square path one step every two rendered frames, with no background fill. With reduced motion, the orbit shows
-a stationary frame. The orbit disappears 500 ms after the last pending operation settles and releases its space
-so any remaining messages return to the left edge. If the viewport cannot fit the orbit and at least 16 text
-columns side by side, the text is hidden and the orbit is shown on its own where it fits.
+the square path one step every three rendered frames, with no background fill. With reduced motion, the orbit shows
+a stationary frame. The orbit disappears 500 ms after the last pending operation settles, leaving any remaining
+messages in place. If the viewport cannot fit the orbit and at least 16 text columns side by side, the text is
+hidden and the orbit is shown on its own where it fits.
 
 Create the plugin with `createLoadingIndicatorsPlugin` and install it eagerly before the deferred loader so
 initial feature imports can be shown. Supply a live `prefersReducedMotion` callback from the host; the plugin

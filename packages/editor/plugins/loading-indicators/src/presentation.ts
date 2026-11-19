@@ -11,7 +11,7 @@ type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextS
 const GUTTER_COLUMNS = ORBIT_COLUMNS + 2;
 const MIN_TEXT_COLUMNS = 16;
 const ORBIT_LINGER_MS = 500;
-const RENDERS_PER_ORBIT_STEP = 2;
+const RENDERS_PER_ORBIT_STEP = 3;
 
 function formatElapsedTime(elapsed: number): string {
 	return elapsed < 1000 ? `${Math.floor(elapsed)} ms` : `${(elapsed / 1000).toFixed(1)} s`;
@@ -57,15 +57,10 @@ export function installPresentation(
 	let rowHeight = 0;
 	let columns = 0;
 	let grid = 0;
-	let gutterWidth = 0;
-	let orbitRender: number | undefined;
-	let orbitHideTimer: ReturnType<typeof setTimeout> | undefined;
+	let canDrawOrbit = false;
+	let orbitRender = 0;
+	let orbitUntil = -Infinity;
 	let elapsedTimer: ReturnType<typeof setInterval> | undefined;
-	const resetOrbit = () => {
-		clearTimeout(orbitHideTimer);
-		orbitHideTimer = undefined;
-		orbitRender = undefined;
-	};
 	const updateElapsed = () => {
 		const now = Date.now();
 		for (let index = 0; index < rows.length; index++) {
@@ -83,24 +78,16 @@ export function installPresentation(
 		const indicators = state.featureFlags.canvasOverlays
 			? state.loadingIndicators.filter(visibility.isVisible).slice(0, Math.min(options.maxVisibleRows, availableRows))
 			: [];
-		if (state.loadingIndicators.some(indicator => indicator.status === 'loading')) {
-			orbitRender ??= 0;
-			clearTimeout(orbitHideTimer);
-			orbitHideTimer = undefined;
-		} else if (!indicators.length) {
-			resetOrbit();
-		} else if (orbitRender !== undefined) {
-			orbitHideTimer ??= setTimeout(() => {
-				resetOrbit();
-				prepare();
-			}, ORBIT_LINGER_MS);
-		}
-		const fitsOrbit = availableRows >= ORBIT_ROWS && availableColumns > ORBIT_COLUMNS;
-		const gutterColumns = orbitRender !== undefined && fitsOrbit && indicators.length ? GUTTER_COLUMNS : 0;
-		gutterWidth = gutterColumns * grid;
-		columns = availableColumns - gutterColumns - 2;
-		const fitsText = fitsOrbit && availableColumns >= GUTTER_COLUMNS + MIN_TEXT_COLUMNS + 2;
 		const now = Date.now();
+		if (now >= orbitUntil) orbitRender = 0;
+		orbitUntil = state.loadingIndicators.reduce(
+			(until, { finishedAt }) => (finishedAt === null ? Infinity : Math.max(until, finishedAt + ORBIT_LINGER_MS)),
+			-Infinity
+		);
+		const fitsOrbit = availableRows >= ORBIT_ROWS && availableColumns > ORBIT_COLUMNS;
+		canDrawOrbit = fitsOrbit && indicators.length > 0;
+		columns = availableColumns - GUTTER_COLUMNS - 2;
+		const fitsText = fitsOrbit && columns >= MIN_TEXT_COLUMNS;
 		rows = fitsText
 			? indicators.map((indicator, index) =>
 					prepareRow(indicator, columns, grid, (index - indicators.length) * rowHeight, now)
@@ -115,9 +102,10 @@ export function installPresentation(
 	};
 	const visibility = installVisibility(store, prepare, options);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
-		if (!rows.length && !gutterWidth) return;
+		const drawOrbit = canDrawOrbit && (orbitUntil === Infinity || Date.now() < orbitUntil);
+		if (!rows.length && !drawOrbit) return;
 		draw.startGroup(0, bottom);
-		if (gutterWidth && orbitRender !== undefined) {
+		if (drawOrbit) {
 			const reducedMotion = options.prefersReducedMotion();
 			const step = reducedMotion ? 0 : Math.floor(orbitRender / RENDERS_PER_ORBIT_STEP);
 			const frame = ORBIT_GLYPH_FRAMES[step];
@@ -126,9 +114,10 @@ export function installPresentation(
 			}
 			if (!reducedMotion) orbitRender = (orbitRender + 1) % (ORBIT_GLYPH_FRAMES.length * RENDERS_PER_ORBIT_STEP);
 		}
+		const textLeft = GUTTER_COLUMNS * grid;
 		for (const row of rows) {
-			draw.drawFill(gutterWidth, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);
-			for (const span of row.spans) draw.drawGlyphs(gutterWidth + span.x, row.y, span.glyphs, span.color);
+			draw.drawFill(textLeft, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);
+			for (const span of row.spans) draw.drawGlyphs(textLeft + span.x, row.y, span.glyphs, span.color);
 		}
 		draw.endGroup();
 	});
@@ -150,7 +139,6 @@ export function installPresentation(
 		events.off('resize', prepare);
 		events.off('gridSizeChanged', prepare);
 		clearInterval(elapsedTimer);
-		clearTimeout(orbitHideTimer);
 		removeDrawer();
 	};
 }
