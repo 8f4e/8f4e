@@ -78,6 +78,8 @@ export const IncludeErrorCode = {
 	UNRESOLVED_INCLUDE: 4,
 	UNKNOWN_EXPORT: 5,
 	CONFLICTING_BINDING: 6,
+	DEPENDENCY_CYCLE: 7,
+	UNBOUND_CALL_TARGET: 8,
 } as const;
 
 export type IncludeErrorCodeValue = (typeof IncludeErrorCode)[keyof typeof IncludeErrorCode];

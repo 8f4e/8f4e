@@ -5,7 +5,6 @@ note
 noteEnd
 
 includes
-include std/memory/advancePointer
 include std/memory/queuePush
 include std/memory/queuePop
 includesEnd

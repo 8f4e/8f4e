@@ -5,8 +5,6 @@ note
 noteEnd
 
 includes
-include std/math/log2
-include std/math/exp2
 include std/color/srgbByteToLinear
 include std/color/linearToSrgbByte
 includesEnd

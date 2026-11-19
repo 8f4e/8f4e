@@ -2,10 +2,9 @@
 
 includes
 ; @pos -43 -12
-include std/memory/advancePointer
 include std/memory/queuePush
 include std/memory/queuePop
-include std/math/exp2
+include std/midi/midiNoteToHz
 includesEnd
 
 function noteEventKind
@@ -284,12 +283,7 @@ float out
 push *on
 if
 push &out
-push *note
-sub 69
-castToFloat
-div 12.0
-call exp2
-mul 440.0
+call midiNoteToHz *note
 store
 ifEnd
 moduleEnd

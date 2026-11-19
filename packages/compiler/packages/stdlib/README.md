@@ -43,6 +43,10 @@ In stdlib include context, `#export` means "make this function available to the 
 the project preparser and does not create a WebAssembly export. Private helper functions should omit `#export`; the
 preparser prefixes those helper names when expanding the include.
 
+Use an `includes` block before the functions to import dependencies from other library files. A library can call
+its own functions and directly imported exports. These imports stay private to the library. A project declares
+its own include if it needs to call the same dependency directly.
+
 ## Floating-point math
 
 `std/math/lerp`, `std/math/smoothstep`, and `std/math/fract` have both `float` and `float64` overloads. Interpolation
@@ -79,7 +83,6 @@ to even. Input high bytes are ignored, and the result's high byte is zero.
 
 `std/color/srgbByteToLinear` decodes an sRGB byte into a linear-light float in `0..1`.
 `std/color/linearToSrgbByte` clamps a finite linear float to `0..1`, encodes it, and rounds to a byte.
-Both require explicit includes of `std/math/log2` and `std/math/exp2` under their standard exported names.
 See the [conversion reference](../../docs/standard-library.md#stdcolorsrgbbytetolinear) for approximation bounds.
 
 `std/memory/storeRGB` writes a packed color as three consecutive R, G, B bytes through an `int8u*` pointer. Supply
@@ -93,10 +96,8 @@ finite `float` amount in `0..1`. Zero selects the top-left sample, one averages 
 blend in linear light. Supply non-overlapping buffers; source data and destination row padding are preserved.
 Zero-sized outputs perform no memory access.
 
-Include `std/color/srgbByteToLinear`, `std/color/linearToSrgbByte`, `std/math/lerp`, `std/math/log2`, and `std/math/exp2`
-explicitly under their standard exported names. Includes do not load other sources recursively, and renaming a
-prerequisite does not rewrite calls from another source. See the
-[downsampling reference](../../docs/standard-library.md#stdimagedownsamplergb2x) for buffer sizes, strides, and an example.
+See the [downsampling reference](../../docs/standard-library.md#stdimagedownsamplergb2x) for buffer sizes, strides,
+and an example.
 
 ## Pointer swaps
 

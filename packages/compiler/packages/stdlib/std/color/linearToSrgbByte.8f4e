@@ -1,3 +1,8 @@
+includes
+include std/math/exp2
+include std/math/log2
+includesEnd
+
 function linearToSrgbByte
 #export
 ; Requires std/math/log2 and

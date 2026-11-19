@@ -1,0 +1,27 @@
+includes
+include std/math/exp2
+includesEnd
+
+function midiNoteToHz
+#export
+; Converts a MIDI note in 0..127
+; to its frequency in Hz.
+param int note
+
+push note
+castToFloat
+call midiNoteToHz
+functionEnd float
+
+function midiNoteToHz
+#export
+; Fractional notes use the same
+; 12-TET tuning with A4 at 440 Hz.
+param float note
+
+push note
+sub 69.0
+div 12.0
+call exp2
+mul 440.0
+functionEnd float

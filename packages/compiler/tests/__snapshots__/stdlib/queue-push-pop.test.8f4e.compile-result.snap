@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "advancePointer__float_p_p__float_p__int": {
+    "queuePop__int_p_p__int_p__int": {
       "lines": [
         {
           "arguments": [
@@ -8,7 +8,433 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "advancePointer",
+              "value": "queuePop",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readPointer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "itemCount",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 2,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "readPointer",
+              "type": "identifier",
+              "value": "**readPointer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "readPointer",
+              "type": "identifier",
+              "value": "*readPointer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/memory/advancePointer§unselected__advancePointer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "readPointer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "itemCount",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "queuePop",
+      "type": "function",
+    },
+    "queuePush__int_p_p__int_p__int__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "queuePush",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int**",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "writePointer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "itemCount",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "slot",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "writePointer",
+              "type": "identifier",
+              "value": "*writePointer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "slot",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "slot",
+              "type": "identifier",
+              "value": "*slot",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "equalToZero",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "slot",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "store",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/memory/advancePointer§unselected__advancePointer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "writePointer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "itemCount",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "queuePush",
+      "type": "function",
+    },
+    "§std/memory/advancePointer§unselected__advancePointer__float_p_p__float_p__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/memory/advancePointer§unselected__advancePointer",
             },
           ],
           "instruction": "function",
@@ -258,10 +684,10 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "advancePointer",
+      "name": "§std/memory/advancePointer§unselected__advancePointer",
       "type": "function",
     },
-    "advancePointer__int_p_p__int_p__int": {
+    "§std/memory/advancePointer§unselected__advancePointer__int_p_p__int_p__int": {
       "lines": [
         {
           "arguments": [
@@ -269,7 +695,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "advancePointer",
+              "value": "§std/memory/advancePointer§unselected__advancePointer",
             },
           ],
           "instruction": "function",
@@ -519,477 +945,11 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "advancePointer",
-      "type": "function",
-    },
-    "queuePop__int_p_p__int_p__int": {
-      "lines": [
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "queuePop",
-            },
-          ],
-          "instruction": "function",
-        },
-        {
-          "arguments": [],
-          "instruction": "#impure",
-          "isBlockPrologue": true,
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int**",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "readPointer",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int*",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "buffer",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "itemCount",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "local",
-        },
-        {
-          "arguments": [
-            {
-              "dereferenceDepth": 2,
-              "referenceKind": "memory-pointer",
-              "scope": "local",
-              "targetMemoryId": "readPointer",
-              "type": "identifier",
-              "value": "**readPointer",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "localSet",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "if",
-        },
-        {
-          "arguments": [
-            {
-              "dereferenceDepth": 1,
-              "referenceKind": "memory-pointer",
-              "scope": "local",
-              "targetMemoryId": "readPointer",
-              "type": "identifier",
-              "value": "*readPointer",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 0,
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "store",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "advancePointer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "readPointer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "buffer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "itemCount",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [],
-          "instruction": "ifEnd",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-          ],
-          "instruction": "functionEnd",
-        },
-      ],
-      "name": "queuePop",
-      "type": "function",
-    },
-    "queuePush__int_p_p__int_p__int__int": {
-      "lines": [
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "queuePush",
-            },
-          ],
-          "instruction": "function",
-        },
-        {
-          "arguments": [],
-          "instruction": "#impure",
-          "isBlockPrologue": true,
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int**",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "writePointer",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int*",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "buffer",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "itemCount",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int*",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "slot",
-            },
-          ],
-          "instruction": "local",
-        },
-        {
-          "arguments": [
-            {
-              "dereferenceDepth": 1,
-              "referenceKind": "memory-pointer",
-              "scope": "local",
-              "targetMemoryId": "writePointer",
-              "type": "identifier",
-              "value": "*writePointer",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "slot",
-            },
-          ],
-          "instruction": "localSet",
-        },
-        {
-          "arguments": [
-            {
-              "dereferenceDepth": 1,
-              "referenceKind": "memory-pointer",
-              "scope": "local",
-              "targetMemoryId": "slot",
-              "type": "identifier",
-              "value": "*slot",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "equalToZero",
-        },
-        {
-          "arguments": [],
-          "instruction": "if",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "slot",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "value",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "store",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "advancePointer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "writePointer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "buffer",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "itemCount",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [],
-          "instruction": "ifEnd",
-        },
-        {
-          "arguments": [],
-          "instruction": "functionEnd",
-        },
-      ],
-      "name": "queuePush",
+      "name": "§std/memory/advancePointer§unselected__advancePointer",
       "type": "function",
     },
   },
   "functionOverview": {
-    "advancePointer__float_p_p__float_p__int": {
-      "id": "advancePointer__float_p_p__float_p__int",
-      "signature": {
-        "parameters": [
-          {
-            "name": "pointer",
-            "type": "float**",
-          },
-          {
-            "name": "buffer",
-            "type": "float*",
-          },
-          {
-            "name": "itemCount",
-            "type": "int",
-          },
-        ],
-        "returns": [],
-      },
-    },
-    "advancePointer__int_p_p__int_p__int": {
-      "id": "advancePointer__int_p_p__int_p__int",
-      "signature": {
-        "parameters": [
-          {
-            "name": "pointer",
-            "type": "int**",
-          },
-          {
-            "name": "buffer",
-            "type": "int*",
-          },
-          {
-            "name": "itemCount",
-            "type": "int",
-          },
-        ],
-        "returns": [],
-      },
-    },
     "queuePop__int_p_p__int_p__int": {
       "id": "queuePop__int_p_p__int_p__int",
       "signature": {
@@ -1030,6 +990,46 @@
           },
           {
             "name": "value",
+            "type": "int",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "§std/memory/advancePointer§unselected__advancePointer__float_p_p__float_p__int": {
+      "id": "§std/memory/advancePointer§unselected__advancePointer__float_p_p__float_p__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "pointer",
+            "type": "float**",
+          },
+          {
+            "name": "buffer",
+            "type": "float*",
+          },
+          {
+            "name": "itemCount",
+            "type": "int",
+          },
+        ],
+        "returns": [],
+      },
+    },
+    "§std/memory/advancePointer§unselected__advancePointer__int_p_p__int_p__int": {
+      "id": "§std/memory/advancePointer§unselected__advancePointer__int_p_p__int_p__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "pointer",
+            "type": "int**",
+          },
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "itemCount",
             "type": "int",
           },
         ],
@@ -2455,8 +2455,8 @@
   },
   "overview": {
     "compiledFunctions": [
-      "advancePointer__float_p_p__float_p__int",
-      "advancePointer__int_p_p__int_p__int",
+      "§std/memory/advancePointer§unselected__advancePointer__float_p_p__float_p__int",
+      "§std/memory/advancePointer§unselected__advancePointer__int_p_p__int_p__int",
       "queuePop__int_p_p__int_p__int",
       "queuePush__int_p_p__int_p__int__int",
     ],

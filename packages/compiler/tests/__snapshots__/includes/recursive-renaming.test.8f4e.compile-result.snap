@@ -91,7 +91,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "external",
+              "value": "§test/external§unselected__external",
             },
             {
               "referenceKind": "plain",
@@ -218,7 +218,7 @@
             {
               "isInteger": true,
               "type": "literal",
-              "value": 5,
+              "value": 50,
             },
           ],
           "instruction": "push",
@@ -454,6 +454,76 @@
       "name": "viaAlias",
       "type": "function",
     },
+    "§test/external§unselected__external__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§test/external§unselected__external",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 5,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "§test/external§unselected__external",
+      "type": "function",
+    },
   },
   "functionOverview": {
     "countdown__int": {
@@ -528,6 +598,20 @@
     },
     "viaAlias__int": {
       "id": "viaAlias__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int",
+          },
+        ],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "§test/external§unselected__external__int": {
+      "id": "§test/external§unselected__external__int",
       "signature": {
         "parameters": [
           {
@@ -666,6 +750,32 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
+              "value": "external",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 60,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
               "value": "delegated",
             },
             {
@@ -701,6 +811,7 @@
   },
   "overview": {
     "compiledFunctions": [
+      "§test/external§unselected__external__int",
       "countdown__int",
       "delegated__int",
       "descend__int",

@@ -3,6 +3,7 @@
 includes
 ; @pos -132 -30
 include std/grid/indexToXY
+include std/math/wrapIndex
 include std/memory/loadBitAt2D
 include std/memory/storeBitAt2D
 include std/random/xorshift
@@ -58,22 +59,14 @@ push neighbors
 push buffer
 push WIDTH
 push HEIGHT
-; Offset before remainder
-; to avoid negative values.
 push x
-push dx
-add
-push WIDTH-1
-add
-push WIDTH
-remainder
+add dx
+sub 1
+call wrapIndex WIDTH
 push y
-push dy
-add
-push HEIGHT-1
-add
-push HEIGHT
-remainder
+add dy
+sub 1
+call wrapIndex HEIGHT
 call loadBitAt2D
 add
 localSet neighbors

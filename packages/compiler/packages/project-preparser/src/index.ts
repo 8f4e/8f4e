@@ -4,7 +4,6 @@ export {
 	collectProjectIncludeIdsFromBlock,
 	collectProjectIncludeIdsFromText,
 	resolveFunctionIncludeSource,
-	resolveProjectIncludes,
 	resolveProjectIncludesAsync,
 } from './functionIncludes';
 export { parseProjectSource } from './parseProjectSource';

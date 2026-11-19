@@ -57,6 +57,11 @@ Later compiler passes receive ordinary functions. Include-specific internal name
 an export marker and `unselected` for exports that were not selected. Collisions with project declarations are handled by
 ordinary namespace validation.
 
+Library files can declare dependencies using their own `includes` blocks. The resolver loads each file once
+within a project scope and gives dependencies private function identities shared by all importers in that scope.
+Direct project imports have separate bindings, so a project rename or local override cannot change an imported
+library's dependency. Missing files and cycles retain the importing file's row and the originating project include.
+
 Early include export and binding failures retain the included file id and its zero-based source row. Project
 resolution also records the declaration that loaded the file, including its project group. Standalone
 `resolveFunctionIncludeSource` parsing keeps the file identity without inventing a project declaration.

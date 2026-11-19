@@ -1,10 +1,10 @@
 import { IncludeErrorCode } from '@8f4e/language-spec';
+import { parseLine } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import {
 	collectProjectIncludeIdsFromBlock,
 	collectProjectIncludeIdsFromText,
 	resolveFunctionIncludeSource,
-	resolveProjectIncludes,
 	resolveProjectIncludesAsync,
 } from './functionIncludes';
 
@@ -141,8 +141,11 @@ describe('include export selections', () => {
 		]);
 	});
 
-	it('selects the whole public overload family, keeping unselected exports as internal dependencies', () => {
-		const functions = resolveProjectIncludes([includeBlock('include std/test first')], () => selectableSource);
+	it('selects the whole public overload family, keeping unselected exports as internal dependencies', async () => {
+		const functions = await resolveProjectIncludesAsync(
+			[includeBlock('include std/test first')],
+			() => selectableSource
+		);
 		expect(functions.map(func => func.bindings.functionName)).toEqual([
 			'first',
 			'first',
@@ -175,15 +178,18 @@ describe('include export selections', () => {
 		expect(functions[0]!.bindings.callTargets.get('second')).toBe('b');
 	});
 
-	it('preserves original source through syntax validation when selections or names change', () => {
-		const all = resolveProjectIncludes([includeBlock('include std/test')], () => selectableSource);
-		const selected = resolveProjectIncludes([includeBlock('include std/test first renamed')], () => selectableSource);
+	it('preserves original source through syntax validation when selections or names change', async () => {
+		const all = await resolveProjectIncludesAsync([includeBlock('include std/test')], () => selectableSource);
+		const selected = await resolveProjectIncludesAsync(
+			[includeBlock('include std/test first renamed')],
+			() => selectableSource
+		);
 		expect(selected.map(func => func.code)).toEqual(all.map(func => func.code));
 		expect(selected[0]!.bindings.functionName).toBe('renamed');
 	});
 
-	it('deduplicates repeated include-all declarations', () => {
-		const functions = resolveProjectIncludes(
+	it('deduplicates repeated include-all declarations', async () => {
+		const functions = await resolveProjectIncludesAsync(
 			[includeBlock('include std/test', 'include std/test')],
 			() => selectableSource
 		);
@@ -201,8 +207,10 @@ describe('include export selections', () => {
 		['include std/test first a', 'include std/test first b'],
 		['include std/test', 'include std/test first renamed'],
 		['include std/test first renamed', 'include std/test'],
-	])('rejects conflicting names for one export: %s, %s', (...declarations) => {
-		expect(() => resolveProjectIncludes([includeBlock(...declarations)], () => selectableSource)).toThrowError(
+	])('rejects conflicting names for one export: %s, %s', async (...declarations) => {
+		await expect(
+			resolveProjectIncludesAsync([includeBlock(...declarations)], () => selectableSource)
+		).rejects.toMatchObject(
 			expect.objectContaining({
 				diagnostic: expect.objectContaining({
 					code: IncludeErrorCode.CONFLICTING_BINDING,
@@ -213,8 +221,8 @@ describe('include export selections', () => {
 		);
 	});
 
-	it('leaves collisions between different exports to ordinary namespace validation', () => {
-		const functions = resolveProjectIncludes(
+	it('leaves collisions between different exports to ordinary namespace validation', async () => {
+		const functions = await resolveProjectIncludesAsync(
 			[includeBlock('include std/test first sameName', 'include std/test second sameName')],
 			() => selectableSource
 		);
@@ -223,10 +231,10 @@ describe('include export selections', () => {
 
 	it.each(['missing', 'helper', 'originalFirst'])(
 		'rejects non-public selections with declaration diagnostics: %s',
-		name => {
-			expect(() =>
-				resolveProjectIncludes([includeBlock(`include std/test ${name}`)], () => selectableSource)
-			).toThrowError(
+		async name => {
+			await expect(
+				resolveProjectIncludesAsync([includeBlock(`include std/test ${name}`)], () => selectableSource)
+			).rejects.toMatchObject(
 				expect.objectContaining({
 					message: `include "std/test" does not export "${name}"`,
 					diagnostic: expect.objectContaining({
@@ -255,8 +263,8 @@ describe('include export selections', () => {
 		]);
 	});
 
-	it('rewrites recursive source-name and export-alias calls to one identity', () => {
-		const functions = resolveProjectIncludes([includeBlock('include std/test publicName localName')], () =>
+	it('rewrites recursive source-name and export-alias calls to one identity', async () => {
+		const functions = await resolveProjectIncludesAsync([includeBlock('include std/test publicName localName')], () =>
 			['function sourceName', '#export publicName', 'call sourceName', 'call publicName', 'functionEnd'].join('\n')
 		);
 		expect(functions[0]!.bindings.functionName).toBe('localName');
@@ -271,8 +279,8 @@ describe('include export selections', () => {
 		expect(functions[0]!.bindings.callTargets.get('publicName')).toBe('localName');
 	});
 
-	it('keeps distinct export aliases under distinct identities when unselected', () => {
-		const functions = resolveProjectIncludes([includeBlock('include std/test selected')], () =>
+	it('keeps distinct export aliases under distinct identities when unselected', async () => {
+		const functions = await resolveProjectIncludesAsync([includeBlock('include std/test selected')], () =>
 			[
 				'function sameSourceName',
 				'#export first',
@@ -293,8 +301,8 @@ describe('include export selections', () => {
 		expect(new Set(functions.map(func => func.source.symbolName)).size).toBe(3);
 	});
 
-	it('keeps export and helper names separate and preserves source-name call precedence', () => {
-		const functions = resolveProjectIncludes([includeBlock('include std/test selected')], () =>
+	it('keeps export and helper names separate and preserves source-name call precedence', async () => {
+		const functions = await resolveProjectIncludesAsync([includeBlock('include std/test selected')], () =>
 			[
 				'function sourceName',
 				'#export helper',
@@ -343,5 +351,72 @@ describe('include export selections', () => {
 				}),
 			})
 		);
+	});
+});
+
+describe('include dependencies', () => {
+	function library(name: string, dependency?: string) {
+		const includes = dependency ? `includes\ninclude ${dependency}\nincludesEnd\n` : '';
+		return `${includes}function ${name}\n#export\nfunctionEnd`;
+	}
+
+	it('shares a private dependency across importers and loads each file once', async () => {
+		const sources = new Map([
+			['std/left', library('left', 'std/shared')],
+			['std/right', library('right', 'std/shared')],
+			['std/shared', library('shared')],
+		]);
+		const loads: string[] = [];
+		const functions = await resolveProjectIncludesAsync(
+			[includeBlock('include std/left', 'include std/right', 'include std/shared shared publicShared')],
+			id => {
+				loads.push(id);
+				return sources.get(id);
+			}
+		);
+		expect(loads).toEqual(['std/left', 'std/shared', 'std/right']);
+		const [left, right, direct, dependency] = functions;
+		expect(functions).toHaveLength(4);
+		expect(direct.bindings.functionName).toBe('publicShared');
+		expect(parseLine(`call ${dependency.bindings.functionName}`, 0).ok).toBe(false);
+		expect(left.bindings.callTargets.get('shared')).toBe(dependency.bindings.functionName);
+		expect(right.bindings.callTargets.get('shared')).toBe(dependency.bindings.functionName);
+	});
+
+	it('reports a missing dependency at the importing file and retains the project include site', async () => {
+		await expect(
+			resolveProjectIncludesAsync(
+				[includeBlock('include std/first')],
+				id => (id === 'std/first' ? library('first', 'std/missing') : undefined),
+				'audio'
+			)
+		).rejects.toMatchObject({
+			message: 'unresolved include "std/missing" (from std/first)',
+			diagnostic: {
+				code: IncludeErrorCode.UNRESOLVED_INCLUDE,
+				location: {
+					kind: 'include-file',
+					includeId: 'std/first',
+					lineNumber: 1,
+					includeSite: { projectBlockId: 42, projectGroupPath: 'audio', lineNumber: 1 },
+				},
+			},
+		});
+	});
+
+	it('reports the full dependency cycle on the line that closes it', async () => {
+		const sources = new Map([
+			['std/first', library('first', 'std/second')],
+			['std/second', library('second', 'std/first')],
+		]);
+		await expect(
+			resolveProjectIncludesAsync([includeBlock('include std/first')], id => sources.get(id))
+		).rejects.toMatchObject({
+			message: 'include cycle: std/first -> std/second -> std/first',
+			diagnostic: {
+				code: IncludeErrorCode.DEPENDENCY_CYCLE,
+				location: { kind: 'include-file', includeId: 'std/second', lineNumber: 1 },
+			},
+		});
 	});
 });

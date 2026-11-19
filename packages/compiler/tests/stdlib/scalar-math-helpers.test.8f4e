@@ -1,0 +1,83 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/softsign
+include std/math/fastSigmoid
+include std/math/wrapIndex
+include std/math/mapRange
+includesEnd
+
+entry test
+module softsignAssertions
+call softsign -3.0
+assertEqual -0.75
+
+call softsign 0.0
+assertEqual 0.0
+
+call softsign 3.0f64
+assertEqual 0.75f64
+
+; The result retains double precision near 1.
+call softsign 1.0000000000000009f64
+assertEqual 0.5000000000000002f64
+moduleEnd
+
+module fastSigmoidAssertions
+call fastSigmoid -3.0
+assertEqual 0.125
+
+call fastSigmoid 0.0
+assertEqual 0.5
+
+call fastSigmoid 3.0f64
+assertEqual 0.875f64
+
+call fastSigmoid -1.0000000000000009f64
+assertEqual 0.2499999999999999f64
+moduleEnd
+
+module wrapIndexAssertions
+call wrapIndex -1 8
+assertEqual 7
+
+call wrapIndex -17 8
+assertEqual 7
+
+call wrapIndex -16 8
+assertEqual 0
+
+call wrapIndex 19 8
+assertEqual 3
+
+call wrapIndex -2147483648 2147483647
+assertEqual 2147483646
+
+call wrapIndex 2147483647 1
+assertEqual 0
+moduleEnd
+
+module mapRangeAssertions
+call mapRange -1.0 -1.0 1.0 10.0 30.0
+assertEqual 10.0
+
+call mapRange 1.0 -1.0 1.0 10.0 30.0
+assertEqual 30.0
+
+call mapRange 0.5 -1.0 1.0 10.0 30.0
+assertEqual 25.0
+
+call mapRange 3.0 4.0 0.0 -10.0 10.0
+assertEqual -5.0
+
+call mapRange 0.25 0.0 1.0 10.0 -10.0
+assertEqual 5.0
+
+call mapRange 2.0 0.0 1.0 10.0 20.0
+assertEqual 30.0
+moduleEnd
+entryEnd

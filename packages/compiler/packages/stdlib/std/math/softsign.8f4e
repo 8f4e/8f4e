@@ -1,0 +1,24 @@
+function softsign
+#export
+; Maps a finite value to -1..1.
+param float value
+
+push value
+push value
+abs
+add 1.0
+ensureNonZero
+div
+functionEnd float
+
+function softsign
+#export
+param float64 value
+
+push value
+push value
+abs
+add 1.0f64
+ensureNonZero
+div
+functionEnd float64

@@ -286,7 +286,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "loadAt",
+              "value": "§std/memory/loadAt§unselected__loadAt",
             },
             {
               "referenceKind": "plain",
@@ -363,7 +363,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "loadAt",
+              "value": "§std/memory/loadAt§unselected__loadAt",
             },
           ],
           "instruction": "call",
@@ -402,6 +402,217 @@
         },
       ],
       "name": "loadRangeAt",
+      "type": "function",
+    },
+    "§std/memory/loadAt§unselected__loadAt__int8u_p__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/memory/loadAt§unselected__loadAt",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int8u*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load8u",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "§std/memory/loadAt§unselected__loadAt",
+      "type": "function",
+    },
+    "§std/memory/loadAt§unselected__loadAt__int_p__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/memory/loadAt§unselected__loadAt",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [],
+          "instruction": "#impure",
+          "isBlockPrologue": true,
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "buffer",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "index",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isPointee": true,
+              "referenceKind": "pointee-element-word-size",
+              "scope": "local",
+              "targetMemoryId": "buffer",
+              "type": "identifier",
+              "value": "sizeof(*buffer)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [],
+          "instruction": "add",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "§std/memory/loadAt§unselected__loadAt",
       "type": "function",
     },
   },
@@ -457,6 +668,42 @@
         ],
         "returns": [
           "int",
+          "int",
+        ],
+      },
+    },
+    "§std/memory/loadAt§unselected__loadAt__int8u_p__int": {
+      "id": "§std/memory/loadAt§unselected__loadAt__int8u_p__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "buffer",
+            "type": "int8u*",
+          },
+          {
+            "name": "index",
+            "type": "int",
+          },
+        ],
+        "returns": [
+          "int",
+        ],
+      },
+    },
+    "§std/memory/loadAt§unselected__loadAt__int_p__int": {
+      "id": "§std/memory/loadAt§unselected__loadAt__int_p__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "buffer",
+            "type": "int*",
+          },
+          {
+            "name": "index",
+            "type": "int",
+          },
+        ],
+        "returns": [
           "int",
         ],
       },
@@ -903,6 +1150,8 @@
   },
   "overview": {
     "compiledFunctions": [
+      "§std/memory/loadAt§unselected__loadAt__int_p__int",
+      "§std/memory/loadAt§unselected__loadAt__int8u_p__int",
       "loadAt__int_p__int",
       "loadAt__int8u_p__int",
       "loadRangeAt__int_p__int",
