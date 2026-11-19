@@ -1,4 +1,5 @@
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 import { createWatchPlugin } from '../src/index';
@@ -29,7 +30,7 @@ test('watch plugin renders its directive', async () => {
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 
-	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, {
+	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});
@@ -67,7 +68,7 @@ test('dereferenced watch follows runtime pointer changes without selection', asy
 	);
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
-	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, {
+	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});

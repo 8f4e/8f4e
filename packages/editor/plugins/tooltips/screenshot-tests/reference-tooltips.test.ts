@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type GlyphIds, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createCompilerResult } from '../src/__tests__/compilerResult';
 import { createEvents } from '../src/__tests__/events';
@@ -99,7 +100,7 @@ entryEnd`);
 	memoryViews.float32[target.allocationUnitAddress] = 1.5;
 	memoryViews.float32[target.allocationUnitAddress + 1] = 2.5;
 	memoryViews.int32[compiled.memoryPlan.modules.inspect.memory.pointer.allocationUnitAddress] = target.byteAddress;
-	const renderer = await initView(store, events, canvas, memoryViews, { loading: store.loading, drawers });
+	const renderer = await initView(store, events, new Engine(canvas), memoryViews, { loading: store.loading, drawers });
 	try {
 		now.mockReturnValue(1000);
 		renderer.renderFrame();

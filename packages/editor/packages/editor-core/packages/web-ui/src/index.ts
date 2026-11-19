@@ -2,7 +2,7 @@ import { toPaletteBytes } from '@8f4e/editor-palette';
 import type { EditorLoadingRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
-import { Engine } from 'glugglugglug';
+import type { Engine } from 'glugglugglug';
 import { subscribeToAppearance, updateGridSize } from './appearance';
 import { getConfiguredFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
@@ -55,19 +55,45 @@ export interface WebUiOptions {
 	renderStatsIntervalFrames?: number;
 }
 
+/** The sprite and render-hook API used by web-ui. Alternative engines can satisfy it structurally. */
+export type WebUiRenderer = Pick<
+	Engine,
+	| 'gl'
+	| 'hooks'
+	| 'frameStats'
+	| 'setPalette'
+	| 'setSpriteAtlas'
+	| 'drawSprite'
+	| 'resize'
+	| 'renderFrame'
+	| 'releaseRenderingMemory'
+	| 'restoreRenderingMemory'
+	| 'destroy'
+>;
+
+/** Initializes web-ui and takes ownership of the supplied renderer, including on startup failure. */
 export default async function init(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	canvas: HTMLCanvasElement,
+	engine: WebUiRenderer,
 	memoryViews: MemoryViews,
 	options: WebUiOptions
-): Promise<{
-	resize: (width: number, height: number) => boolean;
-	releaseRenderingResources: () => void;
-	resetRenderStats: () => void;
-	renderFrame: () => void;
-	destroy: () => void;
-}> {
+) {
+	try {
+		return await mount(store, events, engine, memoryViews, options);
+	} catch (error) {
+		engine.destroy();
+		throw error;
+	}
+}
+
+async function mount(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	engine: WebUiRenderer,
+	memoryViews: MemoryViews,
+	options: WebUiOptions
+) {
 	const state = store.getState();
 	const defaultFont = options.defaultFont ?? DEFAULT_FONT;
 	const [initialFontAtlas] = await Promise.all([loadFontAtlas(defaultFont), options.initialProjectReady]);
@@ -75,7 +101,6 @@ export default async function init(
 	const fontAtlas = font === defaultFont ? initialFontAtlas : await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	updateGridSize(state, events, fontAtlas);
-	const engine = new Engine(canvas);
 	let frameStartedAt = performance.now();
 	engine.hooks.preDraw.push(() => {
 		frameStartedAt = performance.now();
@@ -86,8 +111,8 @@ export default async function init(
 	engine.setPalette(paletteBytes);
 	background.setPalette(paletteBytes);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
-	let viewportWidth = canvas.width;
-	let viewportHeight = canvas.height;
+	let viewportWidth = engine.gl.drawingBufferWidth || state.viewport.width || 1;
+	let viewportHeight = engine.gl.drawingBufferHeight || state.viewport.height || 1;
 	let renderedFrameCount = 0;
 	let statsSampleStartFrameCount = 0;
 	let statsSampleStartTime = performance.now();
@@ -105,7 +130,6 @@ export default async function init(
 		renderLayers = drawers.attachRenderLayers({ gl: engine.gl, palette });
 	} catch (error) {
 		background.destroy();
-		engine.destroy();
 		throw error;
 	}
 	const unsubscribeAppearance = subscribeToAppearance(
@@ -181,8 +205,7 @@ export default async function init(
 		renderLayers.releaseMemory();
 		engine.releaseRenderingMemory();
 		renderingResourcesReleased = true;
-		canvas.width = 1;
-		canvas.height = 1;
+		engine.resize(1, 1);
 	};
 	const restoreRenderingResources = () => {
 		if (!renderingResourcesReleased) {
@@ -199,7 +222,7 @@ export default async function init(
 	};
 
 	return {
-		resize: (width, height) => {
+		resize: (width: number, height: number) => {
 			viewportWidth = width;
 			viewportHeight = height;
 			if (renderingResourcesReleased) {

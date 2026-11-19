@@ -2,6 +2,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -33,7 +34,10 @@ test('applies project appearance settings and restores defaults after project re
 	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
 		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
 	});
-	const renderer = await init(store, events, canvas, createMockMemoryViews(), { loading: store.loading, drawers });
+	const renderer = await init(store, events, new Engine(canvas), createMockMemoryViews(), {
+		loading: store.loading,
+		drawers,
+	});
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: canvas.width, canvasHeight: canvas.height });
 	const module = {

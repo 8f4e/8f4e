@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { PaletteConfig } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { wavePlugin } from '../src/index';
@@ -64,7 +65,7 @@ entryEnd`);
 	};
 	initialize(memoryViews, compiled.memoryPlan.modules.audio.memory);
 
-	const renderer = await initView(store, events, canvas, memoryViews, {
+	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});

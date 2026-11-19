@@ -19,6 +19,7 @@ import initView, {
 	registerWebUiConfig,
 	type WebUiOptions,
 } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 
 import { disposeAll } from './disposeAll';
 import initEvents from './events';
@@ -195,9 +196,10 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		};
 		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
+		const renderer = new Engine(canvas);
 		const initialProjectReady = events.dispatchAsync('init');
 
-		view = await initView(store, events, canvas, memoryViews, {
+		view = await initView(store, events, renderer, memoryViews, {
 			loading: store.loading,
 			defaultFont: options.defaultFont,
 			initialProjectReady,

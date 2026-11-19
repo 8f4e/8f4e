@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { createSliderPlugin } from '../src/index';
@@ -64,7 +65,7 @@ entryEnd`);
 	memoryViews.float32[memory.middle.allocationUnitAddress] = 0.5;
 	memoryViews.float32[memory.maximum.allocationUnitAddress] = 1;
 
-	const renderer = await initView(store, events, canvas, memoryViews, {
+	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});

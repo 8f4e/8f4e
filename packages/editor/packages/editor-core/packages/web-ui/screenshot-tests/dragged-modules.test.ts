@@ -1,6 +1,7 @@
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -20,10 +21,16 @@ test('dragged module', async () => {
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
 
-	const renderer = await init(createStateManager(mockState), createMockEventDispatcher(), canvas, memoryViews, {
-		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
-		drawers,
-	});
+	const renderer = await init(
+		createStateManager(mockState),
+		createMockEventDispatcher(),
+		new Engine(canvas),
+		memoryViews,
+		{
+			loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
+			drawers,
+		}
+	);
 
 	try {
 		const codeLines = [
