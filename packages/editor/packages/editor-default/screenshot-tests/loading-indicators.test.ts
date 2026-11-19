@@ -107,9 +107,9 @@ entryEnd`);
 			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
 		);
 		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual(['done', 'done', 'failed']);
-		now.mockReturnValue(3350);
-		frameTime.mockReturnValue(1000);
-		await vi.advanceTimersByTimeAsync(1000);
+		now.mockReturnValue(2850);
+		frameTime.mockReturnValue(500);
+		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 	} finally {

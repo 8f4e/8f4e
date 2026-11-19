@@ -46,14 +46,14 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		loading.add({ id: 'cancelled', message: 'Starting a superseded operation with a long message...' }).cancel();
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-settling');
-		now.mockReturnValue(3400);
-		frameTime.mockReturnValue(1000);
-		await vi.advanceTimersByTimeAsync(1000);
+		now.mockReturnValue(2900);
+		frameTime.mockReturnValue(500);
+		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(5501);
 		frameTime.mockReturnValue(3101);
-		await vi.advanceTimersByTimeAsync(2101);
+		await vi.advanceTimersByTimeAsync(2601);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-failures-retained');
 		expect(editor.state.loadingIndicators).toHaveLength(5);

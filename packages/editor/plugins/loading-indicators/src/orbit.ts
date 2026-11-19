@@ -31,7 +31,7 @@ const TAPER = '○•∙·';
 export const ORBIT_FRAMES = PATH.map((_, head) => {
 	const rows = Array.from({ length: ORBIT_ROWS }, () => Array<string>(ORBIT_COLUMNS).fill(' '));
 	for (const [index, [x, y]] of PATH.entries()) {
-		rows[y][x] = TAPER[(head + PATH.length - index) % PATH.length] ?? '·';
+		rows[y][x] = TAPER[(head + PATH.length - index) % PATH.length] ?? ' ';
 	}
 	return rows.map(row => row.join(''));
 });

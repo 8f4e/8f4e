@@ -10,7 +10,7 @@ type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextS
 // One cell before the orbit and one blank cell before the text panel's own padding.
 const GUTTER_COLUMNS = ORBIT_COLUMNS + 2;
 const MIN_TEXT_COLUMNS = 16;
-const ORBIT_LINGER_MS = 1000;
+const ORBIT_LINGER_MS = 500;
 const ORBIT_GLYPH_FRAMES = ORBIT_FRAMES.map(frame => frame.map(textToGlyphIds));
 
 function formatElapsedTime(elapsed: number): string {
