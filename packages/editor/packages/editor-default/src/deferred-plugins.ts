@@ -6,11 +6,13 @@ import type { createDefaultEditorPlugins } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
 export function createDeferredEditorPlugin(
-	options: Parameters<typeof createDefaultEditorPlugins>[0] & { fileSession: ProjectFileSession }
+	options: Parameters<typeof createDefaultEditorPlugins>[0] & {
+		fileSession: ProjectFileSession;
+		prefersReducedMotion: () => boolean;
+	}
 ): EditorPlugin {
 	const { canvas, fileSession, includeKeyboardModeSwitching = true } = options;
 	const browserWindow = canvas.ownerDocument.defaultView!;
-	const motionPreference = browserWindow.matchMedia('(prefers-reduced-motion: reduce)');
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
 	return createLazyPluginLoaderPlugin([
@@ -262,7 +264,7 @@ export function createDeferredEditorPlugin(
 		},
 		...createLazyPluginRegistry({
 			inputTarget: canvas,
-			prefersReducedMotion: () => motionPreference.matches,
+			prefersReducedMotion: options.prefersReducedMotion,
 			navigator: browserWindow.navigator,
 			writeMemory: options.writeMemory,
 			getMemory: options.getMemory,

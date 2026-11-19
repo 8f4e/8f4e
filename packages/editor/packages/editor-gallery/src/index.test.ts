@@ -29,7 +29,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			finish = resolve;
 		})
 	);
-	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
+	const browserWindow = { navigator: {}, matchMedia: vi.fn((_query: string) => ({ matches: false })) };
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
 	const onInitialProjectLoaded = vi.fn();
 	const mounting = mountGalleryEditor(canvas, {
@@ -56,6 +56,10 @@ it('starts without storage and reports empty-project readiness after initializat
 	]);
 	expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
 	const deferredPlugins = await loadDeferredPlugins();
+	expect(browserWindow.matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+	expect(
+		browserWindow.matchMedia.mock.calls.filter(([query]) => query === '(prefers-reduced-motion: reduce)')
+	).toHaveLength(1);
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(createFontPreviewPlugin).toHaveBeenCalledWith({ inputTarget: canvas, defaultFont: undefined });
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 1 });

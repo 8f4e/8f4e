@@ -4,8 +4,10 @@ import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { expect, test, vi } from 'vitest';
+
+const loadingIndicatorsPlugin = createLoadingIndicatorsPlugin({ prefersReducedMotion: () => true });
 
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
@@ -106,6 +108,8 @@ entryEnd`);
 			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
 		);
 		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual(['done', 'done', 'failed']);
+		now.mockReturnValue(2850);
+		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 	} finally {

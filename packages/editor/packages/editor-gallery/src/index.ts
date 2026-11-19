@@ -4,7 +4,7 @@ import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-backgr
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
 import { resolveStdlibInclude } from './stdlib-resolver';
@@ -47,13 +47,15 @@ export async function mountGalleryEditor(
 ): Promise<GalleryEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
 	const fileSession = createProjectFileSession();
+	const motionPreference = canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
+	const prefersReducedMotion = () => motionPreference.matches;
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
 			fileSession.plugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
-			loadingIndicatorsPlugin,
+			createLoadingIndicatorsPlugin({ prefersReducedMotion }),
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,
@@ -67,6 +69,7 @@ export async function mountGalleryEditor(
 							canvas,
 							compiler,
 							fileSession,
+							prefersReducedMotion,
 							sharedAudioContext,
 							includeKeyboardModeSwitching,
 							captureWheel,

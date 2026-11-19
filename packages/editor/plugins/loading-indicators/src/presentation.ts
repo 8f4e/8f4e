@@ -2,10 +2,16 @@ import type { EditorPluginContext, LoadingIndicator } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import type { LoadingIndicatorsPluginOptions } from './options';
+import { ORBIT_COLUMNS, ORBIT_GLYPH_FRAMES, ORBIT_ROWS } from './orbit';
 import { installVisibility } from './visibility';
 
 type TextSpan = { x: number; glyphs: GlyphIds; color: PaletteIndex };
 type Row = { indicator: LoadingIndicator; y: number; width: number; spans: TextSpan[] };
+// One cell before the orbit and one blank cell before the text panel's own padding.
+const GUTTER_COLUMNS = ORBIT_COLUMNS + 2;
+const MIN_TEXT_COLUMNS = 16;
+const ORBIT_LINGER_MS = 500;
+const RENDERS_PER_ORBIT_STEP = 3;
 
 function formatElapsedTime(elapsed: number): string {
 	return elapsed < 1000 ? `${Math.floor(elapsed)} ms` : `${(elapsed / 1000).toFixed(1)} s`;
@@ -40,17 +46,20 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 	return { indicator, y, width: (message.length + statusText.length + durationText.length + 2) * grid, spans };
 }
 
-/** Prepare text on state/geometry changes; only visible pending rows need timed elapsed updates. */
+/** Prepare the overlay layout outside drawing; let the orbit linger briefly after pending work settles. */
 export function installPresentation(
 	{ store, events, drawers }: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>,
 	options: Required<LoadingIndicatorsPluginOptions>
 ): () => void {
 	const state = store.getState();
 	let rows: Row[] = [];
-	let top = 0;
+	let bottom = 0;
 	let rowHeight = 0;
 	let columns = 0;
 	let grid = 0;
+	let canDrawOrbit = false;
+	let orbitRender = 0;
+	let orbitUntil = -Infinity;
 	let elapsedTimer: ReturnType<typeof setInterval> | undefined;
 	const updateElapsed = () => {
 		const now = Date.now();
@@ -61,19 +70,29 @@ export function installPresentation(
 	};
 	const prepare = () => {
 		const { width, height, vGrid, hGrid } = state.viewport;
-		columns = Math.max(0, Math.floor(width / vGrid) - 2);
-		const count = Math.min(options.maxVisibleRows, Math.max(0, Math.floor(height / hGrid) - 1));
 		grid = vGrid;
 		rowHeight = hGrid;
+		const availableColumns = Math.floor(width / grid);
+		const availableRows = Math.floor(height / rowHeight);
+		bottom = availableRows * rowHeight;
+		const indicators = state.featureFlags.canvasOverlays
+			? state.loadingIndicators.filter(visibility.isVisible).slice(0, Math.min(options.maxVisibleRows, availableRows))
+			: [];
 		const now = Date.now();
-		rows =
-			columns && state.featureFlags.canvasOverlays
-				? state.loadingIndicators
-						.filter(visibility.isVisible)
-						.slice(0, count)
-						.map((indicator, index) => prepareRow(indicator, columns, grid, index * rowHeight, now))
-				: [];
-		top = height - (rows.length + 1) * rowHeight;
+		if (now >= orbitUntil) orbitRender = 0;
+		orbitUntil = state.loadingIndicators.reduce(
+			(until, { finishedAt }) => (finishedAt === null ? Infinity : Math.max(until, finishedAt + ORBIT_LINGER_MS)),
+			-Infinity
+		);
+		const fitsOrbit = availableRows >= ORBIT_ROWS && availableColumns > ORBIT_COLUMNS;
+		canDrawOrbit = fitsOrbit && indicators.length > 0;
+		columns = availableColumns - GUTTER_COLUMNS - 2;
+		const fitsText = fitsOrbit && columns >= MIN_TEXT_COLUMNS;
+		rows = fitsText
+			? indicators.map((indicator, index) =>
+					prepareRow(indicator, columns, grid, (index - indicators.length) * rowHeight, now)
+				)
+			: [];
 		if (rows.some(row => row.indicator.status === 'loading')) {
 			elapsedTimer ??= setInterval(updateElapsed, options.elapsedUpdateIntervalMs);
 		} else {
@@ -83,11 +102,22 @@ export function installPresentation(
 	};
 	const visibility = installVisibility(store, prepare, options);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
-		if (!rows.length) return;
-		draw.startGroup(0, top);
+		const drawOrbit = canDrawOrbit && (orbitUntil === Infinity || Date.now() < orbitUntil);
+		if (!rows.length && !drawOrbit) return;
+		draw.startGroup(0, bottom);
+		if (drawOrbit) {
+			const reducedMotion = options.prefersReducedMotion();
+			const step = reducedMotion ? 0 : Math.floor(orbitRender / RENDERS_PER_ORBIT_STEP);
+			const frame = ORBIT_GLYPH_FRAMES[step];
+			for (const [index, glyphs] of frame.entries()) {
+				draw.drawGlyphs(grid, (index - ORBIT_ROWS) * rowHeight, glyphs, PALETTE_INDICES.floatingInk);
+			}
+			if (!reducedMotion) orbitRender = (orbitRender + 1) % (ORBIT_GLYPH_FRAMES.length * RENDERS_PER_ORBIT_STEP);
+		}
+		const textLeft = GUTTER_COLUMNS * grid;
 		for (const row of rows) {
-			draw.drawFill(0, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);
-			for (const span of row.spans) draw.drawGlyphs(span.x, row.y, span.glyphs, span.color);
+			draw.drawFill(textLeft, row.y, PALETTE_INDICES.floatingSurface, row.width, rowHeight);
+			for (const span of row.spans) draw.drawGlyphs(textLeft + span.x, row.y, span.glyphs, span.color);
 		}
 		draw.endGroup();
 	});

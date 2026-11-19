@@ -1,5 +1,5 @@
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { expect, test, vi } from 'vitest';
 
 test('draws contributor messages, elapsed times and terminal results with independent visibility', async () => {
@@ -16,7 +16,7 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 	try {
 		editor = await initEditor(canvas, {
 			plugins: [
-				loadingIndicatorsPlugin,
+				createLoadingIndicatorsPlugin({ prefersReducedMotion: () => true }),
 				{
 					id: 'test-contributor',
 					setup: context => {
@@ -34,6 +34,12 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		vi.advanceTimersByTime(100);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-pending');
+		canvas.style.width = '192px';
+		editor.resize(192, 320);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('loading-indicators-orbit-only');
+		canvas.style.width = '512px';
+		editor.resize(512, 320);
 		now.mockReturnValue(1760);
 		download.done();
 		missing.fail();
@@ -44,9 +50,13 @@ test('draws contributor messages, elapsed times and terminal results with indepe
 		compilation.done();
 		loading.add({ id: 'cancelled', message: 'Starting a superseded operation with a long message...' }).cancel();
 		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('loading-indicators-settling');
+		now.mockReturnValue(2900);
+		await vi.advanceTimersByTimeAsync(500);
+		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
 		now.mockReturnValue(5501);
-		await vi.advanceTimersByTimeAsync(3101);
+		await vi.advanceTimersByTimeAsync(2601);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('loading-indicators-failures-retained');
 		expect(editor.state.loadingIndicators).toHaveLength(5);

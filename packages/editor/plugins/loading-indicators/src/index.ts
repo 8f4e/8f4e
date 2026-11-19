@@ -4,8 +4,9 @@ import { installPresentation } from './presentation';
 
 export type { LoadingIndicatorsPluginOptions } from './options';
 
-/** Creates loading-indicator presentation with optional row limits and lifecycle timings. */
+/** Creates loading-indicator presentation with a host motion policy and optional limits and timings. */
 export function createLoadingIndicatorsPlugin({
+	prefersReducedMotion,
 	maxVisibleRows = 20,
 	elapsedUpdateIntervalMs = 100,
 	hideIntervalMs = 25,
@@ -16,8 +17,9 @@ export function createLoadingIndicatorsPlugin({
 	slowDoneVisibleMs = 3000,
 	failedVisibleMs = 5000,
 	cancelledVisibleMs = 5000,
-}: LoadingIndicatorsPluginOptions = {}): EditorPlugin {
+}: LoadingIndicatorsPluginOptions): EditorPlugin {
 	const options = {
+		prefersReducedMotion,
 		maxVisibleRows,
 		elapsedUpdateIntervalMs,
 		hideIntervalMs,
@@ -34,6 +36,3 @@ export function createLoadingIndicatorsPlugin({
 		setup: context => installPresentation(context, options),
 	};
 }
-
-/** Default presentation instance for compositions that do not need custom settings. */
-export const loadingIndicatorsPlugin = createLoadingIndicatorsPlugin();
