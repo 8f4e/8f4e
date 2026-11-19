@@ -13,7 +13,7 @@ import type { MemoryViews } from './types';
 
 export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
 export { registerWebUiConfig } from './config';
-export { DrawContext } from './drawContext';
+export { DrawContext, type SpriteTarget } from './drawContext';
 export type {
 	CanvasDrawer,
 	CanvasDrawerContext,
