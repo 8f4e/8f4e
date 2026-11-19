@@ -6,6 +6,13 @@ with one decimal place otherwise. Done and failed results receive green and red 
 neutral label. Elapsed time stops at completion. Messages are clipped to the viewport, reserving room for status
 and time. By default, the list shows at most 20 rows, or fewer when the viewport cannot fit them.
 
+On viewports with room for the 8×4 loader and at least 16 text columns, the text sits to the right of a shared
+orbit with shrinking circles following a square path. Both sit on whole cells in the editor grid, down to the last
+full row. The orbit has no background fill, and a blank column separates it from the text panels. Its phase follows
+the page's clock, so remounting an editor does not restart the loop. It runs until the last visible message disappears,
+including finished results during their grace period. With reduced motion it shows a stationary frame. Narrow or
+short viewports keep the text-only layout.
+
 Install `loadingIndicatorsPlugin` through the ordinary plugin contract. This default instance is created by
 `createLoadingIndicatorsPlugin()` and keeps existing usage unchanged. Install it eagerly before the deferred
 loader so the initial feature imports can be shown. `canvasOverlays` controls drawing. There is no configuration
@@ -38,9 +45,10 @@ operation-duration thresholds are inclusive.
 | `failedVisibleMs` | `5000` | Visibility after failure |
 | `cancelledVisibleMs` | `5000` | Visibility after cancellation |
 
-Text, clipping, colors, and positions are prepared when indicators, viewport size, or font metrics change. Frames
-only draw those prepared rows. By default, visible pending rows refresh elapsed labels every 100 ms outside rendering;
-completed rows retain their prepared text. The elapsed timer stops when no pending rows are visible.
+Text, clipping, colors, and positions are prepared when indicators, viewport size, or font metrics change. Drawing
+uses those prepared rows and selects from cached orbit frames without a separate animation timer. By default,
+visible pending rows refresh elapsed labels every 100 ms outside rendering; completed rows retain their prepared
+text. The elapsed timer stops when no pending rows are visible.
 
 Plugins contribute through `loading` in their setup context:
 

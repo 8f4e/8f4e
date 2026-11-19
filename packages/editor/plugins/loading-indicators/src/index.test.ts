@@ -6,10 +6,12 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createLoadingIndicatorsPlugin, loadingIndicatorsPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
+const TEXT_X_WITH_ORBIT = 88;
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 	vi.useRealTimers();
 	vi.restoreAllMocks();
+	vi.unstubAllGlobals();
 });
 
 function setup(width = 320, height = 160, plugin = loadingIndicatorsPlugin) {
@@ -41,11 +43,11 @@ function setup(width = 320, height = 160, plugin = loadingIndicatorsPlugin) {
 it('draws cached results, hides them by outcome, and retains every contribution', () => {
 	vi.useFakeTimers();
 	vi.setSystemTime(1000);
-	const test = setup();
+	const test = setup(352);
 	const visibleMessages = () => {
 		test.draw.drawGlyphs.mockClear();
 		test.render();
-		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8).map(([, , text]) => text);
+		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === TEXT_X_WITH_ORBIT).map(([, , text]) => text);
 	};
 	expect(vi.getTimerCount()).toBe(0);
 	test.render();
@@ -77,18 +79,23 @@ it('draws cached results, hides them by outcome, and retains every contribution'
 	test.render();
 	test.render();
 	expect(clock).not.toHaveBeenCalled();
-	expect(test.draw.startGroup).toHaveBeenLastCalledWith(0, 64);
-	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(8, 0, textToGlyphIds('Compiling...'), PALETTE_INDICES.floatingInk);
-	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(104, 0, textToGlyphIds(' done'), PALETTE_INDICES.positiveBase);
-	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(144, 0, textToGlyphIds(' 270 ms'), PALETTE_INDICES.floatingMuted);
-	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(144, 16, textToGlyphIds(' failed'), PALETTE_INDICES.negativeBase);
+	expect(test.draw.startGroup).toHaveBeenLastCalledWith(0, 80);
 	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
-		96,
+		TEXT_X_WITH_ORBIT,
+		0,
+		textToGlyphIds('Compiling...'),
+		PALETTE_INDICES.floatingInk
+	);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(184, 0, textToGlyphIds(' done'), PALETTE_INDICES.positiveBase);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(224, 0, textToGlyphIds(' 270 ms'), PALETTE_INDICES.floatingMuted);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(224, 16, textToGlyphIds(' failed'), PALETTE_INDICES.negativeBase);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+		176,
 		32,
 		textToGlyphIds(' cancelled'),
 		PALETTE_INDICES.floatingMuted
 	);
-	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(136, 48, textToGlyphIds(' 1.2 s'), PALETTE_INDICES.floatingMuted);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(216, 48, textToGlyphIds(' 1.2 s'), PALETTE_INDICES.floatingMuted);
 	expect(test.store.getState().dialogStack).toEqual([]);
 	const changed = vi.fn();
 	test.store.subscribe('loadingIndicators', changed);
@@ -155,7 +162,7 @@ it('limits messages and lists to the viewport while reserving room for elapsed t
 		test.store.loading.add({ id, message });
 	test.render();
 	expect(test.draw.startGroup).toHaveBeenCalledWith(0, 0);
-	expect(test.draw.drawFill).toHaveBeenCalledTimes(2);
+	expect(test.draw.drawFill).toHaveBeenCalledTimes(3);
 	for (const [x, , text] of test.draw.drawGlyphs.mock.calls) expect(x / 8 - 1 + text.length).toBeLessThanOrEqual(14);
 	test.store.set('viewport.width', 64);
 	test.draw.drawGlyphs.mockClear();
@@ -176,6 +183,148 @@ it('limits messages and lists to the viewport while reserving room for elapsed t
 	test.render();
 	expect(test.draw.drawFill).toHaveBeenCalledTimes(20);
 	expect(test.store.getState().loadingIndicators).toHaveLength(22);
+});
+
+it('keeps one square orbit to the left of the rows until the last result expires', () => {
+	vi.useFakeTimers();
+	const test = setup();
+	const pending = test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
+	const orbit = () => {
+		test.draw.drawGlyphs.mockClear();
+		test.render();
+		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8).map(([, , glyphs]) => glyphs);
+	};
+	const first = ['······∙•', '·      ○', '·      ·', '········'].map(textToGlyphIds);
+	const second = ['·······∙', '·      •', '·      ○', '········'].map(textToGlyphIds);
+	expect(orbit()).toEqual(first);
+	expect(test.draw.startGroup).toHaveBeenLastCalledWith(0, 96);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+		TEXT_X_WITH_ORBIT,
+		16,
+		textToGlyphIds('Compiling...'),
+		PALETTE_INDICES.floatingInk
+	);
+	vi.advanceTimersByTime(77);
+	expect(orbit()).toEqual(first);
+	vi.advanceTimersByTime(1);
+	expect(orbit()).toEqual(second);
+	vi.advanceTimersByTime(78);
+	expect(orbit()[3]).toEqual(textToGlyphIds('·······○'));
+	vi.advanceTimersByTime(18 * 78);
+	expect(orbit()).toEqual(first);
+	pending.done();
+	expect(orbit()).toEqual(first);
+	expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
+		TEXT_X_WITH_ORBIT,
+		16,
+		textToGlyphIds('Compiling...'),
+		PALETTE_INDICES.floatingInk
+	);
+	vi.advanceTimersByTime(78);
+	expect(orbit()).toEqual(second);
+	vi.advanceTimersByTime(3000 - 78);
+	expect(orbit()).toHaveLength(4);
+	vi.advanceTimersByTime(1);
+	expect(orbit()).toEqual([]);
+	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+});
+
+it('pins the orbit to the bottom left without a fill as messages are added and expire', () => {
+	vi.useFakeTimers();
+	const test = setup();
+	test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
+	const checkLayout = (visibleRows: number) => {
+		test.draw.drawFill.mockClear();
+		test.draw.drawGlyphs.mockClear();
+		test.render();
+		const [left, top] = test.draw.startGroup.mock.lastCall!;
+		const orbitCells = test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8).map(([x, y]) => [left + x, top + y]);
+		expect(orbitCells).toEqual([
+			[8, 96],
+			[8, 112],
+			[8, 128],
+			[8, 144],
+		]);
+		expect(test.draw.drawFill.mock.calls.map(([x]) => x)).toEqual(Array(visibleRows).fill(80));
+	};
+	checkLayout(1);
+	for (let index = 0; index < 5; index++) {
+		test.store.loading.add({ id: `task-${index}`, message: 'Loading asset...' }).done();
+	}
+	checkLayout(6);
+	vi.advanceTimersByTime(1101);
+	checkLayout(1);
+});
+
+it('keeps the orbit phase when a new editor is mounted', () => {
+	vi.useFakeTimers();
+	const first = setup();
+	first.store.loading.add({ id: 'initial', message: 'Loading first project...' });
+	vi.advanceTimersByTime(156);
+	first.render();
+	const orbit = first.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8);
+	expect(orbit.map(([, , glyphs]) => glyphs)[3]).toEqual(textToGlyphIds('·······○'));
+	first.dispose();
+
+	const second = setup();
+	second.store.loading.add({ id: 'replacement', message: 'Loading second project...' });
+	second.render();
+	expect(second.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8)).toEqual(orbit);
+});
+
+it('aligns glyphs and text fills to whole cells on a viewport with partial rows and columns', () => {
+	vi.useFakeTimers();
+	const test = setup(327, 173);
+	test.store.loading.add({ id: 'compiler', message: 'Compiling...' }).done();
+	const checkGrid = (cellWidth: number, cellHeight: number) => {
+		test.draw.drawFill.mockClear();
+		test.draw.drawGlyphs.mockClear();
+		test.render();
+		const [left, top] = test.draw.startGroup.mock.lastCall!;
+		const orbit = test.draw.drawGlyphs.mock.calls.filter(([x]) => x === cellWidth);
+		expect(orbit.map(([, y]) => top + y)).toEqual(
+			[4, 3, 2, 1].map(offset => (Math.floor(173 / cellHeight) - offset) * cellHeight)
+		);
+		for (const [x, y] of [...test.draw.drawGlyphs.mock.calls, ...test.draw.drawFill.mock.calls]) {
+			expect((left + x) % cellWidth).toBe(0);
+			expect((top + y) % cellHeight).toBe(0);
+		}
+	};
+	checkGrid(8, 16);
+	test.store.loading.add({ id: 'assets', message: 'Loading assets...' });
+	test.store.loading.add({ id: 'plugins', message: 'Loading plugins...' });
+	checkGrid(8, 16);
+	Object.assign(test.store.getState().viewport, { vGrid: 5, hGrid: 11 });
+	test.events.dispatch('gridSizeChanged');
+	checkGrid(5, 11);
+});
+
+it('freezes the orbit for reduced motion and falls back to text on a narrow or short viewport', () => {
+	vi.useFakeTimers();
+	vi.stubGlobal(
+		'matchMedia',
+		vi.fn(() => ({ matches: true }))
+	);
+	const test = setup();
+	test.store.loading.add({ id: 'compiler', message: 'Compiling...' });
+	const render = () => {
+		test.draw.drawGlyphs.mockClear();
+		test.draw.drawFill.mockClear();
+		test.render();
+		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8).map(([, , glyphs]) => glyphs);
+	};
+	const initial = render();
+	expect(initial).toHaveLength(4);
+	vi.advanceTimersByTime(260);
+	expect(render()).toEqual(initial);
+	for (const [width, height] of [
+		[223, 160],
+		[320, 63],
+	]) {
+		test.events.dispatch('resize', { canvasWidth: width, canvasHeight: height });
+		expect(render()).toEqual([textToGlyphIds('Compiling...')]);
+		expect(test.draw.drawFill).toHaveBeenCalledTimes(1);
+	}
 });
 
 it('applies custom row limits, refresh intervals, and result visibility timings', () => {
@@ -200,7 +349,7 @@ it('applies custom row limits, refresh intervals, and result visibility timings'
 	const visibleMessages = () => {
 		test.draw.drawGlyphs.mockClear();
 		test.render();
-		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === 8).map(([, , text]) => text);
+		return test.draw.drawGlyphs.mock.calls.filter(([x]) => x === TEXT_X_WITH_ORBIT).map(([, , text]) => text);
 	};
 	const fast = test.store.loading.add({ id: 'fast', message: 'Fast' });
 	const alsoFast = test.store.loading.add({ id: 'also-fast', message: 'Also fast' });

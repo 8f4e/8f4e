@@ -10,6 +10,7 @@ import { expect, test, vi } from 'vitest';
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+	vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
@@ -120,6 +121,7 @@ entryEnd`);
 test('shows the initial deferred import through an eagerly installed loading drawer', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+	vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 160;

@@ -5,6 +5,7 @@ import { expect, test, vi } from 'vitest';
 test('draws contributor messages, elapsed times and terminal results with independent visibility', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
 	const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+	vi.spyOn(performance, 'now').mockReturnValue(0);
 	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 320;
