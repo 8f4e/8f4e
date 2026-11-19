@@ -51,5 +51,4 @@ The plugin uses the existing tooltip font and fill entries in the sprite palette
 npx nx run @8f4e/editor-plugin-tooltips:build
 npx nx run @8f4e/editor-plugin-tooltips:test
 npx nx run @8f4e/editor-plugin-tooltips:typecheck
-npx nx run @8f4e/editor-plugin-tooltips:test:screenshot
 ```

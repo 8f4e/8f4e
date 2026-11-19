@@ -1,15 +1,13 @@
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
+import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
-import { setup } from '../src/__tests__/setup';
-import { createWatchPlugin } from '../src/index';
+import { createWatchPlugin } from '../index';
+import { setup } from './setup';
 
 test('watch plugin renders its directive', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 768;
-	canvas.height = 512;
-	canvas.style.background = '#000';
-	document.body.append(canvas);
+	const width = 768;
+	const height = 512;
+	const ascii = new AsciiRenderer(width, height);
 	const drawers = createEditorDrawerRegistry();
 	const test = await setup(
 		createWatchPlugin({ prefersReducedMotion: () => true }),
@@ -27,28 +25,26 @@ test('watch plugin renders its directive', async () => {
 		],
 		{ drawers }
 	);
-	test.state.viewport.width = canvas.width;
-	test.state.viewport.height = canvas.height;
+	test.state.viewport.width = width;
+	test.state.viewport.height = height;
 
-	const renderer = await initView(test.store, test.events, createAsciiCanvasRenderer(canvas), test.memoryViews, {
+	const renderer = await initView(test.store, test.events, ascii, test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});
 
 	try {
 		renderer.renderFrame();
-		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/watch.viewport.snap');
+		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot('./__snapshots__/watch.viewport.snap');
 	} finally {
 		renderer.destroy();
-		canvas.remove();
 	}
 });
 
 test('dereferenced watch follows runtime pointer changes without selection', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 512;
-	canvas.height = 256;
-	document.body.append(canvas);
+	const width = 512;
+	const height = 256;
+	const ascii = new AsciiRenderer(width, height);
 	const drawers = createEditorDrawerRegistry();
 	const test = await setup(
 		createWatchPlugin({ prefersReducedMotion: () => true }),
@@ -66,24 +62,23 @@ test('dereferenced watch follows runtime pointer changes without selection', asy
 		],
 		{ drawers, mode: 'view' }
 	);
-	test.state.viewport.width = canvas.width;
-	test.state.viewport.height = canvas.height;
-	const renderer = await initView(test.store, test.events, createAsciiCanvasRenderer(canvas), test.memoryViews, {
+	test.state.viewport.width = width;
+	test.state.viewport.height = height;
+	const renderer = await initView(test.store, test.events, ascii, test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
 	});
 	try {
 		renderer.renderFrame();
-		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot(
 			'./__snapshots__/dereferenced-watch-before-execution.viewport.snap'
 		);
 		test.run();
 		renderer.renderFrame();
-		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot(
 			'./__snapshots__/dereferenced-watch-after-execution.viewport.snap'
 		);
 	} finally {
 		renderer.destroy();
-		canvas.remove();
 	}
 });

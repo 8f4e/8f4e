@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@8f4e/web-ui-testing": "*",
-    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
     "vitest": "4.1.12",

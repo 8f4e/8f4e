@@ -1,17 +1,15 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
+import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
-import { createEvents } from '../src/__tests__/events';
-import { createButtonPlugin } from '../src/index';
+import { createButtonPlugin } from '../index';
+import { createEvents } from './events';
 
 test('button plugin draws off and on values', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 512;
-	canvas.height = 256;
-	canvas.style.background = '#000';
-	document.body.append(canvas);
+	const width = 512;
+	const height = 256;
+	const ascii = new AsciiRenderer(width, height);
 	const project = parseProjectSource(`8f4e/v1
 entry main
 module controls
@@ -38,8 +36,8 @@ entryEnd`);
 		drawers,
 	});
 	const state = store.getState();
-	state.viewport.width = canvas.width;
-	state.viewport.height = canvas.height;
+	state.viewport.width = width;
+	state.viewport.height = height;
 	state.compiler.result.memoryPlan = compiled.memoryPlan;
 	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
 	state.compiler.result.compiledModules = compiled.compiledModules;
@@ -69,18 +67,17 @@ entryEnd`);
 	};
 	memoryViews.int32[compiled.memoryPlan.modules.controls.memory.on.allocationUnitAddress] = 1;
 
-	const renderer = await initView(store, events, createAsciiCanvasRenderer(canvas), memoryViews, {
+	const renderer = await initView(store, events, ascii, memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
 
 	try {
 		renderer.renderFrame();
-		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/button-values.viewport.snap');
+		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot('./__snapshots__/button-values.viewport.snap');
 	} finally {
 		renderer.destroy();
 		disposePlugin();
 		store.dispose();
-		canvas.remove();
 	}
 });

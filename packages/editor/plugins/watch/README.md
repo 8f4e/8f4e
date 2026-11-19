@@ -52,5 +52,4 @@ The block drawer runs in registration order with other code-block drawers, inclu
 npx nx run @8f4e/editor-plugin-watch:build
 npx nx run @8f4e/editor-plugin-watch:test
 npx nx run @8f4e/editor-plugin-watch:typecheck
-npx nx run @8f4e/editor-plugin-watch:test:screenshot
 ```

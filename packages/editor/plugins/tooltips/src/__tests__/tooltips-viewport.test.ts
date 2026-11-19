@@ -1,11 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
-import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
+import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
-import { createCompilerResult } from '../src/__tests__/compilerResult';
-import { createEvents } from '../src/__tests__/events';
-import { tooltipsPlugin } from '../src/index';
+import { tooltipsPlugin } from '../index';
+import { createCompilerResult } from './compilerResult';
+import { createEvents } from './events';
 
 test.each([
 	{ name: 'instruction stack analysis', row: 4, inline: false, call: false },
@@ -15,11 +15,9 @@ test.each([
 	{ name: 'named call signature', row: 1, inline: false, call: true },
 ])('tooltips plugin draws $name', async ({ name, row, inline, call, continued }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
-	const canvas = document.createElement('canvas');
-	canvas.width = 768;
-	canvas.height = 320;
-	canvas.style.background = '#000';
-	document.body.append(canvas);
+	const width = 768;
+	const height = 320;
+	const ascii = new AsciiRenderer(width, height);
 	const project = parseProjectSource(
 		call
 			? `8f4e/v1
@@ -63,8 +61,8 @@ entryEnd`
 		drawers,
 	});
 	const state = store.getState();
-	state.viewport.width = canvas.width;
-	state.viewport.height = canvas.height;
+	state.viewport.width = width;
+	state.viewport.height = height;
 	store.set('initialProjectState', project);
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
@@ -87,7 +85,7 @@ entryEnd`
 	};
 	if (!call) memoryViews.int32[compiled.memoryPlan.modules.controls.memory.value.allocationUnitAddress] = 42;
 
-	const renderer = await initView(store, events, createAsciiCanvasRenderer(canvas), memoryViews, {
+	const renderer = await initView(store, events, ascii, memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
@@ -95,7 +93,7 @@ entryEnd`
 	now.mockReturnValue(1000);
 	try {
 		renderer.renderFrame();
-		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot(
 			`./__snapshots__/${name.replaceAll(' ', '-')}.viewport.snap`
 		);
 	} finally {
@@ -103,6 +101,5 @@ entryEnd`
 		disposePlugin();
 		store.dispose();
 		now.mockRestore();
-		canvas.remove();
 	}
 });

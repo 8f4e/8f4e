@@ -26,7 +26,6 @@ The button uses the existing `switchBackground`, `controlKnob`, and `fontControl
 npx nx run @8f4e/editor-plugin-button:build
 npx nx run @8f4e/editor-plugin-button:test
 npx nx run @8f4e/editor-plugin-button:typecheck
-npx nx run @8f4e/editor-plugin-button:test:screenshot
 ```
 
 The host supplies `writeMemory(address, value, isInteger)` to the factory. It must write to the current compiler memory, including after memory replacement or growth. Core pointer reads remain available through editor state.
