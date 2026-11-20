@@ -85,6 +85,7 @@ export interface InternalPointerEvent {
 export interface CodeBlockPointerDownEvent {
 	x: number;
 	y: number;
+	buttons: number;
 	relativeX: number;
 	relativeY: number;
 	codeBlock: CodeBlockGraphicData;

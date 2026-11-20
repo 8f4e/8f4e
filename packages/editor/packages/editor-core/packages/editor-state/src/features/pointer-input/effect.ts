@@ -5,12 +5,13 @@ import findCodeBlockAtViewportCoordinates from '../code-blocks/utils/finders/fin
 
 export default function pointerInput(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
-	const getBlockPointer = ({ x, y }: InternalPointerEvent): CodeBlockPointerDownEvent | undefined => {
+	const getBlockPointer = ({ x, y, buttons }: InternalPointerEvent): CodeBlockPointerDownEvent | undefined => {
 		const codeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
 		if (!codeBlock) return;
 		return {
 			x,
 			y,
+			buttons,
 			codeBlock,
 			relativeX: x - (codeBlock.x - state.viewport.x),
 			relativeY: y - (codeBlock.y - state.viewport.y),

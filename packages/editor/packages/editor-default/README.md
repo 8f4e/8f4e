@@ -37,6 +37,8 @@ still selects the initial mode when the plugin is omitted.
 After the first render, the default editor loads `group-path` to show the current project group and its ancestors as
 an indented tree. It appears below the mode hint, or in the first row when the hint is disabled. At the project root,
 the tree is hidden.
+The deferred `enter-group-button` plugin reserves two rows beneath each project group header for a centered
+**Enter group** button. Clicking or tapping it opens the child project without changing source or selection history.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,

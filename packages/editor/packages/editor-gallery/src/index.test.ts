@@ -85,6 +85,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'stack-connections',
 			'keyboard-navigation',
 			'keyboard-mode-switching',
+			'enter-group-button',
 			'group-path',
 			'keyboard-editing',
 			'font-preview',
@@ -107,7 +108,7 @@ it('defaults to Departure Mono and omits keyboard plugins on coarse-pointer brow
 	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('departuremono7x14');
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual(
-		expect.arrayContaining(['mouse-input', 'touch-input', 'group-path'])
+		expect.arrayContaining(['mouse-input', 'touch-input', 'enter-group-button', 'group-path'])
 	);
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 0 });
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])

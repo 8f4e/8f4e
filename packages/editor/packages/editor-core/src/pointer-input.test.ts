@@ -49,6 +49,7 @@ it.each([true, false])('routes controls before block selection with moduleDraggi
 	test.events.dispatch('pointerdown', test.pointer);
 	expect(pressed).toHaveBeenCalledOnce();
 	expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
+	expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
 	expect(test.pointer.stopPropagation).toBe(true);
 	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 });

@@ -83,6 +83,8 @@ from the source declaration. Hosts can override generic feature flags. Core reta
 After the first render, the gallery loads `group-path` to show the active group and its ancestors as an indented tree.
 The tree appears below the mode hint when it is available and starts on the first row otherwise. It is hidden at the
 project root.
+The deferred `enter-group-button` plugin adds a centered **Enter group** button below each project group header,
+so both mouse and touch users can open child projects directly.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,

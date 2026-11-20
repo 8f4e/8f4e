@@ -6,7 +6,7 @@ import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { codeBlockBackgroundPlugin } from '../src/index';
 
-test('draws normal, disabled, and dragged block backgrounds below registered fixture text', async () => {
+test('draws normal, disabled, dragged, and selected block backgrounds below registered fixture text', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 720;
 	canvas.height = 384;
@@ -61,6 +61,11 @@ test('draws normal, disabled, and dragged block backgrounds below registered fix
 		);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('block-backgrounds');
+		editor.state.codeBlockRendering.selectedCodeBlock = editor.state.codeBlockRendering.currentProject.blocks.find(
+			block => block.name === 'normal'
+		);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('selected-block-background');
 	} finally {
 		editor.dispose();
 		canvas.remove();

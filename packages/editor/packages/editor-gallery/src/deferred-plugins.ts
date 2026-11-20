@@ -195,6 +195,12 @@ export function createDeferredEditorPlugin({
 				),
 		},
 		{
+			id: 'enter-group-button',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-enter-group-button').then(module => module.enterGroupButtonPlugin),
+		},
+		{
 			id: 'group-path',
 			scope: 'view',
 			matches: () => true,
