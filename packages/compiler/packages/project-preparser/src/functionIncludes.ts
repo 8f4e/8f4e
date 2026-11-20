@@ -9,9 +9,8 @@ import type {
 	SourceMetadata,
 } from '@8f4e/language-spec';
 import { IncludeErrorCode } from '@8f4e/language-spec';
-import { parseLine } from '@8f4e/tokenizer';
+import { isProjectGapLine, parseLine } from '@8f4e/tokenizer';
 import { INCLUDES_BLOCK_DELIMITER } from './delimiters';
-import { isProjectGapLine } from './projectLines';
 import { isBlock, readProjectSource, sourceLines } from './projectSource';
 
 type ResolvedFunctionSource = {

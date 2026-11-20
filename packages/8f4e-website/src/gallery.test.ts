@@ -620,7 +620,7 @@ entryEnd`;
 		edits: [left, right].map(block => ({
 			type: 'update' as const,
 			blockId: getEditorBlockId(block),
-			code: [...block.code.slice(0, -1), 'useTemplate counter', 'groupEnd'],
+			code: [`${block.code[0]} use counter`, ...block.code.slice(1)],
 		})),
 	});
 	editor.navigation.openGroup(getEditorBlockId(right));
@@ -647,7 +647,7 @@ entryEnd`;
 	};
 	await save(1);
 	expect(projectSource.match(/^template counter$/gm)).toHaveLength(1);
-	expect(projectSource.match(/^useTemplate counter$/gm)).toHaveLength(2);
+	expect(projectSource.match(/^group (left|right) use counter$/gm)).toHaveLength(2);
 	expect(projectSource).toContain('int value 22');
 	expect(projectSource).not.toContain('int value 1');
 	const moved = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;

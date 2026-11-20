@@ -672,7 +672,7 @@ int release6 SAMPLE_RATE/2
 moduleEnd
 entryEnd
 groupEnd
-group adsrEnv2
+group adsrEnv2 use adsrEnvelope
 ; @pos 317 13
 ; @group operator2
 expose trigger &envelope:trigger
@@ -686,9 +686,8 @@ init &attack &envelopeTimings:attack2
 init &decay &envelopeTimings:decay2
 init &release &envelopeTimings:release2
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
-group adsrEnv4
+group adsrEnv4 use adsrEnvelope
 ; @pos 317 44
 ; @group operator4
 expose trigger &envelope:trigger
@@ -702,9 +701,8 @@ init &attack &envelopeTimings:attack4
 init &decay &envelopeTimings:decay4
 init &release &envelopeTimings:release4
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
-group adsrEnv6
+group adsrEnv6 use adsrEnvelope
 ; @pos 317 74
 ; @group operator5
 expose trigger &envelope:trigger
@@ -718,7 +716,6 @@ init &attack &envelopeTimings:attack6
 init &decay &envelopeTimings:decay6
 init &release &envelopeTimings:release6
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
 module modulator4
 ; @pos 365 44
@@ -804,7 +801,7 @@ mul
 store
 
 moduleEnd
-group adsrEnv1
+group adsrEnv1 use adsrEnvelope
 ; @pos 418 13
 ; @group operator1
 expose trigger &envelope:trigger
@@ -818,9 +815,8 @@ init &attack &envelopeTimings:attack1
 init &decay &envelopeTimings:decay1
 init &release &envelopeTimings:release1
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
-group adsrEnv3
+group adsrEnv3 use adsrEnvelope
 ; @pos 418 44
 ; @group operator3
 expose trigger &envelope:trigger
@@ -834,9 +830,8 @@ init &attack &envelopeTimings:attack3
 init &decay &envelopeTimings:decay3
 init &release &envelopeTimings:release3
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
-group adsrEnv5
+group adsrEnv5 use adsrEnvelope
 ; @pos 418 74
 ; @group operator6
 expose trigger &envelope:trigger
@@ -850,7 +845,6 @@ init &attack &envelopeTimings:attack5
 init &decay &envelopeTimings:decay5
 init &release &envelopeTimings:release5
 pass adsrEnv
-useTemplate adsrEnvelope
 groupEnd
 module carrier1
 ; @pos 465 13

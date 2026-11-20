@@ -2,7 +2,7 @@
 
 `@8f4e/project-preparser` parses `.8f4e` project documents into the canonical compiler-owned object model.
 
-Template inlining happens on source text before ordinary project parsing. The package-level flow is:
+Template inlining happens on the parsed source tree before construction of the project model. The package-level flow is:
 
 ```ts
 const project: ProjectObjectModel = parseProjectSource(sourceText);
@@ -17,13 +17,17 @@ Note blocks (`note` through `noteEnd`) preserve their content as text until the 
 Lines that look like other block markers remain note content at the project root and inside groups.
 
 `projectSource.ts` supplies the shared structural reader for ordinary parsing, source template transforms, and
-`validateProjectCodeBlock`, which validates model-owned blocks and flat group shells before serialization. The reader
-preserves original line numbers and treats document blocks as opaque; notes can contain examples of arbitrary markers.
+`validateProjectCodeBlock`, which validates model-owned flat blocks before serialization and group shells during
+composition. Nested blocks remain separately owned in the model. The reader preserves original line numbers,
+parses each group header once, classifies group-body declarations, and treats document blocks as opaque; notes
+can contain examples of arbitrary markers. Flat group validation returns the classified declaration keywords and
+their zero-based wrapper rows for composition.
 Preprocessors register their additional scope delimiters explicitly. Template transforms also share `mapSourceScope`,
 which follows entry wrappers within one owning scope and leaves child-group recursion to the caller.
 
 Model construction in `parseProjectSource.ts` traverses those source nodes with explicit root, group, and entry
-contexts. Source-line preservation and exposure collection are handled separately from block classification and
+contexts. Copied template blocks receive distinct IDs based on expanded source order, while diagnostics retain the
+original document rows. Source-line preservation and exposure collection are handled separately from block classification and
 recursive entry/group traversal. Each context writes directly into the canonical project model.
 
 This package owns:
@@ -69,17 +73,17 @@ describe the failure while hosts format the supplied source coordinates.
 
 ## Group source templates
 
-`parseProjectSource` calls `inlineProjectTemplates` before parsing. Definitions use `template NAME` / `templateEnd`;
-a child group selects a definition with `useTemplate NAME`. Lookup uses only the directly containing scope.
-Definitions can appear after their users. A raw using group may contain its own declaration lines, but exactly one
-reference and no child blocks or entries. The inlining stage validates these rules and removes definitions, retaining
-`useTemplate` as an ordinary group source line. The model contains independent, fully expanded groups and no template registry.
+`parseProjectSource` expands templates directly on the structural source nodes. Definitions use `template NAME` / `templateEnd`;
+a child group selects a definition with the opener `group INSTANCE use NAME`. Lookup uses only the directly containing scope.
+Definitions can appear after their users. A raw using group may contain its own declaration lines, but no child blocks
+or entries. The inlining stage validates these rules and removes definitions, retaining the original group header.
+The model contains independent, fully expanded groups and no template registry.
 
 `extractProjectTemplates(expandedSource)` is the inverse source transform used after ordinary editor serialization.
 Within each scope, the last using group in source order supplies the shared child blocks and entries. Editor serialization
 already uses spatial order, so the rightmost instance wins, with existing vertical/creation tie breakers. The transform
 silently replaces other copies, preserves each outer shell, reconstructs nested definitions in their owning scopes, and
-omits unused definitions. Marking an existing editor group with `useTemplate NAME` creates the definition on save.
+omits unused definitions. Appending `use NAME` to an existing editor group's opener creates the definition on save.
 
 These transforms do not read editor positions or state. See [source syntax](../../docs/source-syntax.md#group-templates)
 for the language and authoring behavior.

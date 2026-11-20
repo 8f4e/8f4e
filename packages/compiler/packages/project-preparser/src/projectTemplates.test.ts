@@ -3,7 +3,7 @@ import { ErrorCode, getProjectGroups, getProjectModules } from '@8f4e/language-s
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { parseProjectSource } from './parseProjectSource';
-import { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
+import { extractProjectTemplates } from './projectTemplates';
 
 const body = `function helper
 param int x
@@ -16,7 +16,7 @@ constants settings
 const GAIN 2
 constantsEnd
 note
-useTemplate ignored
+group example use ignored
 entry fake
 template fake
 noteEnd
@@ -30,22 +30,24 @@ moduleEnd
 entryEnd`;
 const definition = `template voice\n${body}\ntemplateEnd`;
 const instance = (name: string) =>
-	`group ${name}\n; @pos 4 5\nexpose out &processor:value\ninit &out 7\npass env\nuseTemplate voice\ngroupEnd`;
+	`group ${name} use voice\n; @pos 4 5\nexpose out &processor:value\ninit &out 7\npass env\ngroupEnd`;
 const source = (content: string) => `8f4e/v1\n${content}`;
 const groups = (text: string) => getProjectGroups(parseProjectSource(text));
 function thrown(text: string) {
 	try {
-		inlineProjectTemplates(text);
+		parseProjectSource(text);
 	} catch (error) {
 		return error;
 	}
-	throw new Error('Expected preprocessing to fail');
+	throw new Error('Expected project parsing to fail');
 }
 
 describe('scope-local template inlining', () => {
 	it('expands forward references into ordinary independent groups and retains each outer shell', () => {
 		const [a, b] = groups(source(`entry main\n${instance('a')}\n${instance('b')}\nentryEnd\n${definition}`));
-		expect(a.code).toContain('useTemplate voice');
+		expect(a.name).toBe('a');
+		expect(b.name).toBe('b');
+		expect(a.code[0]).toBe('group a use voice');
 		expect(a.code).toContain('pass env');
 		expect(a.exposures).toHaveLength(1);
 		expect(a.entries).toEqual(['empty', 'main']);
@@ -68,16 +70,88 @@ ${instance('child')}
 entryEnd
 templateEnd
 entry main
-group a
-useTemplate outer
+group a use outer
 groupEnd
-group b
-useTemplate outer
+group b use outer
 groupEnd
 entryEnd`);
 		const [a, b] = groups(text);
 		expect(getProjectGroups(a)[0].functions).toHaveLength(1);
 		expect(getProjectGroups(b)[0].functions).toHaveLength(1);
+	});
+
+	it('assigns distinct expanded-source block ids throughout nested template copies', () => {
+		const text = source(`template outer
+template inner
+entry main
+module oscillator
+moduleEnd
+entryEnd
+templateEnd
+entry main
+group nested use inner
+groupEnd
+entryEnd
+templateEnd
+entry main
+group a use outer
+groupEnd
+group b use outer
+groupEnd
+module tail
+moduleEnd
+entryEnd`);
+		const project = parseProjectSource(text);
+		const ids = getProjectGroups(project).flatMap(group => {
+			const [nested] = getProjectGroups(group);
+			return [group.id, nested.id, getProjectModules(nested)[0].id];
+		});
+		ids.push(getProjectModules(project)[0].id);
+		// The expanded source has two ten-line group instances followed by the tail module.
+		expect(ids).toEqual([3, 5, 7, 13, 15, 17, 23]);
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it.each([
+		{ scenario: 'plain group', prefix: '', opener: 'group a', statement: 'unexpected voice' },
+		{ scenario: 'unused definition', prefix: definition, opener: 'group a', statement: 'unexpected voice' },
+		{ scenario: 'template instance', prefix: definition, opener: 'group a use voice', statement: 'push 1' },
+	])('rejects unsupported statements at the original document line ($scenario)', ({ prefix, opener, statement }) => {
+		const text = source(`${prefix}\nentry main\n${opener}\n; keep this row\n${statement}\ngroupEnd\nentryEnd`);
+		const row = text.split('\n').indexOf(statement);
+		expect(() => parseProjectSource(text)).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					instruction: statement.split(' ')[0],
+					location: { kind: 'document', lineNumber: row },
+					message: expect.stringContaining(`Parse error at line ${row + 1}:`),
+				}),
+			})
+		);
+	});
+
+	it('reports errors in copied group bodies at the original template declaration', () => {
+		const text = source(`template voice
+entry main
+group nested
+unsupported value
+groupEnd
+entryEnd
+templateEnd
+entry main
+group a use voice
+groupEnd
+entryEnd`);
+		expect(() => parseProjectSource(text)).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					instruction: 'unsupported',
+					location: { kind: 'document', lineNumber: 4 },
+				}),
+			})
+		);
 	});
 
 	it('resolves identical names independently in separate scopes', () => {
@@ -124,21 +198,19 @@ entryEnd`);
 		'group x\ngroupEnd',
 		'template x\ntemplateEnd',
 	])('rejects inline child content: %s', content => {
-		const text = source(`${definition}\nentry main\ngroup a\nuseTemplate voice\n${content}\ngroupEnd\nentryEnd`);
+		const text = source(`${definition}\nentry main\ngroup a use voice\n${content}\ngroupEnd\nentryEnd`);
 		expect(thrown(text)).toMatchObject({
 			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT }),
 		});
 	});
 
-	it('rejects repeated useTemplate instructions before expansion', () => {
-		const error = thrown(
-			source(`${definition}\nentry main\ngroup a\nuseTemplate voice\nuseTemplate voice\ngroupEnd\nentryEnd`)
-		);
+	it('rejects repeated use clauses before expansion', () => {
+		const error = thrown(source(`${definition}\nentry main\ngroup a use voice use voice\ngroupEnd\nentryEnd`));
 		expect(error).toBeInstanceOf(CompilerError);
 		expect(error).toMatchObject({
 			diagnostic: expect.objectContaining({
-				code: SyntaxErrorCode.MULTIPLE_TEMPLATE_REFERENCES,
-				instruction: 'useTemplate',
+				code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+				instruction: 'group',
 			}),
 		});
 	});
@@ -148,23 +220,20 @@ entryEnd`);
 		'template a b',
 		'template bad/name',
 		'template; missing name',
-		'useTemplate',
-		'useTemplate a b',
-		'useTemplate bad/name',
+		'group a use',
+		'group a use bad/name',
 	])('validates instruction arguments: %s', line => {
 		const text = line.startsWith('template')
 			? source(`${line}\ntemplateEnd`)
-			: source(`entry main\ngroup a\n${line}\ngroupEnd\nentryEnd`);
+			: source(`entry main\n${line}\ngroupEnd\nentryEnd`);
 		expect(thrown(text)).toMatchObject({
 			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_TEMPLATE_NAME }),
 		});
 	});
 
 	it.each([
-		'useTemplate voice',
-		'entry main\nuseTemplate voice\nentryEnd',
 		'entry main\ntemplate voice\ntemplateEnd\nentryEnd',
-		'entry main\nmodule x\nuseTemplate voice\nmoduleEnd\nentryEnd',
+		'entry main\nmodule x\ntemplate voice\nmoduleEnd\nentryEnd',
 	])('rejects template syntax in invalid contexts: %s', content => {
 		expect(thrown(source(content))).toMatchObject({
 			diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK }),
@@ -178,22 +247,24 @@ entryEnd`);
 	});
 
 	it('preserves note contents and untouched sources byte for byte', () => {
-		const text = source('note\ntemplate fake\nuseTemplate fake\ngroupEnd\nentryEnd\nnoteEnd');
-		expect(inlineProjectTemplates(text)).toBe(text);
+		const text = source('note\ntemplate fake\ngroup example use fake\ngroupEnd\nentryEnd\nnoteEnd');
+		expect(parseProjectSource(text).notes[0].code.join('\n')).toBe(text.slice('8f4e/v1\n'.length));
 		expect(extractProjectTemplates(text)).toBe(text);
-		expect(inlineProjectTemplates(source('entry main\nmodule x\nmoduleEnd\nentryEnd'))).toBe(
-			source('entry main\nmodule x\nmoduleEnd\nentryEnd')
-		);
+		const plain = source('entry main\nmodule x\nmoduleEnd\nentryEnd');
+		expect(getProjectModules(parseProjectSource(plain))).toEqual([
+			{ type: 'module', id: 3, entry: 'main', code: ['module x', 'moduleEnd'] },
+		]);
+		expect(extractProjectTemplates(plain)).toBe(plain);
 	});
 
 	it('allows inline comments on template names and removes unused definitions', () => {
-		expect(
-			groups(
-				source(
-					'template voice ; definition\nentry empty\nentryEnd\ntemplateEnd\nentry main\ngroup a\nuseTemplate voice; reference\ngroupEnd\nentryEnd'
-				)
-			)[0].entries
-		).toEqual(['empty']);
+		const [group] = groups(
+			source(
+				'template voice ; definition\nentry empty\nentryEnd\ntemplateEnd\nentry main\ngroup a use voice; reference\ngroupEnd\nentryEnd'
+			)
+		);
+		expect(group.entries).toEqual(['empty']);
+		expect(group.code[0]).toBe('group a use voice; reference');
 		const unused = parseProjectSource(source(definition));
 		expect(unused.execution).toEqual([]);
 		expect(unused.functions).toEqual([]);
@@ -211,10 +282,20 @@ entryEnd`);
 });
 
 it('validates bare commented references and template closer arguments in the inlining stage', () => {
-	expect(thrown(source('entry main\ngroup a\nuseTemplate; missing name\ngroupEnd\nentryEnd'))).toMatchObject({
+	expect(thrown(source('entry main\ngroup a use; missing name\ngroupEnd\nentryEnd'))).toMatchObject({
 		diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_TEMPLATE_NAME }),
 	});
 	expect(thrown(source('template voice\ntemplateEnd extra'))).toMatchObject({
 		diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE }),
+	});
+});
+
+it('reports undefined templates on the group header even without any definitions', () => {
+	expect(thrown(source('entry main\ngroup a use missing\ngroupEnd\nentryEnd'))).toMatchObject({
+		diagnostic: expect.objectContaining({
+			code: ErrorCode.UNDEFINED_TEMPLATE,
+			instruction: 'group',
+			location: { kind: 'document', lineNumber: 2 },
+		}),
 	});
 });

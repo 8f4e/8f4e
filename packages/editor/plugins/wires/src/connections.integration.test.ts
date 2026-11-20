@@ -249,10 +249,9 @@ entryEnd`;
 			const definition = kind === 'template' ? `template voice\n${contents}\ntemplateEnd\n` : '';
 			const { state, events, readConnections } = await setup(`8f4e/v1
 ${definition}entry main
-group patch
+group patch${kind === 'template' ? ' use voice' : ''}
 expose output &source:value
-${kind === 'template' ? 'useTemplate voice' : contents}
-groupEnd
+${kind === 'template' ? '' : contents + '\n'}groupEnd
 module outerSink
 float* input &patch:output
 moduleEnd

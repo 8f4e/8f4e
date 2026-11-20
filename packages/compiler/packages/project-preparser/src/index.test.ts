@@ -339,11 +339,11 @@ describe('parseProjectSource', () => {
 		]);
 	});
 
-	it('preserves every group-root source line while extracting nested blocks', () => {
+	it('preserves declarations and comments while extracting nested blocks', () => {
 		const groupCode = [
 			'group audio',
 			'; this comment belongs to the group block',
-			'futureInstruction anything',
+			'init &level 0',
 			'expose level &voice:level',
 			'',
 			'groupEnd',
@@ -427,7 +427,7 @@ entryEnd`);
 		).toThrow('duplicate sibling group "audio"');
 
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup\ngroupEnd\nentryEnd')).toThrow(
-			'group requires exactly one name'
+			'expected group NAME or group NAME use TEMPLATE'
 		);
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup invalid/name\ngroupEnd\nentryEnd')).toThrow(
 			'invalid group name'

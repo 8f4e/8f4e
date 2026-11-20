@@ -20,7 +20,12 @@ import {
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
 } from '@8f4e/language-spec';
-import { parseProjectConstantNamespacePassLine, parseProjectMemoryInitializerLine } from '@8f4e/tokenizer';
+import { validateProjectCodeBlock } from '@8f4e/project-preparser';
+import {
+	classifyProjectScopeLine,
+	parseProjectConstantNamespacePassLine,
+	parseProjectMemoryInitializerLine,
+} from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
@@ -28,27 +33,32 @@ import { resolveFunctionPasses } from './resolveFunctionPasses';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectScopePasses(
-	code: readonly string[],
-	projectPath: ProjectGroupPath
-): ProjectConstantNamespacePassLine[] {
+function collectProjectScopeDeclarations(code: readonly string[], projectPath: ProjectGroupPath, isGroup: boolean) {
 	const passes: ProjectConstantNamespacePassLine[] = [];
-	for (const [index, sourceLine] of code.entries()) {
-		if (!/^\s*pass(?:\s|$)/.test(sourceLine)) {
-			continue;
-		}
-
-		const result = parseProjectConstantNamespacePassLine(sourceLine, index);
+	const initializers: ProjectMemoryInitializerLine[] = [];
+	const diagnosticSource = { kind: 'scope', projectGroupPath: projectPath } as const;
+	const declarations = isGroup
+		? validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' })
+		: code.flatMap((line, lineNumber) => {
+				const scopeLine = classifyProjectScopeLine(line);
+				return scopeLine.kind === 'declaration' ? [{ instruction: scopeLine.instruction, lineNumber }] : [];
+			});
+	for (const { instruction, lineNumber } of declarations) {
+		if (instruction === 'expose') continue;
+		const sourceLine = code[lineNumber];
+		const result =
+			instruction === 'pass'
+				? parseProjectConstantNamespacePassLine(sourceLine, lineNumber)
+				: parseProjectMemoryInitializerLine(sourceLine, lineNumber);
 		if (!result.ok)
-			throw syntaxErrorAt(
-				result.issue.code,
-				result.issue.message,
-				{ kind: 'scope', projectGroupPath: projectPath },
-				{ lineNumber: index, instruction: 'pass' }
-			);
-		passes.push({ ...result.value, diagnosticSource: { kind: 'scope', projectGroupPath: projectPath } });
+			throw syntaxErrorAt(result.issue.code, result.issue.message, diagnosticSource, {
+				lineNumber,
+				instruction,
+			});
+		if (result.value.instruction === 'pass') passes.push({ ...result.value, diagnosticSource });
+		else initializers.push({ ...result.value, diagnosticSource });
 	}
-	return passes;
+	return { passes, initializers };
 }
 
 function appendMemoryExposureAliases(
@@ -92,24 +102,6 @@ function appendMemoryExposureAliases(
 
 	aliases.set(groupPath, groupAliases);
 	program.memoryAliases = aliases;
-}
-
-function collectProjectMemoryInitializers(
-	code: readonly string[],
-	projectPath: ProjectGroupPath
-): ProjectMemoryInitializerLine[] {
-	return code.flatMap((line, index) => {
-		if (!/^\s*init(?:\s|$)/.test(line)) return [];
-		const result = parseProjectMemoryInitializerLine(line, index);
-		if (!result.ok)
-			throw syntaxErrorAt(
-				result.issue.code,
-				result.issue.message,
-				{ kind: 'scope', projectGroupPath: projectPath },
-				{ lineNumber: index, instruction: 'init' }
-			);
-		return [{ ...result.value, diagnosticSource: { kind: 'scope' as const, projectGroupPath: projectPath } }];
-	});
 }
 
 function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFunctionBindings): ValidatedFunctionAST {
@@ -169,7 +161,11 @@ function appendUnit(
 	};
 	for (const name of project.entries) ensureEntry(name);
 	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
-	const memoryInitializers = collectProjectMemoryInitializers(project.code, projectPath);
+	const { initializers: memoryInitializers, passes: constantNamespacePasses } = collectProjectScopeDeclarations(
+		project.code,
+		projectPath,
+		parentProjectPath !== undefined
+	);
 	if (memoryInitializers.length > 0) {
 		program.projectMemoryInitializerScopes.push({
 			groupPath: projectPath,
@@ -177,7 +173,6 @@ function appendUnit(
 			initializers: memoryInitializers,
 		});
 	}
-	const constantNamespacePasses = collectProjectScopePasses(project.code, projectPath);
 	if (constantNamespacePasses.length > 0) {
 		program.projectConstantNamespaceScopes.push({
 			groupPath: projectPath,

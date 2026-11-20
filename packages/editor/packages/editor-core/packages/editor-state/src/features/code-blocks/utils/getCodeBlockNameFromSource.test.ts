@@ -16,6 +16,7 @@ describe('getCodeBlockNameFromSource', () => {
 
 	it('returns raw project-group names for group blocks', () => {
 		expect(getCodeBlockNameFromSource(['group audio', '', 'groupEnd'])).toBe('audio');
+		expect(getCodeBlockNameFromSource(['group audio use voice; comment', 'groupEnd'])).toBe('audio');
 	});
 
 	it('returns source names for notes and includes, and an empty name for unnamed blocks', () => {

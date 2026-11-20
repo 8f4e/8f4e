@@ -9,4 +9,4 @@ export {
 	tryParseProjectMemoryExposureLine,
 } from './projectMemoryExposure';
 export { validateProjectCodeBlock } from './projectSource';
-export { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
+export { extractProjectTemplates } from './projectTemplates';
