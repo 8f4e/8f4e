@@ -37,22 +37,22 @@ function collectProjectScopeDeclarations(code: readonly string[], projectPath: P
 	const passes: ProjectConstantNamespacePassLine[] = [];
 	const initializers: ProjectMemoryInitializerLine[] = [];
 	const diagnosticSource = { kind: 'scope', projectGroupPath: projectPath } as const;
-	const { bodyStart, bodyEnd } = isGroup
+	const declarations = isGroup
 		? validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' })
-		: { bodyStart: 0, bodyEnd: code.length };
-	for (let index = bodyStart; index < bodyEnd; index++) {
-		const sourceLine = code[index];
-		const scopeLine = classifyProjectScopeLine(sourceLine);
-		if (scopeLine.kind !== 'declaration' || scopeLine.instruction === 'expose') continue;
-
-		const { instruction } = scopeLine;
+		: code.flatMap((line, lineNumber) => {
+				const scopeLine = classifyProjectScopeLine(line);
+				return scopeLine.kind === 'declaration' ? [{ instruction: scopeLine.instruction, lineNumber }] : [];
+			});
+	for (const { instruction, lineNumber } of declarations) {
+		if (instruction === 'expose') continue;
+		const sourceLine = code[lineNumber];
 		const result =
 			instruction === 'pass'
-				? parseProjectConstantNamespacePassLine(sourceLine, index)
-				: parseProjectMemoryInitializerLine(sourceLine, index);
+				? parseProjectConstantNamespacePassLine(sourceLine, lineNumber)
+				: parseProjectMemoryInitializerLine(sourceLine, lineNumber);
 		if (!result.ok)
 			throw syntaxErrorAt(result.issue.code, result.issue.message, diagnosticSource, {
-				lineNumber: index,
+				lineNumber,
 				instruction,
 			});
 		if (result.value.instruction === 'pass') passes.push({ ...result.value, diagnosticSource });

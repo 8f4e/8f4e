@@ -1,6 +1,11 @@
 import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type { DiagnosticSource, projectInstructions } from '@8f4e/language-spec';
-import { classifyProjectScopeLine, SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
+import {
+	classifyProjectScopeLine,
+	type ProjectScopeDeclarationName,
+	SyntaxErrorCode,
+	syntaxErrorMessage,
+} from '@8f4e/tokenizer';
 import { ENTRY_BLOCK_DELIMITER, GROUP_BLOCK_DELIMITER } from './delimiters';
 import {
 	getExpectedProjectCloserPrefix,
@@ -15,6 +20,8 @@ import { type GroupHeader, parseGroupHeader } from './projectLines';
 export interface SourceLine {
 	text: string;
 	lineNumber: number;
+	/** Present only on classified group-body declarations. */
+	declaration?: ProjectScopeDeclarationName;
 }
 interface SourceBlockSpan {
 	start: SourceLine;
@@ -136,6 +143,7 @@ class ProjectSourceReader {
 							line,
 							`Parse error at line ${line.lineNumber}: instruction "${scopeLine.instruction}" is not allowed in a group body`
 						);
+					if (scopeLine.kind === 'declaration') line.declaration = scopeLine.instruction;
 				}
 				result.push(line);
 				this.position++;
@@ -221,14 +229,20 @@ interface BlockValidationContext {
 	expectedOpener?: ProjectBlockOpener;
 }
 
+interface ClassifiedGroupDeclaration {
+	instruction: ProjectScopeDeclarationName;
+	/** Zero-based row in the original flat group wrapper. */
+	lineNumber: number;
+}
+
 /**
  * Validate a flat model-owned block or group shell. Child blocks are owned separately.
- * Return the source row range of its body, excluding the opener and closer (end exclusive).
+ * Return the classified group declarations in source order; other block types return an empty list.
  */
 export function validateProjectCodeBlock(
 	code: readonly string[],
 	{ diagnosticSource = { kind: 'document' }, blockIndex, expectedOpener }: BlockValidationContext = {}
-): { bodyStart: number; bodyEnd: number } {
+): ClassifiedGroupDeclaration[] {
 	const description = blockIndex === undefined ? 'Block' : `Block ${blockIndex}`;
 	function fail(lineNumber: number, message: string, instruction?: string): never {
 		throw syntaxErrorAt(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, `${description}: ${message}`, diagnosticSource, {
@@ -253,5 +267,9 @@ export function validateProjectCodeBlock(
 	const block = reader.readBlock('flat');
 	if (reader.position !== last + 1)
 		fail(block.end.lineNumber - 1, `closer "${block.end.text.trim()}" is not at the end of the block`, closer);
-	return { bodyStart: first + 1, bodyEnd: last };
+	return block.opener === 'group'
+		? block.children.flatMap(line =>
+				!isBlock(line) && line.declaration ? [{ instruction: line.declaration, lineNumber: line.lineNumber - 1 }] : []
+			)
+		: [];
 }

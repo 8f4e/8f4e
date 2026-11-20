@@ -17,6 +17,7 @@ it('keeps note examples opaque and preserves original source positions and text'
 		'int phase',
 		'moduleEnd',
 		'entryEnd',
+		'expose output &oscillator:phase',
 		'groupEnd',
 		'entryEnd',
 	];
@@ -33,6 +34,9 @@ it('keeps note examples opaque and preserves original source positions and text'
 	expect(group).toMatchObject({ opener: 'group', header: { name: 'voice', template: 'audio' } });
 	expect(group.start.lineNumber).toBe(8);
 	expect(group.children.filter(isBlock)[0].children.filter(isBlock)[0].start.lineNumber).toBe(10);
+	expect(group.children.filter(node => !isBlock(node))).toEqual([
+		{ text: 'expose output &oscillator:phase', lineNumber: 14, declaration: 'expose' },
+	]);
 });
 
 it('only recognizes preprocessing scopes when the caller registers their delimiters', () => {
@@ -48,10 +52,24 @@ it('validates a flat group shell while normal source reading accepts its separat
 	const source = 'group voice\nentry main\nmodule oscillator\nmoduleEnd\nentryEnd\ngroupEnd';
 	expect(() => readProjectSource(source)).not.toThrow();
 	expect(() => validateProjectCodeBlock(source.split('\n'))).toThrow('mixed block type markers');
-	expect(validateProjectCodeBlock(['', 'group voice', 'pass env', 'groupEnd', ''])).toEqual({
-		bodyStart: 2,
-		bodyEnd: 3,
-	});
+	expect(
+		validateProjectCodeBlock([
+			'',
+			'group voice',
+			'; keep this row',
+			'pass env',
+			'',
+			'expose output &oscillator:phase',
+			'init &output 1',
+			'groupEnd',
+			'',
+		])
+	).toEqual([
+		{ instruction: 'pass', lineNumber: 3 },
+		{ instruction: 'expose', lineNumber: 5 },
+		{ instruction: 'init', lineNumber: 6 },
+	]);
+	expect(validateProjectCodeBlock(['note', 'pass env', 'noteEnd'])).toEqual([]);
 });
 
 it('reports unclosed notes rather than interpreting their embedded block markers', () => {

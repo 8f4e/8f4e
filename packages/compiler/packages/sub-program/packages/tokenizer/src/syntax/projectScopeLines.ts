@@ -7,14 +7,14 @@ export function isProjectGapLine(line: string): boolean {
 	return trimmed === '' || trimmed.startsWith('#') || trimmed.startsWith(';') || trimmed.startsWith('//');
 }
 
-type ProjectScopeDeclaration =
+export type ProjectScopeDeclarationName =
 	| typeof projectInstructions.expose
 	| typeof projectInstructions.init
 	| typeof projectInstructions.pass;
 
 type ProjectScopeLine =
 	| { kind: 'gap' }
-	| { kind: 'declaration'; instruction: ProjectScopeDeclaration }
+	| { kind: 'declaration'; instruction: ProjectScopeDeclarationName }
 	| { kind: 'unsupported'; instruction: string };
 
 /** Classifies a project-owned source line without interpreting its operands or resolving symbols. */

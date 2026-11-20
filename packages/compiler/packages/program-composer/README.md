@@ -4,9 +4,9 @@ Private compiler stage that parses recursive `ProjectObjectModel` trees, isolate
 ordered AST program for global allocation and code generation. It consumes the typed `execution` sequence directly,
 expanding each group recursively at its declaration position. Later compiler stages receive the flattened module order.
 
-Composition validates each group's editable wrapper with the preparser's flat-block validator before collecting its
-body declarations. The wrapper's template clause is syntax-checked but never resolved during composition; its child
-project is already expanded.
+Composition validates each group's editable wrapper with the preparser's flat-block validator and uses the returned
+declaration keywords and source rows to parse their operands. The wrapper's template clause is syntax-checked but
+never resolved during composition; its child project is already expanded.
 
 Within each project or group, the last enabled module with a given name replaces earlier definitions across all entries.
 The composer syntax-checks enabled module blocks, then includes only the selected definitions in the AST and entry steps.

@@ -18,9 +18,10 @@ Lines that look like other block markers remain note content at the project root
 
 `projectSource.ts` supplies the shared structural reader for ordinary parsing, source template transforms, and
 `validateProjectCodeBlock`, which validates model-owned flat blocks before serialization and group shells during
-composition. Nested blocks remain separately owned in the model. The reader
-preserves original line numbers, parses each group header once, and treats document blocks as opaque; notes can contain
-examples of arbitrary markers.
+composition. Nested blocks remain separately owned in the model. The reader preserves original line numbers,
+parses each group header once, classifies group-body declarations, and treats document blocks as opaque; notes
+can contain examples of arbitrary markers. Flat group validation returns the classified declaration keywords and
+their zero-based wrapper rows for composition.
 Preprocessors register their additional scope delimiters explicitly. Template transforms also share `mapSourceScope`,
 which follows entry wrappers within one owning scope and leaves child-group recursion to the caller.
 

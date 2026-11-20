@@ -91,10 +91,9 @@ function readGroup(
 function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines: string[]): void {
 	const line = node.text;
 	const trimmed = line.trim();
-	const scopeLine = classifyProjectScopeLine(line);
 	const { project } = context;
 	if (context.kind === 'group') {
-		if (scopeLine.kind === 'declaration' && scopeLine.instruction === 'expose') {
+		if (node.declaration === 'expose') {
 			const exposure = {
 				...parseProjectMemoryExposureLine(trimmed, node.lineNumber),
 				lineNumber: project.code.length,
@@ -111,6 +110,7 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 		project.code.push(line);
 		return;
 	}
+	const scopeLine = classifyProjectScopeLine(line);
 	if (scopeLine.kind === 'gap') {
 		if (context.kind === 'root') pendingGapLines.push(line);
 		return;
