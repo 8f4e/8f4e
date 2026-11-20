@@ -339,11 +339,11 @@ describe('parseProjectSource', () => {
 		]);
 	});
 
-	it('preserves every group-root source line while extracting nested blocks', () => {
+	it('preserves declarations and comments while extracting nested blocks', () => {
 		const groupCode = [
 			'group audio',
 			'; this comment belongs to the group block',
-			'futureInstruction anything',
+			'init &level 0',
 			'expose level &voice:level',
 			'',
 			'groupEnd',

@@ -2,7 +2,7 @@
 
 `@8f4e/project-preparser` parses `.8f4e` project documents into the canonical compiler-owned object model.
 
-Template inlining happens on source text before ordinary project parsing. The package-level flow is:
+Template inlining happens on the parsed source tree before construction of the project model. The package-level flow is:
 
 ```ts
 const project: ProjectObjectModel = parseProjectSource(sourceText);
@@ -18,12 +18,14 @@ Lines that look like other block markers remain note content at the project root
 
 `projectSource.ts` supplies the shared structural reader for ordinary parsing, source template transforms, and
 `validateProjectCodeBlock`, which validates model-owned blocks and flat group shells before serialization. The reader
-preserves original line numbers and treats document blocks as opaque; notes can contain examples of arbitrary markers.
+preserves original line numbers, parses each group header once, and treats document blocks as opaque; notes can contain
+examples of arbitrary markers.
 Preprocessors register their additional scope delimiters explicitly. Template transforms also share `mapSourceScope`,
 which follows entry wrappers within one owning scope and leaves child-group recursion to the caller.
 
 Model construction in `parseProjectSource.ts` traverses those source nodes with explicit root, group, and entry
-contexts. Source-line preservation and exposure collection are handled separately from block classification and
+contexts. Copied template blocks receive distinct IDs based on expanded source order, while diagnostics retain the
+original document rows. Source-line preservation and exposure collection are handled separately from block classification and
 recursive entry/group traversal. Each context writes directly into the canonical project model.
 
 This package owns:
@@ -69,7 +71,7 @@ describe the failure while hosts format the supplied source coordinates.
 
 ## Group source templates
 
-`parseProjectSource` calls `inlineProjectTemplates` before parsing. Definitions use `template NAME` / `templateEnd`;
+`parseProjectSource` expands templates directly on the structural source nodes. Definitions use `template NAME` / `templateEnd`;
 a child group selects a definition with the opener `group INSTANCE use NAME`. Lookup uses only the directly containing scope.
 Definitions can appear after their users. A raw using group may contain its own declaration lines, but no child blocks
 or entries. The inlining stage validates these rules and removes definitions, retaining the original group header.

@@ -11,7 +11,7 @@ it('keeps note examples opaque and preserves original source positions and text'
 		'template ignored',
 		'noteEnd',
 		'entry main',
-		'group voice',
+		'group voice use audio; comment',
 		'entry main',
 		'module oscillator',
 		'int phase',
@@ -30,6 +30,7 @@ it('keeps note examples opaque and preserves original source positions and text'
 	]);
 	expect(blocks[1].start.lineNumber).toBe(7);
 	const group = blocks[1].children.filter(isBlock)[0];
+	expect(group).toMatchObject({ opener: 'group', header: { name: 'voice', template: 'audio' } });
 	expect(group.start.lineNumber).toBe(8);
 	expect(group.children.filter(isBlock)[0].children.filter(isBlock)[0].start.lineNumber).toBe(10);
 });

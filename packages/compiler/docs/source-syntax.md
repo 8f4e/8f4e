@@ -44,6 +44,9 @@ push; instruction comment
 Groups have isolated scopes. Use `pass NAME` in a child group to share a function or constant namespace from its
 immediate parent. Repeat the pass at each group boundary when forwarding a name to deeper groups.
 
+Outside nested blocks, a group body accepts only `pass`, `expose`, `init`, blank lines, and comments.
+Unrecognized or misplaced statements are errors.
+
 Passed functions are called normally, without `use`. A pass shares the complete overload set and retains the
 definition's original scope, including its helper functions and constants; it does not copy the function into the child.
 A passed function cannot collide with a local function, local entry, or another function pass. If a name identifies both

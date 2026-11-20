@@ -36,5 +36,6 @@ export type {
 
 export type { CompileTimeMulDivExpression } from './parseConstantMulDivExpression';
 export type { LiteralMulDivResult } from './parseLiteralMulDivExpression';
+export { classifyProjectScopeLine, isProjectGapLine } from './projectScopeLines';
 export * from './public';
 export { SyntaxErrorCode, type SyntaxErrorLine, syntaxErrorMessage } from './syntaxError';

@@ -4,35 +4,47 @@ import {
 	createProjectObjectModel,
 	documentBlockInstructionByType,
 	documentBlockInstructionPairs,
+	projectInstructions,
 } from '@8f4e/language-spec';
-import { SyntaxErrorCode } from '@8f4e/tokenizer';
+import { classifyProjectScopeLine, SyntaxErrorCode } from '@8f4e/tokenizer';
 import { FORMAT_HEADER } from './delimiters';
-import { startsWithInstruction } from './projectKeywords';
-import { getEntryName, isProjectGapLine, parseGroupHeader } from './projectLines';
+import { getEntryName } from './projectLines';
 import { parseProjectMemoryExposureLine } from './projectMemoryExposure';
 import {
 	isBlock,
 	readProjectSource,
 	type SourceBlock,
+	type SourceGroupBlock,
 	type SourceLine,
 	type SourceNode,
 	sourceLines,
 } from './projectSource';
-import { inlineProjectTemplates } from './projectTemplates';
+import { expandProjectTemplateNodes } from './projectTemplates';
 
 type ScopeContext =
 	| { kind: 'root'; project: ProjectObjectModel }
 	| { kind: 'group'; project: ProjectGroupObjectModel }
 	| { kind: 'entry'; project: ProjectObjectModel; name: string };
 
+/** Block ids remain unique expanded-source positions; source spans keep original document rows for errors. */
+type ExpandedSourcePosition = { nextLineNumber: number };
+
 function hasDisabledDirective(code: readonly string[]): boolean {
 	return code.some(line => /^\s*;\s*@disabled(?:\s|$)/.test(line));
 }
 
-function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentBlockType, entry?: string): void {
+function addBlock(
+	target: ProjectObjectModel,
+	node: SourceBlock,
+	type: DocumentBlockType,
+	id: number,
+	position: ExpandedSourcePosition,
+	entry?: string
+): void {
 	const code = sourceLines([node]);
+	position.nextLineNumber += code.length - 2;
 	const block: ProjectBlock = {
-		id: node.start.lineNumber,
+		id,
 		code,
 		...(hasDisabledDirective(code) ? { disabled: true } : {}),
 	};
@@ -56,17 +68,22 @@ function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentB
 	}
 }
 
-function readGroup(node: SourceBlock, entry: string): ProjectGroupObjectModel {
+function readGroup(
+	node: SourceGroupBlock,
+	entry: string,
+	id: number,
+	position: ExpandedSourcePosition
+): ProjectGroupObjectModel {
 	const group: ProjectGroupObjectModel = {
 		...createProjectObjectModel(),
 		type: 'group',
-		id: node.start.lineNumber,
-		name: parseGroupHeader(node.start.text, node.start.lineNumber).name,
+		id,
+		name: node.header.name,
 		entry,
 		code: [node.start.text],
 		exposures: [],
 	};
-	readScope(node.children, { kind: 'group', project: group });
+	readScope(node.children, { kind: 'group', project: group }, position);
 	group.code.push(node.end.text);
 	return group;
 }
@@ -74,9 +91,10 @@ function readGroup(node: SourceBlock, entry: string): ProjectGroupObjectModel {
 function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines: string[]): void {
 	const line = node.text;
 	const trimmed = line.trim();
+	const scopeLine = classifyProjectScopeLine(line);
 	const { project } = context;
 	if (context.kind === 'group') {
-		if (startsWithInstruction(trimmed, 'expose')) {
+		if (scopeLine.kind === 'declaration' && scopeLine.instruction === 'expose') {
 			const exposure = {
 				...parseProjectMemoryExposureLine(trimmed, node.lineNumber),
 				lineNumber: project.code.length,
@@ -93,7 +111,7 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 		project.code.push(line);
 		return;
 	}
-	if (isProjectGapLine(trimmed)) {
+	if (scopeLine.kind === 'gap') {
 		if (context.kind === 'root') pendingGapLines.push(line);
 		return;
 	}
@@ -104,7 +122,7 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 			{ kind: 'document' },
 			{ lineNumber: node.lineNumber - 1 }
 		);
-	if (!startsWithInstruction(trimmed, 'pass') && !startsWithInstruction(trimmed, 'init'))
+	if (scopeLine.kind !== 'declaration' || scopeLine.instruction === 'expose')
 		throw syntaxErrorAt(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 			`Parse error at line ${node.lineNumber}: expected opener keyword, got "${trimmed}"`,
@@ -116,7 +134,7 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 	pendingGapLines.length = 0;
 }
 
-function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
+function readScopeBlock(node: SourceBlock, context: ScopeContext, id: number, position: ExpandedSourcePosition): void {
 	const { project } = context;
 	if (node.opener === 'entry') {
 		if (context.kind === 'entry')
@@ -128,7 +146,7 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 			);
 		const name = getEntryName(node.start.text, node.start.lineNumber);
 		if (!project.entries.includes(name)) project.entries.push(name);
-		readScope(node.children, { kind: 'entry', project, name });
+		readScope(node.children, { kind: 'entry', project, name }, position);
 		return;
 	}
 	if (node.opener === 'group') {
@@ -139,7 +157,7 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 				{ kind: 'document' },
 				{ lineNumber: node.start.lineNumber - 1 }
 			);
-		const group = readGroup(node, context.name);
+		const group = readGroup(node, context.name, id, position);
 		if (project.execution.some(block => block.type === 'group' && block.name === group.name))
 			throw syntaxErrorAt(
 				SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
@@ -159,24 +177,28 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 			{ lineNumber: node.start.lineNumber - 1 }
 		);
 	const type = documentBlockInstructionPairs.find(({ start }) => start === node.opener)!.type;
-	addBlock(project, node, type, entry);
+	addBlock(project, node, type, id, position, entry);
 }
 
-function readScope(nodes: SourceNode[], context: ScopeContext): void {
+function readScope(nodes: SourceNode[], context: ScopeContext, position: ExpandedSourcePosition): void {
 	const pendingGapLines: string[] = [];
 	for (const node of nodes) {
 		if (isBlock(node)) {
 			pendingGapLines.length = 0;
-			readScopeBlock(node, context);
-		} else readScopeLine(node, context, pendingGapLines);
+			const id = position.nextLineNumber++;
+			readScopeBlock(node, context, id, position);
+			position.nextLineNumber++;
+		} else {
+			position.nextLineNumber++;
+			readScopeLine(node, context, pendingGapLines);
+		}
 	}
 	if (context.kind === 'root' && context.project.code.length) context.project.code.push(...pendingGapLines);
 }
 
 /** Parses `.8f4e` text into the canonical compiler-owned project object model. */
 export function parseProjectSource(text: string): ProjectObjectModel {
-	const source = inlineProjectTemplates(text);
-	const header = source.split('\n', 1)[0].trim();
+	const header = text.split('\n', 1)[0].trim();
 	if (header !== FORMAT_HEADER)
 		throw syntaxErrorAt(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
@@ -185,6 +207,7 @@ export function parseProjectSource(text: string): ProjectObjectModel {
 			{ lineNumber: 0 }
 		);
 	const project = createProjectObjectModel();
-	readScope(readProjectSource(source).slice(1), { kind: 'root', project });
+	const nodes = readProjectSource(text, [projectInstructions.template]).slice(1);
+	readScope(expandProjectTemplateNodes(nodes), { kind: 'root', project }, { nextLineNumber: 2 });
 	return project;
 }

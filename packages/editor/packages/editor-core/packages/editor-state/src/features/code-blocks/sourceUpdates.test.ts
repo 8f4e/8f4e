@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
-import { parseProjectSource } from '@8f4e/compiler';
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getProjectGroups } from '@8f4e/language-spec';
+import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { afterEach, describe, expect, it } from 'vitest';
 import initState, { applyCodeBlockSourceEdits, matchEditorDirectives, serializeProjectLevel } from '../../index';
 
@@ -44,6 +45,26 @@ it('keeps the template header when renaming an expanded group and updating child
 	expect(getProjectGroups(serializeProjectLevel(state.codeBlockRendering.rootProject))[0]).toMatchObject({
 		name: 'renamed',
 		code: ['group renamed use voice', 'groupEnd'],
+	});
+});
+
+it('reports unsupported group statements when compiling live source edits at the owning scope row', async () => {
+	const { store, events, state } = setup(
+		'8f4e/v1\nentry main\ngroup parent\nentry main\ngroup voice\ngroupEnd\nentryEnd\ngroupEnd\nentryEnd'
+	);
+	const parent = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'parent')!;
+	events.dispatch('openProjectGroup', { codeBlock: parent });
+	const voice = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voice')!;
+	applyCodeBlockSourceEdits({ store, events }, [
+		{ codeBlock: voice, code: ['group voice', '; keep this row', 'push 1', 'groupEnd'] },
+	]);
+	await expect(compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject))).rejects.toMatchObject({
+		diagnostic: {
+			domain: 'syntax',
+			code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+			instruction: 'push',
+			location: { kind: 'scope', projectGroupPath: 'parent/voice', lineNumber: 2 },
+		},
 	});
 });
 

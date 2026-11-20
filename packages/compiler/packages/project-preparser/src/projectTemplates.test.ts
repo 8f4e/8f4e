@@ -80,6 +80,82 @@ entryEnd`);
 		expect(getProjectGroups(b)[0].functions).toHaveLength(1);
 	});
 
+	it('assigns distinct expanded-source block ids throughout nested template copies', () => {
+		const text = source(`template outer
+template inner
+entry main
+module oscillator
+moduleEnd
+entryEnd
+templateEnd
+entry main
+group nested use inner
+groupEnd
+entryEnd
+templateEnd
+entry main
+group a use outer
+groupEnd
+group b use outer
+groupEnd
+module tail
+moduleEnd
+entryEnd`);
+		const project = parseProjectSource(text);
+		const ids = getProjectGroups(project).flatMap(group => {
+			const [nested] = getProjectGroups(group);
+			return [group.id, nested.id, getProjectModules(nested)[0].id];
+		});
+		ids.push(getProjectModules(project)[0].id);
+		const expected = inlineProjectTemplates(text)
+			.split('\n')
+			.flatMap((line, index) => (/^(group|module) /.test(line) ? [index + 1] : []));
+		expect(ids).toEqual(expected);
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it.each([
+		{ scenario: 'plain group', prefix: '', opener: 'group a', statement: 'unexpected voice' },
+		{ scenario: 'unused definition', prefix: definition, opener: 'group a', statement: 'unexpected voice' },
+		{ scenario: 'template instance', prefix: definition, opener: 'group a use voice', statement: 'push 1' },
+	])('rejects unsupported statements at the original document line ($scenario)', ({ prefix, opener, statement }) => {
+		const text = source(`${prefix}\nentry main\n${opener}\n; keep this row\n${statement}\ngroupEnd\nentryEnd`);
+		const row = text.split('\n').indexOf(statement);
+		expect(() => parseProjectSource(text)).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					instruction: statement.split(' ')[0],
+					location: { kind: 'document', lineNumber: row },
+					message: expect.stringContaining(`Parse error at line ${row + 1}:`),
+				}),
+			})
+		);
+	});
+
+	it('reports errors in copied group bodies at the original template declaration', () => {
+		const text = source(`template voice
+entry main
+group nested
+unsupported value
+groupEnd
+entryEnd
+templateEnd
+entry main
+group a use voice
+groupEnd
+entryEnd`);
+		expect(() => parseProjectSource(text)).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					instruction: 'unsupported',
+					location: { kind: 'document', lineNumber: 4 },
+				}),
+			})
+		);
+	});
+
 	it('resolves identical names independently in separate scopes', () => {
 		const scoped = (name: string, value: number) =>
 			`group ${name}\ntemplate voice\nentry main\nmodule x\nint value ${value}\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\n${instance('child')}\nentryEnd\ngroupEnd`;

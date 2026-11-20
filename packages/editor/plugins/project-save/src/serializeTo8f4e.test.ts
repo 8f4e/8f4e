@@ -182,7 +182,7 @@ entryEnd`;
 					code: [
 						'group audio',
 						'; retain this group comment',
-						'futureInstruction anything',
+						'init &count 0',
 						'expose count &counter:count',
 						'groupEnd',
 					],
@@ -216,13 +216,7 @@ entryEnd`;
 			entries: ['main'],
 			name: 'audio',
 
-			code: [
-				'group audio',
-				'; retain this group comment',
-				'futureInstruction anything',
-				'expose count &counter:count',
-				'groupEnd',
-			],
+			code: ['group audio', '; retain this group comment', 'init &count 0', 'expose count &counter:count', 'groupEnd'],
 			exposures: [
 				{
 					name: 'count',
@@ -246,6 +240,13 @@ entryEnd`;
 		expect(group.entries).toEqual(['foo', 'bar']);
 		expect(group.execution).toEqual([]);
 		expect(saved).toContain('group idle\nentry foo\nentryEnd\nentry bar\nentryEnd\ngroupEnd');
+	});
+
+	it('rejects an unsupported statement in an edited group shell before producing a file', () => {
+		const group = createGroup({ name: 'voice', code: ['group voice', '; comment', 'push 1', 'groupEnd'] });
+		expect(() => serializeProjectTo8f4e(createProject({ execution: [group] }))).toThrow(
+			'Parse error at line 3: instruction "push" is not allowed in a group body'
+		);
 	});
 
 	it('accepts functionEnd with type suffix', () => {

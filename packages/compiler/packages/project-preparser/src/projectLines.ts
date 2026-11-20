@@ -1,5 +1,5 @@
 import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
-import { isValidModuleName, MODULE_NAME_PATTERN } from '@8f4e/language-spec';
+import { type DiagnosticSource, isValidModuleName, MODULE_NAME_PATTERN } from '@8f4e/language-spec';
 import { SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
 
 /**
@@ -23,14 +23,23 @@ export function getEntryName(line: string, lineNumber: number): string {
 	return blockName;
 }
 
+export interface GroupHeader {
+	name: string;
+	template?: string;
+}
+
 /** Parses a group opener, without changing its raw source or resolving its optional template reference. */
-export function parseGroupHeader(line: string, lineNumber: number): { name: string; template?: string } {
+export function parseGroupHeader(
+	line: string,
+	lineNumber: number,
+	diagnosticSource: DiagnosticSource = { kind: 'document' }
+): GroupHeader {
 	const [, name, clause, template, ...extra] = line.split(';', 1)[0].trim().split(/\s+/);
 	if (!name || (clause !== undefined && clause !== 'use') || extra.length) {
 		throw syntaxErrorAt(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 			`Parse error at line ${lineNumber}: expected group NAME or group NAME use TEMPLATE`,
-			{ kind: 'document' },
+			diagnosticSource,
 			{ lineNumber: lineNumber - 1, instruction: 'group' }
 		);
 	}
@@ -38,7 +47,7 @@ export function parseGroupHeader(line: string, lineNumber: number): { name: stri
 		throw syntaxErrorAt(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 			`Parse error at line ${lineNumber}: invalid group name; names must match ${MODULE_NAME_PATTERN}`,
-			{ kind: 'document' },
+			diagnosticSource,
 			{ lineNumber: lineNumber - 1, instruction: 'group' }
 		);
 	}
@@ -47,23 +56,11 @@ export function parseGroupHeader(line: string, lineNumber: number): { name: stri
 			throw syntaxErrorAt(
 				SyntaxErrorCode.INVALID_TEMPLATE_NAME,
 				syntaxErrorMessage(SyntaxErrorCode.INVALID_TEMPLATE_NAME),
-				{ kind: 'document' },
+				diagnosticSource,
 				{ lineNumber: lineNumber - 1, instruction: 'group' }
 			);
 		}
 		return { name, template };
 	}
 	return { name };
-}
-
-/**
- * Checks whether a project line can be skipped between project-level blocks.
- *
- * @param trimmedLine - Trimmed project line to inspect.
- * @returns True when the line is blank or a project-level comment.
- */
-export function isProjectGapLine(trimmedLine: string): boolean {
-	return (
-		trimmedLine === '' || trimmedLine.startsWith('#') || trimmedLine.startsWith(';') || trimmedLine.startsWith('//')
-	);
 }

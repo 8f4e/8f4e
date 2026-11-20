@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getEntryName, isProjectGapLine, parseGroupHeader } from './projectLines';
+import { getEntryName, parseGroupHeader } from './projectLines';
 
 describe('getEntryName', () => {
 	it('reads the single required name from entry openers', () => {
@@ -35,19 +35,5 @@ describe('parseGroupHeader', () => {
 		expect(() => parseGroupHeader('group bad/name use voice', 1)).toThrow('invalid group name');
 		expect(() => parseGroupHeader('group audio use bad/name', 1)).toThrow('Expected one template name');
 		expect(() => parseGroupHeader('group audio use; comment', 1)).toThrow('Expected one template name');
-	});
-});
-
-describe('isProjectGapLine', () => {
-	it('treats blank lines and project comments as gaps between project blocks', () => {
-		expect(isProjectGapLine('')).toBe(true);
-		expect(isProjectGapLine('# project comment')).toBe(true);
-		expect(isProjectGapLine('; project comment')).toBe(true);
-		expect(isProjectGapLine('// project comment')).toBe(true);
-	});
-
-	it('does not treat code as a project gap', () => {
-		expect(isProjectGapLine('module counter')).toBe(false);
-		expect(isProjectGapLine('push 1')).toBe(false);
 	});
 });

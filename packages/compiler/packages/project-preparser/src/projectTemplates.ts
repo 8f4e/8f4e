@@ -1,13 +1,13 @@
 import { getError } from '@8f4e/compiler-diagnostics';
 import { ErrorCode, isValidModuleName, projectInstructions } from '@8f4e/language-spec';
-import { SyntaxErrorCode } from '@8f4e/tokenizer';
+import { isProjectGapLine, SyntaxErrorCode } from '@8f4e/tokenizer';
 import { mapSourceScope } from './mapSourceScope';
-import { isProjectGapLine, parseGroupHeader } from './projectLines';
 import {
 	instruction,
 	isBlock,
 	readProjectSource,
 	type SourceBlock,
+	type SourceGroupBlock,
 	type SourceLine,
 	type SourceNode,
 	sourceLines,
@@ -19,9 +19,6 @@ function namedInstruction(line: SourceLine): string {
 	if (!name || extra.length || !isValidModuleName(name)) syntaxError(SyntaxErrorCode.INVALID_TEMPLATE_NAME, line);
 	return name;
 }
-
-// A cheap candidate check only; the source reader and group-header parser handle actual syntax.
-const mayContainTemplates = /^\s*(?:template(?:End)?(?=[\s;]|$)|group\s+[^;\s]+\s+use(?=[\s;]|$))/m;
 
 function templateError(
 	code: typeof ErrorCode.UNDEFINED_TEMPLATE | typeof ErrorCode.DUPLICATE_TEMPLATE | typeof ErrorCode.RECURSIVE_TEMPLATE,
@@ -44,9 +41,8 @@ function templateError(
 	throw diagnostic;
 }
 
-/** Expand scope-local templates in raw source, retaining the group header's template reference. */
-export function inlineProjectTemplates(source: string): string {
-	if (!mayContainTemplates.test(source)) return source;
+/** Expand scope-local templates on the structural source tree, retaining original source spans and headers. */
+export function expandProjectTemplateNodes(nodes: SourceNode[]): SourceNode[] {
 	function expandScope(nodes: SourceNode[], active: string[] = []): SourceNode[] {
 		const templates = new Map<string, SourceBlock>();
 		for (const node of nodes) {
@@ -54,13 +50,13 @@ export function inlineProjectTemplates(source: string): string {
 			const name = namedInstruction(node.start);
 			if (templates.has(name)) templateError(ErrorCode.DUPLICATE_TEMPLATE, node.start, name);
 			for (const child of node.children) {
-				if (!isBlock(child) && !isProjectGapLine(child.text.trim()))
+				if (!isBlock(child) && !isProjectGapLine(child.text))
 					syntaxError(SyntaxErrorCode.INVALID_TEMPLATE_CONTENT, child);
 			}
 			templates.set(name, node);
 		}
-		function expandGroup(group: SourceBlock): SourceBlock {
-			const { template: name } = parseGroupHeader(group.start.text, group.start.lineNumber);
+		function expandGroup(group: SourceGroupBlock): SourceGroupBlock {
+			const { template: name } = group.header;
 			if (!name) return { ...group, children: expandScope(group.children, active) };
 			if (group.children.some(isBlock)) syntaxError(SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT, group.start);
 			const template = templates.get(name);
@@ -85,16 +81,20 @@ export function inlineProjectTemplates(source: string): string {
 			return [node];
 		});
 	}
-	return sourceLines(expandScope(readProjectSource(source, [projectInstructions.template]))).join('\n');
+	return expandScope(nodes);
+}
+
+/** Expand scope-local templates in raw source, retaining the group header's template reference. */
+export function inlineProjectTemplates(source: string): string {
+	return sourceLines(expandProjectTemplateNodes(readProjectSource(source, [projectInstructions.template]))).join('\n');
 }
 
 /** Collapse expanded groups in serialization order. The last reference in each owning scope supplies its body. */
 export function extractProjectTemplates(source: string): string {
-	if (!mayContainTemplates.test(source)) return source;
 	function extractScope(nodes: SourceNode[]): SourceNode[] {
 		const templates = new Map<string, SourceBlock>();
-		function extractGroup(group: SourceBlock): SourceBlock {
-			const { template: name } = parseGroupHeader(group.start.text, group.start.lineNumber);
+		function extractGroup(group: SourceGroupBlock): SourceGroupBlock {
+			const { template: name } = group.header;
 			if (!name) return { ...group, children: extractScope(group.children) };
 			templates.set(name, {
 				opener: 'template',

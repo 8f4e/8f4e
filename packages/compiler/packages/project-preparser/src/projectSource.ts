@@ -1,27 +1,35 @@
 import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
-import type { DiagnosticSource } from '@8f4e/language-spec';
-import { SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
+import type { DiagnosticSource, projectInstructions } from '@8f4e/language-spec';
+import { classifyProjectScopeLine, SyntaxErrorCode, syntaxErrorMessage } from '@8f4e/tokenizer';
 import { ENTRY_BLOCK_DELIMITER, GROUP_BLOCK_DELIMITER } from './delimiters';
 import {
 	getExpectedProjectCloserPrefix,
 	getProjectCloserKeyword,
 	getProjectOpenerKeyword,
+	type ProjectBlockOpener,
 	startsWithInstruction,
 } from './projectKeywords';
+import { type GroupHeader, parseGroupHeader } from './projectLines';
 
 /** Private source spans, discarded before constructing the canonical project model. */
 export interface SourceLine {
 	text: string;
 	lineNumber: number;
 }
-export interface SourceBlock {
-	opener: string;
+interface SourceBlockSpan {
 	start: SourceLine;
 	end: SourceLine;
 	children: SourceNode[];
 }
+type ScopeDelimiter = typeof projectInstructions.template;
+type SourceBlockOpener = ProjectBlockOpener | ScopeDelimiter['opener'];
+
+export interface SourceGroupBlock extends SourceBlockSpan {
+	opener: 'group';
+	header: GroupHeader;
+}
+export type SourceBlock = SourceGroupBlock | (SourceBlockSpan & { opener: Exclude<SourceBlockOpener, 'group'> });
 export type SourceNode = SourceLine | SourceBlock;
-type ScopeDelimiter = { readonly opener: string; readonly closer: string };
 
 export function isBlock(node: SourceNode): node is SourceBlock {
 	return 'opener' in node;
@@ -64,7 +72,7 @@ class ProjectSourceReader {
 		);
 	}
 
-	private opener(line: SourceLine): string | null {
+	private opener(line: SourceLine): SourceBlockOpener | null {
 		return (
 			this.additionalScopes.find(({ opener }) => startsWithInstruction(instruction(line), opener))?.opener ??
 			getProjectOpenerKeyword(line.text.trim())
@@ -113,6 +121,15 @@ class ProjectSourceReader {
 			}
 			if (this.opener(line)) result.push(this.readBlock());
 			else {
+				if (expectedCloser === GROUP_BLOCK_DELIMITER.closer) {
+					const scopeLine = classifyProjectScopeLine(line.text);
+					if (scopeLine.kind !== 'gap' && scopeLine.kind !== 'declaration')
+						this.syntaxError(
+							SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+							line,
+							`Parse error at line ${line.lineNumber}: instruction "${scopeLine.instruction}" is not allowed in a group body`
+						);
+				}
 				result.push(line);
 				this.position++;
 			}
@@ -169,7 +186,10 @@ class ProjectSourceReader {
 			);
 		if (this.additionalScopes.some(pair => pair.opener === opener) && instruction(end) !== expectedCloser)
 			this.syntaxError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, end, undefined, start);
-		return { opener, start, children, end };
+		const span = { start, children, end };
+		return opener === 'group'
+			? { ...span, opener, header: parseGroupHeader(start.text, start.lineNumber, this.diagnosticSource) }
+			: { ...span, opener };
 	}
 }
 
