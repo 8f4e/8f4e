@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { getProjectGroups } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, matchEditorDirectives } from '../../index';
+import initState, { applyCodeBlockSourceEdits, matchEditorDirectives, serializeProjectLevel } from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -28,6 +29,23 @@ function setup(projectSource = source) {
 function matched(block: CodeBlockGraphicData) {
 	return matchEditorDirectives(block.parsedDirectives, [{ name: 'future' }]);
 }
+
+it('keeps the template header when renaming an expanded group and updating child paths', () => {
+	const { store, events, state } = setup(
+		'8f4e/v1\ntemplate voice\nentry main\nmodule audio\nint gate 0\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup left use voice\ngroupEnd\nentryEnd'
+	);
+	const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'left')!;
+	applyCodeBlockSourceEdits({ store, events }, [
+		{ codeBlock: group, code: ['group renamed use voice', ...group.code.slice(1)] },
+	]);
+	expect(group.name).toBe('renamed');
+	expect(group.code[0]).toBe('group renamed use voice');
+	expect(group.childProject?.blocks.find(block => block.name === 'audio')?.projectPath).toBe('renamed');
+	expect(getProjectGroups(serializeProjectLevel(state.codeBlockRendering.rootProject))[0]).toMatchObject({
+		name: 'renamed',
+		code: ['group renamed use voice', 'groupEnd'],
+	});
+});
 
 describe('cached directive records', () => {
 	it('shares prepared tab geometry across cursor and layout changes and refreshes it before source layouts', () => {

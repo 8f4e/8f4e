@@ -442,7 +442,7 @@ store
 moduleEnd
 entryEnd
 entry audio
-group voice1
+group voice1 use sampleVoice
 ; @pos 180 88
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -450,9 +450,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice2
+group voice2 use sampleVoice
 ; @pos 180 99
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -460,9 +459,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice3
+group voice3 use sampleVoice
 ; @pos 180 110
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -470,9 +468,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice4
+group voice4 use sampleVoice
 ; @pos 180 121
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -480,9 +477,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice5
+group voice5 use sampleVoice
 ; @pos 220 88
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -490,9 +486,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice6
+group voice6 use sampleVoice
 ; @pos 220 99
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -500,9 +495,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice7
+group voice7 use sampleVoice
 ; @pos 220 110
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -510,9 +504,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice8
+group voice8 use sampleVoice
 ; @pos 220 121
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -520,9 +513,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice9
+group voice9 use sampleVoice
 ; @pos 260 88
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -530,9 +522,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice10
+group voice10 use sampleVoice
 ; @pos 260 99
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -540,9 +531,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice11
+group voice11 use sampleVoice
 ; @pos 260 110
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -550,9 +540,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice12
+group voice12 use sampleVoice
 ; @pos 260 121
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -560,9 +549,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice13
+group voice13 use sampleVoice
 ; @pos 300 88
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -570,9 +558,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice14
+group voice14 use sampleVoice
 ; @pos 300 99
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -580,9 +567,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice15
+group voice15 use sampleVoice
 ; @pos 300 110
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -590,9 +576,8 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
-group voice16
+group voice16 use sampleVoice
 ; @pos 300 121
 expose trigger &inputs:trigger
 expose note &inputs:note
@@ -600,7 +585,6 @@ expose velocity &inputs:velocity
 expose out &amplifier:out
 pass mapSample
 ; @watch note
-useTemplate sampleVoice
 groupEnd
 module voiceMixer
 ; @pos 355 87
@@ -736,7 +720,7 @@ int16[] forte ASSET_FORTE_SIZE/2
 moduleEnd
 entryEnd
 entry main
-group oneShotSampler
+group oneShotSampler use oneShotSampler
 ; @pos 60 -3
 ; @home
 ; Sixteen voices and mixing.
@@ -747,7 +731,6 @@ expose note &eventInputs:note
 expose velocity &eventInputs:velocity
 expose out &voiceMixer:out
 pass mapSample
-useTemplate oneShotSampler
 groupEnd
 entryEnd
 entry samples

@@ -427,7 +427,7 @@ entryEnd`);
 		).toThrow('duplicate sibling group "audio"');
 
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup\ngroupEnd\nentryEnd')).toThrow(
-			'group requires exactly one name'
+			'expected group NAME or group NAME use TEMPLATE'
 		);
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup invalid/name\ngroupEnd\nentryEnd')).toThrow(
 			'invalid group name'

@@ -303,7 +303,7 @@ describe('group template serialization', () => {
 	const expanded = (name: string, value: number) =>
 		`group ${name}\n; @pos ${value} 0\nexpose value &processor:value\ninit &value ${value}\npass env\nentry empty\nentryEnd\nentry main\nmodule processor\n; @pos 10 20\nint value ${value}\nmoduleEnd\nentryEnd\ngroupEnd`;
 	function mark(project: ProjectObjectModel) {
-		for (const group of getProjectGroups(project)) group.code.splice(1, 0, 'useTemplate voice');
+		for (const group of getProjectGroups(project)) group.code[0] += ' use voice';
 		return project;
 	}
 
@@ -315,7 +315,7 @@ describe('group template serialization', () => {
 		const saved = serializeProjectTo8f4e(project);
 		expect(saved.match(/^template voice$/gm)).toHaveLength(1);
 		expect(saved.match(/^module processor$/gm)).toHaveLength(1);
-		expect(saved.match(/^useTemplate voice$/gm)).toHaveLength(2);
+		expect(saved.match(/^group (left|right) use voice$/gm)).toHaveLength(2);
 		const [left, right] = getProjectGroups(parseProjectSource(saved));
 		for (const group of [left, right]) {
 			expect(group.entries).toEqual(['main', 'empty']);
@@ -334,11 +334,11 @@ describe('group template serialization', () => {
 	});
 
 	it('keeps nested definitions local when extracting a shared outer template', () => {
-		const source = `8f4e/v1\ntemplate outer\ntemplate inner\nentry main\nmodule x\nint value 7\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup nested\nuseTemplate inner\ngroupEnd\nentryEnd\ntemplateEnd\nentry main\ngroup a\nuseTemplate outer\ngroupEnd\ngroup b\nuseTemplate outer\ngroupEnd\nentryEnd`;
+		const source = `8f4e/v1\ntemplate outer\ntemplate inner\nentry main\nmodule x\nint value 7\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup nested use inner\ngroupEnd\nentryEnd\ntemplateEnd\nentry main\ngroup a use outer\ngroupEnd\ngroup b use outer\ngroupEnd\nentryEnd`;
 		const saved = serializeProjectTo8f4e(parseProjectSource(source));
 		expect(saved.match(/^template inner$/gm)).toHaveLength(1);
 		expect(saved.indexOf('template inner')).toBeGreaterThan(saved.indexOf('template outer'));
-		expect(saved.indexOf('template inner')).toBeLessThan(saved.indexOf('useTemplate inner'));
+		expect(saved.indexOf('template inner')).toBeLessThan(saved.indexOf('group nested use inner'));
 		for (const outer of getProjectGroups(parseProjectSource(saved)))
 			expect(getProjectModules(getProjectGroups(outer)[0])[0].code).toContain('int value 7');
 		expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
@@ -355,7 +355,7 @@ constants settings
 const GAIN 2
 constantsEnd
 note
-useTemplate example
+group sample use example
 template example
 entry main
 group example
@@ -364,8 +364,7 @@ entry empty
 entryEnd
 templateEnd
 entry main
-group instance
-useTemplate voice
+group instance use voice; instance comment
 groupEnd
 entryEnd`;
 		const saved = serializeProjectTo8f4e(parseProjectSource(source));
@@ -374,6 +373,7 @@ entryEnd`;
 		expect(group.constants).toHaveLength(1);
 		expect(group.includes).toHaveLength(1);
 		expect(group.notes[0].code).toContain('template example');
+		expect(group.code[0]).toBe('group instance use voice; instance comment');
 		expect(group.entries).toEqual(['empty']);
 		expect(serializeProjectTo8f4e(parseProjectSource(saved))).toBe(saved);
 	});
@@ -395,8 +395,7 @@ moduleEnd
 entryEnd
 templateEnd
 entry main
-group child
-useTemplate local
+group child use local
 groupEnd
 entryEnd
 groupEnd`;

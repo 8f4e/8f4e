@@ -70,16 +70,16 @@ describe the failure while hosts format the supplied source coordinates.
 ## Group source templates
 
 `parseProjectSource` calls `inlineProjectTemplates` before parsing. Definitions use `template NAME` / `templateEnd`;
-a child group selects a definition with `useTemplate NAME`. Lookup uses only the directly containing scope.
-Definitions can appear after their users. A raw using group may contain its own declaration lines, but exactly one
-reference and no child blocks or entries. The inlining stage validates these rules and removes definitions, retaining
-`useTemplate` as an ordinary group source line. The model contains independent, fully expanded groups and no template registry.
+a child group selects a definition with the opener `group INSTANCE use NAME`. Lookup uses only the directly containing scope.
+Definitions can appear after their users. A raw using group may contain its own declaration lines, but no child blocks
+or entries. The inlining stage validates these rules and removes definitions, retaining the original group header.
+The model contains independent, fully expanded groups and no template registry.
 
 `extractProjectTemplates(expandedSource)` is the inverse source transform used after ordinary editor serialization.
 Within each scope, the last using group in source order supplies the shared child blocks and entries. Editor serialization
 already uses spatial order, so the rightmost instance wins, with existing vertical/creation tie breakers. The transform
 silently replaces other copies, preserves each outer shell, reconstructs nested definitions in their owning scopes, and
-omits unused definitions. Marking an existing editor group with `useTemplate NAME` creates the definition on save.
+omits unused definitions. Appending `use NAME` to an existing editor group's opener creates the definition on save.
 
 These transforms do not read editor positions or state. See [source syntax](../../docs/source-syntax.md#group-templates)
 for the language and authoring behavior.

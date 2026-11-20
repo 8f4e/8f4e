@@ -25,7 +25,7 @@ constants local
 const EXPECTED 2
 constantsEnd
 note
-useTemplate is ordinary note text here.
+group example use voice is ordinary note text here.
 noteEnd
 template inner
 entry main
@@ -50,25 +50,22 @@ push &value
 call scale value
 store
 moduleEnd
-group nested
+group nested use inner
 pass local
-useTemplate inner
 groupEnd
 entryEnd
 templateEnd
 
 entry test
-group left
+group left use voice
 expose value &processor:value
 init &value 5
 pass env
-useTemplate voice
 groupEnd
-group right
+group right use voice
 expose value &processor:value
 init &value 10
 pass env
-useTemplate voice
 groupEnd
 module verify
 int& leftValue &left:value

@@ -8,7 +8,7 @@ import {
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { FORMAT_HEADER } from './delimiters';
 import { startsWithInstruction } from './projectKeywords';
-import { getProjectBlockName, isProjectGapLine } from './projectLines';
+import { getEntryName, isProjectGapLine, parseGroupHeader } from './projectLines';
 import { parseProjectMemoryExposureLine } from './projectMemoryExposure';
 import {
 	isBlock,
@@ -61,7 +61,7 @@ function readGroup(node: SourceBlock, entry: string): ProjectGroupObjectModel {
 		...createProjectObjectModel(),
 		type: 'group',
 		id: node.start.lineNumber,
-		name: getProjectBlockName(node.start.text, node.start.lineNumber, 'group'),
+		name: parseGroupHeader(node.start.text, node.start.lineNumber).name,
 		entry,
 		code: [node.start.text],
 		exposures: [],
@@ -126,7 +126,7 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext): void {
 				{ kind: 'document' },
 				{ lineNumber: node.start.lineNumber - 1 }
 			);
-		const name = getProjectBlockName(node.start.text, node.start.lineNumber, 'entry');
+		const name = getEntryName(node.start.text, node.start.lineNumber);
 		if (!project.entries.includes(name)) project.entries.push(name);
 		readScope(node.children, { kind: 'entry', project, name });
 		return;

@@ -2341,7 +2341,7 @@ int[] operator6 17
 - OP6_LEFT_CURVE OP6_RIGHT_CURVE
 - OP6_AMP_MOD_SENSITIVITY
 moduleEnd
-group envelope2
+group envelope2 use dx7Envelope
 ; @pos 320 0
 ; @group operator2
 expose settings &dx7Settings:in
@@ -2366,9 +2366,8 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
-group envelope4
+group envelope4 use dx7Envelope
 ; @pos 320 36
 ; @group operator4
 expose settings &dx7Settings:in
@@ -2393,9 +2392,8 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
-group envelope6
+group envelope6 use dx7Envelope
 ; @pos 320 72
 ; @group operator6
 expose settings &dx7Settings:in
@@ -2420,7 +2418,6 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
 module modulator2
 ; @pos 382 0
@@ -2590,7 +2587,7 @@ store
 store
 
 moduleEnd
-group envelope1
+group envelope1 use dx7Envelope
 ; @pos 437 0
 ; @group operator1
 expose settings &dx7Settings:in
@@ -2615,9 +2612,8 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
-group envelope3
+group envelope3 use dx7Envelope
 ; @pos 437 36
 ; @group operator3
 expose settings &dx7Settings:in
@@ -2642,9 +2638,8 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
-group envelope5
+group envelope5 use dx7Envelope
 ; @pos 437 72
 ; @group operator5
 expose settings &dx7Settings:in
@@ -2669,7 +2664,6 @@ pass env
 pass dx7Level
 pass dx7LevelScale
 
-useTemplate dx7Envelope
 groupEnd
 module carrier1
 ; @pos 499 0
@@ -3063,7 +3057,7 @@ ifEnd
 loopEnd
 ifEnd
 moduleEnd
-group voice1
+group voice1 use dx7Voice
 ; @pos 375 24
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3072,9 +3066,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice2
+group voice2 use dx7Voice
 ; @pos 375 37
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3083,9 +3076,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice3
+group voice3 use dx7Voice
 ; @pos 375 50
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3094,9 +3086,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice4
+group voice4 use dx7Voice
 ; @pos 375 63
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3105,9 +3096,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice5
+group voice5 use dx7Voice
 ; @pos 422 24
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3116,9 +3106,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice6
+group voice6 use dx7Voice
 ; @pos 422 37
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3127,9 +3116,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice7
+group voice7 use dx7Voice
 ; @pos 422 50
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3138,9 +3126,8 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
-group voice8
+group voice8 use dx7Voice
 ; @pos 422 63
 expose frequency &voiceInput:frequency
 expose event &noteEvents:in
@@ -3149,7 +3136,6 @@ expose out &limiter:out
 pass env
 pass preset
 
-useTemplate dx7Voice
 groupEnd
 module voiceMixer
 ; @pos 481 34

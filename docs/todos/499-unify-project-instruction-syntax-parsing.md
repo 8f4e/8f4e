@@ -20,14 +20,14 @@ The separate exposure parser duplicates token-level rules and reports plain erro
 similar collection loops for `pass` and `init`, including repeated source-context handling. These differences reflect
 how the features were introduced rather than different language requirements.
 
-Named project instructions add more variants: `entry` and `group` names use whitespace splitting in
-`getProjectBlockName`, while `template` and `useTemplate` names have a separate semicolon-comment and name parser.
+Named project instructions add more variants: `entry`, `group` (including its optional `use NAME` clause), and
+`template` names have separate whitespace/comment splitting and name parsers.
 Consolidate these lexical rules too, without moving template expansion or scope resolution out of preprocessing.
 
 ## Proposed Solution
 
 Make the tokenizer own syntax parsing and validation for `expose`, `pass`, and `init`, and provide shared lexical
-helpers for named project instructions (`entry`, `group`, `template`, and `useTemplate`). Move exposure parsing onto the
+helpers for named project instructions (`entry`, `group`, and `template`). Move exposure parsing onto the
 existing instruction-token and argument-classification path. Keep project block structure and exposure collection
 in the preparser, and keep scoped composition and semantic resolution in their existing stages.
 
@@ -55,7 +55,7 @@ and diagnostic-context code where useful without introducing another project obj
 ## Success Criteria
 
 - [ ] `expose`, `pass`, and `init` syntax is owned by the tokenizer and reuses existing token/argument parsing.
-- [ ] `entry`, `group`, `template`, and `useTemplate` names share lexical helpers instead of independent whitespace/comment splitting.
+- [ ] `entry`, `group` (including its template reference), and `template` names share lexical helpers instead of independent whitespace/comment splitting.
 - [ ] Inline comments and whitespace are handled consistently across project instructions while their own naming rules remain explicit.
 - [ ] Template semantics stay in preprocessing; only token/argument parsing is shared with other instructions.
 - [ ] Malformed exposure syntax produces structured syntax diagnostics with the correct group and source line.
