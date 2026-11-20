@@ -45,7 +45,8 @@ keeping each name/type pair together. A pair wider than the normal wrap width ex
 Calls without resolved compiler metadata show the generic call signature.
 
 Documented functions supply their `; @doc`, `; @param`, and `; @returns` text after the call signature and before
-the before/after stack analysis. Documentation is retrieved from the concrete resolved overload, including library
+the before/after stack analysis. Each parameter description has a bullet and indented continuation lines.
+Documentation is retrieved from the concrete resolved overload, including library
 includes and local overrides. Selecting an active `function`, `param`, or `functionEnd` declaration also shows its
 relevant documentation. Documentation edits revise compiler inputs; stale results fall back to generic instruction
 help until the updated compilation is accepted.

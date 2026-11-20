@@ -36,37 +36,42 @@ function getParameterDescription(documentation: FunctionDocumentation, name: str
 }
 
 /** Selects documentation relevant to the current call or function declaration line. */
-function getFunctionDocumentationText({
+function getFunctionDocumentationLines({
 	source,
 	parsedLine,
 	stackAnalysisLine,
 	functionDocumentation: documentation,
+	maxLength = TOOLTIP_WRAP_WIDTH,
 }: SelectedLineTooltipTextOptions): string[] {
 	if (!documentation) return [];
-	const returns = documentation.returns ? [`returns: ${documentation.returns}`] : [];
+	const wrap = (text: string | undefined) => (text ? wrapTooltipText(text, maxLength) : []);
+	const returns = documentation.returns && `returns: ${documentation.returns}`;
 	switch (source.sourceInstruction?.instruction) {
 		case 'call': {
 			const call = stackAnalysisLine?.resolvedCall;
 			if (!call) return [];
 			return [
-				...(documentation.description ? [documentation.description] : []),
+				...wrap(documentation.description),
 				...call.signature.parameters.flatMap(({ name }) => {
 					const description = getParameterDescription(documentation, name);
-					return description ? [`${name}: ${description}`] : [];
+					if (!description) return [];
+					return wrapTooltipText(`${name}: ${description}`, maxLength - 2).map(
+						(line, index) => `${index === 0 ? '• ' : '  '}${line}`
+					);
 				}),
-				...returns,
+				...wrap(returns),
 			];
 		}
 		case 'function':
-			return documentation.description ? [documentation.description] : [];
+			return wrap(documentation.description);
 		case 'param': {
 			if (parsedLine?.instruction !== 'param') return [];
 			const name = parsedLine.arguments[1].value;
 			const description = getParameterDescription(documentation, name);
-			return description ? [`${name}: ${description}`] : [];
+			return description ? wrapTooltipText(`${name}: ${description}`, maxLength) : [];
 		}
 		case 'functionEnd':
-			return returns;
+			return wrap(returns);
 		default:
 			return [];
 	}
@@ -95,14 +100,20 @@ export function getSelectedLineTooltipTextContent({
 			: [formatStackSignature(signature)]
 		: [];
 	const shortDescription = sourceInstruction?.spec.docs?.shortDescription;
-	const documentedText = getFunctionDocumentationText({ source, parsedLine, stackAnalysisLine, functionDocumentation });
+	const documentedLines = getFunctionDocumentationLines({
+		source,
+		parsedLine,
+		stackAnalysisLine,
+		functionDocumentation,
+		maxLength,
+	});
 	const tooltipText: string[] = [];
 	const highlightTargets: SelectedLineTooltipContent['highlightTargets'] = [];
 
 	tooltipText.push(...signatureLines);
 
-	if (documentedText.length > 0) {
-		tooltipText.push(...documentedText.flatMap(text => wrapTooltipText(text, maxLength)));
+	if (documentedLines.length > 0) {
+		tooltipText.push(...documentedLines);
 	} else if (shortDescription) {
 		tooltipText.push(...wrapTooltipText(shortDescription, maxLength));
 	}

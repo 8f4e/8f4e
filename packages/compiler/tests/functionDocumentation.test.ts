@@ -1,9 +1,7 @@
-import { readdirSync } from 'node:fs';
-import { sep } from 'node:path';
 import { createFunctionId } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
-import { resolveStdlibInclude } from './stdlibResolver';
+import { resolveTestInclude } from './testIncludeResolver';
 
 describe('compiled function documentation', () => {
 	it('keeps documentation on the selected overload through includes, aliases, and group qualification', async () => {
@@ -11,45 +9,39 @@ describe('compiled function documentation', () => {
 entry main
 group voice
 includes
-include std/math/lerp lerp blend
+include test/documented-overloads transform blend
 includesEnd
 entry main
 module caller
-call blend 0.0 1.0 0.5
+call blend 1
 drop
-call blend 0.0f64 1.0f64 0.5f64
+call blend 1.0
 drop
 moduleEnd
 entryEnd
 function blend
-; @doc Local single-precision override.
-; @param start The local starting point.
-param float start
-param float end
-param float amount
-push start
-functionEnd float
+; @doc Local integer override.
+; @param input The local input.
+param int input
+push input
+functionEnd int
 groupEnd
 entryEnd`);
-		const result = await compileProject(project, { resolveInclude: resolveStdlibInclude, includeStackAnalysis: true });
+		const result = await compileProject(project, { resolveInclude: resolveTestInclude, includeStackAnalysis: true });
 		const calls = result.compiledModules['voice/caller'].stackAnalysis!.filter(line => line.instruction === 'call');
 		const functions = calls.map(line => result.compiledFunctions![line.resolvedCall!.targetFunctionId]);
 		expect(functions.map(func => func.id)).toEqual([
-			createFunctionId('voice/blend', ['float', 'float', 'float']),
-			createFunctionId('voice/blend', ['float64', 'float64', 'float64']),
+			createFunctionId('voice/blend', ['int']),
+			createFunctionId('voice/blend', ['float']),
 		]);
 		expect(functions[0].ast.documentation).toEqual({
-			description: 'Local single-precision override.',
-			parameters: { start: 'The local starting point.' },
+			description: 'Local integer override.',
+			parameters: { input: 'The local input.' },
 		});
 		expect(functions[1].ast.documentation).toEqual({
-			description: 'Linearly interpolates between two values.',
-			parameters: {
-				start: 'The starting value.',
-				end: 'The target value.',
-				amount: 'Interpolation factor (0..1; outside extrapolates).',
-			},
-			returns: 'The interpolated value.',
+			description: 'Doubles a floating-point value.',
+			parameters: { amount: 'The floating-point input. Supplied by the caller.' },
+			returns: 'Twice the input.',
 		});
 	});
 
@@ -76,25 +68,5 @@ functionEnd int`;
 		expect(initial.compiledFunctions![id].ast.documentation).toEqual({ description: 'Old text.' });
 		expect(updated.codeBuffer).toEqual(initial.codeBuffer);
 		expect(updated.compiledModules.caller.stackAnalysis).toEqual(initial.compiledModules.caller.stackAnalysis);
-	});
-
-	it('ships documentation for every standard-library function and its parameters', async () => {
-		const stdlibRoot = new URL('std/', import.meta.resolve('@8f4e/stdlib/package.json'));
-		const includes = readdirSync(stdlibRoot, { recursive: true, encoding: 'utf8' })
-			.filter(file => file.endsWith('.8f4e'))
-			.sort()
-			.map(file => `include std/${file.slice(0, -'.8f4e'.length).replaceAll(sep, '/')}`);
-		expect(includes.length).toBeGreaterThan(0);
-		const project = parseProjectSource(`8f4e/v1\nincludes\n${includes.join('\n')}\nincludesEnd`);
-		const { compiledFunctions } = await compileProject(project, { resolveInclude: resolveStdlibInclude });
-		const functions = Object.values(compiledFunctions!);
-		expect(functions.length).toBeGreaterThan(0);
-		for (const { id, ast, signature } of functions) {
-			expect(ast.documentation?.description, id).toBeTruthy();
-			for (const { name } of signature.parameters) {
-				expect(ast.documentation?.parameters?.[name], `${id}: ${name}`).toBeTruthy();
-			}
-			if (signature.returns.length > 0) expect(ast.documentation?.returns, `${id}: return values`).toBeTruthy();
-		}
 	});
 });

@@ -116,14 +116,15 @@ describe('call signature tooltips', () => {
 			'call mix (a: float',
 			'b: float -- float)',
 			'before values are blended.',
-			'a: Left input with a',
-			'longer description.',
-			'b: Right input.',
+			'• a: Left input with a',
+			'  longer description.',
+			'• b: Right input.',
 			'returns: The mixture.',
 			'before [-float]',
 			'after: [+float]',
 		]);
 		expect(content.colors[2][7]).toBeUndefined();
+		expect(content.colors[4][2]).toBeUndefined();
 		expect(content.highlightTargets.map(target => target.lineIndex)).toEqual([7, 8]);
 	});
 

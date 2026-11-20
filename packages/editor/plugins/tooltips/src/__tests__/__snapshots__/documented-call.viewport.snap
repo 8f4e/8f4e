@@ -6,8 +6,8 @@
                           call mix (left: float                                                 
                           right: float -- float)                                                
                           Combines two values.                                                  
-                          left: First value.                                                    
-                          right: Second value.                                                  
+                          ? left: First value.                                                  
+                          ? right: Second value.                                                
                           returns: Sum of the inputs.                                           
                           before []                                                             
                           after: [+float]                                                       

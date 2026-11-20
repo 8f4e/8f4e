@@ -52,6 +52,9 @@ preparser prefixes those helper names when expanding the include.
 Document each overload with `; @doc`, one `; @param NAME` per parameter, and `; @returns` when it returns values.
 Continue longer descriptions with `; -` on adjacent lines. See the [function documentation syntax](../../docs/instructions/blocks/function.md#function-documentation).
 
+Run `npx nx run @8f4e/stdlib:test` from the repository root to check documentation for every shipped function
+declaration, including private helpers.
+
 Use an `includes` block before the functions to import dependencies from other library files. A library can call
 its own functions and directly imported exports. These imports stay private to the library. A project declares
 its own include if it needs to call the same dependency directly.
