@@ -1,8 +1,12 @@
 function wrapPointer
 #export
-; Bidirectionally wraps an int
-; byte address into a circular
-; int buffer.
+; @doc Bidirectionally wraps a typed byte address into a
+; - circular buffer.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
+; @returns The wrapped typed address.
 param int* pointer
 param int* buffer
 param int itemCount
@@ -32,9 +36,13 @@ functionEnd int*
 
 function wrapPointer
 #export
-; Bidirectionally wraps a float
-; byte address into a circular
-; float buffer.
+; @doc Bidirectionally wraps a typed byte address into a
+; - circular buffer.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
+; @returns The wrapped typed address.
 param float* pointer
 param float* buffer
 param int itemCount

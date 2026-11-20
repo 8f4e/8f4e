@@ -1,9 +1,15 @@
 function nearestValue
 #export
 #impure
-; Returns the int buffer value
-; nearest to value. Ties keep the
-; first matching buffer value.
+; @doc Finds the closest value in a buffer; ties keep
+; - the first match.
+; @param value Value to search for.
+; @param buffer Start of the buffer (need not be
+; - sorted).
+; @param itemCount Number of elements; nonpositive skips
+; - the scan.
+; @returns Nearest value, or zero if the buffer is
+; - empty.
 param int value
 param int* buffer
 param int itemCount
@@ -78,9 +84,15 @@ functionEnd int
 function nearestValue
 #export
 #impure
-; Returns the float buffer value
-; nearest to value. Ties keep the
-; first matching buffer value.
+; @doc Finds the closest value in a buffer; ties keep
+; - the first match.
+; @param value Value to search for.
+; @param buffer Start of the buffer (need not be
+; - sorted).
+; @param itemCount Number of elements; nonpositive skips
+; - the scan.
+; @returns Nearest value, or zero if the buffer is
+; - empty.
 param float value
 param float* buffer
 param int itemCount

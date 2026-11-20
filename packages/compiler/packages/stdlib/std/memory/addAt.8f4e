@@ -1,8 +1,11 @@
 function addAt
 #export
 #impure
-; Adds a value to the existing
-; float at buffer[index].
+; @doc Adds to the existing float at a buffer element
+; - index.
+; @param buffer Start of the float buffer.
+; @param index Valid zero-based element index.
+; @param value Value to add.
 param float* buffer
 param int index
 param float value

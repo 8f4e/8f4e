@@ -1,6 +1,10 @@
 function loadAt
 #export
 #impure
+; @doc Reads a value by element index.
+; @param buffer Start of the buffer.
+; @param index Valid zero-based element index.
+; @returns The integer element.
 param int* buffer
 param int index
 
@@ -16,7 +20,10 @@ functionEnd int
 function loadAt
 #export
 #impure
-; Reads an unsigned-byte element.
+; @doc Reads a value by element index.
+; @param buffer Start of the buffer.
+; @param index Valid zero-based element index.
+; @returns Unsigned byte value (0..255).
 param int8u* buffer
 param int index
 

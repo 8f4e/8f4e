@@ -1,9 +1,12 @@
 function decrementPointer
 #export
 #impure
-; Decrements an int pointer by
-; one element and wraps it
-; within the circular buffer.
+; @doc Moves a pointer back one element and wraps it in
+; - a circular buffer.
+; @param pointer Address of the mutable pointer
+; - variable.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
 param int** pointer
 param int* buffer
 param int itemCount
@@ -38,9 +41,12 @@ functionEnd
 function decrementPointer
 #export
 #impure
-; Decrements a float pointer by
-; one element and wraps it
-; within the circular buffer.
+; @doc Moves a pointer back one element and wraps it in
+; - a circular buffer.
+; @param pointer Address of the mutable pointer
+; - variable.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
 param float** pointer
 param float* buffer
 param int itemCount

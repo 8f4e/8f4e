@@ -1,11 +1,14 @@
 function tptLowPass
 #export
-; Processes one low-pass sample
-; with a trapezoidal SVF.
-; g = tan(PI * cutoffHz / Fs).
-; Use finite values, g >= 0 and
-; damping > 0. State starts at zero.
-; Returns low, nextS1, nextS2.
+; @doc Processes one sample of a trapezoidal low-pass
+; - state-variable filter. The caller persists the
+; - states.
+; @param input Current finite input sample.
+; @param g Non-negative tan(PI * cutoffHz / sampleRate).
+; @param damping Positive damping (1 / Q).
+; @param s1 First integrator state, initially zero.
+; @param s2 Second integrator state, initially zero.
+; @returns Low-pass output, next s1, next s2 (top).
 param float input
 param float g
 param float damping

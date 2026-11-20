@@ -5,8 +5,12 @@ includesEnd
 function loadRangeAt
 #export
 #impure
-; Reads neighboring offsets and
-; returns the start and length.
+; @doc Reads neighboring offsets and returns the range
+; - they describe.
+; @param offsets Array of range boundaries.
+; @param index Index of the first offset in a valid
+; - adjacent pair.
+; @returns Start offset, then range length (top).
 param int* offsets
 param int index
 local int start

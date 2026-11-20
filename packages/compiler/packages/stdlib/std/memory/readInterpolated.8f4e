@@ -1,9 +1,15 @@
 function readInterpolated
 #export
 #impure
-; Reads an interpolated float
-; value from a circular int
-; buffer.
+; @doc Reads two adjacent circular-buffer samples and
+; - linearly interpolates.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
+; @param fraction Interpolation factor between adjacent
+; - samples.
+; @returns The interpolated float value.
 param int* pointer
 param int* buffer
 param int itemCount
@@ -49,9 +55,15 @@ functionEnd float
 function readInterpolated
 #export
 #impure
-; Reads an interpolated float
-; value from a circular int16
-; buffer.
+; @doc Reads two adjacent circular-buffer samples and
+; - linearly interpolates.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
+; @param fraction Interpolation factor between adjacent
+; - samples.
+; @returns The interpolated float value.
 param int16* pointer
 param int16* buffer
 param int itemCount
@@ -97,9 +109,15 @@ functionEnd float
 function readInterpolated
 #export
 #impure
-; Reads an interpolated float
-; value from a circular float
-; buffer.
+; @doc Reads two adjacent circular-buffer samples and
+; - linearly interpolates.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
+; @param fraction Interpolation factor between adjacent
+; - samples.
+; @returns The interpolated float value.
 param float* pointer
 param float* buffer
 param int itemCount
@@ -141,10 +159,13 @@ add
 functionEnd float
 
 function wrapReadAddress
-; Wraps an int-buffer byte
-; address into the circular
-; buffer range used by
-; readInterpolated.
+; @doc Wraps a typed byte address into the circular
+; - sample buffer.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param byteLength Positive buffer length in bytes.
+; @returns The wrapped typed address.
 param int* pointer
 param int* buffer
 param int byteLength
@@ -166,10 +187,13 @@ add
 functionEnd int*
 
 function wrapReadAddress
-; Wraps an int16-buffer byte
-; address into the circular
-; buffer range used by
-; readInterpolated.
+; @doc Wraps a typed byte address into the circular
+; - sample buffer.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param byteLength Positive buffer length in bytes.
+; @returns The wrapped typed address.
 param int16* pointer
 param int16* buffer
 param int byteLength
@@ -191,10 +215,13 @@ add
 functionEnd int16*
 
 function wrapReadAddress
-; Wraps a float-buffer byte
-; address into the circular
-; buffer range used by
-; readInterpolated.
+; @doc Wraps a typed byte address into the circular
+; - sample buffer.
+; @param pointer Typed byte address, possibly out of
+; - range.
+; @param buffer Start of the circular buffer.
+; @param byteLength Positive buffer length in bytes.
+; @returns The wrapped typed address.
 param float* pointer
 param float* buffer
 param int byteLength

@@ -1,9 +1,15 @@
 function triggerToGate
 #export
 #impure
-; Converts an int trigger to a
-; held gate by resetting the
-; remaining-samples counter.
+; @doc Holds a gate for a number of calls. Every
+; - positive trigger restarts the countdown.
+; @param trigger Current trigger; positive restarts the
+; - gate.
+; @param duration Duration in calls, including the
+; - triggering call.
+; @param remainingSamples Address of persistent
+; - countdown, initially zero.
+; @returns 1 while the countdown is active, otherwise 0.
 param int trigger
 param int duration
 param int* remainingSamples
@@ -36,9 +42,15 @@ functionEnd int
 function triggerToGate
 #export
 #impure
-; Converts a float trigger to a
-; held gate by resetting the
-; remaining-samples counter.
+; @doc Holds a gate for a number of calls. Every
+; - positive trigger restarts the countdown.
+; @param trigger Current trigger; positive restarts the
+; - gate.
+; @param duration Duration in calls, including the
+; - triggering call.
+; @param remainingSamples Address of persistent
+; - countdown, initially zero.
+; @returns 1 while the countdown is active, otherwise 0.
 param float trigger
 param int duration
 param int* remainingSamples

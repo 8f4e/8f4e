@@ -5,9 +5,13 @@ includesEnd
 function queuePop
 #export
 #impure
-; Pops a nonzero word from a
-; zero-marked integer FIFO.
-; Returns zero when empty.
+; @doc Consumes a nonzero word from a zero-marked
+; - integer FIFO.
+; @param readPointer Address of the read cursor,
+; - initially at buffer start.
+; @param buffer Start of the FIFO buffer.
+; @param itemCount Positive buffer length in elements.
+; @returns Removed word, or zero if the slot is empty.
 param int** readPointer
 param int* buffer
 param int itemCount

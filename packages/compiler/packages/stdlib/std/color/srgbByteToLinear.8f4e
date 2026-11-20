@@ -5,7 +5,9 @@ includesEnd
 
 function srgbByteToLinear
 #export
-; channel must be in 0..255.
+; @doc Decodes an sRGB channel byte into linear light.
+; @param channel Encoded sRGB byte in 0..255.
+; @returns Linear-light value in 0..1.
 param int channel
 local float encoded
 

@@ -1,5 +1,10 @@
 function clamp
 #export
+; @doc Constrains a value to an inclusive range.
+; @param value Value to constrain.
+; @param minValue Inclusive lower bound.
+; @param maxValue Inclusive upper bound (>= minValue).
+; @returns The clamped value.
 param int value
 param int minValue
 param int maxValue
@@ -14,6 +19,11 @@ functionEnd int
 
 function clamp
 #export
+; @doc Constrains a value to an inclusive range.
+; @param value Value to constrain.
+; @param minValue Inclusive lower bound.
+; @param maxValue Inclusive upper bound (>= minValue).
+; @returns The clamped value.
 param float value
 param float minValue
 param float maxValue

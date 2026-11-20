@@ -14,6 +14,7 @@ This package owns:
 - Standard-library include source files.
 - Stable include ids such as `std/math/clamp` and `std/memory/loadAt`.
 - Marking every public include function with `#export`.
+- Inline function, parameter, and return documentation for editor tooltips.
 
 This package does not own:
 
@@ -32,6 +33,11 @@ Stdlib source files must explicitly mark their public include functions with `#e
 ```8f4e
 function clamp
 #export
+; @doc Constrains a value to an inclusive range.
+; @param value Value to constrain.
+; @param minValue Inclusive lower bound.
+; @param maxValue Inclusive upper bound.
+; @returns The clamped value.
 param int value
 param int minValue
 param int maxValue
@@ -42,6 +48,9 @@ functionEnd int
 In stdlib include context, `#export` means "make this function available to the including project." It is consumed by
 the project preparser and does not create a WebAssembly export. Private helper functions should omit `#export`; the
 preparser prefixes those helper names when expanding the include.
+
+Document each overload with `; @doc`, one `; @param NAME` per parameter, and `; @returns` when it returns values.
+Continue longer descriptions with `; -` on adjacent lines. See the [function documentation syntax](../../docs/instructions/blocks/function.md#function-documentation).
 
 Use an `includes` block before the functions to import dependencies from other library files. A library can call
 its own functions and directly imported exports. These imports stay private to the library. A project declares

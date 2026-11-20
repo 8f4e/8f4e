@@ -1,8 +1,8 @@
 function saw
 #export
-; Sawtooth function for
-; the input range [-PI, PI].
-; Output range: [-1, 1].
+; @doc Maps phase to a sawtooth ramp.
+; @param x Phase in radians, -PI..PI.
+; @returns Sawtooth sample in -1..1.
 param float x
 
 const INV_PI 0.318309886183790

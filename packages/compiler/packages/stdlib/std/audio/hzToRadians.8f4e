@@ -1,8 +1,9 @@
 function hzToRadians
 #export
-; Converts finite Hz to radians
-; per sample. sampleRate must be
-; a positive integer.
+; @doc Converts frequency in Hz to radians per sample.
+; @param frequencyHz Finite frequency in Hz.
+; @param sampleRate Positive sample rate in Hz.
+; @returns Phase increment in radians per sample.
 param float frequencyHz
 param int sampleRate
 

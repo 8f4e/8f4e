@@ -1,10 +1,11 @@
 function storeRGB
 #export
 #impure
-; Write packed 0xRRGGBB as three
-; consecutive R, G, B bytes.
-; pixel must have three writable
-; bytes; the high byte is ignored.
+; @doc Writes a packed color as three consecutive R, G,
+; - B bytes.
+; @param pixel Address with at least three writable
+; - bytes.
+; @param color Packed 0xRRGGBB; high byte ignored.
 param int8u* pixel
 param int color
 

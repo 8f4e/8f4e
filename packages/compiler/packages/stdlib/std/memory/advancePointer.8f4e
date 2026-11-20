@@ -1,9 +1,12 @@
 function advancePointer
 #export
 #impure
-; Advances an int pointer by
-; one element and wraps it
-; within the circular buffer.
+; @doc Advances a pointer by one element and wraps it in
+; - a circular buffer.
+; @param pointer Address of the mutable pointer
+; - variable.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
 param int** pointer
 param int* buffer
 param int itemCount
@@ -38,9 +41,12 @@ functionEnd
 function advancePointer
 #export
 #impure
-; Advances a float pointer by
-; one element and wraps it
-; within the circular buffer.
+; @doc Advances a pointer by one element and wraps it in
+; - a circular buffer.
+; @param pointer Address of the mutable pointer
+; - variable.
+; @param buffer Start of the circular buffer.
+; @param itemCount Positive buffer length in elements.
 param float** pointer
 param float* buffer
 param int itemCount

@@ -1,9 +1,9 @@
 function cosine
 #export
-; Polynomial approximation
-; of the cosine function with
-; Taylor series (6th order).
-; Only works in [-PI, PI].
+; @doc Approximates cosine with a sixth-order Taylor
+; - polynomial.
+; @param x Phase in radians, -PI..PI.
+; @returns The approximate cosine.
 param float x
 
 const PI 3.141592653589793

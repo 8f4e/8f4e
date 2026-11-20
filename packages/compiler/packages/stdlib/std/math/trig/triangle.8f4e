@@ -1,8 +1,8 @@
 function triangle
 #export
-; Triangle function for
-; the input range [-PI, PI].
-; Output range: [-1, 1].
+; @doc Maps phase to a triangle waveform.
+; @param x Phase in radians, -PI..PI.
+; @returns Triangle sample in -1..1.
 param float x
 
 const INV_PI 0.318309886183790

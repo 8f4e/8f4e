@@ -1,6 +1,13 @@
 function risingEdge
 #export
 #impure
+; @doc Detects an increase in a value and updates the
+; - stored previous value.
+; @param currentValue Current value to compare.
+; @param previousValue Address of persistent previous
+; - value state.
+; @returns 1 if the current value is greater, otherwise
+; - 0.
 param int currentValue
 param int* previousValue
 
@@ -16,6 +23,13 @@ functionEnd int
 function risingEdge
 #export
 #impure
+; @doc Detects an increase in a value and updates the
+; - stored previous value.
+; @param currentValue Current value to compare.
+; @param previousValue Address of persistent previous
+; - value state.
+; @returns 1 if the current value is greater, otherwise
+; - 0.
 param float currentValue
 param float* previousValue
 

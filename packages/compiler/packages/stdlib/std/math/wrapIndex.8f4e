@@ -1,7 +1,9 @@
 function wrapIndex
 #export
-; Wraps a signed index into
-; 0..size-1 for a positive size.
+; @doc Wraps a signed index into a cyclic range.
+; @param index Index, possibly negative or out of range.
+; @param size Positive range length.
+; @returns Wrapped index in 0..size-1.
 param int index
 param int size
 

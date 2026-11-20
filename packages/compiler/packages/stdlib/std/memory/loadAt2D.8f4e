@@ -1,11 +1,14 @@
 function loadAt2D
 #export
 #impure
-; Reads an unsigned byte from a
-; row-major width-by-height buffer.
-; Coordinates outside the grid
-; return zero. The buffer must
-; contain width*height bytes.
+; @doc Reads an unsigned byte from a row-major grid.
+; - Out-of-bounds coordinates return zero.
+; @param buffer Buffer holding width*height bytes.
+; @param width Non-negative width in pixels.
+; @param height Non-negative height in pixels.
+; @param x Horizontal pixel coordinate.
+; @param y Vertical pixel coordinate.
+; @returns The byte value (0..255), or zero.
 param int8u* buffer
 param int width
 param int height
