@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-website",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "private": true,
   "description": "8f4e editor website",
   "type": "module",
