@@ -84,11 +84,6 @@ export function expandProjectTemplateNodes(nodes: SourceNode[]): SourceNode[] {
 	return expandScope(nodes);
 }
 
-/** Expand scope-local templates in raw source, retaining the group header's template reference. */
-export function inlineProjectTemplates(source: string): string {
-	return sourceLines(expandProjectTemplateNodes(readProjectSource(source, [projectInstructions.template]))).join('\n');
-}
-
 /** Collapse expanded groups in serialization order. The last reference in each owning scope supplies its body. */
 export function extractProjectTemplates(source: string): string {
 	function extractScope(nodes: SourceNode[]): SourceNode[] {

@@ -249,6 +249,16 @@ entryEnd`;
 		);
 	});
 
+	it.each([
+		{ code: ['group voice', 'group ghost', 'groupEnd'], error: 'mixed block type markers' },
+		{ code: ['group voice', 'groupEnd', 'groupEnd'], error: 'not at the end of the block' },
+		{ code: ['group voice use', 'groupEnd'], error: 'Expected one template name' },
+		{ code: ['module voice', 'moduleEnd'], error: 'expected opener "group"' },
+	])('rejects malformed group shells before producing a file: $error', ({ code, error }) => {
+		const group = createGroup({ name: 'voice', code });
+		expect(() => serializeProjectTo8f4e(createProject({ execution: [group] }))).toThrow(error);
+	});
+
 	it('accepts functionEnd with type suffix', () => {
 		expect(() =>
 			serializeProjectTo8f4e(createProject({ functions: [{ id: 1, code: validFunctionBlock }] }))

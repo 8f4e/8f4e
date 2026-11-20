@@ -3,7 +3,7 @@ import { ErrorCode, getProjectGroups, getProjectModules } from '@8f4e/language-s
 import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { parseProjectSource } from './parseProjectSource';
-import { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
+import { extractProjectTemplates } from './projectTemplates';
 
 const body = `function helper
 param int x
@@ -35,11 +35,11 @@ const source = (content: string) => `8f4e/v1\n${content}`;
 const groups = (text: string) => getProjectGroups(parseProjectSource(text));
 function thrown(text: string) {
 	try {
-		inlineProjectTemplates(text);
+		parseProjectSource(text);
 	} catch (error) {
 		return error;
 	}
-	throw new Error('Expected preprocessing to fail');
+	throw new Error('Expected project parsing to fail');
 }
 
 describe('scope-local template inlining', () => {
@@ -107,10 +107,8 @@ entryEnd`);
 			return [group.id, nested.id, getProjectModules(nested)[0].id];
 		});
 		ids.push(getProjectModules(project)[0].id);
-		const expected = inlineProjectTemplates(text)
-			.split('\n')
-			.flatMap((line, index) => (/^(group|module) /.test(line) ? [index + 1] : []));
-		expect(ids).toEqual(expected);
+		// The expanded source has two ten-line group instances followed by the tail module.
+		expect(ids).toEqual([3, 5, 7, 13, 15, 17, 23]);
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
@@ -250,11 +248,13 @@ entryEnd`);
 
 	it('preserves note contents and untouched sources byte for byte', () => {
 		const text = source('note\ntemplate fake\ngroup example use fake\ngroupEnd\nentryEnd\nnoteEnd');
-		expect(inlineProjectTemplates(text)).toBe(text);
+		expect(parseProjectSource(text).notes[0].code.join('\n')).toBe(text.slice('8f4e/v1\n'.length));
 		expect(extractProjectTemplates(text)).toBe(text);
-		expect(inlineProjectTemplates(source('entry main\nmodule x\nmoduleEnd\nentryEnd'))).toBe(
-			source('entry main\nmodule x\nmoduleEnd\nentryEnd')
-		);
+		const plain = source('entry main\nmodule x\nmoduleEnd\nentryEnd');
+		expect(getProjectModules(parseProjectSource(plain))).toEqual([
+			{ type: 'module', id: 3, entry: 'main', code: ['module x', 'moduleEnd'] },
+		]);
+		expect(extractProjectTemplates(plain)).toBe(plain);
 	});
 
 	it('allows inline comments on template names and removes unused definitions', () => {

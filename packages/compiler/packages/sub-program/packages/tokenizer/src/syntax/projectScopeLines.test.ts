@@ -19,16 +19,11 @@ describe('project scope source lines', () => {
 	});
 
 	it.each([
-		['group left use voice', 'group'],
-		['groupEnd', 'groupEnd'],
-	])('classifies group delimiters: %s', (line, instruction) => {
-		expect(classifyProjectScopeLine(line)).toEqual({ kind: 'group-delimiter', instruction });
-	});
-
-	it.each([
 		['push 1', 'push'],
 		['passage env', 'passage'],
 		['module counter', 'module'],
+		['group left use voice', 'group'],
+		['groupEnd', 'groupEnd'],
 	])('does not skip unsupported statements: %s', (line, instruction) => {
 		expect(isProjectGapLine(line)).toBe(false);
 		expect(classifyProjectScopeLine(line)).toEqual({ kind: 'unsupported', instruction });

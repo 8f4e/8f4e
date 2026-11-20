@@ -47,8 +47,11 @@ it('only recognizes preprocessing scopes when the caller registers their delimit
 it('validates a flat group shell while normal source reading accepts its separately owned children', () => {
 	const source = 'group voice\nentry main\nmodule oscillator\nmoduleEnd\nentryEnd\ngroupEnd';
 	expect(() => readProjectSource(source)).not.toThrow();
-	expect(() => validateProjectCodeBlock(source.split('\n'), 0)).toThrow('mixed block type markers');
-	expect(() => validateProjectCodeBlock(['group voice', 'pass env', 'groupEnd'], 0)).not.toThrow();
+	expect(() => validateProjectCodeBlock(source.split('\n'))).toThrow('mixed block type markers');
+	expect(validateProjectCodeBlock(['', 'group voice', 'pass env', 'groupEnd', ''])).toEqual({
+		bodyStart: 2,
+		bodyEnd: 3,
+	});
 });
 
 it('reports unclosed notes rather than interpreting their embedded block markers', () => {

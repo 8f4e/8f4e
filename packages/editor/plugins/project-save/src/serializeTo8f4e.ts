@@ -1,11 +1,16 @@
-import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
+import type {
+	ProjectBlock,
+	ProjectExecutableBlock,
+	ProjectGroupObjectModel,
+	ProjectObjectModel,
+} from '@8f4e/language-spec';
 import { extractProjectTemplates, FORMAT_HEADER, validateProjectCodeBlock } from '@8f4e/project-preparser';
 
 function getDocumentBlocks(project: ProjectObjectModel) {
 	return [...project.includes, ...project.functions, ...project.constants, ...project.notes, ...project.unknown];
 }
 
-function getAllBlocks(project: ProjectObjectModel): Array<{ code: string[] }> {
+function getAllBlocks(project: ProjectObjectModel): Array<ProjectBlock | ProjectExecutableBlock> {
 	return [
 		...getDocumentBlocks(project),
 		...project.execution.flatMap(block => (block.type === 'group' ? [block, ...getAllBlocks(block)] : [block])),
@@ -57,7 +62,11 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 	const allBlocks = getAllBlocks(project);
 
 	for (let i = 0; i < allBlocks.length; i++) {
-		validateProjectCodeBlock(allBlocks[i].code, i);
+		const block = allBlocks[i];
+		validateProjectCodeBlock(block.code, {
+			blockIndex: i,
+			expectedOpener: 'type' in block && block.type === 'group' ? 'group' : undefined,
+		});
 	}
 
 	const blockStrings = [

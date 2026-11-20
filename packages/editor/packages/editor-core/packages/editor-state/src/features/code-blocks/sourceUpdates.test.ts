@@ -68,6 +68,65 @@ it('reports unsupported group statements when compiling live source edits at the
 	});
 });
 
+it('validates the entire edited group wrapper without resolving a newly authored template', async () => {
+	const { store, events, state } = setup(
+		'8f4e/v1\nentry main\ngroup parent\nentry main\ngroup voice\nentry main\nmodule oscillator\nint value 1\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd\ngroupEnd\nentryEnd'
+	);
+	const parent = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'parent')!;
+	events.dispatch('openProjectGroup', { codeBlock: parent });
+	const voice = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voice')!;
+	const compile = () => compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject));
+
+	for (const { code, row, message, errorCode } of [
+		{
+			code: ['group voice', 'group ghost', 'groupEnd'],
+			row: 1,
+			message: 'mixed block type markers',
+			errorCode: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		},
+		{
+			code: ['group voice', 'groupEnd', 'groupEnd'],
+			row: 1,
+			message: 'not at the end of the block',
+			errorCode: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		},
+		{
+			code: ['group voice use', 'groupEnd'],
+			row: 0,
+			message: 'Expected one template name',
+			errorCode: SyntaxErrorCode.INVALID_TEMPLATE_NAME,
+		},
+		{
+			code: ['module voice', 'moduleEnd'],
+			row: 0,
+			message: 'expected opener "group"',
+			errorCode: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		},
+		{
+			code: ['group voice'],
+			row: 0,
+			message: 'unknown or missing closer',
+			errorCode: SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		},
+	]) {
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: voice, code }]);
+		await expect(compile()).rejects.toMatchObject({
+			diagnostic: {
+				domain: 'syntax',
+				code: errorCode,
+				message: expect.stringContaining(message),
+				location: { kind: 'scope', projectGroupPath: 'parent/voice', lineNumber: row },
+			},
+		});
+	}
+
+	// A valid header can mark the existing child project as a template before the template exists on disk.
+	applyCodeBlockSourceEdits({ store, events }, [
+		{ codeBlock: voice, code: ['', 'group voice use authored; comment', 'groupEnd', ''] },
+	]);
+	expect((await compile()).compiledModules['parent/voice/oscillator']).toBeDefined();
+});
+
 describe('cached directive records', () => {
 	it('shares prepared tab geometry across cursor and layout changes and refreshes it before source layouts', () => {
 		const { store, events, audio } = setup('8f4e/v1\nentry main\nmodule audio\n; @tab 8\n\tvalue\nmoduleEnd\nentryEnd');

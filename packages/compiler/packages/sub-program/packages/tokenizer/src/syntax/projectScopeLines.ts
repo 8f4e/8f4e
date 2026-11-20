@@ -15,7 +15,6 @@ type ProjectScopeDeclaration =
 type ProjectScopeLine =
 	| { kind: 'gap' }
 	| { kind: 'declaration'; instruction: ProjectScopeDeclaration }
-	| { kind: 'group-delimiter'; instruction: 'group' | 'groupEnd' }
 	| { kind: 'unsupported'; instruction: string };
 
 /** Classifies a project-owned source line without interpreting its operands or resolving symbols. */
@@ -27,9 +26,6 @@ export function classifyProjectScopeLine(line: string): ProjectScopeLine {
 		case projectInstructions.init:
 		case projectInstructions.pass:
 			return { kind: 'declaration', instruction };
-		case projectInstructions.group.opener:
-		case projectInstructions.group.closer:
-			return { kind: 'group-delimiter', instruction };
 		default:
 			return { kind: 'unsupported', instruction };
 	}

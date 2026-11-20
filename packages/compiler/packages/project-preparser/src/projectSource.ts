@@ -62,11 +62,11 @@ class ProjectSourceReader {
 	private readonly scopeClosers: Map<string, string>;
 
 	constructor(
-		source: string,
+		code: readonly string[],
 		private readonly additionalScopes: readonly ScopeDelimiter[] = [],
 		private readonly diagnosticSource?: DiagnosticSource
 	) {
-		this.lines = source.split('\n').map((text, index) => ({ text, lineNumber: index + 1 }));
+		this.lines = code.map((text, index) => ({ text, lineNumber: index + 1 }));
 		this.scopeClosers = new Map(
 			[ENTRY_BLOCK_DELIMITER, GROUP_BLOCK_DELIMITER, ...additionalScopes].map(({ opener, closer }) => [opener, closer])
 		);
@@ -110,7 +110,7 @@ class ProjectSourceReader {
 		return syntaxError(code, line, message, owner);
 	}
 
-	readScope(expectedCloser?: string, owner?: SourceLine): SourceNode[] {
+	readScope(expectedCloser?: string, owner?: SourceLine, flatBlockOpener?: SourceBlockOpener): SourceNode[] {
 		const result: SourceNode[] = [];
 		while (this.position < this.lines.length) {
 			const line = this.lines[this.position];
@@ -119,8 +119,15 @@ class ProjectSourceReader {
 				if (closer !== expectedCloser) this.fail(line, `unexpected closer "${closer}"`, owner);
 				return result;
 			}
-			if (this.opener(line)) result.push(this.readBlock());
-			else {
+			if (this.opener(line)) {
+				if (flatBlockOpener)
+					this.fail(
+						line,
+						`mixed block type markers (found opener "${line.text.trim()}" inside "${flatBlockOpener}" block)`,
+						owner
+					);
+				result.push(this.readBlock());
+			} else {
 				if (expectedCloser === GROUP_BLOCK_DELIMITER.closer) {
 					const scopeLine = classifyProjectScopeLine(line.text);
 					if (scopeLine.kind !== 'gap' && scopeLine.kind !== 'declaration')
@@ -137,13 +144,13 @@ class ProjectSourceReader {
 		return result;
 	}
 
-	readBlock(): SourceBlock {
+	readBlock(mode: 'nested' | 'flat' = 'nested'): SourceBlock {
 		const start = this.lines[this.position++];
 		const opener = this.opener(start)!;
 		const scopeCloser = this.scopeClosers.get(opener);
 		const expectedCloser = scopeCloser ?? getExpectedProjectCloserPrefix(opener);
 		const children: SourceNode[] = [];
-		if (scopeCloser) children.push(...this.readScope(scopeCloser, start));
+		if (scopeCloser) children.push(...this.readScope(scopeCloser, start, mode === 'flat' ? opener : undefined));
 		else {
 			while (this.position < this.lines.length) {
 				const line = this.lines[this.position];
@@ -199,7 +206,7 @@ export function readProjectSource(
 	additionalScopes: readonly ScopeDelimiter[] = [],
 	diagnosticSource?: DiagnosticSource
 ): SourceNode[] {
-	return new ProjectSourceReader(source, additionalScopes, diagnosticSource).readScope();
+	return new ProjectSourceReader(source.split('\n'), additionalScopes, diagnosticSource).readScope();
 }
 
 export function sourceLines(nodes: SourceNode[]): string[] {
@@ -208,57 +215,43 @@ export function sourceLines(nodes: SourceNode[]): string[] {
 	);
 }
 
-/** Validate a model-owned block or group shell before source serialization. Child blocks are owned separately. */
-export function validateProjectCodeBlock(code: readonly string[], blockIndex: number): void {
+interface BlockValidationContext {
+	diagnosticSource?: DiagnosticSource;
+	blockIndex?: number;
+	expectedOpener?: ProjectBlockOpener;
+}
+
+/**
+ * Validate a flat model-owned block or group shell. Child blocks are owned separately.
+ * Return the source row range of its body, excluding the opener and closer (end exclusive).
+ */
+export function validateProjectCodeBlock(
+	code: readonly string[],
+	{ diagnosticSource = { kind: 'document' }, blockIndex, expectedOpener }: BlockValidationContext = {}
+): { bodyStart: number; bodyEnd: number } {
+	const description = blockIndex === undefined ? 'Block' : `Block ${blockIndex}`;
+	function fail(lineNumber: number, message: string, instruction?: string): never {
+		throw syntaxErrorAt(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, `${description}: ${message}`, diagnosticSource, {
+			lineNumber,
+			instruction,
+		});
+	}
 	const first = code.findIndex(line => line.trim() !== '');
-	if (first < 0)
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: block has no content`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, first) }
-		);
+	if (first < 0) fail(0, 'block has no content');
 	const opener = getProjectOpenerKeyword(code[first].trim());
-	if (!opener)
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: unknown or missing opener "${code[first].trim()}"`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, first) }
-		);
+	if (!opener) fail(first, `unknown or missing opener "${code[first].trim()}"`);
+	if (expectedOpener && opener !== expectedOpener)
+		fail(first, `expected opener "${expectedOpener}", got "${opener}"`, opener);
 	let last = code.length - 1;
 	while (code[last].trim() === '') last--;
 	const closer = getProjectCloserKeyword(code[last].trim());
-	if (!closer)
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: unknown or missing closer "${code[last].trim()}"`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, last) }
-		);
+	if (!closer) fail(last, `unknown or missing closer "${code[last].trim()}"`);
 	if (closer !== getExpectedProjectCloserPrefix(opener))
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: opener/closer mismatch (opener "${opener}", closer "${code[last].trim()}")`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, last) }
-		);
-	const reader = new ProjectSourceReader(code.join('\n'));
+		fail(last, `opener/closer mismatch (opener "${opener}", closer "${code[last].trim()}")`, closer);
+	const reader = new ProjectSourceReader(code, [], diagnosticSource);
 	reader.position = first;
-	const block = reader.readBlock();
+	const block = reader.readBlock('flat');
 	if (reader.position !== last + 1)
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: closer "${block.end.text.trim()}" is not at the end of the block`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, last) }
-		);
-	const nested = block.children.find(isBlock);
-	if (nested)
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Block ${blockIndex}: mixed block type markers (found opener "${nested.start.text.trim()}" inside "${opener}" block)`,
-			{ kind: 'document' },
-			{ lineNumber: Math.max(0, first) }
-		);
+		fail(block.end.lineNumber - 1, `closer "${block.end.text.trim()}" is not at the end of the block`, closer);
+	return { bodyStart: first + 1, bodyEnd: last };
 }

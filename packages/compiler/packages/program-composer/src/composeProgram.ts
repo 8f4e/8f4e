@@ -20,11 +20,11 @@ import {
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
 } from '@8f4e/language-spec';
+import { validateProjectCodeBlock } from '@8f4e/project-preparser';
 import {
 	classifyProjectScopeLine,
 	parseProjectConstantNamespacePassLine,
 	parseProjectMemoryInitializerLine,
-	SyntaxErrorCode,
 } from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
@@ -33,19 +33,16 @@ import { resolveFunctionPasses } from './resolveFunctionPasses';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectScopeDeclarations(code: readonly string[], projectPath: ProjectGroupPath) {
+function collectProjectScopeDeclarations(code: readonly string[], projectPath: ProjectGroupPath, isGroup: boolean) {
 	const passes: ProjectConstantNamespacePassLine[] = [];
 	const initializers: ProjectMemoryInitializerLine[] = [];
 	const diagnosticSource = { kind: 'scope', projectGroupPath: projectPath } as const;
-	for (const [index, sourceLine] of code.entries()) {
+	const { bodyStart, bodyEnd } = isGroup
+		? validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' })
+		: { bodyStart: 0, bodyEnd: code.length };
+	for (let index = bodyStart; index < bodyEnd; index++) {
+		const sourceLine = code[index];
 		const scopeLine = classifyProjectScopeLine(sourceLine);
-		if (scopeLine.kind === 'unsupported' && projectPath !== ROOT_PROJECT_GROUP_PATH)
-			throw syntaxErrorAt(
-				SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-				`Instruction "${scopeLine.instruction}" is not allowed in a group body.`,
-				diagnosticSource,
-				{ lineNumber: index, instruction: scopeLine.instruction }
-			);
 		if (scopeLine.kind !== 'declaration' || scopeLine.instruction === 'expose') continue;
 
 		const { instruction } = scopeLine;
@@ -166,7 +163,8 @@ function appendUnit(
 	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
 	const { initializers: memoryInitializers, passes: constantNamespacePasses } = collectProjectScopeDeclarations(
 		project.code,
-		projectPath
+		projectPath,
+		parentProjectPath !== undefined
 	);
 	if (memoryInitializers.length > 0) {
 		program.projectMemoryInitializerScopes.push({
