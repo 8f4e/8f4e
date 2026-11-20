@@ -3,15 +3,15 @@ function nearestValue
 #impure
 ; @doc Finds the closest value in a buffer; ties keep
 ; - the first match.
-; @param value Value to search for.
-; @param buffer Start of the buffer (need not be
-; - sorted).
-; @param itemCount Number of elements; nonpositive skips
-; - the scan.
 ; @returns Nearest value, or zero if the buffer is
 ; - empty.
+; @param value Value to search for.
 param int value
+; @param buffer Start of the buffer (need not be
+; - sorted).
 param int* buffer
+; @param itemCount Number of elements; nonpositive skips
+; - the scan.
 param int itemCount
 
 local int index
@@ -86,15 +86,15 @@ function nearestValue
 #impure
 ; @doc Finds the closest value in a buffer; ties keep
 ; - the first match.
-; @param value Value to search for.
-; @param buffer Start of the buffer (need not be
-; - sorted).
-; @param itemCount Number of elements; nonpositive skips
-; - the scan.
 ; @returns Nearest value, or zero if the buffer is
 ; - empty.
+; @param value Value to search for.
 param float value
+; @param buffer Start of the buffer (need not be
+; - sorted).
 param float* buffer
+; @param itemCount Number of elements; nonpositive skips
+; - the scan.
 param int itemCount
 
 local int index

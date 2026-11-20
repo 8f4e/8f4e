@@ -34,12 +34,12 @@ Stdlib source files must explicitly mark their public include functions with `#e
 function clamp
 #export
 ; @doc Constrains a value to an inclusive range.
-; @param value Value to constrain.
-; @param minValue Inclusive lower bound.
-; @param maxValue Inclusive upper bound.
 ; @returns The clamped value.
+; @param value Value to constrain.
 param int value
+; @param minValue Inclusive lower bound.
 param int minValue
+; @param maxValue Inclusive upper bound.
 param int maxValue
 ; ...
 functionEnd int
@@ -49,8 +49,9 @@ In stdlib include context, `#export` means "make this function available to the 
 the project preparser and does not create a WebAssembly export. Private helper functions should omit `#export`; the
 preparser prefixes those helper names when expanding the include.
 
-Document each overload with `; @doc`, one `; @param NAME` per parameter, and `; @returns` when it returns values.
-Continue longer descriptions with `; -` on adjacent lines. See the [function documentation syntax](../../docs/instructions/blocks/function.md#function-documentation).
+Document each overload with `; @doc`, `; @param NAME` directly above each matching `param` instruction, and `; @returns`
+when it returns values. Continue longer descriptions with `; -` on adjacent lines. See the
+[function documentation syntax](../../docs/instructions/blocks/function.md#function-documentation).
 
 Run `npx nx run @8f4e/stdlib:test` from the repository root to check documentation for every shipped function
 declaration, including private helpers.

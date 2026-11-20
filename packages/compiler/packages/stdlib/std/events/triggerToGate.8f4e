@@ -3,15 +3,15 @@ function triggerToGate
 #impure
 ; @doc Holds a gate for a number of calls. Every
 ; - positive trigger restarts the countdown.
+; @returns 1 while the countdown is active, otherwise 0.
 ; @param trigger Current trigger; positive restarts the
 ; - gate.
+param int trigger
 ; @param duration Duration in calls, including the
 ; - triggering call.
+param int duration
 ; @param remainingSamples Address of persistent
 ; - countdown, initially zero.
-; @returns 1 while the countdown is active, otherwise 0.
-param int trigger
-param int duration
 param int* remainingSamples
 
 push trigger
@@ -44,15 +44,15 @@ function triggerToGate
 #impure
 ; @doc Holds a gate for a number of calls. Every
 ; - positive trigger restarts the countdown.
+; @returns 1 while the countdown is active, otherwise 0.
 ; @param trigger Current trigger; positive restarts the
 ; - gate.
+param float trigger
 ; @param duration Duration in calls, including the
 ; - triggering call.
+param int duration
 ; @param remainingSamples Address of persistent
 ; - countdown, initially zero.
-; @returns 1 while the countdown is active, otherwise 0.
-param float trigger
-param int duration
 param int* remainingSamples
 
 push trigger

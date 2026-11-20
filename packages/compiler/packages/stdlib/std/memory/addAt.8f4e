@@ -4,10 +4,10 @@ function addAt
 ; @doc Adds to the existing float at a buffer element
 ; - index.
 ; @param buffer Start of the float buffer.
-; @param index Valid zero-based element index.
-; @param value Value to add.
 param float* buffer
+; @param index Valid zero-based element index.
 param int index
+; @param value Value to add.
 param float value
 
 push buffer

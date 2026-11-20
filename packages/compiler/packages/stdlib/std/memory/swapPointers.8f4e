@@ -4,8 +4,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param int** first
+; @param second Address of the second pointer variable.
 param int** second
 
 local int* previous
@@ -26,8 +26,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param int8** first
+; @param second Address of the second pointer variable.
 param int8** second
 
 local int8* previous
@@ -48,8 +48,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param int8u** first
+; @param second Address of the second pointer variable.
 param int8u** second
 
 local int8u* previous
@@ -70,8 +70,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param int16** first
+; @param second Address of the second pointer variable.
 param int16** second
 
 local int16* previous
@@ -92,8 +92,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param int16u** first
+; @param second Address of the second pointer variable.
 param int16u** second
 
 local int16u* previous
@@ -114,8 +114,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param float** first
+; @param second Address of the second pointer variable.
 param float** second
 
 local float* previous
@@ -136,8 +136,8 @@ function swapPointers
 ; @doc Swaps addresses stored in two same-type pointer
 ; - variables without accessing the pointed-to data.
 ; @param first Address of the first pointer variable.
-; @param second Address of the second pointer variable.
 param float64** first
+; @param second Address of the second pointer variable.
 param float64** second
 
 local float64* previous

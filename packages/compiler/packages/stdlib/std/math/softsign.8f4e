@@ -1,8 +1,8 @@
 function softsign
 #export
 ; @doc Squashes a finite number using x / (1 + abs(x)).
-; @param value Finite input value.
 ; @returns A value in -1..1.
+; @param value Finite input value.
 param float value
 
 push value
@@ -16,8 +16,8 @@ functionEnd float
 function softsign
 #export
 ; @doc Squashes a finite number using x / (1 + abs(x)).
-; @param value Finite input value.
 ; @returns A value in -1..1.
+; @param value Finite input value.
 param float64 value
 
 push value

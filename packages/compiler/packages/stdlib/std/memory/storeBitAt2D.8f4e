@@ -6,16 +6,16 @@ function storeBitAt2D
 ; - writes do nothing.
 ; @param buffer Writable buffer with ceil(width/8) bytes
 ; - per row.
-; @param width Non-negative width in pixels.
-; @param height Non-negative height in pixels.
-; @param x Horizontal pixel coordinate.
-; @param y Vertical pixel coordinate.
-; @param value Zero clears; nonzero sets the bit.
 param int8u* buffer
+; @param width Non-negative width in pixels.
 param int width
+; @param height Non-negative height in pixels.
 param int height
+; @param x Horizontal pixel coordinate.
 param int x
+; @param y Vertical pixel coordinate.
 param int y
+; @param value Zero clears; nonzero sets the bit.
 param int value
 
 local int mask

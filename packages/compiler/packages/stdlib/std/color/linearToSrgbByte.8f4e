@@ -6,9 +6,9 @@ includesEnd
 function linearToSrgbByte
 #export
 ; @doc Encodes linear light as an sRGB channel byte.
+; @returns Nearest sRGB byte (0..255), ties to even.
 ; @param linear Finite linear-light value, clamped to
 ; - 0..1.
-; @returns Nearest sRGB byte (0..255), ties to even.
 param float linear
 
 push linear

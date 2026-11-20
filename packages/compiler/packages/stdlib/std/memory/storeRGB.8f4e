@@ -5,8 +5,8 @@ function storeRGB
 ; - B bytes.
 ; @param pixel Address with at least three writable
 ; - bytes.
-; @param color Packed 0xRRGGBB; high byte ignored.
 param int8u* pixel
+; @param color Packed 0xRRGGBB; high byte ignored.
 param int color
 
 push pixel

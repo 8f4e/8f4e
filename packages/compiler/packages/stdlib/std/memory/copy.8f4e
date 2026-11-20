@@ -4,8 +4,8 @@ function copy
 ; @doc Copies one value between pointers of the same
 ; - type.
 ; @param source Address of the value to read.
-; @param dest Address of the destination to write.
 param int* source
+; @param dest Address of the destination to write.
 param int* dest
 
 push dest
@@ -20,8 +20,8 @@ function copy
 ; @doc Copies one value between pointers of the same
 ; - type.
 ; @param source Address of the value to read.
-; @param dest Address of the destination to write.
 param float* source
+; @param dest Address of the destination to write.
 param float* dest
 
 push dest

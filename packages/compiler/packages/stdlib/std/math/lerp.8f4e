@@ -1,13 +1,13 @@
 function lerp
 #export
 ; @doc Linearly interpolates between two values.
+; @returns The interpolated value.
 ; @param start The starting value.
+param float start
 ; @param end The target value.
+param float end
 ; @param amount Interpolation factor (0..1; outside
 ; - extrapolates).
-; @returns The interpolated value.
-param float start
-param float end
 param float amount
 
 push start
@@ -25,13 +25,13 @@ functionEnd float
 function lerp
 #export
 ; @doc Linearly interpolates between two values.
+; @returns The interpolated value.
 ; @param start The starting value.
+param float64 start
 ; @param end The target value.
+param float64 end
 ; @param amount Interpolation factor (0..1; outside
 ; - extrapolates).
-; @returns The interpolated value.
-param float64 start
-param float64 end
 param float64 amount
 
 push start

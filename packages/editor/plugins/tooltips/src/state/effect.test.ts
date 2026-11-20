@@ -96,8 +96,8 @@ push value
 functionEnd int
 function transform
 ; @doc Float transformation.
-; @param amount A float input.
 ; @returns The float result.
+; @param amount A float input.
 param float
 - amount
 push amount

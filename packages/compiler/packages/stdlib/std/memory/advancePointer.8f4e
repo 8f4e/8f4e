@@ -5,10 +5,10 @@ function advancePointer
 ; - a circular buffer.
 ; @param pointer Address of the mutable pointer
 ; - variable.
-; @param buffer Start of the circular buffer.
-; @param itemCount Positive buffer length in elements.
 param int** pointer
+; @param buffer Start of the circular buffer.
 param int* buffer
+; @param itemCount Positive buffer length in elements.
 param int itemCount
 
 local int byteLength
@@ -45,10 +45,10 @@ function advancePointer
 ; - a circular buffer.
 ; @param pointer Address of the mutable pointer
 ; - variable.
-; @param buffer Start of the circular buffer.
-; @param itemCount Positive buffer length in elements.
 param float** pointer
+; @param buffer Start of the circular buffer.
 param float* buffer
+; @param itemCount Positive buffer length in elements.
 param int itemCount
 
 local int byteLength

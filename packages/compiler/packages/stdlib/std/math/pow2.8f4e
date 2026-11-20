@@ -2,9 +2,9 @@ function pow2
 #export
 ; @doc Computes a power of two using a signed integer
 ; - left shift.
+; @returns The 32-bit result of 1 << exponent.
 ; @param exponent Shift count; 0..30 for a positive
 ; - result.
-; @returns The 32-bit result of 1 << exponent.
 param int exponent
 
 push 1

@@ -3,16 +3,16 @@ function loadBitAt2D
 #impure
 ; @doc Reads an MSB-first packed pixel. Out-of-bounds
 ; - coordinates return zero.
-; @param buffer Buffer with ceil(width/8) bytes per row.
-; @param width Non-negative width in pixels.
-; @param height Non-negative height in pixels.
-; @param x Horizontal pixel coordinate.
-; @param y Vertical pixel coordinate.
 ; @returns 0 or 1.
+; @param buffer Buffer with ceil(width/8) bytes per row.
 param int8u* buffer
+; @param width Non-negative width in pixels.
 param int width
+; @param height Non-negative height in pixels.
 param int height
+; @param x Horizontal pixel coordinate.
 param int x
+; @param y Vertical pixel coordinate.
 param int y
 
 push x

@@ -1,8 +1,8 @@
 function dup
 #export
 ; @doc Duplicates the top stack value.
-; @param value Value to duplicate.
 ; @returns Two copies of the input value.
+; @param value Value to duplicate.
 param int value
 
 push value
@@ -13,8 +13,8 @@ functionEnd int int
 function dup
 #export
 ; @doc Duplicates the top stack value.
-; @param value Value to duplicate.
 ; @returns Two copies of the input value.
+; @param value Value to duplicate.
 param float value
 
 push value

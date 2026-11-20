@@ -2,8 +2,8 @@ function smoothstep
 #export
 ; @doc Evaluates a cubic easing curve without clamping
 ; - the input.
-; @param amount Interpolation amount, typically 0..1.
 ; @returns The eased amount.
+; @param amount Interpolation amount, typically 0..1.
 param float amount
 
 push amount
@@ -22,8 +22,8 @@ function smoothstep
 #export
 ; @doc Evaluates a cubic easing curve without clamping
 ; - the input.
-; @param amount Interpolation amount, typically 0..1.
 ; @returns The eased amount.
+; @param amount Interpolation amount, typically 0..1.
 param float64 amount
 
 push amount

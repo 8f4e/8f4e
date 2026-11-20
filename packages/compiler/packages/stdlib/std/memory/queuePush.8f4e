@@ -9,12 +9,12 @@ function queuePush
 ; - FIFO; drops it if the slot is occupied.
 ; @param writePointer Address of the write cursor,
 ; - initially at buffer start.
-; @param buffer Start of the initially zero-filled FIFO.
-; @param itemCount Positive buffer length in elements.
-; @param value Nonzero word to enqueue.
 param int** writePointer
+; @param buffer Start of the initially zero-filled FIFO.
 param int* buffer
+; @param itemCount Positive buffer length in elements.
 param int itemCount
+; @param value Nonzero word to enqueue.
 param int value
 local int* slot
 

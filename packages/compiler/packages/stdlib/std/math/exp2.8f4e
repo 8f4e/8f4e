@@ -2,8 +2,8 @@ function exp2
 #export
 ; @doc Approximates 2^x using range reduction and a
 ; - Taylor polynomial.
-; @param x Finite exponent, clamped to -24..6.
 ; @returns The approximate power of two.
+; @param x Finite exponent, clamped to -24..6.
 param float x
 local int exponent
 local float fraction

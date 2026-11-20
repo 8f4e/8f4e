@@ -34,18 +34,19 @@ Functions are reusable code blocks that:
 
 Use full-line `; @doc`, `; @param NAME`, and `; @returns` comments inside a function block to describe its
 purpose, named parameters, and returned values. The editor displays this documentation when a function, parameter,
-return declaration, or call is selected. Each overload has its own documentation.
+return declaration, or call is selected. Each overload has its own documentation. For readability, place each
+parameter's documentation directly above its `param` instruction.
 
 ```8f4e
 function lerp
 ; @doc Linearly interpolates between two values.
+; @returns The interpolated value.
 ; @param start The starting value.
+param float start
 ; @param end The target value.
+param float end
 ; @param amount Interpolation factor, typically 0..1.
 ; - Values outside that range extrapolate.
-; @returns The interpolated value.
-param float start
-param float end
 param float amount
 push start
 push end

@@ -3,8 +3,8 @@ function normalize
 #impure
 ; @doc Loads a signed 8-bit integer and normalizes it to
 ; - -1..1.
-; @param pointer Address of the signed 8-bit sample.
 ; @returns Normalized float, clamped to -1..1.
+; @param pointer Address of the signed 8-bit sample.
 param int8* pointer
 
 push pointer
@@ -26,8 +26,8 @@ function normalize
 #impure
 ; @doc Loads a unsigned 8-bit integer and normalizes it
 ; - to 0..1.
-; @param pointer Address of the unsigned 8-bit sample.
 ; @returns Normalized float, clamped to 0..1.
+; @param pointer Address of the unsigned 8-bit sample.
 param int8u* pointer
 
 push pointer
@@ -49,8 +49,8 @@ function normalize
 #impure
 ; @doc Loads a signed 16-bit integer and normalizes it
 ; - to -1..1.
-; @param pointer Address of the signed 16-bit sample.
 ; @returns Normalized float, clamped to -1..1.
+; @param pointer Address of the signed 16-bit sample.
 param int16* pointer
 
 push pointer
@@ -72,8 +72,8 @@ function normalize
 #impure
 ; @doc Loads a unsigned 16-bit integer and normalizes it
 ; - to 0..1.
-; @param pointer Address of the unsigned 16-bit sample.
 ; @returns Normalized float, clamped to 0..1.
+; @param pointer Address of the unsigned 16-bit sample.
 param int16u* pointer
 
 push pointer
@@ -95,8 +95,8 @@ function normalize
 #impure
 ; @doc Loads a signed 32-bit integer and normalizes it
 ; - to -1..1.
-; @param pointer Address of the signed 32-bit sample.
 ; @returns Normalized float, clamped to -1..1.
+; @param pointer Address of the signed 32-bit sample.
 param int* pointer
 
 push pointer

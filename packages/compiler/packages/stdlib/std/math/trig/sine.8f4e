@@ -2,8 +2,8 @@ function sine
 #export
 ; @doc Approximates sine with a seventh-order Taylor
 ; - polynomial.
-; @param x Phase in radians, -PI..PI.
 ; @returns The approximate sine.
+; @param x Phase in radians, -PI..PI.
 param float x
 
 const PI 3.141592653589793

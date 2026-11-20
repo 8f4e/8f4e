@@ -1,11 +1,11 @@
 function swap
 #export
 ; @doc Exchanges the top two stack values.
+; @returns Second value, then first value (top).
 ; @param first First value, below the second on the
 ; - stack.
-; @param second Second value, at the top of the stack.
-; @returns Second value, then first value (top).
 param int first
+; @param second Second value, at the top of the stack.
 param int second
 
 push second
@@ -16,11 +16,11 @@ functionEnd int int
 function swap
 #export
 ; @doc Exchanges the top two stack values.
+; @returns Second value, then first value (top).
 ; @param first First value, below the second on the
 ; - stack.
-; @param second Second value, at the top of the stack.
-; @returns Second value, then first value (top).
 param int first
+; @param second Second value, at the top of the stack.
 param float second
 
 push second
@@ -31,11 +31,11 @@ functionEnd float int
 function swap
 #export
 ; @doc Exchanges the top two stack values.
+; @returns Second value, then first value (top).
 ; @param first First value, below the second on the
 ; - stack.
-; @param second Second value, at the top of the stack.
-; @returns Second value, then first value (top).
 param float first
+; @param second Second value, at the top of the stack.
 param int second
 
 push second
@@ -46,11 +46,11 @@ functionEnd int float
 function swap
 #export
 ; @doc Exchanges the top two stack values.
+; @returns Second value, then first value (top).
 ; @param first First value, below the second on the
 ; - stack.
-; @param second Second value, at the top of the stack.
-; @returns Second value, then first value (top).
 param float first
+; @param second Second value, at the top of the stack.
 param float second
 
 push second

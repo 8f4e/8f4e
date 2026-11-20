@@ -3,9 +3,9 @@ function xorshift
 #impure
 ; @doc Advances a signed 32-bit XORShift pseudorandom
 ; - generator.
-; @param seed Address of mutable seed; zero stays zero.
 ; @returns Next signed 32-bit integer, also written to
 ; - seed.
+; @param seed Address of mutable seed; zero stays zero.
 param int* seed
 
 push seed

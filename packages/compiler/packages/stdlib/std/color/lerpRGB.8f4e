@@ -2,12 +2,12 @@ function lerpRGB
 #export
 ; @doc Blends packed RGB channel values, rounding to
 ; - nearest with ties to even.
-; @param start Starting color (0xRRGGBB).
-; @param end Target color (0xRRGGBB).
-; @param amount Finite interpolation factor, 0..1.
 ; @returns Packed 0xRRGGBB color with high byte zero.
+; @param start Starting color (0xRRGGBB).
 param int start
+; @param end Target color (0xRRGGBB).
 param int end
+; @param amount Finite interpolation factor, 0..1.
 param float amount
 local int color
 local int shift
@@ -55,12 +55,12 @@ function lerpRGB
 #export
 ; @doc Blends packed RGB channel values, rounding to
 ; - nearest with ties to even.
-; @param start Starting color (0xRRGGBB).
-; @param end Target color (0xRRGGBB).
-; @param amount Finite interpolation factor, 0..1.
 ; @returns Packed 0xRRGGBB color with high byte zero.
+; @param start Starting color (0xRRGGBB).
 param int start
+; @param end Target color (0xRRGGBB).
 param int end
+; @param amount Finite interpolation factor, 0..1.
 param float64 amount
 local int color
 local int shift

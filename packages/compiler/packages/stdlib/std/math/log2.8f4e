@@ -2,9 +2,9 @@ function log2
 #export
 ; @doc Approximates the base-two logarithm, including
 ; - subnormal inputs.
-; @param value Finite, strictly positive number.
 ; @returns The approximate logarithm, exact for powers
 ; - of two.
+; @param value Finite, strictly positive number.
 param float value
 local int exponent
 local float ratio
@@ -85,9 +85,9 @@ function log2
 #export
 ; @doc Approximates the base-two logarithm, including
 ; - subnormal inputs.
-; @param value Finite, strictly positive number.
 ; @returns The approximate logarithm, exact for powers
 ; - of two.
+; @param value Finite, strictly positive number.
 param float64 value
 local int exponent
 local float64 ratio

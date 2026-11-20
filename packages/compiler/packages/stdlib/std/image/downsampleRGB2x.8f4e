@@ -11,23 +11,23 @@ function downsampleRGB2x
 ; - Supply non-overlapping buffers.
 ; @param source RGB source buffer, twice the output
 ; - dimensions.
+param int8u* source
 ; @param destination Writable RGB output buffer.
+param int8u* destination
 ; @param outputWidth Non-negative output width in
 ; - pixels.
+param int outputWidth
 ; @param outputHeight Non-negative output height in
 ; - pixels.
+param int outputHeight
 ; @param sourceStride Source row stride in bytes (at
 ; - least 6*outputWidth).
+param int sourceStride
 ; @param destinationStride Output row stride in bytes
 ; - (at least 3*outputWidth).
+param int destinationStride
 ; @param amount Finite blend: 0 copies top-left, 1
 ; - averages the block.
-param int8u* source
-param int8u* destination
-param int outputWidth
-param int outputHeight
-param int sourceStride
-param int destinationStride
 param float amount
 
 local int x
@@ -101,12 +101,12 @@ function resolveChannel
 #impure
 ; @doc Resolves one channel of a 2x2 sRGB block in
 ; - linear light.
-; @param first Address of the top-left channel byte.
-; @param sourceStride Source row stride in bytes.
-; @param amount Finite blend factor in 0..1.
 ; @returns The filtered sRGB byte.
+; @param first Address of the top-left channel byte.
 param int8u* first
+; @param sourceStride Source row stride in bytes.
 param int sourceStride
+; @param amount Finite blend factor in 0..1.
 param float amount
 local float nearest
 local float filtered

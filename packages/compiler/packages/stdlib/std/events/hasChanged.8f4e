@@ -3,11 +3,11 @@ function hasChanged
 #impure
 ; @doc Detects changes in a value and updates the stored
 ; - previous value.
+; @returns 1 if the values differ, otherwise 0.
 ; @param currentValue Current value to compare.
+param int currentValue
 ; @param previousValue Address of persistent previous
 ; - value state.
-; @returns 1 if the values differ, otherwise 0.
-param int currentValue
 param int* previousValue
 
 push currentValue
@@ -24,11 +24,11 @@ function hasChanged
 #impure
 ; @doc Detects changes in a value and updates the stored
 ; - previous value.
+; @returns 1 if the values differ, otherwise 0.
 ; @param currentValue Current value to compare.
+param float currentValue
 ; @param previousValue Address of persistent previous
 ; - value state.
-; @returns 1 if the values differ, otherwise 0.
-param float currentValue
 param float* previousValue
 
 push currentValue

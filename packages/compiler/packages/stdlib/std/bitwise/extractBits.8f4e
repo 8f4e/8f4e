@@ -2,14 +2,14 @@ function extractBits
 #export
 ; @doc Extracts a bit field into the low bits of the
 ; - result.
-; @param word Source 32-bit bit pattern.
-; @param offset Least-significant bit offset,
-; - 0..32-count.
-; @param count Number of bits, 0..32.
 ; @returns Unsigned field; zero if count is zero,
 ; - original word if count is 32.
+; @param word Source 32-bit bit pattern.
 param int word
+; @param offset Least-significant bit offset,
+; - 0..32-count.
 param int offset
+; @param count Number of bits, 0..32.
 param int count
 
 push count

@@ -2,8 +2,8 @@ function cosine
 #export
 ; @doc Approximates cosine with a sixth-order Taylor
 ; - polynomial.
-; @param x Phase in radians, -PI..PI.
 ; @returns The approximate cosine.
+; @param x Phase in radians, -PI..PI.
 param float x
 
 const PI 3.141592653589793

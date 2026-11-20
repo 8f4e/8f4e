@@ -29,8 +29,8 @@ drop
 moduleEnd
 entryEnd
 function mix
-${documented ? '; @doc Combines two values.\n; @param left First value.\n; @param right Second value.\n; @returns Sum of the inputs.\n' : ''}param float left
-param float right
+${documented ? '; @doc Combines two values.\n; @returns Sum of the inputs.\n; @param left First value.\n' : ''}param float left
+${documented ? '; @param right Second value.\n' : ''}param float right
 push left
 push right
 add

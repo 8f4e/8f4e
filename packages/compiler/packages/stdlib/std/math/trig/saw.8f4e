@@ -1,8 +1,8 @@
 function saw
 #export
 ; @doc Maps phase to a sawtooth ramp.
-; @param x Phase in radians, -PI..PI.
 ; @returns Sawtooth sample in -1..1.
+; @param x Phase in radians, -PI..PI.
 param float x
 
 const INV_PI 0.318309886183790

@@ -3,9 +3,9 @@ function lcg
 #impure
 ; @doc Advances a 16-bit linear congruential
 ; - pseudorandom generator.
-; @param seed Address of persistent, mutable integer
-; - seed.
 ; @returns Next integer in 0..65535, also written to
+; - seed.
+; @param seed Address of persistent, mutable integer
 ; - seed.
 param int* seed
 

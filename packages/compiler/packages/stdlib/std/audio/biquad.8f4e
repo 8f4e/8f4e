@@ -3,26 +3,26 @@ function biquad
 ; @doc Processes one Direct Form I biquad sample.
 ; - Normalize coefficients so a0 = 1; the caller owns
 ; - sample history.
-; @param input Current input sample.
-; @param b0 Current input coefficient.
-; @param b1 First input history coefficient.
-; @param b2 Second input history coefficient.
-; @param a1 First feedback coefficient (subtracted).
-; @param a2 Second feedback coefficient (subtracted).
-; @param x1 Previous input sample.
-; @param x2 Input two samples ago.
-; @param y1 Previous output sample.
-; @param y2 Output two samples ago.
 ; @returns The filtered output sample.
+; @param input Current input sample.
 param float input
+; @param b0 Current input coefficient.
 param float b0
+; @param b1 First input history coefficient.
 param float b1
+; @param b2 Second input history coefficient.
 param float b2
+; @param a1 First feedback coefficient (subtracted).
 param float a1
+; @param a2 Second feedback coefficient (subtracted).
 param float a2
+; @param x1 Previous input sample.
 param float x1
+; @param x2 Input two samples ago.
 param float x2
+; @param y1 Previous output sample.
 param float y1
+; @param y2 Output two samples ago.
 param float y2
 
 push input

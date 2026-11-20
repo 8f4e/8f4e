@@ -7,11 +7,11 @@ function loadRangeAt
 #impure
 ; @doc Reads neighboring offsets and returns the range
 ; - they describe.
+; @returns Start offset, then range length (top).
 ; @param offsets Array of range boundaries.
+param int* offsets
 ; @param index Index of the first offset in a valid
 ; - adjacent pair.
-; @returns Start offset, then range length (top).
-param int* offsets
 param int index
 local int start
 
