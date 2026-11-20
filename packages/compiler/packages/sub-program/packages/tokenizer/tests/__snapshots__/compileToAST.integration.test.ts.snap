@@ -345,6 +345,22 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       },
     ],
     "name": "mix",
+    "signature": {
+      "parameters": [
+        {
+          "name": "left",
+          "type": "int",
+        },
+        {
+          "name": "right",
+          "type": "float",
+        },
+      ],
+      "returns": [
+        "int",
+        "float",
+      ],
+    },
     "type": "function",
   },
   "module": {

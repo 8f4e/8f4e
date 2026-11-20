@@ -1,5 +1,6 @@
 import type { ResolvedMemoryDeclaration, ResolvedMemoryPointerPushLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
+import { createMemory } from '../../../../tests/memoryFixtures';
 import createInstructionCompilerTestContext, { pointerIdentifier } from '../../../../tests/testUtils';
 import { f64load, i32const, i32load, i32load8s, i32load8u, i32load16s, i32load16u } from '../../../operations';
 import pushMemoryPointer from './pushMemoryPointer';
@@ -20,19 +21,8 @@ function createResolvedMemoryPointerPushLine(
 
 function createPointerMemoryItem(
 	overrides: Partial<ResolvedMemoryDeclaration> & Pick<ResolvedMemoryDeclaration, 'id' | 'byteAddress'>
-) {
-	return {
-		numberOfElements: 1,
-		elementWordSize: 4,
-		allocationUnitAddress: 0,
-		allocationUnitCount: 1,
-		isInteger: true,
-		isUnsigned: false,
-		pointerDepth: 1,
-		type: 'int*',
-		lineNumber: 1,
-		...overrides,
-	} as ResolvedMemoryDeclaration;
+): ResolvedMemoryDeclaration {
+	return createMemory({ pointerDepth: 1, type: 'int*', lineNumber: 1, ...overrides });
 }
 
 describe('pushMemoryPointer', () => {

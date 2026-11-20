@@ -50,13 +50,12 @@ export default function getMemoryTargetAtSourceLine(
 	if (!plannedModule) return { target: undefined };
 
 	const sourceName = getDeclarationName(sourceLine);
-	const index = plannedModule.declarationSources.findIndex(
-		({ line }) =>
-			line.lineNumber === sourceLineIndex &&
-			line.instruction === sourceLine.instruction &&
-			getDeclarationName(line) === sourceName
+	const memory = plannedModule.declarations.find(
+		({ source }) =>
+			source.lineNumber === sourceLineIndex &&
+			source.instruction === sourceLine.instruction &&
+			getDeclarationName(source) === sourceName
 	);
-	const memory = plannedModule.declarations[index];
 	return {
 		target: memory
 			? {

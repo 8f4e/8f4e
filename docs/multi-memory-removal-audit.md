@@ -542,7 +542,7 @@ Related active work to reconcile:
 - [TODO 495 Index editor pointer targets by memory and address](todos/495-index-editor-pointer-targets-by-memory-and-address.md):
   indexing by byte address may still be useful, but the outer memory-index key and cross-memory criteria disappear.
   Preserve first-match behavior for duplicate addresses, empty allocations, and changing pointer values.
-- [TODO 500 Keep planned memory and its source together](todos/500-keep-planned-memory-and-its-source-together.md):
+- [TODO 500 Keep planned memory and its source together](todos/archived/500-keep-planned-memory-and-its-source-together.md):
   overlaps shared planner contracts and fixtures; preserve declaration/source associations during either refactor.
 - [TODO 475 Remove dead compiler block state caches](todos/475-remove-dead-compiler-block-state-caches.md): separate
   adjacent context cleanup; its presence does not make active loop/map state part of memory removal.

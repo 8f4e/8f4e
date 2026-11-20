@@ -1,7 +1,9 @@
 import {
+	createFunctionId,
 	createProjectObjectModel,
 	ErrorCode,
 	MAX_FUNCTION_PARAMETERS,
+	MAX_FUNCTION_RETURN_VALUES,
 	type ProjectModuleBlock,
 	type ProjectObjectModel,
 } from '@8f4e/language-spec';
@@ -41,6 +43,53 @@ describe('compileSubProgram', () => {
 				}),
 			})
 		);
+	});
+
+	it('reports a signature overflow on the function end when there are too many results', () => {
+		const project = createProjectObjectModel();
+		project.functions.push({
+			id: 1,
+			code: ['function helper', `functionEnd${' int'.repeat(MAX_FUNCTION_RETURN_VALUES + 1)}`],
+		});
+		expect(() => compileSubProgram(composeProgram(project), {})).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.FUNCTION_SIGNATURE_OVERFLOW,
+					instruction: 'functionEnd',
+					location: { kind: 'block', projectBlockId: 1, projectGroupPath: '', lineNumber: 1 },
+				}),
+			})
+		);
+	});
+
+	it('keeps compiled signatures detached from the cached source AST', () => {
+		const project = createProjectObjectModel();
+		project.functions.push({
+			id: 1,
+			code: [
+				'function helper',
+				'param float* source',
+				'param float64 factor',
+				'push source',
+				'push factor',
+				'functionEnd float* float64',
+			],
+		});
+		const program = composeProgram(project);
+		const functionId = createFunctionId('helper', ['float*', 'float64']);
+		const first = compileSubProgram(program, {}).compiledFunctions![functionId];
+		first.signature.parameters[0].name = 'edited';
+		first.ast.signature.returns[0] = 'int';
+
+		const next = compileSubProgram(composeProgram(project, program.cache), {}).compiledFunctions![functionId];
+		expect(program.cache.ast.stats.hits).toBe(1);
+		expect(next.signature).toEqual({
+			parameters: [
+				{ name: 'source', type: 'float*' },
+				{ name: 'factor', type: 'float64' },
+			],
+			returns: ['float*', 'float64'],
+		});
 	});
 
 	it("retains each module's entry ownership when composed modules are reordered", () => {

@@ -4,8 +4,6 @@ import drawConnectors from './drawer/connectors';
 import deriveConnectors from './layout/deriveConnectors';
 import type { ConnectorWidgets } from './types';
 
-export { type ConnectorConnectionVisitor, createConnectorConnections } from './connections';
-
 /** Owns input/output connector sprite presentation for one editor. */
 export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',

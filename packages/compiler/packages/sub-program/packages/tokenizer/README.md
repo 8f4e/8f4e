@@ -39,5 +39,6 @@ This package does not own:
 Syntax errors belong to `src/syntax/syntaxError.ts`; semantic errors belong to later compiler phases.
 
 Function declaration checks run while the function AST builder consumes parsed lines. The builder records whether the
-body has started and uses its existing import/export metadata to reject invalid declarations before building a validated
-AST. Later stages trust these guarantees. Export-name collisions between different functions remain semantic checks.
+body has started, validates declarations against the import/export metadata, and collects typed parameters and return
+types into the AST's `signature`. Later stages use that signature for registration and check whole-program
+constraints such as conflicting export names.

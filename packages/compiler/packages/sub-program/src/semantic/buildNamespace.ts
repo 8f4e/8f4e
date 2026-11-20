@@ -8,8 +8,6 @@ import {
 	type FunctionMetadata,
 	type FunctionMetadataLookup,
 	type FunctionRegistry,
-	type FunctionSignature,
-	type FunctionValueType,
 	MAX_FUNCTION_PARAMETERS,
 	MAX_FUNCTION_RETURN_VALUES,
 	type RegisteredFunction,
@@ -41,24 +39,18 @@ function getFunctionExportName(ast: ComposedFunctionAST): string | undefined {
 	return ast.exportLine ? (ast.exportLine.arguments[0]?.value ?? ast.name) : undefined;
 }
 
-/** Gets the declared signature and checks the compiler's function arity limits. */
-function getFunctionSignature(ast: ComposedFunctionAST): FunctionSignature {
-	const parameters: FunctionSignature['parameters'] = [];
-	for (const line of ast.lines) {
-		if (line.instruction !== 'param') continue;
-		parameters.push({ name: line.arguments[1].value, type: line.arguments[0].value as FunctionValueType });
-		if (parameters.length > MAX_FUNCTION_PARAMETERS) {
-			throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, line, { symbol: ast.name });
-		}
+/** Checks arity limits with source ownership already bound to the function. */
+function validateFunctionArity(ast: ComposedFunctionAST): void {
+	if (ast.signature.parameters.length > MAX_FUNCTION_PARAMETERS) {
+		let parameterCount = 0;
+		const overflowLine = ast.lines.find(
+			line => line.instruction === 'param' && ++parameterCount > MAX_FUNCTION_PARAMETERS
+		)!;
+		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, overflowLine, { symbol: ast.name });
 	}
-	if (ast.functionEndLine.arguments.length > MAX_FUNCTION_RETURN_VALUES) {
+	if (ast.signature.returns.length > MAX_FUNCTION_RETURN_VALUES) {
 		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, ast.functionEndLine, { symbol: ast.name });
 	}
-
-	return {
-		parameters,
-		returns: ast.functionEndLine.arguments.map(argument => argument.value as FunctionSignature['returns'][number]),
-	};
 }
 
 /**
@@ -79,15 +71,15 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const byId: FunctionMetadataLookup = {};
 	// Source names may also be Object.prototype property names.
 	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
-	const selectedFunctions = new Map<string, { id: string; ast: TFunction; signature: FunctionSignature }>();
+	const selectedFunctions = new Map<string, { id: string; ast: TFunction }>();
 	for (const ast of asts) {
-		const signature = getFunctionSignature(ast);
-		const parameters = signature.parameters.map(parameter => parameter.type);
+		validateFunctionArity(ast);
+		const parameters = ast.signature.parameters.map(parameter => parameter.type);
 		const id = createFunctionId(ast.name, parameters);
 		const key = JSON.stringify([ast.name, parameters]);
 		// Keep the selected declarations in their own source order.
 		selectedFunctions.delete(key);
-		selectedFunctions.set(key, { id, ast, signature });
+		selectedFunctions.set(key, { id, ast });
 	}
 	const overloadCountsByName = [...selectedFunctions.values()].reduce<Record<string, number>>((counts, { ast }) => {
 		counts[ast.name] = (counts[ast.name] ?? 0) + 1;
@@ -97,8 +89,8 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const reservedFunctionNames = new Set(options.reservedFunctionIds);
 	const seenExportNames = new Set(options.reservedExportNames);
 
-	for (const { id, ast, signature } of selectedFunctions.values()) {
-		const name = ast.name;
+	for (const { id, ast } of selectedFunctions.values()) {
+		const { name, signature } = ast;
 		if (reservedFunctionNames.has(name)) {
 			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, {
 				details: {

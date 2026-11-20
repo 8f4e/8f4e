@@ -5,6 +5,7 @@ import {
 	ErrorCode,
 	type FunctionMetadata,
 	type MemoryLayoutPlan,
+	type PlannedMemoryDeclaration,
 	type ValidatedFunctionAST,
 } from '@8f4e/language-spec';
 import type { SyntaxResult } from '@8f4e/tokenizer';
@@ -15,27 +16,41 @@ import type { ReferenceResolutionContext } from './context';
 import resolveLineReferences from './resolveLineReferences';
 
 function createSourceMemoryPlan(): MemoryLayoutPlan {
-	const buffer = {
-		id: 'buffer',
+	const buffer: PlannedMemoryDeclaration = {
+		id: 0,
+		name: 'buffer',
 		lineNumber: 1,
 		numberOfElements: 4,
 		elementWordSize: 4,
+		elementByteLength: 16,
 		allocationUnitAddress: 0,
 		allocationUnitCount: 4,
+		allocatedByteLength: 16,
 		byteAddress: 0,
+		endByteAddress: 16,
 		type: 'int',
 		isInteger: true,
 		pointerDepth: 0,
 		isUnsigned: false,
-	} as const;
+		source: {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 1,
+			instruction: 'int[]',
+			arguments: [
+				{ type: ArgumentType.IDENTIFIER, value: 'buffer', referenceKind: 'plain', scope: 'local' },
+				{ type: ArgumentType.LITERAL, value: 4, isInteger: true },
+			],
+		},
+	};
 	const source = {
 		id: 'source',
 		lineNumber: 1,
 		byteAddress: 0,
 		allocationUnitCount: 4,
+		allocatedByteLength: 16,
+		endByteAddress: 16,
 		memory: { buffer },
 		declarations: [buffer],
-		declarationSources: [],
 	};
 	return {
 		modules: { source },
@@ -551,18 +566,19 @@ describe('resolveSemanticReferences', () => {
 			arguments: [syntaxValue(classifyIdentifier('int'))],
 		};
 		const functionId = createFunctionId('echo', ['int']);
-		const ast = {
-			type: 'function',
-			name: 'echo',
-			lines: [functionLine, paramLine, pushLine, functionEndLine],
-			functionLine,
-			functionEndLine,
-		} as ValidatedFunctionAST;
 		const metadata = {
 			id: functionId,
 			name: 'echo',
 			signature: { parameters: [{ name: 'value', type: 'int' }], returns: ['int'] },
 		} satisfies FunctionMetadata;
+		const ast = {
+			type: 'function',
+			name: 'echo',
+			signature: metadata.signature,
+			lines: [functionLine, paramLine, pushLine, functionEndLine],
+			functionLine,
+			functionEndLine,
+		} as ValidatedFunctionAST;
 
 		const result = resolveSemanticReferences({
 			ast: { modules: [], constants: [] },

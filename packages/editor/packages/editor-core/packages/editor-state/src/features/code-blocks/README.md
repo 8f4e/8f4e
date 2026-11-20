@@ -18,10 +18,9 @@ errors in contributor-owned `state.codeErrors` lists and applies generic layout 
 Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-rendering`, including its tolerant parser,
 background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
 
-`@8f4e/editor-plugin-connectors` owns input/output connector geometry and sprites.
-Its connection lookup can run without installing the sprite plugin.
-`@8f4e/editor-plugin-wires` uses that lookup for the GPU pass. Core retains no widget presentation data; language
-semantics stay in the compiler.
+`@8f4e/editor-plugin-connectors` owns input/output connector sprites, and `@8f4e/editor-plugin-wires` independently
+owns wire layout and drawing. Both use the editor's group exposure rows and the compiler's resolved targets.
+Core retains no widget presentation data; language semantics stay in the compiler.
 
 Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
 `@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the

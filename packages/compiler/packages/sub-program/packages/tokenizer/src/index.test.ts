@@ -76,6 +76,13 @@ describe('compileToAST', () => {
 			functionLine: { instruction: 'function' },
 			functionEndLine: { instruction: 'functionEnd' },
 			exportLine: { instruction: '#export' },
+			signature: {
+				parameters: [
+					{ name: 'left', type: 'int' },
+					{ name: 'right', type: 'float' },
+				],
+				returns: ['int', 'float'],
+			},
 		});
 		expect(ast.lines[0].instruction).toBe('const');
 	});

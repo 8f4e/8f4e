@@ -1,7 +1,6 @@
 import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileOptions, ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { createFunctionId, ErrorCode } from '@8f4e/language-spec';
-import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
@@ -41,31 +40,6 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 }
 
 describe('compile project object model', () => {
-	it.each(['prototype', 'prototypeEnd', 'shape', 'paramShape', 'pushShape'])(
-		'treats %s as an unknown instruction',
-		instruction => {
-			let thrownError: unknown;
-
-			try {
-				compile(
-					{
-						...emptyProjectFixture,
-						entries: { main: [{ code: ['module main', instruction, 'moduleEnd'], projectBlockId: 42 }] },
-					},
-					{}
-				);
-			} catch (error) {
-				thrownError = error;
-			}
-
-			expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
-				code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION,
-				instruction,
-				location: expect.objectContaining({ projectBlockId: 42, lineNumber: 1 }),
-			});
-		}
-	);
-
 	it('rejects function ids that collide with generated entry function ids during semantic metadata collection', () => {
 		let thrownError: unknown;
 

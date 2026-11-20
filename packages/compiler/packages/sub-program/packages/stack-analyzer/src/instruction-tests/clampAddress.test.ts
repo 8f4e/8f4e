@@ -23,7 +23,6 @@ function createPlannedModule(overrides: Partial<PlannedMemoryModule> = {}): Plan
 		endByteAddress: byteAddress + allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE,
 		memory: overrides.memory ?? {},
 		declarations: overrides.declarations ?? [],
-		declarationSources: overrides.declarationSources ?? [],
 	};
 }
 

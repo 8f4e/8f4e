@@ -7,6 +7,7 @@ import type {
 } from './arguments';
 import type { SourceMetadata } from './compiled';
 import type { DiagnosticSource } from './diagnostics';
+import type { FunctionSignature } from './functionTypes';
 import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
@@ -249,6 +250,8 @@ export interface FunctionAST extends SourceBlockMetadata {
 	/** Source-level callable name written after the `function` instruction. */
 	name: string;
 	lines: CompilerASTLines;
+	/** Explicit parameters and results collected by the tokenizer. */
+	signature: FunctionSignature;
 	functionLine: FunctionLine;
 	functionEndLine: FunctionEndLine;
 	exportLine?: ExportLine;

@@ -72,6 +72,7 @@ describe('resolveMemoryDefaults integration', () => {
 			],
 		} as const;
 		const counterMemory = {
+			source: counterLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 4,
@@ -89,6 +90,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const valuesMemory = {
+			source: valuesLine,
 			numberOfElements: 3,
 			elementWordSize: 4,
 			byteAddress: 8,
@@ -106,6 +108,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const ptrMemory = {
+			source: pointerLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 20,
@@ -124,6 +127,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const copiedCountMemory = {
+			source: copiedCountLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 24,
@@ -141,6 +145,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const gainMemory = {
+			source: gainLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 28,
@@ -158,6 +163,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const audioSamplesMemory = {
+			source: audioSamplesLine,
 			numberOfElements: 6,
 			elementWordSize: 2,
 			byteAddress: 4,
@@ -191,13 +197,6 @@ describe('resolveMemoryDefaults integration', () => {
 						gain: gainMemory,
 					},
 					declarations: [counterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
-					declarationSources: [
-						{ line: counterLine },
-						{ line: valuesLine },
-						{ line: pointerLine },
-						{ line: copiedCountLine },
-						{ line: gainLine },
-					],
 				},
 				audio: {
 					id: 'audio',
@@ -210,7 +209,6 @@ describe('resolveMemoryDefaults integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesLine }],
 				},
 			},
 			moduleList: [
@@ -229,13 +227,6 @@ describe('resolveMemoryDefaults integration', () => {
 						gain: gainMemory,
 					},
 					declarations: [counterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
-					declarationSources: [
-						{ line: counterLine },
-						{ line: valuesLine },
-						{ line: pointerLine },
-						{ line: copiedCountLine },
-						{ line: gainLine },
-					],
 				},
 				{
 					id: 'audio',
@@ -248,7 +239,6 @@ describe('resolveMemoryDefaults integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesLine }],
 				},
 			],
 		} as const;

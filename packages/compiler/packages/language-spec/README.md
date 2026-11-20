@@ -8,7 +8,7 @@ This package is the place for data and types that describe the 8f4e language its
 - `ProjectObjectModel` and its project block, group, entry, identity, and include-resolver contracts.
 - Instruction names, instruction specs, source argument shape rules, stack signatures, and instruction effects.
 - Memory declaration types, memory data contracts, and memory layout metadata types.
-- Function type limits, function signature helpers, parameter shape metadata, and runtime option contracts.
+- Function type limits and signature helpers, and runtime option contracts.
 - Compiler error codes and shared error metadata.
 - Assertion host import names and default no-op bindings (`IGNORED_ASSERTION_IMPORTS`) for hosts that ignore assertions.
 

@@ -131,6 +131,17 @@
         ],
         "name": "double",
         "projectBlockId": 2,
+        "signature": {
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int",
+            },
+          ],
+          "returns": [
+            "int",
+          ],
+        },
         "sourceIdentity": {
           "codeBlockId": "double",
           "projectGroupPath": "",

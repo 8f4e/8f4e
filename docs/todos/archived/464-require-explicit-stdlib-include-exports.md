@@ -235,5 +235,5 @@ functionEnd float
 
 - This TODO records the 2026-06-19 brainstorming decision to require explicit include-local `#export` markers.
 - The no-fallback rule is intentional because the project is unreleased.
-- The compiler should continue to receive only irreducible source blocks: entries/modules, constants, and functions.
-  Include visibility is resolved before that boundary.
+- The compiler should continue to receive only irreducible source blocks: entries/modules, constants, functions, and
+  prototypes. Include visibility is resolved before that boundary.

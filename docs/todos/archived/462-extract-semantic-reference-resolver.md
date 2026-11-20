@@ -24,7 +24,7 @@ This means analyzer and codegen can drift while resolving the same language cons
 - identifier references for memory declarations, locals, and intermodule targets;
 - inline call arguments;
 - map, default, loop, clamp-address, memory-copy, and memory-declaration value positions;
-- push reference enrichment.
+- push and pushShape reference enrichment.
 
 The compiler pipeline should resolve these semantic references once, before stack analysis and codegen. Downstream
 passes should consume the unchanged project AST plus a semantic reference report instead of replaying the same semantic
@@ -65,7 +65,7 @@ data required by downstream passes without mutating or widening the AST.
 
 - Add the new package with a README that states ownership clearly.
 - Define a project-level input containing resolved constants, inlined memory references, memory plan, defaults,
-  pointer metadata, namespaces, function registry, function type registry, and memory regions.
+  pointer metadata, namespaces, function registry, function type registry, memory regions, and prototype shapes.
 - Define an output that includes shared per-line semantic facts keyed back to the original project AST.
 
 ### Step 2: Move Shared Resolution Logic

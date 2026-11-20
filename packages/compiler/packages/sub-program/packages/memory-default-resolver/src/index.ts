@@ -305,10 +305,11 @@ function resolveModuleMemoryDefaults(
 	const memoryDefaults: MemoryDefaults = {};
 	const declarationSourceFacts = memoryReferences.declarationSourcesByModuleId[plannedModule.id]!.lineFacts;
 
-	plannedModule.declarationSources.forEach(({ line }, index) => {
-		const plannedDeclaration = plannedModule.declarations[index]!;
-
-		const resolvedLine = applyMemoryReferenceFacts(line, declarationSourceFacts[index]);
+	for (const plannedDeclaration of plannedModule.declarations) {
+		const resolvedLine = applyMemoryReferenceFacts(
+			plannedDeclaration.source,
+			declarationSourceFacts[plannedDeclaration.id]
+		);
 		if (isArrayMemoryDeclarationLine(resolvedLine)) {
 			setMemoryDefault(
 				memoryDefaults,
@@ -316,7 +317,7 @@ function resolveModuleMemoryDefaults(
 				createArrayDefaultValues(resolvedLine, plannedDeclaration),
 				resolvedLine
 			);
-			return;
+			continue;
 		}
 
 		const { defaultValue } = resolveScalarDefault(resolvedLine, plannedModule, memoryPlan);
@@ -326,15 +327,6 @@ function resolveModuleMemoryDefaults(
 			plannedDeclaration.isInteger ? Math.trunc(defaultValue) : defaultValue,
 			resolvedLine
 		);
-	});
-
-	// A repeated name uses the winning default at each allocation of that name.
-	for (const declaration of plannedModule.declarations) {
-		if (declaration.name === undefined) continue;
-		const effective = plannedModule.memory[declaration.name]!;
-		if (effective.id !== declaration.id) {
-			memoryDefaults[declaration.id] = { ...memoryDefaults[effective.id]! };
-		}
 	}
 
 	return memoryDefaults;

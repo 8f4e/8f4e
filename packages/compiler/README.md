@@ -245,8 +245,9 @@ space. The memory planner lays modules out alphabetically by id, while module ex
 order. `CompileResult.requiredMemoryBytes` reports the allocation size, and `initDefaults()` initializes that memory.
 
 Each module in `CompileResult.memoryPlan` lists every allocation in `declarations`, including anonymous
-declarations. The numeric declaration ID is its index in that list. Use the module's `memory` lookup for source
-names and the declaration ID for defaults and pointer metadata. Anonymous declarations have no source name.
+declarations. The numeric declaration ID is its index in that list. Each declaration carries its source line in
+`source`. Use the module's `memory` lookup for names and the declaration ID for defaults and pointer metadata.
+Named declarations must be unique within their module.
 
 Layout addresses and counts use fixed 4-byte allocation units. Typed element widths remain independent of that grid:
 one `float64` occupies two units, while four `int8[]` elements fit in one unit. See

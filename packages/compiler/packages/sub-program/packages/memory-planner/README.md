@@ -14,15 +14,18 @@ const memoryPlan = planSubProgramMemoryLayout({
 
 The planner collects module IDs and ordered memory declarations from those ASTs.
 
-Modules are allocated in alphabetical order by module id, independent from source or execution order. Module layout source lines are either memory declarations or `shape` lines. The planner expands `shape` lines into effective declaration sources, then plans those declarations in order within each module.
+Modules are allocated in alphabetical order by module id, independent of source or execution order. Within a
+module, the planner allocates memory declarations in source order and rejects a second declaration with the same
+name. Anonymous declarations are not subject to the name check.
 
 The returned plan contains:
 
 - `moduleList`: planned modules in layout order.
 - `modules`: planned modules keyed by id.
-- Each module's `declarations` lists every allocation in source order. Its zero-based index is the declaration ID.
-- Each module's `memory` looks up effective named declarations by source name. Anonymous declarations have no name.
-- Each module's `declarationSources` lists the corresponding source lines in declaration ID order.
+- Each module's `declarations` lists every allocation in source order. Its zero-based index is the declaration ID,
+  and each declaration carries its `source` line.
+- Each module's `memory` looks up the same declaration objects by name. Anonymous declarations appear only in
+  `declarations`.
 
 ## Ownership
 
@@ -32,7 +35,7 @@ This package owns:
 - Memory declaration byte addresses.
 - Building planner-ready memory layout source from validated ASTs.
 - Memory declaration order.
-- Declaration size and type layout facts.
+- Declaration size and type layout facts, and uniqueness of named allocations within a module.
 
 This package does not own:
 

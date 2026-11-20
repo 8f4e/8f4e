@@ -4,29 +4,29 @@ priority: Medium
 effort: 4-8h
 created: 2026-10-14
 issue: https://github.com/8f4e/8f4e/issues/1027
-status: Open
-completed: null
+status: Completed
+completed: 2026-11-20
 ---
 
 # TODO: Keep planned memory and its source together
 
 ## Problem Description
 
-Each planned memory module stores layout metadata in `declarations` and effective source declarations in a separate
-`declarationSources` array. Their positions must match, but the type contract does not express that relationship.
-The module's `memory` lookup returns only the layout record, so consumers must reconstruct its source association.
+Before this refactor, each memory plan stored layout metadata in `declarations` and source lines in a separate
+`declarationSources` array. Their positions had to match, but the type contract did not express that relationship.
+The module's `memory` lookup returned only the layout record, so consumers had to recover its source separately.
 
-Group initializer resolution currently finds a resolved backing declaration with `declarations.indexOf(targetMemory)`
-and uses that index to retrieve its source. Default resolution also joins the two arrays by index. Reordering,
+Group initializer resolution used the backing declaration's numeric ID to retrieve its source from the separate array.
+Default resolution also joined the two arrays by index. Reordering,
 filtering, or constructing incomplete plans can separate facts that describe the same declaration.
 
-## Proposed Solution
+## Implemented Solution
 
 Give each `PlannedMemoryDeclaration` a required `source` containing its `MemoryDeclarationLine`.
 Extract the existing address, size, and type fields into `MemoryDeclarationLayout`, which low-level
 layout helpers can produce before the planner attaches the source.
 
-Keep the ordered `declarations` list and the `memory[id]` lookup pointing to the same complete declaration objects.
+Keep the ordered `declarations` list and the `memory[name]` lookup pointing to the same complete declaration objects.
 Remove the module-level `declarationSources` array and update consumers to read `declaration.source` directly.
 
 Here, source means the declaration after layout normalization. Preserve its current line-number semantics. Reference
@@ -37,7 +37,7 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
 - **Reliable pairing:** every planned declaration carries its source, so the relationship no longer depends on two
   arrays staying synchronized.
 - **Direct source access:** resolving an exposed alias also provides its backing declaration's source, eliminating
-  the additional linear search in group initializer validation.
+  the additional indexed source lookup in group initializer validation.
 - **Simpler default resolution:** each iteration has the layout and source line together.
 - **Clearer contracts:** layout-only helpers use layout metadata, while consumers of complete planned declarations
   can rely on source information being present.
@@ -59,14 +59,14 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
 
 ## Success Criteria
 
-- [ ] Every planned declaration has a required source line.
-- [ ] `memory[id]` and `declarations` reference the same complete declaration objects.
-- [ ] The module-level `declarationSources` array and positional source-recovery logic are removed.
-- [ ] Layout helpers can operate without requiring source metadata.
-- [ ] Declaration ordering, memory addresses, initializer precedence, and diagnostics retain their behavior.
-- [ ] Scalar declarations and single-element arrays remain distinguishable during initializer validation.
-- [ ] Later passes preserve source records and cached ASTs while producing their own resolution results.
-- [ ] Consumers and fixtures use the new contracts directly without optional-source fallbacks or compatibility aliases.
+- [x] Every planned declaration has a required source line.
+- [x] `memory[name]` and `declarations` reference the same complete declaration objects.
+- [x] The module-level `declarationSources` array and positional source-recovery logic are removed.
+- [x] Layout helpers can operate without requiring source metadata.
+- [x] Declaration ordering, memory addresses, initializer precedence, and diagnostics retain their behavior for valid declarations.
+- [x] Scalar declarations and single-element arrays remain distinguishable during initializer validation.
+- [x] Later passes preserve source records and cached ASTs while producing their own resolution results.
+- [x] Consumers and fixtures use the new contracts directly without optional-source fallbacks or compatibility aliases.
 
 ## Affected Components
 
@@ -96,4 +96,4 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
 
 - [PR #1019](https://github.com/8f4e/8f4e/pull/1019) introduced group initializers, exposing the positional
   lookup needed to recover a resolved declaration's source.
-- [TODO 499](499-unify-project-instruction-syntax-parsing.md) separately addresses project instruction syntax ownership.
+- [TODO 499](../499-unify-project-instruction-syntax-parsing.md) separately addresses project instruction syntax ownership.

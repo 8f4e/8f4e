@@ -9,7 +9,6 @@ import type {
 	ModuleAST,
 	ModuleLine,
 	PlannedMemoryDeclaration,
-	PlannedMemoryDeclarationSource,
 	PlannedMemoryModule,
 	ValidatedModuleAST,
 } from '@8f4e/language-spec';
@@ -27,9 +26,9 @@ import { planArrayDeclarationLayout, planScalarDeclarationLayout } from './decla
 import { getAllocatedByteLength, getEndByteAddress } from './layoutAddresses';
 
 export type {
+	MemoryDeclarationLayout,
 	MemoryLayoutPlan,
 	PlannedMemoryDeclaration,
-	PlannedMemoryDeclarationSource,
 	PlannedMemoryModule,
 } from '@8f4e/language-spec';
 
@@ -90,12 +89,9 @@ function getUnresolvedArgumentIdentifier(argument: Argument): string {
 	return argument.type === ArgumentType.IDENTIFIER ? argument.value : String(argument.type);
 }
 
-function normalizeLayoutMemoryDeclarationLine(
-	line: MemoryDeclarationLine,
-	sourceLine: CompilerASTLine = line
-): MemoryDeclarationLine {
+function validateLayoutMemoryDeclarationLine(line: MemoryDeclarationLine, sourceLine: CompilerASTLine): void {
 	if (!isArrayMemoryDeclarationLine(line)) {
-		return line;
+		return;
 	}
 
 	const elementCount = line.arguments[1];
@@ -108,13 +104,6 @@ function normalizeLayoutMemoryDeclarationLine(
 	if (!Number.isInteger(elementCount.value) || elementCount.value < 0) {
 		throw plannerError(ErrorCode.INVALID_ARRAY_SIZE, sourceLine);
 	}
-
-	return elementCount === line.arguments[1]
-		? line
-		: ({
-				...line,
-				arguments: [line.arguments[0], elementCount, ...line.arguments.slice(2)],
-			} as MemoryDeclarationLine);
 }
 
 function collectModuleMemoryLayoutSourceLines(
@@ -128,7 +117,8 @@ function collectModuleMemoryLayoutSourceLines(
 		const line = applyConstantFacts(sourceLine, constantReferences?.lineFacts[lineIndex]);
 
 		if (isMemoryDeclarationLine(line)) {
-			lines.push(normalizeLayoutMemoryDeclarationLine(line, sourceLine));
+			validateLayoutMemoryDeclarationLine(line, sourceLine);
+			lines.push(line);
 		}
 	}
 
@@ -175,17 +165,21 @@ function planModuleMemory(
 	moduleByteAddress: number
 ): Omit<PlannedMemoryModule, 'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress'> {
 	let localAllocationUnitOffset = 0;
-	const memory: Record<string, PlannedMemoryDeclaration> = {};
+	const memory: Record<string, PlannedMemoryDeclaration> = Object.create(null);
 	const declarations: PlannedMemoryDeclaration[] = [];
-	const declarationSources: PlannedMemoryDeclarationSource[] = sourceModule.lines.map(line => ({ line }));
 
-	for (const { line } of declarationSources) {
-		const plannedDeclaration = planDeclarationLine(line, moduleByteAddress, localAllocationUnitOffset);
+	for (const line of sourceModule.lines) {
 		const name = getDeclarationName(line);
-		const declaration = {
+		if (name !== undefined && Object.hasOwn(memory, name)) {
+			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, line, { symbol: sourceModule.id, details: { identifier: name } });
+		}
+
+		const plannedDeclaration = planDeclarationLine(line, moduleByteAddress, localAllocationUnitOffset);
+		const declaration: PlannedMemoryDeclaration = {
 			...plannedDeclaration.declaration,
 			id: declarations.length,
 			...(name !== undefined ? { name } : {}),
+			source: line,
 		};
 
 		if (name !== undefined) memory[name] = declaration;
@@ -197,7 +191,6 @@ function planModuleMemory(
 		allocationUnitCount: localAllocationUnitOffset,
 		memory,
 		declarations,
-		declarationSources,
 	};
 }
 
@@ -222,7 +215,6 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.allocationUnitCount),
 			memory: moduleMemory.memory,
 			declarations: moduleMemory.declarations,
-			declarationSources: moduleMemory.declarationSources,
 		};
 
 		modules[plannedModule.id] = plannedModule;

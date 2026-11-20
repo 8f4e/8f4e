@@ -6,6 +6,8 @@ import type {
 	ExportLine,
 	FunctionEndLine,
 	FunctionLine,
+	FunctionSignature,
+	FunctionValueType,
 	ImportLine,
 	ModuleLine,
 } from '@8f4e/language-spec';
@@ -24,6 +26,7 @@ type FunctionASTBuilder = {
 	type: 'function';
 	name: string;
 	functionLine: FunctionLine;
+	signature: FunctionSignature;
 	functionEndLine?: FunctionEndLine;
 	exportLine?: ExportLine;
 	importLine?: ImportLine;
@@ -59,6 +62,7 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 				type: 'function',
 				name: line.arguments[0].value,
 				functionLine: line,
+				signature: { parameters: [], returns: [] },
 			};
 		case 'constants':
 			return {
@@ -104,8 +108,17 @@ function applyFunctionASTLine(builder: FunctionASTBuilder, line: CompilerASTLine
 	if (isFunctionBodyInstructionName(line.instruction)) {
 		builder.bodyStarted = true;
 	}
-	if (line.instruction === 'functionEnd') {
-		builder.functionEndLine = line;
+	switch (line.instruction) {
+		case 'param':
+			builder.signature.parameters.push({
+				name: line.arguments[1].value,
+				type: line.arguments[0].value as FunctionValueType,
+			});
+			break;
+		case 'functionEnd':
+			builder.functionEndLine = line;
+			builder.signature.returns = line.arguments.map(argument => argument.value as FunctionValueType);
+			break;
 	}
 }
 
@@ -156,6 +169,7 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 				type: 'function',
 				name: builder.name,
 				lines,
+				signature: builder.signature,
 				functionLine: builder.functionLine,
 				functionEndLine: builder.functionEndLine,
 				...(builder.exportLine ? { exportLine: builder.exportLine } : {}),

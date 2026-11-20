@@ -125,7 +125,8 @@ describe('call stack analysis', () => {
 
 	it('resolves pointer overloads from known memory address literals', () => {
 		const previousTrigger: PlannedMemoryDeclaration = {
-			id: 'previousTrigger',
+			id: 0,
+			name: 'previousTrigger',
 			elementByteLength: 4,
 			allocatedByteLength: 4,
 			endByteAddress: 4,
@@ -139,6 +140,14 @@ describe('call stack analysis', () => {
 			isUnsigned: false,
 			type: 'int',
 			lineNumber: 1,
+			source: {
+				diagnosticSource: { kind: 'document' },
+				lineNumber: 1,
+				instruction: 'int',
+				arguments: [
+					{ type: ArgumentType.IDENTIFIER, value: 'previousTrigger', referenceKind: 'plain', scope: 'local' },
+				],
+			},
 		};
 		const plannedModule: PlannedMemoryModule = {
 			id: 'test',
@@ -149,7 +158,6 @@ describe('call stack analysis', () => {
 			endByteAddress: 4,
 			memory: { previousTrigger },
 			declarations: [previousTrigger],
-			declarationSources: [],
 		};
 		const context = createStackAnalyzerTestContext({
 			currentPlannedModule: plannedModule,

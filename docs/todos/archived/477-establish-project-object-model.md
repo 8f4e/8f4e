@@ -41,6 +41,7 @@ interface ProjectObjectModel {
 	modules: ProjectModuleBlock[];
 	functions: ProjectBlock[];
 	constants: ProjectBlock[];
+	prototypes: ProjectBlock[];
 	includes: ProjectBlock[];
 	notes: ProjectBlock[];
 	unknown: ProjectBlock[];
@@ -74,12 +75,12 @@ interface ProjectModuleBlock extends ProjectBlock {
 
 Collection membership is the block type. The model must not also carry `type: 'function' | 'module' | ...`, because
 the field and collection could disagree. `modules` preserves module order; filtering that array by `entry` defines the
-execution order for each entry. Functions and constants are hoisted, so their array order is deterministic
+execution order for each entry. Functions, constants, and prototypes are hoisted, so their array order is deterministic
 but not semantically significant. Includes retain array order for deterministic expansion. Notes and unknown/incomplete
 blocks remain available to editors without entering compilation.
 
 Groups use the same object model recursively rather than referencing root-owned blocks by id. A nested model owns its
-modules, functions, constants, includes, notes, unknown blocks, and further groups. Identity fields are not
+modules, functions, constants, prototypes, includes, notes, unknown blocks, and further groups. Identity fields are not
 part of the root project model: child groups require a sibling-unique `name` and an `entry` through
 `ProjectGroupObjectModel`. Its `code` retains every source line owned by the group wrapper, while nested project blocks
 remain in their typed collections. A group's canonical path is formed from its ancestors' encoded names. The root path
@@ -149,10 +150,10 @@ object model.
 ### Step 1: Design The Canonical Object Model
 
 - Add `ProjectObjectModel` and its supporting types to `@8f4e/language-spec`.
-- Store modules, functions, constants, includes, notes, and unknown blocks in separate top-level arrays;
+- Store modules, functions, constants, prototypes, includes, notes, and unknown blocks in separate top-level arrays;
   collection membership defines block type.
 - Require `entry` on module blocks and do not permit it on the shared base block type.
-- Preserve module order in the `modules` array and document that functions and constants are hoisted.
+- Preserve module order in the `modules` array and document that functions, constants, and prototypes are hoisted.
 - Represent groups as recursively owned `ProjectGroupObjectModel` values so every block is owned by exactly one
   project model and every child has a required name and entry.
 - Keep recursive compilation out of the group-model refactor; compile only the root project until a dedicated
@@ -178,7 +179,7 @@ object model.
 - Remove `prepareCompilerInputAsync`, `prepareCompilerInputFromProjectBlocksAsync`, and
   `prepareCompilerInputFromProjectSourceAsync` from consumer-facing exports.
 - Remove `SubProgramSource` and the public `compile(SubProgramSource, ...)` entry point. Update compiler stages to read
-  the canonical module, function, and constants collections directly.
+  the canonical module, function, constants, and prototype collections directly.
 - Resolve includes as compiler-derived function sources without constructing a second project-level input model.
 - Keep include resolution explicit in `compileProject` options, make the public function asynchronous, and preserve
   block-relative diagnostic identity.
@@ -235,7 +236,7 @@ object model.
   operations.
 - [x] Block type is represented solely by top-level collection membership; object-model blocks do not carry a redundant
   type field.
-- [x] Module order is preserved per entry, while functions and constants are compiled as hoisted blocks.
+- [x] Module order is preserved per entry, while functions, constants, and prototypes are compiled as hoisted blocks.
 - [x] Groups recursively own complete `ProjectObjectModel` values instead of referencing root blocks by id.
 - [x] Groups expose direct-module memory through non-allocating symbolic aliases and compiled address metadata.
 - [x] Canonical group paths derive from sibling-unique group names and key every module-addressed compiler result map.

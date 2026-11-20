@@ -117,12 +117,17 @@ describe('planSubProgramMemoryLayout integration', () => {
 			],
 		} as const;
 
-		expect(
-			planSubProgramMemoryLayout({
-				modules,
-				constantReferences,
-				startingByteAddress: 4,
-			} satisfies MemoryPlannerIntegrationInput)
-		).toMatchSnapshot();
+		const plan = planSubProgramMemoryLayout({
+			modules,
+			constantReferences,
+			startingByteAddress: 4,
+		} satisfies MemoryPlannerIntegrationInput);
+		for (const module of plan.moduleList) {
+			expect(plan.modules[module.id]).toBe(module);
+			for (const declaration of module.declarations) {
+				if (declaration.name !== undefined) expect(module.memory[declaration.name]).toBe(declaration);
+			}
+		}
+		expect(plan.moduleList.map(({ memory: _memory, ...module }) => module)).toMatchSnapshot();
 	});
 });

@@ -183,7 +183,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -206,7 +223,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 57,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -543,7 +577,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 67,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -566,7 +617,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 48,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -903,7 +971,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1396,7 +1481,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "reset"
+            "name": "reset",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "reset",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1679,7 +1781,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -1702,7 +1821,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "set"
+            "name": "set",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "set",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -2039,7 +2175,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 177,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -2062,7 +2215,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 159,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -2399,7 +2569,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -2800,7 +2987,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2819,12 +3023,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -2867,7 +3067,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "set"
+            "name": "set",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "set",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           },
           "reset": {
             "numberOfElements": 1,
@@ -2884,7 +3101,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "reset"
+            "name": "reset",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "reset",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2903,29 +3137,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "set"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
-            "lineNumber": 6,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "reset"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "set",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -2944,7 +3157,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 8,
+            "elementByteLength": 4,
+            "endByteAddress": 12,
+            "lineNumber": 6,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -2987,7 +3215,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 159,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3006,12 +3251,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -3054,7 +3295,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3073,12 +3331,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3121,7 +3375,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 67,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3140,12 +3411,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3188,7 +3455,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 177,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3207,12 +3491,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3255,7 +3535,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 48,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3274,12 +3571,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 3,
               "diagnosticSource": {
                 "kind": "block",
@@ -3322,7 +3615,29 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
+            "name": "buffer",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
+              "instruction": "int[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 64,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -3339,7 +3654,31 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "bufferPointer"
+            "name": "bufferPointer",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "bufferPointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3358,29 +3697,8 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 72,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 288,
-            "elementByteLength": 4,
-            "endByteAddress": 292,
-            "lineNumber": 5,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "bufferPointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -3404,7 +3722,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 72,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 288,
+            "elementByteLength": 4,
+            "endByteAddress": 292,
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3454,7 +3787,29 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
+            "name": "buffer",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
+              "instruction": "int[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 64,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -3471,7 +3826,31 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "bufferPointer"
+            "name": "bufferPointer",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "bufferPointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3490,29 +3869,8 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 137,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 548,
-            "elementByteLength": 4,
-            "endByteAddress": 552,
-            "lineNumber": 5,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "bufferPointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -3536,7 +3894,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 137,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 548,
+            "elementByteLength": 4,
+            "endByteAddress": 552,
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3586,7 +3959,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 57,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3605,12 +3995,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -3655,7 +4041,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 200,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3674,12 +4077,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3722,7 +4121,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "set"
+            "name": "set",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "set",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           },
           "reset": {
             "numberOfElements": 1,
@@ -3739,7 +4155,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "reset"
+            "name": "reset",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 144,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "reset",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3758,29 +4191,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "set"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 2,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 8,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
-            "lineNumber": 6,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "reset"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "set",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3799,7 +4211,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 2,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 8,
+            "elementByteLength": 4,
+            "endByteAddress": 12,
+            "lineNumber": 6,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "reset",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -3842,7 +4269,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 159,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3861,12 +4305,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -3909,7 +4349,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 91,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3928,12 +4385,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -3976,7 +4429,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 67,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3995,12 +4465,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -4043,7 +4509,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 177,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -4062,12 +4545,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -4110,7 +4589,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 3,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 48,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -4129,12 +4625,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 3,
               "diagnosticSource": {
                 "kind": "block",
@@ -4177,7 +4669,29 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
+            "name": "buffer",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
+              "instruction": "int[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 64,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -4194,7 +4708,31 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "bufferPointer"
+            "name": "bufferPointer",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 115,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "bufferPointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -4213,29 +4751,8 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 72,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 288,
-            "elementByteLength": 4,
-            "endByteAddress": 292,
-            "lineNumber": 5,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "bufferPointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -4259,7 +4776,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 72,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 288,
+            "elementByteLength": 4,
+            "endByteAddress": 292,
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -4309,7 +4841,29 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
+            "name": "buffer",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
+              "instruction": "int[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 64,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
           },
           "bufferPointer": {
             "numberOfElements": 1,
@@ -4326,7 +4880,31 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 1,
-            "name": "bufferPointer"
+            "name": "bufferPointer",
+            "source": {
+              "lineNumber": 5,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 223,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "bufferPointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -4345,29 +4923,8 @@
             "type": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 137,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 548,
-            "elementByteLength": 4,
-            "endByteAddress": 552,
-            "lineNumber": 5,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "bufferPointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -4391,7 +4948,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 137,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 548,
+            "elementByteLength": 4,
+            "endByteAddress": 552,
+            "lineNumber": 5,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "bufferPointer",
+            "source": {
               "lineNumber": 5,
               "diagnosticSource": {
                 "kind": "block",
@@ -4441,7 +5013,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 57,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -4460,12 +5049,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",

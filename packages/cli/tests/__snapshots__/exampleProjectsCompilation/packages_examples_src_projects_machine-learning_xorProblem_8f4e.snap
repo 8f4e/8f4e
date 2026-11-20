@@ -280,7 +280,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -303,7 +325,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -679,7 +723,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -702,7 +768,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -1078,7 +1166,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1270,7 +1375,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1462,7 +1584,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -1485,7 +1624,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1861,7 +2017,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -2165,7 +2338,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2184,12 +2374,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2232,7 +2418,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2251,12 +2454,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2299,7 +2498,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2318,12 +2534,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2366,7 +2578,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           },
           "in2": {
             "numberOfElements": 1,
@@ -2383,7 +2617,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2402,29 +2658,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -2448,7 +2683,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
@@ -2481,8 +2731,7 @@
         "allocatedByteLength": 0,
         "endByteAddress": 20,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       "perceptron": {
         "id": "perceptron",
@@ -2507,7 +2756,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2526,12 +2792,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -2574,7 +2836,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2593,12 +2872,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -2641,7 +2916,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2660,12 +2952,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -2709,7 +2997,32 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2729,12 +3042,8 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",
@@ -2787,7 +3096,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2806,12 +3132,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2854,7 +3176,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2873,12 +3212,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2921,7 +3256,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2940,12 +3292,8 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -2988,7 +3336,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           },
           "in2": {
             "numberOfElements": 1,
@@ -3005,7 +3375,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3024,29 +3416,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -3070,7 +3441,22 @@
             }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
@@ -3103,8 +3489,7 @@
         "allocatedByteLength": 0,
         "endByteAddress": 20,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       {
         "id": "perceptron",
@@ -3129,7 +3514,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3148,12 +3550,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -3196,7 +3594,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3215,12 +3630,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -3263,7 +3674,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3282,12 +3710,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -3331,7 +3755,32 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3351,12 +3800,8 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",

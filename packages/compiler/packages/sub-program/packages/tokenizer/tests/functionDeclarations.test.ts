@@ -132,6 +132,13 @@ describe('function declaration syntax', () => {
 			type: 'function',
 			importLine: { instruction: '#import', arguments: [{ value: 'host.read' }] },
 			functionEndLine: { instruction: 'functionEnd', arguments: [{ value: 'int' }] },
+			signature: {
+				parameters: [
+					{ name: 'address', type: 'int' },
+					{ name: 'state', type: 'int*' },
+				],
+				returns: ['int'],
+			},
 		});
 		expect(ast.lines.find(line => line.instruction === 'param' && line.arguments[1].value === 'state')).toMatchObject({
 			arguments: [{ value: 'int*' }, { value: 'state' }],

@@ -161,7 +161,11 @@ constantsEnd
 		});
 
 		expect(second.compileResult.cache.ast.entries.get('root:entry:main:module:0')?.ast).toBe(cachedModuleAst);
-		expect(second.compileResult.memoryPlan.modules.cachedConstants!.memory.buffer!.numberOfElements).toBe(4);
+		const before = first.compileResult.memoryPlan.modules.cachedConstants.memory.buffer;
+		const after = second.compileResult.memoryPlan.modules.cachedConstants.memory.buffer;
+		expect(after.numberOfElements).toBe(4);
+		expect(before.source.arguments[1]).toMatchObject({ value: 2 });
+		expect(after.source.arguments[1]).toMatchObject({ value: 4 });
 		const cachedMemoryDeclaration = cachedModuleAst?.lines.find(isMemoryDeclarationLine);
 		expect(cachedMemoryDeclaration?.arguments[1]).toEqual(expect.objectContaining({ value: 'SIZE' }));
 	});

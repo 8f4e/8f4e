@@ -1,8 +1,24 @@
+import { readFile } from 'node:fs/promises';
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { expect, test } from 'vitest';
-import { loadExample } from './exampleRuntime';
 
 test('FM envelope groups start independently with their own timing and feed the original operators', async () => {
-	const { modules, result, step, view } = await loadExample('audio/keyboardController6OperatorFMSynth.8f4e');
+	const source = await readFile(
+		new URL('../src/projects/audio/keyboardController6OperatorFMSynth.8f4e', import.meta.url),
+		'utf8'
+	);
+	const result = await compileProject(parseProjectSource(source), {
+		resolveInclude: id => readFile(new URL(import.meta.resolve(`@8f4e/stdlib/${id}.8f4e`)), 'utf8'),
+		startingMemoryAllocationUnitAddress: 0,
+	});
+	const pages = Math.max(1, Math.ceil(result.requiredMemoryBytes / 65536));
+	const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+	new Uint8Array(memory.buffer).fill(0xa5);
+	const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+	(instance.exports.initDefaults as () => void)();
+	const step = instance.exports.main as () => void;
+	const view = new DataView(memory.buffer);
+	const { modules } = result.memoryPlan;
 	const keyboard = modules.keyboard.memory;
 	const operators = [
 		[480, 4800, 4800, 'carrier1', 'amplitudeMod'],

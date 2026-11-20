@@ -343,7 +343,7 @@ function resolveDeclarationSourceReferences(
 ): MemoryReferenceResolutionBlockFacts {
 	pointerMetadata[module.id] = pointerMetadata[module.id] ?? {};
 	const context = createModuleResolutionContext(memoryPlan, pointerMetadata, memoryAliases, module, referenceSlots);
-	const lineFacts = module.declarationSources.map(({ line }) => {
+	const lineFacts = module.declarations.map(({ source: line }) => {
 		const memoryReferenceFacts = resolveMemoryReferenceLineFacts(line, context, initializerDefaults);
 		updatePointerMemoryMetadata(applyMemoryReferenceFacts(line, memoryReferenceFacts), context);
 		return memoryReferenceFacts;

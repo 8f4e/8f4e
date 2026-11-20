@@ -180,28 +180,6 @@ describe('resolveMemoryDefaults', () => {
 		});
 	});
 
-	it('uses the winning default for each allocation of a repeated name', () => {
-		const originalFoo = scalarLine(2, 'int', [syntaxValue(classifyIdentifier('foo')), literal(1)]);
-		const originalBar = scalarLine(3, 'int', [syntaxValue(classifyIdentifier('bar')), literal(3)]);
-		const localFoo = scalarLine(12, 'int', [syntaxValue(classifyIdentifier('foo')), literal(2)]);
-		const module = moduleAst('main', [originalFoo, originalBar, localFoo]);
-		const memoryPlan = planSubProgramMemoryLayout({
-			modules: [module],
-			constantReferences: noConstantReferences(),
-		});
-
-		const result = resolveMemoryDefaults({
-			memoryPlan,
-			memoryReferences: noMemoryReferences(memoryPlan),
-		});
-
-		expect(result.main).toEqual({
-			0: { value: 2, hasExplicitDefault: true },
-			2: { value: 2, hasExplicitDefault: true },
-			1: { value: 3, hasExplicitDefault: true },
-		});
-	});
-
 	it('rejects array initializers longer than the planned array', () => {
 		const values = arrayLine(2, 'int[]', [
 			syntaxValue(classifyIdentifier('values')),

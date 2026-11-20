@@ -60,7 +60,6 @@ Active todo files are listed below.
 | 494 | Measure editor block-highlight parser scaling | 🟡 | 3-6h | 2026-10-14 | Benchmark the existing stack-based parser across increasing source sizes and report runtime, allocations, and complete highlight-preparation costs. |
 | 498 | Consolidate shared editor test-state builders | 🟡 | 4-8h | 2026-10-14 | Share complete typed state defaults and migrate cast-based editor/runtime fixtures so missing required fields are caught earlier. |
 | 499 | Unify project instruction syntax parsing | 🟡 | 4-8h | 2026-10-14 | Move exposure syntax into the tokenizer alongside pass and init, with shared comment handling, validation, and source diagnostics. |
-| 500 | Keep planned memory and its source together | 🟡 | 4-8h | 2026-10-14 | Attach effective source information to each planned declaration, removing parallel arrays and positional source lookups. |
 | 501 | Preserve known pointee counts of one | 🟡 | 1-2h | 2026-10-16 | Retain proven single-element pointee counts so count(*pointer) resolves correctly while unknown counts remain errors. |
 | 502 | Add browser-driven accessibility color-scheme overrides | 🟡 | 2-4d | 2026-10-18 | Add tested alternative editor palettes selected automatically from supported browser contrast and forced-color preferences. |
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
@@ -86,6 +85,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 500 | Keep planned memory and its source together | 2026-11-20 | Planned declarations carry their source directly; group initializers, default resolution, and editor lookup no longer join parallel arrays. |
 | 388 | Add PixelCode font to sprite-generator | 2026-11-06 | Added `pixelcode6x12` from PixelCode v2.2 with native pixel conversion, lazy loading, attribution, and rendering checks. |
 | 389 | Add EagleSpCGA Alt3 8x8 font to sprite-generator | 2026-11-06 | Added `eaglespcgaalt38x8` from the Oldschool PC Font Pack v2.2 bitmap strike; verified Unicode mapping and original pixels. |
 | 465 | Add Sergamon font to the editor | 2026-11-06 | Added `sergamon8x16` directly from v2.2.3 source grids, with lazy loading, attribution, and rendering checks. |
@@ -116,6 +116,7 @@ Active todo files are listed below.
 | 489 | Remove obsolete intermodular nth-reference helpers | 2026-09-30 | Deleted two test-only tokenizer helpers while preserving and strengthening coverage of the live nth-reference classifier. |
 | 488 | Remove disabled editor debug overlays | 2026-09-30 | Removed the disconnected info and console overlays and their public flags while retaining state-backed logging. |
 | 274 | Remove unused editor-core feature-flag configuration | 2026-09-30 | Deleted the test-only editor-core implementation and retained focused coverage beside the canonical editor-state feature flags. |
+| 448 | Move prototype content validation to parser | 2026-09-07 | Cancelled as stale; parser-owned placement validation already rejects invalid prototype contents. GitHub issue #944 was closed as not planned. |
 | 425 | Split StackItem into value and address variants | 2026-09-07 | Cancelled as stale; the value/address discriminated union is already implemented. GitHub issue #713 was closed as not planned. |
 | 408 | Reduce tokenizer identifier classification work | 2026-09-07 | Cancelled as stale; identifier dispatch is already optimized and GitHub issue #661 was already closed as completed. |
 | 407 | Optimize normalizeArgumentsAtIndexes | 2026-09-07 | Cancelled as stale; the targeted normalization path was removed by later compiler refactoring. GitHub issue #660 was closed as not planned. |
@@ -157,6 +158,8 @@ Active todo files are listed below.
 | 062 | Editor Command Queue Refactor | 2026-06-14 | Cancelled; no command-queue refactor is planned for this editor host-callback cleanup. |
 | 054 | Benchmark Unrolled vs Normal Loop in Audio Buffer Filler | 2026-06-14 | Cancelled; no benchmark work is planned for this old audio-buffer loop strategy investigation. |
 | 446 | Store project block type during project parse | 2026-06-11 | Superseded first by project-preparser classification and later by the compiler-owned typed collections in `ProjectObjectModel`. |
+| 449 | Add function paramShape instruction | 2026-06-14 | Archived with the exact completion date unknown; `paramShape <prototypeId>` now expands prototype memory declarations into function pointer params while prototypes remain memory-shape-only. |
+| 451 | Add pushShape instruction | 2026-06-14 | Archived with the exact completion date unknown; `pushShape <prototypeId>` now pushes effective module memory addresses in prototype order for `paramShape` call sites. |
 | 456 | Improve function overload mismatch diagnostics | 2026-06-13 | Failed overload resolution now reports inferred call signatures while listing available overload signatures, without changing true missing-function diagnostics. |
 | 455 | Unify assert and assertf with polymorphic overloads | 2026-06-12 | Float assertion fixtures now use polymorphic `assert` consistently, and any remaining `assertf` behavior is treated as compatibility. |
 | 435 | Add polymorphic function overloads | 2026-06-09 | Implemented in PR #784: functions can share a source name across exact parameter signatures, use signature-derived ids, and resolve calls through stack-based overload matching. |
@@ -164,6 +167,7 @@ Active todo files are listed below.
 | 440 | Migrate keyboard memory directives to config | 2026-06-04 | Keyboard memory targets now use schema-backed `@config keyboard...` entries, and the keyboard plugin activates from config paths instead of custom directives. |
 | 439 | Migrate @midiIn to config directive | 2026-06-04 | MIDI input bindings now use schema-backed `@config midi.inputs...` entries, with no live `@midiIn` support remaining. |
 | 447 | Remove duplicated constants block validation | 2026-06-01 | `parseConstantsAST()` now only asserts block type; invalid constants-block contents are rejected by the shared instruction-spec validation path during namespace collection. |
+| 444 | Use parser-collected shape lines for prototype expansion | 2026-06-01 | Module ASTs now carry parser-collected `shapeLines`, and prototype expansion uses those parsed lines instead of rescanning/reparsing shaped module source. |
 | 438 | Add generic function imports | 2026-05-29 | `#import <field-name>` now declares host-provided functions, imported functions participate in normal `call` resolution and stack typing, WebAssembly import/function indexes are emitted correctly, and invalid import shapes have compiler coverage. |
 | 437 | Add execution entries | 2026-05-29 | `entry` / `entryEnd` now partitions modules into exported execution entries, `initDefaults` only initializes memory defaults, old test/init-only grouping was removed, and examples/runtime/CLI paths use the new entry exports. |
 | 150 | Add Test Module Type | 2026-05-29 | Completed by the `entry test` CLI test runner flow and superseded by execution entries plus generic function imports. |

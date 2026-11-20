@@ -1,7 +1,12 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import {
+	createMockCodeBlock,
+	createMockEventDispatcher,
+	createMockMemoryDeclarationSource,
+	createMockState,
+} from '@8f4e/editor-state-testing';
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -324,6 +329,7 @@ entryEnd`);
 								memory: {
 									value: {
 										id: 0,
+										source: createMockMemoryDeclarationSource('int', 0, 'value'),
 										name: 'value',
 										numberOfElements: 1,
 										byteAddress: 4,
@@ -335,7 +341,6 @@ entryEnd`);
 									},
 								},
 								declarations: [],
-								declarationSources: [],
 							},
 						},
 						moduleList: [],

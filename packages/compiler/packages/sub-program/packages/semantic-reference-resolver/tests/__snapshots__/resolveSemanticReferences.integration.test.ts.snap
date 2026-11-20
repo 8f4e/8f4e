@@ -99,7 +99,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
         "signature": {
           "parameters": [
             {
-              "name": "value",
+              "name": "amount",
               "type": "int",
             },
           ],
@@ -146,6 +146,21 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "name": "value",
                 "numberOfElements": 1,
                 "pointerDepth": 0,
+                "source": {
+                  "arguments": [
+                    {
+                      "referenceKind": "plain",
+                      "scope": "local",
+                      "type": "identifier",
+                      "value": "value",
+                    },
+                  ],
+                  "diagnosticSource": {
+                    "kind": "document",
+                  },
+                  "instruction": "int",
+                  "lineNumber": 2,
+                },
                 "type": "int",
               },
             },
@@ -210,6 +225,21 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "name": "value",
                 "numberOfElements": 1,
                 "pointerDepth": 0,
+                "source": {
+                  "arguments": [
+                    {
+                      "referenceKind": "plain",
+                      "scope": "local",
+                      "type": "identifier",
+                      "value": "value",
+                    },
+                  ],
+                  "diagnosticSource": {
+                    "kind": "document",
+                  },
+                  "instruction": "int",
+                  "lineNumber": 2,
+                },
                 "type": "int",
               },
             },

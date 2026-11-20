@@ -123,6 +123,10 @@
         ],
         "name": "helpers/hidden",
         "projectBlockId": 5,
+        "signature": {
+          "parameters": [],
+          "returns": [],
+        },
         "sourceIdentity": {
           "codeBlockId": "hidden",
           "projectGroupPath": "helpers",

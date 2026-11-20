@@ -45,7 +45,7 @@ The same contract is used across compiler stages, with independent allocator sta
 can allocate hidden temporaries that semantic analysis does not need, so stages do not share allocator state or assume
 identical final local counts.
 
-- Parameters remain first. After parameters, source locals and generated
+- Parameters remain first, including expanded `paramShape` parameters. After parameters, source locals and generated
   temporaries receive indices in compiler traversal order without a separate declaration prepass.
 - The two integer min/max locals and four map locals use repeated named allocation rather than exposing a raw multi-slot
   reservation API.

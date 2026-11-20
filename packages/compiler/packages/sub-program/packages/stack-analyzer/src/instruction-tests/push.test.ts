@@ -1,5 +1,5 @@
 import type { CompilerASTLine, LiteralPushLine, ResolvedMemoryDeclaration } from '@8f4e/language-spec';
-import { ArgumentType } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, ArgumentType } from '@8f4e/language-spec';
 import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import createStackAnalyzerTestContext from '../../tests/testUtils';
@@ -28,20 +28,32 @@ function resolvedMemoryPointerPushLine(id: string, memoryItem: ResolvedMemoryDec
 }
 
 function createMemoryItem(
-	overrides: Partial<ResolvedMemoryDeclaration> & Pick<ResolvedMemoryDeclaration, 'id' | 'byteAddress'>
-) {
+	overrides: Partial<ResolvedMemoryDeclaration> & Required<Pick<ResolvedMemoryDeclaration, 'name' | 'byteAddress'>>
+): ResolvedMemoryDeclaration {
+	const elementWordSize = overrides.elementWordSize ?? ALLOCATION_UNIT_BYTE_SIZE;
+	const type = overrides.type ?? 'int';
 	return {
+		id: 0,
 		numberOfElements: 1,
-		elementWordSize: 4,
-		allocationUnitAddress: 0,
-		allocationUnitCount: 1,
+		elementWordSize,
+		elementByteLength: elementWordSize,
+		allocatedByteLength: elementWordSize,
+		endByteAddress: overrides.byteAddress + elementWordSize,
+		allocationUnitAddress: overrides.byteAddress / ALLOCATION_UNIT_BYTE_SIZE,
+		allocationUnitCount: elementWordSize / ALLOCATION_UNIT_BYTE_SIZE,
 		isInteger: true,
 		pointerDepth: 0,
 		isUnsigned: false,
-		type: 'int',
+		type,
 		lineNumber: 1,
+		source: {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 1,
+			instruction: type,
+			arguments: [{ type: ArgumentType.IDENTIFIER, value: overrides.name, referenceKind: 'plain', scope: 'local' }],
+		},
 		...overrides,
-	} as ResolvedMemoryDeclaration;
+	};
 }
 describe('push stack analysis', () => {
 	it('tracks address range metadata on resolved address literals', () => {
@@ -165,7 +177,7 @@ describe('push stack analysis', () => {
 
 	it('tracks isFloat64 on the stack item', () => {
 		const memoryItem = createMemoryItem({
-			id: 'myF64',
+			name: 'myF64',
 			byteAddress: 8,
 			elementWordSize: 8,
 			isInteger: false,
@@ -181,7 +193,7 @@ describe('push stack analysis', () => {
 
 	it('float32 memory push does not set isFloat64', () => {
 		const memoryItem = createMemoryItem({
-			id: 'myF32',
+			name: 'myF32',
 			byteAddress: 0,
 			elementWordSize: 4,
 			isInteger: false,
@@ -197,7 +209,7 @@ describe('push stack analysis', () => {
 
 	it('dereferencing float64* emits f64.load and marks stack item as float64', () => {
 		const memoryItem = createMemoryItem({
-			id: 'floatPointer',
+			name: 'floatPointer',
 			byteAddress: 0,
 			type: 'float64*',
 			pointeeBaseType: 'float64',
@@ -213,7 +225,7 @@ describe('push stack analysis', () => {
 
 	it('dereferencing float64** once resolves to a pointer value', () => {
 		const memoryItem = createMemoryItem({
-			id: 'floatPointerPointer',
+			name: 'floatPointerPointer',
 			byteAddress: 0,
 			type: 'float64**',
 			pointeeBaseType: 'float64',
@@ -229,16 +241,18 @@ describe('push stack analysis', () => {
 
 	it('handles mixed int32/float32/float64 memory layout', () => {
 		const memory = {
-			myInt: createMemoryItem({ id: 'myInt', byteAddress: 0, elementWordSize: 4, isInteger: true }),
+			myInt: createMemoryItem({ name: 'myInt', byteAddress: 0, elementWordSize: 4, isInteger: true }),
 			myFloat: createMemoryItem({
-				id: 'myFloat',
+				id: 1,
+				name: 'myFloat',
 				byteAddress: 4,
 				elementWordSize: 4,
 				isInteger: false,
 				type: 'float',
 			}),
 			myF64: createMemoryItem({
-				id: 'myF64',
+				id: 2,
+				name: 'myF64',
 				byteAddress: 8,
 				elementWordSize: 8,
 				isInteger: false,
@@ -272,7 +286,7 @@ describe('push stack analysis', () => {
 
 	it('tracks pointer metadata when pushing a pointer-typed memory identifier', () => {
 		const memoryItem = createMemoryItem({
-			id: 'ptr',
+			name: 'ptr',
 			byteAddress: 0,
 			elementWordSize: 4,
 			isInteger: true,

@@ -37,7 +37,7 @@ entryEnd
 
 - `pass env` makes the immediate parent's `constants env` namespace available to the child under the same local name.
 - `pass` forwards a namespace, not an individual constant value.
-- Each consuming module, function, or constants block still explicitly imports the namespace with `use env`.
+- Each consuming module, function, prototype, or constants block still explicitly imports the namespace with `use env`.
 - A nested group must repeat `pass env` at every parent-to-child boundary.
 - A root-level `pass env` is syntactically accepted and reports that the parent namespace is undefined.
 - Project/group scope no longer supports unwrapped `const` declarations; constants have one representation: named

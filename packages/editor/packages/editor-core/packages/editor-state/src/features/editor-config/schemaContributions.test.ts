@@ -1,4 +1,4 @@
-import { createMockState } from '@8f4e/editor-state-testing';
+import { createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it } from 'vitest';
 import { createEditorConfigSchemaContributionsValidator } from './schemaContributions';
@@ -45,10 +45,15 @@ const store = createStateManager(
 							allocatedByteLength: 0,
 							endByteAddress: 0,
 							memory: {
-								buffer: { id: 0, name: 'buffer', allocationUnitAddress: 32, pointerDepth: 0 },
+								buffer: {
+									id: 0,
+									source: createMockMemoryDeclarationSource('int', 1, 'buffer'),
+									name: 'buffer',
+									allocationUnitAddress: 32,
+									pointerDepth: 0,
+								},
 							},
 							declarations: [],
-							declarationSources: [],
 						},
 					},
 					moduleList: [],

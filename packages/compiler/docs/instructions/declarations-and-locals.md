@@ -1,5 +1,8 @@
 # Declarations and locals
 
+Named memory declarations must be unique within their module, even when their types differ. The same name can be
+used in other modules. Anonymous declarations do not have a name and can appear more than once.
+
 ### const
 
 The const instruction declares a constant value that can be referenced elsewhere in the program.

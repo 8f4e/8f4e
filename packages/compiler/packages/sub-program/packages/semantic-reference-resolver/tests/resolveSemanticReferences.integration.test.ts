@@ -1,4 +1,10 @@
-import type { ConstantsAST, FunctionAST, ModuleAST } from '@8f4e/language-spec';
+import type {
+	ConstantsAST,
+	FunctionAST,
+	FunctionSignature,
+	ModuleAST,
+	ScalarMemoryDeclarationLine,
+} from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type ResolveSemanticReferencesInput, resolveSemanticReferences } from '../src';
 
@@ -6,12 +12,12 @@ type SemanticReferenceResolverIntegrationInput = ResolveSemanticReferencesInput<
 
 describe('resolveSemanticReferences integration', () => {
 	it('resolves sub-program-level semantic references from pass-shaped fixtures', () => {
-		const valueDeclarationLine = {
+		const valueDeclarationLine: ScalarMemoryDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int',
 			arguments: [{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' }],
-		} as const;
+		};
 		const moduleLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
@@ -100,6 +106,10 @@ describe('resolveSemanticReferences integration', () => {
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],
 		} as const;
+		const signature: FunctionSignature = {
+			parameters: [{ name: 'amount', type: 'int' }],
+			returns: ['int'],
+		};
 		const valueMemory = {
 			numberOfElements: 1,
 			elementWordSize: 4,
@@ -116,6 +126,7 @@ describe('resolveSemanticReferences integration', () => {
 			pointerDepth: 0,
 			type: 'int',
 			isUnsigned: false,
+			source: valueDeclarationLine,
 		} as const;
 		const ast = {
 			modules: [
@@ -131,6 +142,7 @@ describe('resolveSemanticReferences integration', () => {
 				{
 					type: 'function',
 					name: 'increment',
+					signature,
 					functionLine,
 					functionEndLine,
 					lines: [functionLine, paramLine, localLine, pushParamLine, localSetLine, pushLocalLine, functionEndLine],
@@ -150,7 +162,6 @@ describe('resolveSemanticReferences integration', () => {
 						value: valueMemory,
 					},
 					declarations: [valueMemory],
-					declarationSources: [{ line: valueDeclarationLine }],
 				},
 			},
 			moduleList: [
@@ -165,7 +176,6 @@ describe('resolveSemanticReferences integration', () => {
 						value: valueMemory,
 					},
 					declarations: [valueMemory],
-					declarationSources: [{ line: valueDeclarationLine }],
 				},
 			],
 		} as const;
@@ -233,10 +243,7 @@ describe('resolveSemanticReferences integration', () => {
 				increment__int: {
 					id: 'increment__int',
 					name: 'increment',
-					signature: {
-						parameters: [{ name: 'value', type: 'int' }],
-						returns: ['int'],
-					},
+					signature,
 				},
 			},
 			arityByName: {

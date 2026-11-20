@@ -1,12 +1,11 @@
-import type { MemoryPointerMetadata, MemoryValueKind, PlannedMemoryDeclaration, PointeeBaseType } from './memory';
+import type { MemoryDeclarationLayout, MemoryPointerMetadata, MemoryValueKind, PointeeBaseType } from './memory';
 import { BASE_TYPE_METADATA } from './memory';
 
-export type PointerMetadata = Pick<PlannedMemoryDeclaration, 'pointeeBaseType' | 'pointerDepth'> &
-	MemoryPointerMetadata;
+export type PointerMetadata = Pick<MemoryDeclarationLayout, 'pointeeBaseType' | 'pointerDepth'> & MemoryPointerMetadata;
 
 /** Returns the element base type from the allocation plan's authoritative storage flags. */
 export function getMemoryBaseType(
-	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+	memoryItem: Pick<MemoryDeclarationLayout, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
 ): PointeeBaseType {
 	if (memoryItem.isInteger) {
 		if (memoryItem.elementWordSize === BASE_TYPE_METADATA.int8.wordSize) {
@@ -21,7 +20,7 @@ export function getMemoryBaseType(
 }
 
 function getDeclaredBaseTypeMetadata(
-	memoryItem: Pick<PlannedMemoryDeclaration, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+	memoryItem: Pick<MemoryDeclarationLayout, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
 ) {
 	return BASE_TYPE_METADATA[getMemoryBaseType(memoryItem)];
 }
@@ -35,11 +34,11 @@ export function getPointerDepthFromMetadata(pointerMetadata: PointerMetadata | u
 	return pointerMetadata.pointerDepth;
 }
 
-export function getElementCount(memoryItem: PlannedMemoryDeclaration): number {
+export function getElementCount(memoryItem: Pick<MemoryDeclarationLayout, 'numberOfElements'>): number {
 	return memoryItem.numberOfElements;
 }
 
-export function getElementWordSize(memoryItem: PlannedMemoryDeclaration): number {
+export function getElementWordSize(memoryItem: Pick<MemoryDeclarationLayout, 'elementWordSize'>): number {
 	return memoryItem.elementWordSize;
 }
 
@@ -77,7 +76,9 @@ export function getDereferencedValueKindFromMetadata(
 	return getPointeeBaseTypeMetadata(pointerMetadata.pointeeBaseType).valueKind;
 }
 
-export function getElementMaxValue(memoryItem: PlannedMemoryDeclaration): number {
+export function getElementMaxValue(
+	memoryItem: Pick<MemoryDeclarationLayout, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+): number {
 	const metadata = getDeclaredBaseTypeMetadata(memoryItem);
 	return memoryItem.isUnsigned ? (metadata.unsignedMax ?? metadata.max) : metadata.max;
 }
@@ -92,7 +93,9 @@ export function getPointeeElementMaxValue(memoryItem: PointerMetadata | undefine
 	return getPointeeElementMaxValueFromMetadata(memoryItem);
 }
 
-export function getElementMinValue(memoryItem: PlannedMemoryDeclaration): number {
+export function getElementMinValue(
+	memoryItem: Pick<MemoryDeclarationLayout, 'elementWordSize' | 'isInteger' | 'isUnsigned'>
+): number {
 	const metadata = getDeclaredBaseTypeMetadata(memoryItem);
 	return memoryItem.isUnsigned ? (metadata.unsignedMin ?? metadata.min) : metadata.min;
 }

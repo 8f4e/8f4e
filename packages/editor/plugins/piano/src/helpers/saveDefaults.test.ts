@@ -1,4 +1,4 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import type { PianoKeyboard } from '../types';
@@ -26,13 +26,20 @@ function createPianoCodeBlock(
 			pressedKeyCountModuleId: 'synth',
 			pressedKeysListMemory: {
 				id: 0,
+				source: createMockMemoryDeclarationSource('int[]', 1, 'notes', 4),
 				name: 'notes',
 				allocationUnitAddress: 4,
 				numberOfElements: 4,
 				elementWordSize: 4,
 				isInteger: true,
 			},
-			pressedKeyCountMemory: { id: 1, name: 'count', allocationUnitAddress: 8, isInteger: true },
+			pressedKeyCountMemory: {
+				id: 1,
+				source: createMockMemoryDeclarationSource('int', 2, 'count'),
+				name: 'count',
+				allocationUnitAddress: 8,
+				isInteger: true,
+			},
 		} as PianoKeyboard,
 	];
 	return { codeBlock, keyboards };

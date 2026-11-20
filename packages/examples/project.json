@@ -29,13 +29,14 @@
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "biome check --write packages/examples/src",
+				"command": "biome check --write packages/examples/src packages/examples/tests packages/examples/vitest.config.ts",
 				"cwd": "{workspaceRoot}"
 			}
 		},
 		"test": {
 			"executor": "nx:run-commands",
 			"dependsOn": [
+				"^build",
 				{
 					"projects": ["@8f4e/cli"],
 					"target": "test",
@@ -46,6 +47,10 @@
 				"commands": [
 					{
 						"command": "node ../cli/bin/cli.js test \"src/modules/**/*.8f4em\"",
+						"forwardAllArgs": false
+					},
+					{
+						"command": "vitest run --config vitest.config.ts",
 						"forwardAllArgs": false
 					}
 				],

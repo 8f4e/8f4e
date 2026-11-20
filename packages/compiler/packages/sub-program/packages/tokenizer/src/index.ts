@@ -82,6 +82,10 @@ function bindSource(ast: ValidatedAST, diagnosticSource: DiagnosticSource): Vali
 			return {
 				...ast,
 				lines,
+				signature: {
+					parameters: ast.signature.parameters.map(parameter => ({ ...parameter })),
+					returns: [...ast.signature.returns],
+				},
 				functionLine: boundLine(ast.functionLine),
 				functionEndLine: boundLine(ast.functionEndLine),
 				...(ast.exportLine ? { exportLine: boundLine(ast.exportLine) } : {}),

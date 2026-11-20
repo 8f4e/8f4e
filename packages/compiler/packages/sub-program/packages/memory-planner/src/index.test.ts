@@ -116,7 +116,7 @@ describe('planSubProgramMemoryLayout', () => {
 						diagnosticSource: { kind: 'document' },
 						lineNumber: 2,
 						instruction: 'int',
-						arguments: [identifier('last')],
+						arguments: [identifier('value')],
 					},
 				]),
 				validatedModuleAst('alpha', 10, [
@@ -124,7 +124,7 @@ describe('planSubProgramMemoryLayout', () => {
 						diagnosticSource: { kind: 'document' },
 						lineNumber: 11,
 						instruction: 'int[]',
-						arguments: [identifier('first'), literal(2)],
+						arguments: [identifier('value'), literal(2)],
 					},
 				]),
 			],
@@ -134,9 +134,9 @@ describe('planSubProgramMemoryLayout', () => {
 
 		expect(plan.moduleList.map(module => module.id)).toEqual(['alpha', 'zeta']);
 		expect(plan.modules.alpha.byteAddress).toBe(4);
-		expect(plan.modules.alpha.memory.first.byteAddress).toBe(4);
+		expect(plan.modules.alpha.memory.value.byteAddress).toBe(4);
 		expect(plan.modules.zeta.byteAddress).toBe(12);
-		expect(plan.modules.zeta.memory.last.byteAddress).toBe(12);
+		expect(plan.modules.zeta.memory.value.byteAddress).toBe(12);
 	});
 
 	it('plans compiler-normalized declaration lines', () => {
@@ -167,16 +167,19 @@ describe('planSubProgramMemoryLayout', () => {
 		} as MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			modules: [validatedModuleAst('main', 1, [line])],
+			modules: [validatedModuleAst('main', 1, [line, { ...line, lineNumber: 3 }])],
 			constantReferences: noConstantReferences(),
 		});
 
-		expect(plan.modules.main.declarations[0]).toMatchObject({ id: 0, byteAddress: 4 });
-		expect(plan.modules.main.declarations[0].name).toBeUndefined();
+		expect(plan.modules.main.declarations).toMatchObject([
+			{ id: 0, byteAddress: 4 },
+			{ id: 1, byteAddress: 8 },
+		]);
+		expect(plan.modules.main.declarations.every(declaration => declaration.name === undefined)).toBe(true);
 		expect(plan.modules.main.memory).toEqual({});
 	});
 
-	it('keeps declaration sources in allocation order', () => {
+	it('keeps each declaration source on the shared indexed and named record', () => {
 		const foo = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
@@ -203,8 +206,41 @@ describe('planSubProgramMemoryLayout', () => {
 		});
 
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['foo', 'bar', 'local']);
-		expect(plan.modules.main.declarationSources).toEqual([{ line: foo }, { line: bar }, { line: local }]);
+		expect(plan.modules.main.declarations.map(declaration => declaration.source)).toEqual([foo, bar, local]);
+		expect(plan.modules.main.memory.bar).toBe(plan.modules.main.declarations[1]);
+		expect(plan.modules.main.memory.bar.source).toBe(bar);
 		expect(plan.modules.main.memory.local.byteAddress).toBe(16);
+	});
+
+	it.each(['buffer', '__proto__'])('reports duplicate storage name %s at the second declaration', name => {
+		const first = {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 2,
+			instruction: 'int',
+			arguments: [identifier(name)],
+		} satisfies MemoryDeclarationLine;
+		const duplicate = {
+			diagnosticSource: { kind: 'block', projectBlockId: 7, projectGroupPath: 'audio' },
+			lineNumber: 4,
+			instruction: 'float[]',
+			arguments: [identifier(name), literal(1)],
+		} satisfies MemoryDeclarationLine;
+
+		expect(() =>
+			planSubProgramMemoryLayout({
+				modules: [validatedModuleAst('audio/voice', 1, [first, duplicate])],
+				constantReferences: noConstantReferences(),
+			})
+		).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.DUPLICATE_IDENTIFIER,
+					instruction: 'float[]',
+					message: `Duplicate identifier: ${name}. (45)`,
+					location: { ...duplicate.diagnosticSource, lineNumber: duplicate.lineNumber },
+				}),
+			})
+		);
 	});
 });
 
@@ -289,13 +325,11 @@ describe('planner input building', () => {
 
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['counter', 'values']);
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(6);
-		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: counter },
+		expect(plan.modules.main.declarations.map(declaration => declaration.source)).toEqual([
+			counter,
 			{
-				line: {
-					...local,
-					arguments: [identifier('values'), literal(6)],
-				},
+				...local,
+				arguments: [identifier('values'), literal(6)],
 			},
 		]);
 	});
@@ -405,14 +439,12 @@ describe('planner input building', () => {
 		});
 
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['first', 'counter', 'items']);
-		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: firstDeclaration },
-			{ line: counter },
+		expect(plan.modules.main.declarations.map(declaration => declaration.source)).toEqual([
+			firstDeclaration,
+			counter,
 			{
-				line: {
-					...arrayDeclaration,
-					arguments: [identifier('items'), literal(3)],
-				},
+				...arrayDeclaration,
+				arguments: [identifier('items'), literal(3)],
 			},
 		]);
 		expect(moduleAst.lines).toEqual(originalLinesSnapshot);

@@ -5,7 +5,7 @@ import {
 	createMemoryDefaults,
 	createMemoryPlan,
 	serializeSegments,
-} from '../../tests/initialMemoryDataSegments/testUtils';
+} from '../../tests/memoryFixtures';
 import createInitialMemoryDataSegments from './createInitialMemoryDataSegments';
 
 describe('createInitialMemoryDataSegments', () => {
