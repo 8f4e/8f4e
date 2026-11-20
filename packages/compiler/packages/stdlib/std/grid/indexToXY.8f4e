@@ -1,9 +1,11 @@
 function indexToXY
 #export
-; Converts a non-negative row-major
-; index into x and y coordinates.
-; width must be positive.
+; @doc Converts a non-negative row-major index to a
+; - coordinate pair.
+; @returns X coordinate, then Y coordinate (top).
+; @param index Zero-based row-major index.
 param int index
+; @param width Positive row width in elements.
 param int width
 
 push index

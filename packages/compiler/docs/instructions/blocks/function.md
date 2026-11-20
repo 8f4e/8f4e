@@ -30,6 +30,41 @@ Functions are reusable code blocks that:
 - Cannot read unqualified module memory identifiers by name
 - Cannot declare their own memory
 
+### Function documentation
+
+Use full-line `; @doc`, `; @param NAME`, and `; @returns` comments inside a function block to describe its
+purpose, named parameters, and returned values. The editor displays this documentation when a function, parameter,
+return declaration, or call is selected. Each overload has its own documentation. For readability, place each
+parameter's documentation directly above its `param` instruction.
+
+```8f4e
+function lerp
+; @doc Linearly interpolates between two values.
+; @returns The interpolated value.
+; @param start The starting value.
+param float start
+; @param end The target value.
+param float end
+; @param amount Interpolation factor, typically 0..1.
+; - Values outside that range extrapolate.
+param float amount
+push start
+push end
+push start
+sub
+mul amount
+add
+functionEnd float
+```
+
+Use adjacent `; -` comments to continue any documentation tag across multiple source lines. Their text is joined
+with spaces, and the tooltip wraps it for display. A blank line, other comment, instruction, or new tag ends the
+continuation. Each tag takes the remainder of its line as prose; `@` words in the prose are not editor directives.
+
+All tags are optional. An unknown parameter name or an empty tag is ignored, and the last nonempty description for
+the same tag (or parameter) wins. Use one `@returns` description for multiple return values in stack order.
+Documentation does not change the function signature, executable instructions, or generated WebAssembly.
+
 ### Overloads
 
 Functions may share the same source name when each version has a distinct parameter signature:

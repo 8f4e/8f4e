@@ -1,4 +1,5 @@
 import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
+import { parseFunctionDocumentationTagLine } from '@8f4e/tokenizer';
 
 export interface DirectiveComment {
 	name: string;
@@ -61,6 +62,8 @@ function parseDirectiveContinuationArgs(line: string): string[] | undefined {
 
 export function parseDirectiveLineRecords(line: string): ParsedDirectiveLineRecord[] {
 	if (/^\s*;/.test(line)) {
+		// Function documentation is not an editor directive; its prose may itself contain @-prefixed words.
+		if (parseFunctionDocumentationTagLine(line)) return [];
 		return parseDirectiveCommentSegment(line.replace(/^\s*;\s*/, ''), false);
 	}
 
@@ -72,10 +75,11 @@ export function parseDirectiveLineRecords(line: string): ParsedDirectiveLineReco
 	return parseDirectiveCommentSegment(line.slice(commentStart + 1), true);
 }
 
-/** Ordinary comment text excludes directives and their continuation syntax. */
+/** Ordinary comment text excludes documentation, directives and their continuation syntax. */
 export function isOrdinaryCommentLine(line: string): boolean {
 	return (
 		/^\s*;/.test(line) &&
+		!parseFunctionDocumentationTagLine(line) &&
 		parseDirectiveContinuationArgs(line) === undefined &&
 		parseDirectiveLineRecords(line).length === 0
 	);

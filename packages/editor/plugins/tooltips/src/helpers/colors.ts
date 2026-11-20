@@ -32,11 +32,16 @@ export function getTooltipLineColors(
  */
 export function getSelectedLineTooltipColors(
 	text: string[],
-	signatureLineCount: number
+	signatureLineCount: number,
+	stackAnalysisStartLine: number
 ): Array<Array<PaletteIndex | undefined>> {
 	return text.map((tooltipLine, index) => {
 		const highlightRange =
-			index < signatureLineCount ? { start: 0, end: tooltipLine.length } : getStackValueHighlightRange(tooltipLine);
+			index < signatureLineCount
+				? { start: 0, end: tooltipLine.length }
+				: index >= stackAnalysisStartLine
+					? getStackValueHighlightRange(tooltipLine)
+					: undefined;
 
 		return getTooltipLineColors(tooltipLine, highlightRange ? [highlightRange] : []);
 	});

@@ -54,6 +54,12 @@ describe('source edit compilation invalidation', () => {
 		{ name: 'adding a directive', before: ['push 1'], after: ['; @favorite', 'push 1'] },
 		{ name: 'removing a directive', before: ['; @favorite', 'push 1'], after: ['push 1'] },
 		{ name: 'changing a directive in place', before: ['; @pos 0 0', 'push 1'], after: ['; @pos 2 3', 'push 1'] },
+		{ name: 'changing documentation in place', before: ['; @doc Old text.'], after: ['; @doc New text.'] },
+		{
+			name: 'changing a documentation continuation in place',
+			before: ['; @doc Description.', '; - Old text.'],
+			after: ['; @doc Description.', '; - New text.'],
+		},
 		{ name: 'replacing a comment with a directive', before: ['; explanation'], after: ['; @favorite'] },
 		{ name: 'replacing a directive with a comment', before: ['; @favorite'], after: ['; explanation'] },
 		{ name: 'removing an inline directive', before: ['push 1 ; @favorite'], after: ['push 1'] },

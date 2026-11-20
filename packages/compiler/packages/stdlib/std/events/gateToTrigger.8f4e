@@ -1,10 +1,13 @@
 function gateToTrigger
 #export
 #impure
-; Returns a one-sample trigger
-; when an int gate rises above
-; its previous value.
+; @doc Emits a one-call trigger on any increase in the
+; - gate and stores the new gate.
+; @returns 1 on an increase, otherwise 0.
+; @param gate Current gate value.
 param int gate
+; @param previousGate Address of persistent previous
+; - gate state.
 param int* previousGate
 
 push gate
@@ -19,10 +22,13 @@ functionEnd int
 function gateToTrigger
 #export
 #impure
-; Returns a one-sample trigger
-; when a float gate rises above
-; its previous value.
+; @doc Emits a one-call trigger on any increase in the
+; - gate and stores the new gate.
+; @returns 1 on an increase, otherwise 0.
+; @param gate Current gate value.
 param float gate
+; @param previousGate Address of persistent previous
+; - gate state.
 param float* previousGate
 
 push gate

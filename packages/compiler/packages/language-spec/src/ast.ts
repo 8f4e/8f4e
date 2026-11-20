@@ -7,7 +7,7 @@ import type {
 } from './arguments';
 import type { SourceMetadata } from './compiled';
 import type { DiagnosticSource } from './diagnostics';
-import type { FunctionSignature } from './functionTypes';
+import type { FunctionDocumentation, FunctionSignature } from './functionTypes';
 import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
@@ -252,6 +252,8 @@ export interface FunctionAST extends SourceBlockMetadata {
 	lines: CompilerASTLines;
 	/** Explicit parameters and results collected by the tokenizer. */
 	signature: FunctionSignature;
+	/** Documentation comments, kept separate from the instruction stream and signature. */
+	documentation?: FunctionDocumentation;
 	functionLine: FunctionLine;
 	functionEndLine: FunctionEndLine;
 	exportLine?: ExportLine;

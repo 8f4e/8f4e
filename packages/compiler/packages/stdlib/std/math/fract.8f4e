@@ -1,8 +1,10 @@
 function fract
 #export
-; Returns the fractional part of
-; a float by subtracting its
-; integer-truncated value.
+; @doc Returns the signed fractional part, truncating
+; - toward zero.
+; @returns The value minus its truncated integer part.
+; @param value Finite value whose integer part fits in
+; - int.
 param float value
 
 push value
@@ -15,9 +17,10 @@ functionEnd float
 
 function fract
 #export
-; Signed fractional part of a
-; finite double, truncating toward
-; zero without an integer cast.
+; @doc Returns the signed fractional part, truncating
+; - toward zero.
+; @returns The value minus its truncated integer part.
+; @param value Finite double-precision value.
 param float64 value
 local float64 fraction
 

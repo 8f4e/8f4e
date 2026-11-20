@@ -1,10 +1,11 @@
 function swapPointers
 #export
 #impure
-; Exchanges two int pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param int** first
+; @param second Address of the second pointer variable.
 param int** second
 
 local int* previous
@@ -22,10 +23,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two int8 pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param int8** first
+; @param second Address of the second pointer variable.
 param int8** second
 
 local int8* previous
@@ -43,10 +45,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two int8u pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param int8u** first
+; @param second Address of the second pointer variable.
 param int8u** second
 
 local int8u* previous
@@ -64,10 +67,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two int16 pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param int16** first
+; @param second Address of the second pointer variable.
 param int16** second
 
 local int16* previous
@@ -85,10 +89,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two int16u pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param int16u** first
+; @param second Address of the second pointer variable.
 param int16u** second
 
 local int16u* previous
@@ -106,10 +111,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two float pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param float** first
+; @param second Address of the second pointer variable.
 param float** second
 
 local float* previous
@@ -127,10 +133,11 @@ functionEnd
 function swapPointers
 #export
 #impure
-; Exchanges two float64 pointer values.
-; Pass the addresses of the pointer
-; variables, not their pointees.
+; @doc Swaps addresses stored in two same-type pointer
+; - variables without accessing the pointed-to data.
+; @param first Address of the first pointer variable.
 param float64** first
+; @param second Address of the second pointer variable.
 param float64** second
 
 local float64* previous

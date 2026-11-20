@@ -1,0 +1,20 @@
+function transform
+#export
+; @doc Increments an integer.
+; @returns The incremented value.
+; @param value The integer input.
+param int value
+push value
+add 1
+functionEnd int
+
+function transform
+#export
+; @doc Doubles a floating-point value.
+; @returns Twice the input.
+; @param amount The floating-point input.
+; - Supplied by the caller.
+param float amount
+push amount
+mul 2.0
+functionEnd float

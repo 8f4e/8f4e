@@ -1,10 +1,14 @@
 function moveTowards
 #export
-; Moves current toward target by
-; at most maxStep, without overshoot.
-; Nonpositive steps leave it unchanged.
+; @doc Moves toward a target by at most a step, without
+; - overshooting.
+; @returns The next value.
+; @param current Current value.
 param float current
+; @param target Target value.
 param float target
+; @param maxStep Maximum distance per call; nonpositive
+; - leaves current unchanged.
 param float maxStep
 
 push maxStep

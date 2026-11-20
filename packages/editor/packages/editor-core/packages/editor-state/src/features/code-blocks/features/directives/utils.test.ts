@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	isOrdinaryCommentLine,
 	matchEditorDirectives,
 	parseDirectiveLineRecords,
 	parseDirectiveRecords,
@@ -7,6 +8,20 @@ import {
 } from './utils';
 
 describe('parseDirectiveLineRecords', () => {
+	it.each(['; @doc Use @pos for placement.', '; @param value A value marked @watch.', '; @returns @disabled'])(
+		'keeps documentation prose out of editor directives: %s',
+		line => {
+			expect(parseDirectiveLineRecords(line)).toEqual([]);
+			expect(isOrdinaryCommentLine(line)).toBe(false);
+		}
+	);
+
+	it('does not attach documentation continuations to preceding editor directives', () => {
+		expect(parseDirectiveRecords(['; @pos 1 2', '; @doc Description.', '; - Additional text.'])).toEqual([
+			{ prefix: '@', name: 'pos', args: ['1', '2'], isTrailing: false, sourceLineIndex: 0, sourceLine: '; @pos 1 2' },
+		]);
+	});
+
 	it('parses a full-line editor directive', () => {
 		expect(parseDirectiveLineRecords('; @pos 10 20')).toEqual([
 			{

@@ -2,9 +2,11 @@ import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type { ASTCache, ASTCacheEntry, CompilerASTLine, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
 
 export { createASTCache } from './cache';
+export { parseFunctionDocumentationTagLine } from './parseFunctionDocumentation';
 
 import { hashSource } from './cache';
 import { mainTokenizerLoop } from './mainTokenizerLoop';
+import { parseFunctionDocumentation } from './parseFunctionDocumentation';
 
 import { createASTFromBuilder } from './sourceBlockASTBuilder';
 import instructionParser from './syntax/instructionParser';
@@ -115,6 +117,10 @@ function parseSourceToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheK
 	}
 
 	const group = createASTFromBuilder(parsedSource.lines, parsedSource.astBuilder) as ValidatedAST;
+	if (group.type === 'function') {
+		const documentation = parseFunctionDocumentation(code, group);
+		if (documentation) group.documentation = documentation;
+	}
 
 	if (cache && cacheKey !== undefined) {
 		const entry: ASTCacheEntry<ValidatedAST> = {
