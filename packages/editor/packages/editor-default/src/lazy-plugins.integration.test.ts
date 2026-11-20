@@ -81,6 +81,7 @@ function restoreSession(directive: string, nested = false) {
 
 it.each([
 	['plot &points 4', 'plot', 8],
+	['scope value 30 0 100', 'scope', 8],
 	['wave &points 4', 'wave', 2],
 	['wave2 &points 4', 'wave', 4],
 	['wave4 &points 4', 'wave', 8],

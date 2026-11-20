@@ -3,7 +3,7 @@
 `@8f4e/8f4e-website` contains a product homepage using
 [`@8f4e/editor-landing`](../editor/packages/editor-landing/README.md), plus examples and compiler test galleries using
 [`@8f4e/editor-gallery`](../editor/packages/editor-gallery/README.md). Both embedded compositions keep live editing,
-controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, and slider;
+controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, scope, and slider;
 its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
 piano, assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary
 assets, MIDI, keyboard-to-memory input, bars, meter, wave, and crossfade. It also omits entry outlines, offscreen block

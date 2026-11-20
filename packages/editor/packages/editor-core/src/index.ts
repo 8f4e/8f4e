@@ -77,6 +77,7 @@ export type {
 	WebUiRenderer,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
+export { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 

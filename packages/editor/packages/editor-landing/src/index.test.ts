@@ -64,6 +64,7 @@ it('starts without storage and reports empty-project readiness after initializat
 		'watch',
 		'stack',
 		'plot',
+		'scope',
 		'slider',
 		'worker-runtime',
 	]);

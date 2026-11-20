@@ -1,7 +1,7 @@
 # Landing Editor
 
 `@8f4e/editor-landing` composes the editor for interactive landing-page demos. It provides live editing, compilation,
-URL loading, the worker runtime, watch/stack annotations, plot, and slider controls. Stack Connections draws links beside
+URL loading, the worker runtime, watch/stack annotations, plot, scope, and slider controls. Stack Connections draws links beside
 the selected code block from each operand producer to the highlighted instruction. Each mount starts fresh without browser
 session persistence. Standard-library discovery and include resolution are omitted; homepage demos must be self-contained,
 including after live edits.

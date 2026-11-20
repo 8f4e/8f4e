@@ -28,6 +28,7 @@ Examples:
 ; @watch counter
 ; @stack
 ; @plot &audioBuffer lengthMemory
+; @scope level 30 -1 1
 ; @button &gate0 0 1
 ; @config font ibmvga8x16
 ```
@@ -280,6 +281,30 @@ Range detection:
 - integer arrays use type-derived bounds, matching `@wave`
 - lengths can be positive literal counts, integer memory targets, or `count(buffer)`
 - if `minValue` and `maxValue` are specified, they override the type-derived defaults
+
+### `@scope`
+
+Provided by `@8f4e/editor-plugin-scope`.
+
+Plot the recent history of a single runtime value, without declaring a buffer in WebAssembly memory.
+
+```txt
+; @scope <typedValueSource> <sampleRate>
+; @scope <typedValueSource> <sampleRate> <minValue> <maxValue>
+
+float level 0
+; @scope level 30 -1 1
+```
+
+Like `@meter`, the source can be a scalar memory, a typed pointer whose pointee is read, or `&memory` to read
+directly from storage. Qualified memory names and group exposures work as well. The optional range defaults to
+the type-derived bounds used by `@plot` and must have a minimum below its maximum.
+
+The sample rate is in samples per second (Hz), up to 1000 Hz. Browser timer scheduling is best-effort and
+may be throttled; use `@plot` over a runtime-managed buffer for precise or audio-rate sampling.
+The editor samples independently of the render loop while the directive is displayed in the current project
+level. The history lives in a bounded JavaScript array, with one sample per horizontal pixel; new values
+appear at the right and older values scroll left. No WebAssembly buffer is allocated for the history.
 
 ### `@textureUpload` and `@texture`
 

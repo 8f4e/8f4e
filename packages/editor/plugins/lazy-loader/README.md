@@ -18,8 +18,9 @@ const loader = createLazyPluginLoaderPlugin([
 ```
 
 Pass the loader alongside fixed plugins when constructing the editor. Use `view`
-scope for plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Supply the editor's
-live memory writer to control factories after their implementations load. Keyboard-to-memory input, MIDI input, binary assets, and
+scope for plot, scope, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade. Supply the editor's
+live memory writer to control factories and live memory getter to the scope factory after their implementations load.
+Keyboard-to-memory input, MIDI input, binary assets, and
 audio/worker/test/texture runtime plugins use `project` scope. The texture runtime matches both `@texture` and its config root.
 Keyboard-to-memory input matches raw `@config keyboard.*` directives before its schema is installed.
 Watch matches `@watch`/`@w`; stack matches `@stack`/`@s`.

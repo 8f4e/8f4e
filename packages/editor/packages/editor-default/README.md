@@ -140,7 +140,7 @@ browser API use.
 Meter, bars, crossfade, watch, and stack are also optional plugins in this standard set. Watch and stack receive a
 live reduced-motion preference from the browser host and keep their animation and data inside their installations.
 Block drawers run in registration order, including plugins installed later by the lazy loader.
-Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade load on demand through
+Plot, scope, wave, meter, bars, watch, stack, switch, button, piano, slider, and crossfade load on demand through
 `@8f4e/editor-plugin-lazy-loader`. The per-editor registry in `src/lazy-plugins.ts` matches cached parsed directives
 and dynamically imports their implementations. Wave matches `@wave`, `@wave2`, and `@wave4`;
 watch matches `@watch` and `@w`, and stack matches `@stack` and `@s`.
