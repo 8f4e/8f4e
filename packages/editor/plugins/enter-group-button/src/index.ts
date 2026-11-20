@@ -103,12 +103,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			if (!codeBlock) return;
 			reset();
 			event.stopPropagation = true;
-			if (
-				state.codeBlockRendering.currentProject.blocks.includes(codeBlock) &&
-				state.dialogStack.length === 0 &&
-				!state.contextMenu.open &&
-				hitTest(codeBlock, event)
-			) {
+			if (state.codeBlockRendering.currentProject.blocks.includes(codeBlock) && hitTest(codeBlock, event)) {
 				events.dispatch('openProjectGroup', { codeBlock });
 			}
 		};

@@ -444,6 +444,7 @@ describe('public editor editing handle', () => {
 		];
 		const { navigation, editing, state, dispose } = setup(project);
 		const revision = editing.getRevision();
+		const compilerRevision = state.compilerInputRevision;
 		const root = state.codeBlockRendering.rootProject.blocks;
 		const parent = root.find(block => block.name === 'parent')!;
 		const nested = parent.childProject!.blocks.find(block => block.name === 'child')!;
@@ -464,6 +465,7 @@ describe('public editor editing handle', () => {
 		navigation.goToParentGroup();
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(root);
 		expect(editing.getRevision()).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
 		dispose();
 		expect(() => navigation.goToRoot()).toThrow('disposed');
 		const ordinary = setup();

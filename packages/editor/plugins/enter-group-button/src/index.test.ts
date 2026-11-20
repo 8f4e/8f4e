@@ -58,6 +58,8 @@ function setup() {
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
+	const openGroup = vi.fn();
+	events.on('openProjectGroup', openGroup);
 	const render = (codeBlock = block) => {
 		drawFill.mockClear();
 		drawGlyphs.mockClear();
@@ -106,13 +108,13 @@ function setup() {
 		store,
 		state,
 		events,
-		root,
 		block,
 		ordinary,
 		height,
 		render,
 		drawFill,
 		drawGlyphs,
+		openGroup,
 		press,
 		release,
 		pointer,
@@ -184,30 +186,20 @@ it('softens only the shadow when switching to a light palette', () => {
 	expect(buttonColors()).toEqual([selectionSurface, black, black, selectionInk]);
 });
 
-it('claims the button press and enters nested groups on release without editing the project', () => {
+it('claims the button press and dispatches openProjectGroup on release inside', () => {
 	const test = setup();
-	const revision = test.state.projectChange.revision;
-	const compilerRevision = test.state.compilerInputRevision;
 	test.state.viewport.x = 11;
 	test.state.viewport.y = 15;
 	test.render();
 	const face = test.drawFill.mock.calls[0];
 	const label = test.drawGlyphs.mock.calls[2];
 	expect(test.press().stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.currentProject).toBe(test.root);
+	expect(test.openGroup).not.toHaveBeenCalled();
 	test.render();
 	expect(test.drawFill.mock.calls).toEqual([face]);
 	expect(test.drawGlyphs.mock.calls).toEqual([label]);
 	expect(test.release().stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.currentProject).toBe(test.block.childProject);
-	const nested = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inner')!;
-	expect(nested.gaps.get(0)?.size).toBe(2);
-	expect(test.press(nested).stopPropagation).toBe(true);
-	test.release(nested);
-	expect(test.state.codeBlockRendering.currentProject).toBe(nested.childProject);
-	expect(test.state.projectChange.revision).toBe(revision);
-	expect(test.state.compilerInputRevision).toBe(compilerRevision);
-	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.openGroup).toHaveBeenCalledExactlyOnceWith({ codeBlock: test.block });
 });
 
 it('ignores non-primary and outside presses, and cancels when released outside or cancelled', () => {
@@ -221,11 +213,38 @@ it('ignores non-primary and outside presses, and cancels when released outside o
 	test.events.dispatch('pointermove', outside);
 	expect(outside.stopPropagation).toBe(true);
 	expect(test.release(test.block, { x: 0, y: 0 }).stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.currentProject).toBe(test.root);
+	expect(test.openGroup).not.toHaveBeenCalled();
 	test.press();
 	test.events.dispatch('pointercancel', test.pointer(test.block, { buttons: 0 }));
 	test.release();
-	expect(test.state.codeBlockRendering.currentProject).toBe(test.root);
+	expect(test.openGroup).not.toHaveBeenCalled();
+});
+
+it('cancels the button press when a dialog opens, even if it closes before release', () => {
+	const test = setup();
+	expect(test.press().stopPropagation).toBe(true);
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
+	expect(test.state.dialogStack).toHaveLength(1);
+	test.render();
+	expect(test.drawGlyphs).toHaveBeenCalledTimes(3);
+	test.events.dispatch('removeDialog', { id: 'modal' });
+	expect(test.state.dialogStack).toHaveLength(0);
+	expect(test.release().stopPropagation).toBe(false);
+	expect(test.openGroup).not.toHaveBeenCalled();
+});
+
+it('cancels the button press when a context menu opens, even if it closes before release', async () => {
+	const test = setup();
+	expect(test.press().stopPropagation).toBe(true);
+	test.events.dispatch('contextmenu', test.pointer(test.block, { buttons: 2 }));
+	await vi.waitFor(() => expect(test.state.contextMenu.items.length).toBeGreaterThan(0));
+	expect(test.state.contextMenu.open).toBe(true);
+	test.render();
+	expect(test.drawGlyphs).toHaveBeenCalledTimes(3);
+	test.events.dispatch('closeContextMenu');
+	expect(test.state.contextMenu.open).toBe(false);
+	expect(test.release().stopPropagation).toBe(false);
+	expect(test.openGroup).not.toHaveBeenCalled();
 });
 
 it('removes drawing, layout contributions, and input handlers on disposal', () => {
@@ -239,5 +258,5 @@ it('removes drawing, layout contributions, and input handlers on disposal', () =
 	expect(test.drawFill).not.toHaveBeenCalled();
 	expect(test.press().stopPropagation).toBe(false);
 	test.release();
-	expect(test.state.codeBlockRendering.currentProject).toBe(test.root);
+	expect(test.openGroup).not.toHaveBeenCalled();
 });
