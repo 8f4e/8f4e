@@ -152,6 +152,8 @@ export function reconstructProject(
 					name: groupName,
 					projectPath,
 					childProject: createProjectLevel(group, createChildProjectGroupPath(projectPath, groupName)),
+					// Root serialization needs authored exposures even for groups outside the active view.
+					projectMemoryExposures: group.exposures.map(exposure => ({ ...exposure })),
 				}
 			);
 		});

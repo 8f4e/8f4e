@@ -21,6 +21,18 @@ float second 2
 moduleEnd
 entryEnd
 groupEnd
+group sibling
+expose output &source:value
+entry main
+module source
+float value 4
+moduleEnd
+entryEnd
+groupEnd
+module consumer
+float& input &patch:output
+float& otherInput &sibling:output
+moduleEnd
 entryEnd
 note description
 Original
@@ -32,7 +44,7 @@ function setup() {
 	const store = initState(events, { callbacks: {} });
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
 	const state = store.getState();
-	const group = () => state.codeBlockRendering.rootProject.blocks.find(block => block.childProject)!;
+	const group = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'patch')!;
 	const serialize = () => serializeToProject(state);
 	return { store, state, events, group, serialize };
 }
@@ -100,6 +112,49 @@ it('keeps draft exposure records current and preserves compiler diagnostics for 
 				location: { kind: 'scope', projectGroupPath: 'patch', lineNumber: 2 },
 			},
 		});
+	} finally {
+		dispose();
+		test.store.dispose();
+	}
+});
+
+it('preserves root references to a group through API edits, undo, and redo while it is open', async () => {
+	const test = setup();
+	test.events.dispatch('enterEditMode');
+	const { handle, navigation, dispose } = createEditorEditingHandle(test.store, test.events);
+	try {
+		const readExposures = (project: ReturnType<typeof test.serialize>) =>
+			getProjectGroups(project).map(({ name, exposures }) => ({ name, exposures }));
+		const expectedExposures = readExposures(test.serialize());
+		expect(expectedExposures.map(({ name, exposures }) => [name, exposures.length])).toEqual([
+			['patch', 1],
+			['sibling', 1],
+		]);
+		navigation.openGroup(getEditorBlockId(test.group()));
+		const currentProject = () => test.state.codeBlockRendering.currentProject;
+		const expectRestoredGroup = async (defaultValue: number) => {
+			expect(currentProject().path).toBe('patch');
+			const project = test.serialize();
+			expect(readExposures(project)).toEqual(expectedExposures);
+			const compiled = await compileProject(project);
+			const { targetMemory } = compiled.compiledModules.consumer.referenceSlots.input;
+			expect(compiled.memoryDefaultsByModuleId['patch/source'][targetMemory.id].value).toBe(defaultValue);
+		};
+
+		const block = currentProject().blocks.find(block => block.name === 'source')!;
+		handle.applyEdits({
+			expectedRevision: handle.getRevision(),
+			edits: [
+				{ type: 'update', blockId: getEditorBlockId(block), code: ['module source', 'float first 3', 'moduleEnd'] },
+			],
+		});
+		await expectRestoredGroup(3);
+
+		handle.undo({ expectedRevision: handle.getRevision() });
+		await expectRestoredGroup(1);
+
+		handle.redo({ expectedRevision: handle.getRevision() });
+		await expectRestoredGroup(3);
 	} finally {
 		dispose();
 		test.store.dispose();

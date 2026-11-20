@@ -80,7 +80,9 @@ collections. Compilation recursively composes those collections into one program
 The editor's source pass records each group exposure's name, target, and zero-based row in the group's wrapper
 `code`. Serialization copies those records without reparsing, and layout uses the same rows when following pending
 edits. The rows match source parsing after child blocks are extracted; they are independent of the declaration's
-original position in a whole `.8f4e` document.
+original position in a whole `.8f4e` document. When rebuilding the tree from a project snapshot, the editor copies
+the exposure records into every group, regardless of which view is open. Root serialization does not depend on a
+group's source or layout being refreshed in the active view.
 
 ## References
 
