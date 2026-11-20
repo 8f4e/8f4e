@@ -132,4 +132,5 @@ function parseSourceToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheK
 	return group;
 }
 
+export { foldArgumentContinuationLines, type SourceLine } from './sourceLines';
 export { instructionParser };

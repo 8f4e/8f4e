@@ -1,11 +1,12 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import {
 	ArgumentType,
+	type CompilerASTLine,
 	isMemoryDeclarationLine,
 	isReferenceSlotLine,
 	type MemoryDeclarationLine,
 } from '@8f4e/language-spec';
-import { parseLine } from '@8f4e/tokenizer';
+import { foldArgumentContinuationLines, parseLine } from '@8f4e/tokenizer';
 import { getCompiledModuleForCodeBlock } from '../features/code-blocks/utils/getCompiledModuleForCodeBlock';
 import resolveMemoryTarget, { type ResolvedMemoryTarget } from './resolveMemoryTarget';
 
@@ -27,9 +28,18 @@ export default function getMemoryTargetAtSourceLine(
 	if (codeBlock.blockType !== 'module') return;
 
 	// Source edits can refresh layout while the previous compilation is still active.
-	const parsed = parseLine(codeBlock.code[sourceLineIndex], sourceLineIndex);
-	if (!parsed.ok) return;
-	const sourceLine = parsed.value;
+	let sourceLine: CompilerASTLine;
+	try {
+		const logicalLine = foldArgumentContinuationLines(codeBlock.code).find(
+			({ lineNumber }) => lineNumber === sourceLineIndex
+		);
+		if (!logicalLine) return;
+		const parsed = parseLine(logicalLine.line, sourceLineIndex);
+		if (!parsed.ok) return;
+		sourceLine = parsed.value;
+	} catch {
+		return;
+	}
 	if (!isMemoryDeclarationLine(sourceLine) && !isReferenceSlotLine(sourceLine)) return;
 	const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
 	if (!compiledModule) return { target: undefined };
