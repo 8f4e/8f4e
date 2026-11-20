@@ -148,11 +148,7 @@ export { default as getBlockType } from './features/code-blocks/utils/codeParser
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';
 export { default as getCodeBlockNameFromSource } from './features/code-blocks/utils/getCodeBlockNameFromSource';
 export { getCompiledFunctionForCodeBlock } from './features/code-blocks/utils/getCompiledFunctionForCodeBlock';
-export {
-	type CodeBlockModuleCompilation,
-	getCompiledModuleForCodeBlock,
-	getModuleCompilationForCodeBlock,
-} from './features/code-blocks/utils/getCompiledModuleForCodeBlock';
+export { getCompiledModuleForCodeBlock } from './features/code-blocks/utils/getCompiledModuleForCodeBlock';
 export {
 	type CurrentCompiledLine,
 	getCurrentCompiledLineForCodeBlock,

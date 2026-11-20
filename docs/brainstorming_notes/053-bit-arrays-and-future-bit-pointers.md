@@ -28,7 +28,7 @@ declared bit arrays while preserving those byte-oriented APIs.
 
 The initial feature includes:
 
-- Module-owned `bit[]` declarations, including declarations expanded from prototype shapes.
+- Module-owned `bit[]` declarations.
 - Integer values on the stack: reads produce 0 or 1; writes normalize zero to 0 and any nonzero integer to 1.
 - Indexed operations whose source operand identifies a declared bit array.
 - Packed defaults, logical bounds, memory metadata, and editor and CLI support.
@@ -247,7 +247,7 @@ WebAssembly value type and changes no function calling convention. Memory-plan c
 - Generic byte views and texture uploads use physical byte spans.
 - CLI `run --dump` reads logical element values; JSON array writes normalize integer values.
 - CLI raw capture and binary loading operate on packed data bytes, excluding allocation padding.
-- Group exposures, prototype expansion, and pointer count propagation preserve the appropriate logical or byte
+- Group exposures and pointer count propagation preserve the appropriate logical or byte
   view instead of multiplying the logical count by a fabricated byte width.
 
 These updates must land together before exposing the declaration in normal projects. Source compatibility for
@@ -311,7 +311,7 @@ Before implementation, review these choices:
   enabled and disabled.
 - Prove stores preserve neighboring bits, trailing data-byte padding, allocation padding, and adjacent declarations.
 - Check metadata queries, rejected element addresses, and the byte view's physical count, size, and end boundary.
-- Exercise qualified access from impure functions, prototype expansion, group exposures, and effect diagnostics.
+- Exercise qualified access from impure functions, group exposures, and effect diagnostics.
 - Verify editor and CLI logical reads and writes alongside byte capture, loading, and bulk fills.
 - Verify texture compatibility for byte-aligned widths and explicitly padded odd widths.
 - Compare Rule 110's rendered pixels with the existing byte-based reference while retaining its packed-byte

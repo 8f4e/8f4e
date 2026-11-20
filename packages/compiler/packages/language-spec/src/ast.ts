@@ -7,6 +7,7 @@ import type {
 } from './arguments';
 import type { SourceMetadata } from './compiled';
 import type { DiagnosticSource } from './diagnostics';
+import type { FunctionSignature } from './functionTypes';
 import type { InlineOperandInstructionName, NoSourceArgumentInstructionName } from './instructionSpecTypes';
 import type { DocumentOnlyInstructionName, SemanticInstructionName } from './instructions';
 import { semanticInstructionNames } from './instructions';
@@ -105,11 +106,6 @@ export type ModuleLine = ASTLineBase<'module', [ArgumentIdentifier]>;
 export type ModuleEndLine = ASTLineBase<'moduleEnd', []>;
 export type ConstantsLine = ASTLineBase<'constants', [ArgumentIdentifier]>;
 export type ConstantsEndLine = ASTLineBase<'constantsEnd', []>;
-export type PrototypeLine = ASTLineBase<'prototype', [ArgumentIdentifier]>;
-export type PrototypeEndLine = ASTLineBase<'prototypeEnd', []>;
-export type ShapeLine = ASTLineBase<'shape', [ArgumentIdentifier]>;
-export type ParamShapeLine = ASTLineBase<'paramShape', [ArgumentIdentifier]>;
-export type PushShapeLine = ASTLineBase<'pushShape', [ArgumentIdentifier]>;
 export type UseLine = ASTLineBase<'use', [ArgumentIdentifier]>;
 export type LocalDeclarationLine = ASTLineBase<'local', [ArgumentIdentifier, ArgumentIdentifier]>;
 export type ParamLine = ASTLineBase<'param', [ArgumentIdentifier, ArgumentIdentifier]>;
@@ -175,10 +171,7 @@ export type SemanticInstructionLine =
 	| ModuleLine
 	| ModuleEndLine
 	| ConstantsLine
-	| ConstantsEndLine
-	| PrototypeLine
-	| PrototypeEndLine
-	| ShapeLine;
+	| ConstantsEndLine;
 
 type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| PushLine
@@ -196,11 +189,6 @@ type ExplicitCompilerASTLineWithoutGenericNoSource =
 	| ModuleEndLine
 	| ConstantsLine
 	| ConstantsEndLine
-	| PrototypeLine
-	| PrototypeEndLine
-	| ShapeLine
-	| ParamShapeLine
-	| PushShapeLine
 	| UseLine
 	| LocalDeclarationLine
 	| ParamLine
@@ -262,6 +250,8 @@ export interface FunctionAST extends SourceBlockMetadata {
 	/** Source-level callable name written after the `function` instruction. */
 	name: string;
 	lines: CompilerASTLines;
+	/** Explicit parameters and results collected by the tokenizer. */
+	signature: FunctionSignature;
 	functionLine: FunctionLine;
 	functionEndLine: FunctionEndLine;
 	exportLine?: ExportLine;
@@ -276,15 +266,7 @@ export interface ConstantsAST extends SourceBlockMetadata {
 	constantsLine: ConstantsLine;
 }
 
-/** Parsed AST for a reusable memory-shape prototype block. */
-export interface PrototypeAST extends SourceBlockMetadata {
-	type: 'prototype';
-	id: string;
-	lines: CompilerASTLines;
-	prototypeLine: PrototypeLine;
-}
-
-export type AST = ModuleAST | FunctionAST | ConstantsAST | PrototypeAST;
+export type AST = ModuleAST | FunctionAST | ConstantsAST;
 
 declare const validatedASTBrand: unique symbol;
 
@@ -295,7 +277,6 @@ export type ValidatedAST<TAST extends AST = AST> = TAST & {
 export type ValidatedModuleAST = ValidatedAST<ModuleAST>;
 export type ValidatedFunctionAST = ValidatedAST<FunctionAST>;
 export type ValidatedConstantsAST = ValidatedAST<ConstantsAST>;
-export type ValidatedPrototypeAST = ValidatedAST<PrototypeAST>;
 
 /** Source identity guaranteed by composition, before include renaming and group qualification. */
 export interface SourceBlockIdentity {
@@ -315,7 +296,6 @@ export type ComposedModuleAST = ComposedAST<ValidatedModuleAST> & {
 };
 export type ComposedFunctionAST = ComposedAST<ValidatedFunctionAST>;
 export type ComposedConstantsAST = ComposedAST<ValidatedConstantsAST>;
-export type ComposedPrototypeAST = ComposedAST<ValidatedPrototypeAST>;
 
 const semanticInstructionSet = new Set<string>(semanticInstructionNames);
 

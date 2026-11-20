@@ -114,37 +114,6 @@ function registerSourceText(context: EditorPluginContext) {
 	cleanups.push(removeText, removePreparation);
 }
 
-test('renders expanded shape and paramShape declarations with aligned connectors', async () => {
-	const { editor, canvas, render, context, memory } = await setup(`8f4e/v1
-constants env
-; @pos 100 100
-constantsEnd
-prototype voiceState
-; @pos 100 100
-int* input
-int output
-prototypeEnd
-function process
-; @pos 48 12
-paramShape voiceState
-functionEnd
-entry main
-module source
-; @pos 48 2
-int output 1
-moduleEnd
-module sink
-; @pos 2 2
-shape voiceState
-moduleEnd
-entryEnd`);
-	const plan = editor.state.compiler.result.memoryPlan.modules;
-	new Int32Array(memory.buffer)[plan.sink.memory.input.allocationUnitAddress] = plan.source.memory.output.byteAddress;
-	registerSourceText(context);
-	render();
-	await expect(canvas).toMatchScreenshot('expanded-declarations');
-});
-
 test('draws a live wire with the connector presentation plugin omitted', async () => {
 	const { editor, canvas, gl, render, memory, compiled } = await setup(
 		`8f4e/v1

@@ -144,7 +144,7 @@ param int address
 functionEnd int
 ```
 
-Only supported function prologue directives, `param` and `paramShape` declarations, and `functionEnd` are allowed in an imported function. Executable instructions such as `push`, `load`, `store`, or `call` are invalid because the implementation lives in the host.
+Only supported function prologue directives, `param` declarations, and `functionEnd` are allowed in an imported function. Executable instructions such as `push`, `load`, `store`, or `call` are invalid because the implementation lives in the host.
 
 **Host imports:**
 ```ts

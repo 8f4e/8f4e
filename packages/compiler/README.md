@@ -105,7 +105,7 @@ the text representation without invoking a second block-classification or whole-
 `ProjectObjectModel` is defined by `@8f4e/language-spec`. Each scope owns an `entries` name table (including empty entries)
 and one `execution` sequence containing
 `type: 'module'` and `type: 'group'` nodes, each with an id and entry membership. Modules and groups share declaration
-order. The separate `functions`, `constants`, `prototypes`, `includes`, `notes`, and `unknown` collections retain
+order. The separate `functions`, `constants`, `includes`, `notes`, and `unknown` collections retain
 hoisted declarations and non-executable blocks. `getProjectModules(project)` and `getProjectGroups(project)` select
 only direct children of the corresponding type, retaining their relative order.
 
@@ -115,10 +115,10 @@ the parent's `init`. Other child entries run only through explicit local calls. 
 no automatic work. Root entries are host exports; child entries have scoped identities. Empty entries remain valid.
 
 For example, with `voiceA` and `voiceB` in `synth`'s `main`, `rootA`, `synth`, `rootB` executes as
-`rootA -> synth/voiceA -> synth/voiceB -> rootB`. Functions, constants, and prototypes remain hoisted, and memory
+`rootA -> synth/voiceA -> synth/voiceB -> rootB`. Functions and constants remain hoisted, and memory
 references do not reorder execution. The editor creates this ordered model from spatial position at each scope.
 
-Composition qualifies nested module, function, constant-namespace, and prototype names so sibling groups may reuse
+Composition qualifies nested module, function, and constant-namespace names so sibling groups may reuse
 source-level names safely. It hands one flattened validated-AST program to the compiler, allowing memory addresses,
 function indexes and type indexes to be planned once. Resolved entry plans pass through semantic compilation to
 emission without reconstructing project scopes. Each composed module carries its canonical `executionEntryName`,
@@ -144,7 +144,7 @@ and the backing `PlannedMemoryDeclaration` for editors and other hosts.
 
 Inside a group, `init &<exposed-memory> <number>` overrides a scalar declaration's default without changing its source.
 An address value, as in `init &input &source:output`, resolves against the immediate parent project. Initializers share
-ordinary default conversion and `initDefaults()` timing, including for inherited scalar declarations.
+ordinary default conversion and `initDefaults()` timing.
 
 ## Public API quickstart
 
@@ -244,9 +244,10 @@ Compiled programs import one WebAssembly linear memory as `host.memory`. All mod
 space. The memory planner lays modules out alphabetically by id, while module execution follows the composer-provided
 order. `CompileResult.requiredMemoryBytes` reports the allocation size, and `initDefaults()` initializes that memory.
 
-Each module in `CompileResult.memoryPlan` lists every allocation in `declarations`, including anonymous and inherited
-fields. The numeric declaration ID is its index after `shape` expansion. Use the module's `memory` lookup for source
-names and the declaration ID for defaults and pointer metadata. Anonymous declarations have no source name.
+Each module in `CompileResult.memoryPlan` lists every allocation in `declarations`, including anonymous
+declarations. The numeric declaration ID is its index in that list. Each declaration carries its source line in
+`source`. Use the module's `memory` lookup for names and the declaration ID for defaults and pointer metadata.
+Named declarations must be unique within their module.
 
 Layout addresses and counts use fixed 4-byte allocation units. Typed element widths remain independent of that grid:
 one `float64` occupies two units, while four `int8[]` elements fit in one unit. See

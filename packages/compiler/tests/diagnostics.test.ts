@@ -151,20 +151,22 @@ entryEnd`);
 		});
 	});
 
-	it('reports inherited declaration failures at the original prototype', async () => {
+	it('reports invalid declaration defaults at their source line', async () => {
 		const project = parseProjectSource(`8f4e/v1
-prototype state
-float* cursor &missing
-prototypeEnd
 entry main
 module reader
-shape state
+float* cursor &missing
 moduleEnd
 entryEnd`);
 		expect(await diagnosticFor(project)).toMatchObject({
 			kind: 'source',
 			domain: 'semantic',
-			location: { kind: 'block', projectBlockId: project.prototypes[0].id, projectGroupPath: '', lineNumber: 1 },
+			location: {
+				kind: 'block',
+				projectBlockId: getProjectModules(project)[0].id,
+				projectGroupPath: '',
+				lineNumber: 1,
+			},
 		});
 	});
 

@@ -4,9 +4,7 @@ import type {
 	CompilerASTLine,
 	MemoryDeclarationLine,
 	ModuleLine,
-	ShapeLine,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
@@ -60,25 +58,8 @@ function moduleAst(id: string, lines: readonly CompilerASTLine[]): ValidatedModu
 	} as ValidatedModuleAST;
 }
 
-function prototypeAst(id: string, declarationLines: readonly MemoryDeclarationLine[]): ValidatedPrototypeAST {
-	const prototypeLine = {
-		diagnosticSource: { kind: 'document' },
-		lineNumber: 1,
-		instruction: 'prototype',
-		arguments: [syntaxValue(classifyIdentifier(id))],
-	} as const;
-
-	return {
-		type: 'prototype',
-		id,
-		lines: [prototypeLine, ...declarationLines],
-		prototypeLine,
-	} as ValidatedPrototypeAST;
-}
-
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 	};
 }
@@ -104,7 +85,6 @@ describe('resolveMemoryDefaults', () => {
 		]);
 		const module = moduleAst('main', [counter, values]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});
@@ -115,8 +95,8 @@ describe('resolveMemoryDefaults', () => {
 		});
 
 		expect(result.main).toEqual({
-			0: { value: 7, hasExplicitDefault: true, isInherited: false },
-			1: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true, isInherited: false },
+			0: { value: 7, hasExplicitDefault: true },
+			1: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true },
 		});
 	});
 
@@ -132,7 +112,6 @@ describe('resolveMemoryDefaults', () => {
 		]);
 		const module = moduleAst('main', [implicitScalar, explicitScalar, anonymousScalar, implicitArray, explicitArray]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});
@@ -159,7 +138,6 @@ describe('resolveMemoryDefaults', () => {
 		]);
 		const module = moduleAst('main', [buffer, pointer]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 			startingByteAddress: 4,
@@ -199,37 +177,6 @@ describe('resolveMemoryDefaults', () => {
 		expect(result.main[1]).toMatchObject({
 			value: memoryPlan.modules.main.memory.buffer.byteAddress,
 			hasExplicitDefault: true,
-			isInherited: false,
-		});
-	});
-
-	it('preserves inherited shape defaults until local declarations override them', () => {
-		const prototypeFoo = scalarLine(2, 'int', [syntaxValue(classifyIdentifier('foo')), literal(1)]);
-		const prototypeBar = scalarLine(3, 'int', [syntaxValue(classifyIdentifier('bar')), literal(3)]);
-		const shape = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 11,
-			instruction: 'shape',
-			arguments: [syntaxValue(classifyIdentifier('state'))],
-		} satisfies ShapeLine;
-		const localFoo = scalarLine(12, 'int', [syntaxValue(classifyIdentifier('foo')), literal(2)]);
-		const prototype = prototypeAst('state', [prototypeFoo, prototypeBar]);
-		const module = moduleAst('main', [shape, localFoo]);
-		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [prototype],
-			modules: [module],
-			constantReferences: noConstantReferences(),
-		});
-
-		const result = resolveMemoryDefaults({
-			memoryPlan,
-			memoryReferences: noMemoryReferences(memoryPlan),
-		});
-
-		expect(result.main).toEqual({
-			0: { value: 2, hasExplicitDefault: true, isInherited: true },
-			2: { value: 2, hasExplicitDefault: true, isInherited: false },
-			1: { value: 3, hasExplicitDefault: true, isInherited: true },
 		});
 	});
 
@@ -243,7 +190,6 @@ describe('resolveMemoryDefaults', () => {
 		]);
 		const module = moduleAst('main', [values]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});

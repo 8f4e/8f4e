@@ -15,18 +15,6 @@ describe('function declaration syntax', () => {
 			parameter: 'param int value',
 			instruction: 'param',
 		},
-		{
-			name: 'paramShape after a local declaration',
-			body: 'local int temporary',
-			parameter: 'paramShape state',
-			instruction: 'paramShape',
-		},
-		{
-			name: 'paramShape after an executable instruction',
-			body: 'push 1',
-			parameter: 'paramShape state',
-			instruction: 'paramShape',
-		},
 	])('rejects $name', ({ body, parameter, instruction }) => {
 		expect(() => compileToAST(['function example', body, parameter, 'functionEnd'], { kind: 'document' })).toThrowError(
 			expect.objectContaining({
@@ -127,7 +115,7 @@ describe('function declaration syntax', () => {
 		});
 	});
 
-	it('accepts an imported signature with prologue directives and unresolved paramShape', () => {
+	it('accepts an imported signature with prologue directives and pointer parameters', () => {
 		const ast = compileToAST(
 			[
 				'function read',
@@ -135,7 +123,7 @@ describe('function declaration syntax', () => {
 				'#impure',
 				'#loopCap 4',
 				'param int address',
-				'paramShape state',
+				'param int* state',
 				'functionEnd int',
 			],
 			{ kind: 'document' }
@@ -144,9 +132,16 @@ describe('function declaration syntax', () => {
 			type: 'function',
 			importLine: { instruction: '#import', arguments: [{ value: 'host.read' }] },
 			functionEndLine: { instruction: 'functionEnd', arguments: [{ value: 'int' }] },
+			signature: {
+				parameters: [
+					{ name: 'address', type: 'int' },
+					{ name: 'state', type: 'int*' },
+				],
+				returns: ['int'],
+			},
 		});
-		expect(ast.lines.find(line => line.instruction === 'paramShape')).toMatchObject({
-			arguments: [{ value: 'state' }],
+		expect(ast.lines.find(line => line.instruction === 'param' && line.arguments[1].value === 'state')).toMatchObject({
+			arguments: [{ value: 'int*' }, { value: 'state' }],
 		});
 	});
 

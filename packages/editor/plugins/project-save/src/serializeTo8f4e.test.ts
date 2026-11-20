@@ -15,7 +15,6 @@ function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObject
 		execution: [],
 		functions: [],
 		constants: [],
-		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
@@ -355,9 +354,6 @@ includesEnd
 constants settings
 const GAIN 2
 constantsEnd
-prototype state
-int value
-prototypeEnd
 note
 useTemplate example
 template example
@@ -376,7 +372,6 @@ entryEnd`;
 		const group = getProjectGroups(parseProjectSource(saved))[0];
 		expect(group.functions).toHaveLength(1);
 		expect(group.constants).toHaveLength(1);
-		expect(group.prototypes).toHaveLength(1);
 		expect(group.includes).toHaveLength(1);
 		expect(group.notes[0].code).toContain('template example');
 		expect(group.entries).toEqual(['empty']);

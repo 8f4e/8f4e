@@ -15,9 +15,6 @@ includesEnd
 constants settings
 const GAIN 2
 constantsEnd
-prototype state
-int value 1
-prototypeEnd
 note
 useTemplate ignored
 entry fake
@@ -55,7 +52,6 @@ describe('scope-local template inlining', () => {
 		expect(a.functions[0].code[0]).toBe('function helper');
 		expect(a.includes).toHaveLength(1);
 		expect(a.constants).toHaveLength(1);
-		expect(a.prototypes).toHaveLength(1);
 		expect(a.notes[0].code).toContain('template fake');
 		expect(getProjectModules(a)[0].code).toContain('; @pos 12 34');
 		expect(Object.keys(a)).not.toContain('templateId');
@@ -123,7 +119,6 @@ entryEnd`);
 		'module x\nmoduleEnd',
 		'function x\nfunctionEnd',
 		'constants x\nconstantsEnd',
-		'prototype x\nprototypeEnd',
 		'includes\nincludesEnd',
 		'note\nnoteEnd',
 		'group x\ngroupEnd',

@@ -1,3 +1,4 @@
+import { createMockMemoryDeclarationSource } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import resolveMemoryIdentifier, { getDeclarationsByByteAddress } from './resolveMemoryIdentifier';
@@ -9,6 +10,7 @@ function createMemory(
 	overrides: Partial<PlannedMemoryDeclaration> = {}
 ): PlannedMemoryDeclaration {
 	return {
+		source: createMockMemoryDeclarationSource(overrides.type ?? 'int', overrides.lineNumber ?? 1, name),
 		id: 0,
 		name,
 		numberOfElements: 1,
@@ -38,7 +40,6 @@ function createModule(id: string, declarations: PlannedMemoryDeclaration[]): Pla
 		endByteAddress: declarations.at(-1)?.endByteAddress ?? 0,
 		memory: Object.fromEntries(declarations.map(declaration => [declaration.name, declaration])),
 		declarations,
-		declarationSources: [],
 	};
 }
 

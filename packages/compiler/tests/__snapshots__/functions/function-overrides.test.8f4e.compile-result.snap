@@ -318,10 +318,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "state",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
             },
           ],
-          "instruction": "paramShape",
+          "instruction": "param",
         },
         {
           "arguments": [
@@ -462,17 +468,6 @@
     },
     "read__int_p": {
       "id": "read__int_p",
-      "paramShapeExpansions": [
-        {
-          "lineNumber": 2,
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int*",
-            },
-          ],
-        },
-      ],
       "signature": {
         "parameters": [
           {

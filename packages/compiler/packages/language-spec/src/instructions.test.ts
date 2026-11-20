@@ -19,7 +19,6 @@ const functionInstructionClassificationSamples = [
 	'local',
 	'call',
 	'param',
-	'paramShape',
 	'functionEnd',
 	'const',
 	'use',

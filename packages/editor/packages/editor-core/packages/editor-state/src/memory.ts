@@ -28,6 +28,7 @@ export {
 	readElementIndex,
 	readNumericValue,
 } from './pureHelpers/preparedMemory';
+export { getProjectGroupMemoryExposures } from './pureHelpers/projectGroupMemoryExposures';
 export {
 	default as resolveMemoryIdentifier,
 	getDeclarationsByByteAddress,

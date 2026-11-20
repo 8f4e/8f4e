@@ -1,7 +1,6 @@
 import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { CompileOptions, ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { createFunctionId, ErrorCode } from '@8f4e/language-spec';
-import { SyntaxErrorCode } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
@@ -10,13 +9,11 @@ type ProjectFixture = {
 	entries: Record<string, SourceFixture[]>;
 	constants: SourceFixture[];
 	functions: SourceFixture[];
-	prototypes: SourceFixture[];
 };
 
 const emptyProjectFixture = {
 	constants: [],
 	functions: [],
-	prototypes: [],
 };
 
 function compile(fixture: ProjectFixture, options: CompileOptions) {
@@ -35,7 +32,6 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 		],
 		functions: fixture.functions.map(toBlock),
 		constants: fixture.constants.map(toBlock),
-		prototypes: fixture.prototypes.map(toBlock),
 		includes: [],
 		notes: [],
 		unknown: [],
@@ -43,137 +39,7 @@ function compile(fixture: ProjectFixture, options: CompileOptions) {
 	return compileProjectObjectModel(project, options);
 }
 
-describe('compile prototype validation', () => {
-	it('rejects prototype block markers inside module source', () => {
-		let thrownError: unknown;
-
-		try {
-			compile(
-				{
-					...emptyProjectFixture,
-					entries: {
-						main: [
-							{
-								code: ['module main', 'prototype nested', 'int value 1', 'prototypeEnd', 'moduleEnd'],
-							},
-						],
-					},
-				},
-				{}
-			);
-		} catch (error) {
-			thrownError = error;
-		}
-
-		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
-			code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-			instruction: 'prototype',
-		});
-	});
-
-	it('reports a tokenizer diagnostic when a prototype is missing an id', () => {
-		let thrownError: unknown;
-
-		try {
-			compile(
-				{
-					...emptyProjectFixture,
-					entries: { main: [] },
-					prototypes: [{ code: ['prototype', 'prototypeEnd'] }],
-				},
-				{}
-			);
-		} catch (error) {
-			thrownError = error;
-		}
-
-		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
-			code: SyntaxErrorCode.MISSING_ARGUMENT,
-			message: 'Missing required argument for prototype.',
-			instruction: 'prototype',
-		});
-	});
-
-	it('reports a syntax diagnostic when shape is missing a prototype id', () => {
-		let thrownError: unknown;
-
-		try {
-			compile(
-				{
-					...emptyProjectFixture,
-					entries: {
-						main: [
-							{
-								projectBlockId: 42,
-								code: ['module main', 'shape', 'moduleEnd'],
-							},
-						],
-					},
-				},
-				{}
-			);
-		} catch (error) {
-			thrownError = error;
-		}
-
-		expect(serializeDiagnostic(thrownError, 'compile')).toMatchObject({
-			code: SyntaxErrorCode.MISSING_ARGUMENT,
-			message: 'Missing required argument for shape.',
-			instruction: 'shape',
-			location: expect.objectContaining({ projectBlockId: 42 }),
-		});
-	});
-
-	it('expands shapes after prototype parsing reaches the tokenizer', () => {
-		const result = compile(
-			{
-				...emptyProjectFixture,
-				entries: {
-					main: [{ code: ['module main', 'shape state', 'moduleEnd'] }],
-				},
-				prototypes: [{ code: ['prototype state', 'int value 7', 'prototypeEnd'] }],
-			},
-			{}
-		);
-
-		expect(result.memoryDefaultsByModuleId.main![result.memoryPlan.modules.main.memory.value.id]?.value).toBe(7);
-	});
-
-	it('marks shape-expanded declarations as inherited at the shape line', () => {
-		const result = compile(
-			{
-				...emptyProjectFixture,
-				entries: {
-					main: [{ code: ['module filterA', 'shape filterState', 'float cutoff 1200', 'moduleEnd'] }],
-				},
-				prototypes: [
-					{
-						code: [
-							'prototype filterState',
-							'float* input',
-							'float cutoff 800',
-							'float resonance 0.5',
-							'float output',
-							'prototypeEnd',
-						],
-					},
-				],
-			},
-			{}
-		);
-
-		const memory = result.memoryPlan.modules.filterA!.memory;
-		const memoryDefaults = result.memoryDefaultsByModuleId.filterA!;
-		expect(memory.input).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults[memory.input.id]).toMatchObject({ isInherited: true });
-		expect(memory.resonance).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults[memory.resonance.id]).toMatchObject({ isInherited: true });
-		expect(memory.output).toMatchObject({ lineNumber: 1 });
-		expect(memoryDefaults[memory.output.id]).toMatchObject({ isInherited: true });
-		expect(memory.cutoff).toMatchObject({ lineNumber: 2 });
-		expect(memoryDefaults[memory.cutoff.id]).toMatchObject({ isInherited: false });
-	});
-
+describe('compile project object model', () => {
 	it('rejects function ids that collide with generated entry function ids during semantic metadata collection', () => {
 		let thrownError: unknown;
 

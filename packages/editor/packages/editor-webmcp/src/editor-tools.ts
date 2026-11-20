@@ -13,7 +13,7 @@ const code = { type: 'string', description: 'Complete source of the block, with 
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 const blockTypeInput = {
 	type: 'string',
-	enum: ['module', 'function', 'constants', 'prototype', 'includes', 'note', 'unknown', 'group', 'project'],
+	enum: ['module', 'function', 'constants', 'includes', 'note', 'unknown', 'group', 'project'],
 };
 const blockInput = objectInput({ type: blockTypeInput, name: { type: 'string' } }, ['type', 'name']);
 const editInputs = {

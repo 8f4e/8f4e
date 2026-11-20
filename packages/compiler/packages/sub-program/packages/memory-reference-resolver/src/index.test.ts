@@ -1,4 +1,10 @@
-import { ArgumentType, type CompilerDiagnosticLine, type ValidatedModuleAST } from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	type CompilerDiagnosticLine,
+	isArrayMemoryDeclarationInstructionName,
+	type MemoryDeclarationLine,
+	type ValidatedModuleAST,
+} from '@8f4e/language-spec';
 import type { MemoryLayoutPlan, PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/memory-planner';
 import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
@@ -32,7 +38,7 @@ function createMemoryDeclaration(
 		id: 0,
 		name,
 		lineNumber: 0,
-		type: 'int',
+		type: 'int' as const,
 		numberOfElements: 1,
 		elementWordSize: 4,
 		allocationUnitAddress: 0,
@@ -43,13 +49,28 @@ function createMemoryDeclaration(
 		isUnsigned: false,
 		...overrides,
 	};
+	const firstArgument = syntaxValue(classifyIdentifier(name));
+	const location = { diagnosticSource: { kind: 'document' as const }, lineNumber: declaration.lineNumber };
+	const arrayInstruction = `${declaration.type}[]`;
+	const source: MemoryDeclarationLine =
+		declaration.numberOfElements !== 1 && isArrayMemoryDeclarationInstructionName(arrayInstruction)
+			? {
+					...location,
+					instruction: arrayInstruction,
+					arguments: [
+						firstArgument,
+						{ type: ArgumentType.LITERAL, value: declaration.numberOfElements, isInteger: true },
+					],
+				}
+			: { ...location, instruction: declaration.type, arguments: [firstArgument] };
 
 	return {
 		...declaration,
+		source: overrides.source ?? source,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
 		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
-	} as PlannedMemoryDeclaration;
+	};
 }
 
 function createPlannedModule(
@@ -68,7 +89,6 @@ function createPlannedModule(
 		allocationUnitCount: 5,
 		memory,
 		declarations,
-		declarationSources: [],
 		...overrides,
 	};
 
@@ -114,7 +134,6 @@ function withRemoteModules(
 
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 		constants: [],
 		functions: [],
@@ -156,7 +175,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -199,13 +217,13 @@ describe('resolveMemoryReferences', () => {
 				syntaxValue(classifyIdentifier('samples')),
 				{ type: ArgumentType.LITERAL, value: count, isInteger: true },
 			],
-		};
+		} as const;
 		const pointerLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'float*',
 			arguments: [syntaxValue(classifyIdentifier('ptr')), syntaxValue(classifyIdentifier('&samples'))],
-		};
+		} as const;
 		const pushLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
@@ -219,6 +237,7 @@ describe('resolveMemoryReferences', () => {
 			moduleLine,
 		} as unknown as ValidatedModuleAST;
 		const samples = createMemoryDeclaration('samples', {
+			source: samplesLine,
 			lineNumber: 2,
 			type: 'float',
 			numberOfElements: count,
@@ -229,6 +248,7 @@ describe('resolveMemoryReferences', () => {
 			isInteger: false,
 		});
 		const ptr = createMemoryDeclaration('ptr', {
+			source: pointerLine,
 			lineNumber: 3,
 			type: 'float*',
 			allocationUnitAddress: 8,
@@ -242,7 +262,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -294,7 +313,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -303,7 +321,6 @@ describe('resolveMemoryReferences', () => {
 			memoryAliases: new Map(),
 			projectMemoryInitializerScopes: [],
 			constantReferences: {
-				prototypes: [],
 				modules: [
 					{
 						lineFacts: [
@@ -338,7 +355,7 @@ describe('resolveMemoryReferences', () => {
 			lineNumber: 2,
 			instruction: 'int*',
 			arguments: [syntaxValue(classifyIdentifier('pointer')), syntaxValue(classifyIdentifier('&audio:level'))],
-		};
+		} as const;
 		const endAddressLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
@@ -364,6 +381,7 @@ describe('resolveMemoryReferences', () => {
 			moduleLine,
 		} as unknown as ValidatedModuleAST;
 		const pointer = createMemoryDeclaration('pointer', {
+			source: pointerLine,
 			type: 'int*',
 			byteAddress: 16,
 			pointeeBaseType: 'int',
@@ -384,7 +402,7 @@ describe('resolveMemoryReferences', () => {
 		]);
 
 		const result = resolveMemoryReferences({
-			ast: { prototypes: [], modules: [ast], constants: [], functions: [] },
+			ast: { modules: [ast], constants: [], functions: [] },
 			memoryPlan,
 			memoryAliases,
 			projectMemoryInitializerScopes: [],

@@ -5,7 +5,7 @@ import type {
 	PlannedMemoryDeclaration,
 	PlannedMemoryModule,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, ArgumentType, isArrayMemoryDeclarationInstructionName } from '@8f4e/language-spec';
 
 function getAllocatedByteLength(allocationUnitCount: number): number {
 	return Math.max(0, allocationUnitCount) * ALLOCATION_UNIT_BYTE_SIZE;
@@ -16,32 +16,61 @@ function getEndByteAddress(byteAddress: number, allocationUnitCount: number): nu
 }
 
 /**
- * Creates a memory data structure fixture for initial memory segment tests.
+ * Creates a planned memory declaration fixture.
  *
  * @param overrides - Required identity and byte-address fields plus fixture overrides.
- * @returns A complete data structure fixture.
+ * @returns A declaration with layout and source.
  */
 export function createMemory(
 	overrides: Partial<PlannedMemoryDeclaration> & Pick<PlannedMemoryDeclaration, 'id' | 'byteAddress'>
 ): PlannedMemoryDeclaration {
+	const numberOfElements = overrides.numberOfElements ?? 1;
+	const elementWordSize = overrides.elementWordSize ?? ALLOCATION_UNIT_BYTE_SIZE;
+	const elementByteLength = numberOfElements * elementWordSize;
 	const declaration = {
-		numberOfElements: 1,
-		elementWordSize: 4,
+		numberOfElements,
+		elementWordSize,
 		type: 'int' as const,
-		allocationUnitCount: 1,
-		allocationUnitAddress: overrides.byteAddress / 4,
+		allocationUnitCount: Math.ceil(elementByteLength / ALLOCATION_UNIT_BYTE_SIZE),
+		allocationUnitAddress: overrides.byteAddress / ALLOCATION_UNIT_BYTE_SIZE,
 		lineNumber: 0,
 		isInteger: true,
 		pointerDepth: 0,
 		isUnsigned: false,
 		...overrides,
 	};
+	const identifier = {
+		type: ArgumentType.IDENTIFIER,
+		value: declaration.name ?? 'array',
+		referenceKind: 'plain',
+		scope: 'local',
+	} as const;
+	const location = { diagnosticSource: { kind: 'document' }, lineNumber: declaration.lineNumber } as const;
+	const arrayInstruction = `${declaration.type}[]`;
 
 	return {
 		...declaration,
-		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
+		source:
+			declaration.source ??
+			(declaration.numberOfElements !== 1 && isArrayMemoryDeclarationInstructionName(arrayInstruction)
+				? {
+						...location,
+						instruction: arrayInstruction,
+						arguments: [
+							identifier,
+							{ type: ArgumentType.LITERAL, value: declaration.numberOfElements, isInteger: true },
+						],
+					}
+				: {
+						...location,
+						instruction: declaration.type,
+						arguments: [
+							declaration.name === undefined ? { type: ArgumentType.LITERAL, value: 0, isInteger: true } : identifier,
+						],
+					}),
+		elementByteLength,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
-		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
+		endByteAddress: declaration.byteAddress + elementByteLength,
 	};
 }
 
@@ -52,7 +81,6 @@ export function createMemoryDefault(
 	return {
 		value,
 		hasExplicitDefault: false,
-		isInherited: false,
 		...overrides,
 	};
 }
@@ -78,7 +106,6 @@ export function createMemoryPlan(
 		endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
 		memory,
 		declarations,
-		declarationSources: overrides.declarationSources ?? [],
 	};
 
 	return {

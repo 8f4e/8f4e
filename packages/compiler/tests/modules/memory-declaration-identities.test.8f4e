@@ -1,0 +1,37 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Memory names are local to each module.
+Both named and anonymous allocations have declaration indices.
+noteEnd
+
+entry test
+module anonymousStorage
+int 42
+int 7
+int __anonymous__1 19
+push &anonymousStorage:0
+load
+assertEqual 42
+push &anonymousStorage:1
+load
+assertEqual 7
+push __anonymous__1
+assertEqual 19
+push &this:2
+assertEqual &__anonymous__1
+moduleEnd
+
+module anotherStorage
+int __anonymous__1 23
+int& named &anonymousStorage:__anonymous__1
+int& indexed &anonymousStorage:2
+push __anonymous__1
+assertEqual 23
+push *named
+assertEqual 19
+push indexed
+assertEqual named
+moduleEnd
+entryEnd

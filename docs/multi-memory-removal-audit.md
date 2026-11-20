@@ -284,7 +284,6 @@ Primary files:
 - `packages/compiler/packages/sub-program/packages/stack-analyzer/src/analyzeStack.ts`
 - `packages/compiler/packages/sub-program/packages/stack-analyzer/src/utils/stackAddressMetadata.ts`
 - `packages/compiler/packages/sub-program/packages/stack-analyzer/src/instructionAnalyzers/push.ts`
-- `packages/compiler/packages/sub-program/packages/stack-analyzer/src/instructionAnalyzers/pushShape.ts`
 - `packages/compiler/packages/sub-program/packages/stack-analyzer/src/instructionAnalyzers/memory.ts`
 
 Remove region facts from pointer default resolution, local/function pointer construction, arithmetic propagation,
@@ -305,12 +304,6 @@ chain becomes unnecessary:
 
 The `localSet` instruction and its operand validation remain necessary. Its code generation can emit the local
 assignment directly.
-
-### Shape pointers need less propagation
-
-`analyzePushShape` merges memory identity from each produced address into pointer type metadata. Once identity is
-removed, assign the remaining pointee type facts directly. Preserve shape expansion, pointer depth/type, allocation
-addresses, and safety metadata.
 
 ## WebAssembly generation and instruction utilities
 
@@ -549,7 +542,7 @@ Related active work to reconcile:
 - [TODO 495 Index editor pointer targets by memory and address](todos/495-index-editor-pointer-targets-by-memory-and-address.md):
   indexing by byte address may still be useful, but the outer memory-index key and cross-memory criteria disappear.
   Preserve first-match behavior for duplicate addresses, empty allocations, and changing pointer values.
-- [TODO 500 Keep planned memory and its source together](todos/500-keep-planned-memory-and-its-source-together.md):
+- [TODO 500 Keep planned memory and its source together](todos/archived/500-keep-planned-memory-and-its-source-together.md):
   overlaps shared planner contracts and fixtures; preserve declaration/source associations during either refactor.
 - [TODO 475 Remove dead compiler block state caches](todos/475-remove-dead-compiler-block-state-caches.md): separate
   adjacent context cleanup; its presence does not make active loop/map state part of memory removal.

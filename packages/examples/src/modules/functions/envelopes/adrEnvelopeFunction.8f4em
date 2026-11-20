@@ -11,33 +11,27 @@ const SAMPLE_RATE 48000
 const AUDIO_BUFFER_SIZE 128
 constantsEnd
 
-prototype adrEnvState
-; @pos 0 4
-int* trigger
-int previousTrigger
-int attackTime
-int decayTime
-float decayLevel
-int releaseTime
-float out
-int _state 4
-int _counter
-prototypeEnd
-
 function adrEnv
 ; @public
 ; @pos 0 24
 ; Attack-decay-release (ADR) envelope function
 ; from the six-operator FM piano.
-; Uses an independent adrEnvState
-; prototype instance for each envelope.
+; Pass each envelope's own state by address.
 ; Requires std/events/risingEdge.
 ; Release follows decay automatically;
 ; this preserves the original behavior.
 
 ; @tab 8
 #impure
-paramShape adrEnvState
+param int** trigger
+param int* previousTrigger
+param int* attackTime
+param int* decayTime
+param float* decayLevel
+param int* releaseTime
+param float* out
+param int* _state
+param int* _counter
 
 const	ATTACK 1
 const	DECAY 2
@@ -181,18 +175,23 @@ module envelope
 ; @pos 54 16
 ; Example state and function call.
 use env
-shape adrEnvState
 int* trigger &trigger:gate
+int previousTrigger
 int attackTime SAMPLE_RATE/100
 int decayTime SAMPLE_RATE/10
 float decayLevel 0.5
 int releaseTime SAMPLE_RATE/10
+float out
+int _state 4
+int _counter
 
 ; @watch out
 ; @watch _state
 ; @watch _counter
 
-pushShape adrEnvState
 call adrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &decayLevel &releaseTime
+- &out &_state &_counter
 moduleEnd
 entryEnd

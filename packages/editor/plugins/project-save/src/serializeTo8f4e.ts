@@ -2,14 +2,7 @@ import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language
 import { extractProjectTemplates, FORMAT_HEADER, validateProjectCodeBlock } from '@8f4e/project-preparser';
 
 function getDocumentBlocks(project: ProjectObjectModel) {
-	return [
-		...project.includes,
-		...project.functions,
-		...project.constants,
-		...project.prototypes,
-		...project.notes,
-		...project.unknown,
-	];
+	return [...project.includes, ...project.functions, ...project.constants, ...project.notes, ...project.unknown];
 }
 
 function getAllBlocks(project: ProjectObjectModel): Array<{ code: string[] }> {

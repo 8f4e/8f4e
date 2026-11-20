@@ -92,6 +92,12 @@
         ],
         "name": "left/helper",
         "projectBlockId": 5,
+        "signature": {
+          "parameters": [],
+          "returns": [
+            "int",
+          ],
+        },
         "sourceIdentity": {
           "codeBlockId": "helper",
           "projectGroupPath": "left",
@@ -188,6 +194,12 @@
         ],
         "name": "right/helper",
         "projectBlockId": 18,
+        "signature": {
+          "parameters": [],
+          "returns": [
+            "int",
+          ],
+        },
         "sourceIdentity": {
           "codeBlockId": "helper",
           "projectGroupPath": "right",
@@ -363,7 +375,6 @@
         "type": "module",
       },
     ],
-    "prototypes": [],
   },
   "cache": {
     "keys": [

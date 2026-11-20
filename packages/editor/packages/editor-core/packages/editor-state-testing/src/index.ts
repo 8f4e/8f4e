@@ -1,5 +1,11 @@
 import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State, Viewport } from '@8f4e/editor-state-types';
-import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	isArrayMemoryDeclarationInstructionName,
+	type MemoryDeclarationInstruction,
+	type MemoryDeclarationLine,
+	ROOT_PROJECT_GROUP_PATH,
+} from '@8f4e/language-spec';
 
 type DeepPartial<T> = T extends (...args: never[]) => unknown
 	? T
@@ -85,6 +91,35 @@ export function createMockViewport(x = 0, y = 0, width = 800, height = 600): Vie
 		roundedHeight: height,
 		vGrid: 8,
 		hGrid: 16,
+	};
+}
+
+/** Creates representative source for hand-built memory layout fixtures. */
+export function createMockMemoryDeclarationSource(
+	instruction: MemoryDeclarationInstruction,
+	lineNumber: number,
+	name?: string,
+	elementCount = 1
+): MemoryDeclarationLine {
+	const diagnosticSource = { kind: 'block', projectBlockId: 0, projectGroupPath: ROOT_PROJECT_GROUP_PATH } as const;
+	const identifier =
+		name === undefined
+			? undefined
+			: ({ type: ArgumentType.IDENTIFIER, referenceKind: 'plain', scope: 'local', value: name } as const);
+	if (isArrayMemoryDeclarationInstructionName(instruction)) {
+		if (!identifier) throw new Error('Mock memory array declarations require a name');
+		return {
+			diagnosticSource,
+			lineNumber,
+			instruction,
+			arguments: [identifier, { type: ArgumentType.LITERAL, isInteger: true, value: elementCount }],
+		};
+	}
+	return {
+		diagnosticSource,
+		lineNumber,
+		instruction,
+		arguments: [identifier ?? { type: ArgumentType.LITERAL, isInteger: true, value: 0 }],
 	};
 }
 

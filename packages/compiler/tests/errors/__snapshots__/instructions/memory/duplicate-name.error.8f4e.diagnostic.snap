@@ -1,13 +1,14 @@
 {
-  "code": 5,
+  "code": 45,
   "domain": "semantic",
-  "instruction": "shape",
+  "instruction": "int[]",
   "kind": "source",
   "location": {
     "kind": "block",
-    "lineNumber": 4,
+    "lineNumber": 3,
     "projectBlockId": 4,
     "projectGroupPath": "",
   },
-  "message": "Unknown prototype shape in memory layout.",
+  "message": "Duplicate identifier: value. (45)",
+  "symbol": "probe",
 }

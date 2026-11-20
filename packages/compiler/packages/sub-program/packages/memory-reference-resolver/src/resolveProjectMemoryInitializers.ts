@@ -28,11 +28,10 @@ export function resolveProjectMemoryInitializers(
 				{ scope: 'intermodule', targetModuleId: scope.groupPath, targetMemoryId: name },
 				context
 			);
-			const declaration = resolved?.targetModule.declarationSources[resolved.targetMemory.id];
 			if (
 				!context.memoryAliases.get(scope.groupPath)?.has(name) ||
 				!resolved ||
-				!isScalarMemoryDeclarationLine(declaration!.line)
+				!isScalarMemoryDeclarationLine(resolved.targetMemory.source)
 			) {
 				throw getError(ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET, line, {
 					details: {

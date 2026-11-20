@@ -59,7 +59,6 @@ exports[`constant resolver > keeps AST lines immutable while reporting resolved 
         ],
       },
     ],
-    "prototypes": [],
   },
 }
 `;

@@ -267,7 +267,6 @@ describe('compilation scheduling and publication', () => {
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
-				prototypes: expect.any(Array),
 			}),
 			{
 				startingMemoryAllocationUnitAddress: 0,
@@ -315,7 +314,6 @@ describe('compilation scheduling and publication', () => {
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
-				prototypes: expect.any(Array),
 			}),
 			{
 				startingMemoryAllocationUnitAddress: 0,

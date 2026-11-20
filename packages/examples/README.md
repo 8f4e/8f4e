@@ -32,3 +32,8 @@ npx nx run @8f4e/examples:generate-minblep-lut
 ```
 
 Review the resulting table diff before committing it.
+
+## Testing
+
+Run `npx nx run @8f4e/examples:test` to check example module tests and full-project behavior regressions. The module
+tests run through the CLI; the project regressions compile and step the example projects directly.

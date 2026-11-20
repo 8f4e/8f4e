@@ -7,6 +7,7 @@ import type {
 	PlannedMemoryDeclaration,
 	ProjectEntryName,
 	ProjectGroupPath,
+	ProjectMemoryExposure,
 } from '@8f4e/language-spec';
 import type { Position } from '../../shared/types';
 import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
@@ -113,6 +114,8 @@ export interface CodeBlockGraphicData {
 	projectPath: ProjectGroupPath;
 	/** Child project level owned by a language-level project-group block. */
 	childProject?: ProjectLevel;
+	/** Current source declarations prepared for a project group, separate from accepted compiler targets. */
+	projectMemoryExposures?: readonly ProjectMemoryExposure[];
 	/**
 	 * When true, the block is excluded from compilation and rendered with a transparent background.
 	 * Defaults to false.

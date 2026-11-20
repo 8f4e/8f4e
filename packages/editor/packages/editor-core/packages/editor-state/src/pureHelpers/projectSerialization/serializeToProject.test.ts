@@ -55,7 +55,6 @@ describe('serializeToProject', () => {
 			execution: [],
 			functions: [],
 			constants: [],
-			prototypes: [],
 			includes: [
 				expect.objectContaining({
 					code: ['includes', 'include std/current', 'includesEnd'],

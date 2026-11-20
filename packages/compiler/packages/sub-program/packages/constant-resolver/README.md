@@ -7,7 +7,6 @@ The sub-program-level entry point receives the original AST grouping:
 ```ts
 const result = resolveConstants({
 	ast: {
-		prototypes,
 		modules,
 		constants,
 		functions,
@@ -30,7 +29,7 @@ This package owns:
 - Resolving explicit parent-to-child constants-namespace aliases declared with project-level `pass` instructions.
 - Resolving `use` dependencies between constant namespaces.
 - Resolving constant declarations in source order.
-- Extracting constant-resolved argument facts for prototypes, modules, constants blocks, and functions.
+- Extracting constant-resolved argument facts for modules, constants blocks, and functions.
 
 This package does not own:
 

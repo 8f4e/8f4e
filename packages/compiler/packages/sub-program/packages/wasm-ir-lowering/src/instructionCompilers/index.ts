@@ -45,7 +45,6 @@ import notEqual from './notEqual';
 import notZero from './notZero';
 import or from './or';
 import push from './push';
-import pushShape from './pushShape';
 import remainder from './remainder';
 import _return from './return';
 import round from './round';
@@ -89,7 +88,6 @@ const instructions = {
 	branchIfTrue,
 	exitIfTrue,
 	push,
-	pushShape,
 	block,
 	blockEnd,
 	lessOrEqual,

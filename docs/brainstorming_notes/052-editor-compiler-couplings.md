@@ -11,13 +11,8 @@ the config ownership checked after extraction, for future architectural discussi
   [Default editor state](../../packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/state/createDefaultState.ts)
   also initializes compiler-specific statistics, even when the compiler plugin is omitted.
 
-- **Block layout from compiled facts (presentation extracted).** The connectors plugin owns
-  [shape declarations](../../packages/editor/plugins/connectors/src/layout/shape.ts) and
-  [parameter shapes](../../packages/editor/plugins/connectors/src/layout/param-shape.ts), including row reservations
-  and private labels derived from compiler metadata. Core applies generic layout contributions.
-
 - **Connector geometry (presentation extracted).** The [connectors plugin](../../packages/editor/plugins/connectors/src/layout/deriveConnectors.ts)
-  derives endpoints from compiler memory plans and exposure targets, sharing inherited rows with generated labels.
+  derives endpoints at declaration and `expose` rows from compiler memory plans and exposure targets.
   Core's [MemoryIdentifier type](../../packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/types.ts)
   still carries a compiler-owned planned declaration for generic memory lookup.
 

@@ -4,7 +4,6 @@ import type {
 	ComposedEntry,
 	ComposedFunctionAST,
 	ComposedModuleAST,
-	ComposedPrototypeAST,
 	DiagnosticSource,
 	IncludedFunctionBindings,
 	ProjectConstantNamespaceScope,
@@ -41,7 +40,6 @@ export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure, Pr
 export interface ComposedProgram {
 	entries: ComposedEntry[];
 	ast: {
-		prototypes: ComposedPrototypeAST[];
 		modules: ComposedModuleAST[];
 		constants: ComposedConstantsAST[];
 		functions: ComposedFunctionAST[];

@@ -21,14 +21,11 @@ describe.each(['café', 'value🚀'])('compiler rejects non-ASCII entity name %s
 });
 
 describe('compiler ASCII entity names', () => {
-	it('compiles punctuation, constants, prototypes, and references into executable WebAssembly', async () => {
+	it('compiles punctuation in function, constant, and memory identifiers into executable WebAssembly', async () => {
 		const project = parseProjectSource(`8f4e/v1
 constants config!$
 const VALUE!$_0 7
 constantsEnd
-prototype state!$
-int field!$ 3
-prototypeEnd
 function compute!$
 #export result!$
 use config!$
@@ -42,7 +39,7 @@ add
 functionEnd int
 entry main
 module _example_1
-shape state!$
+int field!$ 3
 int output!$
 push &output!$
 call compute!$ field!$

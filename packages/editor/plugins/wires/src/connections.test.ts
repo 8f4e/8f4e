@@ -1,7 +1,7 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { visitConnections } from './connections';
-import type { ConnectorWidgets, Input, Output } from './types';
+import type { WireEndpoints, WireInput, WireOutput } from './deriveEndpoints';
 
 describe('visitConnections', () => {
 	it.each([
@@ -20,28 +20,18 @@ describe('visitConnections', () => {
 			x: 300,
 			y: 400,
 		});
-		const input: Input = {
-			x: 0,
-			y: 36,
-			wireX: 15,
-			wireY: 45,
+		const input: WireInput = {
+			x: 15,
+			y: 45,
 			source: kind === 'reference' ? { kind, byteAddress: outputAddress } : { kind, allocationUnitAddress: 2 },
 		};
-		const output: Output = {
+		const output: WireOutput = {
 			codeBlock: outputBlock,
-			x: 140,
-			y: 54,
-			wireX: 155,
-			wireY: 63,
-			calibratedMax: 0,
-			calibratedMin: 0,
-			memory: {
-				byteAddress: outputAddress,
-				allocationUnitAddress: 20,
-				allocationUnitCount: 1,
-			} as never,
+			x: 155,
+			y: 63,
+			byteAddress: outputAddress,
 		};
-		const widgetsByBlock = new WeakMap([[inputBlock, { inputs: [input], outputs: [] } as ConnectorWidgets]]);
+		const endpointsByBlock = new WeakMap([[inputBlock, { inputs: [input], outputs: [] } satisfies WireEndpoints]]);
 		const outputsByByteAddress = new Map([[outputAddress, output]]);
 
 		const state = createMockState({
@@ -58,7 +48,7 @@ describe('visitConnections', () => {
 		});
 		const visit = vi.fn();
 		const memory = Int32Array.from(kind === 'reference' ? [] : [0, 0, outputAddress]);
-		visitConnections(state, memory, { widgetsByBlock, outputsByByteAddress }, visit);
+		visitConnections(state, memory, { endpointsByBlock, outputsByByteAddress }, visit);
 		expect(visit).toHaveBeenCalledExactlyOnceWith(110, 236, 450, 454, true);
 	});
 });

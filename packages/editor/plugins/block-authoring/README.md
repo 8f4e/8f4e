@@ -1,6 +1,6 @@
 # Block authoring
 
-`blockAuthoringPlugin` contributes New Module, New Function, New Prototype, and New Note to the main menu, plus
+`blockAuthoringPlugin` contributes New Module, New Function, and New Note to the main menu, plus
 Delete to a block's menu. Menu contributions and commands are available in edit mode.
 
 `createCodeBlock { x, y, blockType }` creates a four-line source template. Named block types use a random particle

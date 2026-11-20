@@ -633,10 +633,16 @@ entryEnd`;
 	});
 	editor.navigation.goToRoot();
 	const save = async (count: number) => {
-		view
-			.panel('templates')
-			.querySelector('canvas')!
-			.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true }));
+		const canvas = view.panel('templates').querySelector('canvas')!;
+		// Compilation can finish before the deferred save plugin starts handling shortcuts.
+		await vi.waitFor(
+			() => {
+				const shortcut = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true });
+				canvas.dispatchEvent(shortcut);
+				expect(shortcut.defaultPrevented).toBe(true);
+			},
+			{ timeout: 10000 }
+		);
 		await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(count));
 	};
 	await save(1);

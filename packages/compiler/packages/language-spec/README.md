@@ -8,14 +8,14 @@ This package is the place for data and types that describe the 8f4e language its
 - `ProjectObjectModel` and its project block, group, entry, identity, and include-resolver contracts.
 - Instruction names, instruction specs, source argument shape rules, stack signatures, and instruction effects.
 - Memory declaration types, memory data contracts, and memory layout metadata types.
-- Function type limits, function signature helpers, parameter shape metadata, and runtime option contracts.
+- Function type limits and signature helpers, and runtime option contracts.
 - Compiler error codes and shared error metadata.
 - Assertion host import names and default no-op bindings (`IGNORED_ASSERTION_IMPORTS`) for hosts that ignore assertions.
 
 The package is intentionally declarative. Other compiler packages import these facts so they agree on the same language model.
 
-`FunctionSignature.parameters` contains `{ name, type }` entries in declaration order, including fields expanded by
-`paramShape`. Function identities and WebAssembly types depend only on the parameter types. When stack analysis is
+`FunctionSignature.parameters` contains `{ name, type }` entries in declaration order.
+Function identities and WebAssembly types depend only on the parameter types. When stack analysis is
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete
 function signature, including calls to generated entry dispatchers.
 

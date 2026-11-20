@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module probe
+int value 1
+int adjacent
+int[] value 2 10 20
+moduleEnd
+entryEnd

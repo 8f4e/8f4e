@@ -17,7 +17,7 @@ Shared conversion from live editor blocks to the canonical project model.
 `serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving, history, and live
 compilation. It is not a separate editor schema and it is not the exported `.8f4e` file format.
 
-Each known editor block is placed directly into the model's `execution`, `functions`, `constants`, `prototypes`,
+Each known editor block is placed directly into the model's `execution`, `functions`, `constants`,
 `includes`, or `notes` collection. Incomplete blocks go to `unknown`; modules carry their required `entry`. Asset
 directives remain embedded in block source. All notes belong to the project and are included in session saves,
 history snapshots, and project files, regardless of their names.
@@ -65,7 +65,7 @@ The canonical structure is defined by `@8f4e/language-spec`:
 
 Projects contain local `entries`, root-owned `code`, an ordered `execution` list of modules and groups, and separate
 function,
-constant, prototype, include, note, and unknown-block collections. Each group recursively owns the same project
+constant, include, note, and unknown-block collections. Each group recursively owns the same project
 structure plus its name, entry, source, and exposures. See the language-spec `ProjectObjectModel` definition for the
 complete contract.
 
@@ -77,9 +77,12 @@ are runtime data and are excluded from project exports, history snapshots, and s
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.
 
-While collecting a group's exposure declarations, serialization records each declaration's zero-based row in that
-group's visible `code`. These rows match the coordinates recorded by source parsing after child blocks are extracted;
-they are independent of the declaration's original position in a whole `.8f4e` document.
+The editor's source pass records each group exposure's name, target, and zero-based row in the group's wrapper
+`code`. Serialization copies those records without reparsing, and layout uses the same rows when following pending
+edits. The rows match source parsing after child blocks are extracted; they are independent of the declaration's
+original position in a whole `.8f4e` document. When rebuilding the tree from a project snapshot, the editor copies
+the exposure records into every group, regardless of which view is open. Root serialization does not depend on a
+group's source or layout being refreshed in the active view.
 
 ## References
 

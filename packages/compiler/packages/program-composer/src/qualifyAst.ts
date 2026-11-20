@@ -41,17 +41,7 @@ function qualifyArgument(argument: Argument, prefix: string): Argument {
 	return argument;
 }
 
-const FIRST_ARGUMENT_SYMBOL_INSTRUCTIONS = new Set([
-	'module',
-	'function',
-	'constants',
-	'prototype',
-	'call',
-	'use',
-	'shape',
-	'paramShape',
-	'pushShape',
-]);
+const FIRST_ARGUMENT_SYMBOL_INSTRUCTIONS = new Set(['module', 'function', 'constants', 'call', 'use']);
 
 function qualifyLine(line: CompilerASTLine, prefix: string): CompilerASTLine {
 	const argumentsWithQualifiedModules = line.arguments.map(argument => qualifyArgument(argument, prefix));
@@ -128,13 +118,6 @@ export function qualifyAst<TAst extends ValidatedAST>(ast: TAst, prefix: string)
 				id: qualifySymbol(prefix, ast.id),
 				lines,
 				constantsLine: getQualifiedLine(ast.constantsLine),
-			} as TAst;
-		case 'prototype':
-			return {
-				...ast,
-				id: qualifySymbol(prefix, ast.id),
-				lines,
-				prototypeLine: getQualifiedLine(ast.prototypeLine),
 			} as TAst;
 		case 'function':
 			return {

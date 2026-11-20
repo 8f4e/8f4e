@@ -22,10 +22,10 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "consumer/state",
+              "value": "input",
             },
           ],
-          "instruction": "shape",
+          "instruction": "int*",
         },
         {
           "arguments": [
@@ -493,7 +493,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
-          "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

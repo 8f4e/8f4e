@@ -19,7 +19,6 @@ import {
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
-	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import { parseProjectConstantNamespacePassLine, parseProjectMemoryInitializerLine } from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
@@ -197,21 +196,10 @@ function appendUnit(
 			sourceIdentity: { projectGroupPath: projectPath, codeBlockId },
 		};
 	};
-	const prototypes = project.prototypes.filter(block => !block.disabled);
 	const constants = project.constants.filter(block => !block.disabled);
 	const functions = project.functions.filter(block => !block.disabled);
 	const includedFunctions = includedFunctionsByProjectPath.get(projectPath) ?? [];
 
-	program.ast.prototypes.push(
-		...prototypes.map((prototype, index) =>
-			qualify(
-				compileSourceToAST<ValidatedPrototypeAST>(
-					createCompilerSource(prototype, projectPath, `prototype:${index}`),
-					program.cache
-				)
-			)
-		)
-	);
 	program.ast.constants.push(
 		...constants.map((constantsBlock, index) =>
 			qualify(
@@ -279,7 +267,7 @@ function appendUnit(
 
 /**
  * Parses and composes a recursive project tree into one globally planned compiler program.
- * Groups expand at their declaration positions; functions, constants, and prototypes remain hoisted.
+ * Groups expand at their declaration positions; functions and constants remain hoisted.
  */
 export function composeProgram(
 	project: ProjectObjectModel,
@@ -289,7 +277,6 @@ export function composeProgram(
 	const program: ComposedProgram = {
 		entries: [],
 		ast: {
-			prototypes: [],
 			modules: [],
 			constants: [],
 			functions: [],

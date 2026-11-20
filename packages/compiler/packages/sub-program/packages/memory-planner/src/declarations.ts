@@ -1,5 +1,6 @@
 import type {
 	ArrayDeclarationInstruction,
+	MemoryDeclarationLayout,
 	MemoryType,
 	PointeeBaseType,
 	ScalarMemoryDeclarationInstruction,
@@ -12,6 +13,11 @@ import {
 	getByteAddressFromAllocationUnitOffset,
 } from './layoutAddresses';
 import getMemoryFlags from './memoryFlags';
+
+interface DeclarationLayoutResult {
+	declaration: MemoryDeclarationLayout;
+	nextLocalAllocationUnitOffset: number;
+}
 
 function getPointerDepth(instruction: string): number {
 	return instruction.endsWith('**') || instruction.includes('**[]') ? 2 : instruction.includes('*') ? 1 : 0;
@@ -39,7 +45,7 @@ export function planScalarDeclarationLayout(input: {
 	startingByteAddress: number;
 	localAllocationUnitOffset: number;
 	instruction: ScalarMemoryDeclarationInstruction;
-}) {
+}): DeclarationLayoutResult {
 	const pointerDepth = getPointerDepth(input.instruction);
 	const baseType = getScalarBaseType(input.instruction);
 	const flags = getMemoryFlags(baseType, pointerDepth);
@@ -118,7 +124,7 @@ export function planArrayDeclarationLayout(input: {
 	localAllocationUnitOffset: number;
 	instruction: ArrayDeclarationInstruction;
 	numberOfElements: number;
-}) {
+}): DeclarationLayoutResult {
 	const type = input.instruction.slice(0, -2) as MemoryType;
 	const pointerDepth = getPointerDepth(input.instruction);
 	const elementWordSize =

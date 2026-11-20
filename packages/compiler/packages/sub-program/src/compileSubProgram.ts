@@ -6,7 +6,6 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompileResult,
-	ComposedPrototypeAST,
 	FunctionMetadata,
 	FunctionMetadataLookup,
 	FunctionRegistry,
@@ -89,10 +88,6 @@ function mergeFunctionRegistries(...registries: FunctionRegistry[]): FunctionReg
 	return { byId, arityByName };
 }
 
-function indexPrototypeShapes(prototypes: readonly ComposedPrototypeAST[]): Record<string, ComposedPrototypeAST> {
-	return Object.fromEntries(prototypes.map(prototype => [prototype.id, prototype]));
-}
-
 /**
  * Compiles one composed program into emission-ready module, function, memory, and data-segment artifacts.
  *
@@ -103,7 +98,6 @@ function indexPrototypeShapes(prototypes: readonly ComposedPrototypeAST[]): Reco
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompileResult {
 	const { entries, cache } = program;
 	const entryNames = entries.map(entry => entry.id);
-	const prototypeShapesById = indexPrototypeShapes(program.ast.prototypes);
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = withCompilerStage('function registration', () =>
 		registerFunctions(program.ast.functions, {
@@ -112,7 +106,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 				...RESERVED_EXPORT_NAMES,
 				...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
 			],
-			prototypeShapes: prototypeShapesById,
 		})
 	);
 	const subProgramAst = { ...program.ast, functions: registration.declarations.map(({ ast }) => ast) };
@@ -126,7 +119,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 
 	const memoryPlan = withCompilerStage('memory planning', () =>
 		planSubProgramMemoryLayout({
-			prototypes: subProgramAst.prototypes,
 			modules: subProgramAst.modules,
 			constantReferences: constantResolution.references,
 			startingByteAddress:
@@ -164,7 +156,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			constantReferences: constantResolution.references,
 			memoryReferences: memoryReferenceResolution.references,
 			functions: functionRegistry,
-			prototypeShapes: prototypeShapesById,
 		})
 	).references;
 	const stackReport = withCompilerStage('stack analysis', () =>

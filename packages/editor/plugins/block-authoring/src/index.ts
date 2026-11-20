@@ -5,7 +5,6 @@ import { documentBlockInstructionByType } from '@8f4e/language-spec';
 const newBlocks = [
 	{ type: 'module', title: 'New Module' },
 	{ type: 'function', title: 'New Function' },
-	{ type: 'prototype', title: 'New Prototype' },
 	{ type: 'note', title: 'New Note' },
 ] as const;
 

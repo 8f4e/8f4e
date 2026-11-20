@@ -1,4 +1,4 @@
-import type { SourceLocalBinding } from '@8f4e/language-spec';
+import type { ArrayMemoryDeclarationLine, FunctionSignature, SourceLocalBinding } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type AnalyzeStackSubProgramInput, analyzeStack } from '../src';
 
@@ -12,7 +12,7 @@ describe('analyzeStack integration', () => {
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
-		const bufferDeclarationLine = {
+		const bufferDeclarationLine: ArrayMemoryDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int[]',
@@ -20,7 +20,7 @@ describe('analyzeStack integration', () => {
 				{ type: 'identifier', value: 'buffer', referenceKind: 'plain', scope: 'local' },
 				{ type: 'literal', value: 4, isInteger: true },
 			],
-		} as const;
+		};
 		const moduleEndLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 9,
@@ -46,6 +46,10 @@ describe('analyzeStack integration', () => {
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],
 		} as const;
+		const signature: FunctionSignature = {
+			parameters: [{ name: 'value', type: 'int' }],
+			returns: ['int'],
+		};
 		const bufferMemory = {
 			numberOfElements: 4,
 			elementWordSize: 4,
@@ -58,9 +62,11 @@ describe('analyzeStack integration', () => {
 			lineNumber: 2,
 			isInteger: true,
 			id: 0,
+			name: 'buffer',
 			pointerDepth: 0,
 			type: 'int',
 			isUnsigned: false,
+			source: bufferDeclarationLine,
 		} as const;
 		const bufferRange = {
 			source: 'memory-start',
@@ -120,6 +126,7 @@ describe('analyzeStack integration', () => {
 				{
 					type: 'function',
 					name: 'increment',
+					signature,
 					functionLine,
 					functionEndLine,
 					exportLine,
@@ -187,12 +194,6 @@ describe('analyzeStack integration', () => {
 						buffer: bufferMemory,
 					},
 					declarations: [bufferMemory],
-					declarationSources: [
-						{
-							line: bufferDeclarationLine,
-							isInherited: false,
-						},
-					],
 				},
 			},
 			moduleList: [
@@ -207,12 +208,6 @@ describe('analyzeStack integration', () => {
 						buffer: bufferMemory,
 					},
 					declarations: [bufferMemory],
-					declarationSources: [
-						{
-							line: bufferDeclarationLine,
-							isInherited: false,
-						},
-					],
 				},
 			],
 		} as const;
@@ -224,10 +219,7 @@ describe('analyzeStack integration', () => {
 				increment__int: {
 					id: 'increment__int',
 					name: 'increment',
-					signature: {
-						parameters: [{ name: 'value', type: 'int' }],
-						returns: ['int'],
-					},
+					signature,
 				},
 			},
 			arityByName: {

@@ -6,6 +6,7 @@ import type {
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
+import { createMemory } from '../../tests/memoryFixtures';
 import createInstructionCompilerTestContext, { compileInstructionForTest, identifier } from '../../tests/testUtils';
 import push from './push';
 
@@ -43,20 +44,8 @@ function resolvedMemoryPointerPushLine(
 
 function createMemoryItem(
 	overrides: Partial<ResolvedMemoryDeclaration> & Pick<ResolvedMemoryDeclaration, 'byteAddress'>
-) {
-	return {
-		id: 0,
-		numberOfElements: 1,
-		elementWordSize: 4,
-		allocationUnitAddress: 0,
-		allocationUnitCount: 1,
-		isInteger: true,
-		pointerDepth: 0,
-		isUnsigned: false,
-		type: 'int',
-		lineNumber: 1,
-		...overrides,
-	} as ResolvedMemoryDeclaration;
+): ResolvedMemoryDeclaration {
+	return createMemory({ id: 0, lineNumber: 1, ...overrides });
 }
 
 describe('push instruction compiler', () => {

@@ -258,7 +258,6 @@ describe('serializeProjectLevel', () => {
 				execution: [],
 				functions: [],
 				constants: [],
-				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],

@@ -19,7 +19,6 @@ describe('getOrCreateMemory', () => {
 				],
 				functions: [],
 				constants: [],
-				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],

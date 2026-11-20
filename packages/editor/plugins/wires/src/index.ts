@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { type ConnectorConnectionVisitor, createConnectorConnections } from '@8f4e/editor-plugin-connectors';
+import { createWireConnections, type WireConnectionVisitor } from './connections';
 import { LineDrawer } from './line-drawer';
 import { resolveWireColors } from './wire-colors';
 
@@ -7,12 +7,12 @@ import { resolveWireColors } from './wire-colors';
 export const wiresPlugin: EditorPlugin = {
 	id: 'wires',
 	setup: ({ store, events, drawers }) => {
-		const connections = createConnectorConnections(store.getState(), events);
+		const connections = createWireConnections(store.getState(), events);
 		try {
 			const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
 				const lines = new LineDrawer(gl);
 				let colors = resolveWireColors(palette);
-				const drawConnection: ConnectorConnectionVisitor = (inputX, inputY, outputX, outputY, selected) => {
+				const drawConnection: WireConnectionVisitor = (inputX, inputY, outputX, outputY, selected) => {
 					lines.drawLine(
 						inputX,
 						inputY,

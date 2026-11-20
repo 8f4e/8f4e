@@ -34,9 +34,6 @@ it('expands existing bounds in every direction', () => {
 	expect(deriveEntryBounds(blocks, 8, 16)).toEqual([{ entryName: 'main', x: 2, y: 4, width: 136, height: 172 }]);
 });
 
-it.each(['note', 'function', 'constants', 'prototype', 'includes', 'unknown'] as const)(
-	'excludes ordinary %s blocks',
-	blockType => {
-		expect(deriveEntryBounds([createMockCodeBlock({ blockType })], 8, 16)).toEqual([]);
-	}
-);
+it.each(['note', 'function', 'constants', 'includes', 'unknown'] as const)('excludes ordinary %s blocks', blockType => {
+	expect(deriveEntryBounds([createMockCodeBlock({ blockType })], 8, 16)).toEqual([]);
+});

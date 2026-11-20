@@ -1,11 +1,11 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, serializeProjectLevel } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import initWebUi, { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
-import { type ConnectorConnectionVisitor, connectorsPlugin, createConnectorConnections } from './index';
+import { connectorsPlugin } from './index';
 
 const source = `8f4e/v1
 entry main
@@ -19,39 +19,14 @@ float* input &source:output
 moduleEnd
 entryEnd`;
 
-const shapeSource = `8f4e/v1
-prototype voiceState
-; @pos 100 100
-int* input
-int output
-prototypeEnd
-function process
-; @pos 45 12
-paramShape voiceState
-functionEnd
-entry main
-module source
-; @pos 50 1
-int output 1
-moduleEnd
-module sink
-; @pos 2 1
-shape voiceState
-moduleEnd
-entryEnd`;
-
 const cleanups: Array<() => void> = [];
-function runCleanup(cleanup: () => void) {
-	cleanups.splice(cleanups.indexOf(cleanup), 1);
-	cleanup();
-}
 
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 	vi.restoreAllMocks();
 });
 
-async function setup(text = shapeSource, installed = true) {
+async function setup(text = source) {
 	const project = parseProjectSource(text);
 	const compiled = await compileProject(project);
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
@@ -70,142 +45,35 @@ async function setup(text = shapeSource, installed = true) {
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
 	const drawers = createEditorDrawerRegistry();
 	const registerRenderLayer = vi.spyOn(drawers, 'registerRenderLayer');
-	const dispose = installed
-		? connectorsPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				drawers,
-			})
-		: undefined;
-	const state = store.getState();
-	Object.assign(state.compiler.result, {
-		memoryPlan: compiled.memoryPlan,
-		memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-		compiledModules: compiled.compiledModules,
-		compiledFunctions: compiled.compiledFunctions,
-		projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
+	const dispose = connectorsPlugin.setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		drawers,
 	});
-	const connections = createConnectorConnections(state, events);
+	const state = store.getState();
+	state.compiler.result = { ...state.compiler.result, ...compiled };
 	events.dispatch('loadProject', { project });
-	const readConnections = () => {
-		const endpoints: Array<Parameters<ConnectorConnectionVisitor>> = [];
-		connections.visit(memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
-		return endpoints;
-	};
-	const drawGlyphs = vi.fn();
-	const drawLabels = (codeBlock: CodeBlockGraphicData) => {
-		drawGlyphs.mockClear();
+
+	const connectorPositions = (codeBlock: CodeBlockGraphicData) => {
+		const drawFill = vi.fn();
 		drawers.drawCodeBlock({
-			draw: { drawGlyphs, drawFill: vi.fn(), drawSprite: vi.fn() } as unknown as DrawContext,
+			draw: { drawFill, drawSprite: vi.fn() } as unknown as DrawContext,
 			state,
 			codeBlock,
 			memoryViews,
 		});
-		return drawGlyphs.mock.calls.map(([x, y, glyphs]) => ({ x, y, text: String.fromCharCode(...glyphs) }));
+		return drawFill.mock.calls.map(([x, y]) => ({ x, y }));
 	};
-	cleanups.push(store.dispose, connections.dispose);
-	if (dispose) cleanups.push(dispose);
-	return { store, state, events, drawers, memoryViews, registerRenderLayer, drawLabels, readConnections };
+	cleanups.push(store.dispose, dispose);
+	return { store, state, events, drawers, memoryViews, registerRenderLayer, connectorPositions };
 }
 
 describe('connectors plugin', () => {
-	it('targets active module definitions and individual function overloads by source identity', async () => {
-		const test = await setup(
-			shapeSource
-				.replace('entry main', 'function process\nparam float left\nparam float right\nfunctionEnd\nentry main')
-				.replace('entryEnd', 'module sink\nshape voiceState\nmoduleEnd\nentryEnd')
-		);
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
-		const sinks = blocks.filter(block => block.name === 'sink');
-		expect(test.drawLabels(sinks[0])).toEqual([]);
-		expect(sinks[0].gaps.size).toBe(0);
-		expect(test.drawLabels(sinks[1]).map(label => label.text)).toEqual(['int* input', 'int output']);
-		const functions = blocks.filter(block => block.name === 'process');
-		expect(test.drawLabels(functions[0]).map(label => label.text)).toEqual(['int** input', 'int* output']);
-		expect(test.drawLabels(functions[1])).toEqual([]);
-		expect(functions[1].gaps.size).toBe(0);
-	});
-
-	it('owns module and function expansion space, including late installation and disposal', async () => {
-		const test = await setup(shapeSource, false);
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
-		const sink = blocks.find(block => block.name === 'sink')!;
-		const func = blocks.find(block => block.name === 'process')!;
-		expect(sink.gaps.size).toBe(0);
-		expect(func.gaps.size).toBe(0);
-		const dispose = connectorsPlugin.setup({
-			store: test.store,
-			events: test.events,
-			drawers: test.drawers,
-			layout: test.store.layout,
-			loading: test.store.loading,
-			menus: test.store.menus,
-			directives: test.store.directives,
-		});
-		cleanups.push(dispose);
-		expect(sink.gaps.get(2)?.size).toBe(2);
-		expect(func.gaps.get(2)?.size).toBe(2);
-		expect(test.drawLabels(func)).toEqual([
-			{ x: 24, y: 48, text: 'int** input' },
-			{ x: 24, y: 64, text: 'int* output' },
-		]);
-		runCleanup(dispose);
-		expect(test.drawLabels(sink)).toEqual([]);
-		expect(test.drawLabels(func)).toEqual([]);
-		expect(sink.gaps.size).toBe(0);
-		expect(func.gaps.size).toBe(0);
-	});
-
-	it('refreshes and removes function expansion labels after source edits and recompilation', async () => {
-		const test = await setup(shapeSource);
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
-		const prototype = blocks.find(block => block.name === 'voiceState')!;
-		const func = blocks.find(block => block.name === 'process')!;
-		const recompile = async () => {
-			test.store.set('compiler.isCompiling', true);
-			const result = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject));
-			test.store.set('compiler.result', {
-				...test.state.compiler.result,
-				compiledModules: result.compiledModules,
-				compiledFunctions: result.compiledFunctions,
-				memoryPlan: result.memoryPlan,
-				memoryDefaultsByModuleId: result.memoryDefaultsByModuleId,
-				projectMemoryExposuresByGroupPath: result.projectMemoryExposuresByGroupPath,
-			});
-			test.store.set('compiler.isCompiling', false);
-		};
-		applyCodeBlockSourceEdits(test, [
-			{ codeBlock: prototype, code: prototype.code.map(line => (line === 'int output' ? 'float output' : line)) },
-		]);
-		await recompile();
-		expect(test.drawLabels(func).map(label => label.text)).toEqual(['int** input', 'float* output']);
-		applyCodeBlockSourceEdits(test, [
-			{ codeBlock: func, code: func.code.filter(line => !line.startsWith('paramShape')) },
-		]);
-		await recompile();
-		expect(test.drawLabels(func)).toEqual([]);
-		expect(func.gaps.size).toBe(0);
-	});
-
-	it('reserves and draws no expansion rows for disabled or hidden source', async () => {
-		const test = await setup(shapeSource);
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
-		for (const name of ['sink', 'process']) {
-			const block = blocks.find(block => block.name === name)!;
-			const code = [...block.code];
-			for (const directive of ['; @disabled', '; @hide']) {
-				applyCodeBlockSourceEdits(test, [{ codeBlock: block, code: [code[0], directive, ...code.slice(1)] }]);
-				expect(test.drawLabels(block)).toEqual([]);
-				expect(block.gaps.size).toBe(0);
-			}
-		}
-	});
-
-	it('renders connector sprites and labels without registering a GPU wire pass', async () => {
+	it('renders connector sprites without registering a GPU wire pass', async () => {
 		const { store, events, drawers, memoryViews, registerRenderLayer } = await setup();
 		const width = 800;
 		const height = 320;
@@ -216,191 +84,22 @@ describe('connectors plugin', () => {
 		cleanups.push(view.destroy);
 		view.renderFrame();
 		const frame = ascii.toText();
-		expect(frame).toContain('int* input');
 		expect(frame).toContain('[ ]');
 		expect(frame).toContain('[*]');
 		expect(registerRenderLayer).not.toHaveBeenCalled();
 	});
-	it('keeps inherited labels and wire endpoints aligned with contributed rows', async () => {
-		const test = await setup(shapeSource);
-		const sink = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-		const memory = test.state.compiler.result.memoryPlan.modules;
-		test.memoryViews.int32[memory.sink.memory.input.allocationUnitAddress] = memory.source.memory.output.byteAddress;
-		const contribution = test.store.layout.createContribution();
+
+	it('positions connector sprites after another plugin adds rows', async () => {
+		const { state, store, connectorPositions } = await setup();
+		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const contribution = store.layout.createContribution();
 		cleanups.push(contribution.dispose);
 		contribution.update(sink, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
-		expect(sink.gaps.get(2)?.size).toBe(2);
-		expect(test.drawLabels(sink)).toEqual([
-			{ x: 24, y: 80, text: 'int* input' },
-			{ x: 24, y: 96, text: 'int output' },
-		]);
-		expect(test.readConnections()[0][1]).toBe(sink.y + 88 - test.state.viewport.y);
+		expect(connectorPositions(sink)).toContainEqual({ x: 0, y: 4 * state.viewport.hGrid });
 	});
 
-	it('resolves live pointer endpoints independently of block visibility', async () => {
-		const { state, memoryViews, readConnections } = await setup(source, false);
-		const output = state.compiler.result.memoryPlan.modules.source.memory.output;
-		const input = state.compiler.result.memoryPlan.modules.sink.memory.input;
-		state.codeBlockRendering.currentProject.blocks[0].x = -10000;
-		state.codeBlockRendering.currentProject.blocks[1].x = 10000;
-		expect(readConnections()).toHaveLength(1);
-		memoryViews.int32[input.allocationUnitAddress] = 123456;
-		expect(readConnections()).toHaveLength(0);
-		memoryViews.int32[input.allocationUnitAddress] = output.byteAddress;
-		expect(readConnections()).toHaveLength(1);
-	});
-
-	it('connects a double pointer to a pointer slot without a fixed reference', async () => {
-		const { state, readConnections } = await setup(`8f4e/v1
-entry main
-module source
-; @pos 30 2
-int value 42
-int* slot &value
-moduleEnd
-module sink
-; @pos 2 12
-int** input &source:slot
-moduleEnd
-entryEnd`);
-		const sourceBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
-		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-		const { vGrid, hGrid, x, y } = state.viewport;
-		const endpoints = readConnections();
-		expect(endpoints).toHaveLength(2);
-		expect(endpoints[1].slice(0, 4)).toEqual([
-			sink.x + Math.round(vGrid * 1.5) - x,
-			sink.y + Math.round(hGrid * 2.5) - y,
-			sourceBlock.x + Math.round(sourceBlock.width - vGrid * 1.5) - x,
-			sourceBlock.y + Math.round(hGrid * 3.5) - y,
-		]);
-	});
-
-	it.each(['root', 'group'])(
-		'keeps wires on the active same-named output after selection changes in a %s',
-		async scope => {
-			const body = `module source
-; @pos 20 2
-float output 1
-moduleEnd
-module source
-; @pos 60 2
-float output 2
-moduleEnd
-module sink
-; @pos 2 20
-float* input &source:output
-moduleEnd`;
-			const text =
-				scope === 'group'
-					? `8f4e/v1\nentry main\ngroup voice\nentry main\n${body}\nentryEnd\ngroupEnd\nentryEnd`
-					: `8f4e/v1\nentry main\n${body}\nentryEnd`;
-			const { state, events, memoryViews, readConnections } = await setup(text);
-			if (scope === 'group') {
-				events.dispatch('openProjectGroup', {
-					codeBlock: state.codeBlockRendering.rootProject.blocks.find(block => block.childProject),
-				});
-			}
-			events.dispatch('enterEditMode');
-			const sources = state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'source');
-			const [inactive, active] = sources;
-			const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-			const moduleId = scope === 'group' ? 'voice/source' : 'source';
-			expect(state.compiler.result.compiledModules[moduleId].ast.projectBlockId).toBe(active.creationIndex);
-			const onInputChanged = vi.fn();
-			events.on('compilationInputChanged', onInputChanged);
-			const expectActiveWire = () => {
-				const endpoints = readConnections();
-				expect(endpoints).toHaveLength(1);
-				expect(endpoints[0][2]).toBe(
-					active.x + Math.round(active.width - state.viewport.vGrid * 1.5) - state.viewport.x
-				);
-			};
-			expectActiveWire();
-			for (const block of [inactive, active, sink, inactive, active]) {
-				events.dispatch('pointerdown', {
-					x: block.x - state.viewport.x + 1,
-					y: block.y - state.viewport.y + 1,
-					movementX: 0,
-					movementY: 0,
-					buttons: 1,
-					stopPropagation: false,
-					canvasWidth: 800,
-					canvasHeight: 600,
-					altKey: false,
-				});
-				events.dispatch('pointerup');
-				expectActiveWire();
-			}
-			expect(onInputChanged).not.toHaveBeenCalled();
-			const output = state.compiler.result.memoryPlan.modules[moduleId].memory.output;
-			expect(memoryViews.float32[output.allocationUnitAddress]).toBe(2);
-		}
-	);
-
-	it('resolves inputs only for the active same-named module', async () => {
-		const { state, readConnections } = await setup(`8f4e/v1
-entry main
-module source
-; @pos 60 2
-float output 2
-moduleEnd
-module sink
-; @pos 2 2
-float* input &source:output
-moduleEnd
-module sink
-; @pos 2 20
-float* input &source:output
-moduleEnd
-entryEnd`);
-		const active = state.codeBlockRendering.currentProject.blocks.find(
-			block => block.creationIndex === state.compiler.result.compiledModules.sink.ast.projectBlockId
-		)!;
-		const endpoints = readConnections();
-		expect(endpoints).toHaveLength(1);
-		expect(endpoints[0][0]).toBe(active.x + Math.round(state.viewport.vGrid * 1.5) - state.viewport.x);
-	});
-
-	it('removes obsolete outputs when blocks are deleted or the project is replaced', async () => {
-		const { state, store, events, readConnections } = await setup(source, false);
-		expect(readConnections()).toHaveLength(1);
-		deleteCodeBlocks(store, [state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!]);
-		expect(readConnections()).toHaveLength(0);
-		events.dispatch('loadProject', { project: parseProjectSource(source) });
-		expect(readConnections()).toHaveLength(1);
-		events.dispatch('loadProject', { project: parseProjectSource('8f4e/v1\nentry main\nentryEnd') });
-		expect(readConnections()).toHaveLength(0);
-	});
-
-	it('rebinds geometry and the output index when compilation changes memory addresses', async () => {
-		const test = await setup(source, false);
-		const { state, store, memoryViews, readConnections } = test;
-		const previousAddress = state.compiler.result.memoryPlan.modules.source.memory.output.byteAddress;
-		const block = state.codeBlockRendering.currentProject.blocks.find(item => item.name === 'source')!;
-		applyCodeBlockSourceEdits(test, [
-			{ codeBlock: block, code: [...block.code.slice(0, 2), 'float _padding 0', ...block.code.slice(2)] },
-		]);
-		store.set('compiler.isCompiling', true);
-		const result = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject));
-		store.set('compiler.result', {
-			...state.compiler.result,
-			compiledModules: result.compiledModules,
-			memoryPlan: result.memoryPlan,
-			memoryDefaultsByModuleId: result.memoryDefaultsByModuleId,
-		});
-		store.set('compiler.isCompiling', false);
-		const { source: compiledSource, sink } = result.memoryPlan.modules;
-		const outputAddress = compiledSource.memory.output.byteAddress;
-		expect(outputAddress).not.toBe(previousAddress);
-		memoryViews.int32[sink.memory.input.allocationUnitAddress] = previousAddress;
-		expect(readConnections()).toHaveLength(0);
-		memoryViews.int32[sink.memory.input.allocationUnitAddress] = outputAddress;
-		expect(readConnections()).toHaveLength(1);
-	});
-
-	it('resolves group exposures and rebuilds the index while navigating between project slices', async () => {
-		const { state, events, readConnections } = await setup(`8f4e/v1
+	it('follows moved and removed exposures before a new compiler result is accepted', async () => {
+		const test = await setup(`8f4e/v1
 entry main
 group patch
 expose output &source:value
@@ -408,37 +107,20 @@ entry main
 module source
 float value 1
 moduleEnd
-module innerSink
-float* input &source:value
-moduleEnd
 entryEnd
 groupEnd
-module outerSink
-float* input &patch:output
-moduleEnd
 entryEnd`);
-		const root = state.codeBlockRendering.currentProject.blocks;
-		const group = root.find(block => block.name === 'patch')!;
-		const outerSink = root.find(block => block.name === 'outerSink')!;
-		const nested = group.childProject!.blocks;
-		const innerSink = nested.find(block => block.name === 'innerSink')!;
-		const innerSource = nested.find(block => block.name === 'source')!;
-		const expectConnection = (input: CodeBlockGraphicData, output: CodeBlockGraphicData) => {
-			// Each fixture declaration is on its block's second source row.
-			const { vGrid, hGrid, x, y } = state.viewport;
-			expect(readConnections().map(call => call.slice(0, 4))).toEqual([
-				[
-					input.x + vGrid * 1.5 - x,
-					input.y + hGrid * 1.5 - y,
-					output.x + output.width - vGrid * 1.5 - x,
-					output.y + hGrid * 1.5 - y,
-				],
-			]);
-		};
-		expectConnection(outerSink, group);
-		events.dispatch('openProjectGroup', { codeBlock: group });
-		expectConnection(innerSink, innerSource);
-		events.dispatch('goToParentProjectGroup');
-		expectConnection(outerSink, group);
+		const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'patch')!;
+		const { hGrid } = test.state.viewport;
+		const rows = () => test.connectorPositions(group).map(position => position.y);
+		expect(rows()).toEqual([hGrid]);
+
+		applyCodeBlockSourceEdits(test, [{ codeBlock: group, code: [group.code[0], '', '', ...group.code.slice(1)] }]);
+		expect(rows()).toEqual([3 * hGrid]);
+
+		applyCodeBlockSourceEdits(test, [
+			{ codeBlock: group, code: group.code.filter(line => !line.startsWith('expose ')) },
+		]);
+		expect(rows()).toEqual([]);
 	});
 });

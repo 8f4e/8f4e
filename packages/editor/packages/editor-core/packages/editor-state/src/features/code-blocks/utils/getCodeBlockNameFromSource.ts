@@ -5,7 +5,6 @@ const namedBlockStarts: ReadonlySet<string> = new Set([
 	documentBlockInstructionByType.module.start,
 	documentBlockInstructionByType.function.start,
 	documentBlockInstructionByType.constants.start,
-	documentBlockInstructionByType.prototype.start,
 	documentBlockInstructionByType.note.start,
 	documentBlockInstructionByType.includes.start,
 	'group',

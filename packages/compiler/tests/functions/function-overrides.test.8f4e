@@ -7,10 +7,6 @@ The last enabled definition of each resolved parameter signature wins.
 Other overloads and functions in other groups remain independent.
 noteEnd
 
-prototype state
-int value
-prototypeEnd
-
 function convert
 #export oldConvert
 param int value
@@ -60,7 +56,7 @@ functionEnd int
 
 function read
 #impure
-paramShape state
+param int* value
 push *value
 functionEnd int
 

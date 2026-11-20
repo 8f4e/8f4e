@@ -1,4 +1,4 @@
-import type { MemoryDeclarationLine, ShapeLine } from './ast';
+import type { MemoryDeclarationLine } from './ast';
 
 export const scalarMemoryDeclarationInstructions = [
 	'int',
@@ -149,8 +149,8 @@ export const BASE_TYPE_METADATA: Record<BaseTypeMetadataKey, BaseTypeMetadata> =
 	},
 };
 
-/** Memory declaration metadata produced by layout planning before semantic defaults are applied. */
-export interface PlannedMemoryDeclaration {
+/** Storage layout and type metadata produced by declaration layout calculation. */
+export interface MemoryDeclarationLayout {
 	numberOfElements: number;
 	/** Byte width of one typed element, independent of the 4-byte allocation grid. */
 	elementWordSize: number;
@@ -177,19 +177,20 @@ export interface PlannedMemoryDeclaration {
 	 * - `'int8u'` / `'int16u'`: narrow unsigned integer pointee
 	 */
 	pointeeBaseType?: PointeeBaseType;
-	/** Index in the owning module's expanded declarations. */
-	id: number;
-	/** Source name when the declaration is named. */
-	name?: string;
 	/** Number of pointer layers in the declaration. Non-pointers have depth 0. */
 	pointerDepth: number;
 	isUnsigned: boolean;
 }
 
-export type PlannedMemoryDeclarationSource = { line: MemoryDeclarationLine } & (
-	| { isInherited: false }
-	| { isInherited: true; shapeLine: ShapeLine }
-);
+/** An allocated declaration with its identity and layout-normalized source attached. */
+export interface PlannedMemoryDeclaration extends MemoryDeclarationLayout {
+	/** Index in the owning module's declarations. */
+	id: number;
+	/** Source name when the declaration is named. */
+	name?: string;
+	/** Declaration line with array sizes and other constant arguments resolved. */
+	source: MemoryDeclarationLine;
+}
 
 export interface PlannedMemoryModule {
 	id: string;
@@ -201,11 +202,10 @@ export interface PlannedMemoryModule {
 	allocatedByteLength: number;
 	/** Exclusive end address of this module allocation. */
 	endByteAddress: number;
-	/** Effective named declarations, keyed by source name. */
+	/** Named declarations, keyed by source name. */
 	memory: Record<string, PlannedMemoryDeclaration>;
-	/** All declarations in expanded source order, indexed by declaration ID. */
+	/** All declarations in source order, indexed by declaration ID. */
 	declarations: readonly PlannedMemoryDeclaration[];
-	declarationSources: readonly PlannedMemoryDeclarationSource[];
 }
 
 export interface MemoryLayoutPlan {
@@ -220,7 +220,6 @@ export type MemoryDefaultValue = number | Record<string, number>;
 export interface MemoryDefault {
 	value: MemoryDefaultValue;
 	hasExplicitDefault?: boolean;
-	isInherited: boolean;
 }
 
 export type MemoryDefaults = Record<number, MemoryDefault>;

@@ -25,7 +25,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "defaultFreq"
+            "name": "defaultFreq",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 440,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
           }
         }
       },
@@ -491,7 +513,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 2,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -936,65 +975,8 @@
             "type": "float",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          "pointer": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 128,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 512,
-            "elementByteLength": 4,
-            "endByteAddress": 516,
-            "lineNumber": 9,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "pointer"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 128,
-            "elementWordSize": 4,
-            "allocationUnitCount": 128,
-            "allocatedByteLength": 512,
-            "allocationUnitAddress": 0,
-            "lineNumber": 8,
-            "byteAddress": 0,
-            "elementByteLength": 512,
-            "endByteAddress": 512,
-            "isInteger": false,
-            "pointerDepth": 0,
-            "type": "float",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 128,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 512,
-            "elementByteLength": 4,
-            "endByteAddress": 516,
-            "lineNumber": 9,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "pointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",
@@ -1015,11 +997,25 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "pointer": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 128,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 512,
+            "elementByteLength": 4,
+            "endByteAddress": 516,
+            "lineNumber": 9,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer",
+            "source": {
               "lineNumber": 9,
               "diagnosticSource": {
                 "kind": "block",
@@ -1042,8 +1038,89 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 128,
+            "elementWordSize": 4,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 0,
+            "lineNumber": 8,
+            "byteAddress": 0,
+            "elementByteLength": 512,
+            "endByteAddress": 512,
+            "isInteger": false,
+            "pointerDepth": 0,
+            "type": "float",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": ""
+              },
+              "instruction": "float[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "literal",
+                  "value": 128,
+                  "isInteger": true
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 128,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 512,
+            "elementByteLength": 4,
+            "endByteAddress": 516,
+            "lineNumber": 9,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer",
+            "source": {
+              "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "pointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         ]
       },
@@ -1070,99 +1147,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "defaultFreq"
-          },
-          "phase": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 130,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 520,
-            "elementByteLength": 4,
-            "endByteAddress": 524,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "phase"
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 131,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 524,
-            "elementByteLength": 4,
-            "endByteAddress": 528,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 2,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 129,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 516,
-            "elementByteLength": 4,
-            "endByteAddress": 520,
-            "lineNumber": 4,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "defaultFreq"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 130,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 520,
-            "elementByteLength": 4,
-            "endByteAddress": 524,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "phase"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 131,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 524,
-            "elementByteLength": 4,
-            "endByteAddress": 528,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 2,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "defaultFreq",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -1183,11 +1169,25 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "phase": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 520,
+            "elementByteLength": 4,
+            "endByteAddress": 524,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -1203,11 +1203,25 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "out": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 524,
+            "elementByteLength": 4,
+            "endByteAddress": 528,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
@@ -1223,8 +1237,116 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 516,
+            "elementByteLength": 4,
+            "endByteAddress": 520,
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 440,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 520,
+            "elementByteLength": 4,
+            "endByteAddress": 524,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "phase",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 524,
+            "elementByteLength": 4,
+            "endByteAddress": 528,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       }
@@ -1253,65 +1375,8 @@
             "type": "float",
             "isUnsigned": false,
             "id": 0,
-            "name": "buffer"
-          },
-          "pointer": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 128,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 512,
-            "elementByteLength": 4,
-            "endByteAddress": 516,
-            "lineNumber": 9,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "pointer"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 128,
-            "elementWordSize": 4,
-            "allocationUnitCount": 128,
-            "allocatedByteLength": 512,
-            "allocationUnitAddress": 0,
-            "lineNumber": 8,
-            "byteAddress": 0,
-            "elementByteLength": 512,
-            "endByteAddress": 512,
-            "isInteger": false,
-            "pointerDepth": 0,
-            "type": "float",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "buffer"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 128,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 512,
-            "elementByteLength": 4,
-            "endByteAddress": 516,
-            "lineNumber": 9,
-            "type": "int",
-            "pointerDepth": 0,
-            "isInteger": true,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "pointer"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "buffer",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",
@@ -1332,11 +1397,25 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "pointer": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 128,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 512,
+            "elementByteLength": 4,
+            "endByteAddress": 516,
+            "lineNumber": 9,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer",
+            "source": {
               "lineNumber": 9,
               "diagnosticSource": {
                 "kind": "block",
@@ -1359,8 +1438,89 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 128,
+            "elementWordSize": 4,
+            "allocationUnitCount": 128,
+            "allocatedByteLength": 512,
+            "allocationUnitAddress": 0,
+            "lineNumber": 8,
+            "byteAddress": 0,
+            "elementByteLength": 512,
+            "endByteAddress": 512,
+            "isInteger": false,
+            "pointerDepth": 0,
+            "type": "float",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "buffer",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": ""
+              },
+              "instruction": "float[]",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "buffer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "literal",
+                  "value": 128,
+                  "isInteger": true
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 128,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 512,
+            "elementByteLength": 4,
+            "endByteAddress": 516,
+            "lineNumber": 9,
+            "type": "int",
+            "pointerDepth": 0,
+            "isInteger": true,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "pointer",
+            "source": {
+              "lineNumber": 9,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "pointer",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&buffer",
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer"
+                }
+              ]
+            }
           }
         ]
       },
@@ -1387,99 +1547,8 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "defaultFreq"
-          },
-          "phase": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 130,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 520,
-            "elementByteLength": 4,
-            "endByteAddress": 524,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "phase"
-          },
-          "out": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 131,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 524,
-            "elementByteLength": 4,
-            "endByteAddress": 528,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 2,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 129,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 516,
-            "elementByteLength": 4,
-            "endByteAddress": 520,
-            "lineNumber": 4,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "defaultFreq"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 130,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 520,
-            "elementByteLength": 4,
-            "endByteAddress": 524,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "phase"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 131,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 524,
-            "elementByteLength": 4,
-            "endByteAddress": 528,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 2,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "defaultFreq",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
@@ -1500,11 +1569,25 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "phase": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 520,
+            "elementByteLength": 4,
+            "endByteAddress": 524,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
@@ -1520,11 +1603,25 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "out": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 524,
+            "elementByteLength": 4,
+            "endByteAddress": 528,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
@@ -1540,8 +1637,116 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 129,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 516,
+            "elementByteLength": 4,
+            "endByteAddress": 520,
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "defaultFreq",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 440,
+                  "type": "literal",
+                  "isInteger": true
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 130,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 520,
+            "elementByteLength": 4,
+            "endByteAddress": 524,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "phase",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "phase",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 131,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 524,
+            "elementByteLength": 4,
+            "endByteAddress": 528,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 2,
+            "name": "out",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 89,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       }
@@ -1551,30 +1756,25 @@
     "audioout": {
       "0": {
         "value": {},
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "phaseAccumulator": {
       "0": {
         "value": 440,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "2": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     }
   },

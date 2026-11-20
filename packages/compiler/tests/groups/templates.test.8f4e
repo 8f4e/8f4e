@@ -2,7 +2,7 @@
 
 note
 ; @config testRuntime.enabled true
-Two instances share source, helper functions, prototypes and scoped nested templates,
+Two instances share source, helper functions, and scoped nested templates,
 while their exposed initializers and memory remain independent.
 noteEnd
 
@@ -21,9 +21,6 @@ push value
 mul 2
 add OFFSET
 functionEnd int
-prototype state
-int value
-prototypeEnd
 constants local
 const EXPECTED 2
 constantsEnd
@@ -48,7 +45,7 @@ entry empty
 entryEnd
 entry main
 module processor
-shape state
+int value
 push &value
 call scale value
 store

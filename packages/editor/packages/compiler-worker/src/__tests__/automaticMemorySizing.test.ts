@@ -10,7 +10,6 @@ function createInput(modules: Array<{ code: string[] }>): ProjectObjectModel {
 		execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry: 'main' }))],
 		constants: [],
 		functions: [],
-		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],
