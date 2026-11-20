@@ -1,9 +1,11 @@
 function copy
 #export
 #impure
-; Copies the value pointed to
-; by source into dest.
+; @doc Copies one value between pointers of the same
+; - type.
+; @param source Address of the value to read.
 param int* source
+; @param dest Address of the destination to write.
 param int* dest
 
 push dest
@@ -15,9 +17,11 @@ functionEnd
 function copy
 #export
 #impure
-; Copies the value pointed to
-; by source into dest.
+; @doc Copies one value between pointers of the same
+; - type.
+; @param source Address of the value to read.
 param float* source
+; @param dest Address of the destination to write.
 param float* dest
 
 push dest

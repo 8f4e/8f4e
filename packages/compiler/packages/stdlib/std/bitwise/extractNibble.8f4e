@@ -1,8 +1,11 @@
 function extractNibble
 #export
-; Index 0 is the least-significant
-; nibble of the 32-bit word.
+; @doc Extracts four bits from a 32-bit integer.
+; @returns The nibble value, 0..15.
+; @param word Source bit pattern.
 param int word
+; @param nibbleIndex Nibble position 0..7, from the
+; - least-significant nibble.
 param int nibbleIndex
 
 push word

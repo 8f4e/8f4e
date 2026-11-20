@@ -4,7 +4,10 @@ includesEnd
 
 function fastSigmoid
 #export
-; Maps softsign's output to 0..1.
+; @doc Maps a finite number into 0..1 using a scaled
+; - softsign.
+; @returns The sigmoid approximation.
+; @param value Finite input value.
 param float value
 
 call softsign value
@@ -14,6 +17,10 @@ functionEnd float
 
 function fastSigmoid
 #export
+; @doc Maps a finite number into 0..1 using a scaled
+; - softsign.
+; @returns The sigmoid approximation.
+; @param value Finite input value.
 param float64 value
 
 call softsign value

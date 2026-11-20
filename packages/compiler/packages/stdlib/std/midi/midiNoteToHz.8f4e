@@ -4,8 +4,10 @@ includesEnd
 
 function midiNoteToHz
 #export
-; Converts a MIDI note in 0..127
-; to its frequency in Hz.
+; @doc Converts a MIDI note to frequency in 12-TET (A4 =
+; - 440 Hz).
+; @returns Frequency in Hz.
+; @param note MIDI note number in 0..127.
 param int note
 
 push note
@@ -15,8 +17,11 @@ functionEnd float
 
 function midiNoteToHz
 #export
-; Fractional notes use the same
-; 12-TET tuning with A4 at 440 Hz.
+; @doc Converts a MIDI note to frequency in 12-TET (A4 =
+; - 440 Hz).
+; @returns Frequency in Hz.
+; @param note MIDI note in 0..127; fractional notes
+; - allowed.
 param float note
 
 push note

@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, serializeProjectLevel } from '@8f4e/editor-state';
 import {
 	createMockCodeBlock,
 	createMockEventDispatcher,
@@ -78,6 +78,80 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 });
 
 describe('tooltip effect', () => {
+	it('shows documentation for the selected overload and declarations and refreshes after a documentation edit', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+module caller
+call transform 1
+drop
+call transform 1.0
+drop
+moduleEnd
+entryEnd
+function transform
+; @doc Integer transformation.
+; @param value An integer input.
+param int value
+push value
+functionEnd int
+function transform
+; @doc Float transformation.
+; @returns The float result.
+; @param amount A float input.
+param float
+- amount
+push amount
+functionEnd float`);
+		const compiled = await compileProject(project, { includeStackAnalysis: true });
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		const tooltip = createTooltip(store, events);
+		cleanups.push(() => {
+			tooltip.dispose();
+			store.dispose();
+		});
+		events.dispatch('enterEditMode');
+		store.set('initialProjectState', project);
+		const state = store.getState();
+		store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
+		const blocks = state.codeBlockRendering.currentProject.blocks;
+		const caller = blocks.find(block => block.name === 'caller')!;
+		const floatFunction = blocks.find(block => block.name === 'transform' && block.code.includes('param float'))!;
+		const select = (block: typeof caller, row: number) => {
+			store.set('codeBlockRendering.selectedCodeBlock', block);
+			store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+		};
+		select(caller, 1);
+		expect(tooltip.getState().text).toContain('Integer transformation.');
+		expect(tooltip.getState().text).toContain('• value: An integer input.');
+		expect(tooltip.getState().text).not.toContain('Float transformation.');
+		select(caller, 3);
+		expect(tooltip.getState().text).toContain('Float transformation.');
+		expect(tooltip.getState().text).toContain('• amount: A float input.');
+		expect(tooltip.getState().text).toContain('returns: The float result.');
+		select(floatFunction, 0);
+		expect(tooltip.getState().text).toContain('Float transformation.');
+		select(floatFunction, 4);
+		expect(tooltip.getState().text).toContain('amount: A float input.');
+		select(floatFunction, 7);
+		expect(tooltip.getState().text).toContain('returns: The float result.');
+		select(caller, 3);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{
+				codeBlock: floatFunction,
+				code: floatFunction.code.map(line => line.replace('Float transformation.', 'Updated float docs.')),
+			},
+		]);
+		expect(tooltip.getState().text).not.toContain('Float transformation.');
+		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
+		const recompiled = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject), {
+			cache: compiled.cache,
+			includeStackAnalysis: true,
+		});
+		store.set('compiler.result', createCompilerResult(recompiled, state.compilerInputRevision));
+		expect(tooltip.getState().text).toContain('Updated float docs.');
+	});
+
 	it('uses current source classification while accepted compiler metadata lags incomplete edits', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main

@@ -1,8 +1,12 @@
 function storeAt
 #export
 #impure
+; @doc Writes a value at a buffer element index.
+; @param buffer Start of the writable buffer.
 param int* buffer
+; @param index Valid zero-based element index.
 param int index
+; @param value Integer value to store.
 param int value
 
 push buffer
@@ -19,10 +23,13 @@ functionEnd
 function storeAt
 #export
 #impure
-; Writes an unsigned-byte element,
-; truncating value to its low byte.
+; @doc Writes a value at a buffer element index.
+; @param buffer Start of the writable buffer.
 param int8u* buffer
+; @param index Valid zero-based element index.
 param int index
+; @param value Value to store, truncated to its low
+; - byte.
 param int value
 
 push buffer

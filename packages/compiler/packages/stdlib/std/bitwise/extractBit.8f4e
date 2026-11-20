@@ -1,6 +1,11 @@
 function extractBit
 #export
+; @doc Extracts one bit from a 32-bit integer.
+; @returns 0 or 1.
+; @param word Source bit pattern.
 param int word
+; @param bitIndex Bit position 0..31, from the
+; - least-significant bit.
 param int bitIndex
 
 push word

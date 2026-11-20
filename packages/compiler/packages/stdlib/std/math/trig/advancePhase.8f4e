@@ -1,11 +1,14 @@
 function advancePhase
 #export
 #impure
-; Advances a phase by one sample
-; and preserves overshoot when
-; wrapping across PI.
+; @doc Advances a phase by one sample, wrapping once
+; - above PI and preserving overshoot.
+; @returns The updated phase in radians.
+; @param phase Address of the mutable phase in radians.
 param float* phase
+; @param frequency Oscillator frequency in Hz.
 param float frequency
+; @param sampleRate Positive sample rate in Hz.
 param int sampleRate
 
 const PI 3.141592653589793

@@ -119,6 +119,14 @@ export interface FunctionSignature {
 	returns: FunctionValueType[];
 }
 
+/** Optional source documentation for one concrete function declaration. */
+export interface FunctionDocumentation {
+	readonly description?: string;
+	readonly parameters?: Readonly<Record<string, string>>;
+	/** Description of the returned values in stack order. */
+	readonly returns?: string;
+}
+
 /** WebAssembly host import module/name pair for an imported function. */
 export interface FunctionImportMetadata {
 	moduleName: string;

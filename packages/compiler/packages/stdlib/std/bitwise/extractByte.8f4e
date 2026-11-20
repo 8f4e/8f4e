@@ -1,6 +1,11 @@
 function extractByte
 #export
+; @doc Extracts one byte from a 32-bit integer.
+; @returns The byte value, 0..255.
+; @param word Source bit pattern.
 param int word
+; @param byteIndex Byte position 0..3, from the
+; - least-significant byte.
 param int byteIndex
 
 push word

@@ -1,9 +1,12 @@
 function lcg
 #export
 #impure
-; Advances a 16-bit linear
-; congruential generator seed
-; and returns the next integer.
+; @doc Advances a 16-bit linear congruential
+; - pseudorandom generator.
+; @returns Next integer in 0..65535, also written to
+; - seed.
+; @param seed Address of persistent, mutable integer
+; - seed.
 param int* seed
 
 const MODULUS 65536

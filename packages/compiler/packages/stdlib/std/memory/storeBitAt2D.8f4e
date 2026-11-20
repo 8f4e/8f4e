@@ -1,18 +1,21 @@
 function storeBitAt2D
 #export
 #impure
-; Writes an MSB-first packed pixel.
-; Rows occupy ceil(width/8) bytes.
-; Zero clears; nonzero sets the bit.
-; Other bits and padding are kept.
-; Out-of-bounds writes do nothing.
-; Dimensions must be non-negative;
-; the buffer must hold all rows.
+; @doc Sets or clears an MSB-first packed pixel,
+; - preserving other bits and padding. Out-of-bounds
+; - writes do nothing.
+; @param buffer Writable buffer with ceil(width/8) bytes
+; - per row.
 param int8u* buffer
+; @param width Non-negative width in pixels.
 param int width
+; @param height Non-negative height in pixels.
 param int height
+; @param x Horizontal pixel coordinate.
 param int x
+; @param y Vertical pixel coordinate.
 param int y
+; @param value Zero clears; nonzero sets the bit.
 param int value
 
 local int mask

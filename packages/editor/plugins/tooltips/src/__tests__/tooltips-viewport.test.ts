@@ -13,7 +13,8 @@ test.each([
 	{ name: 'inline arithmetic operand', row: 3, inline: true, call: false },
 	{ name: 'continued arithmetic operand', row: 3, inline: true, call: false, continued: true },
 	{ name: 'named call signature', row: 1, inline: false, call: true },
-])('tooltips plugin draws $name', async ({ name, row, inline, call, continued }) => {
+	{ name: 'documented call', row: 1, inline: false, call: true, documented: true },
+])('tooltips plugin draws $name', async ({ name, row, inline, call, continued, documented }) => {
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const width = 768;
 	const height = 320;
@@ -28,8 +29,8 @@ drop
 moduleEnd
 entryEnd
 function mix
-param float left
-param float right
+${documented ? '; @doc Combines two values.\n; @returns Sum of the inputs.\n; @param left First value.\n' : ''}param float left
+${documented ? '; @param right Second value.\n' : ''}param float right
 push left
 push right
 add
