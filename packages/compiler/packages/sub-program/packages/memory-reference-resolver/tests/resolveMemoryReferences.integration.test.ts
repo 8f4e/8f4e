@@ -1,13 +1,8 @@
-import type { ConstantsAST, FunctionAST, ModuleAST, PrototypeAST } from '@8f4e/language-spec';
+import type { ConstantsAST, FunctionAST, ModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type ResolveMemoryReferencesInput, resolveMemoryReferences } from '../src';
 
-type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<
-	PrototypeAST,
-	ModuleAST,
-	ConstantsAST,
-	FunctionAST
->;
+type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<ModuleAST, ConstantsAST, FunctionAST>;
 
 describe('resolveMemoryReferences integration', () => {
 	it('resolves sub-program-level memory references from pass-shaped fixtures', () => {
@@ -227,7 +222,6 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: true,
 		} as const;
 		const ast = {
-			prototypes: [],
 			modules: [
 				{
 					type: 'module',
@@ -282,10 +276,7 @@ describe('resolveMemoryReferences integration', () => {
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
+					declarationSources: [{ line: samplesDeclarationLine }, { line: pointerDeclarationLine }],
 				},
 				audio: {
 					id: 'audio',
@@ -298,7 +289,7 @@ describe('resolveMemoryReferences integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
+					declarationSources: [{ line: audioSamplesDeclarationLine }],
 				},
 			},
 			moduleList: [
@@ -314,10 +305,7 @@ describe('resolveMemoryReferences integration', () => {
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
+					declarationSources: [{ line: samplesDeclarationLine }, { line: pointerDeclarationLine }],
 				},
 				{
 					id: 'audio',
@@ -330,12 +318,11 @@ describe('resolveMemoryReferences integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
+					declarationSources: [{ line: audioSamplesDeclarationLine }],
 				},
 			],
 		} as const;
 		const constantReferences = {
-			prototypes: [],
 			modules: [
 				{
 					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined, undefined],

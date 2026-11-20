@@ -1,4 +1,4 @@
-import type { MemoryDeclarationLine, ShapeLine } from './ast';
+import type { MemoryDeclarationLine } from './ast';
 
 export const scalarMemoryDeclarationInstructions = [
 	'int',
@@ -177,7 +177,7 @@ export interface PlannedMemoryDeclaration {
 	 * - `'int8u'` / `'int16u'`: narrow unsigned integer pointee
 	 */
 	pointeeBaseType?: PointeeBaseType;
-	/** Index in the owning module's expanded declarations. */
+	/** Index in the owning module's declarations. */
 	id: number;
 	/** Source name when the declaration is named. */
 	name?: string;
@@ -186,10 +186,9 @@ export interface PlannedMemoryDeclaration {
 	isUnsigned: boolean;
 }
 
-export type PlannedMemoryDeclarationSource = { line: MemoryDeclarationLine } & (
-	| { isInherited: false }
-	| { isInherited: true; shapeLine: ShapeLine }
-);
+export interface PlannedMemoryDeclarationSource {
+	line: MemoryDeclarationLine;
+}
 
 export interface PlannedMemoryModule {
 	id: string;
@@ -203,7 +202,7 @@ export interface PlannedMemoryModule {
 	endByteAddress: number;
 	/** Effective named declarations, keyed by source name. */
 	memory: Record<string, PlannedMemoryDeclaration>;
-	/** All declarations in expanded source order, indexed by declaration ID. */
+	/** All declarations in source order, indexed by declaration ID. */
 	declarations: readonly PlannedMemoryDeclaration[];
 	declarationSources: readonly PlannedMemoryDeclarationSource[];
 }
@@ -220,7 +219,6 @@ export type MemoryDefaultValue = number | Record<string, number>;
 export interface MemoryDefault {
 	value: MemoryDefaultValue;
 	hasExplicitDefault?: boolean;
-	isInherited: boolean;
 }
 
 export type MemoryDefaults = Record<number, MemoryDefault>;

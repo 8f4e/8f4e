@@ -9,7 +9,6 @@ export default defineConfig({
 		rollupOptions: {
 			...createEsLibConfig('./src/index.ts', 'dist').build?.rollupOptions,
 			external: [
-				'@8f4e/semantic-utils',
 				'@8f4e/compiler-diagnostics',
 				'@8f4e/compiler-wasm-utils',
 				'@8f4e/constant-resolver',

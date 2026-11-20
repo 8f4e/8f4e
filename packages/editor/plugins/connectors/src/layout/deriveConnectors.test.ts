@@ -25,7 +25,7 @@ function createMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Planne
 	};
 }
 
-function setMemories(state: State, memories: PlannedMemoryDeclaration[], inheritedNames: string[] = []) {
+function setMemories(state: State, memories: PlannedMemoryDeclaration[]) {
 	state.compiler.result.compiledModules['test-block'] = {
 		referenceSlots: Object.create(null),
 		id: 'test-block',
@@ -46,9 +46,6 @@ function setMemories(state: State, memories: PlannedMemoryDeclaration[], inherit
 		declarationSources: [],
 	};
 	state.compiler.result.memoryPlan = { modules: { 'test-block': module }, moduleList: [module] };
-	state.compiler.result.memoryDefaultsByModuleId['test-block'] = Object.fromEntries(
-		memories.map(memory => [memory.id, { value: 0, isInherited: inheritedNames.includes(memory.name!) }])
-	);
 }
 
 describe('deriveConnectors', () => {
@@ -78,9 +75,8 @@ describe('deriveConnectors', () => {
 		const output = createMemory({ name: 'output', lineNumber: 3 });
 		const buffer = createMemory({ name: 'buffer', lineNumber: 5, numberOfElements: 4, allocationUnitCount: 4 });
 		setMemories(state, [
-			output,
 			createMemory({ name: 'input', type: 'int*', pointerDepth: 1, allocationUnitAddress: 1 }),
-			buffer,
+			output,
 			createMemory({
 				name: '_arrayInput',
 				type: 'float*',
@@ -90,6 +86,7 @@ describe('deriveConnectors', () => {
 				numberOfElements: 4,
 				allocationUnitCount: 4,
 			}),
+			buffer,
 		]);
 
 		const widgets = deriveConnectors(block, state);
@@ -130,21 +127,6 @@ describe('deriveConnectors', () => {
 		expect(deriveConnectors(createMockCodeBlock(), state)).toEqual({ inputs: [], outputs: [] });
 		setMemories(state, [createMemory()]);
 		expect(deriveConnectors(createMockCodeBlock({ name: '' }), state)).toEqual({ inputs: [], outputs: [] });
-	});
-
-	it('keeps inherited input and output rows aligned below a shared shape declaration', () => {
-		const state = createMockState();
-		const block = createMockCodeBlock({ gaps: new Map([[1, { size: 2 }]]) });
-		setMemories(
-			state,
-			[createMemory({ name: 'input', type: 'int*', pointerDepth: 1 }), createMemory({ name: 'output' })],
-			['input', 'output']
-		);
-
-		const widgets = deriveConnectors(block, state);
-
-		expect(widgets.inputs[0].y).toBe(32);
-		expect(widgets.outputs.map(output => output.y)).toEqual([32, 48]);
 	});
 
 	it('rounds wire anchors to whole pixels for odd font dimensions', () => {

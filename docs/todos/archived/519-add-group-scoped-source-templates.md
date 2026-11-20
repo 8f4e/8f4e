@@ -24,7 +24,7 @@ The project is unreleased. Backward compatibility, legacy syntax support, and mi
 
 - Define a template with `template <name>` and `templateEnd` in a root or group project scope.
 - A child group selects a template with exactly one `useTemplate <name>` instruction in its own group-level source lines.
-- In input source, a group using a template must not also author child blocks or entries, including modules, functions, includes, constants, prototypes, notes, nested groups, or local template definitions. All shared content comes from the selected template.
+- In input source, a group using a template must not also author child blocks or entries, including modules, functions, includes, constants, notes, nested groups, or local template definitions. All shared content comes from the selected template.
 - The compiler stage responsible for template inlining validates these restrictions before insertion. Multiple `useTemplate` instructions are invalid even when they name the same template.
 - Treat these as language syntax supported by the compiler source front end, including CLI consumers. `useTemplate` is not an editor directive.
 - Run a source-to-source preprocessing step before `parseProjectSource` performs its ordinary structural parsing. Use the same path when loading a project into the editor.
@@ -50,7 +50,7 @@ The boundary is between a group's own declaration lines and its child blocks, ra
 | Group name and outer position | Per instance |
 | Group-level `expose`, `init`, `pass`, and other declaration lines | Per instance |
 | `useTemplate <name>` | Retained per instance as the template reference |
-| Child functions, includes, constants, prototypes, and note blocks | Shared template content |
+| Child functions, includes, constants, and note blocks | Shared template content |
 | Entries, including empty entries, their modules, and nested groups | Shared template content |
 | Internal block positions and directives | Shared template content |
 | Nested template definitions | Owned by their local scope within the shared content |
@@ -139,7 +139,7 @@ Live synchronization and stronger enforcement of equal contents between instance
 - [x] Expanded groups retain `useTemplate` and compile without template resolution in later stages.
 - [x] The template-inlining stage rejects multiple `useTemplate` instructions and authored child blocks or entries alongside a template reference in input source, while expanded editor groups remain valid.
 - [x] No template-specific fields or registries are added to project-model or editor-state types.
-- [x] Functions, includes, constants, prototypes, notes, empty entries, modules, and nested groups survive expansion and serialization.
+- [x] Functions, includes, constants, notes, empty entries, modules, and nested groups survive expansion and serialization.
 - [x] Every instance retains its own outer name, position, exposures, initializers, passes, and other group-level lines.
 - [x] Template lookup uses only the directly containing scope; ancestors and sibling private scopes are inaccessible.
 - [x] Identical names in separate scopes resolve and serialize independently, including inside copied outer templates.

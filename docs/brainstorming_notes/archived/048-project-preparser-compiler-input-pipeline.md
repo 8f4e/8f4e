@@ -16,7 +16,6 @@ The compiler should consume one normalized source object, `SubProgramSource`, ma
 - executable module blocks grouped by entry name
 - shared function blocks
 - top-level constants blocks
-- prototype blocks
 
 Project-level conveniences such as includes are not basic compiler blocks. They should be reduced into function blocks before `SubProgramSource` reaches semantic analysis and code generation.
 
@@ -39,7 +38,7 @@ For the editor, the natural input is lower in the pipeline. The editor already h
 
 The project preparser should still be independent from the editor. Editor-state should map its own block representation into plain project blocks before calling shared preparation helpers. The shared preparser/preparer must not know about editor rendering fields, grid fields, selection state, or other editor-specific data.
 
-Editor-state should also not own compiler-facing block classification. It can keep UI-facing block type information for rendering and interaction, but compilation should rely on the shared project-preparser to classify blocks as modules, functions, constants, prototypes, includes, or ignored project blocks.
+Editor-state should also not own compiler-facing block classification. It can keep UI-facing block type information for rendering and interaction, but compilation should rely on the shared project-preparser to classify blocks as modules, functions, constants, includes, or ignored project blocks.
 
 The architecture should therefore support both entry points:
 
@@ -104,7 +103,7 @@ The compiler input preparer owns reduction from project blocks to `SubProgramSou
 - call the host-provided include resolver
 - split resolved include source into function blocks
 - attach source metadata to expanded include functions
-- partition project blocks into entries, functions, constants, and prototypes
+- partition project blocks into entries, functions, and constants
 - ignore non-compiler project blocks such as notes and editor-only blocks
 - ignore groups as unsupported compiler input
 - preserve source ids needed for diagnostics

@@ -11,7 +11,6 @@ describe.each(['café', 'value🚀'])('non-ASCII entity name %s', name => {
 		{ code: ['module example', `int ${name} 7`, 'moduleEnd'], lineNumber: 1, instruction: 'int' },
 		{ code: ['module example', `int* ${name}`, 'moduleEnd'], lineNumber: 1, instruction: 'int*' },
 		{ code: ['module example', `int[] ${name} 2`, 'moduleEnd'], lineNumber: 1, instruction: 'int[]' },
-		{ code: [`prototype ${name}`, 'int value', 'prototypeEnd'], lineNumber: 0, instruction: 'prototype' },
 		{ code: [`constants ${name}`, 'const VALUE 7', 'constantsEnd'], lineNumber: 0, instruction: 'constants' },
 		{
 			code: ['constants example', `const ${name.toUpperCase()} 7`, 'constantsEnd'],
@@ -55,7 +54,6 @@ describe('ASCII entity names', () => {
 	it.each([
 		['function compute!$', '#export result!$', 'param int input!$', 'local int saved!$', 'functionEnd'],
 		['module _example_1', 'int value!$ 7', 'int* pointer!$ &value!$', 'int[] samples!$ 2', 'moduleEnd'],
-		['prototype state!$', 'int field!$', 'prototypeEnd'],
 		['constants config!$', 'const VALUE!$_0 7', 'constantsEnd'],
 	])('preserves existing naming conventions in %s', (...code) => {
 		expect(() => compileToAST(code, { kind: 'document' })).not.toThrow();
@@ -83,21 +81,21 @@ describe('ASCII entity names', () => {
 		);
 	});
 
-	it.each([
-		{ code: ['module example', 'int[] TABLE 2', 'moduleEnd'], instruction: 'int[]' },
-		{ code: ['prototype state', 'float64*[] TABLE 2', 'prototypeEnd'], instruction: 'float64*[]' },
-	])('rejects a constant-style name on the $instruction declaration line', ({ code, instruction }) => {
-		expect(() => compileToAST(code, { kind: 'document' })).toThrowError(
-			expect.objectContaining({
-				diagnostic: expect.objectContaining({
-					code: SyntaxErrorCode.INVALID_IDENTIFIER,
-					message: 'Array name "TABLE" uses a naming pattern reserved for constants.',
-					instruction: instruction,
-					location: expect.objectContaining({ lineNumber: 1 }),
-				}),
-			})
-		);
-	});
+	it.each([{ code: ['module example', 'int[] TABLE 2', 'moduleEnd'], instruction: 'int[]' }])(
+		'rejects a constant-style name on the $instruction declaration line',
+		({ code, instruction }) => {
+			expect(() => compileToAST(code, { kind: 'document' })).toThrowError(
+				expect.objectContaining({
+					diagnostic: expect.objectContaining({
+						code: SyntaxErrorCode.INVALID_IDENTIFIER,
+						message: 'Array name "TABLE" uses a naming pattern reserved for constants.',
+						instruction: instruction,
+						location: expect.objectContaining({ lineNumber: 1 }),
+					}),
+				})
+			);
+		}
+	);
 
 	it('accepts constant-style identifiers in array length and initializer positions', () => {
 		expect(() =>

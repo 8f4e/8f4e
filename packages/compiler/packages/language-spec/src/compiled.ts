@@ -3,7 +3,7 @@ import type { AssertionSite } from './assertions';
 import type { ComposedFunctionAST, ComposedModuleAST, FunctionAST, ValidatedAST, ValidatedFunctionAST } from './ast';
 import type { ASTCache } from './cache';
 import type { DiagnosticLocation } from './diagnostics';
-import type { FunctionImportMetadata, FunctionParameter, FunctionSignature } from './functionTypes';
+import type { FunctionImportMetadata, FunctionSignature } from './functionTypes';
 import type { MemoryDefaults, MemoryLayoutPlan, MemoryPointerMetadataMap } from './memory';
 import type { ProjectMemoryExposuresByGroupPath } from './project';
 import type { ReferenceSlotMap } from './referenceSlots';
@@ -55,12 +55,6 @@ export interface FunctionTypeRegistry {
 	baseTypeIndex: number;
 }
 
-/** Expanded parameter declarations for a source `paramShape` instruction. */
-export interface FunctionParamShapeExpansion {
-	lineNumber: number;
-	parameters: FunctionParameter[];
-}
-
 /** Semantic function symbol, independent of WebAssembly layout. */
 export interface FunctionMetadata {
 	/** Canonical compiler identity for this concrete function. */
@@ -71,7 +65,6 @@ export interface FunctionMetadata {
 	import?: FunctionImportMetadata;
 	exportName?: string;
 	isImpure?: boolean;
-	paramShapeExpansions?: FunctionParamShapeExpansion[];
 }
 
 export type FunctionMetadataLookup = Record<string, FunctionMetadata>;

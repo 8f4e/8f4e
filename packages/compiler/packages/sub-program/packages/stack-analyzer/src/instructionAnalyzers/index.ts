@@ -3,7 +3,6 @@ import type {
 	CompilationContext,
 	EnsureNonZeroLine,
 	MapEndLine,
-	ResolvedPushShapeLine,
 	SemanticAssertEqualLine,
 	SemanticCallLine,
 	SemanticReferenceLine,
@@ -31,7 +30,6 @@ import { analyzeShiftRightUnsigned } from './numeric/shiftRightUnsigned';
 import { analyzeSub } from './numeric/sub';
 import { analyzeXor } from './numeric/xor';
 import { analyzePush } from './push';
-import { analyzePushShape } from './pushShape';
 import { analyzeFromSpec } from './spec';
 import type { InstructionAnalysisResult } from './types';
 
@@ -53,12 +51,6 @@ export function analyzeByInstruction(
 			return {
 				consumed: [],
 				produced: analyzePush(line as CodegenPushLine, context),
-			};
-		}
-		case 'pushShape': {
-			return {
-				consumed: [],
-				produced: analyzePushShape(line as ResolvedPushShapeLine, context),
 			};
 		}
 		case 'add':

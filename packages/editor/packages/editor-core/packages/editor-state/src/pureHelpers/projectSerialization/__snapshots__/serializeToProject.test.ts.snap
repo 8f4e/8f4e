@@ -9,7 +9,6 @@ exports[`serializeToProject > serializes basic project state without compiled da
   "functions": [],
   "includes": [],
   "notes": [],
-  "prototypes": [],
   "unknown": [
     {
       "code": [

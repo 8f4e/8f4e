@@ -137,8 +137,6 @@ export interface ProjectObjectModel {
 	functions: ProjectBlock[];
 	/** Hoisted constants blocks. */
 	constants: ProjectBlock[];
-	/** Hoisted prototype blocks. */
-	prototypes: ProjectBlock[];
 	/** Ordered include declarations expanded privately by the compiler. */
 	includes: ProjectBlock[];
 	/** Non-compiling project note blocks. */
@@ -199,7 +197,6 @@ export function createProjectObjectModel(): ProjectObjectModel {
 		execution: [],
 		functions: [],
 		constants: [],
-		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],

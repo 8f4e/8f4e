@@ -28,6 +28,5 @@ Early include validation uses `include-file` with the file id and a row
 relative to that file. Its `includeSite` identifies the loading declaration when the file belongs to a project;
 standalone include parsing still retains file identity. Diagnostics inside an included symbol use a row relative to
 that symbol. Hosts can navigate source diagnostics and present internal or unmappable failures persistently.
-Inherited memory declarations retain their original source line and a separate `shapeLine` for module layout.
 
 Run the package's Nx `build`, `test` and `typecheck` targets from the repository root.

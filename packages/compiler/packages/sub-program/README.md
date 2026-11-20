@@ -9,8 +9,8 @@ exposed; `ProjectObjectModel` remains owned by `@8f4e/language-spec`.
 
 All recursively owned projects have already been flattened with isolated internal symbols at this boundary. Memory
 addresses and function/type indexes are therefore assigned once for the complete program, avoiding a linker or
-relocation layer before final WebAssembly emission. Function registration resolves signatures and `paramShape` expansions
-once, selects the last declaration for each scoped name and parameter signature, and collects its imports, exports, and
+relocation layer before final WebAssembly emission. Function registration resolves signatures once, selects the last
+declaration for each scoped name and parameter signature, and collects its imports, exports, and
 impurity flags. Only selected functions proceed to constant and memory reference resolution. Semantic resolution consumes
 these registered declarations and assigns source binding identities while producing executable bodies without declarations.
 Stack analysis consumes those bodies and produces execution facts. Function analysis then reports imports, explicit/early returns, and recursion

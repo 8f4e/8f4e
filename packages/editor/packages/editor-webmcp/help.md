@@ -6,7 +6,7 @@
 
 - Instructions execute in source order. `push` puts a value on the stack; operations such as `add` consume operands and push their result.
 - Modules declare persistent memory and executable code. `int`, `float`, and `float64` declare memory values. `push value` reads a value; `push &value` pushes its address. `store` consumes an address followed by a value and writes that value to memory.
-- An `entry` contains modules to execute. A runtime selects which entry to invoke and how often. Functions provide callable code; constants and prototypes provide shared declarations.
+- An `entry` contains modules to execute. A runtime selects which entry to invoke and how often. Functions provide callable code, constants provide shared values, and group templates reuse a set of blocks within a project.
 - Groups organize a nested project scope. `use` declares dependencies, and `expose` publishes group memory. Read the source-syntax and identifier-prefix documentation before wiring blocks together.
 - Compiler directives start with `#`, such as `#impure`. They control compilation and have placement rules.
 - Editor directives live in comments, such as `; @pos 10 20`, `; @watch count`, and `; @slider &gain 0 1 0.01`. They configure layout and editor features.

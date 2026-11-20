@@ -22,15 +22,14 @@ filtering, or constructing incomplete plans can separate facts that describe the
 
 ## Proposed Solution
 
-Give each `PlannedMemoryDeclaration` a required `source` containing its effective `MemoryDeclarationLine` and
-`isInherited` flag. Extract the existing address, size, and type fields into `MemoryDeclarationLayout`, which low-level
+Give each `PlannedMemoryDeclaration` a required `source` containing its `MemoryDeclarationLine`.
+Extract the existing address, size, and type fields into `MemoryDeclarationLayout`, which low-level
 layout helpers can produce before the planner attaches the source.
 
 Keep the ordered `declarations` list and the `memory[id]` lookup pointing to the same complete declaration objects.
 Remove the module-level `declarationSources` array and update consumers to read `declaration.source` directly.
 
-Here, source means the effective declaration after shape expansion and layout normalization. Preserve its current
-line-number and inheritance semantics; complete original-file or prototype provenance is separate work. Reference
+Here, source means the declaration after layout normalization. Preserve its current line-number semantics. Reference
 resolution facts, resolved defaults, and pointer provenance remain outputs of their existing compiler passes.
 
 ## Pros
@@ -39,7 +38,7 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
   arrays staying synchronized.
 - **Direct source access:** resolving an exposed alias also provides its backing declaration's source, eliminating
   the additional linear search in group initializer validation.
-- **Simpler default resolution:** each iteration has the layout, effective source line, and inheritance flag together.
+- **Simpler default resolution:** each iteration has the layout and source line together.
 - **Clearer contracts:** layout-only helpers use layout metadata, while consumers of complete planned declarations
   can rely on source information being present.
 - **Safer maintenance:** declaration reordering and test-fixture construction cannot silently omit or misalign a
@@ -55,16 +54,16 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
    source lookup and other joins between declaration and source arrays.
 4. Update shared consumers, exports, documentation, snapshots, and test builders to use the appropriate contract.
    Complete-plan fixtures must supply real source records; layout-only fixtures should use the narrower layout type.
-5. Add focused coverage for inherited declarations, scalar versus single-element array initializers, and aliases
+5. Add focused coverage for scalar versus single-element array initializers and aliases
    exposed through nested groups. Verify that cached ASTs and effective source lines are not mutated by later passes.
 
 ## Success Criteria
 
-- [ ] Every planned declaration has a required effective source line and inheritance flag.
+- [ ] Every planned declaration has a required source line.
 - [ ] `memory[id]` and `declarations` reference the same complete declaration objects.
 - [ ] The module-level `declarationSources` array and positional source-recovery logic are removed.
 - [ ] Layout helpers can operate without requiring source metadata.
-- [ ] Inherited shapes, declaration ordering, memory addresses, initializer precedence, and diagnostics retain their behavior.
+- [ ] Declaration ordering, memory addresses, initializer precedence, and diagnostics retain their behavior.
 - [ ] Scalar declarations and single-element arrays remain distinguishable during initializer validation.
 - [ ] Later passes preserve source records and cached ASTs while producing their own resolution results.
 - [ ] Consumers and fixtures use the new contracts directly without optional-source fallbacks or compatibility aliases.
@@ -80,7 +79,7 @@ resolution facts, resolved defaults, and pointer provenance remain outputs of th
 ## Risks & Considerations
 
 - Preserve ordered declaration access used by numeric memory references such as `&module:0`.
-- Preserve effective source locations for inherited shapes; attaching source must not imply richer origin tracking.
+- Preserve the existing source locations; attaching source must not imply richer origin tracking.
 - Keep phase-specific resolution reports separate instead of accumulating mutable semantic results in the plan.
 - Update required-field fixtures rather than weakening the production contract to accommodate incomplete test data.
 - The project is unreleased: remove obsolete fields and update consumers directly without compatibility fallbacks.

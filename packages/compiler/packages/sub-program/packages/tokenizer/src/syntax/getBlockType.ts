@@ -36,7 +36,7 @@ export function getBlockType(code: string[]): CodeBlockType {
 
 /**
  * Returns true if the given block type is accepted as a direct input to the compiler
- * (modules, functions, constants, and prototypes).
+ * (modules, functions, and constants).
  * Constants blocks are treated as modules by the compiler.
  * Accepts undefined for safe use with optional chaining.
  *

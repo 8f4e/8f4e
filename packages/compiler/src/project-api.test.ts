@@ -34,7 +34,6 @@ const directProject: ProjectObjectModel = {
 	],
 	functions: [{ id: 3, code: ['function one', 'push 1', 'functionEnd int'] }],
 	constants: [],
-	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],

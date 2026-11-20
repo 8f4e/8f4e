@@ -1,45 +1,22 @@
-import type { ConstantsAST, FunctionAST, ModuleAST, PrototypeAST } from '@8f4e/language-spec';
+import type { ConstantsAST, FunctionAST, ModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type ResolveSemanticReferencesInput, resolveSemanticReferences } from '../src';
 
-type SemanticReferenceResolverIntegrationInput = ResolveSemanticReferencesInput<
-	PrototypeAST,
-	ModuleAST,
-	ConstantsAST,
-	FunctionAST
->;
+type SemanticReferenceResolverIntegrationInput = ResolveSemanticReferencesInput<ModuleAST, ConstantsAST, FunctionAST>;
 
 describe('resolveSemanticReferences integration', () => {
 	it('resolves sub-program-level semantic references from pass-shaped fixtures', () => {
-		const prototypeLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 1,
-			instruction: 'prototype',
-			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
-		} as const;
 		const valueDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int',
 			arguments: [{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' }],
 		} as const;
-		const prototypeEndLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 3,
-			instruction: 'prototypeEnd',
-			arguments: [],
-		} as const;
 		const moduleLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
-		} as const;
-		const shapeLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 2,
-			instruction: 'shape',
-			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const pushMemoryLine = {
 			diagnosticSource: { kind: 'document' },
@@ -69,15 +46,9 @@ describe('resolveSemanticReferences integration', () => {
 				{ type: 'identifier', value: 'value', referenceKind: 'plain', scope: 'local' },
 			],
 		} as const;
-		const pushShapeLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 6,
-			instruction: 'pushShape',
-			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
-		} as const;
 		const moduleEndLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 7,
+			lineNumber: 6,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
@@ -147,20 +118,12 @@ describe('resolveSemanticReferences integration', () => {
 			isUnsigned: false,
 		} as const;
 		const ast = {
-			prototypes: [
-				{
-					type: 'prototype',
-					id: 'state',
-					prototypeLine,
-					lines: [prototypeLine, valueDeclarationLine, prototypeEndLine],
-				},
-			],
 			modules: [
 				{
 					type: 'module',
 					id: 'main',
 					moduleLine,
-					lines: [moduleLine, shapeLine, pushMemoryLine, pushAddressLine, callLine, pushShapeLine, moduleEndLine],
+					lines: [moduleLine, valueDeclarationLine, pushMemoryLine, pushAddressLine, callLine, moduleEndLine],
 				},
 			],
 			constants: [],
@@ -187,9 +150,7 @@ describe('resolveSemanticReferences integration', () => {
 						value: valueMemory,
 					},
 					declarations: [valueMemory],
-					declarationSources: [
-						{ line: { ...valueDeclarationLine, lineNumber: shapeLine.lineNumber }, isInherited: true },
-					],
+					declarationSources: [{ line: valueDeclarationLine }],
 				},
 			},
 			moduleList: [
@@ -204,18 +165,11 @@ describe('resolveSemanticReferences integration', () => {
 						value: valueMemory,
 					},
 					declarations: [valueMemory],
-					declarationSources: [
-						{ line: { ...valueDeclarationLine, lineNumber: shapeLine.lineNumber }, isInherited: true },
-					],
+					declarationSources: [{ line: valueDeclarationLine }],
 				},
 			],
 		} as const;
 		const memoryReferences = {
-			prototypes: [
-				{
-					lineFacts: [undefined, undefined, undefined],
-				},
-			],
 			modules: [
 				{
 					referenceSlots: {},
@@ -243,7 +197,6 @@ describe('resolveSemanticReferences integration', () => {
 						},
 						undefined,
 						undefined,
-						undefined,
 					],
 				},
 			],
@@ -263,14 +216,9 @@ describe('resolveSemanticReferences integration', () => {
 			},
 		} as const;
 		const constantReferences = {
-			prototypes: [
-				{
-					lineFacts: [undefined, undefined, undefined],
-				},
-			],
 			modules: [
 				{
-					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined, undefined],
+					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined],
 				},
 			],
 			constants: [],
@@ -298,9 +246,6 @@ describe('resolveSemanticReferences integration', () => {
 		const pointerMetadataByModuleId = {
 			main: {},
 		} as const;
-		const prototypeShapes = {
-			state: ast.prototypes[0],
-		} as const;
 
 		const result = resolveSemanticReferences({
 			ast,
@@ -311,7 +256,6 @@ describe('resolveSemanticReferences integration', () => {
 			constantReferences,
 			memoryReferences,
 			functions,
-			prototypeShapes,
 		} satisfies SemanticReferenceResolverIntegrationInput);
 		expect(result.references.modules.main.ast).toBe(ast.modules[0]);
 		expect(result.references.functions.increment__int.ast).toBe(ast.functions[0]);

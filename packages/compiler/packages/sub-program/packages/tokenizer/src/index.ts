@@ -78,8 +78,6 @@ function bindSource(ast: ValidatedAST, diagnosticSource: DiagnosticSource): Vali
 			return { ...ast, lines, moduleLine: boundLine(ast.moduleLine) };
 		case 'constants':
 			return { ...ast, lines, constantsLine: boundLine(ast.constantsLine) };
-		case 'prototype':
-			return { ...ast, lines, prototypeLine: boundLine(ast.prototypeLine) };
 		case 'function':
 			return {
 				...ast,

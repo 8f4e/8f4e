@@ -40,7 +40,6 @@ function setup(installed = true) {
 it.each([
 	['module', 'New Module', 'module quark', 'moduleEnd'],
 	['function', 'New Function', 'function quark', 'functionEnd'],
-	['prototype', 'New Prototype', 'prototype quark', 'prototypeEnd'],
 	['note', 'New Note', 'note', 'noteEnd'],
 ] as const)('forwards a %s template and menu coordinates to core', async (blockType, title, header, end) => {
 	const test = setup();

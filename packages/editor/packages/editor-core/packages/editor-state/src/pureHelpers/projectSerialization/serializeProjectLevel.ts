@@ -46,8 +46,6 @@ export default function serializeProjectLevel(level: ProjectLevel): ProjectObjec
 			project.functions.push(block);
 		} else if (codeBlock.blockType === 'constants') {
 			project.constants.push(block);
-		} else if (codeBlock.blockType === 'prototype') {
-			project.prototypes.push(block);
 		} else if (codeBlock.blockType === 'includes') {
 			project.includes.push(block);
 		} else if (codeBlock.blockType === 'note') {

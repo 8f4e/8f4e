@@ -10,7 +10,6 @@ function projectWithModules(modules: Array<Omit<ProjectModuleBlock, 'type'>>): P
 		execution: modules.map(module => ({ ...module, type: 'module' })),
 		functions: [],
 		constants: [],
-		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],

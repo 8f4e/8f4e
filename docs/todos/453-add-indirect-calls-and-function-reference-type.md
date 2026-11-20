@@ -120,8 +120,6 @@ typed table indices, but raw integers should not automatically become callable w
 
 - **Related**: `docs/todos/435-add-polymorphic-function-overloads.md`
 - **Related**: `docs/todos/452-add-reachability-based-function-pruning.md`
-- **Related**: `docs/todos/449-add-function-param-shape.md`
-- **Related**: `docs/todos/451-add-push-shape-instruction.md`
 
 ## Notes
 

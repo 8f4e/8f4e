@@ -28,7 +28,6 @@ const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedPro
 	return [
 		...currentProject.functions.map(block => ({ ...block, blockType: 'function' as const })),
 		...currentProject.constants.map(block => ({ ...block, blockType: 'constants' as const })),
-		...currentProject.prototypes.map(block => ({ ...block, blockType: 'prototype' as const })),
 		...currentProject.includes.map(block => ({ ...block, blockType: 'includes' as const })),
 		...currentProject.notes.map(block => ({ ...block, blockType: 'note' as const })),
 		...currentProject.unknown.map(block => ({ ...block, blockType: 'unknown' as const })),

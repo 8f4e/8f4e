@@ -319,11 +319,11 @@ allocation. Dereferencing a scalar reference emits the target address followed b
 and a float value followed by `store` updates `oscillator:output`.
 
 Targets can be selected by name or by their zero-based declaration index: `&memories:0` selects the first memory
-declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations, including
-inherited memory; they are not byte offsets or array element indices.
+declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations,
+not byte offsets or array elements.
 
 The declared type must match the target's element type, including integer signedness and floating-point width.
-Scalar and array targets are supported, including inherited memory and memory exposed by project groups. The slot
+Scalar and array targets are supported, including memory exposed by project groups. The slot
 keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `min(*slot)`, and `max(*slot)`.
 Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
 local names and follow the same non-constant naming convention as memory declarations.

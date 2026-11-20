@@ -5,9 +5,7 @@ import type {
 	CompileTimeOperator,
 	CompileTimeRoundingValue,
 	MemoryDeclarationLine,
-	ShapeLine,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import { ArgumentType, arrayMemoryDeclarationInstructions, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
@@ -45,10 +43,6 @@ function expression(
 	};
 }
 
-function shapeLine(id: string, lineNumber: number): ShapeLine {
-	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction: 'shape', arguments: [identifier(id)] };
-}
-
 function moduleLine(id: string, lineNumber: number) {
 	return {
 		diagnosticSource: { kind: 'document' },
@@ -69,29 +63,8 @@ function validatedModuleAst(id: string, lineNumber: number, lines: readonly Comp
 	} as ValidatedModuleAST;
 }
 
-function prototypeAst(
-	id: string,
-	lineNumber: number,
-	declarationLines: readonly MemoryDeclarationLine[]
-): ValidatedPrototypeAST {
-	const prototypeLine = {
-		diagnosticSource: { kind: 'document' },
-		lineNumber,
-		instruction: 'prototype',
-		arguments: [identifier(id)],
-	} as const;
-
-	return {
-		type: 'prototype',
-		id,
-		lines: [prototypeLine, ...declarationLines],
-		prototypeLine,
-	} as ValidatedPrototypeAST;
-}
-
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 	};
 }
@@ -99,7 +72,6 @@ function noConstantReferences() {
 describe('planSubProgramMemoryLayout', () => {
 	it('plans module start addresses and declaration addresses from ASTs', () => {
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [
 				validatedModuleAst('first', 1, [
 					{
@@ -138,7 +110,6 @@ describe('planSubProgramMemoryLayout', () => {
 
 	it('allocates modules alphabetically by id instead of source order', () => {
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [
 				validatedModuleAst('zeta', 1, [
 					{
@@ -170,7 +141,6 @@ describe('planSubProgramMemoryLayout', () => {
 
 	it('plans compiler-normalized declaration lines', () => {
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [
 				validatedModuleAst('main', 1, [
 					{
@@ -197,7 +167,6 @@ describe('planSubProgramMemoryLayout', () => {
 		} as MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [validatedModuleAst('main', 1, [line])],
 			constantReferences: noConstantReferences(),
 		});
@@ -207,7 +176,7 @@ describe('planSubProgramMemoryLayout', () => {
 		expect(plan.modules.main.memory).toEqual({});
 	});
 
-	it('expands shape declarations into effective declaration sources', () => {
+	it('keeps declaration sources in allocation order', () => {
 		const foo = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
@@ -228,29 +197,14 @@ describe('planSubProgramMemoryLayout', () => {
 		} satisfies MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [prototypeAst('state', 1, [foo, bar])],
-			modules: [validatedModuleAst('main', 1, [shapeLine('state', 11), local])],
+			modules: [validatedModuleAst('main', 1, [foo, bar, local])],
 			constantReferences: noConstantReferences(),
 			startingByteAddress: 4,
 		});
 
 		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['foo', 'bar', 'local']);
-		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: foo, isInherited: true, shapeLine: shapeLine('state', 11) },
-			{ line: bar, isInherited: true, shapeLine: shapeLine('state', 11) },
-			{ line: local, isInherited: false },
-		]);
+		expect(plan.modules.main.declarationSources).toEqual([{ line: foo }, { line: bar }, { line: local }]);
 		expect(plan.modules.main.memory.local.byteAddress).toBe(16);
-	});
-
-	it('rejects unknown shape declarations while planning layout', () => {
-		expect(() =>
-			planSubProgramMemoryLayout({
-				prototypes: [],
-				modules: [validatedModuleAst('main', 1, [shapeLine('missing', 11)])],
-				constantReferences: noConstantReferences(),
-			})
-		).toThrow(CompilerError);
 	});
 });
 
@@ -268,10 +222,8 @@ describe('planner input building', () => {
 		} satisfies MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [validatedModuleAst('main', 1, [line])],
 			constantReferences: {
-				prototypes: [],
 				modules: [{ lineFacts: [undefined, { arguments: [identifier('values'), literal(expectedElementCount)] }] }],
 			},
 		});
@@ -295,7 +247,6 @@ describe('planner input building', () => {
 
 		expect(() =>
 			planSubProgramMemoryLayout({
-				prototypes: [],
 				modules: [validatedModuleAst('main', 1, [line])],
 				constantReferences: noConstantReferences(),
 			})
@@ -310,12 +261,12 @@ describe('planner input building', () => {
 		);
 	});
 
-	it('builds planner-ready source from validated module and prototype ASTs', () => {
-		const inherited = {
+	it('builds planner-ready source from validated module ASTs', () => {
+		const counter = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 20,
+			lineNumber: 3,
 			instruction: 'int',
-			arguments: [identifier('inherited')],
+			arguments: [identifier('counter')],
 		} satisfies MemoryDeclarationLine;
 		const local = {
 			diagnosticSource: { kind: 'document' },
@@ -325,10 +276,8 @@ describe('planner input building', () => {
 		} satisfies MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [prototypeAst('state', 19, [inherited])],
-			modules: [validatedModuleAst('main', 1, [shapeLine('state', 3), local])],
+			modules: [validatedModuleAst('main', 1, [counter, local])],
 			constantReferences: {
-				prototypes: [{ lineFacts: [] }],
 				modules: [
 					{
 						lineFacts: [undefined, undefined, { arguments: [identifier('values'), literal(6)] }],
@@ -338,16 +287,15 @@ describe('planner input building', () => {
 			startingByteAddress: 4,
 		});
 
-		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['inherited', 'values']);
+		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['counter', 'values']);
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(6);
 		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: inherited, isInherited: true, shapeLine: shapeLine('state', 3) },
+			{ line: counter },
 			{
 				line: {
 					...local,
 					arguments: [identifier('values'), literal(6)],
 				},
-				isInherited: false,
 			},
 		]);
 	});
@@ -362,7 +310,6 @@ describe('planner input building', () => {
 
 		expect(() =>
 			planSubProgramMemoryLayout({
-				prototypes: [],
 				modules: [validatedModuleAst('main', 1, [line])],
 				constantReferences: noConstantReferences(),
 			})
@@ -379,21 +326,7 @@ describe('planner input building', () => {
 
 		expect(() =>
 			planSubProgramMemoryLayout({
-				prototypes: [],
 				modules: [validatedModuleAst('main', 1, [line])],
-				constantReferences: noConstantReferences(),
-			})
-		).toThrow(CompilerError);
-	});
-
-	it('rejects duplicate prototype ids while building planner input', () => {
-		const first = prototypeAst('state', 1, []);
-		const second = prototypeAst('state', 10, []);
-
-		expect(() =>
-			planSubProgramMemoryLayout({
-				prototypes: [first, second],
-				modules: [],
 				constantReferences: noConstantReferences(),
 			})
 		).toThrow(CompilerError);
@@ -409,10 +342,8 @@ describe('planner input building', () => {
 		} satisfies MemoryDeclarationLine;
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [validatedModuleAst('main', 1, [line])],
 			constantReferences: {
-				prototypes: [],
 				modules: [
 					{
 						lineFacts: [
@@ -431,12 +362,12 @@ describe('planner input building', () => {
 		expect(plan.modules.main.memory.values.numberOfElements).toBe(7);
 	});
 
-	it('preserves declaration and shape order across non-declaration lines without mutating the input AST', () => {
-		const inherited = {
+	it('preserves declaration order across non-declaration lines without mutating the input AST', () => {
+		const counter = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 2,
+			lineNumber: 13,
 			instruction: 'int',
-			arguments: [identifier('inherited')],
+			arguments: [identifier('counter')],
 		} satisfies MemoryDeclarationLine;
 		const firstDeclaration = {
 			diagnosticSource: { kind: 'document' },
@@ -450,7 +381,6 @@ describe('planner input building', () => {
 			instruction: 'push',
 			arguments: [literal(1)],
 		} as unknown as CompilerASTLine;
-		const shape = shapeLine('state', 13);
 		const sizeIdentifier = identifier('COUNT');
 		const arrayDeclaration = {
 			diagnosticSource: { kind: 'document' },
@@ -458,15 +388,13 @@ describe('planner input building', () => {
 			instruction: 'int[]',
 			arguments: [identifier('items'), sizeIdentifier],
 		} satisfies MemoryDeclarationLine;
-		const moduleAst = validatedModuleAst('main', 10, [firstDeclaration, ignoredInstruction, shape, arrayDeclaration]);
+		const moduleAst = validatedModuleAst('main', 10, [firstDeclaration, ignoredInstruction, counter, arrayDeclaration]);
 		const originalLinesSnapshot = [...moduleAst.lines];
 		const originalArrayArgumentsSnapshot = [...arrayDeclaration.arguments];
 
 		const plan = planSubProgramMemoryLayout({
-			prototypes: [prototypeAst('state', 1, [inherited])],
 			modules: [moduleAst],
 			constantReferences: {
-				prototypes: [{ lineFacts: [] }],
 				modules: [
 					{
 						lineFacts: [undefined, undefined, undefined, undefined, { arguments: [identifier('items'), literal(3)] }],
@@ -476,20 +404,15 @@ describe('planner input building', () => {
 			startingByteAddress: 4,
 		});
 
-		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual([
-			'first',
-			'inherited',
-			'items',
-		]);
+		expect(plan.modules.main.declarations.map(declaration => declaration.name)).toEqual(['first', 'counter', 'items']);
 		expect(plan.modules.main.declarationSources).toEqual([
-			{ line: firstDeclaration, isInherited: false },
-			{ line: inherited, isInherited: true, shapeLine: shapeLine('state', 13) },
+			{ line: firstDeclaration },
+			{ line: counter },
 			{
 				line: {
 					...arrayDeclaration,
 					arguments: [identifier('items'), literal(3)],
 				},
-				isInherited: false,
 			},
 		]);
 		expect(moduleAst.lines).toEqual(originalLinesSnapshot);

@@ -13,13 +13,6 @@ const ONE 1.0
 const SIZE 3
 constantsEnd
 
-prototype arraySizeBoundaries
-use validSizes
-int[] empty ZERO
-int[] single ONE
-int[] multiple SIZE/1
-prototypeEnd
-
 entry test
 module zeroLengthArrays
 float[] floats 0
@@ -198,8 +191,11 @@ push count(doublePointerPointers)
 assertEqual 3
 moduleEnd
 
-module prototypeArraySizes
-shape arraySizeBoundaries
+module constantArraySizes
+use validSizes
+int[] empty ZERO
+int[] single ONE
+int[] multiple SIZE/1
 
 push count(empty)
 assertEqual 0

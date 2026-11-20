@@ -12,7 +12,6 @@ const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): Projec
 	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
 	constants: [],
 	functions: [],
-	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],

@@ -2,8 +2,8 @@
   "functionAst": {},
   "functionOverview": {},
   "moduleAst": {
-    "oscA": {
-      "id": "oscA",
+    "anonymousStorage": {
+      "id": "anonymousStorage",
       "lines": [
         {
           "arguments": [
@@ -11,7 +11,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "oscA",
+              "value": "anonymousStorage",
             },
           ],
           "instruction": "module",
@@ -19,26 +19,19 @@
         {
           "arguments": [
             {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "oscillatorState",
+              "isInteger": true,
+              "type": "literal",
+              "value": 42,
             },
           ],
-          "instruction": "shape",
+          "instruction": "int",
         },
         {
           "arguments": [
             {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "localA",
-            },
-            {
               "isInteger": true,
               "type": "literal",
-              "value": 11,
+              "value": 7,
             },
           ],
           "instruction": "int",
@@ -49,17 +42,66 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "phase",
+              "value": "__anonymous__1",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 19,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "anonymousStorage",
+              "type": "identifier",
+              "value": "&anonymousStorage:0",
             },
           ],
           "instruction": "push",
         },
         {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
           "arguments": [
             {
-              "isInteger": false,
+              "isInteger": true,
               "type": "literal",
-              "value": 0,
+              "value": 42,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 1,
+              "targetModuleId": "anonymousStorage",
+              "type": "identifier",
+              "value": "&anonymousStorage:1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
             },
           ],
           "instruction": "assertEqual",
@@ -70,28 +112,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "frequency",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 440,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "localA",
+              "value": "__anonymous__1",
             },
           ],
           "instruction": "push",
@@ -101,83 +122,7 @@
             {
               "isInteger": true,
               "type": "literal",
-              "value": 11,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "phase",
-              "type": "identifier",
-              "value": "&phase",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "frequency",
-              "type": "identifier",
-              "value": "&frequency",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "lessThan",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 1,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "frequency",
-              "type": "identifier",
-              "value": "&frequency",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "localA",
-              "type": "identifier",
-              "value": "&localA",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "lessThan",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 1,
+              "value": 19,
             },
           ],
           "instruction": "assertEqual",
@@ -189,8 +134,8 @@
       ],
       "type": "module",
     },
-    "oscB": {
-      "id": "oscB",
+    "boson": {
+      "id": "boson",
       "lines": [
         {
           "arguments": [
@@ -198,7 +143,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "oscB",
+              "value": "boson",
             },
           ],
           "instruction": "module",
@@ -209,18 +154,18 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "oscAPhase",
+              "value": "test2",
             },
             {
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
-              "targetMemoryId": "phase",
-              "targetModuleId": "oscA",
+              "targetMemoryId": "foo",
+              "targetModuleId": "tau",
               "type": "identifier",
-              "value": "&oscA:phase",
+              "value": "&tau:foo",
             },
           ],
-          "instruction": "float&",
+          "instruction": "int&",
         },
         {
           "arguments": [
@@ -228,12 +173,140 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "localB",
+              "value": "test1",
+            },
+            {
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "bar",
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:bar",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "test3",
+            },
+            {
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "he",
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:he",
+            },
+          ],
+          "instruction": "int&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "test2",
+              "type": "identifier",
+              "value": "*test2",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "test1",
+              "type": "identifier",
+              "value": "*test1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "test3",
+              "type": "identifier",
+              "value": "*test3",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "tau": {
+      "id": "tau",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "tau",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "foo",
             },
             {
               "isInteger": true,
               "type": "literal",
-              "value": 22,
+              "value": 1,
             },
           ],
           "instruction": "int",
@@ -244,31 +317,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "oscillatorState",
+              "value": "he",
             },
-          ],
-          "instruction": "shape",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "localB",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
             {
               "isInteger": true,
               "type": "literal",
-              "value": 22,
+              "value": 2,
             },
           ],
-          "instruction": "assertEqual",
+          "instruction": "int",
         },
         {
           "arguments": [
@@ -276,91 +333,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "phase",
+              "value": "bar",
             },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "frequency",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 440,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "localB",
-              "type": "identifier",
-              "value": "&localB",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "phase",
-              "type": "identifier",
-              "value": "&phase",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "lessThan",
-        },
-        {
-          "arguments": [
             {
               "isInteger": true,
               "type": "literal",
-              "value": 1,
+              "value": 3,
             },
           ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "memory-reference",
-              "scope": "local",
-              "targetMemoryId": "phase",
-              "type": "identifier",
-              "value": "&phase",
-            },
-          ],
-          "instruction": "push",
+          "instruction": "int",
         },
         {
           "arguments": [
@@ -368,14 +349,74 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "oscAPhase",
+              "value": "he",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bar",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 44,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bar",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 8,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bar",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "foo",
             },
           ],
           "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "notEqual",
         },
         {
           "arguments": [
@@ -383,6 +424,102 @@
               "isInteger": true,
               "type": "literal",
               "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "he",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bar",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 1,
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:1",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 10,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-nth-reference",
+              "scope": "intermodule",
+              "targetMemoryIndex": 2,
+              "targetModuleId": "tau",
+              "type": "identifier",
+              "value": "&tau:2",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "load",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
             },
           ],
           "instruction": "assertEqual",
@@ -396,75 +533,13 @@
     },
   },
   "moduleMemory": {
-    "oscA": {
-      "memory": {
-        "frequency": {
-          "allocationUnitAddress": 2,
-          "allocationUnitCount": 1,
-          "byteAddress": 8,
-          "default": 440,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": 1,
-          "isInherited": true,
-          "isInteger": false,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "float",
-        },
-        "localA": {
-          "allocationUnitAddress": 3,
-          "allocationUnitCount": 1,
-          "byteAddress": 12,
-          "default": 11,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": 2,
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
-        },
-        "phase": {
+    "anonymousStorage": {
+      "anonymousMemory": [
+        {
           "allocationUnitAddress": 1,
           "allocationUnitCount": 1,
           "byteAddress": 4,
-          "default": 0,
-          "elementWordSize": 4,
-          "id": 0,
-          "isInherited": true,
-          "isInteger": false,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "float",
-        },
-      },
-    },
-    "oscB": {
-      "memory": {
-        "frequency": {
-          "allocationUnitAddress": 6,
-          "allocationUnitCount": 1,
-          "byteAddress": 24,
-          "default": 440,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": 2,
-          "isInherited": true,
-          "isInteger": false,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "float",
-        },
-        "localB": {
-          "allocationUnitAddress": 4,
-          "allocationUnitCount": 1,
-          "byteAddress": 16,
-          "default": 22,
+          "default": 42,
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
@@ -474,19 +549,84 @@
           "pointerDepth": 0,
           "type": "int",
         },
-        "phase": {
-          "allocationUnitAddress": 5,
+        {
+          "allocationUnitAddress": 2,
           "allocationUnitCount": 1,
-          "byteAddress": 20,
-          "default": 0,
+          "byteAddress": 8,
+          "default": 7,
           "elementWordSize": 4,
+          "hasExplicitDefault": true,
           "id": 1,
-          "isInherited": true,
-          "isInteger": false,
+          "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,
           "pointerDepth": 0,
-          "type": "float",
+          "type": "int",
+        },
+      ],
+      "memory": {
+        "__anonymous__1": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 19,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+    "boson": {
+      "memory": {},
+    },
+    "tau": {
+      "memory": {
+        "bar": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 1,
+          "byteAddress": 40,
+          "default": 16,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 6,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "foo": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
+          "byteAddress": 16,
+          "default": 1,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "he": {
+          "allocationUnitAddress": 7,
+          "allocationUnitCount": 1,
+          "byteAddress": 28,
+          "default": 10,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
         },
       },
     },
@@ -494,10 +634,11 @@
   "overview": {
     "compiledFunctions": [],
     "compiledModules": [
-      "oscA",
-      "oscB",
+      "anonymousStorage",
+      "boson",
+      "tau",
     ],
-    "requiredMemoryBytes": 28,
+    "requiredMemoryBytes": 44,
     "wasmExports": [
       "initDefaults",
       "main",

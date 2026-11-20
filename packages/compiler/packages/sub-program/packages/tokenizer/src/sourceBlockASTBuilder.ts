@@ -8,7 +8,6 @@ import type {
 	FunctionLine,
 	ImportLine,
 	ModuleLine,
-	PrototypeLine,
 } from '@8f4e/language-spec';
 import { isFunctionBodyInstructionName, isImportedFunctionDeclarationInstructionName } from '@8f4e/language-spec';
 import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
@@ -38,15 +37,8 @@ type ConstantsASTBuilder = {
 	constantsLine: ConstantsLine;
 };
 
-/** Accumulates prototype memory declarations while the tokenizer builds a validated AST. */
-type PrototypeASTBuilder = {
-	type: 'prototype';
-	id: string;
-	prototypeLine: PrototypeLine;
-};
-
 /** Source block builder selected from the first valid source block in parsed input. */
-export type SourceBlockASTBuilder = ModuleASTBuilder | FunctionASTBuilder | ConstantsASTBuilder | PrototypeASTBuilder;
+export type SourceBlockASTBuilder = ModuleASTBuilder | FunctionASTBuilder | ConstantsASTBuilder;
 
 /**
  * Creates the source-block builder represented by a parsed block-start line.
@@ -74,12 +66,6 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 				id: line.arguments[0].value,
 				constantsLine: line,
 			};
-		case 'prototype':
-			return {
-				type: 'prototype',
-				id: line.arguments[0].value,
-				prototypeLine: line,
-			};
 		default:
 			return undefined;
 	}
@@ -87,7 +73,7 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 
 /** Validates function declaration structure while collecting its AST metadata. */
 function applyFunctionASTLine(builder: FunctionASTBuilder, line: CompilerASTLine): void {
-	if (builder.bodyStarted && (line.instruction === 'param' || line.instruction === 'paramShape')) {
+	if (builder.bodyStarted && line.instruction === 'param') {
 		throw new SyntaxIssue(SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY, undefined, line);
 	}
 
@@ -139,8 +125,6 @@ export function applySourceBlockASTLine(builder: SourceBlockASTBuilder, line: Co
 			return;
 		case 'constants':
 			return;
-		case 'prototype':
-			return;
 	}
 }
 
@@ -183,13 +167,6 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 				id: builder.id,
 				lines,
 				constantsLine: builder.constantsLine,
-			};
-		case 'prototype':
-			return {
-				type: 'prototype',
-				id: builder.id,
-				lines,
-				prototypeLine: builder.prototypeLine,
 			};
 	}
 }

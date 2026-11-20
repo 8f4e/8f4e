@@ -49,7 +49,6 @@ function addBlock(target: ProjectObjectModel, node: SourceBlock, type: DocumentB
 		const collections = {
 			function: target.functions,
 			constants: target.constants,
-			prototype: target.prototypes,
 			includes: target.includes,
 			note: target.notes,
 		};

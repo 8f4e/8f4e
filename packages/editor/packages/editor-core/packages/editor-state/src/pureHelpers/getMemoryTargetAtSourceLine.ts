@@ -51,8 +51,7 @@ export default function getMemoryTargetAtSourceLine(
 
 	const sourceName = getDeclarationName(sourceLine);
 	const index = plannedModule.declarationSources.findIndex(
-		({ line, isInherited }) =>
-			!isInherited &&
+		({ line }) =>
 			line.lineNumber === sourceLineIndex &&
 			line.instruction === sourceLine.instruction &&
 			getDeclarationName(line) === sourceName

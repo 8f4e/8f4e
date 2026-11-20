@@ -17,7 +17,7 @@ Shared conversion from live editor blocks to the canonical project model.
 `serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving, history, and live
 compilation. It is not a separate editor schema and it is not the exported `.8f4e` file format.
 
-Each known editor block is placed directly into the model's `execution`, `functions`, `constants`, `prototypes`,
+Each known editor block is placed directly into the model's `execution`, `functions`, `constants`,
 `includes`, or `notes` collection. Incomplete blocks go to `unknown`; modules carry their required `entry`. Asset
 directives remain embedded in block source. All notes belong to the project and are included in session saves,
 history snapshots, and project files, regardless of their names.
@@ -65,7 +65,7 @@ The canonical structure is defined by `@8f4e/language-spec`:
 
 Projects contain local `entries`, root-owned `code`, an ordered `execution` list of modules and groups, and separate
 function,
-constant, prototype, include, note, and unknown-block collections. Each group recursively owns the same project
+constant, include, note, and unknown-block collections. Each group recursively owns the same project
 structure plus its name, entry, source, and exposures. See the language-spec `ProjectObjectModel` definition for the
 complete contract.
 

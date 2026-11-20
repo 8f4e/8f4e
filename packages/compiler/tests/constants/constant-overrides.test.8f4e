@@ -41,17 +41,12 @@ use preset
 push VALUE
 functionEnd int
 
-prototype values
-use preset
-int value VALUE
-float level LEVEL
-prototypeEnd
-
 entry test
 module finalValues
 use preset
 use derived
-shape values
+int value VALUE
+float level LEVEL
 
 push value
 assertEqual 40

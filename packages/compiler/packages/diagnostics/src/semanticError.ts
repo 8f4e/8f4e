@@ -130,16 +130,6 @@ function formatSemanticMessage(
 			return 'Possible division by zero. (' + code + ')';
 		case ErrorCode.MISSING_FUNCTION_ID:
 			return 'Missing function ID. (' + code + ')';
-		case ErrorCode.MISSING_PROTOTYPE_ID:
-			return 'Missing prototype ID. (' + code + ')';
-		case ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH:
-			return (
-				'paramShape cannot expand this prototype declaration because the resulting pointer parameter type is unsupported. (' +
-				code +
-				')'
-			);
-		case ErrorCode.PUSH_SHAPE_REQUIRES_MODULE_SHAPE:
-			return 'pushShape requires the current module to declare the requested shape. (' + code + ')';
 		case ErrorCode.INVALID_FUNCTION_SIGNATURE:
 			return 'Invalid function signature. Parameters and returns must be "int", "float", or "float64". (' + code + ')';
 		case ErrorCode.DUPLICATE_FUNCTION_SIGNATURE:

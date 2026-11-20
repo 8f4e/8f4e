@@ -18,7 +18,9 @@ const exampleProjects = [
 
 const additionalProjects = [
 	'packages/examples/src/projects/audio/formantSynth.8f4e',
+	'packages/examples/src/projects/audio/keyboardController6OperatorFMSynth.8f4e',
 	'packages/examples/src/projects/audio/minBLEP.8f4e',
+	'packages/examples/src/benchmarks/bytecode-size/fmSynth.8f4e',
 	'packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e',
 	'packages/examples/src/projects/audio/reverb.8f4e',
 	'packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e',

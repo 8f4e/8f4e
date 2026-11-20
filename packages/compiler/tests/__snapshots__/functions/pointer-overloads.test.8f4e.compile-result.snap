@@ -24,10 +24,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "floatState",
+              "value": "float*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
             },
           ],
-          "instruction": "paramShape",
+          "instruction": "param",
         },
         {
           "arguments": [
@@ -81,10 +87,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "integerState",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
             },
           ],
-          "instruction": "paramShape",
+          "instruction": "param",
         },
         {
           "arguments": [
@@ -118,17 +130,6 @@
   "functionOverview": {
     "readState__float_p": {
       "id": "readState__float_p",
-      "paramShapeExpansions": [
-        {
-          "lineNumber": 2,
-          "parameters": [
-            {
-              "name": "value",
-              "type": "float*",
-            },
-          ],
-        },
-      ],
       "signature": {
         "parameters": [
           {
@@ -143,17 +144,6 @@
     },
     "readState__int_p": {
       "id": "readState__int_p",
-      "paramShapeExpansions": [
-        {
-          "lineNumber": 2,
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int*",
-            },
-          ],
-        },
-      ],
       "signature": {
         "parameters": [
           {
@@ -188,21 +178,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "floatState",
+              "value": "value",
             },
-          ],
-          "instruction": "shape",
-        },
-        {
-          "arguments": [
             {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "floatState",
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.5,
             },
           ],
-          "instruction": "pushShape",
+          "instruction": "float",
         },
         {
           "arguments": [
@@ -211,6 +195,13 @@
               "scope": "local",
               "type": "identifier",
               "value": "readState",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
             },
           ],
           "instruction": "call",
@@ -252,21 +243,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "integerState",
+              "value": "value",
             },
-          ],
-          "instruction": "shape",
-        },
-        {
-          "arguments": [
             {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "integerState",
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
             },
           ],
-          "instruction": "pushShape",
+          "instruction": "int",
         },
         {
           "arguments": [
@@ -275,6 +260,13 @@
               "scope": "local",
               "type": "identifier",
               "value": "readState",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
             },
           ],
           "instruction": "call",
@@ -308,7 +300,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
-          "isInherited": true,
           "isInteger": false,
           "isUnsigned": false,
           "numberOfElements": 1,
@@ -327,7 +318,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
-          "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

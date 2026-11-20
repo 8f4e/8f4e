@@ -31,7 +31,7 @@ In short:
 
 ## Declaration and Execution Handoff
 
-Function registration resolves signatures and `paramShape` expansions, selects the last declaration for each scoped name
+Function registration resolves signatures, selects the last declaration for each scoped name
 and parameter signature, and collects its imports, exports, and impurity flags. Only selected functions proceed to constant
 and memory reference resolution. Semantic reference resolution then assigns source binding identities and produces
 executable bodies. These bodies exclude parameter/local declarations, source block markers, memory declarations, and

@@ -1015,8 +1015,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1042,8 +1041,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -1183,8 +1181,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1203,8 +1200,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1223,8 +1219,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -1332,8 +1327,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1359,8 +1353,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -1500,8 +1493,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1520,8 +1512,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -1540,8 +1531,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -1551,30 +1541,25 @@
     "audioout": {
       "0": {
         "value": {},
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "phaseAccumulator": {
       "0": {
         "value": 440,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "2": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     }
   },

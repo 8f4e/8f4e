@@ -2,7 +2,7 @@
 
 ## Entity names
 
-Entity names and references must contain only ASCII characters. This includes module, function, export, parameter, local, memory, prototype, constant, and constant namespace names. Non-ASCII names are rejected during tokenization with `INVALID_IDENTIFIER` and the source line.
+Entity names and references must contain only ASCII characters. This includes module, function, export, parameter, local, memory, constant, and constant namespace names. Non-ASCII names are rejected during tokenization with `INVALID_IDENTIFIER` and the source line.
 
 Each entity kind retains its naming rules: module names match `[A-Za-z_][A-Za-z0-9_-]*`, while constants start with an uppercase ASCII letter and contain no lowercase letters. Other valid ASCII punctuation remains accepted. This restriction does not apply to quoted string literals.
 
@@ -115,7 +115,7 @@ lines before ordinary project parsing. Each group has its own memory: after one 
 and 21. `useTemplate` stays in the expanded group's source. Later compiler stages and the project object model operate
 on ordinary expanded groups; templates are not editor directives.
 
-Templates share child functions, includes, constants, prototypes, notes, entries (including empty ones), modules, nested
+Templates share child functions, includes, constants, notes, entries (including empty ones), modules, nested
 groups, and their internal layout. Group names, outer positions, `expose`, `init`, `pass`, and other group-level lines
 remain specific to each instance. Template bodies contain child blocks and entries, not instance declaration lines.
 

@@ -38,9 +38,8 @@ plugin is installed.
 - `state.codeErrors.compiler` contains diagnostics mapped to project blocks and source lines.
 
 Source-specific views use `getCompiledModuleForCodeBlock` to match the selected definition's `projectBlockId` to the
-editor block's `creationIndex`. `getModuleCompilationForCodeBlock` resolves that module, its memory plan, and its defaults
-together, returning no result until all reports are available. Overridden source blocks receive no module artifacts.
-The connectors plugin owns inherited declaration ordering, shape/paramShape labels, and connector presentation.
+editor block's `creationIndex`. Overridden source blocks receive no module artifacts.
+The connectors plugin uses the active module's memory plan to place endpoints at the source declarations.
 
 `getCurrentCompiledLineForCodeBlock(block, state, sourceLineNumber = block.cursor.row)` supplies current parsed
 source and stack-analysis metadata to line-based views. It checks the accepted input revision and source owner,

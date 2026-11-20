@@ -282,13 +282,11 @@ function setMemoryDefault(
 	defaults: MemoryDefaults,
 	memoryId: number,
 	value: MemoryDefault['value'],
-	line: MemoryDeclarationLine,
-	isInherited: boolean
+	line: MemoryDeclarationLine
 ): void {
 	defaults[memoryId] = {
 		value,
 		hasExplicitDefault: declarationHasExplicitDefault(line),
-		isInherited,
 	};
 }
 
@@ -307,7 +305,7 @@ function resolveModuleMemoryDefaults(
 	const memoryDefaults: MemoryDefaults = {};
 	const declarationSourceFacts = memoryReferences.declarationSourcesByModuleId[plannedModule.id]!.lineFacts;
 
-	plannedModule.declarationSources.forEach(({ line, isInherited }, index) => {
+	plannedModule.declarationSources.forEach(({ line }, index) => {
 		const plannedDeclaration = plannedModule.declarations[index]!;
 
 		const resolvedLine = applyMemoryReferenceFacts(line, declarationSourceFacts[index]);
@@ -316,8 +314,7 @@ function resolveModuleMemoryDefaults(
 				memoryDefaults,
 				plannedDeclaration.id,
 				createArrayDefaultValues(resolvedLine, plannedDeclaration),
-				resolvedLine,
-				isInherited
+				resolvedLine
 			);
 			return;
 		}
@@ -327,8 +324,7 @@ function resolveModuleMemoryDefaults(
 			memoryDefaults,
 			plannedDeclaration.id,
 			plannedDeclaration.isInteger ? Math.trunc(defaultValue) : defaultValue,
-			resolvedLine,
-			isInherited
+			resolvedLine
 		);
 	});
 
@@ -337,10 +333,7 @@ function resolveModuleMemoryDefaults(
 		if (declaration.name === undefined) continue;
 		const effective = plannedModule.memory[declaration.name]!;
 		if (effective.id !== declaration.id) {
-			memoryDefaults[declaration.id] = {
-				...memoryDefaults[effective.id]!,
-				isInherited: memoryDefaults[declaration.id]!.isInherited,
-			};
+			memoryDefaults[declaration.id] = { ...memoryDefaults[effective.id]! };
 		}
 	}
 
@@ -350,8 +343,7 @@ function resolveModuleMemoryDefaults(
 /**
  * Resolves memory defaults for a whole planned sub-program.
  *
- * The memory plan is the source of truth for declaration order, layout, and
- * effective declaration source lines after shape expansion.
+ * The memory plan is the source of truth for declaration order, layout, and declaration source lines.
  *
  * @param input - Completed memory plan and memory-reference facts for the sub-program.
  * @returns Memory defaults keyed by module id.

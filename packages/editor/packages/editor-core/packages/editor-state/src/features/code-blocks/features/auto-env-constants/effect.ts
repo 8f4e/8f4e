@@ -74,7 +74,6 @@ export default function autoEnvConstants(store: StateManager<State>, events: Eve
 				...state.initialProjectState.execution,
 				...state.initialProjectState.functions,
 				...state.initialProjectState.constants,
-				...state.initialProjectState.prototypes,
 				...state.initialProjectState.includes,
 				...state.initialProjectState.notes,
 				...state.initialProjectState.unknown,

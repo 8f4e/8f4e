@@ -107,7 +107,6 @@ outermost permission reduction rule should not automatically apply recursively.
 - Should bare `*` retain read/write access, or should access qualifiers eventually become mandatory?
 - How should taking the address of a qualified pointer slot preserve permissions at every level?
 - How should parameter matching and overload resolution handle permission reduction?
-- How should `paramShape` expansions select access modes for generated pointer parameters?
 - Which multi-level pointer conversions are safe, and which should require an exact inner type match?
 - How should raw integer addresses and explicit pointer conversions interact with access permissions?
 - Should qualifiers also inform the editor's visual representation of module inputs and outputs?

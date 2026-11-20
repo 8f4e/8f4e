@@ -1,10 +1,9 @@
-import { gapCalculator, getModuleCompilationForCodeBlock } from '@8f4e/editor-state';
+import { gapCalculator, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { ConnectorWidgets } from '../types';
 import { isInputMemoryDeclaration, isOutputMemoryDeclaration } from './connectors/memoryDeclarations';
 import { getProjectMemoryExposureConnectors } from './connectors/projectMemoryExposures';
-import { getMemoryDeclarationRows } from './getMemoryDeclarationRows';
 
 /** Derive both connector lists from one ordered traversal of the block's memory declarations. */
 export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state: State): ConnectorWidgets {
@@ -47,15 +46,15 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 			addConnector(exposure.targetMemory, row);
 		}
 	} else {
-		const compilation = getModuleCompilationForCodeBlock(codeBlock, state);
-		if (!compilation) return widgets;
-		for (const { memory, rowOffset } of getMemoryDeclarationRows(
-			compilation.plannedModule,
-			compilation.memoryDefaults
-		)) {
-			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps) + rowOffset);
+		const compiledModule = getCompiledModuleForCodeBlock(codeBlock, state);
+		if (!compiledModule) return widgets;
+		const plannedModule = state.compiler.result.memoryPlan.modules[compiledModule.id];
+		if (!plannedModule) return widgets;
+		for (const memory of plannedModule.declarations) {
+			if (memory.name !== undefined && plannedModule.memory[memory.name]?.id !== memory.id) continue;
+			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps));
 		}
-		for (const slot of Object.values(compilation.compiledModule.referenceSlots)) {
+		for (const slot of Object.values(compiledModule.referenceSlots)) {
 			const y = gapCalculator(slot.lineNumber, codeBlock.gaps) * height;
 			widgets.inputs.push({
 				x: 0,

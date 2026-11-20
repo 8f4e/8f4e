@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { compileProject, parseProjectSource } from '../src';
 
 describe('resolved call signatures', () => {
-	it('preserves overload names, expanded parameters, imports, entry calls, and function calls on source lines', async () => {
+	it('preserves overload names, typed parameters, imports, entry calls, and function calls on source lines', async () => {
 		const result = await compileProject(
 			parseProjectSource(`8f4e/v1
 entry main
@@ -16,7 +16,7 @@ push 1.0
 call convert
 drop
 call inspect &value
-call expanded 3 &value &factor 0.5
+call mix 3 &value &factor 0.5
 call split 7
 drop
 drop
@@ -26,10 +26,6 @@ moduleEnd
 entryEnd
 entry init
 entryEnd
-prototype state
-int left
-float right
-prototypeEnd
 function convert
 param int integer
 push integer
@@ -42,9 +38,10 @@ function inspect
 #import inspect
 param int* address
 functionEnd
-function expanded
+function mix
 param int before
-paramShape state
+param int* left
+param float* right
 param float after
 functionEnd
 function split
@@ -74,7 +71,7 @@ functionEnd
 				signature: { parameters: [{ name: 'address', type: 'int*' }], returns: [] },
 			},
 			{
-				targetFunctionId: createFunctionId('expanded', ['int', 'int*', 'float*', 'float']),
+				targetFunctionId: createFunctionId('mix', ['int', 'int*', 'float*', 'float']),
 				signature: {
 					parameters: [
 						{ name: 'before', type: 'int' },

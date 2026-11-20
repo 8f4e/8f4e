@@ -31,7 +31,7 @@ describe('gaps', () => {
 			displayModel: {
 				lines: [
 					{ sourceLineIndex: 0, text: 'module foo' },
-					{ sourceLineIndex: 1, text: 'shape sharedState' },
+					{ sourceLineIndex: 1, text: 'int value' },
 					{ sourceLineIndex: 2, text: 'moduleEnd' },
 				],
 				displayRowToSourceLineIndex: [0, 1, 2],
@@ -42,7 +42,7 @@ describe('gaps', () => {
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 3 });
-		const graphicData = createCodeBlockGraphicData({ code: ['module foo', 'shape sharedState', 'moduleEnd'] });
+		const graphicData = createCodeBlockGraphicData({ code: ['module foo', 'int value', 'moduleEnd'] });
 
 		gaps(graphicData, blockLayout);
 

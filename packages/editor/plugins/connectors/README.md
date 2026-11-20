@@ -1,18 +1,15 @@
 # Connectors plugin
 
-`@8f4e/editor-plugin-connectors` owns input/output connector sprites, expanded declaration labels, and connection
-geometry. Install `connectorsPlugin` on its own to draw the labels and widgets without a GPU wire layer. Browser
+`@8f4e/editor-plugin-connectors` owns input/output connector sprites and connection geometry.
+Install `connectorsPlugin` on its own to draw the widgets without a GPU wire layer. Browser
 compositions that want wires also install `@8f4e/editor-plugin-wires`. Compilation and memory resolution do not
 depend on either plugin.
 
-The plugin expands compiler-reported `shape` declarations and `paramShape` function parameters for display, reserving
-rows through the generic layout contribution API. Labels stay private and draw with connectors through the ordered
-block drawer registry. Inherited declaration labels and connector endpoints use the same ordered memory rows. Hidden source and
-disabled blocks reserve no expansion rows. Source edits, recompilation, font changes, and group navigation refresh
-the layout; disposal removes its labels and reserved space. The compiler owns all language semantics.
+Connector sprites draw through the ordered block drawer registry. Endpoints follow declaration rows and group
+`expose` rows, including the spacing contributed by other layout plugins. The compiler owns all language semantics.
 
 The shared geometry code derives pointer inputs, pointer-slot address outputs, and public value outputs from the
-compiler memory plan, including inherited shape declarations and exposed memory on nested project groups. One
+compiler memory plan, including exposed memory on nested project groups. One
 derivation pass produces both connector lists.
 Module connectors belong only to the block selected by the compiler's `projectBlockId`, so overridden definitions do
 not add duplicate endpoints and selecting a same-named block cannot redirect wires.

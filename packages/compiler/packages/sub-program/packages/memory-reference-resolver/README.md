@@ -48,7 +48,7 @@ initializer diagnostics retain the group's path and the initializer's source lin
 
 The pass returns `references`, a report containing:
 
-- `prototypes`, `modules`, `constants`, and `functions`: per-line argument facts aligned with the input AST arrays.
+- `modules`, `constants`, and `functions`: per-line argument facts aligned with the input AST arrays.
 - Each module's `referenceSlots`: fixed bindings with source identity and canonical targets; empty when unused.
 - `declarationSourcesByModuleId`: per-line argument facts aligned with each planned module's effective declaration sources.
 - `pointerMetadataByModuleId`: pointer target facts derived from resolved declaration-source address defaults.
@@ -63,12 +63,10 @@ There should be one sub-program-level call during compilation:
 
 ```ts
 const memoryPlan = planSubProgramMemoryLayout({
-	prototypes,
 	modules,
 });
 const memoryReferences = resolveMemoryReferences({
 	ast: {
-		prototypes,
 		modules,
 		constants,
 		functions,
@@ -141,7 +139,6 @@ The package entry point is an `index.ts` function that returns an explicit resul
 ```ts
 const result = resolveMemoryReferences({
 	ast: {
-		prototypes,
 		modules,
 		constants,
 		functions,

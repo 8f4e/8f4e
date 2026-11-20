@@ -40,5 +40,4 @@ Syntax errors belong to `src/syntax/syntaxError.ts`; semantic errors belong to l
 
 Function declaration checks run while the function AST builder consumes parsed lines. The builder records whether the
 body has started and uses its existing import/export metadata to reject invalid declarations before building a validated
-AST. Later stages trust these guarantees. Export-name collisions between different functions and prototype lookup for
-`paramShape` remain semantic checks.
+AST. Later stages trust these guarantees. Export-name collisions between different functions remain semantic checks.

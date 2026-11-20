@@ -11,7 +11,6 @@ import resolveMapReferences from './map';
 import resolveMemoryCopyReferences from './memoryCopy';
 import resolveMemoryDeclarationReferences from './memoryDeclaration';
 import resolvePushReferences from './push';
-import resolvePushShapeReferences from './pushShape';
 
 const instructionReferenceResolvers = {
 	assertEqual: resolveAssertEqualReferences,
@@ -25,7 +24,6 @@ const instructionReferenceResolvers = {
 	map: resolveMapReferences,
 	memoryCopy: resolveMemoryCopyReferences,
 	push: resolvePushReferences,
-	pushShape: resolvePushShapeReferences,
 } as const;
 
 /**

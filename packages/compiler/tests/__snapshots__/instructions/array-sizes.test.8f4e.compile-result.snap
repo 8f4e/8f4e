@@ -2,6 +2,164 @@
   "functionAst": {},
   "functionOverview": {},
   "moduleAst": {
+    "constantArraySizes": {
+      "id": "constantArraySizes",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "constantArraySizes",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "validSizes",
+            },
+          ],
+          "instruction": "use",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ZERO",
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "single",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ONE",
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "multiple",
+            },
+            {
+              "left": {
+                "referenceKind": "constant",
+                "scope": "local",
+                "type": "identifier",
+                "value": "SIZE",
+              },
+              "operator": "/",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 1,
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "int[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-count",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "count(empty)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-count",
+              "scope": "local",
+              "targetMemoryId": "single",
+              "type": "identifier",
+              "value": "count(single)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "element-count",
+              "scope": "local",
+              "targetMemoryId": "multiple",
+              "type": "identifier",
+              "value": "count(multiple)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
     "integerSizes": {
       "id": "integerSizes",
       "lines": [
@@ -534,104 +692,6 @@
               "targetMemoryId": "doublePointerPointers",
               "type": "identifier",
               "value": "count(doublePointerPointers)",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 3,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [],
-          "instruction": "moduleEnd",
-        },
-      ],
-      "type": "module",
-    },
-    "prototypeArraySizes": {
-      "id": "prototypeArraySizes",
-      "lines": [
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "prototypeArraySizes",
-            },
-          ],
-          "instruction": "module",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "arraySizeBoundaries",
-            },
-          ],
-          "instruction": "shape",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "element-count",
-              "scope": "local",
-              "targetMemoryId": "empty",
-              "type": "identifier",
-              "value": "count(empty)",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 0,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "element-count",
-              "scope": "local",
-              "targetMemoryId": "single",
-              "type": "identifier",
-              "value": "count(single)",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": true,
-              "type": "literal",
-              "value": 1,
-            },
-          ],
-          "instruction": "assertEqual",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "element-count",
-              "scope": "local",
-              "targetMemoryId": "multiple",
-              "type": "identifier",
-              "value": "count(multiple)",
             },
           ],
           "instruction": "push",
@@ -1761,12 +1821,55 @@
     },
   },
   "moduleMemory": {
+    "constantArraySizes": {
+      "memory": {
+        "empty": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 0,
+          "byteAddress": 4,
+          "default": {},
+          "elementWordSize": 4,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 0,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "multiple": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 3,
+          "byteAddress": 8,
+          "default": {},
+          "elementWordSize": 4,
+          "id": 2,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 3,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "single": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": {},
+          "elementWordSize": 4,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
     "integerSizes": {
       "memory": {
         "bytes": {
-          "allocationUnitAddress": 8,
+          "allocationUnitAddress": 12,
           "allocationUnitCount": 1,
-          "byteAddress": 32,
+          "byteAddress": 48,
           "default": {},
           "elementWordSize": 1,
           "id": 3,
@@ -1777,9 +1880,9 @@
           "type": "int8u",
         },
         "doublePointerPointers": {
-          "allocationUnitAddress": 37,
+          "allocationUnitAddress": 41,
           "allocationUnitCount": 3,
-          "byteAddress": 148,
+          "byteAddress": 164,
           "default": {},
           "elementWordSize": 4,
           "id": 13,
@@ -1791,9 +1894,9 @@
           "type": "float64**",
         },
         "doublePointers": {
-          "allocationUnitAddress": 34,
+          "allocationUnitAddress": 38,
           "allocationUnitCount": 3,
-          "byteAddress": 136,
+          "byteAddress": 152,
           "default": {},
           "elementWordSize": 4,
           "id": 12,
@@ -1805,9 +1908,9 @@
           "type": "float64*",
         },
         "doubles": {
-          "allocationUnitAddress": 28,
+          "allocationUnitAddress": 32,
           "allocationUnitCount": 6,
-          "byteAddress": 112,
+          "byteAddress": 128,
           "default": {},
           "elementWordSize": 8,
           "id": 11,
@@ -1819,9 +1922,9 @@
           "type": "float64",
         },
         "floatPointerPointers": {
-          "allocationUnitAddress": 19,
+          "allocationUnitAddress": 23,
           "allocationUnitCount": 3,
-          "byteAddress": 76,
+          "byteAddress": 92,
           "default": {},
           "elementWordSize": 4,
           "id": 8,
@@ -1833,9 +1936,9 @@
           "type": "float**",
         },
         "floatPointers": {
-          "allocationUnitAddress": 16,
+          "allocationUnitAddress": 20,
           "allocationUnitCount": 3,
-          "byteAddress": 64,
+          "byteAddress": 80,
           "default": {},
           "elementWordSize": 4,
           "id": 7,
@@ -1847,9 +1950,9 @@
           "type": "float*",
         },
         "floats": {
-          "allocationUnitAddress": 1,
+          "allocationUnitAddress": 5,
           "allocationUnitCount": 3,
-          "byteAddress": 4,
+          "byteAddress": 20,
           "default": {},
           "elementWordSize": 4,
           "id": 0,
@@ -1860,9 +1963,9 @@
           "type": "float",
         },
         "intPointerPointers": {
-          "allocationUnitAddress": 25,
+          "allocationUnitAddress": 29,
           "allocationUnitCount": 3,
-          "byteAddress": 100,
+          "byteAddress": 116,
           "default": {},
           "elementWordSize": 4,
           "id": 10,
@@ -1874,9 +1977,9 @@
           "type": "int**",
         },
         "intPointers": {
-          "allocationUnitAddress": 22,
+          "allocationUnitAddress": 26,
           "allocationUnitCount": 3,
-          "byteAddress": 88,
+          "byteAddress": 104,
           "default": {},
           "elementWordSize": 4,
           "id": 9,
@@ -1888,9 +1991,9 @@
           "type": "int*",
         },
         "integers": {
-          "allocationUnitAddress": 4,
+          "allocationUnitAddress": 8,
           "allocationUnitCount": 3,
-          "byteAddress": 16,
+          "byteAddress": 32,
           "default": {},
           "elementWordSize": 4,
           "id": 1,
@@ -1901,9 +2004,9 @@
           "type": "int",
         },
         "shorts": {
-          "allocationUnitAddress": 9,
+          "allocationUnitAddress": 13,
           "allocationUnitCount": 2,
-          "byteAddress": 36,
+          "byteAddress": 52,
           "default": {},
           "elementWordSize": 2,
           "id": 4,
@@ -1914,9 +2017,9 @@
           "type": "int16",
         },
         "signedBytes": {
-          "allocationUnitAddress": 7,
+          "allocationUnitAddress": 11,
           "allocationUnitCount": 1,
-          "byteAddress": 28,
+          "byteAddress": 44,
           "default": {},
           "elementWordSize": 1,
           "id": 2,
@@ -1927,9 +2030,9 @@
           "type": "int8",
         },
         "unsignedShorts": {
-          "allocationUnitAddress": 11,
+          "allocationUnitAddress": 15,
           "allocationUnitCount": 2,
-          "byteAddress": 44,
+          "byteAddress": 60,
           "default": {},
           "elementWordSize": 2,
           "id": 5,
@@ -1940,9 +2043,9 @@
           "type": "int16u",
         },
         "words": {
-          "allocationUnitAddress": 13,
+          "allocationUnitAddress": 17,
           "allocationUnitCount": 3,
-          "byteAddress": 52,
+          "byteAddress": 68,
           "default": {},
           "elementWordSize": 4,
           "id": 6,
@@ -1951,52 +2054,6 @@
           "numberOfElements": 3,
           "pointerDepth": 0,
           "type": "int32",
-        },
-      },
-    },
-    "prototypeArraySizes": {
-      "memory": {
-        "empty": {
-          "allocationUnitAddress": 40,
-          "allocationUnitCount": 0,
-          "byteAddress": 160,
-          "default": {},
-          "elementWordSize": 4,
-          "id": 0,
-          "isInherited": true,
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 0,
-          "pointerDepth": 0,
-          "type": "int",
-        },
-        "multiple": {
-          "allocationUnitAddress": 41,
-          "allocationUnitCount": 3,
-          "byteAddress": 164,
-          "default": {},
-          "elementWordSize": 4,
-          "id": 2,
-          "isInherited": true,
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 3,
-          "pointerDepth": 0,
-          "type": "int",
-        },
-        "single": {
-          "allocationUnitAddress": 40,
-          "allocationUnitCount": 1,
-          "byteAddress": 160,
-          "default": {},
-          "elementWordSize": 4,
-          "id": 1,
-          "isInherited": true,
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
         },
       },
     },
@@ -2390,8 +2447,8 @@
   "overview": {
     "compiledFunctions": [],
     "compiledModules": [
+      "constantArraySizes",
       "integerSizes",
-      "prototypeArraySizes",
       "wholeFloatSizes",
       "zeroLengthArrays",
     ],

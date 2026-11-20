@@ -14,8 +14,8 @@ This package is the place for data and types that describe the 8f4e language its
 
 The package is intentionally declarative. Other compiler packages import these facts so they agree on the same language model.
 
-`FunctionSignature.parameters` contains `{ name, type }` entries in declaration order, including fields expanded by
-`paramShape`. Function identities and WebAssembly types depend only on the parameter types. When stack analysis is
+`FunctionSignature.parameters` contains `{ name, type }` entries in declaration order.
+Function identities and WebAssembly types depend only on the parameter types. When stack analysis is
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete
 function signature, including calls to generated entry dispatchers.
 

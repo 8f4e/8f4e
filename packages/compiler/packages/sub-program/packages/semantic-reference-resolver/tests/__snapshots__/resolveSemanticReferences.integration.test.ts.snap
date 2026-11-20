@@ -234,52 +234,6 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
           },
           "sourceLineIndex": 4,
         },
-        {
-          "line": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "document",
-            },
-            "instruction": "pushShape",
-            "lineNumber": 6,
-            "shapeExpansions": [
-              {
-                "pointerType": "int*",
-                "pushLine": {
-                  "arguments": [
-                    {
-                      "address": {
-                        "safeRange": {
-                          "byteAddress": 4,
-                          "memoryId": 0,
-                          "moduleId": "main",
-                          "safeByteLength": 4,
-                          "source": "memory-start",
-                        },
-                      },
-                      "isInteger": true,
-                      "type": "literal",
-                      "value": 4,
-                    },
-                  ],
-                  "diagnosticSource": {
-                    "kind": "document",
-                  },
-                  "instruction": "push",
-                  "lineNumber": 6,
-                },
-              },
-            ],
-          },
-          "sourceLineIndex": 5,
-        },
       ],
       "referenceSlots": {},
       "skipExecutionInCycle": false,

@@ -264,10 +264,33 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "values",
+              "value": "value",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "VALUE",
             },
           ],
-          "instruction": "shape",
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "level",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "LEVEL",
+            },
+          ],
+          "instruction": "float",
         },
         {
           "arguments": [
@@ -660,7 +683,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 1,
-          "isInherited": true,
           "isInteger": false,
           "isUnsigned": false,
           "numberOfElements": 1,
@@ -675,7 +697,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
-          "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

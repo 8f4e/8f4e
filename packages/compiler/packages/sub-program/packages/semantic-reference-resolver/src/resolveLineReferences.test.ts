@@ -565,14 +565,13 @@ describe('resolveSemanticReferences', () => {
 		} satisfies FunctionMetadata;
 
 		const result = resolveSemanticReferences({
-			ast: { prototypes: [], modules: [], constants: [] },
+			ast: { modules: [], constants: [] },
 			registeredFunctions: [{ ast, metadata }],
 			memoryPlan: createEmptyMemoryPlan(),
 			memoryAliases: new Map(),
 			pointerMetadataByModuleId: {},
-			constantReferences: { prototypes: [], modules: [], constants: [], functions: [{ lineFacts: [] }] },
+			constantReferences: { modules: [], constants: [], functions: [{ lineFacts: [] }] },
 			memoryReferences: {
-				prototypes: [],
 				modules: [],
 				constants: [],
 				functions: [{ lineFacts: [] }],
@@ -585,7 +584,6 @@ describe('resolveSemanticReferences', () => {
 				},
 				arityByName: { echo: 1 },
 			},
-			prototypeShapes: {},
 		});
 
 		expect(result.references.functions[functionId].body[0].line).toMatchObject({

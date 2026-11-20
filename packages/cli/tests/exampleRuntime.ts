@@ -25,7 +25,6 @@ export async function loadExample(
 					...createProjectObjectModel(),
 					functions: unit.functions,
 					includes: unit.includes,
-					prototypes: unit.prototypes,
 					constants: [...byName.values()],
 				};
 			}

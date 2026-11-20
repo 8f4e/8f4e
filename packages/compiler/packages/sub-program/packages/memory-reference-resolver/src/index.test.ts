@@ -114,7 +114,6 @@ function withRemoteModules(
 
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 		constants: [],
 		functions: [],
@@ -156,7 +155,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -242,7 +240,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -294,7 +291,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -303,7 +299,6 @@ describe('resolveMemoryReferences', () => {
 			memoryAliases: new Map(),
 			projectMemoryInitializerScopes: [],
 			constantReferences: {
-				prototypes: [],
 				modules: [
 					{
 						lineFacts: [
@@ -384,7 +379,7 @@ describe('resolveMemoryReferences', () => {
 		]);
 
 		const result = resolveMemoryReferences({
-			ast: { prototypes: [], modules: [ast], constants: [], functions: [] },
+			ast: { modules: [ast], constants: [], functions: [] },
 			memoryPlan,
 			memoryAliases,
 			projectMemoryInitializerScopes: [],

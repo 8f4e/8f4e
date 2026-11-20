@@ -52,7 +52,6 @@ export function createMemoryDefault(
 	return {
 		value,
 		hasExplicitDefault: false,
-		isInherited: false,
 		...overrides,
 	};
 }

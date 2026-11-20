@@ -1,4 +1,10 @@
-import { createProjectObjectModel, type ProjectModuleBlock, type ProjectObjectModel } from '@8f4e/language-spec';
+import {
+	createProjectObjectModel,
+	ErrorCode,
+	MAX_FUNCTION_PARAMETERS,
+	type ProjectModuleBlock,
+	type ProjectObjectModel,
+} from '@8f4e/language-spec';
 import { composeProgram } from '@8f4e/program-composer/internal';
 import { describe, expect, it } from 'vitest';
 import { compileSubProgram } from '.';
@@ -9,13 +15,34 @@ const emptyProject: ProjectObjectModel = {
 	execution: [],
 	functions: [],
 	constants: [],
-	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],
 };
 
 describe('compileSubProgram', () => {
+	it('reports a signature overflow at the first parameter beyond the limit', () => {
+		const project = createProjectObjectModel();
+		project.functions.push({
+			id: 1,
+			code: [
+				'function helper',
+				...Array.from({ length: MAX_FUNCTION_PARAMETERS + 1 }, (_, index) => `param int input${index}`),
+				'functionEnd',
+			],
+		});
+
+		expect(() => compileSubProgram(composeProgram(project), {})).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.FUNCTION_SIGNATURE_OVERFLOW,
+					instruction: 'param',
+					location: { kind: 'block', projectBlockId: 1, projectGroupPath: '', lineNumber: MAX_FUNCTION_PARAMETERS + 1 },
+				}),
+			})
+		);
+	});
+
 	it("retains each module's entry ownership when composed modules are reordered", () => {
 		const module = (id: number, name: string, entry: string): ProjectModuleBlock => ({
 			type: 'module',

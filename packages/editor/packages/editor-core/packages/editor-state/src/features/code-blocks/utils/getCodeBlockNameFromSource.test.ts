@@ -14,10 +14,6 @@ describe('getCodeBlockNameFromSource', () => {
 		expect(getCodeBlockNameFromSource(['constants env', '', 'constantsEnd'])).toBe('env');
 	});
 
-	it('returns raw prototype names for prototype blocks', () => {
-		expect(getCodeBlockNameFromSource(['prototype oscillatorState', '', 'prototypeEnd'])).toBe('oscillatorState');
-	});
-
 	it('returns raw project-group names for group blocks', () => {
 		expect(getCodeBlockNameFromSource(['group audio', '', 'groupEnd'])).toBe('audio');
 	});

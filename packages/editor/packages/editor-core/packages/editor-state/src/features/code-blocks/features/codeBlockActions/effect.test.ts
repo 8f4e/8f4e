@@ -14,21 +14,18 @@ describe('codeBlockActions - insertion', () => {
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
 	});
-	it.each(['module', 'function', 'prototype'])(
-		'inserts duplicate %s names without rewriting source references',
-		blockType => {
-			mockState.codeBlockRendering.currentProject.blocks.push(
-				createMockCodeBlock({ name: 'same', code: [`${blockType} same`, `${blockType}End`] })
-			);
-			codeBlockActions(store, mockEvents);
-			const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
-			insert({ x: 100, y: 100, code: [`${blockType} same`, 'push &same:value', `${blockType}End`] });
-			const block = mockState.codeBlockRendering.currentProject.blocks.at(-1)!;
-			expect(block.name).toBe('same');
-			expect(block.code[0]).toBe(`${blockType} same`);
-			expect(block.code).toContain('push &same:value');
-		}
-	);
+	it.each(['module', 'function'])('inserts duplicate %s names without rewriting source references', blockType => {
+		mockState.codeBlockRendering.currentProject.blocks.push(
+			createMockCodeBlock({ name: 'same', code: [`${blockType} same`, `${blockType}End`] })
+		);
+		codeBlockActions(store, mockEvents);
+		const insert = vi.mocked(mockEvents.on).mock.calls.find(([name]) => name === 'insertCodeBlock')![1];
+		insert({ x: 100, y: 100, code: [`${blockType} same`, 'push &same:value', `${blockType}End`] });
+		const block = mockState.codeBlockRendering.currentProject.blocks.at(-1)!;
+		expect(block.name).toBe('same');
+		expect(block.code[0]).toBe(`${blockType} same`);
+		expect(block.code).toContain('push &same:value');
+	});
 	it('ignores insertion in view mode', () => {
 		mockState.editorMode = 'view';
 		codeBlockActions(store, mockEvents);

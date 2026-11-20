@@ -60,9 +60,6 @@ describe('compileToAST integration', () => {
 				['constants sizes', 'const TABLE_SIZE 4*2', 'const START &synth:buffer', 'constantsEnd'],
 				{ kind: 'document' }
 			),
-			prototype: compileToAST(['prototype state', 'float phase', 'int[] history', '- TABLE_SIZE', 'prototypeEnd'], {
-				kind: 'document',
-			}),
 		}).toMatchSnapshot();
 	});
 });

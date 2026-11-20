@@ -5,8 +5,7 @@
 Block instructions define the structure of your program. See detailed documentation in the `blocks/` folder:
 
 - [Module blocks](./blocks/module.md) - `module` and `moduleEnd`
-- [Prototype blocks](./blocks/prototype.md) - `prototype`, `prototypeEnd`, and `shape`
-- [Function blocks](./blocks/function.md) - `function`, `param`, `paramShape`, and `functionEnd`
+- [Function blocks](./blocks/function.md) - `function`, `param`, and `functionEnd`
 - [Constants blocks](./blocks/constants.md) - `constants` and `constantsEnd`
 
 ## Entries and project groups
@@ -116,7 +115,7 @@ entryEnd
 ```
 
 The syntax is `init &<exposed-memory> <number>` or `init &<exposed-memory> &<module>:<memory>`. The destination resolves
-against this group's exposures and must refer to a scalar declaration, including a scalar inherited from a shape.
+against this group's exposures and must refer to a scalar declaration.
 Arrays cannot be initialized as a whole through `init`.
 
 Numeric values use ordinary literal syntax, including zero, negative numbers, hexadecimal, binary, and `f64` suffixes.

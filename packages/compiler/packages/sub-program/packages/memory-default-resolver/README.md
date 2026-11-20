@@ -11,8 +11,8 @@ const memoryDefaultsByModuleId = resolveMemoryDefaults({
 });
 ```
 
-The result is the `memoryDefaultsByModuleId` record: scalar defaults, array initializer defaults, explicit-default flags,
-and inherited-shape flags keyed by module and declaration id. The input needs only the memory-reference report's
+The result is the `memoryDefaultsByModuleId` record: scalar defaults, array initializer defaults, and explicit-default
+flags keyed by module and declaration id. The input needs only the memory-reference report's
 `declarationSourcesByModuleId` facts. Pointer element counts remain owned by the memory-reference pass; orchestration
 passes those facts directly to semantic resolution, stack analysis, and compiled output.
 

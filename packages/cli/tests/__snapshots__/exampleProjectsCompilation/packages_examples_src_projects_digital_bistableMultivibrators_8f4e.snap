@@ -2840,8 +2840,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2942,8 +2941,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -2962,8 +2960,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3030,8 +3027,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3098,8 +3094,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3166,8 +3161,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3234,8 +3228,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3302,8 +3295,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3409,8 +3401,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -3436,8 +3427,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3543,8 +3533,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -3570,8 +3559,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3638,8 +3626,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -3708,8 +3695,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3810,8 +3796,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -3830,8 +3815,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3898,8 +3882,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3966,8 +3949,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4034,8 +4016,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4102,8 +4083,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4170,8 +4150,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4277,8 +4256,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4304,8 +4282,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4411,8 +4388,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4438,8 +4414,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -4506,8 +4481,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -4517,86 +4491,73 @@
     "andGate": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "buttons": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "negate": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "norGate": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "norGate2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "orGate": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "resetButton": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "scope": {
       "0": {
         "value": {},
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 32,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "scope2": {
       "0": {
         "value": {},
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 292,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "setButton": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     }
   },

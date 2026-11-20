@@ -1086,29 +1086,24 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     "audioout": {
       "0": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": {},
       },
       "1": {
         "hasExplicitDefault": true,
-        "isInherited": false,
         "value": 0,
       },
     },
     "phaseAccumulator": {
       "0": {
         "hasExplicitDefault": true,
-        "isInherited": false,
         "value": 440,
       },
       "1": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": 0,
       },
       "2": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": 0,
       },
     },
@@ -1121,7 +1116,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "byteAddress": 0,
         "declarationSources": [
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1146,7 +1140,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1255,7 +1248,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "byteAddress": 516,
         "declarationSources": [
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1280,7 +1272,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1300,7 +1291,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1438,7 +1428,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "byteAddress": 0,
         "declarationSources": [
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1463,7 +1452,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1572,7 +1560,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "byteAddress": 516,
         "declarationSources": [
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1597,7 +1584,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1617,7 +1603,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             },
           },
           {
-            "isInherited": false,
             "line": {
               "arguments": [
                 {
@@ -1804,7 +1789,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     "phaseAccumulator": {},
   },
   "projectMemoryExposuresByGroupPath": {},
-  "prototypes": [],
   "unknown": [],
 }
 `;

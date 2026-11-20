@@ -36,7 +36,7 @@ to later compiler passes beside the original AST. Do not cache transformed/inlin
 
 - Do not make the constant resolver perform AST-wide reference rebinding just to protect the tokenizer cache.
 - Do not add a per-compile AST clone as an unowned bridge without an explicit cache strategy.
-- Do not cache inlined ASTs using only the module/function/prototype source hash.
+- Do not cache inlined ASTs using only the module/function source hash.
 - Do not treat an unchanged module source hash as proof that its inlined constant values are unchanged.
 - Do not couple this to memory layout planning; `push sizeof(buffer)` and other memory metadata expressions are a
   separate semantic concern.
@@ -59,7 +59,7 @@ to later compiler passes beside the original AST. Do not cache transformed/inlin
 
 - Covered recompiling an unchanged module block after changing only a used constants block.
 - Verified cached parser ASTs remain source-shaped.
-- Function/prototype transformed-cache coverage is only needed if a transformed AST cache is introduced later.
+- Function transformed-cache coverage is only needed if a transformed AST cache is introduced later.
 
 ## Validation Checkpoints
 

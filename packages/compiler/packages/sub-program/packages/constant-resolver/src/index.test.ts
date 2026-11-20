@@ -166,7 +166,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [childModule, grandchildModule],
 				constants: [env],
 				functions: [],
@@ -200,7 +199,7 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [childModule], constants: [env], functions: [] },
+				ast: { modules: [childModule], constants: [env], functions: [] },
 				projectConstantNamespaceScopes: [
 					{ groupPath: '', passes: [] },
 					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
@@ -219,7 +218,7 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [env], functions: [] },
+				ast: { modules: [], constants: [env], functions: [] },
 				projectConstantNamespaceScopes: [
 					{ groupPath: '', passes: [] },
 					{ groupPath: 'child', parentGroupPath: '', passes: [] },
@@ -241,7 +240,7 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [childEnv], constants: [env], functions: [] },
+				ast: { modules: [childEnv], constants: [env], functions: [] },
 				projectConstantNamespaceScopes: [
 					{ groupPath: '', passes: [] },
 					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
@@ -253,7 +252,7 @@ describe('constant resolver', () => {
 	it('reports a root pass as an unresolved parent namespace', () => {
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [], functions: [] },
+				ast: { modules: [], constants: [], functions: [] },
 				projectConstantNamespaceScopes: [{ groupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
@@ -262,7 +261,7 @@ describe('constant resolver', () => {
 	it('reports a child pass whose parent has no matching constants block', () => {
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [], functions: [] },
+				ast: { modules: [], constants: [], functions: [] },
 				projectConstantNamespaceScopes: [
 					{ groupPath: '', passes: [] },
 					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
@@ -280,7 +279,7 @@ describe('constant resolver', () => {
 		);
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [rootModule], constants: [], functions: [] },
+				ast: { modules: [rootModule], constants: [], functions: [] },
 				projectConstantNamespaceScopes: [
 					{ groupPath: '', passes: [] },
 					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
@@ -308,7 +307,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [mainAst],
 				constants: [sharedAst],
 				functions: [],
@@ -341,7 +339,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -379,7 +376,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -401,7 +397,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -411,7 +406,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -427,7 +421,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -437,7 +430,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -463,7 +455,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [module],
 					constants: [constants],
 					functions: [],
@@ -473,7 +464,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [module],
 					constants: [constants],
 					functions: [],

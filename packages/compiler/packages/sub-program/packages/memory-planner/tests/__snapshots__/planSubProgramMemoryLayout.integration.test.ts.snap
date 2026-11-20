@@ -9,7 +9,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
       "byteAddress": 4,
       "declarationSources": [
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -32,7 +31,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -137,7 +135,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
       "byteAddress": 28,
       "declarationSources": [
         {
-          "isInherited": true,
           "line": {
             "arguments": [
               {
@@ -151,26 +148,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float",
-            "lineNumber": 2,
-          },
-          "shapeLine": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "document",
-            },
-            "instruction": "shape",
             "lineNumber": 11,
           },
         },
         {
-          "isInherited": true,
           "line": {
             "arguments": [
               {
@@ -184,26 +165,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float",
-            "lineNumber": 3,
-          },
-          "shapeLine": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "document",
-            },
-            "instruction": "shape",
-            "lineNumber": 11,
+            "lineNumber": 12,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -217,11 +182,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "int",
-            "lineNumber": 12,
+            "lineNumber": 13,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -240,11 +204,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "int8[]",
-            "lineNumber": 13,
+            "lineNumber": 14,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -263,7 +226,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float64[]",
-            "lineNumber": 14,
+            "lineNumber": 15,
           },
         },
       ],
@@ -296,7 +259,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 1,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 11,
+          "lineNumber": 12,
           "name": "gain",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -313,7 +276,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 2,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 12,
+          "lineNumber": 13,
           "name": "counter",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -330,7 +293,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 3,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 13,
+          "lineNumber": 14,
           "name": "bytes",
           "numberOfElements": 5,
           "pointerDepth": 0,
@@ -348,7 +311,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "isFloat64": true,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 14,
+          "lineNumber": 15,
           "name": "doubles",
           "numberOfElements": 2,
           "pointerDepth": 0,
@@ -370,7 +333,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 3,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 13,
+          "lineNumber": 14,
           "name": "bytes",
           "numberOfElements": 5,
           "pointerDepth": 0,
@@ -387,7 +350,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 2,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 12,
+          "lineNumber": 13,
           "name": "counter",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -405,7 +368,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "isFloat64": true,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 14,
+          "lineNumber": 15,
           "name": "doubles",
           "numberOfElements": 2,
           "pointerDepth": 0,
@@ -422,7 +385,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 1,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 11,
+          "lineNumber": 12,
           "name": "gain",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -455,7 +418,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
       "byteAddress": 4,
       "declarationSources": [
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -478,7 +440,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -583,7 +544,6 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
       "byteAddress": 28,
       "declarationSources": [
         {
-          "isInherited": true,
           "line": {
             "arguments": [
               {
@@ -597,26 +557,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float",
-            "lineNumber": 2,
-          },
-          "shapeLine": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "document",
-            },
-            "instruction": "shape",
             "lineNumber": 11,
           },
         },
         {
-          "isInherited": true,
           "line": {
             "arguments": [
               {
@@ -630,26 +574,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float",
-            "lineNumber": 3,
-          },
-          "shapeLine": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "document",
-            },
-            "instruction": "shape",
-            "lineNumber": 11,
+            "lineNumber": 12,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -663,11 +591,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "int",
-            "lineNumber": 12,
+            "lineNumber": 13,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -686,11 +613,10 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "int8[]",
-            "lineNumber": 13,
+            "lineNumber": 14,
           },
         },
         {
-          "isInherited": false,
           "line": {
             "arguments": [
               {
@@ -709,7 +635,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
               "kind": "document",
             },
             "instruction": "float64[]",
-            "lineNumber": 14,
+            "lineNumber": 15,
           },
         },
       ],
@@ -742,7 +668,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 1,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 11,
+          "lineNumber": 12,
           "name": "gain",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -759,7 +685,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 2,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 12,
+          "lineNumber": 13,
           "name": "counter",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -776,7 +702,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 3,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 13,
+          "lineNumber": 14,
           "name": "bytes",
           "numberOfElements": 5,
           "pointerDepth": 0,
@@ -794,7 +720,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "isFloat64": true,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 14,
+          "lineNumber": 15,
           "name": "doubles",
           "numberOfElements": 2,
           "pointerDepth": 0,
@@ -816,7 +742,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 3,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 13,
+          "lineNumber": 14,
           "name": "bytes",
           "numberOfElements": 5,
           "pointerDepth": 0,
@@ -833,7 +759,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 2,
           "isInteger": true,
           "isUnsigned": false,
-          "lineNumber": 12,
+          "lineNumber": 13,
           "name": "counter",
           "numberOfElements": 1,
           "pointerDepth": 0,
@@ -851,7 +777,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "isFloat64": true,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 14,
+          "lineNumber": 15,
           "name": "doubles",
           "numberOfElements": 2,
           "pointerDepth": 0,
@@ -868,7 +794,7 @@ exports[`planSubProgramMemoryLayout integration > plans sub-program-level memory
           "id": 1,
           "isInteger": false,
           "isUnsigned": false,
-          "lineNumber": 11,
+          "lineNumber": 12,
           "name": "gain",
           "numberOfElements": 1,
           "pointerDepth": 0,

@@ -13,40 +13,35 @@ import type {
 	ValidatedConstantsAST,
 	ValidatedFunctionAST,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import { ArgumentType, createProjectModuleId, ErrorCode, isBinaryCompileTimeExpression } from '@8f4e/language-spec';
 import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
 
-type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST | ValidatedPrototypeAST;
+type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST;
 type ConstantNamespaceAST = ValidatedModuleAST | ValidatedConstantsAST;
 export type ConstantEnvironment = Readonly<Record<string, Const>>;
 export type ConstantNamespaceMap = Readonly<Record<string, ConstantEnvironment>>;
 
 export interface ResolveConstantsSubProgramAST<
-	TPrototype extends ValidatedPrototypeAST = ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST = ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST = ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST = ValidatedFunctionAST,
 > {
-	prototypes: readonly TPrototype[];
 	modules: readonly TModule[];
 	constants: readonly TConstants[];
 	functions: readonly TFunction[];
 }
 
 export interface ResolveConstantsInput<
-	TPrototype extends ValidatedPrototypeAST = ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST = ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST = ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST = ValidatedFunctionAST,
 > {
-	ast: ResolveConstantsSubProgramAST<TPrototype, TModule, TConstants, TFunction>;
+	ast: ResolveConstantsSubProgramAST<TModule, TConstants, TFunction>;
 	projectConstantNamespaceScopes?: readonly ProjectConstantNamespaceScope[];
 }
 
 export interface ConstantResolutionReport {
-	prototypes: ConstantResolutionBlockFacts[];
 	modules: ConstantResolutionBlockFacts[];
 	constants: ConstantResolutionBlockFacts[];
 	functions: ConstantResolutionBlockFacts[];
@@ -244,7 +239,7 @@ function findUnresolvedUseLine(
 }
 
 function flattenSubProgramAST(input: ResolveConstantsSubProgramAST): ConstantResolvableAST[] {
-	return [...input.prototypes, ...input.modules, ...input.constants, ...input.functions];
+	return [...input.modules, ...input.constants, ...input.functions];
 }
 
 function collectConstantNamespacesFromAsts(
@@ -435,12 +430,11 @@ function resolveConstantsInASTWithNamespaces(
 }
 
 export function resolveConstants<
-	TPrototype extends ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST,
 >(
-	input: ResolveConstantsInput<TPrototype, TModule, TConstants, TFunction>,
+	input: ResolveConstantsInput<TModule, TConstants, TFunction>,
 	options: ResolveConstantsOptions = {}
 ): ResolveConstantsResult {
 	const namespaces = collectConstantNamespaces(input, options);
@@ -448,7 +442,6 @@ export function resolveConstants<
 	return {
 		namespaces,
 		references: {
-			prototypes: input.ast.prototypes.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			modules: input.ast.modules.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			constants: input.ast.constants.map(ast => {
 				const constants = constantsByNamespace.get(ast.id) ?? {};

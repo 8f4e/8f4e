@@ -4887,8 +4887,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4912,8 +4911,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4932,8 +4930,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4957,8 +4954,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -4977,8 +4973,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -5084,8 +5079,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -5111,8 +5105,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -5179,8 +5172,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -5281,8 +5273,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -5301,8 +5292,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -7381,8 +7371,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7400,8 +7389,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7419,8 +7407,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7438,8 +7425,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7457,8 +7443,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7476,8 +7461,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7495,8 +7479,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7514,8 +7497,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7533,8 +7515,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7552,8 +7533,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7571,8 +7551,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7590,8 +7569,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7609,8 +7587,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7628,8 +7605,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7647,8 +7623,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7666,8 +7641,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7685,8 +7659,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7704,8 +7677,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7723,8 +7695,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7742,8 +7713,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7761,8 +7731,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7780,8 +7749,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7799,8 +7767,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7818,8 +7785,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7837,8 +7803,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7856,8 +7821,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7875,8 +7839,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7894,8 +7857,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7913,8 +7875,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7932,8 +7893,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7951,8 +7911,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7970,8 +7929,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -7989,8 +7947,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8008,8 +7965,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8027,8 +7983,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8046,8 +8001,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8065,8 +8019,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8084,8 +8037,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8103,8 +8055,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8122,8 +8073,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8141,8 +8091,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8160,8 +8109,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8179,8 +8127,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8198,8 +8145,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8217,8 +8163,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8236,8 +8181,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8255,8 +8199,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8274,8 +8217,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8293,8 +8235,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8312,8 +8253,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8331,8 +8271,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8350,8 +8289,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8369,8 +8307,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8388,8 +8325,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8407,8 +8343,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8426,8 +8361,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8445,8 +8379,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8464,8 +8397,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8483,8 +8415,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8502,8 +8433,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8521,8 +8451,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8540,8 +8469,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8559,8 +8487,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8578,8 +8505,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8597,8 +8523,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8616,8 +8541,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8635,8 +8559,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8654,8 +8577,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8673,8 +8595,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8692,8 +8613,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8711,8 +8631,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8730,8 +8649,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8749,8 +8667,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8768,8 +8685,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8787,8 +8703,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8806,8 +8721,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8825,8 +8739,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8844,8 +8757,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8863,8 +8775,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8882,8 +8793,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8901,8 +8811,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8920,8 +8829,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8939,8 +8847,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8958,8 +8865,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8977,8 +8883,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -8996,8 +8901,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9015,8 +8919,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9034,8 +8937,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9053,8 +8955,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9072,8 +8973,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9091,8 +8991,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9110,8 +9009,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9129,8 +9027,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9148,8 +9045,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9167,8 +9063,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9186,8 +9081,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9205,8 +9099,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9224,8 +9117,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9243,8 +9135,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9262,8 +9153,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9281,8 +9171,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9300,8 +9189,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9319,8 +9207,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9338,8 +9225,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9357,8 +9243,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9376,8 +9261,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9395,8 +9279,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9414,8 +9297,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9433,8 +9315,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9452,8 +9333,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9471,8 +9351,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9490,8 +9369,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9509,8 +9387,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9528,8 +9405,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9547,8 +9423,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9566,8 +9441,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9585,8 +9459,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9604,8 +9477,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9623,8 +9495,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9642,8 +9513,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9661,8 +9531,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9680,8 +9549,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9699,8 +9567,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9718,8 +9585,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9737,8 +9603,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9756,8 +9621,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9775,8 +9639,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9794,8 +9657,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -9898,8 +9760,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -9925,8 +9786,7 @@
                   "targetModuleId": "midiLUT"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -10066,8 +9926,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10086,8 +9945,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10106,8 +9964,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -10174,8 +10031,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -10385,8 +10241,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10410,8 +10265,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10430,8 +10284,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10455,8 +10308,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10475,8 +10327,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -10582,8 +10433,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10609,8 +10459,7 @@
                   "targetMemoryId": "buffer"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -10677,8 +10526,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -10779,8 +10627,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -10799,8 +10646,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -12879,8 +12725,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12898,8 +12743,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12917,8 +12761,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12936,8 +12779,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12955,8 +12797,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12974,8 +12815,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -12993,8 +12833,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13012,8 +12851,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13031,8 +12869,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13050,8 +12887,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13069,8 +12905,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13088,8 +12923,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13107,8 +12941,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13126,8 +12959,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13145,8 +12977,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13164,8 +12995,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13183,8 +13013,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13202,8 +13031,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13221,8 +13049,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13240,8 +13067,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13259,8 +13085,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13278,8 +13103,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13297,8 +13121,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13316,8 +13139,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13335,8 +13157,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13354,8 +13175,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13373,8 +13193,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13392,8 +13211,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13411,8 +13229,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13430,8 +13247,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13449,8 +13265,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13468,8 +13283,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13487,8 +13301,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13506,8 +13319,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13525,8 +13337,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13544,8 +13355,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13563,8 +13373,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13582,8 +13391,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13601,8 +13409,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13620,8 +13427,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13639,8 +13445,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13658,8 +13463,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13677,8 +13481,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13696,8 +13499,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13715,8 +13517,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13734,8 +13535,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13753,8 +13553,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13772,8 +13571,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13791,8 +13589,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13810,8 +13607,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13829,8 +13625,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13848,8 +13643,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13867,8 +13661,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13886,8 +13679,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13905,8 +13697,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13924,8 +13715,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13943,8 +13733,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13962,8 +13751,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -13981,8 +13769,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14000,8 +13787,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14019,8 +13805,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14038,8 +13823,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14057,8 +13841,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14076,8 +13859,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14095,8 +13877,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14114,8 +13895,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14133,8 +13913,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14152,8 +13931,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14171,8 +13949,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14190,8 +13967,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14209,8 +13985,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14228,8 +14003,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14247,8 +14021,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14266,8 +14039,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14285,8 +14057,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14304,8 +14075,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14323,8 +14093,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14342,8 +14111,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14361,8 +14129,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14380,8 +14147,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14399,8 +14165,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14418,8 +14183,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14437,8 +14201,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14456,8 +14219,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14475,8 +14237,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14494,8 +14255,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14513,8 +14273,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14532,8 +14291,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14551,8 +14309,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14570,8 +14327,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14589,8 +14345,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14608,8 +14363,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14627,8 +14381,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14646,8 +14399,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14665,8 +14417,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14684,8 +14435,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14703,8 +14453,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14722,8 +14471,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14741,8 +14489,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14760,8 +14507,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14779,8 +14525,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14798,8 +14543,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14817,8 +14561,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14836,8 +14579,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14855,8 +14597,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14874,8 +14615,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14893,8 +14633,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14912,8 +14651,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14931,8 +14669,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14950,8 +14687,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14969,8 +14705,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -14988,8 +14723,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15007,8 +14741,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15026,8 +14759,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15045,8 +14777,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15064,8 +14795,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15083,8 +14813,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15102,8 +14831,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15121,8 +14849,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15140,8 +14867,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15159,8 +14885,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15178,8 +14903,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15197,8 +14921,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15216,8 +14939,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15235,8 +14957,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15254,8 +14975,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15273,8 +14993,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15292,8 +15011,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -15396,8 +15114,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15423,8 +15140,7 @@
                   "targetModuleId": "midiLUT"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -15564,8 +15280,7 @@
                   "isInteger": true
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15584,8 +15299,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -15604,8 +15318,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -15672,8 +15385,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -15683,737 +15395,593 @@
     "arEnv": {
       "0": {
         "value": 0.0001,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0.0001,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "2": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "3": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "4": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "audioout": {
       "0": {
         "value": {},
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 20,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "janko": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "keyboard": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "midiLUT": {
       "0": {
         "value": 8.1758,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 8.662,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "2": {
         "value": 9.177,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "3": {
         "value": 9.7227,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "4": {
         "value": 10.3009,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "5": {
         "value": 10.9134,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "6": {
         "value": 11.5623,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "7": {
         "value": 12.2499,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "8": {
         "value": 12.9783,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "9": {
         "value": 13.75,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "10": {
         "value": 14.5676,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "11": {
         "value": 15.4339,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "12": {
         "value": 16.3516,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "13": {
         "value": 17.3239,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "14": {
         "value": 18.354,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "15": {
         "value": 19.4454,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "16": {
         "value": 20.6017,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "17": {
         "value": 21.8268,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "18": {
         "value": 23.1247,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "19": {
         "value": 24.4997,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "20": {
         "value": 25.9565,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "21": {
         "value": 27.5,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "22": {
         "value": 29.1352,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "23": {
         "value": 30.8677,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "24": {
         "value": 32.7032,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "25": {
         "value": 34.6478,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "26": {
         "value": 36.7081,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "27": {
         "value": 38.8909,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "28": {
         "value": 41.2034,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "29": {
         "value": 43.6535,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "30": {
         "value": 46.2493,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "31": {
         "value": 48.9994,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "32": {
         "value": 51.9131,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "33": {
         "value": 55,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "34": {
         "value": 58.2705,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "35": {
         "value": 61.7354,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "36": {
         "value": 65.4064,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "37": {
         "value": 69.2957,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "38": {
         "value": 73.4162,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "39": {
         "value": 77.7817,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "40": {
         "value": 82.4069,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "41": {
         "value": 87.3071,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "42": {
         "value": 92.4986,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "43": {
         "value": 97.9989,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "44": {
         "value": 103.8262,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "45": {
         "value": 110,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "46": {
         "value": 116.5409,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "47": {
         "value": 123.4708,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "48": {
         "value": 130.8128,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "49": {
         "value": 138.5913,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "50": {
         "value": 146.8324,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "51": {
         "value": 155.5635,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "52": {
         "value": 164.8138,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "53": {
         "value": 174.6141,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "54": {
         "value": 184.9972,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "55": {
         "value": 195.9977,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "56": {
         "value": 207.6523,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "57": {
         "value": 220,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "58": {
         "value": 233.0819,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "59": {
         "value": 246.9417,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "60": {
         "value": 261.6256,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "61": {
         "value": 277.1826,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "62": {
         "value": 293.6648,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "63": {
         "value": 311.127,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "64": {
         "value": 329.6276,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "65": {
         "value": 349.2282,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "66": {
         "value": 369.9944,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "67": {
         "value": 391.9954,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "68": {
         "value": 415.3047,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "69": {
         "value": 440,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "70": {
         "value": 466.1638,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "71": {
         "value": 493.8833,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "72": {
         "value": 523.2511,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "73": {
         "value": 554.3653,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "74": {
         "value": 587.3295,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "75": {
         "value": 622.254,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "76": {
         "value": 659.2551,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "77": {
         "value": 698.4565,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "78": {
         "value": 739.9888,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "79": {
         "value": 783.9909,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "80": {
         "value": 830.6094,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "81": {
         "value": 880,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "82": {
         "value": 932.3275,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "83": {
         "value": 987.7666,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "84": {
         "value": 1046.5023,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "85": {
         "value": 1108.7305,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "86": {
         "value": 1174.6591,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "87": {
         "value": 1244.5079,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "88": {
         "value": 1318.5102,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "89": {
         "value": 1396.9129,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "90": {
         "value": 1479.9777,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "91": {
         "value": 1567.9817,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "92": {
         "value": 1661.2188,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "93": {
         "value": 1760,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "94": {
         "value": 1864.655,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "95": {
         "value": 1975.5332,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "96": {
         "value": 2093.0045,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "97": {
         "value": 2217.461,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "98": {
         "value": 2349.3181,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "99": {
         "value": 2489.0159,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "100": {
         "value": 2637.0205,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "101": {
         "value": 2793.8259,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "102": {
         "value": 2959.9554,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "103": {
         "value": 3135.9635,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "104": {
         "value": 3322.4376,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "105": {
         "value": 3520,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "106": {
         "value": 3729.3101,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "107": {
         "value": 3951.0664,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "108": {
         "value": 4186.009,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "109": {
         "value": 4434.9221,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "110": {
         "value": 4698.6363,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "111": {
         "value": 4978.0317,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "112": {
         "value": 5274.0409,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "113": {
         "value": 5587.6517,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "114": {
         "value": 5919.9108,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "115": {
         "value": 6271.927,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "116": {
         "value": 6644.8752,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "117": {
         "value": 7040,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "118": {
         "value": 7458.6202,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "119": {
         "value": 7902.1328,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "120": {
         "value": 8372.0181,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "121": {
         "value": 8869.8442,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "122": {
         "value": 9397.2726,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "123": {
         "value": 9956.0635,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "124": {
         "value": 10548.0818,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "125": {
         "value": 11175.3034,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "126": {
         "value": 11839.8215,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "127": {
         "value": 12543.854,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "midiNote2Freq": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "1": {
         "value": 548,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "phaseAccumulator": {
       "0": {
         "value": 440,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       },
       "2": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "vca": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     }
   },

@@ -21,13 +21,12 @@ const snapshotDirectory = path.join(__dirname, '__snapshots__');
 
 const validModuleBlock = ['module counter', '', 'int count', '', 'moduleEnd'];
 const validFunctionBlock = ['function sine', 'param float x', 'functionEnd float'];
-const validPrototypeBlock = ['prototype oscillatorState', 'float phase', 'float frequency 440', 'prototypeEnd'];
+const validConstantsBlock = ['constants oscillator', 'const PHASE 0', 'const FREQUENCY 440', 'constantsEnd'];
 const validNoteBlock = ['note', '; @pos 2 3', 'remember to tune this later', 'noteEnd'];
 const noteContentMarkers = [
 	'module declarations hold state',
 	'function example',
 	'constants values',
-	'prototype state',
 	'includes',
 	'note another reminder',
 	'entry main',
@@ -35,7 +34,6 @@ const noteContentMarkers = [
 	'moduleEnd',
 	'functionEnd int',
 	'constantsEnd',
-	'prototypeEnd',
 	'includesEnd',
 	'entryEnd',
 	'groupEnd',
@@ -112,7 +110,7 @@ describe('parseProjectSource', () => {
 			'# project directive-style comment before a function',
 			...validFunctionBlock,
 			'',
-			...validPrototypeBlock,
+			...validConstantsBlock,
 			'',
 			...validNoteBlock,
 			'; trailing project comment',
@@ -121,7 +119,7 @@ describe('parseProjectSource', () => {
 
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 6, code: validModuleBlock, entry: 'main' }]);
 		expect(project.functions).toEqual([{ id: 15, code: validFunctionBlock }]);
-		expect(project.prototypes).toEqual([{ id: 19, code: validPrototypeBlock }]);
+		expect(project.constants).toEqual([{ id: 19, code: validConstantsBlock }]);
 		expect(project.notes).toEqual([{ id: 24, code: validNoteBlock }]);
 		expect(getProjectGroups(project)).toEqual([]);
 	});
@@ -196,7 +194,6 @@ describe('parseProjectSource', () => {
 		expect(project.functions).toEqual([{ id: 10, code: validFunctionBlock }]);
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 14, code: validModuleBlock, entry: 'main' }]);
 		expect(project.constants).toEqual([]);
-		expect(project.prototypes).toEqual([]);
 		expect(project.includes).toEqual([]);
 		expect(getProjectGroups(project)).toEqual([]);
 	});
@@ -242,7 +239,6 @@ describe('parseProjectSource', () => {
 			execution: [{ type: 'module', id: 7 + noteCode.length, code: validModuleBlock, entry: 'main' }],
 			functions: [],
 			constants: [],
-			prototypes: [],
 			includes: [],
 			notes: [{ id: 6, code: noteCode }],
 			unknown: [],
@@ -266,19 +262,6 @@ describe('parseProjectSource', () => {
 
 		expect(project.includes).toEqual([{ id: 3, code: includesBlock }]);
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 9, code: validModuleBlock, entry: 'main' }]);
-	});
-
-	it('parses module blocks that contain shape instructions', () => {
-		const project = parseProjectSource(
-			['8f4e/v1', '', 'entry main', 'module oscillator', 'shape oscillatorState', 'moduleEnd', 'entryEnd'].join('\n')
-		);
-
-		expect(getProjectModules(project)[0]).toEqual({
-			type: 'module',
-			id: 4,
-			code: ['module oscillator', 'shape oscillatorState', 'moduleEnd'],
-			entry: 'main',
-		});
 	});
 
 	it('allows empty entries', () => {
@@ -306,7 +289,7 @@ describe('parseProjectSource', () => {
 				...validFunctionBlock,
 				'entry main',
 				'group oscillator',
-				...validPrototypeBlock,
+				...validConstantsBlock,
 				...validNoteBlock,
 				'groupEnd',
 				'entryEnd',
@@ -317,7 +300,6 @@ describe('parseProjectSource', () => {
 
 		expect(getProjectModules(project)).toEqual([]);
 		expect(project.functions).toEqual([]);
-		expect(project.prototypes).toEqual([]);
 		expect(project.notes).toEqual([]);
 		expect(getProjectGroups(project)).toEqual([
 			{
@@ -342,8 +324,7 @@ describe('parseProjectSource', () => {
 						exposures: [],
 						execution: [],
 						functions: [],
-						constants: [],
-						prototypes: [{ id: 17, code: validPrototypeBlock }],
+						constants: [{ id: 17, code: validConstantsBlock }],
 						includes: [],
 						notes: [{ id: 21, code: validNoteBlock }],
 						unknown: [],
@@ -351,7 +332,6 @@ describe('parseProjectSource', () => {
 				],
 				functions: [{ id: 12, code: validFunctionBlock }],
 				constants: [],
-				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],

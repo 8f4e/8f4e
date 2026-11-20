@@ -5,19 +5,16 @@ exports[`resolveMemoryDefaults integration > resolves sub-program-level memory d
   "audio": {
     "0": {
       "hasExplicitDefault": false,
-      "isInherited": false,
       "value": {},
     },
   },
   "main": {
     "0": {
       "hasExplicitDefault": true,
-      "isInherited": true,
       "value": 7,
     },
     "1": {
       "hasExplicitDefault": true,
-      "isInherited": false,
       "value": {
         "0": 1,
         "1": 2,
@@ -26,17 +23,14 @@ exports[`resolveMemoryDefaults integration > resolves sub-program-level memory d
     },
     "2": {
       "hasExplicitDefault": true,
-      "isInherited": false,
       "value": 8,
     },
     "3": {
       "hasExplicitDefault": true,
-      "isInherited": false,
       "value": 6,
     },
     "4": {
       "hasExplicitDefault": true,
-      "isInherited": false,
       "value": 1.75,
     },
   },

@@ -2205,8 +2205,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2273,8 +2272,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2341,8 +2339,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2448,8 +2445,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -2473,8 +2469,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2552,8 +2547,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2620,8 +2614,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2688,8 +2681,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2766,8 +2758,7 @@
                   "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -2836,8 +2827,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2904,8 +2894,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2972,8 +2961,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3079,8 +3067,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
             "line": {
@@ -3104,8 +3091,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3183,8 +3169,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3251,8 +3236,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3319,8 +3303,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3397,8 +3380,7 @@
                   "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       }
@@ -3408,63 +3390,54 @@
     "activationFn": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "inputs": {
       "0": {
         "value": 1,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "notes": {},
     "perceptron": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "result": {
       "0": {
         "value": 8,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     }
   },

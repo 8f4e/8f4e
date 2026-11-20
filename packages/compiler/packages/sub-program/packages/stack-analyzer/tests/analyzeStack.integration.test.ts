@@ -190,7 +190,6 @@ describe('analyzeStack integration', () => {
 					declarationSources: [
 						{
 							line: bufferDeclarationLine,
-							isInherited: false,
 						},
 					],
 				},
@@ -210,7 +209,6 @@ describe('analyzeStack integration', () => {
 					declarationSources: [
 						{
 							line: bufferDeclarationLine,
-							isInherited: false,
 						},
 					],
 				},
