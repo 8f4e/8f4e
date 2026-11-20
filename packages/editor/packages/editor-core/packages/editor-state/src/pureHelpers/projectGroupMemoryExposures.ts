@@ -3,20 +3,13 @@ import type { ProjectMemoryExposure, ResolvedProjectMemoryExposure } from '@8f4e
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
 import getCodeBlockMemoryScope from './getCodeBlockMemoryScope';
 
-type ExposureRow = Pick<ProjectMemoryExposure, 'name' | 'lineNumber'>;
-
-const sourceRowsByBlock = new WeakMap<CodeBlockGraphicData, ExposureRow[]>();
-
-/** Capture exposure rows during the source pass, not during layout. */
-export function updateProjectGroupMemoryExposureRows(block: CodeBlockGraphicData): void {
+/** Collect complete exposure declarations during source preparation for layout and serialization. */
+export function updateProjectGroupMemoryExposureDeclarations(block: CodeBlockGraphicData): void {
 	if (block.childProject === undefined) return;
-	sourceRowsByBlock.set(
-		block,
-		block.code.flatMap((line, lineNumber) => {
-			const exposure = tryParseProjectMemoryExposureLine(line);
-			return exposure ? [{ name: exposure.name, lineNumber }] : [];
-		})
-	);
+	block.projectMemoryExposures = block.code.flatMap((line, lineNumber): ProjectMemoryExposure[] => {
+		const exposure = tryParseProjectMemoryExposureLine(line);
+		return exposure ? [{ ...exposure, lineNumber }] : [];
+	});
 }
 
 /** Use compiler-resolved targets and rows, following edits to the rows while recompilation is pending. */
@@ -28,7 +21,7 @@ export function getProjectGroupMemoryExposures(
 	if (scope.kind !== 'project') return [];
 	const accepted = state.compiler.result.projectMemoryExposuresByGroupPath[scope.groupPath];
 	if (!accepted?.length) return [];
-	const currentRows = sourceRowsByBlock.get(block);
+	const currentRows = block.projectMemoryExposures;
 	if (
 		!currentRows ||
 		(currentRows.length === accepted.length &&

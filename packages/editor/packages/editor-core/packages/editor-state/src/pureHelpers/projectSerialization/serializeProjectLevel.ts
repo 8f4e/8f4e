@@ -1,7 +1,6 @@
 import type { ProjectLevel } from '@8f4e/editor-state-types';
 import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { createProjectObjectModel } from '@8f4e/language-spec';
-import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
 import compareCodeBlocksByPosition from '../compareCodeBlocksByPosition';
 
 /** Returns detached project data in canonical key and grid/creation order, recursively through project groups. */
@@ -25,10 +24,7 @@ export default function serializeProjectLevel(level: ProjectLevel): ProjectObjec
 				entry: codeBlock.entry!,
 
 				code: [...codeBlock.code],
-				exposures: codeBlock.code.flatMap((line, lineNumber) => {
-					const exposure = tryParseProjectMemoryExposureLine(line);
-					return exposure ? [{ ...exposure, lineNumber }] : [];
-				}),
+				exposures: codeBlock.projectMemoryExposures?.map(exposure => ({ ...exposure })) ?? [],
 			});
 			continue;
 		}

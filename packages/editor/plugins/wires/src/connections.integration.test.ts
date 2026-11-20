@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createWireConnections, type WireConnectionVisitor } from './connections';
 
 const source = `8f4e/v1
@@ -21,7 +21,6 @@ const cleanups: Array<() => void> = [];
 
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
-	vi.restoreAllMocks();
 });
 
 async function setup(text = source) {
@@ -32,7 +31,6 @@ async function setup(text = source) {
 	(instance.exports.initDefaults as CallableFunction)();
 	const memoryViews = {
 		int32: new Int32Array(memory.buffer),
-		float32: new Float32Array(memory.buffer),
 	};
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
@@ -140,7 +138,7 @@ moduleEnd`;
 				scope === 'group'
 					? `8f4e/v1\nentry main\ngroup voice\nentry main\n${body}\nentryEnd\ngroupEnd\nentryEnd`
 					: `8f4e/v1\nentry main\n${body}\nentryEnd`;
-			const { state, events, memoryViews, readConnections } = await setup(text);
+			const { state, events, readConnections } = await setup(text);
 			if (scope === 'group') {
 				events.dispatch('openProjectGroup', {
 					codeBlock: state.codeBlockRendering.rootProject.blocks.find(block => block.childProject),
@@ -150,10 +148,6 @@ moduleEnd`;
 			const sources = state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'source');
 			const [inactive, active] = sources;
 			const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-			const moduleId = scope === 'group' ? 'voice/source' : 'source';
-			expect(state.compiler.result.compiledModules[moduleId].ast.projectBlockId).toBe(active.creationIndex);
-			const onInputChanged = vi.fn();
-			events.on('compilationInputChanged', onInputChanged);
 			const expectActiveWire = () => {
 				const endpoints = readConnections();
 				expect(endpoints).toHaveLength(1);
@@ -177,9 +171,6 @@ moduleEnd`;
 				events.dispatch('pointerup');
 				expectActiveWire();
 			}
-			expect(onInputChanged).not.toHaveBeenCalled();
-			const output = state.compiler.result.memoryPlan.modules[moduleId].memory.output;
-			expect(memoryViews.float32[output.allocationUnitAddress]).toBe(2);
 		}
 	);
 

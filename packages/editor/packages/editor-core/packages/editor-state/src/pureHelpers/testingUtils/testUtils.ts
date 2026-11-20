@@ -4,17 +4,20 @@ import { deriveDirectiveState } from '~/features/code-blocks/features/directives
 import getCodeBlockNameFromSource from '~/features/code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '~/features/code-blocks/utils/parseBlockDirectives';
 import { getTabStopsByLine } from '~/features/text-geometry/tabLayout';
+import { updateProjectGroupMemoryExposureDeclarations } from '../projectGroupMemoryExposures';
 
 /** Shared block defaults with editor-owned source-name and directive parsing. */
 export function createMockCodeBlock(options: Parameters<typeof createBaseMockCodeBlock>[0] = {}): CodeBlockGraphicData {
 	const code = options.code ?? [];
 	const parsedDirectives = options.parsedDirectives ?? parseBlockDirectives(code);
-	return createBaseMockCodeBlock({
+	const block = createBaseMockCodeBlock({
 		name: options.name ?? (getCodeBlockNameFromSource(code) || 'test-block'),
 		parsedDirectives,
 		tabStopsByLine: getTabStopsByLine(code.length, parsedDirectives),
 		...options,
 	});
+	updateProjectGroupMemoryExposureDeclarations(block);
+	return block;
 }
 
 export function setMockCodeBlockCode(codeBlock: CodeBlockGraphicData, code: string[]): void {

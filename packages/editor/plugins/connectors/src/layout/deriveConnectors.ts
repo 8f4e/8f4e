@@ -40,7 +40,6 @@ export default function deriveConnectors(codeBlock: CodeBlockGraphicData, state:
 		const plannedModule = state.compiler.result.memoryPlan.modules[compiledModule.id];
 		if (!plannedModule) return widgets;
 		for (const memory of plannedModule.declarations) {
-			if (memory.name !== undefined && plannedModule.memory[memory.name]?.id !== memory.id) continue;
 			addConnector(memory, gapCalculator(memory.lineNumber, codeBlock.gaps));
 		}
 		for (const slot of Object.values(compiledModule.referenceSlots)) {

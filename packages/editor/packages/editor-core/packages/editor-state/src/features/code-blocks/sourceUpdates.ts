@@ -1,7 +1,7 @@
 import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
-import { updateProjectGroupMemoryExposureRows } from '../../pureHelpers/projectGroupMemoryExposures';
+import { updateProjectGroupMemoryExposureDeclarations } from '../../pureHelpers/projectGroupMemoryExposures';
 import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import { getTabStopsByLine } from '../text-geometry/tabLayout';
@@ -25,7 +25,7 @@ function isProjectScopeSourceLine(line: string): boolean {
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
-	updateProjectGroupMemoryExposureRows(block);
+	updateProjectGroupMemoryExposureDeclarations(block);
 	block.tabStopsByLine = getTabStopsByLine(block.code.length, block.parsedDirectives);
 	const previousName = block.name;
 	block.name = getCodeBlockNameFromSource(block.code);

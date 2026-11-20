@@ -60,7 +60,6 @@ export function deriveEndpoints(codeBlock: CodeBlockGraphicData, state: State): 
 	const plannedModule = state.compiler.result.memoryPlan.modules[compiledModule.id];
 	if (!plannedModule) return endpoints;
 	for (const memory of plannedModule.declarations) {
-		if (memory.name !== undefined && plannedModule.memory[memory.name]?.id !== memory.id) continue;
 		addMemory(memory, memory.lineNumber);
 	}
 	for (const slot of Object.values(compiledModule.referenceSlots)) {

@@ -6,6 +6,7 @@ import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType
 import { createCodeBlockGraphicData } from '../features/code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDirectives';
+import { updateProjectGroupMemoryExposureDeclarations } from '../pureHelpers/projectGroupMemoryExposures';
 import serializeProjectLevel from '../pureHelpers/projectSerialization/serializeProjectLevel';
 import { copyProjectLevel, findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
@@ -116,6 +117,7 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					}
 					const pos = parsePos(parseBlockDirectives(edit.code));
 					target.code = [...edit.code];
+					updateProjectGroupMemoryExposureDeclarations(target);
 					if (pos) {
 						target.gridX = pos.x;
 						target.gridY = pos.y;
