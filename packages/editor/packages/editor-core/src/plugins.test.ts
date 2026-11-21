@@ -168,7 +168,7 @@ describe('editor plugins', () => {
 		const drawContext = {
 			draw: {} as Parameters<typeof first.drawers.drawCodeBlock>[0]['draw'],
 			state: first.store.getState(),
-			renderedBlock: { codeBlock: createMockCodeBlock(), x: 0, y: 0 },
+			codeBlock: createMockCodeBlock(),
 			memoryViews: {} as Parameters<typeof first.drawers.drawCodeBlock>[0]['memoryViews'],
 		};
 		first.drawers.drawCodeBlock(drawContext);

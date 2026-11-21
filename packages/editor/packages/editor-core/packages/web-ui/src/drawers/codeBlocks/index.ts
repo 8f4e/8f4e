@@ -17,7 +17,7 @@ export default function drawCodeBlocks(
 		const { codeBlock, x, y } = renderedBlock;
 		if (x > -codeBlock.width && y > -codeBlock.height && x < width && y < height) {
 			draw.startGroup(x, y);
-			drawers.drawCodeBlock({ draw, state, renderedBlock, memoryViews });
+			drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 			draw.endGroup();
 		} else if (state.featureFlags.canvasOverlays) {
 			drawers.drawOffscreenCodeBlock(draw, renderedBlock, state);

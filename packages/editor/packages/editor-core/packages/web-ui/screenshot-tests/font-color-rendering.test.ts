@@ -45,12 +45,12 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
 	const drawers = createEditorDrawerRegistry();
 	const palette = resolvePalette(colors);
-	drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock } }) => {
+	drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 		// Keep each sample visible, including surface colors and dark foreground materials.
 		const [r, g, b] = palette.rgba[tokens[codeBlock.creationIndex]];
 		draw.drawFill(0, 0, PALETTE_INDICES[r + g + b > 1.5 ? 'black' : 'white'], codeBlock.width, codeBlock.height);
 	});
-	drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
+	drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlocks
 			.get(codeBlock.creationIndex)!
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));

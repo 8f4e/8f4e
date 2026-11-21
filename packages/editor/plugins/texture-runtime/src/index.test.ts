@@ -116,7 +116,8 @@ async function setup({
 	const block = state.codeBlockRendering.currentProject.blocks.find(
 		block => block.name === 'screen' || block.name === 'visuals'
 	)!;
-	const frame = (renderGeometry: RenderGeometry = createRenderGeometry(state)) => {
+	const geometry = createRenderGeometry();
+	const frame = (renderGeometry: RenderGeometry = geometry.prepare(state)) => {
 		const buffer = current.memory.buffer;
 		layers.draw({
 			state,
@@ -229,8 +230,8 @@ it('executes once per frame for multiple textures, uploads updated pixels, and f
 
 it('uses rendered block positions for both texture placement and visibility', async () => {
 	const test = await setup({ config: '' });
-	const geometry = createRenderGeometry(test.state);
-	const renderedBlock = geometry.blocksByCodeBlock.get(test.block)!;
+	const geometry = createRenderGeometry();
+	const { x: originalX, y: originalY } = geometry.prepare(test.state).blocksByCodeBlock.get(test.block)!;
 	const rectangles = () =>
 		test.gl.uniform4f.mock.calls
 			.filter(call => (call[0] as { name: string }).name === 'u_rectangle')
@@ -240,14 +241,16 @@ it('uses rendered block positions for both texture placement and visibility', as
 	// Only the presentation moves even while editor-state considers the block offscreen.
 	test.block.x = -10000;
 	const frameAt = (x: number, y: number) => {
-		const blocks = geometry.blocks.map(block => (block === renderedBlock ? { ...block, x, y } : block));
+		const blocks = geometry
+			.prepare(test.state)
+			.blocks.map(block => (block.codeBlock === test.block ? { ...block, x, y } : block));
 		test.frame({ blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) });
 	};
-	frameAt(renderedBlock.x + 25, renderedBlock.y - 10);
+	frameAt(originalX + 25, originalY - 10);
 	expect(rectangles()).toEqual([original, [Number(original[0]) + 25, Number(original[1]) - 10, 32, 32]]);
 	// Visibility follows presentation rather than the block's logical position, in both directions.
 	test.block.x = 50;
-	frameAt(-10000, renderedBlock.y);
+	frameAt(-10000, originalY);
 	expect(rectangles()).toHaveLength(2);
 });
 

@@ -1,20 +1,20 @@
-import type { State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
 import type { RenderedCodeBlock, RenderGeometry } from '../render-geometry';
 import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
 import type { MemoryViews } from '../types';
 
 export interface CodeBlockDrawerContext {
-	/** Drawing coordinates are relative to the visible code block. */
+	/** Drawing coordinates are relative to the visible block's presented origin. */
 	draw: DrawContext;
 	state: State;
-	renderedBlock: RenderedCodeBlock;
+	codeBlock: CodeBlockGraphicData;
 	memoryViews: MemoryViews;
 }
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
-/** Draw one offscreen block's decoration using viewport coordinates. */
+/** Draw one offscreen block's decoration using viewport coordinates and frame-scoped geometry. */
 export type OffscreenCodeBlockDrawer = (draw: DrawContext, renderedBlock: RenderedCodeBlock, state: State) => void;
 
 export interface CanvasDrawerContext {

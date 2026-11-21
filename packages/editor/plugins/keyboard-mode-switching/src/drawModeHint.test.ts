@@ -28,7 +28,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
-			renderGeometry: createRenderGeometry(test.state),
+			renderGeometry: createRenderGeometry().prepare(test.state),
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).toHaveBeenCalledWith(
@@ -52,7 +52,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
-			renderGeometry: createRenderGeometry(test.state),
+			renderGeometry: createRenderGeometry().prepare(test.state),
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).not.toHaveBeenCalled();

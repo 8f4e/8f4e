@@ -16,11 +16,9 @@ export function createCrossfadePlugin({
 			const state = store.getState();
 			const crossfadesByBlock = new WeakMap<CodeBlockGraphicData, Crossfade[]>();
 			const unregisterLayout = registerCrossfadeLayout(layout, crossfadesByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(
-				({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
-					drawCrossfade(draw, crossfadesByBlock.get(codeBlock) ?? [], memoryViews);
-				}
-			);
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+				drawCrossfade(draw, crossfadesByBlock.get(codeBlock) ?? [], memoryViews);
+			});
 			const unregisterInteraction = registerCrossfadeInteraction(state, events, crossfadesByBlock, writeMemory);
 			return () => {
 				unregisterInteraction();

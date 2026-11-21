@@ -7,7 +7,7 @@ import type { MemoryViews } from './types';
 
 const context = { gl: {} as WebGL2RenderingContext, palette: resolvePalette({}) };
 const state = createMockState();
-const frame = { state, memoryViews: {} as MemoryViews, renderGeometry: createRenderGeometry(state) };
+const frame = { state, memoryViews: {} as MemoryViews, renderGeometry: createRenderGeometry().prepare(state) };
 const createLayer = () => ({ draw: vi.fn(), loadPalette: vi.fn(), releaseMemory: vi.fn(), destroy: vi.fn() });
 
 describe('render layer lifecycle', () => {

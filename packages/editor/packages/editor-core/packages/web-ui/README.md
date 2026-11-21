@@ -103,14 +103,15 @@ interface FontAtlas {
 ## State Usage
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
-It prepares a `RenderGeometry` for each frame, containing a `RenderedCodeBlock` for every block in the active project,
+It prepares its renderer-owned `RenderGeometry` before each frame, containing a `RenderedCodeBlock` for every block in the active project,
 including offscreen blocks. Each object references its original editor-state `codeBlock` and has a separate
 viewport-relative pixel origin (`x`, `y`). This is the block's presented position, distinct from its logical position in state.
 The ordered `blocks` array and `blocksByCodeBlock` map reference the same objects. Canvas drawers and GPU render layers
-receive this shared geometry so cross-block drawing can use the presented position of each endpoint. Geometry is valid for
-the current frame only; editor-state remains the owner of logical block positions and hit testing.
+receive this shared geometry so cross-block drawing can use the presented position of each endpoint. Consume it as read-only
+during drawing, without retaining the geometry or individual records across frames: web-ui reuses this storage and updates the
+positions before the next frame. Editor-state remains the owner of logical block positions and hit testing.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
-The block drawer context includes `renderedBlock`; its `draw` context already translates coordinates relative to
+The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
 the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
 `registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, renderedBlock, state)` and handles offscreen blocks
 in the same traversal using viewport coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.

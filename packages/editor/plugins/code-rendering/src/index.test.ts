@@ -49,7 +49,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	const render = (codeBlock: CodeBlockGraphicData = block) => {
 		drawRows.mockClear();
 		drawFills.mockClear();
-		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock, x: 0, y: 0 }, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 		return drawRows.mock.calls.map(([, , cells]) => cells);
 	};
 	return { store, events, emitter, state, block, render, drawRows, drawFills, drawers };
@@ -283,7 +283,7 @@ it('isolates prepared text and highlights between editors and unregisters drawin
 it('draws contributed text backgrounds above nested shading and below selection and text', () => {
 	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
 	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
-	const unregister = test.drawers.registerCodeBlockTextBackgroundDrawer(({ draw, renderedBlock: { codeBlock } }) => {
+	const unregister = test.drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 32, PALETTE_INDICES.secondarySoft, codeBlock.width, 16);
 	});
 	test.render();

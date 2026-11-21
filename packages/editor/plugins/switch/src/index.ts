@@ -20,22 +20,20 @@ export function createSwitchPlugin({
 			const state = store.getState();
 			const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
 			const unregisterLayout = registerSwitchLayout(layout, widgets);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(
-				({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
-					for (const control of widgets.get(codeBlock) ?? []) {
-						const value = memoryViews.int32[control.allocationUnitAddress] || 0;
-						if (value === control.onValue || value === control.offValue) {
-							const isOn = value === control.onValue;
-							const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
-							draw.drawFill(control.x, control.y, PALETTE_INDICES.accentSurface, control.width, control.height);
-							draw.drawFill(knobX, control.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, control.height);
-							draw.drawGlyphs(control.x, control.y, isOn ? ON_LABEL : OFF_LABEL, PALETTE_INDICES.darkBase);
-						} else {
-							draw.drawGlyphs(control.x, control.y, INVALID_LABEL, PALETTE_INDICES.secondaryBase);
-						}
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+				for (const control of widgets.get(codeBlock) ?? []) {
+					const value = memoryViews.int32[control.allocationUnitAddress] || 0;
+					if (value === control.onValue || value === control.offValue) {
+						const isOn = value === control.onValue;
+						const knobX = control.x + state.viewport.vGrid * (isOn ? 2 : 1);
+						draw.drawFill(control.x, control.y, PALETTE_INDICES.accentSurface, control.width, control.height);
+						draw.drawFill(knobX, control.y, PALETTE_INDICES.lightBase, state.viewport.vGrid, control.height);
+						draw.drawGlyphs(control.x, control.y, isOn ? ON_LABEL : OFF_LABEL, PALETTE_INDICES.darkBase);
+					} else {
+						draw.drawGlyphs(control.x, control.y, INVALID_LABEL, PALETTE_INDICES.secondaryBase);
 					}
 				}
-			);
+			});
 			const onPointerDown = (event: CodeBlockPointerDownEvent) => {
 				const { x, y, codeBlock } = event;
 				const control = widgets

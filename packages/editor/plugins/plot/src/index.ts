@@ -9,7 +9,7 @@ export const plotPlugin: EditorPlugin = {
 	setup: ({ layout, drawers }) => {
 		const plotsByBlock = new WeakMap<CodeBlockGraphicData, Plot[]>();
 		const unregisterLayout = registerPlotLayout(layout, plotsByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawPlot(draw, plotsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

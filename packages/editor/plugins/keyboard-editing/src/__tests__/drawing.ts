@@ -7,7 +7,7 @@ export function createDrawingContext(state: State, codeBlock: CodeBlockGraphicDa
 	const context: CodeBlockDrawerContext = {
 		draw: draw as unknown as DrawContext,
 		state,
-		renderedBlock: { codeBlock, x: 0, y: 0 },
+		codeBlock,
 		memoryViews: {
 			int8: new Int8Array(0),
 			int16: new Int16Array(0),

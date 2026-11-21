@@ -2,13 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import initState from '@8f4e/editor-state';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type GlyphIds,
-	type MemoryViews,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type GlyphIds, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -102,8 +96,7 @@ entryEnd`);
 	} as unknown as DrawContext;
 	const render = () => {
 		drawn.length = 0;
-		const renderedBlock = createRenderGeometry(state).blocksByCodeBlock.get(codeBlock)!;
-		const context = { draw, state, renderedBlock, memoryViews };
+		const context = { draw, state, codeBlock, memoryViews };
 		drawers.drawCodeBlock(context);
 		return drawn;
 	};

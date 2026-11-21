@@ -72,10 +72,10 @@ it('snapshots a full viewport with overlap and clipping through the web-ui frame
 	const glyphsByBlock = new Map(blocks.map(block => [block.creationIndex, block.code.map(textToGlyphIds)]));
 	const state = createMockState({ viewport, codeBlockRendering: { currentProject: { blocks } } });
 	const drawers = createEditorDrawerRegistry();
-	drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock } }) => {
+	drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 	});
-	drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
+	drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		glyphsByBlock.get(codeBlock.creationIndex)!.forEach((glyphs, row) => {
 			draw.drawGlyphs(0, row * state.viewport.hGrid, glyphs, PALETTE_INDICES.inkBase);
 		});

@@ -6,11 +6,7 @@ const [VERTICAL, DOT, DASH, BACKTICK, APOSTROPHE] = ['|', '.', '-', '`', "'"].ma
 
 const OUTLINE_STEP_DURATION_MS = 80;
 
-export default function drawSelectionAnimation({
-	draw,
-	state,
-	renderedBlock: { codeBlock },
-}: CodeBlockDrawerContext): void {
+export default function drawSelectionAnimation({ draw, state, codeBlock }: CodeBlockDrawerContext): void {
 	if (state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
 	const { width: codeBlockWidth, height: codeBlockHeight } = codeBlock;
 	const now = performance.now();

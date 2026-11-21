@@ -63,7 +63,7 @@ async function setup(text = source) {
 		drawers.drawCodeBlock({
 			draw: { drawFill, drawSprite: vi.fn() } as unknown as DrawContext,
 			state,
-			renderedBlock: { codeBlock, x: 0, y: 0 },
+			codeBlock,
 			memoryViews,
 		});
 		return drawFill.mock.calls.map(([x, y]) => ({ x, y }));

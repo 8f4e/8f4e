@@ -34,25 +34,22 @@ async function setup(source: string) {
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = services.drawers.registerCodeBlockDrawer(
-						({ draw, state, renderedBlock: { codeBlock } }) => {
-							const errors = getCodeBlockErrors(state, codeBlock);
-							if (!errors.length) return;
-							draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
-							codeBlock.displayModel.lines.forEach((line, row) => {
-								const y = gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid;
-								const isError = errors.some(error => error.lineNumber === line.sourceLineIndex);
-								if (isError)
-									draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, state.viewport.hGrid);
-								draw.drawGlyphs(
-									state.viewport.vGrid,
-									y,
-									glyphsByBlock.get(codeBlock)![row],
-									isError ? PALETTE_INDICES.negativeOn : PALETTE_INDICES.inkBase
-								);
-							});
-						}
-					);
+					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+						const errors = getCodeBlockErrors(state, codeBlock);
+						if (!errors.length) return;
+						draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
+						codeBlock.displayModel.lines.forEach((line, row) => {
+							const y = gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid;
+							const isError = errors.some(error => error.lineNumber === line.sourceLineIndex);
+							if (isError) draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, state.viewport.hGrid);
+							draw.drawGlyphs(
+								state.viewport.vGrid,
+								y,
+								glyphsByBlock.get(codeBlock)![row],
+								isError ? PALETTE_INDICES.negativeOn : PALETTE_INDICES.inkBase
+							);
+						});
+					});
 					return () => {
 						removePreparation();
 						removeDrawer();

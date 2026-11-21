@@ -165,9 +165,8 @@ Contribution changes preserve source, selection, project revision, and compiler 
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
 Register block drawing with `drawers.registerCodeBlockDrawer(drawer)`. Each callback receives
-`{ draw, state, renderedBlock, memoryViews }` once per visible block per frame, in registration order.
-The `RenderedCodeBlock` contains the original `codeBlock` reference and its viewport-relative pixel origin (`x`, `y`).
-Drawing coordinates are relative to that origin; web-ui owns the single traversal, presentation geometry and
+`{ draw, state, codeBlock, memoryViews }` once per visible block per frame, in registration order.
+Drawing coordinates are relative to the presented block origin; web-ui owns the single traversal, presentation geometry and
 visibility checks. Layout, source changes and hit testing continue to use the original editor-state geometry. Later
 registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
 background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
@@ -176,7 +175,8 @@ Install `@8f4e/editor-plugin-code-block-background` before code rendering. It ow
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
 For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => ...)` replaces a single
-callback in the same traversal. Coordinates are relative to the viewport. The latest registration wins; disposal clears
+callback in the same traversal. A `RenderedCodeBlock` contains the original `codeBlock` reference and its presentation
+origin (`x`, `y`) in viewport coordinates. The latest registration wins; disposal clears
 its slot only if that callback is still registered, without restoring a previous callback. `canvasOverlays` hides
 these decorations during screenshot capture. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow placement and drawing.
 
@@ -194,7 +194,8 @@ Register viewport-coordinate drawing below code blocks with `drawers.registerCan
 Callbacks receive `{ draw, state, memoryViews, renderGeometry }` above the procedural background and independently
 of `canvasOverlays`. `renderGeometry.blocks` contains the ordered rendered blocks for the current project, including
 offscreen blocks; `renderGeometry.blocksByCodeBlock` indexes them by the original editor-state object. All drawing
-stages share the prepared geometry for the current frame. Keep presentation positions out of editor-state and use
+stages share the prepared geometry for the current frame. Web-ui reuses those objects and collections between frames;
+consumers must not retain them or read them after the drawing pass. Keep presentation positions out of editor-state and use
 the rendered block objects for drawing anchored decorations and cross-block connections.
 `@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
 world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.

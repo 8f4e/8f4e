@@ -9,7 +9,7 @@ export const barsPlugin: EditorPlugin = {
 	setup: ({ layout, drawers }) => {
 		const barsByBlock = new WeakMap<CodeBlockGraphicData, Bars[]>();
 		const unregisterLayout = registerBarsLayout(layout, barsByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawBars(draw, barsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

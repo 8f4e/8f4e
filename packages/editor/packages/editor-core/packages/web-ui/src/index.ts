@@ -190,8 +190,9 @@ async function mount(
 	};
 	engine.hooks.postDraw.push(renderStatsHook);
 
+	const geometry = createRenderGeometry();
 	const drawFrame = () => {
-		const renderGeometry = createRenderGeometry(state);
+		const renderGeometry = geometry.prepare(state);
 		layerFrame = { state, memoryViews, renderGeometry };
 		const canvasFrame = { draw, state, memoryViews, renderGeometry };
 		drawers.drawCanvasBackground(canvasFrame);

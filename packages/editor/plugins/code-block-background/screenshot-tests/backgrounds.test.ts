@@ -34,7 +34,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
+					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid * 3,

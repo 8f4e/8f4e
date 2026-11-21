@@ -33,14 +33,14 @@ describe('drawCodeBlocks', () => {
 			viewport: { x: 8, y: -16 },
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
 		});
-		const renderGeometry = createRenderGeometry(state);
+		const renderGeometry = createRenderGeometry().prepare(state);
 		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
 		drawers.registerCodeBlockDrawer(context => {
-			expect(context).toEqual({ draw, state, renderedBlock: renderGeometry.blocks[0], memoryViews });
-			expect(context.renderedBlock).toBe(renderGeometry.blocks[0]);
+			expect(context).toEqual({ draw, state, codeBlock: visible, memoryViews });
+			expect(context.codeBlock).toBe(visible);
 			expect(draw.startGroup).toHaveBeenLastCalledWith(8, 32);
 			calls.push('first');
 		});
@@ -62,7 +62,7 @@ describe('drawCodeBlocks', () => {
 				currentProject: { entries: [], path: '', blocks: [offscreen, visible, lastOffscreen] },
 			},
 		});
-		const renderGeometry = createRenderGeometry(state);
+		const renderGeometry = createRenderGeometry().prepare(state);
 		const draw = createDrawContext();
 		const drawers = createEditorDrawerRegistry();
 		const calls: string[] = [];
@@ -106,7 +106,7 @@ describe('drawCodeBlocks', () => {
 		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
 
 		expect(draw.startGroup).toHaveBeenCalledExactlyOnceWith(5, 15);
-		expect(visible).toHaveBeenCalledExactlyOnceWith({ draw, state, renderedBlock: blocks[0], memoryViews });
+		expect(visible).toHaveBeenCalledExactlyOnceWith({ draw, state, codeBlock: logicalOffscreen, memoryViews });
 		expect(offscreen).toHaveBeenCalledExactlyOnceWith(draw, blocks[1], state);
 		expect(logicalOffscreen.x).toBe(3000);
 		expect(logicalVisible.x).toBe(20);

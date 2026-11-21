@@ -71,9 +71,10 @@ async function setup(text = source, installed = true) {
 	events.dispatch('loadProject', { project });
 	const gl = createFakeWebGl();
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
+	const geometry = createRenderGeometry();
 	const render = () => {
 		gl.drawArraysInstanced.mockClear();
-		layers.draw({ state, memoryViews, renderGeometry: createRenderGeometry(state) });
+		layers.draw({ state, memoryViews, renderGeometry: geometry.prepare(state) });
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);

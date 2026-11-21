@@ -16,7 +16,7 @@ function setup() {
 		drawers.drawCodeBlock({
 			draw: { drawFill, drawGlyphs } as unknown as DrawContext,
 			state,
-			renderedBlock: { codeBlock, x: 0, y: 0 },
+			codeBlock,
 			memoryViews: {} as MemoryViews,
 		});
 	return { codeBlock, state, render, drawFill, drawGlyphs, dispose };

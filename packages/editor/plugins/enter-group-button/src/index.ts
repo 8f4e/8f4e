@@ -112,7 +112,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			reset();
 		};
 
-		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock } }) => {
+		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 			const button = buttons.get(codeBlock);
 			if (!button) return;
 			const pressed = pressedBlock === codeBlock && pressedInside;

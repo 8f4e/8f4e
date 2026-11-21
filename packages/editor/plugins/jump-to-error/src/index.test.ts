@@ -52,7 +52,7 @@ function setup() {
 		drawers.drawCanvasOverlays({
 			draw,
 			state,
-			renderGeometry: createRenderGeometry(state),
+			renderGeometry: createRenderGeometry().prepare(state),
 			memoryViews: {} as MemoryViews,
 		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {

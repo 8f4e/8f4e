@@ -327,16 +327,19 @@ describe('web-ui init', () => {
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
 		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 		const first = mocks.drawCodeBlocks.mock.calls[0][4];
-		expect(first.blocksByCodeBlock.get(block)).toMatchObject({ x: 32, y: 80 });
+		const firstRecord = first.blocksByCodeBlock.get(block);
+		expect(firstRecord).toMatchObject({ x: 32, y: 80 });
 		expect(drawLayer.mock.calls[0][0].renderGeometry).toBe(first);
 		expect(drawTopLayer.mock.calls[0][0].renderGeometry).toBe(first);
 
 		state.viewport.x = 16;
 		view.renderFrame();
 		const next = mocks.drawCodeBlocks.mock.calls[1][4];
-		expect(next.blocksByCodeBlock.get(block)).toMatchObject({ x: 24, y: 80 });
+		expect(next).toBe(first);
+		expect(next.blocksByCodeBlock.get(block)).toBe(firstRecord);
+		expect(firstRecord).toMatchObject({ x: 24, y: 80 });
 		expect(drawLayer.mock.calls[1][0].renderGeometry).toBe(next);
-		expect(first.blocksByCodeBlock.get(block)).toMatchObject({ x: 32, y: 80 });
+		expect(drawTopLayer.mock.calls[1][0].renderGeometry).toBe(next);
 		view.destroy();
 	});
 

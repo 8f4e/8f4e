@@ -49,7 +49,13 @@ describe('visitConnections', () => {
 		});
 		const visit = vi.fn();
 		const memory = Int32Array.from(kind === 'reference' ? [] : [0, 0, outputAddress]);
-		visitConnections(state, createRenderGeometry(state), memory, { endpointsByBlock, outputsByByteAddress }, visit);
+		visitConnections(
+			state,
+			createRenderGeometry().prepare(state),
+			memory,
+			{ endpointsByBlock, outputsByByteAddress },
+			visit
+		);
 		expect(visit).toHaveBeenCalledExactlyOnceWith(110, 236, 450, 454, true);
 	});
 });

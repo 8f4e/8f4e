@@ -62,7 +62,7 @@ entryEnd`);
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
-		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock, x: 0, y: 0 }, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	return { store, state, events, draw, render, dispose };
 }

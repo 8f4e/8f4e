@@ -49,7 +49,7 @@ function setup(initialDialog?: DialogContent) {
 		drawers.drawModalOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
-			renderGeometry: createRenderGeometry(state),
+			renderGeometry: createRenderGeometry().prepare(state),
 			memoryViews: {} as MemoryViews,
 		});
 	};

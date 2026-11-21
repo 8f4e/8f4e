@@ -9,7 +9,7 @@ export const meterPlugin: EditorPlugin = {
 	setup: ({ layout, drawers }) => {
 		const metersByBlock = new WeakMap<CodeBlockGraphicData, Meter[]>();
 		const unregisterLayout = registerMeterLayout(layout, metersByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawMeter(draw, metersByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

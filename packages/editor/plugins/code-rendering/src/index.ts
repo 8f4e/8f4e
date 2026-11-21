@@ -24,11 +24,7 @@ export const codeRenderingPlugin: EditorPlugin = {
 		const project = store.getState().codeBlockRendering.currentProject;
 		refresh({ project, codeBlocks: project.blocks });
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(context => {
-			const {
-				draw,
-				state,
-				renderedBlock: { codeBlock },
-			} = context;
+			const { draw, state, codeBlock } = context;
 			const rendering = renderingByBlock.get(codeBlock)!;
 			if (!codeBlock.disabled) {
 				for (const { x, y, width, height, color } of rendering.highlights) draw.drawFill(x, y, color, width, height);

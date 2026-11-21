@@ -46,7 +46,8 @@ async function setup(text = source) {
 	});
 	const connections = createWireConnections(state, events);
 	events.dispatch('loadProject', { project });
-	const readConnections = (renderGeometry: RenderGeometry = createRenderGeometry(state)) => {
+	const geometry = createRenderGeometry();
+	const readConnections = (renderGeometry: RenderGeometry = geometry.prepare(state)) => {
 		const endpoints: Array<Parameters<WireConnectionVisitor>> = [];
 		connections.visit(renderGeometry, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
 		return endpoints;
@@ -100,7 +101,7 @@ describe('wire connections', () => {
 		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
 		sourceBlock.x = -10000;
 		const [original] = readConnections();
-		const renderGeometry = createRenderGeometry(state);
+		const renderGeometry = createRenderGeometry().prepare(state);
 		const blocks = renderGeometry.blocks.map(block =>
 			block.codeBlock === sink
 				? { ...block, x: block.x + 12, y: block.y + 20 }
@@ -111,6 +112,12 @@ describe('wire connections', () => {
 		).toEqual([[original[0] + 12, original[1] + 20, original[2] - 35, original[3] - 70, original[4]]]);
 		expect(sourceBlock.x).toBe(-10000);
 		expect(readConnections()).toEqual([original]);
+		state.viewport.x += 20;
+		state.viewport.y -= 8;
+		sink.x += 5;
+		expect(readConnections()).toEqual([
+			[original[0] - 15, original[1] + 8, original[2] - 20, original[3] + 8, original[4]],
+		]);
 	});
 
 	it('connects a double pointer to a pointer slot without a fixed reference', async () => {

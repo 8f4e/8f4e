@@ -17,7 +17,7 @@ export default function createCaretPresentation({ store, events }: Pick<EditorPl
 		const visualColumn = getVisualColumnForRawIndex(block.code[row] || '', col, tabStops);
 		x = (visualColumn + block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	};
-	const drawCaret: CodeBlockDrawer = ({ draw, renderedBlock: { codeBlock } }) => {
+	const drawCaret: CodeBlockDrawer = ({ draw, codeBlock }) => {
 		if (state.editorMode !== 'edit' || state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
 		draw.drawGlyphs(
 			x,

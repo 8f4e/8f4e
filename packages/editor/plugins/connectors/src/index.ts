@@ -12,12 +12,10 @@ export const connectorsPlugin: EditorPlugin = {
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
 			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(
-			({ draw, state, renderedBlock: { codeBlock }, memoryViews }) => {
-				const widgets = widgetsByBlock.get(codeBlock);
-				if (widgets) drawConnectors(draw, state, widgets, memoryViews);
-			}
-		);
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
+			const widgets = widgetsByBlock.get(codeBlock);
+			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
+		});
 		return () => {
 			unsubscribeLayout();
 			unregisterDrawer();

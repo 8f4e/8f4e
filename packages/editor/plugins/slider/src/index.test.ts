@@ -64,7 +64,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock: block, x: 0, y: 0 }, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const point = (position = 0.5, sourceLineIndex = 2) => {
 		const x = (block.lineNumberColumnWidth + 2) * state.viewport.vGrid;

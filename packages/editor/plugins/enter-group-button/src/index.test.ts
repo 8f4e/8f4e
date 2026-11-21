@@ -65,7 +65,7 @@ function setup() {
 		drawGlyphs.mockClear();
 		drawers.drawCodeBlock({
 			state,
-			renderedBlock: { codeBlock, x: 0, y: 0 },
+			codeBlock,
 			draw: { drawFill, drawGlyphs } as unknown as DrawContext,
 			memoryViews: {} as MemoryViews,
 		});

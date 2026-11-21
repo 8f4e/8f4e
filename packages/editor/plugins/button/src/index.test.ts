@@ -60,7 +60,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
-		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock, x: 0, y: 0 }, memoryViews });
+		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const point = (row = 2) => ({
 		x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
