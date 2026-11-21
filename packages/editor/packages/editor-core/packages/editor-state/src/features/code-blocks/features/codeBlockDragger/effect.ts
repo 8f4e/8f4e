@@ -1,7 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { raiseCodeBlockInPlace } from '../../partitionCodeBlocksByAlwaysOnTop';
 import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import upsertPos from '../directives/pos/upsert';
@@ -46,13 +45,7 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
 		dragSet = dragTargets.targets;
 
-		// Bring dragged module forward within its z-order partition.
-		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
-		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
-		replaceCodeBlocksInPlace(
-			state.codeBlockRendering.currentProject.blocks,
-			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock)
-		);
+		raiseCodeBlockInPlace(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock);
 
 		if (state.editorMode !== 'edit') {
 			state.codeBlockRendering.draggedCodeBlock = undefined;

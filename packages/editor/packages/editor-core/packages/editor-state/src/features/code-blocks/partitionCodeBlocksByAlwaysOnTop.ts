@@ -1,4 +1,5 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
 
 type AlwaysOnTopPartitionableBlock = Pick<CodeBlockGraphicData, 'alwaysOnTop'>;
 
@@ -22,12 +23,9 @@ export function insertCodeBlockRespectingAlwaysOnTop<TBlock extends AlwaysOnTopP
 }
 
 /**
- * Moves a target code block to the front (end) of its own z-order partition without crossing partitions.
+ * Raises a block within its own z-order partition without replacing the live block list.
  */
-export function bringCodeBlockToFrontWithinPartition<TBlock extends AlwaysOnTopPartitionableBlock>(
-	codeBlocks: readonly TBlock[],
-	targetBlock: TBlock
-): TBlock[] {
+export function raiseCodeBlockInPlace(codeBlocks: CodeBlockGraphicData[], targetBlock: CodeBlockGraphicData): void {
 	const remainingBlocks = codeBlocks.filter(block => block !== targetBlock);
-	return insertCodeBlockRespectingAlwaysOnTop(remainingBlocks, targetBlock);
+	replaceCodeBlocksInPlace(codeBlocks, insertCodeBlockRespectingAlwaysOnTop(remainingBlocks, targetBlock));
 }

@@ -5,8 +5,7 @@ import reverseGapCalculator from '../../../text-geometry/reverseGapCalculator';
 import centerViewportOnCodeBlock from '../../../viewport/centerViewportOnCodeBlock';
 import centerViewportOnCodeBlockCursor from '../../../viewport/centerViewportOnCodeBlockCursor';
 import updateViewport from '../../../viewport/updateViewport';
-import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
+import { raiseCodeBlockInPlace } from '../../partitionCodeBlocksByAlwaysOnTop';
 import findClosestCodeBlockInDirection from '../../utils/finders/findClosestCodeBlockInDirection';
 
 type CodeBlockCursor = NonNullable<State['codeBlockRendering']['selectedCodeBlock']>['cursor'];
@@ -150,7 +149,7 @@ export function navigateToCodeBlockInDirection(
 
 	// Match pointer selection: raise the target within its stacking layer before selecting it.
 	if (targetBlock !== currentBlock) {
-		replaceCodeBlocksInPlace(codeBlocks, bringCodeBlockToFrontWithinPartition(codeBlocks, targetBlock));
+		raiseCodeBlockInPlace(codeBlocks, targetBlock);
 		store.set('codeBlockRendering.selectedCodeBlock', targetBlock);
 
 		if (direction === 'left' || direction === 'right') {

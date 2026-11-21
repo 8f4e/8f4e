@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
 import {
-	bringCodeBlockToFrontWithinPartition,
 	insertCodeBlockRespectingAlwaysOnTop,
 	partitionCodeBlocksByAlwaysOnTop,
+	raiseCodeBlockInPlace,
 } from './partitionCodeBlocksByAlwaysOnTop';
 
 describe('partitionCodeBlocksByAlwaysOnTop', () => {
@@ -36,15 +36,19 @@ describe('partitionCodeBlocksByAlwaysOnTop', () => {
 		const normal1 = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
 		const normal2 = createMockCodeBlock({ name: 'normal2', alwaysOnTop: false });
 		const top1 = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
+		const blocks = [normal1, normal2, top1];
 
-		expect(bringCodeBlockToFrontWithinPartition([normal1, normal2, top1], normal1)).toEqual([normal2, normal1, top1]);
+		raiseCodeBlockInPlace(blocks, normal1);
+		expect(blocks).toEqual([normal2, normal1, top1]);
 	});
 
 	it('brings an always-on-top block forward to the end of the always-on-top partition', () => {
 		const normal1 = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
 		const top1 = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
 		const top2 = createMockCodeBlock({ name: 'top2', alwaysOnTop: true });
+		const blocks = [normal1, top1, top2];
 
-		expect(bringCodeBlockToFrontWithinPartition([normal1, top1, top2], top1)).toEqual([normal1, top2, top1]);
+		raiseCodeBlockInPlace(blocks, top1);
+		expect(blocks).toEqual([normal1, top2, top1]);
 	});
 });
