@@ -39,6 +39,8 @@ describe('viewport entry motion', () => {
 	it('holds against the last crossed edge when entering diagonally', () => {
 		const { step } = setup({ x: 104, y: 110 });
 		expect(step(16, 12, 12)).toEqual({ x: 0, y: 2 });
+		// Keep the chosen edge on later steps, when the block is already logically inside.
+		expect(step(32, 16, 15)).toEqual({ x: 0, y: 5 });
 	});
 
 	it('releases from the held edge after enough pull, overshoots, and settles to the ordinary offset', () => {

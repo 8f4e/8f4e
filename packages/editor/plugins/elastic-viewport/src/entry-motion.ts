@@ -1,5 +1,5 @@
 import type { ResolvedElasticViewportOptions } from './options';
-import { advanceViewportSpring, createViewportSpring, type ViewportSpring } from './spring';
+import { createViewportSpring, createViewportSpringSolver, type ViewportSpring } from './spring';
 
 type Bounds = Readonly<{ x: number; y: number; width: number; height: number }>;
 type Edge = 'left' | 'right' | 'top' | 'bottom';
@@ -17,15 +17,20 @@ export function createEntryMotion(
 	{ releaseDistancePixels, idleReleaseMs, frequency }: ResolvedElasticViewportOptions['entry'],
 	springOptions: ResolvedElasticViewportOptions['spring']
 ) {
+	const advanceRelease = createViewportSpringSolver(frequency, releaseDistancePixels, springOptions);
 	let entries: WeakMap<Bounds, Entry> | undefined;
 	let frame = 0;
 	let active = false;
-	let previousX = 0;
-	let previousY = 0;
-	let viewX = 0;
-	let viewY = 0;
-	let viewWidth = 0;
-	let viewHeight = 0;
+	let previousLeft = 0;
+	let previousTop = 0;
+	let previousRight = 0;
+	let previousBottom = 0;
+	let viewLeft = 0;
+	let viewTop = 0;
+	let viewRight = 0;
+	let viewBottom = 0;
+	let horizontalTravel = 0;
+	let verticalTravel = 0;
 	let frameTime = 0;
 	let elapsedSeconds = 0;
 	let detectEntrances = false;
@@ -40,52 +45,54 @@ export function createEntryMotion(
 		}
 		if (!entry && !detectEntrances) return;
 
-		const x = block.x - viewX;
-		const y = block.y - viewY;
+		const { x, y } = block;
 		const right = x + block.width;
 		const bottom = y + block.height;
-		if (x >= viewWidth || y >= viewHeight || right <= 0 || bottom <= 0) {
+		if (x >= viewRight || y >= viewBottom || right <= viewLeft || bottom <= viewTop) {
 			if (entry) entries?.delete(block);
 			return;
 		}
 
-		const dx = viewX - previousX;
-		const dy = viewY - previousY;
-		const oldX = x + dx;
-		const oldY = y + dy;
-		const xEdge = oldX + block.width <= 0 ? 'left' : oldX >= viewWidth ? 'right' : undefined;
-		const yEdge = oldY + block.height <= 0 ? 'top' : oldY >= viewHeight ? 'bottom' : undefined;
-		let edge = entry?.edge;
-		if (!edge) {
-			if (xEdge && yEdge) {
-				// At a corner, use whichever edge was crossed last along this pan step.
-				const xDepth = xEdge === 'left' ? right : viewWidth - x;
-				const yDepth = yEdge === 'top' ? bottom : viewHeight - y;
-				edge = xDepth / Math.abs(dx) <= yDepth / Math.abs(dy) ? xEdge : yEdge;
-			} else {
-				edge = xEdge ?? yEdge;
-			}
-		}
-		if (!edge) return;
-
-		const horizontal = edge === 'left' || edge === 'right';
-		const inward = edge === 'left' || edge === 'top' ? 1 : -1;
-		const depth = edge === 'left' ? right : edge === 'right' ? viewWidth - x : edge === 'top' ? bottom : viewHeight - y;
-		const presentedDepth = depth + inward * (horizontal ? offset.x : offset.y);
-		if (!entry) {
-			entries ??= new WeakMap();
-			entry = { edge, frame, lastDepth: depth, lastPullTime: frameTime };
-			entries.set(block, entry);
-		}
-		entry.frame = frame;
-
-		let spring = entry.spring;
-		if (spring) {
-			if (!advanceViewportSpring(spring, elapsedSeconds, 0, 0)) {
+		let spring = entry?.spring;
+		if (entry && spring) {
+			if (!advanceRelease(spring, elapsedSeconds, 0, 0)) {
 				entries?.delete(block);
 				return;
 			}
+			entry.frame = frame;
 		} else {
+			let edge = entry?.edge;
+			if (!edge) {
+				const xEdge = right <= previousLeft ? 'left' : x >= previousRight ? 'right' : undefined;
+				const yEdge = bottom <= previousTop ? 'top' : y >= previousBottom ? 'bottom' : undefined;
+				if (xEdge && yEdge) {
+					// At a corner, use whichever edge was crossed last along this pan step.
+					const xDepth = xEdge === 'left' ? right - viewLeft : viewRight - x;
+					const yDepth = yEdge === 'top' ? bottom - viewTop : viewBottom - y;
+					edge = xDepth / horizontalTravel <= yDepth / verticalTravel ? xEdge : yEdge;
+				} else {
+					edge = xEdge ?? yEdge;
+				}
+			}
+			if (!edge) return;
+
+			const horizontal = edge === 'left' || edge === 'right';
+			const inward = edge === 'left' || edge === 'top' ? 1 : -1;
+			const depth =
+				edge === 'left'
+					? right - viewLeft
+					: edge === 'right'
+						? viewRight - x
+						: edge === 'top'
+							? bottom - viewTop
+							: viewBottom - y;
+			const presentedDepth = depth + inward * (horizontal ? offset.x : offset.y);
+			if (!entry) {
+				entries ??= new WeakMap();
+				entry = { edge, frame, lastDepth: depth, lastPullTime: frameTime };
+				entries.set(block, entry);
+			}
+			entry.frame = frame;
 			if (detectEntrances && depth > entry.lastDepth) entry.lastPullTime = frameTime;
 			entry.lastDepth = depth;
 			const idle = frameTime - entry.lastPullTime >= idleReleaseMs;
@@ -103,7 +110,7 @@ export function createEntryMotion(
 				return;
 			}
 			// Start at the held edge; limit the correction when a single step goes far into the viewport.
-			spring = createViewportSpring(frequency, releaseDistancePixels, springOptions);
+			spring = createViewportSpring();
 			const correction = -inward * Math.min(presentedDepth, releaseDistancePixels);
 			if (horizontal) spring.x = correction;
 			else spring.y = correction;
@@ -126,12 +133,18 @@ export function createEntryMotion(
 		): void {
 			frame++;
 			active = false;
-			previousX = lastX;
-			previousY = lastY;
-			viewX = viewport.x;
-			viewY = viewport.y;
-			viewWidth = viewport.width;
-			viewHeight = viewport.height;
+			viewLeft = viewport.x;
+			viewTop = viewport.y;
+			viewRight = viewLeft + viewport.width;
+			viewBottom = viewTop + viewport.height;
+			if (allowEntrances) {
+				previousLeft = lastX;
+				previousTop = lastY;
+				previousRight = lastX + viewport.width;
+				previousBottom = lastY + viewport.height;
+				horizontalTravel = Math.abs(viewLeft - lastX);
+				verticalTravel = Math.abs(viewTop - lastY);
+			}
 			frameTime = time;
 			elapsedSeconds = elapsedMs / 1000;
 			detectEntrances = allowEntrances;

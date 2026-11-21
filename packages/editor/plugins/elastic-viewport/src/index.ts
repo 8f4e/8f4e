@@ -11,7 +11,7 @@ import {
 	type ResolvedElasticViewportOptions,
 	resolveElasticViewportOptions,
 } from './options';
-import { advanceViewportSpring, createViewportSpring, resetViewportSpring, type ViewportSpring } from './spring';
+import { createViewportSpring, createViewportSpringSolver, resetViewportSpring, type ViewportSpring } from './spring';
 
 export type {
 	ElasticViewportEntryOptions,
@@ -30,14 +30,25 @@ interface SpringBlend {
 }
 
 function createPositionEffect(options: ResolvedElasticViewportOptions) {
-	const { prefersReducedMotion, maxFrameGapMs, maxCameraStepPixels, pan, spring, entry: entryOptions } = options;
+	const {
+		prefersReducedMotion,
+		maxFrameGapMs,
+		maxCameraStepPixels,
+		pan,
+		spring: springOptions,
+		entry: entryOptions,
+	} = options;
 	const { sizeProfiles, maxOffsetPixels } = pan;
 	const maxCameraStepSquared = maxCameraStepPixels ** 2;
 	const reach = Math.ceil(maxOffsetPixels * Math.max(...sizeProfiles.map(profile => profile.influence)));
 	// Keep shared responses current so blocks can start using them as soon as they approach the viewport.
-	const springs = sizeProfiles.map(({ frequency }) => createViewportSpring(frequency, maxOffsetPixels, spring));
+	const springProfiles = sizeProfiles.map(profile => ({
+		...profile,
+		spring: createViewportSpring(),
+		advance: createViewportSpringSolver(profile.frequency, maxOffsetPixels, springOptions),
+	}));
 	const blendsByBlock = new WeakMap<CodeBlockGraphicData, SpringBlend>();
-	const entry = createEntryMotion(entryOptions, spring);
+	const entry = createEntryMotion(entryOptions, springOptions);
 	let previousProject: ProjectLevel | undefined;
 	let previousTime: number | undefined;
 	let viewportX = 0;
@@ -65,15 +76,15 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 			const gridCells = (block.width * block.height) / cellArea;
 			if (blendsByBlock.get(block)?.gridCells === gridCells) continue;
 			let upper = 0;
-			while (upper < sizeProfiles.length - 1 && gridCells > sizeProfiles[upper].gridCells) upper++;
+			while (upper < springProfiles.length - 1 && gridCells > springProfiles[upper].gridCells) upper++;
 			const lower = Math.max(0, upper - 1);
-			const from = sizeProfiles[lower];
-			const to = sizeProfiles[upper];
+			const from = springProfiles[lower];
+			const to = springProfiles[upper];
 			const mix = upper === lower ? 0 : Math.min(1, (gridCells - from.gridCells) / (to.gridCells - from.gridCells));
 			blendsByBlock.set(block, {
 				gridCells,
-				from: springs[lower],
-				to: springs[upper],
+				from: from.spring,
+				to: to.spring,
 				fromWeight: (1 - mix) * from.influence,
 				toWeight: mix * to.influence,
 			});
@@ -136,7 +147,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 		wasInteractionSuppressed = interactionSuppressed;
 
 		if (reset) {
-			if (moving) for (const spring of springs) resetViewportSpring(spring);
+			if (moving) for (const { spring } of springProfiles) resetViewportSpring(spring);
 			moving = false;
 			entry.reset();
 			return;
@@ -147,10 +158,10 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 
 		moving = false;
 		hasSharedOffset = false;
-		for (let i = 0; i < springs.length; i++) {
-			const spring = springs[i];
-			if (advanceViewportSpring(spring, elapsedMs / 1000, dx, dy)) moving = true;
-			if (Math.max(Math.abs(spring.x), Math.abs(spring.y)) * sizeProfiles[i].influence >= 0.5) hasSharedOffset = true;
+		const elapsedSeconds = elapsedMs / 1000;
+		for (const { spring, advance, influence } of springProfiles) {
+			if (advance(spring, elapsedSeconds, dx, dy)) moving = true;
+			if (Math.max(Math.abs(spring.x), Math.abs(spring.y)) * influence >= 0.5) hasSharedOffset = true;
 		}
 		if (!hasSharedOffset && !useEntryMotion) return;
 		// Entry motion only applies to logically visible blocks. Only ordinary lag can draw an offscreen block.
