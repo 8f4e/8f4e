@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./connections": {
+      "types": "./dist/connections.d.ts",
+      "default": "./dist/connections.js"
     }
   },
   "sideEffects": false,

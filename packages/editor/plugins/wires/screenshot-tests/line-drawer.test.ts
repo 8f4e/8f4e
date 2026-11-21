@@ -1,7 +1,6 @@
 import { Engine } from 'glugglugglug';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { LineDrawer } from '../src/line-drawer';
-import { drawLooseWire } from '../src/loose-wire';
 
 type Point = readonly [number, number];
 
@@ -21,29 +20,6 @@ describe('Bresenham wires', () => {
 	afterAll(() => {
 		lines.destroy();
 		engine.destroy();
-	});
-
-	test.each([
-		[4, 28],
-		[28, 4],
-	])('draws a continuous translucent sag from x=%i to x=%i without dark joins', (startX, endX) => {
-		engine.renderFrame(() => {
-			lines.reset();
-			drawLooseWire(lines, startX, 8, endX, 8, 1, [1, 1, 1, 0.5]);
-			lines.flush();
-		});
-		const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-		engine.gl.readPixels(0, 0, canvas.width, canvas.height, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, pixels);
-		const alphaAt = (x: number, y: number) => pixels[((canvas.height - 1 - y) * canvas.width + x) * 4 + 3];
-		expect(alphaAt(startX, 8)).toBe(128);
-		expect(alphaAt(endX, 8)).toBe(128);
-		expect(alphaAt(16, 14)).toBe(128);
-		expect(alphaAt(16, 8)).toBe(0);
-		for (let x = 4; x <= 28; x++) {
-			const column = Array.from({ length: canvas.height }, (_, y) => alphaAt(x, y)).filter(alpha => alpha !== 0);
-			expect(column).toEqual([128]);
-		}
-		expect(engine.gl.getError()).toBe(engine.gl.NO_ERROR);
 	});
 
 	const endpoints: Array<[name: string, end: Point]> = [

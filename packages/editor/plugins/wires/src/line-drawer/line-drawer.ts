@@ -63,7 +63,7 @@ export class LineDrawer {
 	 *
 	 * Lines are drawn in call order above every sprite. Invalid coordinates,
 	 * colors, or lifecycle calls are programmer errors with unspecified consequences.
-	 * Endpoints snap to the nearest pixel and are included unless the start is explicitly skipped. Thickness must be
+	 * Endpoints snap to the nearest pixel and are both included. Thickness must be
 	 * a positive integer and expands along the minor axis of the staircase.
 	 *
 	 * @param x1 - Starting X coordinate in canvas pixels.
@@ -72,19 +72,9 @@ export class LineDrawer {
 	 * @param y2 - Ending Y coordinate in canvas pixels.
 	 * @param thickness - Positive integer thickness in canvas pixels.
 	 * @param color - Normalized red, green, blue, and alpha components.
-	 * @param skipStart - Skip the starting sample if a preceding segment already drew it.
 	 */
-	drawLine(
-		x1: number,
-		y1: number,
-		x2: number,
-		y2: number,
-		thickness: number,
-		color: LineColor,
-		skipStart = false
-	): void {
-		// Pack the endpoint flag in the sign to keep the existing instance stride.
-		this.lines.append(x1, y1, x2, y2, skipStart ? -thickness : thickness, color);
+	drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColor): void {
+		this.lines.append(x1, y1, x2, y2, thickness, color);
 	}
 
 	/** Releases retained dynamic GPU buffer storage while preserving the buffer object and shader state. */

@@ -105,10 +105,10 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-connectors').then(module => module.connectorsPlugin),
 		},
 		{
-			id: 'wires',
+			id: 'loose-wires',
 			scope: 'view',
 			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-wires').then(module => module.looseWiresPlugin),
+			load: () => import('@8f4e/editor-plugin-loose-wires').then(module => module.looseWiresPlugin),
 		},
 		{
 			id: 'assertion-markers',

@@ -4,8 +4,8 @@ import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewpor
 import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';
 import { createGroupPathPlugin } from '@8f4e/editor-plugin-group-path';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { looseWiresPlugin } from '@8f4e/editor-plugin-loose-wires';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
-import { looseWiresPlugin } from '@8f4e/editor-plugin-wires';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountGalleryEditor } from './index';
 
@@ -79,7 +79,8 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(createFontPreviewPlugin).toHaveBeenCalledWith({ inputTarget: canvas, defaultFont: undefined });
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 1 });
-	expect(deferredPlugins.filter(plugin => plugin.id === 'wires')).toEqual([looseWiresPlugin]);
+	expect(deferredPlugins).toContain(looseWiresPlugin);
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('wires');
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
@@ -89,7 +90,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-block-background',
 			'code-rendering',
 			'connectors',
-			'wires',
+			'loose-wires',
 			'error-messages',
 			'jump-to-error',
 			'loading-indicators',

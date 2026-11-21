@@ -6,8 +6,7 @@ import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
-import { looseWiresPlugin, wiresPlugin } from './index';
-import { LINE_INSTANCE_BYTE_STRIDE } from './line-drawer/line-instance';
+import { wiresPlugin } from './index';
 
 const source = `8f4e/v1
 entry main
@@ -32,7 +31,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function setup(text = source, installed = true, plugin = wiresPlugin) {
+async function setup(text = source, installed = true) {
 	const project = parseProjectSource(text);
 	const compiled = await compileProject(project);
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
@@ -52,7 +51,7 @@ async function setup(text = source, installed = true, plugin = wiresPlugin) {
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
-		? plugin.setup({
+		? wiresPlugin.setup({
 				store,
 				events,
 				menus: store.menus,
@@ -84,26 +83,6 @@ async function setup(text = source, installed = true, plugin = wiresPlugin) {
 }
 
 describe('wires plugin', () => {
-	it('batches loose wires between the same connector positions as straight wires', async () => {
-		const sample = async (plugin: typeof wiresPlugin) => {
-			const { gl, render } = await setup(source, true, plugin);
-			render();
-			expect(gl.drawArraysInstanced).toHaveBeenCalledOnce();
-			const [, , bytes, , usedLength] = gl.bufferSubData.mock.calls.at(-1)!;
-			const buffer = bytes as Uint8Array;
-			const view = new DataView(buffer.buffer, buffer.byteOffset);
-			return Array.from({ length: Number(usedLength) / LINE_INSTANCE_BYTE_STRIDE }, (_, segment) => {
-				const offset = segment * LINE_INSTANCE_BYTE_STRIDE;
-				return [0, 4, 8, 12].map(field => view.getFloat32(offset + field, true));
-			});
-		};
-		const [straight] = await sample(wiresPlugin);
-		const loose = await sample(looseWiresPlugin);
-		expect(loose.length).toBeGreaterThan(1);
-		expect(loose[0].slice(0, 2)).toEqual(straight.slice(0, 2));
-		expect(loose.at(-1)?.slice(2)).toEqual(straight.slice(2));
-	});
-
 	it('hides wires during dialogs and highlights connections for the selected input block', async () => {
 		const { state, gl, render } = await setup();
 		state.dialogStack.push({ id: 'test', title: 'Test', text: '', buttons: [] });
