@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import type { CodeBlockGraphicData, EditorPlugin } from '@8f4e/editor-core';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, updateViewport } from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockViewport } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -37,9 +37,11 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 		state.viewport.x += dx;
 		state.viewport.y += dy;
 	};
+	const manualPan = (dx: number, dy = 0) =>
+		updateViewport(state, state.viewport.x + dx, state.viewport.y + dy, events, 'pan');
 	const settle = (...codeBlocks: CodeBlockGraphicData[]) =>
 		events.dispatch('codeBlockLayoutsChanged', { project: state.codeBlockRendering.currentProject, codeBlocks });
-	return { state, events, emitter, small, large, dispose, frame, pan, settle };
+	return { state, events, emitter, small, large, dispose, frame, pan, manualPan, settle };
 }
 
 describe('elastic viewport plugin', () => {
@@ -123,6 +125,33 @@ describe('elastic viewport plugin', () => {
 		const offset = frame(16);
 		expect(offset?.(near)).toEqual({ x: 31, y: 0 });
 		for (const block of far) expect(offset?.(block)).toBeUndefined();
+	});
+
+	it('holds an entering block only when the viewport moves through manual panning', () => {
+		const sample = (manual: boolean) => {
+			const { state, frame, pan, manualPan, settle } = setup();
+			const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
+			state.codeBlockRendering.currentProject.blocks.push(block);
+			settle(block);
+			frame(0);
+			(manual ? manualPan : pan)(12);
+			const offset = frame(16)?.(block)?.x ?? 0;
+			return block.x - state.viewport.x + offset - state.viewport.width;
+		};
+		expect(sample(true)).toBe(0);
+		expect(sample(false)).toBeLessThan(0);
+	});
+
+	it('discards held entries when a navigation frame suppresses offsets', () => {
+		const { state, frame, manualPan, settle } = setup();
+		const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
+		state.codeBlockRendering.currentProject.blocks.push(block);
+		settle(block);
+		frame(0);
+		manualPan(12);
+		expect(frame(16)?.(block)).toEqual({ x: 8, y: 0 });
+		expect(frame(32, true)).toBeUndefined();
+		expect(frame(48)).toBeUndefined();
 	});
 
 	it('preserves weight differences even when a sustained fast pan saturates the springs', () => {
@@ -292,6 +321,85 @@ describe('elastic viewport plugin', () => {
 		expect(frame(0)).toBeUndefined();
 		small.x += 40;
 		expect(frame(16)).toBeUndefined();
+	});
+
+	it('uses the configured pan cap and profile for blocks outside the default rendering reach', () => {
+		const profile = { gridCells: 80, frequency: 26, influence: 1 };
+		const panOptions = { maxOffsetPixels: 80, sizeProfiles: [profile] as const };
+		const plugin = createElasticViewportPlugin({ prefersReducedMotion: () => false, pan: panOptions });
+		// Later edits to the caller's settings do not change the constructed plugin.
+		panOptions.maxOffsetPixels = 24;
+		profile.influence = 0.5;
+		const { state, frame, pan, settle } = setup(plugin);
+		const near = createMockCodeBlock({ x: 120 - 80 - 70, y: 100, width: 80, height: 64 });
+		const beyond = createMockCodeBlock({ x: near.x - 10, y: 100, width: 80, height: 64 });
+		state.codeBlockRendering.currentProject.blocks.push(near, beyond);
+		settle(near, beyond);
+		frame(0);
+		pan(120);
+		const offset = frame(16);
+		expect(offset?.(near)).toEqual({ x: 80, y: 0 });
+		expect(offset?.(beyond)).toBeUndefined();
+	});
+
+	it('allows a bouncier pan response or critical damping without overshoot', () => {
+		const sample = (dampingRatio: number) => {
+			const { frame, pan, small } = setup(
+				createElasticViewportPlugin({ prefersReducedMotion: () => false, spring: { dampingRatio } })
+			);
+			frame(0);
+			pan(48);
+			const offsets = [];
+			for (let time = 16; time <= 512; time += 16) offsets.push(frame(time)?.(small)?.x ?? 0);
+			return offsets;
+		};
+		const bouncy = sample(0.25);
+		const critical = sample(1);
+		expect(critical[0]).toBeGreaterThan(0);
+		expect(bouncy[0]).toBe(critical[0]);
+		expect(Math.min(...bouncy)).toBeLessThan(-1);
+		expect(Math.min(...critical)).toBe(0);
+		expect(critical.at(-1)).toBe(0);
+	});
+
+	it.each(['pull', 'idle'] as const)('releases an entry at the configured %s threshold', reason => {
+		const { state, frame, manualPan, settle } = setup(
+			createElasticViewportPlugin({
+				prefersReducedMotion: () => false,
+				entry: { releaseDistancePixels: 24, idleReleaseMs: 32, frequency: 40 },
+			})
+		);
+		const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
+		state.codeBlockRendering.currentProject.blocks.push(block);
+		settle(block);
+		const visibleDepth = (time: number) =>
+			state.viewport.x + state.viewport.width - block.x - (frame(time)?.(block)?.x ?? 0);
+		frame(0);
+		manualPan(12);
+		expect(visibleDepth(16)).toBe(0);
+		if (reason === 'pull') {
+			manualPan(25);
+			expect(visibleDepth(32)).toBeGreaterThan(0);
+		} else {
+			expect(visibleDepth(47)).toBe(0);
+			expect(visibleDepth(48)).toBe(0);
+			expect(visibleDepth(80)).toBeGreaterThan(0);
+		}
+	});
+
+	it('applies the configured camera-step and frame-gap guards independently', () => {
+		const { frame, pan, small } = setup(
+			createElasticViewportPlugin({ prefersReducedMotion: () => false, maxCameraStepPixels: 55, maxFrameGapMs: 45 })
+		);
+		frame(0);
+		pan(55);
+		expect(frame(16)?.(small)?.x).toBeGreaterThan(0);
+		pan(56);
+		expect(frame(32)).toBeUndefined();
+		pan(20);
+		expect(frame(77)?.(small)?.x).toBeGreaterThan(0);
+		pan(20);
+		expect(frame(123)).toBeUndefined();
 	});
 
 	it('owns isolated state per installation and unregisters drawing and layout notifications on disposal', () => {
