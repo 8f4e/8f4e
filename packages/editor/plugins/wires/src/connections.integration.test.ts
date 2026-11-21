@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { createRenderGeometry, type RenderGeometry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createWireConnections, type WireConnectionVisitor } from './connections';
 
@@ -45,9 +46,9 @@ async function setup(text = source) {
 	});
 	const connections = createWireConnections(state, events);
 	events.dispatch('loadProject', { project });
-	const readConnections = () => {
+	const readConnections = (renderGeometry: RenderGeometry = createRenderGeometry(state)) => {
 		const endpoints: Array<Parameters<WireConnectionVisitor>> = [];
-		connections.visit(memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
+		connections.visit(renderGeometry, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
 		return endpoints;
 	};
 	cleanups.push(store.dispose, connections.dispose);
@@ -91,6 +92,25 @@ describe('wire connections', () => {
 		expect(readConnections()).toHaveLength(0);
 		memoryViews.int32[input.allocationUnitAddress] = output.byteAddress;
 		expect(readConnections()).toHaveLength(1);
+	});
+
+	it('uses the rendered origins for both endpoints, including offscreen blocks', async () => {
+		const { state, readConnections } = await setup();
+		const sourceBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		sourceBlock.x = -10000;
+		const [original] = readConnections();
+		const renderGeometry = createRenderGeometry(state);
+		const blocks = renderGeometry.blocks.map(block =>
+			block.codeBlock === sink
+				? { ...block, x: block.x + 12, y: block.y + 20 }
+				: { ...block, x: block.x - 35, y: block.y - 70 }
+		);
+		expect(
+			readConnections({ blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) })
+		).toEqual([[original[0] + 12, original[1] + 20, original[2] - 35, original[3] - 70, original[4]]]);
+		expect(sourceBlock.x).toBe(-10000);
+		expect(readConnections()).toEqual([original]);
 	});
 
 	it('connects a double pointer to a pointer slot without a fixed reference', async () => {

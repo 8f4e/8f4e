@@ -2,7 +2,13 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import {
+	createEditorDrawerRegistry,
+	createRenderGeometry,
+	type DrawContext,
+	type MemoryViews,
+	textToGlyphIds,
+} from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { entryOutlinesPlugin } from './index';
 
@@ -16,7 +22,12 @@ function setup() {
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const method of Object.values(draw)) method.mockClear();
-		drawers.drawCanvasBackground({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawCanvasBackground({
+			draw: draw as unknown as DrawContext,
+			state,
+			renderGeometry: createRenderGeometry(state),
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return {
 		state,

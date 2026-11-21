@@ -8,4 +8,5 @@ Multiple operands from one instruction share a branch.
 Install `stackConnectionsPlugin` with the compiler and code-rendering plugins. It draws when line
 selection is enabled and the compiler's stack analysis matches the current source. Selection, compiler results,
 and settled block layouts refresh the path, including when a layout contribution inserts extra rows. Disposal
-removes the drawer, subscriptions, and layout listener.
+removes the drawer, subscriptions, and layout listener. Each frame positions the path relative to the selected
+block's viewport-relative rendering origin supplied by web-ui.

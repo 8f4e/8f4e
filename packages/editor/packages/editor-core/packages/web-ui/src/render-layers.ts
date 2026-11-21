@@ -1,5 +1,6 @@
 import type { ResolvedPalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
+import type { RenderGeometry } from './render-geometry';
 import type { MemoryViews } from './types';
 
 export interface RenderLayerContext {
@@ -10,6 +11,7 @@ export interface RenderLayerContext {
 export interface RenderLayerFrameContext {
 	state: State;
 	memoryViews: MemoryViews;
+	renderGeometry: RenderGeometry;
 }
 
 /** A canvas-wide pass drawn above sprites, in plugin registration order. */

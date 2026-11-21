@@ -1,7 +1,13 @@
 import { EventEmitter } from 'node:events';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import {
+	createEditorDrawerRegistry,
+	createRenderGeometry,
+	type DrawContext,
+	type MemoryViews,
+	textToGlyphIds,
+} from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLoadingIndicatorsPlugin } from './index';
 
@@ -36,6 +42,7 @@ function setup(width = 320, height = 160, plugin = pluginWithMotion) {
 		drawers.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: store.getState(),
+			renderGeometry: createRenderGeometry(store.getState()),
 			memoryViews: {} as MemoryViews,
 		});
 	};

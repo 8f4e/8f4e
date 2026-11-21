@@ -165,16 +165,18 @@ Contribution changes preserve source, selection, project revision, and compiler 
 use their requests when opened. The lazy loader only imports and installs plugins; it has no layout refresh policy.
 
 Register block drawing with `drawers.registerCodeBlockDrawer(drawer)`. Each callback receives
-`{ draw, state, codeBlock, memoryViews }` once per visible block per frame, in registration order. Coordinates are
-relative to the block; web-ui owns the single traversal, visibility checks, and viewport translation. Later
+`{ draw, state, renderedBlock, memoryViews }` once per visible block per frame, in registration order.
+The `RenderedCodeBlock` contains the original `codeBlock` reference and its viewport-relative pixel origin (`x`, `y`).
+Drawing coordinates are relative to that origin; web-ui owns the single traversal, presentation geometry and
+visibility checks. Layout, source changes and hit testing continue to use the original editor-state geometry. Later
 registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
 background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
 Install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
-For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, codeBlock, state) => ...)` replaces a single
-callback in the same traversal. Coordinates are world coordinates. The latest registration wins; disposal clears
+For offscreen blocks, `drawers.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => ...)` replaces a single
+callback in the same traversal. Coordinates are relative to the viewport. The latest registration wins; disposal clears
 its slot only if that callback is still registered, without restoring a previous callback. `canvasOverlays` hides
 these decorations during screenshot capture. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow placement and drawing.
 
@@ -189,18 +191,23 @@ source line, a message, and the target block identity or project-group scope. Co
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
 
 Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
-Callbacks receive `{ draw, state, memoryViews }` above the procedural background and independently of `canvasOverlays`.
+Callbacks receive `{ draw, state, memoryViews, renderGeometry }` above the procedural background and independently
+of `canvasOverlays`. `renderGeometry.blocks` contains the ordered rendered blocks for the current project, including
+offscreen blocks; `renderGeometry.blocksByCodeBlock` indexes them by the original editor-state object. All drawing
+stages share the prepared geometry for the current frame. Keep presentation positions out of editor-state and use
+the rendered block objects for drawing anchored decorations and cross-block connections.
 `@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
 world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
 Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
 bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
-`{ draw, state, memoryViews }` after code blocks and before overlays, independently of `canvasOverlays`.
+`{ draw, state, memoryViews, renderGeometry }` after code blocks and before overlays, independently of `canvasOverlays`.
 Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
-`{ draw, state, memoryViews }` after ordinary canvas drawers and before modal overlays, with coordinates relative to the viewport's top-left.
+`{ draw, state, memoryViews, renderGeometry }` after ordinary canvas drawers and before modal overlays, with
+coordinates relative to the viewport's top-left.
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.
 
@@ -227,7 +234,7 @@ install the presentation plugin through their deferred registries. Custom compos
 
 Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
 once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
-`{ state, memoryViews }` every frame after sprites in registration order, independently of block culling.
+`{ state, memoryViews, renderGeometry }` every frame after sprites in registration order, independently of block culling.
 Palette changes and memory release are forwarded to the layer. Registration may precede renderer initialization or
 arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.

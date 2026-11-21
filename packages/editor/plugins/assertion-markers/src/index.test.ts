@@ -28,7 +28,8 @@ describe('assertion markers plugin', () => {
 		});
 		const state = createMockState();
 		const draw = { drawFill: vi.fn() } as unknown as DrawContext;
-		const render = () => drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+		const render = () =>
+			drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock, x: 0, y: 0 }, memoryViews: {} as MemoryViews });
 		render();
 		expect(draw.drawFill).not.toHaveBeenCalled();
 		state.assertionResults = [

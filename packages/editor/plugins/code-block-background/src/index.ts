@@ -7,7 +7,7 @@ const CORNER = textToGlyphIds('+');
 export const codeBlockBackgroundPlugin: EditorPlugin = {
 	id: 'code-block-background',
 	setup: ({ drawers }) =>
-		drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+		drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
 			const color = codeBlock.disabled ? PALETTE_INDICES.surfaceSubdued : PALETTE_INDICES.surfaceBase;
 			draw.drawFill(0, 0, color, codeBlock.width, codeBlock.height);
 			const selected = state.codeBlockRendering.selectedCodeBlock === codeBlock;

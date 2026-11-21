@@ -16,9 +16,11 @@ export function createButtonPlugin({
 			const state = store.getState();
 			const buttonsByBlock = new WeakMap<CodeBlockGraphicData, ButtonWidget[]>();
 			const unregisterLayout = registerButtonLayout(layout, buttonsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-				drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);
-			});
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(
+				({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+					drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);
+				}
+			);
 			const unregisterInteraction = registerButtonInteraction(state, events, buttonsByBlock, writeMemory);
 			return () => {
 				unregisterInteraction();

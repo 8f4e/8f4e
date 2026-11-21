@@ -27,7 +27,7 @@ export const stackProducersPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
+		const unregister = drawers.registerCodeBlockTextBackgroundDrawer(({ draw, renderedBlock: { codeBlock } }) => {
 			if (codeBlock !== selectedBlock) return;
 			for (const y of rows) {
 				draw.drawFill(0, y, PALETTE_INDICES.secondaryAlpha30, codeBlock.width, state.viewport.hGrid);

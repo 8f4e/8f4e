@@ -20,9 +20,11 @@ export function createSliderPlugin({
 			const state = store.getState();
 			const slidersByBlock = new WeakMap<CodeBlockGraphicData, Slider[]>();
 			const unregisterLayout = registerSliderLayout(layout, slidersByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
-			});
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(
+				({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+					drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
+				}
+			);
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);
 			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
 				if (state.editorMode !== 'edit' || !slidersByBlock.get(codeBlock)?.length) return;

@@ -101,7 +101,7 @@ function registerSourceText(context: EditorPluginContext) {
 			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 		);
 	});
-	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
 		codeBlock.displayModel.lines.forEach((line, row) =>
 			draw.drawGlyphs(
 				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,

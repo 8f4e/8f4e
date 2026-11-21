@@ -39,16 +39,18 @@ test('draws wrapped contributor messages between source rows and clears their re
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
-						codeBlock.displayModel.lines.forEach((line, row) =>
-							draw.drawGlyphs(
-								state.viewport.vGrid,
-								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
-								glyphsByBlock.get(codeBlock)![row],
-								PALETTE_INDICES.inkBase
-							)
-						);
-					});
+					const removeDrawer = services.drawers.registerCodeBlockDrawer(
+						({ draw, state, renderedBlock: { codeBlock } }) => {
+							codeBlock.displayModel.lines.forEach((line, row) =>
+								draw.drawGlyphs(
+									state.viewport.vGrid,
+									gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+									glyphsByBlock.get(codeBlock)![row],
+									PALETTE_INDICES.inkBase
+								)
+							);
+						}
+					);
 					return () => {
 						removePreparation();
 						removeDrawer();

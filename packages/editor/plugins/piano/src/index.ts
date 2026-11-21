@@ -20,9 +20,11 @@ export function createPianoPlugin({
 			const state = store.getState();
 			const keyboardsByBlock = new WeakMap<CodeBlockGraphicData, PianoKeyboard[]>();
 			const unregisterLayout = registerPianoLayout(layout, keyboardsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
-				drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
-			});
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(
+				({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
+					drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
+				}
+			);
 			const unregisterInteraction = registerPianoInteraction(state, events, keyboardsByBlock, writeMemory);
 			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
 				if (state.editorMode !== 'edit' || !keyboardsByBlock.get(codeBlock)?.length) return;

@@ -42,8 +42,10 @@
 - Route normalized pointer events before default block selection and dragging. UI input layers match drawer
   stages in `INPUT_LAYERS`. Dispatch higher layers first and handlers within each capture or normal phase in
   reverse registration order. Preserve FIFO delivery for unlayered notifications and default effects.
-- Draw in registration order within each stage. Use one block drawer registry in the visible-block traversal
-  and the dedicated offscreen callback for offscreen decoration. Draw context menus above canvas overlays and
+- Draw in registration order within each stage. Web-ui prepares one frame's rendered block geometry for all drawing
+  stages, including offscreen blocks. Use its viewport-relative origins for drawing and keep logical editor-state
+  geometry for layout and hit testing. Use one block drawer registry in the visible-block traversal and the dedicated
+  offscreen callback for offscreen decoration. Draw context menus above canvas overlays and
   dialogs above menus. Modal drawing is independent of `canvasOverlays`.
 - Web-ui owns generic render-layer initialization, palette updates, memory release and disposal. Feature plugins
   own prepared glyphs, drawing data and rendering passes, including connector widgets and wires.

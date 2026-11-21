@@ -74,6 +74,8 @@ export type {
 	CodeBlockDrawerContext,
 	EditorDrawerRegistry,
 	OffscreenCodeBlockDrawer,
+	RenderedCodeBlock,
+	RenderGeometry,
 	WebUiRenderer,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';

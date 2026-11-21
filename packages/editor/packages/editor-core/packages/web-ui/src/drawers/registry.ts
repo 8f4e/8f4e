@@ -1,5 +1,6 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
+import type { RenderedCodeBlock, RenderGeometry } from '../render-geometry';
 import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
 import type { MemoryViews } from '../types';
 
@@ -7,20 +8,21 @@ export interface CodeBlockDrawerContext {
 	/** Drawing coordinates are relative to the visible code block. */
 	draw: DrawContext;
 	state: State;
-	codeBlock: CodeBlockGraphicData;
+	renderedBlock: RenderedCodeBlock;
 	memoryViews: MemoryViews;
 }
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
-/** Draw one offscreen block's decoration using world coordinates. */
-export type OffscreenCodeBlockDrawer = (draw: DrawContext, codeBlock: CodeBlockGraphicData, state: State) => void;
+/** Draw one offscreen block's decoration using viewport coordinates. */
+export type OffscreenCodeBlockDrawer = (draw: DrawContext, renderedBlock: RenderedCodeBlock, state: State) => void;
 
 export interface CanvasDrawerContext {
 	/** Drawing coordinates are relative to the viewport's top-left corner. */
 	draw: DrawContext;
 	state: State;
 	memoryViews: MemoryViews;
+	renderGeometry: RenderGeometry;
 }
 
 export type CanvasDrawer = (context: CanvasDrawerContext) => void;
@@ -103,7 +105,7 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerContextMenuOverlay: contextMenuOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlock: blockDrawers.draw,
-		drawOffscreenCodeBlock: (draw, codeBlock, state) => offscreenDrawer?.(draw, codeBlock, state),
+		drawOffscreenCodeBlock: (draw, renderedBlock, state) => offscreenDrawer?.(draw, renderedBlock, state),
 		drawCanvasBackground: canvasBackground.draw,
 		drawCanvas: canvas.draw,
 		drawCanvasOverlays: canvasOverlays.draw,

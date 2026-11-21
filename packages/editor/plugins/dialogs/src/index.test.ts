@@ -1,7 +1,13 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type { DialogContent } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import {
+	createEditorDrawerRegistry,
+	createRenderGeometry,
+	type DrawContext,
+	type MemoryViews,
+	textToGlyphIds,
+} from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { dialogsPlugin } from './index';
@@ -40,7 +46,12 @@ function setup(initialDialog?: DialogContent) {
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawModalOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawModalOverlays({
+			draw: draw as unknown as DrawContext,
+			state,
+			renderGeometry: createRenderGeometry(state),
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return { events, store, state, render, draw, dispose };
 }

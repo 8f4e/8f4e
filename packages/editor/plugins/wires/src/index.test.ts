@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, createRenderGeometry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { wiresPlugin } from './index';
@@ -73,7 +73,7 @@ async function setup(text = source, installed = true) {
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
 	const render = () => {
 		gl.drawArraysInstanced.mockClear();
-		layers.draw({ state, memoryViews });
+		layers.draw({ state, memoryViews, renderGeometry: createRenderGeometry(state) });
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);

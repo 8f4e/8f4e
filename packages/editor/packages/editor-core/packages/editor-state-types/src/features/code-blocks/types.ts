@@ -53,8 +53,8 @@ export interface ParsedDirectiveRecord {
 }
 
 /**
- * Runtime graphic data for a code block.
- * Contains all information needed to render and interact with a code block.
+ * Runtime source and logical layout data for a code block.
+ * World-space positions are used for layout and interaction; web-ui derives its own per-frame rendering geometry.
  */
 export interface CodeBlockGraphicData {
 	width: number;

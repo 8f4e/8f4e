@@ -41,16 +41,18 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 					const removePreparation = context.layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(codeBlock, textToGlyphIds(codeBlock.name));
 					});
-					const removeDrawer = context.drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
-						if (!codeBlock.entry) return;
-						draw.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
-						draw.drawGlyphs(
-							state.viewport.vGrid,
-							state.viewport.hGrid,
-							glyphsByBlock.get(codeBlock)!,
-							PALETTE_INDICES.inkBase
-						);
-					});
+					const removeDrawer = context.drawers.registerCodeBlockDrawer(
+						({ draw, renderedBlock: { codeBlock }, state }) => {
+							if (!codeBlock.entry) return;
+							draw.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
+							draw.drawGlyphs(
+								state.viewport.vGrid,
+								state.viewport.hGrid,
+								glyphsByBlock.get(codeBlock)!,
+								PALETTE_INDICES.inkBase
+							);
+						}
+					);
 					return () => {
 						removePreparation();
 						removeDrawer();

@@ -6,7 +6,8 @@ compositions install `wiresPlugin` and `connectorsPlugin` separately. Neither pl
 The wire tracker uses compiler metadata and settled editor layout to find declaration, fixed reference, and group
 `expose` endpoints, including endpoints outside the viewport. It indexes outputs by byte address for the current
 project level. Each frame reads live pointer slots from memory and uses the compiler-resolved address for fixed
-references.
+references. Endpoint offsets stay relative to their blocks; the frame's web-ui rendering geometry supplies each
+block's viewport-relative origin, including offscreen endpoints.
 
 The pass runs above sprites, forwards palette changes and GPU memory release to the drawer, and releases its resources on disposal.
 Each frame resets and fills one retained CPU buffer, then uploads the used range once. Dialogs suppress wires; the

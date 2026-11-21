@@ -6,9 +6,11 @@ export const tooltipsPlugin: EditorPlugin = {
 	id: 'tooltips',
 	setup: ({ store, events, drawers }) => {
 		const tooltip = createTooltip(store, events);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
-			drawTooltip(draw, state, codeBlock, memoryViews, tooltip.getState());
-		});
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(
+			({ draw, state, renderedBlock: { codeBlock }, memoryViews }) => {
+				drawTooltip(draw, state, codeBlock, memoryViews, tooltip.getState());
+			}
+		);
 		return () => {
 			unregisterDrawer();
 			tooltip.dispose();

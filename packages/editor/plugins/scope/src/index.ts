@@ -18,7 +18,7 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 			const sampler = createScopeSampler(getMemory);
 			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
 			const unregisterLayout = registerScopeLayout(layout, scopesByBlock, readScopeDirectives);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock } }) => {
 				const scopes = scopesByBlock.get(codeBlock);
 				if (scopes) drawScopes(draw, scopes);
 			});

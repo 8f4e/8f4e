@@ -47,7 +47,7 @@ entryEnd`);
 			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 		);
 	});
-	const disposeFixture = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	const disposeFixture = drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
 		codeBlock.code.forEach((line, row) => {
 			const selected = state.codeBlockRendering.selectedCodeBlock === codeBlock && row === codeBlock.cursor.row;
 			if (selected) {

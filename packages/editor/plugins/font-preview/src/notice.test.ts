@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
 import { FONT_CATALOG, textToGlyphIds } from '@8f4e/sprite-generator';
-import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
+import { createRenderGeometry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { project, setup } from './__tests__/setup';
 
@@ -16,6 +16,7 @@ function setupNotice() {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
+			renderGeometry: createRenderGeometry(test.state),
 			memoryViews: {} as MemoryViews,
 		});
 	};

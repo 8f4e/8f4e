@@ -10,7 +10,7 @@ export const wavePlugin: EditorPlugin = {
 		const state = store.getState();
 		const wavesByBlock = new WeakMap<CodeBlockGraphicData, Wave[]>();
 		const unregisterLayout = registerWaveLayout(layout, wavesByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock }, memoryViews }) => {
 			drawWaves(draw, state, wavesByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

@@ -82,7 +82,7 @@ export async function setup(
 		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.drawSprite).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
+		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock: block, x: 0, y: 0 }, memoryViews });
 	};
 	const update = (code: string[]) => {
 		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);

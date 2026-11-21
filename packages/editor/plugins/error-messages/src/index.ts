@@ -51,7 +51,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 		};
 		const unsubscribeLayout = layout.subscribe(prepare);
 		store.subscribe('codeErrors', refresh);
-		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
+		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, renderedBlock: { codeBlock }, state }) => {
 			for (const { lines, y } of messagesByBlock.get(codeBlock) ?? []) {
 				draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, lines.length * state.viewport.hGrid);
 				lines.forEach((line, row) =>

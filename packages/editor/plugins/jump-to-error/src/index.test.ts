@@ -3,7 +3,13 @@ import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import {
+	createEditorDrawerRegistry,
+	createRenderGeometry,
+	type DrawContext,
+	type MemoryViews,
+	textToGlyphIds,
+} from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createJumpToErrorPlugin } from './index';
 
@@ -42,7 +48,13 @@ function setup() {
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
-	const render = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
+	const render = () =>
+		drawers.drawCanvasOverlays({
+			draw,
+			state,
+			renderGeometry: createRenderGeometry(state),
+			memoryViews: {} as MemoryViews,
+		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {
 		const event = {
 			x: state.viewport.width - 2 * state.viewport.vGrid,

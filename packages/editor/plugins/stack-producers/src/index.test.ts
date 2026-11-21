@@ -45,7 +45,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 		drawers.drawCodeBlockTextBackgrounds({
 			draw: draw as unknown as DrawContext,
 			state,
-			codeBlock: block,
+			renderedBlock: { codeBlock: block, x: 0, y: 0 },
 			memoryViews: {} as MemoryViews,
 		});
 		return draw.drawFill.mock.calls;

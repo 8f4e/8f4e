@@ -36,7 +36,7 @@ test('renders two phases of the selection animation', async () => {
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, renderedBlock: { codeBlock } }) => {
 						codeBlock.code.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid,

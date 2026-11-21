@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
-import { textToGlyphIds } from '@8f4e/web-ui';
+import { createRenderGeometry, textToGlyphIds } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
 
@@ -25,7 +25,12 @@ describe('keyboard mode hints', () => {
 	] as const)('draws the %s hint through its canvas overlay', (mode, hint) => {
 		const test = setup(mode);
 		const { draw, memoryViews } = drawing();
-		test.drawCanvasOverlays({ draw: draw as unknown as DrawContext, state: test.state, memoryViews });
+		test.drawCanvasOverlays({
+			draw: draw as unknown as DrawContext,
+			state: test.state,
+			renderGeometry: createRenderGeometry(test.state),
+			memoryViews,
+		});
 		expect(draw.drawGlyphs).toHaveBeenCalledWith(
 			test.state.viewport.vGrid,
 			0,
@@ -44,7 +49,12 @@ describe('keyboard mode hints', () => {
 		const test = setup();
 		test.disposePlugin();
 		const { draw, memoryViews } = drawing();
-		test.drawCanvasOverlays({ draw: draw as unknown as DrawContext, state: test.state, memoryViews });
+		test.drawCanvasOverlays({
+			draw: draw as unknown as DrawContext,
+			state: test.state,
+			renderGeometry: createRenderGeometry(test.state),
+			memoryViews,
+		});
 		expect(draw.drawGlyphs).not.toHaveBeenCalled();
 	});
 });

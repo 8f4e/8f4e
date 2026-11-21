@@ -96,7 +96,7 @@ export async function setup(
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		vi.mocked(draw.endGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		drawers.drawCodeBlock({ draw, state, renderedBlock: { codeBlock, x: 0, y: 0 }, memoryViews });
 	};
 	const traces = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
 	const backgrounds = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.darkSurface);
