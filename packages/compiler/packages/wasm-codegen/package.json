@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/wasm-codegen",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "private": true,
   "description": "WebAssembly index assignment and binary emission for 8f4e",
   "type": "module",
