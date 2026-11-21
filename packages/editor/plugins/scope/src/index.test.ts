@@ -38,12 +38,12 @@ describe('scope plugin', () => {
 	});
 
 	it('retains only the newest samples up to the plot width', async () => {
-		const test = await setup(['module audio', 'float level -1', '; @scope level 1000 -1 1', 'moduleEnd']);
+		const test = await setup(['module audio', 'float level -1', '; @scope level 250 -1 1', 'moduleEnd']);
 		test.render();
 		const width = test.backgrounds()[0][3]!;
-		vi.advanceTimersByTime(1);
+		vi.advanceTimersByTime(4);
 		test.memoryViews.float32[test.compiled.memoryPlan.modules.audio.memory.level.byteAddress / 4] = 1;
-		vi.advanceTimersByTime(width + 2);
+		vi.advanceTimersByTime((width + 2) * 4);
 		test.render();
 		const points = test.traces();
 		expect(points).toHaveLength(width);
@@ -193,6 +193,69 @@ describe('scope plugin', () => {
 		vi.advanceTimersByTime(100);
 		test.render();
 		expect(test.traces()).toHaveLength(2);
+	});
+
+	it('reports a code error above 250 Hz before compilation and clears it when the rate is corrected', async () => {
+		const invalid = ['module audio', 'float level 0', '; @scope level 251 -1 1', 'moduleEnd'];
+		const test = await setup(invalid, { compile: false });
+		expect(test.state.codeErrors.scope).toEqual([
+			{
+				codeBlockId: test.block.creationIndex,
+				lineNumber: 2,
+				message: '@scope: sample rate must not exceed 250 Hz.',
+			},
+		]);
+		expect(test.block.gaps.size).toBe(0);
+		test.acceptCompilation();
+		vi.advanceTimersByTime(100);
+		test.render();
+		expect(test.getMemory).not.toHaveBeenCalled();
+		expect(test.backgrounds()).toHaveLength(0);
+
+		test.update(invalid.map(line => line.replace('251', '250')));
+		expect(test.state.codeErrors.scope).toEqual([]);
+		expect(test.block.gaps.get(2)?.size).toBe(8);
+		test.acceptCompilation();
+		vi.advanceTimersByTime(4);
+		test.render();
+		expect(test.traces()).toHaveLength(1);
+
+		test.update(invalid);
+		test.acceptCompilation();
+		vi.advanceTimersByTime(100);
+		expect(test.getMemory).toHaveBeenCalledTimes(1);
+		expect(test.state.codeErrors.scope).toHaveLength(1);
+		test.update(['module audio', 'float level 0', 'moduleEnd']);
+		expect(test.state.codeErrors.scope).toEqual([]);
+	});
+
+	it('keeps scope errors for nested source and removes only its own errors on disposal', async () => {
+		const test = await setup([
+			'8f4e/v1',
+			'entry main',
+			'group audio',
+			'entry main',
+			'module voice',
+			'float value 1',
+			'; @scope value 500',
+			'moduleEnd',
+			'entryEnd',
+			'groupEnd',
+			'entryEnd',
+		]);
+		const voice = test.block.childProject!.blocks.find(block => block.name === 'voice')!;
+		expect(test.state.codeErrors.scope).toEqual([
+			{
+				codeBlockId: voice.creationIndex,
+				lineNumber: 2,
+				message: '@scope: sample rate must not exceed 250 Hz.',
+			},
+		]);
+		const otherErrors = [{ message: 'Other contributor' }];
+		test.store.set('codeErrors.other', otherErrors);
+		test.dispose();
+		expect(test.state.codeErrors.scope).toBeUndefined();
+		expect(test.state.codeErrors.other).toBe(otherErrors);
 	});
 
 	it('skips missing or non-finite samples and releases history on a changed binding', async () => {

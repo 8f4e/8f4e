@@ -300,8 +300,9 @@ Like `@meter`, the source can be a scalar memory, a typed pointer whose pointee 
 directly from storage. Qualified memory names and group exposures work as well. The optional range defaults to
 the type-derived bounds used by `@plot` and must have a minimum below its maximum.
 
-The sample rate is in samples per second (Hz), up to 1000 Hz. Browser timer scheduling is best-effort and
-may be throttled; use `@plot` over a runtime-managed buffer for precise or audio-rate sampling.
+The sample rate is in samples per second (Hz), up to 250 Hz. Higher rates produce a code error.
+Browser timer scheduling is best-effort and may be throttled; use `@plot` over a runtime-managed buffer for precise
+or audio-rate sampling.
 The editor samples independently of the render loop while the directive is displayed in the current project
 level. The history lives in a bounded JavaScript array, with one sample per horizontal pixel; new values
 appear at the right and older values scroll left. No WebAssembly buffer is allocated for the history.

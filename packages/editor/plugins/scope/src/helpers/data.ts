@@ -1,5 +1,8 @@
 import { isPointerSource, parseFiniteNumber } from '@8f4e/editor-state';
 
+/** Faster interval requests did not increase sustained browser sampling throughput. */
+export const MAX_SCOPE_SAMPLE_RATE_HZ = 250;
+
 export interface ScopeDirectiveData {
 	memoryId: string;
 	lineNumber: number;
@@ -13,7 +16,13 @@ export function createScopeDirectiveData(args: string[], lineNumber: number): Sc
 	if ((args.length !== 2 && args.length !== 4) || !isPointerSource(args[0])) return;
 
 	const sampleRate = parseFiniteNumber(args[1]);
-	if (sampleRate === undefined || sampleRate <= 0 || sampleRate > 1000 || 1000 / sampleRate > 2_147_483_647) return;
+	if (
+		sampleRate === undefined ||
+		sampleRate <= 0 ||
+		sampleRate > MAX_SCOPE_SAMPLE_RATE_HZ ||
+		1000 / sampleRate > 2_147_483_647
+	)
+		return;
 
 	const minValueOverride = parseFiniteNumber(args[2]);
 	const maxValueOverride = parseFiniteNumber(args[3]);
