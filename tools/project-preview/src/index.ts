@@ -92,9 +92,6 @@ interface PreviewState {
 		x: number;
 		y: number;
 	};
-	viewportAnimation: {
-		active: boolean;
-	};
 }
 
 interface PreviewWindow {
@@ -332,7 +329,6 @@ export async function generateProjectPreview({
 				throw new Error('Preview code block disappeared before capture');
 			}
 
-			state.viewportAnimation.active = false;
 			state.viewport.x = targetBlock.x - previewPosition.x;
 			state.viewport.y = targetBlock.y - previewPosition.y;
 			state.featureFlags.canvasOverlays = false;

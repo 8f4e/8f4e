@@ -1,5 +1,11 @@
-import type { CodeBlockOffsetResolver, CodeBlockPositionEffect, EditorPlugin, ProjectLevel } from '@8f4e/editor-core';
-import { advanceViewportSpring, createViewportSpring, resetViewportSpring } from './spring';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockOffsetResolver,
+	CodeBlockPositionEffect,
+	EditorPlugin,
+	ProjectLevel,
+} from '@8f4e/editor-core';
+import { advanceViewportSpring, createViewportSpring, resetViewportSpring, type ViewportSpring } from './spring';
 
 const MAX_FRAME_GAP_MS = 150;
 const MAX_CAMERA_STEP_PIXELS = 240;
@@ -10,38 +16,60 @@ const SIZE_PROFILES = [
 	{ gridCells: 900, frequency: 13, influence: 0.64 },
 ] as const;
 
-function createPositionEffect(prefersReducedMotion: () => boolean): CodeBlockPositionEffect {
+interface SpringBlend {
+	gridCells: number;
+	from: ViewportSpring;
+	to: ViewportSpring;
+	fromWeight: number;
+	toWeight: number;
+}
+
+function createPositionEffect(prefersReducedMotion: () => boolean) {
 	// Simulate four reference responses to the same camera motion, including for blocks outside the viewport.
 	const springs = SIZE_PROFILES.map(({ frequency }) => createViewportSpring(frequency));
+	const blendsByBlock = new WeakMap<CodeBlockGraphicData, SpringBlend>();
 	let previousProject: ProjectLevel | undefined;
 	let previousTime: number | undefined;
 	let viewportX = 0;
 	let viewportY = 0;
 	let vGrid = 0;
 	let hGrid = 0;
-	let cellArea = 1;
 	let wasInteractionSuppressed = false;
 	let moving = false;
+
+	const prepareBlends = (blocks: readonly CodeBlockGraphicData[], cellArea: number) => {
+		for (const block of blocks) {
+			const gridCells = (block.width * block.height) / cellArea;
+			if (blendsByBlock.get(block)?.gridCells === gridCells) continue;
+			let upper = 0;
+			while (upper < SIZE_PROFILES.length - 1 && gridCells > SIZE_PROFILES[upper].gridCells) upper++;
+			const lower = Math.max(0, upper - 1);
+			const from = SIZE_PROFILES[lower];
+			const to = SIZE_PROFILES[upper];
+			const mix = upper === lower ? 0 : Math.min(1, (gridCells - from.gridCells) / (to.gridCells - from.gridCells));
+			blendsByBlock.set(block, {
+				gridCells,
+				from: springs[lower],
+				to: springs[upper],
+				fromWeight: (1 - mix) * from.influence,
+				toWeight: mix * to.influence,
+			});
+		}
+	};
 
 	// The renderer consumes each offset before resolving the next block.
 	const offset = { x: 0, y: 0 };
 	const resolveOffset: CodeBlockOffsetResolver = block => {
-		const gridCells = (block.width * block.height) / cellArea;
-		let upper = 0;
-		while (upper < SIZE_PROFILES.length - 1 && gridCells > SIZE_PROFILES[upper].gridCells) upper++;
-		const lower = Math.max(0, upper - 1);
-		const from = SIZE_PROFILES[lower];
-		const to = SIZE_PROFILES[upper];
-		const mix = upper === lower ? 0 : Math.min(1, (gridCells - from.gridCells) / (to.gridCells - from.gridCells));
-		const fromWeight = (1 - mix) * from.influence;
-		const toWeight = mix * to.influence;
+		const blend = blendsByBlock.get(block);
+		if (!blend) return;
+		const { from, to, fromWeight, toWeight } = blend;
 		// Keep glyphs and decorations aligned on whole pixels without rounding the simulation or its blend.
-		offset.x = Math.round(springs[lower].x * fromWeight + springs[upper].x * toWeight) || 0;
-		offset.y = Math.round(springs[lower].y * fromWeight + springs[upper].y * toWeight) || 0;
+		offset.x = Math.round(from.x * fromWeight + to.x * toWeight) || 0;
+		offset.y = Math.round(from.y * fromWeight + to.y * toWeight) || 0;
 		return offset.x || offset.y ? offset : undefined;
 	};
 
-	return (state, frameTime, suppressOffsets) => {
+	const effect: CodeBlockPositionEffect = (state, frameTime, suppressOffsets) => {
 		const { viewport, codeBlockRendering } = state;
 		const { currentProject, draggedCodeBlock } = codeBlockRendering;
 		const elapsedMs = previousTime === undefined ? 0 : frameTime - previousTime;
@@ -66,7 +94,6 @@ function createPositionEffect(prefersReducedMotion: () => boolean): CodeBlockPos
 		viewportY = viewport.y;
 		vGrid = viewport.vGrid;
 		hGrid = viewport.hGrid;
-		cellArea = Math.max(1, vGrid * hGrid);
 		wasInteractionSuppressed = interactionSuppressed;
 
 		if (reset) {
@@ -85,6 +112,7 @@ function createPositionEffect(prefersReducedMotion: () => boolean): CodeBlockPos
 		}
 		return hasOffset ? resolveOffset : undefined;
 	};
+	return { effect, prepareBlends };
 }
 
 /** Creates a render-only elastic viewport effect, with motion preference supplied by the host. */
@@ -95,6 +123,20 @@ export function createElasticViewportPlugin({
 }): EditorPlugin {
 	return {
 		id: 'elastic-viewport',
-		setup: ({ drawers }) => drawers.registerCodeBlockPositionEffect(createPositionEffect(prefersReducedMotion)),
+		setup: ({ store, events, drawers }) => {
+			const state = store.getState();
+			const { effect, prepareBlends } = createPositionEffect(prefersReducedMotion);
+			const refresh = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
+				const { vGrid, hGrid } = state.viewport;
+				prepareBlends(codeBlocks, Math.max(1, vGrid * hGrid));
+			};
+			refresh({ codeBlocks: state.codeBlockRendering.currentProject.blocks });
+			events.on('codeBlockLayoutsChanged', refresh);
+			const unregister = drawers.registerCodeBlockPositionEffect(effect);
+			return () => {
+				events.off('codeBlockLayoutsChanged', refresh);
+				unregister();
+			};
+		},
 	};
 }

@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "noEmit": true, "types": ["vitest/globals"] },
+  "compilerOptions": { "noEmit": true, "types": ["vitest/globals", "node"] },
   "exclude": ["node_modules", "dist"]
 }
