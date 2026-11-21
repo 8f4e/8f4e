@@ -72,12 +72,26 @@ chunks. Their directive-based loader is part of that deferred set, so its import
 earlier. Ordinary optional features use individual entries with unconditional or capability predicates, including
 input plugins. Entries load independently and have no keyboard-specific loading stage.
 
-`load()` resolves to one ordinary editor plugin. It can return a lazy-loader plugin that owns
-individual optional feature imports. The deferred loader installs it against current state and calls its disposer
-when the editor closes. Disposal removes the readiness listener and ignores pending imports. Load or setup failures
+`load()` resolves to an ordinary editor plugin or an ordered list of plugins. A lazy-loader plugin can own individual
+optional feature imports alongside plugins that can install immediately once the deferred batch arrives. The deferred
+loader installs the batch against current state and disposes it in reverse order when the editor closes. Disposal
+removes the readiness listener and ignores pending imports. Load or setup failures
 are logged. Optional features must initialize from current state without relying on startup events being replayed.
 The deferred import uses ID `editor-plugins` and message `Loading editor plugins...`, with the same terminal
 outcomes for completion, failure, and disposal.
+
+### Adaptive decorations
+
+`createAdaptiveDecorationsPlugin({ decorations, session, isVisible, watchVisibility, renderBudgetMs })` is a separate
+plugin for independent visual effects that can be removed without changing editing. Supply entries with `id` and
+`load`, most important first, and install the plugin through the existing deferred loader. All decorations start enabled;
+if the 90th-percentile main-thread render time in `info.graphics` exceeds the budget (12 ms by default) in three
+consecutive reports, the last active decoration is removed. The first report after loading, changing visibility or
+removing a decoration is skipped because its sample may include earlier frames. FPS is not used.
+
+Pass the mounting document as `session` to keep effects disabled across remounts on the same page and start fresh on
+reload. `isVisible` and `watchVisibility` are supplied by the host to exclude background samples. Disabling a decoration
+runs its disposer; it does not unload the imported module. Keep essential drawing, input, and diagnostics outside this list.
 
 Verify from the workspace root:
 

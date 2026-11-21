@@ -51,6 +51,8 @@ export type { FontChangedEvent, MemoryViews } from './types';
 
 export interface RenderStats {
 	timeToRenderMs: number;
+	/** 90th percentile of main-thread draw times in this report's sample window. */
+	p90RenderTimeMs: number;
 	fps: number;
 	frameBudgetMs: number;
 	headroomMs: number;
@@ -131,6 +133,7 @@ async function mount(
 	engine.setPalette(paletteBytes);
 	background.setPalette(paletteBytes);
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
+	const renderTimes = options.onRenderStats ? new Float64Array(renderStatsIntervalFrames) : undefined;
 	let viewportWidth = engine.gl.drawingBufferWidth || state.viewport.width || 1;
 	let viewportHeight = engine.gl.drawingBufferHeight || state.viewport.height || 1;
 	let renderedFrameCount = 0;
@@ -188,21 +191,27 @@ async function mount(
 	}
 
 	function emitRenderStats(timeToRenderMs: number): void {
-		if (!options.onRenderStats) {
+		if (!options.onRenderStats || !renderTimes) {
 			return;
 		}
 
+		renderTimes[renderedFrameCount % renderStatsIntervalFrames] = timeToRenderMs;
 		renderedFrameCount++;
 		if (renderedFrameCount % renderStatsIntervalFrames !== 0) {
 			return;
 		}
 
+		const sampleCount = renderedFrameCount - statsSampleStartFrameCount;
 		const fps = getSampledFps();
+		// A resume can start partway into the reporting interval. Ignore the samples from before it.
+		const samples = sampleCount === renderTimes.length ? renderTimes : renderTimes.subarray(-sampleCount);
+		const p90RenderTimeMs = samples.sort()[Math.ceil(sampleCount * 0.9) - 1];
 		const frameBudgetMs = fps > 0 ? 1000 / fps : 0;
 		const headroomMs = frameBudgetMs > 0 ? frameBudgetMs - timeToRenderMs : 0;
 		const fpsCapacity = timeToRenderMs > 0 ? Math.round(1000 / timeToRenderMs) : 0;
 		options.onRenderStats({
 			timeToRenderMs,
+			p90RenderTimeMs,
 			fps,
 			frameBudgetMs,
 			headroomMs,

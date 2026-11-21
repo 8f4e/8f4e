@@ -1,12 +1,12 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import type { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
-import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createAdaptiveDecorationsPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { GalleryEditorMountOptions } from './index';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
-export function createDeferredEditorPlugin({
+export function createDeferredEditorPlugins({
 	canvas,
 	compiler,
 	fileSession,
@@ -26,11 +26,33 @@ export function createDeferredEditorPlugin({
 	captureWheel?: boolean;
 	touchNavigation?: GalleryEditorMountOptions['touchNavigation'];
 	defaultFont?: GalleryEditorMountOptions['defaultFont'];
-}): EditorPlugin {
-	const browserWindow = canvas.ownerDocument.defaultView!;
+}): readonly EditorPlugin[] {
+	const page = canvas.ownerDocument;
+	const browserWindow = page.defaultView!;
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
-	return createLazyPluginLoaderPlugin([
+	const adaptiveDecorations = createAdaptiveDecorationsPlugin({
+		session: page,
+		isVisible: () => page.visibilityState === 'visible',
+		watchVisibility: listener => {
+			page.addEventListener('visibilitychange', listener);
+			return () => page.removeEventListener('visibilitychange', listener);
+		},
+		decorations: [
+			{
+				id: 'coordinate-grid',
+				load: () => import('@8f4e/editor-plugin-coordinate-grid').then(module => module.coordinateGridPlugin),
+			},
+			{
+				id: 'elastic-viewport',
+				load: () =>
+					import('@8f4e/editor-plugin-elastic-viewport').then(module =>
+						module.createElasticViewportPlugin({ prefersReducedMotion })
+					),
+			},
+		],
+	});
+	const lazyPlugins = createLazyPluginLoaderPlugin([
 		{
 			id: 'block-authoring',
 			scope: 'view',
@@ -38,26 +60,11 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-block-authoring').then(module => module.blockAuthoringPlugin),
 		},
 		{
-			id: 'elastic-viewport',
-			scope: 'view',
-			matches: () => true,
-			load: () =>
-				import('@8f4e/editor-plugin-elastic-viewport').then(module =>
-					module.createElasticViewportPlugin({ prefersReducedMotion })
-				),
-		},
-		{
 			id: 'offscreen-block-arrows',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
 				import('@8f4e/editor-plugin-offscreen-block-arrows').then(module => module.offscreenBlockArrowsPlugin),
-		},
-		{
-			id: 'coordinate-grid',
-			scope: 'view',
-			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-coordinate-grid').then(module => module.coordinateGridPlugin),
 		},
 		{
 			id: 'entry-outlines',
@@ -235,4 +242,5 @@ export function createDeferredEditorPlugin({
 			sharedAudioContext,
 		}),
 	]);
+	return [adaptiveDecorations, lazyPlugins];
 }

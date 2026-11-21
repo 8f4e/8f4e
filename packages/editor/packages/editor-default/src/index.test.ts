@@ -3,7 +3,11 @@ import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
-import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import {
+	createAdaptiveDecorationsPlugin,
+	createDeferredPluginLoaderPlugin,
+	createLazyPluginLoaderPlugin,
+} from '@8f4e/editor-plugin-lazy-loader';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
@@ -61,10 +65,10 @@ vi.mock('@8f4e/editor-plugin-compiler', () => ({
 }));
 
 async function loadDeferredPlugins() {
-	const loader = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
+	const batch = await vi.mocked(createDeferredPluginLoaderPlugin).mock.calls.at(-1)![0].load();
 	const entries = vi.mocked(createLazyPluginLoaderPlugin).mock.calls.at(-1)![0];
 	const plugins = await Promise.all(entries.filter(entry => entry.matches([])).map(entry => entry.load()));
-	return [loader, ...plugins];
+	return [...('setup' in batch ? [batch] : batch), ...plugins];
 }
 
 describe('default editor plugins', () => {
@@ -123,10 +127,9 @@ describe('default editor plugins', () => {
 				'dialogs',
 				'context-menu',
 				'block-authoring',
-				'coordinate-grid',
+				'adaptive-decorations',
 				'entry-outlines',
 				'offscreen-block-arrows',
-				'elastic-viewport',
 				'stack-connections',
 				'stack-producers',
 				'tooltips',
@@ -177,7 +180,11 @@ describe('default editor plugins', () => {
 		await mountDefaultEditor(canvas, { storage: {} as Storage });
 		expect(createElasticViewportPlugin).not.toHaveBeenCalled();
 		const plugins = await loadDeferredPlugins();
-		expect(plugins.map(plugin => plugin.id)).toContain('elastic-viewport');
+		expect(plugins.map(plugin => plugin.id)).toContain('adaptive-decorations');
+		const { decorations, session } = vi.mocked(createAdaptiveDecorationsPlugin).mock.calls[0][0];
+		expect(session).toBe(canvas.ownerDocument);
+		expect(decorations.map(decoration => decoration.id)).toEqual(['coordinate-grid', 'elastic-viewport']);
+		await decorations[1].load();
 		expect(createElasticViewportPlugin).toHaveBeenCalledOnce();
 		const { prefersReducedMotion } = vi.mocked(createElasticViewportPlugin).mock.calls[0][0];
 		expect(prefersReducedMotion()).toBe(false);

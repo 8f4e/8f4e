@@ -80,6 +80,9 @@ later as the view pans, while layout and hit testing still use logical positions
 reduced-motion preference.
 The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
 markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
+Both effects are enabled by default. Under sustained main-thread rendering pressure, the
+[adaptive decoration plugin](../../plugins/lazy-loader/README.md#adaptive-decorations) removes elastic motion first,
+then the coordinate grid if needed, for the rest of the page session.
 
 Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy plugin installations.
 The session-persistence plugin uses its storage namespace. The default namespace is `editor`, which uses the
@@ -138,8 +141,8 @@ On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for
 keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this
 event after initial project loading/parsing, font-atlas loading, and rendering. This is the single loading gate for
 optional modules, including directive-based lazy plugins, with no extra frame callback or timer. Font payloads
-remain separate lazy chunks. Every optional feature is an individual entry in the same deferred list, including input
-plugins; their implementations load independently. Deferred features initialize from the current
+remain separate lazy chunks. Optional features, including input plugins, load independently from the same deferred list.
+Deferred features initialize from the current
 project, including edits or compilation results received while loading. Mounting and initial-project callbacks do
 not wait for these features.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no

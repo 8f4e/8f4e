@@ -27,6 +27,7 @@ export interface EditorPlugin {
 	setup: (context: EditorPluginContext) => () => void;
 }
 
+/** Install in order, rolling back on failure. The returned disposer also cleans up in reverse order. */
 export function installEditorPlugins(plugins: readonly EditorPlugin[], context: EditorPluginContext): () => void {
 	const cleanups: Array<() => void> = [];
 	const dispose = () => disposeAll(cleanups);

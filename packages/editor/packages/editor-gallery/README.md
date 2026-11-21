@@ -33,8 +33,8 @@ Compiler coordination, file-session tracking, URL loading, block backgrounds, co
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
 rendering. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the
-current project and do not block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
-same deferred list, including input plugins; their implementations load independently. This boundary also gates all
+current project and do not block the first render, mounting, or initial-project callbacks. Optional features, including
+input plugins, load independently from the same deferred list. This boundary also gates all
 directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
 lazy chunks.
 
@@ -43,6 +43,9 @@ and take longer to spring back into place without changing logical positions or 
 browser's live reduced-motion preference.
 The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
 markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
+Both effects are enabled by default. Under sustained main-thread rendering pressure, the
+[adaptive decoration plugin](../../plugins/lazy-loader/README.md#adaptive-decorations) removes elastic motion first,
+then the coordinate grid if needed, for the rest of the page session.
 
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor

@@ -11,13 +11,35 @@ function deferred<T>() {
 	return { promise, resolve };
 }
 
-function install(load: () => Promise<EditorPlugin>) {
+function install(load: () => Promise<EditorPlugin | readonly EditorPlugin[]>) {
 	const editor = setup([]);
 	const dispose = createDeferredPluginLoaderPlugin({ load }).setup(editor);
 	return { ...editor, dispose };
 }
 
 describe('deferred plugin loader', () => {
+	it('installs a batch directly after readiness and disposes it in reverse order', async () => {
+		const calls: string[] = [];
+		const editor = install(async () =>
+			['first', 'second'].map(id => ({
+				id,
+				setup: () => {
+					calls.push(`setup ${id}`);
+					return () => calls.push(`dispose ${id}`);
+				},
+			}))
+		);
+		try {
+			expect(calls).toEqual([]);
+			editor.events.dispatch('ready');
+			await vi.waitFor(() => expect(calls).toEqual(['setup first', 'setup second']));
+			expect(editor.state.loadingIndicators.map(item => item.id)).toEqual(['editor-plugins']);
+		} finally {
+			editor.dispose();
+		}
+		expect(calls).toEqual(['setup first', 'setup second', 'dispose second', 'dispose first']);
+	});
+
 	it('starts imports once on renderer readiness and uses current state', async () => {
 		const cleanup = vi.fn();
 		const setupPlugin = vi.fn<EditorPlugin['setup']>(() => cleanup);

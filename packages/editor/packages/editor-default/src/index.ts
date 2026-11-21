@@ -57,7 +57,7 @@ export function createDefaultEditorPlugins(options: {
 		createDeferredPluginLoaderPlugin({
 			load: () =>
 				import('./deferred-plugins').then(module =>
-					module.createDeferredEditorPlugin({ ...options, fileSession, prefersReducedMotion })
+					module.createDeferredEditorPlugins({ ...options, fileSession, prefersReducedMotion })
 				),
 		}),
 	];

@@ -69,7 +69,7 @@ export async function mountGalleryEditor(
 			createDeferredPluginLoaderPlugin({
 				load: () =>
 					import('./deferred-plugins').then(module =>
-						module.createDeferredEditorPlugin({
+						module.createDeferredEditorPlugins({
 							canvas,
 							compiler,
 							fileSession,

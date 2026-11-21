@@ -1,8 +1,12 @@
-import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
+import { type EditorPlugin, installEditorPlugins, type LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
 /** Core emits ready after project preparation, font-atlas loading, and rendering. */
-export function createDeferredPluginLoaderPlugin({ load }: { load: () => Promise<EditorPlugin> }): EditorPlugin {
+export function createDeferredPluginLoaderPlugin({
+	load,
+}: {
+	load: () => Promise<EditorPlugin | readonly EditorPlugin[]>;
+}): EditorPlugin {
 	return {
 		id: 'deferred-loader',
 		setup: context => {
@@ -13,9 +17,9 @@ export function createDeferredPluginLoaderPlugin({ load }: { load: () => Promise
 				if (disposed) return;
 				indicator = context.loading.add({ id: 'editor-plugins', message: 'Loading editor plugins...' });
 				try {
-					const plugin = await load();
+					const plugins = await load();
 					if (disposed) return;
-					cleanup = plugin.setup(context);
+					cleanup = installEditorPlugins('setup' in plugins ? [plugins] : plugins, context);
 					indicator.done();
 				} catch (error) {
 					indicator.fail();

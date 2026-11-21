@@ -576,6 +576,7 @@ describe('editor init', () => {
 		const viewOptions = viewCall[4]!;
 		viewOptions.onRenderStats?.({
 			timeToRenderMs: 10,
+			p90RenderTimeMs: 12,
 			fps: 50,
 			frameBudgetMs: 20,
 			headroomMs: 10,
@@ -587,6 +588,7 @@ describe('editor init', () => {
 		expect(viewOptions.renderStatsIntervalFrames).toBe(12);
 		expect(store.set).toHaveBeenCalledWith('info.graphics', {
 			timeToRenderMs: 10,
+			p90RenderTimeMs: 12,
 			fps: 50,
 			frameBudgetMs: 20,
 			headroomMs: 10,

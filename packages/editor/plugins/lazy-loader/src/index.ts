@@ -6,6 +6,11 @@ import type {
 } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
+export {
+	type AdaptiveDecoration,
+	type AdaptiveDecorationsOptions,
+	createAdaptiveDecorationsPlugin,
+} from './adaptive-decorations';
 export { createDeferredPluginLoaderPlugin } from './deferred';
 export { hasConfig, hasDirective } from './hasDirective';
 

@@ -81,7 +81,7 @@ export type {
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
-export type { EditorPlugin, EditorPluginContext } from './plugins';
+export { type EditorPlugin, type EditorPluginContext, installEditorPlugins } from './plugins';
 // Re-export helper functions
 
 export interface Editor {
@@ -132,6 +132,7 @@ function getCanvasDisplaySize(canvas: HTMLCanvasElement): CanvasSize | null {
 function toGraphicsInfoRecord(stats: RenderStats): InfoRecord {
 	return {
 		timeToRenderMs: stats.timeToRenderMs,
+		p90RenderTimeMs: stats.p90RenderTimeMs,
 		fps: stats.fps,
 		frameBudgetMs: stats.frameBudgetMs,
 		headroomMs: stats.headroomMs,

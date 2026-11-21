@@ -539,13 +539,18 @@ describe('web-ui init', () => {
 			renderStatsIntervalFrames: 2,
 		});
 		try {
+			mocks.drawCodeBlocks.mockImplementationOnce(() => {
+				now += 20;
+			});
 			view.renderFrame();
 			now = 1000;
 			view.resetRenderStats();
 			expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 			now = 1010;
 			view.renderFrame();
-			expect(onRenderStats).toHaveBeenCalledWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
+			expect(onRenderStats).toHaveBeenCalledWith(
+				expect.objectContaining({ fps: 100, frameBudgetMs: 10, p90RenderTimeMs: 0 })
+			);
 		} finally {
 			view.destroy();
 			performanceNow.mockRestore();
@@ -556,7 +561,7 @@ describe('web-ui init', () => {
 		let now = 0;
 		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
 		mocks.drawCodeBlocks.mockImplementationOnce(() => {
-			now += 10;
+			now += 15;
 		});
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
@@ -578,6 +583,7 @@ describe('web-ui init', () => {
 		expect(onRenderStats).toHaveBeenCalledTimes(1);
 		expect(onRenderStats).toHaveBeenCalledWith({
 			timeToRenderMs: 10,
+			p90RenderTimeMs: 15,
 			fps: 40,
 			frameBudgetMs: 25,
 			headroomMs: 15,

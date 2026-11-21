@@ -82,6 +82,7 @@ Type emitted by `options.onRenderStats`:
 ```typescript
 interface RenderStats {
   timeToRenderMs: number;
+  p90RenderTimeMs: number; // 90th percentile of main-thread draw times in the sample window
   fps: number; // Calculated over the sampled frame interval
   frameBudgetMs: number;
   headroomMs: number;
@@ -90,6 +91,9 @@ interface RenderStats {
   uploadedInstanceBytes: number;
 }
 ```
+
+Draw times include renderer work on the main thread, not time waiting for the next animation frame or for the GPU to
+finish. Core publishes these samples at `info.graphics`.
 
 ### `FontAtlas`
 

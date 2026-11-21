@@ -24,7 +24,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
 	vi.stubGlobal('window', browserWindow);
 	const canvas = Object.assign(new EventTarget(), {
-		ownerDocument: { defaultView: browserWindow },
+		ownerDocument: Object.assign(new EventTarget(), { defaultView: browserWindow, visibilityState: 'visible' }),
 	}) as HTMLCanvasElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
