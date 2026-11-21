@@ -124,6 +124,41 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test('draws a loose wire between gallery connectors', async () => {
+	const view = setup({
+		wires: async () =>
+			new Response(`8f4e/v1
+constants env
+; @pos 180 60
+constantsEnd
+entry main
+module osc
+; @pos 4 5
+float out 0.5
+moduleEnd
+module amp
+; @pos 48 5
+float* in &osc:out
+moduleEnd
+entryEnd`),
+	});
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	editor.pauseRendering();
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '704px';
+	canvas.style.height = '272px';
+	await expect.poll(() => editor.state.viewport.width).toBe(704);
+	// Refresh the overlay layout without transient loading times in the capture.
+	editor.state.loadingIndicators = [];
+	const rendering = editor.state.codeBlockRendering;
+	rendering.selectedCodeBlock = rendering.currentProject.blocks.find(block => block.name === 'amp');
+	editor.resize(704, 272);
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot('gallery-loose-wires');
+});
+
 test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {
 	const view = setup({ empty: async () => new Response('8f4e/v1') });
 	const editor = await view.mounted();

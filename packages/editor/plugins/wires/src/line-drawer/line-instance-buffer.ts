@@ -45,7 +45,7 @@ export class LineInstanceBuffer {
 	 * @param y1 - Starting Y coordinate in canvas pixels.
 	 * @param x2 - Ending X coordinate in canvas pixels.
 	 * @param y2 - Ending Y coordinate in canvas pixels.
-	 * @param thickness - Positive integer thickness in canvas pixels.
+	 * @param thickness - Integer thickness in canvas pixels, negated when skipping the starting sample.
 	 * @param color - Red, green, blue, and alpha components in the range 0 to 1.
 	 */
 	append(x1: number, y1: number, x2: number, y2: number, thickness: number, color: LineColor): void {

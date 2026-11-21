@@ -43,6 +43,8 @@ and take longer to spring back into place without changing logical positions or 
 browser's live reduced-motion preference.
 The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
 markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
+The deferred `looseWiresPlugin` draws connections with a downward sag instead of the straight lines used by the default
+and landing editors. Wires stay attached to their rendered connector positions while blocks move.
 
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor

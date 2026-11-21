@@ -1,7 +1,8 @@
 # Wires plugin
 
-`@8f4e/editor-plugin-wires` owns wire endpoint layout and the WebGL wire pass. The default, gallery, and landing
-compositions install `wiresPlugin` and `connectorsPlugin` separately. Neither plugin depends on the other.
+`@8f4e/editor-plugin-wires` owns wire endpoint layout and the WebGL wire pass. The default and landing editors install
+`wiresPlugin` for straight lines. The gallery editor installs `looseWiresPlugin` instead for wires with a downward sag.
+Install only one variant per editor. Both work independently of `connectorsPlugin`.
 
 The wire tracker uses compiler metadata and settled editor layout to find declaration, fixed reference, and group
 `expose` endpoints, including endpoints outside the viewport. It indexes outputs by byte address for the current
@@ -22,5 +23,8 @@ preserves the same pixels. The comparison below enlarges pixels 3×, with the pr
 left and Bresenham rendering on the right.
 
 ![Wire rendering before and after Bresenham rasterization](images/bresenham-comparison.png)
+
+Loose wires use the same pixel lines to draw a curve. Sag increases with the horizontal span, up to 96 canvas pixels,
+and nearly vertical wires stay straight. Both variants follow the same rendered connector positions as blocks move.
 
 Run the package's `build`, `test`, `typecheck`, and `test:screenshot` Nx targets to verify it.

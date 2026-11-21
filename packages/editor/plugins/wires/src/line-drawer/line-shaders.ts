@@ -12,6 +12,7 @@ export const lineVertexShaderSource = `#version 300 es
 	flat out vec2 v_delta;
 	flat out int v_thickness;
 	flat out int v_xMajor;
+	flat out int v_skipEndpoint;
 
 	const vec2 CORNERS[4] = vec2[](
 		vec2(0.0, -0.5),
@@ -29,17 +30,20 @@ export const lineVertexShaderSource = `#version 300 es
 			start = start.yx;
 			end = end.yx;
 		}
+		int skipEndpoint = a_thickness < 0.0 ? -1 : 0;
 		// Give reversed endpoints the same pixel choices, including halfway ties.
 		if (start.x > end.x) {
 			vec2 previousStart = start;
 			start = end;
 			end = previousStart;
+			skipEndpoint = -skipEndpoint;
 		}
 		delta = end - start;
 		v_start = start;
 		v_delta = delta;
-		v_thickness = int(a_thickness);
+		v_thickness = int(abs(a_thickness));
 		v_xMajor = xMajor ? 1 : 0;
+		v_skipEndpoint = skipEndpoint;
 
 		// Keep the quad narrow while covering every staircase pixel and both endpoints.
 		vec2 corner = CORNERS[gl_VertexID];
@@ -65,6 +69,7 @@ export const lineFragmentShaderSource = `#version 300 es
 	flat in vec2 v_delta;
 	flat in int v_thickness;
 	flat in int v_xMajor;
+	flat in int v_skipEndpoint;
 	out vec4 outColor;
 
 	void main() {
@@ -73,7 +78,9 @@ export const lineFragmentShaderSource = `#version 300 es
 			pixel = pixel.yx;
 		}
 		float step = pixel.x - v_start.x;
-		if (step < 0.0 || step > v_delta.x) {
+		if (step < 0.0 || step > v_delta.x ||
+			(v_skipEndpoint < 0 && step == 0.0) ||
+			(v_skipEndpoint > 0 && step == v_delta.x)) {
 			discard;
 		}
 		// This is Bresenham's minor-axis step, evaluated directly for each fragment.
