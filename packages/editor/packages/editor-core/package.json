@@ -34,6 +34,6 @@
     "@8f4e/web-ui-testing": "*",
     "@8f4e/editor-palette": "*",
     "@8f4e/editor-state-testing": "*",
-    "vite": "7.3.7"
+    "vite": "7.3.8"
   }
 }
