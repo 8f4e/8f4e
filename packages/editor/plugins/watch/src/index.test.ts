@@ -92,6 +92,16 @@ describe('watch plugin', () => {
 		test.render();
 		expect(test.draw.drawNumericText).not.toHaveBeenCalled();
 	});
+	it('resolves an inline watch when declaration arguments continue on following lines', async () => {
+		const test = await setup(plugin, ['module audio', 'int[] samples ; @watch', '- 2 1 2', 'moduleEnd']);
+		test.render();
+		expect(test.draw.drawNumericText).toHaveBeenCalledWith(
+			expect.any(Number),
+			expect.any(Number),
+			'1',
+			expect.any(Number)
+		);
+	});
 	it.each([
 		['0x', '00 00 00 07'],
 		['0b', '111'],
