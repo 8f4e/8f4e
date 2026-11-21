@@ -81,6 +81,7 @@ function restoreSession(directive: string, nested = false) {
 
 it.each([
 	['plot &points 4', 'plot', 8],
+	['scope value 30 0 100', 'scope', 8],
 	['wave &points 4', 'wave', 2],
 	['wave2 &points 4', 'wave', 4],
 	['wave4 &points 4', 'wave', 8],
@@ -93,6 +94,25 @@ it.each([
 	const { block, entries } = restoreSession(directive);
 	await vi.waitFor(() => expect(block.gaps.get(7)?.size).toBe(rows));
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual([plugin]);
+});
+
+it('loads scope to report unsupported rates when entering a group', async () => {
+	const { block, entries, state, events, outer, inner } = restoreSession('scope value 500', true);
+	const scope = entries.find(entry => entry.id === 'scope')!;
+	expect(scope.load).not.toHaveBeenCalled();
+	events.dispatch('openProjectGroup', { codeBlock: outer });
+	events.dispatch('openProjectGroup', { codeBlock: inner });
+	await vi.waitFor(() =>
+		expect(state.codeErrors.scope).toEqual([
+			{
+				codeBlockId: block.creationIndex,
+				lineNumber: 7,
+				message: '@scope: sample rate must not exceed 250 Hz.',
+			},
+		])
+	);
+	expect(scope.load).toHaveBeenCalledOnce();
+	expect(block.gaps.size).toBe(0);
 });
 
 it('loads MIDI from restored raw configuration and registers its schema', async () => {

@@ -88,6 +88,10 @@ Keep browser dependencies in plugin factories rather than the shared setup conte
 returned plugin captures those dependencies and uses the regular setup services. The render callback runs from
 actions after initialization, once `editor` is available. Each editor receives a plugin bound to its own canvas.
 
+Plugins that sample memory outside the renderer can use `createMemoryViewManager(memoryRef)` to maintain typed views
+of the current compiler memory. Call `updateMemoryViews(memoryRef)` when obtaining the live memory handle; it replaces
+the views only when the underlying buffer changes.
+
 Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
@@ -280,7 +284,8 @@ data in a per-instance WeakMap. Buttons write their on value while pressed and t
 The wave plugin owns `@wave`, `@wave2`, and `@wave4`, including their layout space, typed samples, playheads, and drawing.
 The piano plugin owns `@piano`, key geometry, runtime note toggling, drawing, and its save-to-code menu action.
 The slider plugin owns `@slider`, its geometry, drag interaction, live drawing, and save-to-code menu action.
-Meter, plot, and bars plugins own their typed-memory visualization and layout. Crossfade owns its float-memory
+Meter, plot, and bars plugins own their typed-memory visualization and layout. Scope samples one typed value
+into a private JavaScript history and renders it beneath the directive. Crossfade owns its float-memory
 interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
 `prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.

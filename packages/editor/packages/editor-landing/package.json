@@ -36,6 +36,7 @@
     "@8f4e/editor-plugin-lazy-loader": "*",
     "@8f4e/editor-plugin-plot": "*",
     "@8f4e/editor-plugin-project-url-loader": "*",
+    "@8f4e/editor-plugin-scope": "*",
     "@8f4e/editor-plugin-slider": "*",
     "@8f4e/editor-plugin-stack": "*",
     "@8f4e/editor-plugin-stack-connections": "*",

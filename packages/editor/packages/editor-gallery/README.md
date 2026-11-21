@@ -40,7 +40,7 @@ lazy chunks.
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor
 `@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
-Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
+Plot, scope, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
 project-signal registry in `src/lazy-plugins.ts`. Watch matches `@watch`/`@w`, and stack matches `@stack`/`@s`.
 Both receive a live reduced-motion preference. Block drawers run in registration order, including later lazy installations.
 MIDI input and binary assets also load through that registry when
