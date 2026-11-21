@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-group-path",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Active project group path overlay for the 8f4e editor",
   "type": "module",

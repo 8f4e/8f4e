@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-elastic-viewport",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Size-weighted elastic viewport presentation for the 8f4e editor",
   "type": "module",
