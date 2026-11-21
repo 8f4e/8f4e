@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
+import * as sampling from './state/sampling';
 
 const source = ['module audio', 'float level 0', '; @scope level 10 -1 1', 'moduleEnd'];
 
@@ -333,6 +334,50 @@ describe('scope plugin', () => {
 		vi.advanceTimersByTime(100);
 		test.render(voice);
 		expect(test.traces()).toHaveLength(2);
+	});
+
+	it('does not resynchronize active timers for layout changes in an inactive group', async () => {
+		const createSampler = sampling.createScopeSampler;
+		const sampler = vi.spyOn(sampling, 'createScopeSampler').mockImplementation(getMemory => {
+			const actual = createSampler(getMemory);
+			return { ...actual, sync: vi.fn(actual.sync) };
+		});
+		try {
+			const test = await setup([
+				'8f4e/v1',
+				'entry main',
+				'module audio',
+				'float level 0',
+				'; @scope level 10',
+				'moduleEnd',
+				'group nested',
+				'entry main',
+				'module voice',
+				'float value 1',
+				'; @scope value 20',
+				'moduleEnd',
+				'entryEnd',
+				'groupEnd',
+				'entryEnd',
+			]);
+			const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+			const voice = group.childProject!.blocks.find(block => block.name === 'voice')!;
+			const sync = vi.mocked(sampler.mock.results[0].value.sync);
+			const contribution = test.store.layout.createContribution();
+			const space = { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 1 }] };
+			try {
+				sync.mockClear();
+				contribution.update(voice, space);
+				expect(voice.gaps.get(1)?.size).toBe(1);
+				expect(sync).not.toHaveBeenCalled();
+				contribution.update(test.block, space);
+				expect(sync).toHaveBeenCalled();
+			} finally {
+				contribution.dispose();
+			}
+		} finally {
+			sampler.mockRestore();
+		}
 	});
 
 	it('is optional and cleans up timers and layout independently for each installation', async () => {

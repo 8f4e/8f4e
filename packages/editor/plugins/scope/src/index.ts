@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import drawScopes from './drawer/draw';
 import { createScopeDirectiveReader } from './helpers/data';
 import { registerScopeErrors } from './state/errors';
@@ -19,24 +19,33 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
 			const unregisterLayout = registerScopeLayout(layout, scopesByBlock, readScopeDirectives);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
-				drawScopes(draw, scopesByBlock.get(codeBlock) ?? []);
+				const scopes = scopesByBlock.get(codeBlock);
+				if (scopes) drawScopes(draw, scopes);
 			});
 
 			const syncSampling = () => {
 				const ready =
 					!state.compiler.isCompiling && state.compiler.result.inputRevision === state.compilerInputRevision;
-				sampler.sync(
-					ready ? state.codeBlockRendering.currentProject.blocks.flatMap(block => scopesByBlock.get(block) ?? []) : []
-				);
+				const active: Scope[] = [];
+				if (ready) {
+					for (const block of state.codeBlockRendering.currentProject.blocks) {
+						const scopes = scopesByBlock.get(block);
+						if (scopes) active.push(...scopes);
+					}
+				}
+				sampler.sync(active);
 			};
-			events.on('codeBlockLayoutsChanged', syncSampling);
+			const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
+				if (project === state.codeBlockRendering.currentProject) syncSampling();
+			};
+			events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 			store.subscribe('codeBlockRendering.currentProject.blocks', syncSampling);
 			store.subscribe('compilerInputRevision', syncSampling);
 			store.subscribe('compiler.isCompiling', syncSampling);
 			syncSampling();
 
 			return () => {
-				events.off('codeBlockLayoutsChanged', syncSampling);
+				events.off('codeBlockLayoutsChanged', onLayoutsChanged);
 				store.unsubscribe('codeBlockRendering.currentProject.blocks', syncSampling);
 				store.unsubscribe('compilerInputRevision', syncSampling);
 				store.unsubscribe('compiler.isCompiling', syncSampling);

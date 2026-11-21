@@ -20,6 +20,11 @@ export function registerScopeLayout(
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
 		const items = readScopeDirectives(codeBlock.parsedDirectives).scopes;
+		if (!items.length) {
+			scopesByBlock.delete(codeBlock);
+			contribution.remove(codeBlock);
+			return;
+		}
 		contribution.update(codeBlock, {
 			verticalSpaceAfterSourceLine: items.map(data => ({
 				sourceLineIndex: data.lineNumber,
@@ -73,7 +78,8 @@ export function registerScopeLayout(
 				scopes.push(scope);
 			}
 		}
-		scopesByBlock.set(codeBlock, scopes);
+		if (scopes.length) scopesByBlock.set(codeBlock, scopes);
+		else scopesByBlock.delete(codeBlock);
 	});
 	return () => {
 		unsubscribe();
