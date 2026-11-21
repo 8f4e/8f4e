@@ -52,7 +52,8 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		],
 	});
 	editor.pauseRendering();
-	const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
+	const startTime = 1000;
+	const now = vi.spyOn(performance, 'now').mockReturnValue(startTime);
 	try {
 		const state = editor.state;
 		const destination = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
@@ -60,6 +61,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		context.events.on('viewportChanged', viewportChanged);
 		jumpToCodeBlock(context.store, destination.creationIndex, context.events);
 		const { x, y } = state.viewport;
+		const duration = Math.hypot(x, y) / 2.5;
 		expect(x).toBeGreaterThan(0);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(destination);
 		visible.length = 0;
@@ -82,14 +84,14 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		context.events.dispatch('pointerdown', { ...pointer }, { phase: 'capture' });
 		expect(onBlockPress).not.toHaveBeenCalled();
 
-		now.mockReturnValue(1100);
+		now.mockReturnValue(startTime + duration / 2);
 		visible.length = 0;
 		editor.renderFrame();
 		expect(presented).toEqual({ x: Math.round(x / 2), y: Math.round(y / 2) });
 		expect(visible).toEqual(['middle']);
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/mid-navigation.viewport.snap');
 
-		now.mockReturnValue(1200);
+		now.mockReturnValue(startTime + Math.ceil(duration));
 		visible.length = 0;
 		editor.renderFrame();
 		expect(presented).toEqual({ x, y });

@@ -427,13 +427,14 @@ describe('web-ui init', () => {
 		state.viewport.y = 72;
 		events.dispatch('viewportChanged', { previousX: 24, previousY: 32, x: 124, y: 72, source: 'navigation' });
 		events.dispatch.mockClear();
+		const midpointTime = 1000 + Math.hypot(100, 40) / (2 * 2.5);
 		view.renderFrame(1000);
-		view.renderFrame(1100);
+		view.renderFrame(midpointTime);
 		const { viewport, renderGeometry } = onBackground.mock.lastCall![0];
 		expect(viewport).toBe(readViewportOrigin());
 		expect(viewport).toMatchObject({ x: 74, y: 52 });
 		expect(renderGeometry.blocksByCodeBlock.get(block)).toMatchObject({ x: 106, y: 44 });
-		expect(effect).toHaveBeenLastCalledWith(state, 1100, true);
+		expect(effect).toHaveBeenLastCalledWith(state, midpointTime, true);
 		expect(state.viewport).toMatchObject({ x: 124, y: 72 });
 		view.renderFrame(1200);
 		expect(readViewportOrigin()).toMatchObject({ x: 124, y: 72 });

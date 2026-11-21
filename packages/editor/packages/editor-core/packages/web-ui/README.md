@@ -131,10 +131,11 @@ there are no separate block drawing phases. Ordinary canvas drawers, viewport ov
 Without a background plugin, web-ui draws no block surface.
 
 Editor-state commits navigation immediately and emits a single navigation-tagged `viewportChanged`. Web-ui samples a
-200 ms visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`. It projects
-blocks, culling, the shader background, and canvas drawers from this same camera. Canvas drawers receive its frame-scoped
-`viewport`; layout and hit testing keep using `state.viewport`. The glide suppresses separate block offsets and new pointer
-presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.
+constant-speed visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`.
+Longer jumps take proportionally longer. This camera drives block positions, culling, the shader background, and canvas
+drawers. Canvas drawers receive its frame-scoped `viewport`; layout and hit testing keep using `state.viewport`. The glide
+suppresses separate block offsets and new pointer presses, and is skipped for reduced motion. Core schedules frames;
+neither web-ui nor editor-state owns another frame loop.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.

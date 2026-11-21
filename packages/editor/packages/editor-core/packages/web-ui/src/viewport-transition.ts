@@ -8,6 +8,7 @@ interface Transition {
 	fromY: number;
 	toX: number;
 	toY: number;
+	durationMs: number;
 	startedAt?: number;
 	elapsedMs: number;
 }
@@ -18,11 +19,7 @@ interface ViewportTransitionFrame {
 	suppressBlockOffsets: boolean;
 }
 
-const DURATION_MS = 200;
-
-function easeInOutCubic(progress: number): number {
-	return progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
-}
+const NAVIGATION_SPEED_PIXELS_PER_MS = 2.5;
 
 /** Own the visual camera between logical viewport commits. Sample only when drawing a frame. */
 export function createViewportTransition(initialOrigin: ViewportOrigin) {
@@ -38,10 +35,16 @@ export function createViewportTransition(initialOrigin: ViewportOrigin) {
 		onViewportChanged({ x, y, source }: ViewportChange): void {
 			// If several commits arrive before the next frame, none of their non-pan displacement should spring.
 			pendingNonPanChange ||= source !== 'pan';
-			transition =
-				source === 'navigation' && (x !== frame.x || y !== frame.y)
-					? { fromX: frame.x, fromY: frame.y, toX: x, toY: y, elapsedMs: 0 }
-					: undefined;
+			transition = undefined;
+			if (source !== 'navigation' || (x === frame.x && y === frame.y)) return;
+			transition = {
+				fromX: frame.x,
+				fromY: frame.y,
+				toX: x,
+				toY: y,
+				durationMs: Math.hypot(x - frame.x, y - frame.y) / NAVIGATION_SPEED_PIXELS_PER_MS,
+				elapsedMs: 0,
+			};
 		},
 		/** Whether a navigation glide is pending its first sample or still in progress. */
 		isTransitioning(): boolean {
@@ -66,12 +69,12 @@ export function createViewportTransition(initialOrigin: ViewportOrigin) {
 				transition.startedAt ??= frameTime;
 				// An on-demand render can have a timestamp slightly ahead of the next scheduled frame.
 				transition.elapsedMs = Math.max(transition.elapsedMs, frameTime - transition.startedAt);
-				if (transition.elapsedMs >= DURATION_MS) {
+				if (transition.elapsedMs >= transition.durationMs) {
 					transition = undefined;
 				} else {
-					const eased = easeInOutCubic(transition.elapsedMs / DURATION_MS);
-					frame.x = Math.round(transition.fromX + (transition.toX - transition.fromX) * eased) || 0;
-					frame.y = Math.round(transition.fromY + (transition.toY - transition.fromY) * eased) || 0;
+					const progress = transition.elapsedMs / transition.durationMs;
+					frame.x = Math.round(transition.fromX + (transition.toX - transition.fromX) * progress) || 0;
+					frame.y = Math.round(transition.fromY + (transition.toY - transition.fromY) * progress) || 0;
 				}
 			}
 			if (!transition) {
