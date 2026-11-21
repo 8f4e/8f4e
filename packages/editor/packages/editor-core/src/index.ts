@@ -1,5 +1,4 @@
 import initState, {
-	advanceViewportAnimation,
 	createEditorEditingHandle,
 	type EditorEditingHandle,
 	type EditorNavigationHandle,
@@ -72,6 +71,8 @@ export type {
 	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
+	CodeBlockOffsetResolver,
+	CodeBlockPositionEffect,
 	EditorDrawerRegistry,
 	OffscreenCodeBlockDrawer,
 	RenderedCodeBlock,
@@ -211,12 +212,15 @@ export default async function init(
 		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
 		const initialProjectReady = events.dispatchAsync('init');
+		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
+		const reducedMotion = browserWindow?.matchMedia?.('(prefers-reduced-motion: reduce)');
 
 		rendererOwnedByView = true;
 		view = await initView(store, events, renderer, memoryViews, {
 			loading: store.loading,
 			defaultFont: options.defaultFont,
 			initialProjectReady,
+			prefersReducedMotion: () => reducedMotion?.matches ?? false,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
 			onRenderStats: stats => {
@@ -227,10 +231,7 @@ export default async function init(
 
 		let rendering = false;
 		let animationFrameRequest: number | null = null;
-		const renderFrame = (frameTime = performance.now()) => {
-			advanceViewportAnimation(state, frameTime, events);
-			view.renderFrame();
-		};
+		const renderFrame = (frameTime = performance.now()) => view.renderFrame(frameTime);
 		const pauseRendering = () => {
 			rendering = false;
 			if (animationFrameRequest !== null) {
@@ -268,7 +269,6 @@ export default async function init(
 				renderFrame();
 			}
 		};
-		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
 		const resizeObserver = browserWindow?.ResizeObserver
 			? new browserWindow.ResizeObserver(() => {
 					const size = getCanvasDisplaySize(canvas);

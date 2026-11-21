@@ -124,6 +124,26 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {
+	const view = setup({ empty: async () => new Response('8f4e/v1') });
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	const canvas = view.panel().querySelector('canvas')!;
+	const { x, y } = editor.state.viewport;
+	const panned = { x: x - 3, y: y + 5 };
+	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+	try {
+		const wheel = new WheelEvent('wheel', { deltaX: -3, deltaY: 5, cancelable: true });
+		canvas.dispatchEvent(wheel);
+		expect(wheel.defaultPrevented).toBe(true);
+		expect(editor.state.viewport).toMatchObject(panned);
+		vi.advanceTimersByTime(200);
+		expect(editor.state.viewport).toMatchObject(panned);
+	} finally {
+		vi.useRealTimers();
+	}
+});
+
 test('cycles fonts with F8/F9 and shows credits without changing example source', async () => {
 	const view = setup({ fonts: async () => new Response(source) });
 	const editor = await view.mounted();
@@ -185,9 +205,7 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 	document.body.style.minHeight = '2000px';
 	window.scrollTo(0, 0);
 	try {
-		// Keep the 40-pixel gesture on a grid boundary independently of the mobile default font.
-		const touchSource = source.replace('; @mode edit', '; @mode edit\n; @config font ibmvga8x16');
-		const view = setup({ touch: async () => new Response(touchSource) });
+		const view = setup({ touch: async () => new Response(source) });
 		const editor = await view.mounted();
 		editor.pauseRendering();
 		const canvas = view.panel().querySelector('canvas')!;
@@ -201,9 +219,9 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 		const { x, y } = editor.state.viewport;
 		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(300, 200)] });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(320, 202)] });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(340, 204)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(337, 204)] });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
 		expect(window.scrollY).toBe(0);
 		const scrollStart = point(400, 300);
 		await input.send('Input.synthesizeScrollGesture', {
@@ -214,7 +232,7 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 			preventFling: true,
 		});
 		await expect.poll(() => window.scrollY).toBeGreaterThan(0);
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
 	} finally {
 		document.body.style.minHeight = originalMinHeight;
 		window.scrollTo(0, 0);

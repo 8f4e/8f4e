@@ -18,14 +18,13 @@ export default function entryBounds(store: StateManager<State>, events: EventDis
 	const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
 		if (project === state.codeBlockRendering.currentProject) updateBounds();
 	};
-	const geometryEvents = ['gridSizeChanged', 'viewportChanged', 'viewportResized'] as const;
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	for (const selector of selectors) store.subscribe(selector, updateBounds);
-	for (const event of geometryEvents) events.on(event, updateBounds);
+	events.on('gridSizeChanged', updateBounds);
 	updateBounds();
 	return () => {
 		events.off('codeBlockLayoutsChanged', onLayoutsChanged);
 		for (const selector of selectors) store.unsubscribe(selector, updateBounds);
-		for (const event of geometryEvents) events.off(event, updateBounds);
+		events.off('gridSizeChanged', updateBounds);
 	};
 }

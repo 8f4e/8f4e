@@ -33,7 +33,7 @@ import type {
 	MenuStackEntry,
 } from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
-import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
+import type { ProjectViewport, Viewport } from './features/viewport/types';
 import type {
 	CodeBlockPointerDownEvent,
 	CodeError,
@@ -215,7 +215,6 @@ export interface State {
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
 	viewport: Viewport;
-	viewportAnimation: ViewportAnimation;
 }
 
 export type * from './features/code-blocks/buildDisplayModel';

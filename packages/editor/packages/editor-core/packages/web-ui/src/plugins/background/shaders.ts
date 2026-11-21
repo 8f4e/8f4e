@@ -2,6 +2,7 @@ export const vertexShaderSource = `#version 300 es
 	precision highp float;
 
 	uniform vec2 u_patternScale;
+	uniform vec2 u_patternOffset;
 	out highp vec2 v_patternPosition;
 
 	const vec2 POSITIONS[3] = vec2[](
@@ -13,7 +14,7 @@ export const vertexShaderSource = `#version 300 es
 	void main() {
 		vec2 position = POSITIONS[gl_VertexID];
 		gl_Position = vec4(position, 0.0, 1.0);
-		v_patternPosition = (position * vec2(1.0, -1.0) + 1.0) * 0.5 * u_patternScale;
+		v_patternPosition = (position * vec2(1.0, -1.0) + 1.0) * 0.5 * u_patternScale + u_patternOffset;
 	}
 `;
 

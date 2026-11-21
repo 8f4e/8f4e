@@ -22,27 +22,27 @@ function setup(onCompleted: (event: CodeBlockLayoutsChangedEvent) => void = () =
 	return { store, state: store.getState(), events, load };
 }
 
-it('finishes anchored positions before notifying observers, including late contribution and source updates', () => {
+it('finishes world-space layout before notifying observers, including late contribution and source updates', () => {
 	let state: State;
 	let notifications = 0;
 	const test = setup(({ project, codeBlocks }) => {
 		for (const block of codeBlocks) {
-			if (block.name !== 'anchored') continue;
+			if (block.name !== 'world') continue;
 			notifications++;
 			expect(project).toBe(state.codeBlockRendering.currentProject);
-			expect(block.x + block.width).toBe(state.viewport.x + state.viewport.roundedWidth - 2 * state.viewport.vGrid);
-			expect(block.y + block.height).toBe(state.viewport.y + state.viewport.roundedHeight - 3 * state.viewport.hGrid);
+			expect(block.x).toBe(2 * state.viewport.vGrid);
+			expect(block.y).toBe(3 * state.viewport.hGrid);
 		}
 	});
 	state = test.state;
-	test.load('8f4e/v1\nnote anchored\n; @viewport bottom-right\n; @pos 2 3\ncontent\nnoteEnd');
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'anchored')!;
+	test.load('8f4e/v1\nnote world\n; @pos 2 3\ncontent\nnoteEnd');
+	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'world')!;
 	const contribution = test.store.layout.createContribution();
 	const unsubscribe = test.store.layout.subscribe(({ codeBlock }) => {
 		if (codeBlock === block) {
 			contribution.update(block, {
 				minGridWidth: 48,
-				verticalSpaceAfterSourceLine: [{ sourceLineIndex: 3, heightInRows: 2 }],
+				verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }],
 			});
 		}
 	});
@@ -54,19 +54,17 @@ it('finishes anchored positions before notifying observers, including late contr
 	expect(notifications).toBeGreaterThanOrEqual(3);
 });
 
-it('keeps group ownership across navigation and renaming, and positions inactive groups in their remembered viewport', () => {
+it('keeps group ownership and world-space layout across navigation and renaming', () => {
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
 	test.load(`8f4e/v1
 note root
-; @viewport top-left
 ; @pos 2 3
 root content
 noteEnd
 entry main
 group child
 note nested
-; @viewport bottom-right
 ; @pos 1 2
 nested content
 noteEnd
@@ -87,8 +85,8 @@ entryEnd`);
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 48, verticalSpaceAfterSourceLine: [] });
 	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
-	expect(nested.x + nested.width).toBe(160 + 1024 - test.state.viewport.vGrid);
-	expect(nested.y + nested.height).toBe(320 + 768 - 2 * test.state.viewport.hGrid);
+	const { vGrid, hGrid } = test.state.viewport;
+	expect(nested).toMatchObject({ x: vGrid, y: 2 * hGrid, width: 48 * vGrid });
 	expect(rootBlock).toMatchObject(rootPosition);
 	expect(test.state.codeBlockRendering.entryBounds).toBe(entryBounds);
 	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
@@ -176,18 +174,16 @@ it('settles dependent contributions across groups before publishing separate com
 	expect(second.width).toBe(48 * test.state.viewport.vGrid);
 });
 
-it('updates the anchored subset when source edits add or remove viewport anchoring', () => {
-	const test = setup();
-	test.load('8f4e/v1\nnote anchor\n; @pos 2 3\ncontent\nnoteEnd');
-	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'anchor')!;
-	const code = [...block.code];
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
-		{ codeBlock: block, code: [...code.slice(0, -1), '; @viewport top-left', 'noteEnd'] },
-	]);
-	updateViewport(test.state, 160, 320, test.events);
-	expect(block).toMatchObject({ x: 176, y: 368 });
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [{ codeBlock: block, code }]);
-	expect(block).toMatchObject({ x: 16, y: 48 });
-	updateViewport(test.state, 400, 600, test.events);
-	expect(block).toMatchObject({ x: 16, y: 48 });
+it('keeps blocks in world coordinates when the viewport pans or resizes', () => {
+	const completed: CodeBlockLayoutsChangedEvent[] = [];
+	const test = setup(event => completed.push(event));
+	test.load('8f4e/v1\nnote world\n; @pos 2 3\ncontent\nnoteEnd');
+	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'world')!;
+	const { vGrid, hGrid } = test.state.viewport;
+	expect(block).toMatchObject({ x: 2 * vGrid, y: 3 * hGrid });
+	completed.length = 0;
+	updateViewport(test.state, 163, 325, test.events);
+	test.events.dispatch('resize', { canvasWidth: 435, canvasHeight: 217 });
+	expect(block).toMatchObject({ x: 2 * vGrid, y: 3 * hGrid });
+	expect(completed).toEqual([]);
 });

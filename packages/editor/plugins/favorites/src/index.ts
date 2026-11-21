@@ -24,7 +24,7 @@ export const favoritesPlugin: EditorPlugin = {
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);
-		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex);
+		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex, events);
 		events.on('jumpToFavoriteCodeBlock', onJump);
 		const unregisterBlockMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit') return;

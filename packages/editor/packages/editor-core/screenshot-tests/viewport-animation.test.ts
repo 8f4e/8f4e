@@ -13,6 +13,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const visible: string[] = [];
+	const presented = { x: 0, y: 0 };
 	const editor = await initEditor(canvas, {
 		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
@@ -37,9 +38,14 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 						visible.push(codeBlock.name);
 						draw.drawGlyphs(8, 16, glyphsByBlock.get(codeBlock)!, PALETTE_INDICES.inkBase);
 					});
+					const removeCameraProbe = services.drawers.registerCanvasDrawer(({ viewport }) => {
+						presented.x = viewport.x;
+						presented.y = viewport.y;
+					});
 					return () => {
 						removePreparation();
 						removeDrawer();
+						removeCameraProbe();
 					};
 				},
 			},
@@ -50,27 +56,48 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 	try {
 		const state = editor.state;
 		const destination = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
-		jumpToCodeBlock(context.store, destination.creationIndex);
-		const { targetX, targetY } = state.viewportAnimation;
+		const viewportChanged = vi.fn();
+		context.events.on('viewportChanged', viewportChanged);
+		jumpToCodeBlock(context.store, destination.creationIndex, context.events);
+		const { x, y } = state.viewport;
+		expect(x).toBeGreaterThan(0);
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(destination);
 		visible.length = 0;
 		editor.renderFrame();
 		expect(visible).toEqual(['start']);
-		expect(state.viewport).toMatchObject({ x: 0, y: 0 });
+		expect(presented).toEqual({ x: 0, y: 0 });
+		const pointer = {
+			x: destination.x - x + 4,
+			y: destination.y - y + 4,
+			movementX: 0,
+			movementY: 0,
+			buttons: 1,
+			stopPropagation: false,
+			altKey: false,
+			canvasWidth: canvas.width,
+			canvasHeight: canvas.height,
+		};
+		const onBlockPress = vi.fn();
+		context.events.on('codeBlockPointerDown', onBlockPress, { capture: true });
+		context.events.dispatch('pointerdown', { ...pointer }, { phase: 'capture' });
+		expect(onBlockPress).not.toHaveBeenCalled();
 
-		now.mockReturnValue(1250);
+		now.mockReturnValue(1100);
 		visible.length = 0;
 		editor.renderFrame();
-		expect(state.viewportAnimation.active).toBe(true);
-		expect(state.viewport).toMatchObject({ x: Math.round(targetX / 2), y: Math.round(targetY / 2) });
+		expect(presented).toEqual({ x: Math.round(x / 2), y: Math.round(y / 2) });
 		expect(visible).toEqual(['middle']);
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/mid-navigation.viewport.snap');
 
-		now.mockReturnValue(1500);
+		now.mockReturnValue(1200);
 		visible.length = 0;
 		editor.renderFrame();
-		expect(state.viewportAnimation.active).toBe(false);
-		expect(state.viewport).toMatchObject({ x: targetX, y: targetY });
+		expect(presented).toEqual({ x, y });
+		expect(state.viewport).toMatchObject({ x, y });
+		expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({ previousX: 0, previousY: 0, x, y, source: 'navigation' });
 		expect(visible).toEqual(['destination']);
+		context.events.dispatch('pointerdown', { ...pointer }, { phase: 'capture' });
+		expect(onBlockPress).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ codeBlock: destination }));
 	} finally {
 		now.mockRestore();
 		editor.dispose();

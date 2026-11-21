@@ -50,7 +50,7 @@ export const stackConnectionsPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, state: { viewport }, renderGeometry }) => {
+		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, viewport, renderGeometry }) => {
 			if (!selectedBlock || !rows.length) return;
 			const renderedBlock = renderGeometry.blocksByCodeBlock.get(selectedBlock);
 			if (!renderedBlock) return;

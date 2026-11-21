@@ -41,13 +41,14 @@ it('refreshes entry bounds after layout, grid, and completed project changes', (
 	}
 });
 
-it.each(['viewportChanged', 'viewportResized'])('refreshes moved viewport-anchored geometry after %s', event => {
+it('keeps world-space entry bounds unchanged when the viewport pans', () => {
 	const test = setup();
 	try {
-		test.block.viewportAnchor = 'top-left';
-		test.block.x = 600;
-		test.events.dispatch(event);
-		expect(test.state.codeBlockRendering.entryBounds[0].x).toBe(536);
+		const previous = test.state.codeBlockRendering.entryBounds;
+		test.state.viewport.x = 37;
+		test.state.viewport.y = 21;
+		test.events.dispatch('viewportChanged', { previousX: 0, previousY: 0, x: 37, y: 21 });
+		expect(test.state.codeBlockRendering.entryBounds).toBe(previous);
 	} finally {
 		test.dispose();
 		test.store.dispose();
@@ -86,8 +87,6 @@ it('stops reacting to store and geometry notifications after disposal', () => {
 			codeBlocks: [test.block],
 		});
 		test.events.dispatch('gridSizeChanged');
-		test.events.dispatch('viewportChanged');
-		test.events.dispatch('viewportResized');
 		expect(test.state.codeBlockRendering.entryBounds).toBe(previous);
 	} finally {
 		test.store.dispose();

@@ -1,5 +1,6 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
@@ -21,6 +22,7 @@ const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('glugglugglug', () => ({ Engine: class {} }));
+vi.mock('@8f4e/editor-plugin-elastic-viewport', { spy: true });
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 vi.mock('@8f4e/editor-plugin-session-persistence', () => ({
@@ -121,8 +123,10 @@ describe('default editor plugins', () => {
 				'dialogs',
 				'context-menu',
 				'block-authoring',
+				'coordinate-grid',
 				'entry-outlines',
 				'offscreen-block-arrows',
+				'elastic-viewport',
 				'stack-connections',
 				'stack-producers',
 				'tooltips',
@@ -161,6 +165,24 @@ describe('default editor plugins', () => {
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
 		editor.dispose();
+	});
+
+	it('defers elastic viewport motion and forwards the live reduced-motion preference', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const motionPreference = { matches: false };
+		vi.mocked(window.matchMedia).mockImplementation(
+			query => (query === '(prefers-reduced-motion: reduce)' ? motionPreference : { matches: false }) as MediaQueryList
+		);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		await mountDefaultEditor(canvas, { storage: {} as Storage });
+		expect(createElasticViewportPlugin).not.toHaveBeenCalled();
+		const plugins = await loadDeferredPlugins();
+		expect(plugins.map(plugin => plugin.id)).toContain('elastic-viewport');
+		expect(createElasticViewportPlugin).toHaveBeenCalledOnce();
+		const { prefersReducedMotion } = vi.mocked(createElasticViewportPlugin).mock.calls[0][0];
+		expect(prefersReducedMotion()).toBe(false);
+		motionPreference.matches = true;
+		expect(prefersReducedMotion()).toBe(true);
 	});
 
 	it('defers the PWA update plugin when the host supplies a service worker', async () => {

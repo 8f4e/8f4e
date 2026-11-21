@@ -37,6 +37,13 @@ current project and do not block the first render, mounting, or initial-project 
 same deferred list, including input plugins; their implementations load independently. This boundary also gates all
 directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
 lazy chunks.
+
+`@8f4e/editor-plugin-elastic-viewport` is included in the deferred set. During panning, larger blocks visibly lag more
+and take longer to spring back into place without changing logical positions or hit testing. The plugin follows the
+browser's live reduced-motion preference.
+The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
+markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
+
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor
 `@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
@@ -99,7 +106,7 @@ history and saved files unchanged; loading another project restores its configur
 After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of these four plugins, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
-Coarse-pointer devices load `touch-input` for configurable viewport dragging and grid snapping. Taps
+Coarse-pointer devices load `touch-input` for configurable viewport dragging. Taps
 remain available to controls, and dragging does not edit block positions.
 
 Touch panning uses one finger in both directions by default. Set `touchNavigation: { axis: 'horizontal' }`

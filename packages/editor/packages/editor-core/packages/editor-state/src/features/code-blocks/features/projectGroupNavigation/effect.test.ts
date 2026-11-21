@@ -3,7 +3,6 @@ import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import animateViewport, { advanceViewportAnimation } from '../../../viewport/animateViewport';
 import projectGroupNavigation from './effect';
 
 describe('projectGroupNavigation', () => {
@@ -150,20 +149,6 @@ describe('projectGroupNavigation', () => {
 		expect(state.viewport).toMatchObject({ x: 64, y: -96 });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
 		expect(events.dispatch).not.toHaveBeenCalled();
-	});
-
-	it('cancels an active viewport animation before switching groups', () => {
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [] } });
-		const { state, events, dispatch } = setupNavigation([group]);
-		animateViewport(state, 1000, 1000);
-
-		dispatch('openProjectGroup', { codeBlock: group });
-
-		expect(state.viewportAnimation.active).toBe(false);
-		advanceViewportAnimation(state, 500, events);
-		expect(state.viewport).toMatchObject({ x: 0, y: 0 });
-		dispatch('goToParentProjectGroup');
-		expect(state.viewport).toMatchObject({ x: 64, y: -96 });
 	});
 
 	it('opens a project group by pointing the rendered slice at its nested blocks', () => {

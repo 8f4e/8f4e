@@ -28,6 +28,7 @@ function expectedColors(bytes: Uint8Array, underlay: number[]) {
 
 function createScene() {
 	const engine = new Engine(document.createElement('canvas'));
+	let viewportOrigin = { x: 0, y: 0 };
 	let underlay = [0, 0, 0, 0];
 	engine.hooks.preDraw.push(gl => {
 		gl.disable(gl.RASTERIZER_DISCARD);
@@ -40,7 +41,7 @@ function createScene() {
 			gl.enable(state);
 		gl.blendFunc(gl.ZERO, gl.ZERO);
 	});
-	const background = new BackgroundRenderer(engine);
+	const background = new BackgroundRenderer(engine, () => viewportOrigin);
 	let font: Font;
 	let grid: FontAtlas['grid'];
 	let bytes: Uint8Array;
@@ -54,13 +55,16 @@ function createScene() {
 			background.setFont(font, grid);
 			background.setPalette(bytes);
 		},
-		check(width: number, height: number) {
+		check(width: number, height: number, origin = { x: 0, y: 0 }) {
+			viewportOrigin = origin;
 			engine.resize(width, height);
 			const { cellWidth, cellHeight } = grid;
 			const dot = BACKGROUND_DOTS[font];
 			const columns = Array.from({ length: width }, (_, x) => {
-				const local = x % cellWidth;
-				return local >= dot.x && local < dot.x + dot.size ? 1 + (Math.floor(x / cellWidth) % 2) : 0;
+				const worldX = x + origin.x;
+				const column = Math.floor(worldX / cellWidth);
+				const local = worldX - column * cellWidth;
+				return local >= dot.x && local < dot.x + dot.size ? (column % 2 === 0 ? 1 : 2) : 0;
 			});
 			for (const color of [
 				[0, 0, 0, 0],
@@ -73,7 +77,8 @@ function createScene() {
 				const expected = expectedColors(bytes, color);
 				let maxDelta = 0;
 				for (let y = 0; y < height; y++) {
-					const localY = (height - 1 - y) % cellHeight;
+					const worldY = height - 1 - y + origin.y;
+					const localY = worldY - Math.floor(worldY / cellHeight) * cellHeight;
 					const dotRow = localY >= dot.y && localY < dot.y + dot.size;
 					for (let x = 0; x < width; x++) {
 						const pixel = expected[dotRow ? columns[x] : 0];
@@ -105,6 +110,21 @@ test.each(FONT_NAMES)('draws correctly positioned alternating dots for %s', asyn
 	try {
 		scene.install(await loadFontAtlas(font), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]), font);
 		scene.check(129, 97);
+	} finally {
+		scene.destroy();
+	}
+});
+
+test('pans dots with the viewport origin without losing color parity or pixel precision', async () => {
+	const scene = createScene();
+	try {
+		const font = await loadFontAtlas();
+		scene.install(font, palette([17, 31, 47, 255], [211, 41, 3, 255], [7, 137, 239, 255]));
+		scene.check(33, 35, { x: 3, y: 5 });
+		scene.check(33, 35, { x: font.grid.cellWidth, y: 0 });
+		scene.check(33, 35, { x: -3, y: -5 });
+		scene.check(33, 35, { x: 2 ** 30 + 5, y: -(2 ** 30) - 7 });
+		scene.check(33, 35);
 	} finally {
 		scene.destroy();
 	}

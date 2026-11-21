@@ -220,12 +220,17 @@ describe('favorites plugin', () => {
 		const menuItemIndex = test.state.contextMenu.items.findIndex(
 			item => item.payload?.creationIndex === test.block.creationIndex
 		);
+		const viewportChanged = vi.fn();
+		test.events.on('viewportChanged', viewportChanged);
 		test.events.dispatch('activateContextMenuItem', {
 			x: 8,
 			y: 8,
 			index: menuItemIndex,
 		});
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
+		expect(viewportChanged).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ x: test.state.viewport.x, y: test.state.viewport.y, source: 'navigation' })
+		);
 		expect(test.state.projectChange.revision).toBe(revision);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision);
 	});

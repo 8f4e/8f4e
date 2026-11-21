@@ -65,15 +65,13 @@ Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives 
 coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
 invalid position directive retains the existing block position. Interactive and programmatic edits use this same
 path; ordinary layout invalidations do not reparse source. `layout/coordinator.ts` tracks each block's owning
-`ProjectLevel` and maintains that group's viewport-anchored subset. Ownership is registered on project loading and
-block-collection changes, independently of source edits and layout notifications. Renaming a group retains its
-runtime identity while updating its source path.
+`ProjectLevel`. Ownership is registered on project loading and block-collection changes, independently of source
+edits and layout notifications. Renaming a group retains its runtime identity while updating its source path.
 
-The coordinator queues changed blocks by owning group, settles nested plugin contributions, and finalizes grid and
-viewport-anchored positions before publishing completion for each affected group. Inactive groups use their
-remembered viewport. Viewport movement and resizing reposition only the active group's anchored subset without
-recalculating source/display layout. Other blocks can still be in the middle of a source update and must not be read
-as part of a completion notification.
+The coordinator queues changed blocks by owning group, settles nested plugin contributions, and projects grid
+positions to world pixels before publishing completion for each affected group. Panning and resizing do not move
+blocks in the project. Other blocks can still be in the middle of a source update and must not be read as part of a
+completion notification.
 
 ## Events & Callbacks
 
@@ -122,7 +120,7 @@ in browser memory together with remembered selections: project serialization, cl
 exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving
 selections to the new live blocks. They preserve the active level, falling back to the root if that level was removed.
 Loading a different project creates fresh levels without remembered views or selections. Switching levels stops
-active viewport animations; navigating to the current level leaves its view and selection alone.
+the presented camera in web-ui; navigating to the current level leaves its view and selection alone.
 
 `@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
 It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state

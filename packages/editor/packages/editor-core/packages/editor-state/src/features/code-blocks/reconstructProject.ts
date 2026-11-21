@@ -87,12 +87,6 @@ export function reconstructProject(
 		const gridY = posResult ? posResult.y : previousBlock ? previousBlock.gridY : 0;
 		const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
 
-		// For viewport-anchored blocks, x/y will be resolved after block derivation sets
-		// width/height; initialize to 0 here as a safe placeholder.
-		const isAnchored = directiveState.blockState.viewportAnchor !== undefined;
-		const pixelX = isAnchored ? 0 : gridX * viewport.vGrid;
-		const pixelY = isAnchored ? 0 : gridY * viewport.hGrid;
-
 		const graphicData = createCodeBlockGraphicData({
 			width: 0,
 			height: 0,
@@ -101,8 +95,8 @@ export function reconstructProject(
 			name,
 			gridX,
 			gridY,
-			x: pixelX,
-			y: pixelY,
+			x: gridX * viewport.vGrid,
+			y: gridY * viewport.hGrid,
 			lineNumberColumnWidth: 1,
 			creationIndex: codeBlock.id,
 			blockType: codeBlock.blockType,
@@ -111,7 +105,6 @@ export function reconstructProject(
 			isHome: directiveState.blockState.isHome,
 			homeAlignment: directiveState.blockState.homeAlignment,
 			alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
-			viewportAnchor: directiveState.blockState.viewportAnchor,
 			parsedDirectives: blockParsedDirectives,
 			...overrides,
 		});

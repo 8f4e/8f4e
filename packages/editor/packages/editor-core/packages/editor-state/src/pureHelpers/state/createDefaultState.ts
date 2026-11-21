@@ -70,17 +70,8 @@ export default function createDefaultState() {
 			y: 0,
 			width: 0,
 			height: 0,
-			roundedHeight: 0,
-			roundedWidth: 0,
 			vGrid: 8,
 			hGrid: 16,
-		},
-		viewportAnimation: {
-			startX: 0,
-			startY: 0,
-			targetX: 0,
-			targetY: 0,
-			active: false,
 		},
 	};
 }

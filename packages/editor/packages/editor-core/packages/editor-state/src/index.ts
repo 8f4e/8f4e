@@ -101,7 +101,7 @@ export default function init(
 	registerEffect(projectGroupNavigation(store, events));
 	registerEffect(autoEnvConstants(store, events));
 	registerEffect(publishCompilationInputChanges(store, events));
-	registerEffect(codeBlockRendering(store, events, directives.definitions, layout));
+	codeBlockRendering(store, events, directives.definitions, layout);
 	registerEffect(entryBounds(store, events));
 	registerEffect(projectOperations(store, events));
 	registerEffect(historyTracking(store, events));
@@ -172,10 +172,8 @@ export {
 	getVisualColumnForRawIndex,
 	getVisualLineWidth,
 } from './features/text-geometry/tabLayout';
-export { advanceViewportAnimation, stopViewportAnimation } from './features/viewport/animateViewport';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
-export { default as snapToGrid } from './features/viewport/snapToGrid';
 export { default as updateViewport } from './features/viewport/updateViewport';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
 export { createCodeErrorBlockLookup, default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';

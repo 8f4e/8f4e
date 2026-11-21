@@ -46,6 +46,7 @@ function setup() {
 		drawers.drawCanvasOverlays({
 			draw,
 			state,
+			viewport: state.viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
@@ -90,12 +91,18 @@ it('centers the error source line with reserved rows above it and preserves sour
 	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 3 }] });
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
-	test.state.viewportAnimation.active = true;
+	const viewportChanged = vi.fn();
+	test.events.on('viewportChanged', viewportChanged);
 	expect(test.press().stopPropagation).toBe(true);
 	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
 	expect(test.state.viewport.x).toBe(test.block.x + test.block.width / 2 - 320);
 	expect(test.state.viewport.y).toBe(test.block.y + 5.5 * test.state.viewport.hGrid - 192);
-	expect(test.state.viewportAnimation.active).toBe(false);
+	expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({
+		previousX: 0,
+		previousY: 0,
+		x: test.state.viewport.x,
+		y: test.state.viewport.y,
+	});
 	expect(test.state.projectChange.revision).toBe(revision);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision);
 	const release = { stopPropagation: false } as InternalPointerEvent;

@@ -16,13 +16,11 @@ const storeState: {
 	editorConfig: Record<string, unknown>;
 	info: Record<string, unknown>;
 	viewport: { hGrid: number; vGrid: number };
-	viewportAnimation: { active: boolean };
 } = {
 	globalEditorDirectives: {},
 	editorConfig: {},
 	info: {},
 	viewport: { hGrid: 16, vGrid: 8 },
-	viewportAnimation: { active: false },
 };
 
 const store = {
@@ -375,7 +373,7 @@ describe('editor init', () => {
 		editor.dispose();
 	});
 
-	it('advances viewport state before scheduled and on-demand rendering', async () => {
+	it('passes scheduled and on-demand timestamps to web-ui without mutating navigation state', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
 		const { default: initEvents } = await import('./events');
@@ -406,24 +404,28 @@ describe('editor init', () => {
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
 			const viewportChanged = vi.fn();
 			context.events.on('viewportChanged', viewportChanged);
-			jumpToCodeBlock(context.store, block.creationIndex);
-			const { targetX, targetY } = state.viewportAnimation;
-			expect(state.viewport).toMatchObject({ x: 0, y: 0 });
-			requestFrame.mock.calls[0][0](1000);
-			view.renderFrame.mockImplementationOnce(() => {
-				expect(state.viewport).toMatchObject({ x: Math.round(targetX / 2), y: Math.round(targetY / 2) });
-				expect(viewportChanged).toHaveBeenCalledOnce();
+			jumpToCodeBlock(context.store, block.creationIndex, context.events);
+			const { x, y } = state.viewport;
+			expect(x).toBeGreaterThan(0);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+			expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({
+				previousX: 0,
+				previousY: 0,
+				x,
+				y,
+				source: 'navigation',
 			});
-			requestFrame.mock.calls[1][0](1250);
-			expect(state.viewportAnimation.active).toBe(true);
+			requestFrame.mock.calls[0][0](1000);
+			requestFrame.mock.calls[1][0](1100);
+			expect(view.renderFrame).toHaveBeenLastCalledWith(1100);
 			expect(requestFrame).toHaveBeenCalledTimes(3);
 
 			editor.pauseRendering();
-			now.mockReturnValue(1500);
-			expect(state.viewportAnimation.active).toBe(true);
+			now.mockReturnValue(1200);
 			editor.renderFrame();
-			expect(state.viewport).toMatchObject({ x: targetX, y: targetY });
-			expect(state.viewportAnimation.active).toBe(false);
+			expect(view.renderFrame).toHaveBeenLastCalledWith(1200);
+			expect(state.viewport).toMatchObject({ x, y });
+			expect(viewportChanged).toHaveBeenCalledOnce();
 			expect(requestFrame).toHaveBeenCalledTimes(3);
 		} finally {
 			editor.dispose();

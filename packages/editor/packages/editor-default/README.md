@@ -54,7 +54,7 @@ Each loaded font change shows its name, credits and a 16×16 character grid for 
 After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of them, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
-Coarse-pointer devices load `touch-input` instead, supporting configurable touch panning and grid snapping
+Coarse-pointer devices load `touch-input` instead, supporting configurable touch panning
 without editing block positions. Taps remain available to controls.
 
 Touch panning uses one finger in both directions by default. Set `touchNavigation: { axis: 'horizontal' }`
@@ -74,6 +74,12 @@ immediately.
 The host controls the canvas's layout dimensions with CSS. The editor observes that rendered size and adapts its
 drawing buffer and UI automatically. Wheel input pans the editor and prevents page scrolling by default; embedded
 hosts can pass `captureWheel: false` to leave scrolling to the page.
+
+The default composition loads the elastic viewport plugin after the first render. Larger blocks lag more and settle
+later as the view pans, while layout and hit testing still use logical positions. The effect respects the browser's
+reduced-motion preference.
+The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
+markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
 
 Each mounted editor owns its compiler worker, compiled memory and code-buffer state, and lazy plugin installations.
 The session-persistence plugin uses its storage namespace. The default namespace is `editor`, which uses the

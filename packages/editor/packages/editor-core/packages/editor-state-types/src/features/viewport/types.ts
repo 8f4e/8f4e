@@ -15,19 +15,8 @@ export interface ProjectViewport {
 export interface Viewport {
 	width: number;
 	height: number;
-	roundedWidth: number;
-	roundedHeight: number;
 	vGrid: number;
 	hGrid: number;
 	x: number;
 	y: number;
-}
-
-export interface ViewportAnimation {
-	startX: number;
-	startY: number;
-	targetX: number;
-	targetY: number;
-	active: boolean;
-	startTime?: number;
 }

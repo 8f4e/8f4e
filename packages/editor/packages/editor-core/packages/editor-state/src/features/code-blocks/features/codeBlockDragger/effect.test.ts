@@ -63,7 +63,12 @@ describe('codeBlockDragger', () => {
 	});
 
 	describe('single block drag', () => {
-		it('drags the clicked block by default', () => {
+		it.each([
+			{ x: 0, y: 0 },
+			{ x: 3, y: 5 },
+		])('drags the clicked block and snaps it to the world grid at viewport ($x, $y)', ({ x, y }) => {
+			state.viewport.x = x;
+			state.viewport.y = y;
 			const block1 = createCodeBlockGraphicData({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
@@ -80,8 +85,8 @@ describe('codeBlockDragger', () => {
 
 			// Mousedown without Alt key
 			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
+				x: 50 - x,
+				y: 100 - y,
 				movementX: 0,
 				movementY: 0,
 				buttons: 1,
@@ -95,8 +100,8 @@ describe('codeBlockDragger', () => {
 
 			// Mousemove
 			pointermoveHandlers[0]({
-				x: 60,
-				y: 110,
+				x: 60 - x,
+				y: 110 - y,
 				movementX: 10,
 				movementY: 10,
 				buttons: 1,
@@ -116,6 +121,8 @@ describe('codeBlockDragger', () => {
 			expect(block1.gridY).toBe(6); // Math.round(110 / 20)
 			expect(block1.x).toBe(60); // 6 * 10
 			expect(block1.y).toBe(120); // 6 * 20
+			expect(block1.code).toContain('; @pos 6 6');
+			expect(state.viewport).toMatchObject({ x, y });
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		});
 	});

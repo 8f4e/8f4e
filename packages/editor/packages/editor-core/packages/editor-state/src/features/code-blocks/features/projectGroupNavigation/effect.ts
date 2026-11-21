@@ -1,7 +1,6 @@
 import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { findParentProjectLevel } from '../../../../pureHelpers/projectTree';
-import { stopViewportAnimation } from '../../../viewport/animateViewport';
 import getProjectViewportPosition from '../../../viewport/getProjectViewportPosition';
 import updateViewport from '../../../viewport/updateViewport';
 
@@ -18,7 +17,6 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 		if (project === current) return;
 		current.viewport = { x: state.viewport.x, y: state.viewport.y };
 		current.selectedBlock = state.codeBlockRendering.selectedCodeBlock;
-		stopViewportAnimation(state);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		store.set('codeBlockRendering.currentProject', project);

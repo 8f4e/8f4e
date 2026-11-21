@@ -1,7 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 
-const WHEEL_SCROLL_END_DELAY_MS = 120;
 const POINTER_EVENTS = {
 	mousedown: 'pointerdown',
 	mousemove: 'pointermove',
@@ -22,7 +21,6 @@ export function createMouseInputPlugin({
 			const state = store.getState();
 			let previousX = 0;
 			let previousY = 0;
-			let wheelScrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
 
 			function onMouseEvent(event: MouseEvent) {
 				if (event.type === 'mousedown') {
@@ -71,15 +69,6 @@ export function createMouseInputPlugin({
 					canvasHeight: inputTarget.clientHeight,
 					altKey: event.altKey,
 				} satisfies InternalPointerEvent);
-
-				if (wheelScrollEndTimeout) {
-					clearTimeout(wheelScrollEndTimeout);
-				}
-
-				wheelScrollEndTimeout = setTimeout(() => {
-					wheelScrollEndTimeout = undefined;
-					events.dispatch('viewportscrollend', { movementX, movementY });
-				}, WHEEL_SCROLL_END_DELAY_MS);
 			}
 
 			if (captureWheel) {
@@ -91,10 +80,6 @@ export function createMouseInputPlugin({
 			inputTarget.addEventListener('contextmenu', onMouseEvent);
 
 			return () => {
-				if (wheelScrollEndTimeout) {
-					clearTimeout(wheelScrollEndTimeout);
-				}
-
 				inputTarget.removeEventListener('wheel', onWheelEvent);
 				inputTarget.removeEventListener('mouseup', onMouseEvent);
 				inputTarget.removeEventListener('mousedown', onMouseEvent);

@@ -14,6 +14,18 @@ export interface RenderGeometry {
 	readonly blocksByCodeBlock: ReadonlyMap<CodeBlockGraphicData, RenderedCodeBlock>;
 }
 
+/** Resolve a block's visual translation in viewport pixels, or leave its position unchanged. */
+export type CodeBlockOffsetResolver = (
+	codeBlock: CodeBlockGraphicData
+) => Readonly<{ x: number; y: number }> | undefined;
+
+/** Prepare a frame's visual translations using the renderer's high-resolution timestamp in milliseconds. */
+export type CodeBlockPositionEffect = (
+	state: Readonly<State>,
+	frameTime: number,
+	suppressOffsets: boolean
+) => CodeBlockOffsetResolver | undefined;
+
 interface StoredBlockGeometry extends RenderedCodeBlock {
 	x: number;
 	y: number;
@@ -25,8 +37,7 @@ export function createRenderGeometry() {
 	const blocksByCodeBlock = new Map<CodeBlockGraphicData, StoredBlockGeometry>();
 	const geometry: RenderGeometry = { blocks, blocksByCodeBlock };
 	return {
-		prepare(state: State): RenderGeometry {
-			const { x, y } = state.viewport;
+		prepare(state: State, resolveOffset?: CodeBlockOffsetResolver, { x, y } = state.viewport): RenderGeometry {
 			const codeBlocks = state.codeBlockRendering.currentProject.blocks;
 			let orderChanged = blocks.length !== codeBlocks.length;
 			for (let i = 0; i < codeBlocks.length; i++) {
@@ -37,8 +48,13 @@ export function createRenderGeometry() {
 					renderedBlock = blocksByCodeBlock.get(codeBlock) ?? { codeBlock, x: 0, y: 0 };
 					blocks[i] = renderedBlock;
 				}
+				const offset = resolveOffset?.(codeBlock);
 				renderedBlock.x = codeBlock.x - x;
 				renderedBlock.y = codeBlock.y - y;
+				if (offset) {
+					renderedBlock.x += offset.x;
+					renderedBlock.y += offset.y;
+				}
 			}
 			if (orderChanged) {
 				blocks.length = codeBlocks.length;

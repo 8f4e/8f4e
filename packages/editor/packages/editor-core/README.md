@@ -10,7 +10,7 @@ that consume their events. Other platform renderers can replace web-ui.
 - Initialize the editor-state store and event dispatcher for the web runtime.
 - Make the canvas focusable for installed input plugins.
 - Pass the host-supplied renderer to web-ui with state and memory views, and forward resize events.
-- Own the single animation-frame loop, advancing viewport animation before asking web-ui to draw each frame.
+- Own the single animation-frame loop and pass its timestamp to web-ui.
 - Observe the canvas's CSS dimensions and adapt the drawing buffer and editor viewport when its host resizes it.
 - Expose state access, memory view updates, rendering lifecycle controls, and state machine callbacks as extension
   points.
@@ -24,8 +24,8 @@ Core installs no DOM mouse, wheel, touch, or keyboard listeners.
 Hosts can pause rendering without releasing memory through `pauseRendering()`. `releaseRenderingResources()` also
 releases reloadable GPU textures, dynamic buffers, and the canvas drawing buffer. `resumeRendering()` restores the
 resources and applies any canvas resize that happened while they were released.
-`renderFrame()` immediately advances viewport animation and renders the current state, including while the loop is
-paused. Core coordinates these steps; web-ui draws the supplied viewport without advancing navigation state.
+`renderFrame()` draws immediately, including while the loop is paused. Web-ui uses the timestamp to animate a visual
+camera toward the committed viewport; it does not update navigation state.
 
 The editor supports view and edit modes. `@8f4e/editor-plugin-selection-animation` supplies the continuously circling
 segment around selected code blocks in both modes.
@@ -171,6 +171,14 @@ visibility checks. Layout, source changes and hit testing continue to use the or
 registrations draw over earlier ones, including plugins installed asynchronously. There are no separate block
 background, content, foreground, or overlay stages. Registration returns an unregister function for plugin disposal.
 
+A presentation plugin can register `drawers.registerCodeBlockPositionEffect((state, frameTime, suppressOffsets) => resolveOffset)`.
+Web-ui calls the effect once per frame. The frame timestamp is in milliseconds. When `suppressOffsets` is true,
+the effect should reset any accumulated motion; web-ui ignores its offsets for that frame.
+Return a function that supplies a viewport-pixel `{ x, y }` translation for each block, or return `undefined`
+for a frame or block that needs no translation. Treat the supplied state and blocks as read-only. Web-ui applies
+the translation before drawing and visibility checks; original block positions and input hit areas do not change.
+Only the latest registration is active, and its disposer removes it without restoring a previous effect.
+
 Install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
@@ -191,23 +199,24 @@ source line, a message, and the target block identity or project-group scope. Co
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
 
 Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
-Callbacks receive `{ draw, state, memoryViews, renderGeometry }` above the procedural background and independently
+Callbacks receive `{ draw, state, viewport, memoryViews, renderGeometry }` above the procedural background and independently
 of `canvasOverlays`. `renderGeometry.blocks` contains the ordered rendered blocks for the current project, including
 offscreen blocks; `renderGeometry.blocksByCodeBlock` indexes them by the original editor-state object. All drawing
 stages share the prepared geometry for the current frame. Web-ui reuses those objects and collections between frames;
 consumers must not retain them or read them after the drawing pass. Keep presentation positions out of editor-state and use
-the rendered block objects for drawing anchored decorations and cross-block connections.
+the rendered block objects for drawing attached decorations and cross-block connections. Use the frame's `viewport`
+for other world-to-canvas projections; `state.viewport` is the logical viewport used by editor input and layout.
 `@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
 world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
 Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
-bounds. Bounds update after layout, project, grid, and viewport changes. These semantics work without a drawing plugin.
+bounds. Bounds update after changes to world layout, projects, or grid dimensions. These semantics work without a drawing plugin.
 
 Register ordinary viewport-coordinate drawing with `drawers.registerCanvasDrawer(drawer)`. Callbacks receive
-`{ draw, state, memoryViews, renderGeometry }` after code blocks and before overlays, independently of `canvasOverlays`.
+`{ draw, state, viewport, memoryViews, renderGeometry }` after code blocks and before overlays, independently of `canvasOverlays`.
 Shared canvas drawing types are `CanvasDrawer` and `CanvasDrawerContext`.
 
 Register viewport overlays with `drawers.registerCanvasOverlay(drawer)`. The drawer receives
-`{ draw, state, memoryViews, renderGeometry }` after ordinary canvas drawers and before modal overlays, with
+`{ draw, state, viewport, memoryViews, renderGeometry }` after ordinary canvas drawers and before modal overlays, with
 coordinates relative to the viewport's top-left.
 The renderer checks `featureFlags.canvasOverlays` before invoking this stage. Keyboard hints live in their
 mode-switching plugin; screenshot capture hides canvas overlays through this generic flag.

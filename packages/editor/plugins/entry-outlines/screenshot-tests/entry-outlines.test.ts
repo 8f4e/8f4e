@@ -1,6 +1,6 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -65,7 +65,6 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 			const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
 			editor.navigation.openGroup(getEditorBlockId(group));
 		}
-		stopViewportAnimation(editor.state);
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
 		editor.renderFrame();

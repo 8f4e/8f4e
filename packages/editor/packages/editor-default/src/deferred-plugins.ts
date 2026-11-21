@@ -30,6 +30,21 @@ export function createDeferredEditorPlugin(
 				import('@8f4e/editor-plugin-offscreen-block-arrows').then(module => module.offscreenBlockArrowsPlugin),
 		},
 		{
+			id: 'elastic-viewport',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-elastic-viewport').then(module =>
+					module.createElasticViewportPlugin({ prefersReducedMotion: options.prefersReducedMotion })
+				),
+		},
+		{
+			id: 'coordinate-grid',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-coordinate-grid').then(module => module.coordinateGridPlugin),
+		},
+		{
 			id: 'entry-outlines',
 			scope: 'view',
 			matches: () => true,

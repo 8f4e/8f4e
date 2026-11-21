@@ -14,11 +14,12 @@ function setup() {
 	const store = createStateManager(state);
 	const dispose = entryOutlinesPlugin.setup({ drawers, store } as unknown as EditorPluginContext);
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
-	const render = () => {
+	const render = (viewport = state.viewport) => {
 		for (const method of Object.values(draw)) method.mockClear();
 		drawers.drawCanvasBackground({
 			draw: draw as unknown as DrawContext,
 			state,
+			viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
@@ -35,11 +36,9 @@ function setup() {
 	};
 }
 
-it('draws borders and labels from core entry bounds in world coordinates', () => {
+it('projects world bounds into the presented viewport', () => {
 	const test = setup();
-	test.state.viewport.x = 24;
-	test.state.viewport.y = 32;
-	test.render();
+	test.render({ ...test.state.viewport, x: 24, y: 32 });
 	expect(test.draw.startGroup).toHaveBeenCalledExactlyOnceWith(-24, -32);
 	expect(test.draw.drawFill.mock.calls).toEqual([
 		[16, 64, PALETTE_INDICES.strokeBase, 224, 1],

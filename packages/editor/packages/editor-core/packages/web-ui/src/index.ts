@@ -1,5 +1,11 @@
 import { toPaletteBytes } from '@8f4e/editor-palette';
-import type { EditorLoadingRegistry, EventDispatcher, State } from '@8f4e/editor-state-types';
+import {
+	type EditorLoadingRegistry,
+	type EventDispatcher,
+	INPUT_LAYERS,
+	type InternalPointerEvent,
+	type State,
+} from '@8f4e/editor-state-types';
 import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import type { Engine } from 'glugglugglug';
@@ -12,6 +18,7 @@ import BackgroundRenderer from './plugins/background';
 import { createRenderGeometry } from './render-geometry';
 import type { RenderLayerFrameContext } from './render-layers';
 import type { MemoryViews } from './types';
+import { createViewportTransition } from './viewport-transition';
 
 export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
 export { registerWebUiConfig } from './config';
@@ -26,7 +33,12 @@ export type {
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
-export type { RenderedCodeBlock, RenderGeometry } from './render-geometry';
+export type {
+	CodeBlockOffsetResolver,
+	CodeBlockPositionEffect,
+	RenderedCodeBlock,
+	RenderGeometry,
+} from './render-geometry';
 export type {
 	EditorRenderLayer,
 	RenderLayerContext,
@@ -53,6 +65,8 @@ export interface WebUiOptions {
 	defaultFont?: Font;
 	/** Startup project preparation may run alongside the initial font download. */
 	initialProjectReady?: Promise<void>;
+	/** Read the host's live motion preference without creating browser listeners in web-ui. */
+	prefersReducedMotion?: () => boolean;
 	drawers?: EditorDrawerHost;
 	onRenderStats?: (stats: RenderStats) => void;
 	renderStatsIntervalFrames?: number;
@@ -108,7 +122,10 @@ async function mount(
 	engine.hooks.preDraw.push(() => {
 		frameStartedAt = performance.now();
 	});
-	const background = new BackgroundRenderer(engine);
+	const viewportTransition = createViewportTransition(state.viewport);
+	const presentedViewport = { ...state.viewport };
+	const prefersReducedMotion = options.prefersReducedMotion ?? (() => false);
+	const background = new BackgroundRenderer(engine, () => presentedViewport);
 	const draw = new DrawContext(engine, fontAtlas.grid.cellWidth);
 	const paletteBytes = toPaletteBytes(palette);
 	engine.setPalette(paletteBytes);
@@ -135,6 +152,16 @@ async function mount(
 		background.destroy();
 		throw error;
 	}
+	const { onViewportChanged, reset: resetViewportTransition } = viewportTransition;
+	const guardPointerPress = (event: InternalPointerEvent) => {
+		if (viewportTransition.isTransitioning() && !prefersReducedMotion()) event.stopPropagation = true;
+	};
+	const inputGate = { capture: true, layer: INPUT_LAYERS.modalOverlay + 1 };
+	events.on('viewportChanged', onViewportChanged);
+	store.subscribe('codeBlockRendering.currentProject', resetViewportTransition);
+	events.on('gridSizeChanged', resetViewportTransition);
+	events.on('pointerdown', guardPointerPress, inputGate);
+	events.on('contextmenu', guardPointerPress, inputGate);
 	const unsubscribeAppearance = subscribeToAppearance(
 		store,
 		events,
@@ -191,10 +218,11 @@ async function mount(
 	engine.hooks.postDraw.push(renderStatsHook);
 
 	const geometry = createRenderGeometry();
-	const drawFrame = () => {
-		const renderGeometry = geometry.prepare(state);
+	const drawFrame = (frameTime: number, suppressBlockOffsets: boolean) => {
+		const offsets = drawers.prepareCodeBlockOffsets(state, frameTime, suppressBlockOffsets);
+		const renderGeometry = geometry.prepare(state, offsets, presentedViewport);
 		layerFrame = { state, memoryViews, renderGeometry };
-		const canvasFrame = { draw, state, memoryViews, renderGeometry };
+		const canvasFrame = { draw, state, viewport: presentedViewport, memoryViews, renderGeometry };
 		drawers.drawCanvasBackground(canvasFrame);
 		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
 		drawers.drawCanvas(canvasFrame);
@@ -240,11 +268,20 @@ async function mount(
 		},
 		releaseRenderingResources,
 		resetRenderStats,
-		renderFrame: () => {
+		renderFrame: (frameTime = performance.now()) => {
 			restoreRenderingResources();
-			engine.renderFrame(drawFrame);
+			const camera = viewportTransition.sample(state.viewport, frameTime, prefersReducedMotion());
+			Object.assign(presentedViewport, state.viewport);
+			presentedViewport.x = camera.x;
+			presentedViewport.y = camera.y;
+			engine.renderFrame(() => drawFrame(frameTime, camera.suppressBlockOffsets));
 		},
 		destroy: () => {
+			events.off('viewportChanged', onViewportChanged);
+			store.unsubscribe('codeBlockRendering.currentProject', resetViewportTransition);
+			events.off('gridSizeChanged', resetViewportTransition);
+			events.off('pointerdown', guardPointerPress);
+			events.off('contextmenu', guardPointerPress);
 			unsubscribeAppearance();
 			try {
 				renderLayers.destroy();

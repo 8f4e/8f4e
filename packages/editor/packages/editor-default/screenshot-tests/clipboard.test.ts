@@ -83,6 +83,9 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
 	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	await expect
+		.poll(() => state.loadingIndicators.find(item => item.id === 'plugin:coordinate-grid')?.status)
+		.toBe('done');
 	context.store.set('loadingIndicators', []);
 	editor.renderFrame();
 	await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/text-pasted.viewport.snap');

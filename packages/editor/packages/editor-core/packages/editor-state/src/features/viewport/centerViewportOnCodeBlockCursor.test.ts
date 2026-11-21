@@ -9,8 +9,6 @@ describe('centerViewportOnCodeBlockCursor', () => {
 			y: 0,
 			width: 800,
 			height: 600,
-			roundedWidth: 800,
-			roundedHeight: 600,
 			vGrid: 8,
 			hGrid: 16,
 		};

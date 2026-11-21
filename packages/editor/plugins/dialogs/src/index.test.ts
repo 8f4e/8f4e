@@ -43,6 +43,7 @@ function setup(initialDialog?: DialogContent) {
 		drawers.drawModalOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
+			viewport: state.viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});

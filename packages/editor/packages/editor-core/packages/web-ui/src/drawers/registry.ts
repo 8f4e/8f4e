@@ -1,6 +1,6 @@
 import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
-import type { RenderedCodeBlock, RenderGeometry } from '../render-geometry';
+import type { CodeBlockPositionEffect, RenderedCodeBlock, RenderGeometry } from '../render-geometry';
 import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
 import type { MemoryViews } from '../types';
 
@@ -21,6 +21,8 @@ export interface CanvasDrawerContext {
 	/** Drawing coordinates are relative to the viewport's top-left corner. */
 	draw: DrawContext;
 	state: State;
+	/** The world origin and metrics used for this frame's drawing. Do not retain across frames. */
+	viewport: Readonly<State['viewport']>;
 	memoryViews: MemoryViews;
 	renderGeometry: RenderGeometry;
 }
@@ -29,6 +31,8 @@ export type CanvasDrawer = (context: CanvasDrawerContext) => void;
 
 /** Registrations exposed to editor plugins. */
 export interface EditorDrawerRegistry {
+	/** Replace the presentation-only block position effect. Disposal clears only this registration. */
+	registerCodeBlockPositionEffect: (effect: CodeBlockPositionEffect) => () => void;
 	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
 	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
 	/** Draw inside each visible block, in registration order. */
@@ -53,6 +57,11 @@ export interface EditorDrawerRegistry {
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
 export interface EditorDrawerHost extends EditorDrawerRegistry {
+	prepareCodeBlockOffsets: (
+		state: Parameters<CodeBlockPositionEffect>[0],
+		frameTime: number,
+		suppressOffsets?: boolean
+	) => ReturnType<CodeBlockPositionEffect>;
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
 	drawCodeBlock: CodeBlockDrawer;
 	drawOffscreenCodeBlock: OffscreenCodeBlockDrawer;
@@ -81,6 +90,7 @@ function createOrderedDrawerRegistry<Context>() {
 
 export function createEditorDrawerRegistry(): EditorDrawerHost {
 	let offscreenDrawer: OffscreenCodeBlockDrawer | undefined;
+	let positionEffect: { effect: CodeBlockPositionEffect } | undefined;
 	const blockDrawers = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
 	const textBackgrounds = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
 	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
@@ -90,6 +100,17 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 	const modalOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	return {
 		...createRenderLayerRegistry(),
+		registerCodeBlockPositionEffect: effect => {
+			const registration = { effect };
+			positionEffect = registration;
+			return () => {
+				if (positionEffect === registration) positionEffect = undefined;
+			};
+		},
+		prepareCodeBlockOffsets: (state, frameTime, suppressOffsets = false) => {
+			const offsets = positionEffect?.effect(state, frameTime, suppressOffsets);
+			return suppressOffsets ? undefined : offsets;
+		},
 		registerCodeBlockDrawer: blockDrawers.register,
 		registerCodeBlockTextBackgroundDrawer: textBackgrounds.register,
 		drawCodeBlockTextBackgrounds: textBackgrounds.draw,

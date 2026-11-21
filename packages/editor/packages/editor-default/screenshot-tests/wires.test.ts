@@ -7,11 +7,14 @@ import initEditor, {
 } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
+import { coordinateGridPlugin } from '@8f4e/editor-plugin-coordinate-grid';
+import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { wiresPlugin } from '@8f4e/editor-plugin-wires';
 import { gapCalculator } from '@8f4e/editor-state';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
 constants env
@@ -90,7 +93,18 @@ async function setup(text = source, plugins: readonly EditorPlugin[] = [connecto
 		editor.renderFrame();
 	};
 	render();
-	return { editor, canvas, render, events: editorEvents!, context, memory, project, compiled, gl: renderer.gl };
+	return {
+		editor,
+		canvas,
+		render,
+		events: editorEvents!,
+		context,
+		memory,
+		project,
+		compiled,
+		gl: renderer.gl,
+		renderer,
+	};
 }
 
 function registerSourceText(context: EditorPluginContext) {
@@ -153,6 +167,155 @@ test('renders connectors and wires through the editor and restores them after GP
 	editor.resize(800, 400);
 	render();
 	await expect(canvas).toMatchScreenshot('connector-wires');
+});
+
+test('elastic panning keeps wires attached while grid markers and hit targets follow the viewport', async () => {
+	const extraRows = Array.from({ length: 24 }, (_, index) => `float gain${index} 0`).join('\n');
+	const { editor, canvas, gl, context, events, renderer } = await setup(
+		`8f4e/v1
+constants env
+; @pos 100 100
+constantsEnd
+entry main
+module oscillator
+; @pos 10 3
+float output 0.5
+moduleEnd
+
+module replicator
+; @pos 10 12
+float output 0.5
+moduleEnd
+module amplifier
+; @pos 48 3
+float* input &oscillator:output
+${extraRows}
+moduleEnd
+entryEnd`,
+		[
+			coordinateGridPlugin,
+			connectorsPlugin,
+			wiresPlugin,
+			createElasticViewportPlugin({ prefersReducedMotion: () => false }),
+		]
+	);
+	const { state } = editor;
+	// Keep the world origin visible both before and after the pan.
+	state.viewport.x = -64;
+	state.viewport.y = -32;
+	const initialViewportX = state.viewport.x;
+	const blocks = state.codeBlockRendering.currentProject.blocks;
+	const output = blocks.find(block => block.name === 'oscillator')!;
+	const replica = blocks.find(block => block.name === 'replicator')!;
+	const input = blocks.find(block => block.name === 'amplifier')!;
+	expect(replica).toMatchObject({ width: output.width, height: output.height });
+	const outputWorldX = output.x;
+	const inputWorldX = input.x;
+	let presentedOutputX = 0;
+	let presentedInputX = 0;
+	let presentedReplicaX = 0;
+	cleanups.push(
+		context.drawers.registerCanvasDrawer(({ renderGeometry }) => {
+			presentedOutputX = renderGeometry.blocksByCodeBlock.get(output)!.x;
+			presentedInputX = renderGeometry.blocksByCodeBlock.get(input)!.x;
+			presentedReplicaX = renderGeometry.blocksByCodeBlock.get(replica)!.x;
+		})
+	);
+	const start = performance.now() + 200;
+	const clock = vi.spyOn(performance, 'now');
+	const upload = vi.spyOn(gl, 'bufferSubData');
+	const sprites = vi.spyOn(renderer, 'drawSprite');
+	cleanups.push(() => {
+		clock.mockRestore();
+		upload.mockRestore();
+		sprites.mockRestore();
+	});
+	const marker = () =>
+		sprites.mock.calls
+			.find(([, , , color, width, height]) => color === PALETTE_INDICES.mutedBase && width === 3 && height === 3)
+			?.slice(0, 2);
+	const frame = (elapsed: number) => {
+		clock.mockReturnValue(start + elapsed);
+		upload.mockClear();
+		sprites.mockClear();
+		editor.renderFrame();
+		// Wires run after sprites. The first four floats are the line's two pixel endpoints.
+		const bytes = upload.mock.calls.at(-1)?.[2] as Uint8Array;
+		const data = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+		return [data.getFloat32(0, true), data.getFloat32(4, true), data.getFloat32(8, true), data.getFloat32(12, true)];
+	};
+	const [inputWireX, inputWireY, outputWireX, outputWireY] = frame(0);
+	expect(marker()).toEqual([63, 31]);
+	const initialOutputX = presentedOutputX;
+	const initialInputX = presentedInputX;
+	const pointer: InternalPointerEvent = {
+		x: 0,
+		y: 0,
+		movementX: -40,
+		movementY: 0,
+		buttons: 1,
+		altKey: false,
+		stopPropagation: false,
+		canvasWidth: canvas.width,
+		canvasHeight: canvas.height,
+	};
+	events.dispatch('pointermove', pointer);
+	expect(state.viewport.x).toBe(initialViewportX + 40);
+	const logicalOutputX = outputWorldX - state.viewport.x;
+	const logicalInputX = inputWorldX - state.viewport.x;
+	const logicalReplicaX = replica.x - state.viewport.x;
+	const expectWireAtPresentedPositions = (wire: number[]) => {
+		expect(wire).toEqual([
+			inputWireX + presentedInputX - initialInputX,
+			inputWireY,
+			outputWireX + presentedOutputX - initialOutputX,
+			outputWireY,
+		]);
+	};
+	const first = frame(16);
+	expect(marker()).toEqual([23, 31]);
+	const firstOutputLag = presentedOutputX - logicalOutputX;
+	const firstInputLag = presentedInputX - logicalInputX;
+	// Both sizes move immediately, and their responses differ from the very first pan frame.
+	expect(firstOutputLag).toBeGreaterThan(0);
+	expect(firstInputLag).toBeGreaterThan(firstOutputLag);
+	expect(firstInputLag).toBeLessThan(40);
+	expect(presentedReplicaX - logicalReplicaX).toBe(firstOutputLag);
+	expectWireAtPresentedPositions(first);
+
+	const mid = frame(80);
+	expect(marker()).toEqual([23, 31]);
+	const outputLag = presentedOutputX - logicalOutputX;
+	const inputLag = presentedInputX - logicalInputX;
+	expect(outputLag).toBeGreaterThan(1);
+	expect(inputLag).toBeGreaterThan(outputLag);
+	expectWireAtPresentedPositions(mid);
+
+	const hit = vi.fn();
+	events.on('codeBlockPointerDown', hit, { capture: true });
+	const y = output.y - state.viewport.y + 4;
+	// Probe both a logical-only pixel and a rendered-only pixel without committing a selection or drag.
+	events.dispatch('pointerdown', { ...pointer, x: logicalOutputX + 1, y }, { phase: 'capture' });
+	expect(hit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ codeBlock: output }));
+	hit.mockClear();
+	events.dispatch('pointerdown', { ...pointer, x: logicalOutputX + output.width + 1, y }, { phase: 'capture' });
+	expect(hit).not.toHaveBeenCalled();
+	events.off('codeBlockPointerDown', hit);
+
+	let didOvershoot = false;
+	let last = mid;
+	for (let elapsed = 96; elapsed <= 1000; elapsed += 16) {
+		last = frame(elapsed);
+		didOvershoot ||= presentedOutputX < logicalOutputX;
+	}
+	expect(didOvershoot).toBe(true);
+	expect([presentedOutputX, presentedInputX, presentedReplicaX]).toEqual([
+		logicalOutputX,
+		logicalInputX,
+		logicalReplicaX,
+	]);
+	expect(last).toEqual([inputWireX - 40, inputWireY, outputWireX - 40, outputWireY]);
+	expect([output.x, input.x, state.viewport.x]).toEqual([outputWorldX, inputWorldX, initialViewportX + 40]);
 });
 
 test('renders a wire crossing the viewport when both connected blocks are offscreen', async () => {

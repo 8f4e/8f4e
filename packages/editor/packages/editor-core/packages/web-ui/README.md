@@ -13,7 +13,8 @@ depth testing must use a framebuffer with their own depth attachment.
 ## Rendering plugins
 
 Web-ui owns the procedural background under `src/plugins/background`. It precomposes dot colors over the base
-when the palette changes and draws one triangle before sprites. Glugglugglug owns sprite rendering.
+when the palette changes and draws one triangle before sprites. The shader's dot pattern follows the same presented
+camera as the scene, without any of the presentation offsets applied to individual blocks. Glugglugglug owns sprite rendering.
 
 Canvas-wide editor layers run after sprites in registration order and before render statistics are sampled.
 Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal.
@@ -110,6 +111,8 @@ The ordered `blocks` array and `blocksByCodeBlock` map reference the same object
 receive this shared geometry so cross-block drawing can use the presented position of each endpoint. Consume it as read-only
 during drawing, without retaining the geometry or individual records across frames: web-ui reuses this storage and updates the
 positions before the next frame. Editor-state remains the owner of logical block positions and hit testing.
+The drawer registry can prepare one optional position effect per frame. Its per-block viewport-pixel translations
+are added when building shared geometry, before visibility checks or any drawing stage consumes the positions.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
 The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
 the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
@@ -127,13 +130,11 @@ Connectors and other plugins use the same registry. Registration order determine
 there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
 Without a background plugin, web-ui draws no block surface.
 
-Editor-state stores viewport animation targets and exposes the synchronous
-`advanceViewportAnimation(state, frameTime, events)` helper. Editor-core calls it before web-ui's `renderFrame()`
-from both its scheduled and on-demand frame paths. Each step updates the shared viewport
-through `updateViewport()` and emits `viewportChanged` events, so blocks enter and leave the
-visible area throughout the pan. Web-ui's draw path uses those supplied coordinates without advancing the animation.
-Hosts for other platforms advance animations with their own frame clock. Editor-state needs no frame scheduler or
-cancellation callbacks; web-ui owns no frame loop or pause/resume controls.
+Editor-state commits navigation immediately and emits a single navigation-tagged `viewportChanged`. Web-ui samples a
+200 ms visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`. It projects
+blocks, culling, the shader background, and canvas drawers from this same camera. Canvas drawers receive its frame-scoped
+`viewport`; layout and hit testing keep using `state.viewport`. The glide suppresses separate block offsets and new pointer
+presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
@@ -147,8 +148,8 @@ uses their character codes directly, without validation or Unicode mapping. All 
 palette indices. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
-`gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry and viewport anchors without
-knowing about fonts or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
+`gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry without knowing about fonts
+or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
 Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
 The startup rendering sequence and initial font readiness remain unchanged.

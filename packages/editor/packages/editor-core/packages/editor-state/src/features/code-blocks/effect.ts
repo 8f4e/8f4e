@@ -12,7 +12,6 @@ import { isRestoringProjectEdit } from '../project-changes';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
-import { stopViewportAnimation } from '../viewport/animateViewport';
 import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
 import updateViewport from '../viewport/updateViewport';
 import { createLayoutCoordinator } from './layout/coordinator';
@@ -120,7 +119,6 @@ export default function codeBlockRendering(
 		);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
-		stopViewportAnimation(state);
 		coordinator.reset(rootProject);
 		store.set('codeBlockRendering.rootProject', rootProject);
 		store.set('codeBlockRendering.currentProject', currentProject);
@@ -151,5 +149,4 @@ export default function codeBlockRendering(
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlockSource);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
-	return coordinator.dispose;
 }

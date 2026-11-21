@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { snapToGrid, stopViewportAnimation, updateViewport } from '@8f4e/editor-state';
+import { updateViewport } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 
 const DRAG_THRESHOLD = 6;
@@ -63,13 +63,6 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 			const resetGesture = () => {
 				gesture = undefined;
 			};
-			const finishGesture = () => {
-				if (gesture?.dragging && state.featureFlags.viewportDragging) {
-					const { x, y } = snapToGrid(state);
-					updateViewport(state, horizontal ? x : state.viewport.x, vertical ? y : state.viewport.y, events);
-				}
-				resetGesture();
-			};
 			const syncTouchAction = () => {
 				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? TOUCH_ACTION[axis] : originalTouchAction;
 				if (!state.featureFlags.viewportDragging) resetGesture();
@@ -77,7 +70,7 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 			const onTouchStart = (event: TouchEvent) => {
 				if (event.defaultPrevented) return;
 				releasePointer('pointercancel');
-				finishGesture();
+				resetGesture();
 				if (event.touches.length !== 1) return;
 				const touch = event.touches[0];
 				const pointer = toPointerEvent(touch, event);
@@ -85,12 +78,10 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 				events.dispatch('pointerdown', pointer, { phase: 'capture' });
 				if (pointer.stopPropagation) {
 					claimedPointer = { identifier: touch.identifier, event: pointer };
-					stopViewportAnimation(state);
 					event.preventDefault();
 					return;
 				}
 				if (!state.featureFlags.viewportDragging) return;
-				stopViewportAnimation(state);
 				gesture = {
 					startX: touch.clientX,
 					startY: touch.clientY,
@@ -114,7 +105,7 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 				}
 				if (!gesture) return;
 				if (event.touches.length !== 1 || event.defaultPrevented || !state.featureFlags.viewportDragging) {
-					finishGesture();
+					resetGesture();
 					return;
 				}
 				const touch = event.touches[0];
@@ -136,18 +127,19 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 					state,
 					gesture.startViewportX - (horizontal ? deltaX : 0),
 					gesture.startViewportY - (vertical ? deltaY : 0),
-					events
+					events,
+					'pan'
 				);
 			};
 			const onTouchEnd = (event: TouchEvent) => {
 				// Unclaimed taps retain native tap handling; completed gestures must not click twice.
 				if (gesture?.dragging || claimedPointer) event.preventDefault();
 				releasePointer();
-				finishGesture();
+				resetGesture();
 			};
 			const onTouchCancel = () => {
 				releasePointer('pointercancel');
-				finishGesture();
+				resetGesture();
 			};
 			const onLoadProject = () => {
 				releasePointer('pointercancel');

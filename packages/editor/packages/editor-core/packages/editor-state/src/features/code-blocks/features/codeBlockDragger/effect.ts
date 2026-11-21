@@ -5,7 +5,6 @@ import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import { applyCodeBlockSourceEdits } from '../../sourceEdits';
 import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import upsertPos from '../directives/pos/upsert';
-import { worldPositionToAnchoredPos } from '../directives/viewport/resolve';
 
 /** Plugins may replace targets synchronously before core starts moving and snapping them. */
 export interface ResolveCodeBlockDragTargetsEvent {
@@ -105,39 +104,10 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 
 		// Snap all blocks in drag set to grid using the same pixel delta
 		for (const block of dragSet) {
-			block.x += deltaX;
-			block.y += deltaY;
-
-			let gridX: number;
-			let gridY: number;
-
-			if (block.viewportAnchor) {
-				// Viewport-anchored: convert dragged world-space position back to anchored @pos offset coordinates.
-				// x/y pixel position is not snapped here; it will be recomputed by updateGraphics() using the
-				// updated gridX/gridY anchored offsets after the code edit triggers a re-render.
-				const anchored = worldPositionToAnchoredPos({
-					anchor: block.viewportAnchor,
-					worldX: block.x,
-					worldY: block.y,
-					viewportX: state.viewport.x,
-					viewportY: state.viewport.y,
-					viewportWidth: state.viewport.roundedWidth,
-					viewportHeight: state.viewport.roundedHeight,
-					blockWidth: block.width,
-					blockHeight: block.height,
-					vGrid,
-					hGrid,
-				});
-				gridX = anchored.gridX;
-				gridY = anchored.gridY;
-			} else {
-				// World-space: snap pixel position to the grid and derive grid coordinates.
-				gridX = Math.round(block.x / vGrid);
-				gridY = Math.round(block.y / hGrid);
-				block.x = gridX * vGrid;
-				block.y = gridY * hGrid;
-			}
-
+			const gridX = Math.round((block.x + deltaX) / vGrid);
+			const gridY = Math.round((block.y + deltaY) / hGrid);
+			block.x = gridX * vGrid;
+			block.y = gridY * hGrid;
 			block.gridX = gridX;
 			block.gridY = gridY;
 			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });

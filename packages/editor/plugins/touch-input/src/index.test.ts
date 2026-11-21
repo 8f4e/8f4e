@@ -17,7 +17,7 @@ describe('touch viewport navigation', () => {
 		test.touch('touchstart', [finger(100, 100)]);
 		expect(test.touch('touchmove', [finger(130, 105)]).defaultPrevented).toBe(true);
 		test.touch('touchend');
-		expect(test.state.viewport).toMatchObject({ x: -32, y: 3 });
+		expect(test.state.viewport).toMatchObject({ x: -30, y: 3 });
 	});
 
 	it('keeps horizontal swipes native in vertical mode', () => {
@@ -30,7 +30,7 @@ describe('touch viewport navigation', () => {
 		test.touch('touchstart', [finger(100, 100)]);
 		expect(test.touch('touchmove', [finger(105, 130)]).defaultPrevented).toBe(true);
 		test.touch('touchend');
-		expect(test.state.viewport).toMatchObject({ x: 3, y: -32 });
+		expect(test.state.viewport).toMatchObject({ x: 3, y: -30 });
 	});
 
 	it('pans with exactly one finger and ignores multiple fingers', () => {
@@ -54,9 +54,9 @@ describe('touch viewport navigation', () => {
 		test.touch('touchstart', point(100, 100));
 		expect(test.touch('touchmove', point(130, 118)).defaultPrevented).toBe(true);
 		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
-		expect(test.changed).toHaveBeenCalledWith(expect.objectContaining({ previousX: 0, previousY: 0, x: -30, y: -18 }));
+		expect(test.changed).toHaveBeenCalledWith({ previousX: 0, previousY: 0, x: -30, y: -18, source: 'pan' });
 		expect(test.touch('touchend').defaultPrevented).toBe(true);
-		expect(test.state.viewport).toMatchObject({ x: -32, y: -16 });
+		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 		expect(serializeToProject(test.state)).toEqual(source);
 		expect(test.state.projectChange.revision).toBe(revision);
 	});
@@ -76,21 +76,14 @@ describe('touch viewport navigation', () => {
 		expect(test.state.viewport.x).toBe(-10);
 	});
 
-	it('stops an active viewport animation when touch takes over', () => {
-		const test = setup();
-		test.state.viewportAnimation.active = true;
-		test.touch('touchstart', point(100, 100));
-		expect(test.state.viewportAnimation.active).toBe(false);
-	});
-
-	it('ends cancelled gestures and ignores subsequent movement', () => {
+	it('keeps the last position when cancelled and ignores subsequent movement', () => {
 		const test = setup();
 		test.touch('touchstart', point(100, 100));
 		test.touch('touchmove', point(130, 118));
 		test.touch('touchcancel');
-		const { x, y } = test.state.viewport;
+		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 		test.touch('touchmove', point(180, 180));
-		expect(test.state.viewport).toMatchObject({ x, y });
+		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 	});
 
 	it('does not resume a gesture after a second finger is removed', () => {
@@ -98,10 +91,10 @@ describe('touch viewport navigation', () => {
 		test.touch('touchstart', point(100, 100));
 		test.touch('touchmove', point(130, 118));
 		test.touch('touchstart', [finger(130, 118), finger(200, 200)]);
-		const { x, y } = test.state.viewport;
+		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 		test.touch('touchend', point(130, 118));
 		test.touch('touchmove', point(180, 180));
-		expect(test.state.viewport).toMatchObject({ x, y });
+		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 	});
 
 	it('respects viewport dragging changes and restores browser touch behavior', () => {

@@ -19,8 +19,8 @@ const plugin = createTouchInputPlugin({
 Panning uses one finger. `axis` accepts `'both'`, `'horizontal'`, or `'vertical'` and defaults to `'both'`.
 Use horizontal panning to leave vertical swipes available for native page scrolling.
 
-A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger position and snaps only the enabled
-axes to the editor grid when finished. Adding another finger ends the gesture; removing it does not resume panning.
+A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger along the enabled axes and keeps
+the viewport where the gesture ends. Adding another finger ends the gesture; removing it does not resume panning.
 Axis-restricted gestures yield to page scrolling when the initial movement is primarily in the disabled direction;
 `touch-action: pan-y` or `pan-x` permits that native scrolling. Panning on both axes uses `touch-action: none`.
 Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable

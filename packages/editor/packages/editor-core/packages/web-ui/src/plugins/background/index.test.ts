@@ -77,6 +77,7 @@ describe('procedural background', () => {
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
 		draw();
 		expect(gl.drawArrays).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3);
+		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 0, 0);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 321 / 16, 197 / 16);
 		expect(gl.uniform4fv).toHaveBeenCalledWith(
 			{ name: 'u_dotBounds' },
@@ -90,6 +91,27 @@ describe('procedural background', () => {
 		draw();
 		expect(gl.viewport).toHaveBeenLastCalledWith(0, 0, 800, 601);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 80, 601 / 8);
+		background.destroy();
+	});
+
+	it('reads the current viewport on every draw and wraps over a complete alternating pattern', () => {
+		const { host, gl, draw } = createHost();
+		let origin = { x: 9, y: 3 };
+		const background = new BackgroundRenderer(host, () => origin);
+		background.setFont('ibmvga8x16', grid);
+		background.setPalette(palette([20, 30, 40, 255], [99, 99, 99, 255], [58, 58, 58, 255]));
+		draw();
+		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
+
+		origin = { x: -1_000_000_000_009, y: 1_000_000_000_019 };
+		gl.uniform2f.mockClear();
+		draw();
+		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 16, 3 / 16);
+
+		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
+		gl.uniform2f.mockClear();
+		draw();
+		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 10, 3 / 8);
 		background.destroy();
 	});
 

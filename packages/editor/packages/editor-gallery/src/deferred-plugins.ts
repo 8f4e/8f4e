@@ -38,11 +38,26 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-block-authoring').then(module => module.blockAuthoringPlugin),
 		},
 		{
+			id: 'elastic-viewport',
+			scope: 'view',
+			matches: () => true,
+			load: () =>
+				import('@8f4e/editor-plugin-elastic-viewport').then(module =>
+					module.createElasticViewportPlugin({ prefersReducedMotion })
+				),
+		},
+		{
 			id: 'offscreen-block-arrows',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
 				import('@8f4e/editor-plugin-offscreen-block-arrows').then(module => module.offscreenBlockArrowsPlugin),
+		},
+		{
+			id: 'coordinate-grid',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-coordinate-grid').then(module => module.coordinateGridPlugin),
 		},
 		{
 			id: 'entry-outlines',

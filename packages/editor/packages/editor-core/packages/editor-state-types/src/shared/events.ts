@@ -16,8 +16,8 @@ export interface EditorLifecycleEvents {
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
 	memoryValuesChanged: void;
-	viewportResized: void;
-	viewportChanged: { previousX: number; previousY: number; x: number; y: number };
+	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
+	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };
 }
 
 export type EditorEventPayload<Name extends string, Payload = unknown> = Name extends keyof EditorLifecycleEvents
