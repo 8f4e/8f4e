@@ -1,6 +1,6 @@
 # Loose wires plugin
 
-Install `looseWiresPlugin` from `@8f4e/editor-plugin-loose-wires` in place of the straight wire plugin. The gallery
+Install `createLooseWiresPlugin()` from `@8f4e/editor-plugin-loose-wires` in place of the straight wire plugin. The gallery
 editor loads it after the first render. It resolves its own connections from compiler metadata and live memory and
 does not depend on the straight wire or connector sprite plugins. Endpoints follow the blocks' rendered positions,
 including when blocks are offscreen.

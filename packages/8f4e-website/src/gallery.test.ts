@@ -164,6 +164,23 @@ entryEnd`),
 	editor.resize(704, 272);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot(screenshot);
+	if (slack === 0) {
+		const uniform1f = vi.spyOn(canvas.getContext('webgl2')!, 'uniform1f');
+		editor.renderFrame();
+		const [slackUniform, initialSlack] = uniform1f.mock.calls.at(-1)!;
+		expect(initialSlack).toBe(0);
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', cancelable: true }));
+		expect(editor.state.editorMode).toBe('edit');
+		const configNote = rendering.currentProject.blocks.find(block => block.name === 'wireConfig')!;
+		editor.editing.applyEdits({
+			expectedRevision: editor.editing.getRevision(),
+			edits: [{ type: 'delete', blockId: getEditorBlockId(configNote) }],
+		});
+		expect(editor.state.editorConfig.looseWires).toBeUndefined();
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+		editor.renderFrame();
+		expect(uniform1f).toHaveBeenLastCalledWith(slackUniform, 0.25);
+	}
 });
 
 test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {

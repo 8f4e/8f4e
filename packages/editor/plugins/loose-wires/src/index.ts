@@ -24,13 +24,21 @@ export function createLooseWiresPlugin({ defaultSlack = DEFAULT_SLACK }: LooseWi
 		id: 'loose-wires',
 		setup: ({ store, events, drawers }) => {
 			const connections = createWireConnections(store.getState(), events);
+			let slack: number;
+			const syncSlack = () => {
+				const config = store.getState().editorConfig.looseWires as { slack?: number } | undefined;
+				slack = Math.min(config?.slack ?? defaultSlack, 1);
+			};
 			const removeConfig = () => {
+				store.unsubscribe('editorConfig.looseWires', syncSlack);
 				const schemas = { ...store.getState().editorConfigSchemaContributions };
 				delete schemas.looseWires;
 				store.set('editorConfigSchemaContributions', schemas);
 			};
 			try {
 				store.set('editorConfigSchemaContributions.looseWires', configContribution);
+				syncSlack();
+				store.subscribe('editorConfig.looseWires', syncSlack);
 				const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
 					const drawer = createSlackWireDrawer(gl);
 					let colors = palette.rgba;
@@ -48,8 +56,7 @@ export function createLooseWiresPlugin({ defaultSlack = DEFAULT_SLACK }: LooseWi
 						draw: ({ state, memoryViews, renderGeometry }) => {
 							drawer.reset();
 							if (state.dialogStack.length === 0) connections.visit(renderGeometry, memoryViews.int32, drawConnection);
-							const config = state.editorConfig.looseWires as { slack?: number } | undefined;
-							drawer.flush(Math.min(config?.slack ?? defaultSlack, 1));
+							drawer.flush(slack);
 						},
 						loadPalette: nextPalette => {
 							colors = nextPalette.rgba;
@@ -71,5 +78,3 @@ export function createLooseWiresPlugin({ defaultSlack = DEFAULT_SLACK }: LooseWi
 		},
 	};
 }
-
-export const looseWiresPlugin = createLooseWiresPlugin();

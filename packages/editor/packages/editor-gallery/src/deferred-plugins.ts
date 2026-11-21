@@ -108,7 +108,7 @@ export function createDeferredEditorPlugin({
 			id: 'loose-wires',
 			scope: 'view',
 			matches: () => true,
-			load: () => import('@8f4e/editor-plugin-loose-wires').then(module => module.looseWiresPlugin),
+			load: () => import('@8f4e/editor-plugin-loose-wires').then(module => module.createLooseWiresPlugin()),
 		},
 		{
 			id: 'assertion-markers',
