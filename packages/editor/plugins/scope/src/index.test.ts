@@ -86,6 +86,37 @@ describe('scope plugin', () => {
 		expect(test.traces().map(([, y]) => y)).toEqual([test.state.viewport.hGrid * 8 - 1, 0, 0]);
 	});
 
+	it('shares a sampling timer across blocks at the same rate, keeping their histories independent', async () => {
+		const test = await setup([
+			'module audio',
+			'float level -1',
+			'; @scope level 10',
+			'moduleEnd',
+			'module other',
+			'float level 1',
+			'; @scope level 10',
+			'moduleEnd',
+		]);
+		const other = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'other')!;
+		const height = test.state.viewport.hGrid * 8;
+		vi.advanceTimersByTime(100);
+		expect(test.getMemory).toHaveBeenCalledTimes(1);
+		test.render();
+		expect(test.traces().map(([, y]) => y)).toEqual([height - 1]);
+		test.render(other);
+		expect(test.traces().map(([, y]) => y)).toEqual([0]);
+
+		// A non-finite sample in one scope must not prevent the other from sampling.
+		const address = test.compiled.memoryPlan.modules.audio.memory.level.byteAddress / 4;
+		test.memoryViews.float32[address] = Number.NaN;
+		vi.advanceTimersByTime(100);
+		expect(test.getMemory).toHaveBeenCalledTimes(2);
+		test.render();
+		expect(test.traces()).toHaveLength(1);
+		test.render(other);
+		expect(test.traces().map(([, y]) => y)).toEqual([0, 0]);
+	});
+
 	it.each([
 		'int8[] level 1 127',
 		'int8u[] level 1 255',
