@@ -100,6 +100,31 @@ describe('elastic viewport plugin', () => {
 		expect(offset).toEqual({ x: 7, y: 7 });
 	});
 
+	it('skips distant blocks but keeps offsets for offscreen blocks that could enter view', () => {
+		const { state, frame, pan, settle } = setup();
+		const { width: viewportWidth, height: viewportHeight } = state.viewport;
+		const width = 640;
+		const height = 256;
+		const panX = 80;
+		const block = (x: number, y: number, creationIndex: number) =>
+			createMockCodeBlock({ x, y, width, height, creationIndex });
+		// The largest spring offset can bring the near block one pixel into view. The other blocks are just out of reach.
+		const near = block(panX - width - 30, 100, 2);
+		const far = [
+			block(panX - width - 31, 100, 3),
+			block(panX + viewportWidth + 31, 100, 4),
+			block(200, -height - 31, 5),
+			block(200, viewportHeight + 31, 6),
+		];
+		state.codeBlockRendering.currentProject.blocks.push(near, ...far);
+		settle(near, ...far);
+		frame(0);
+		pan(panX);
+		const offset = frame(16);
+		expect(offset?.(near)).toEqual({ x: 31, y: 0 });
+		for (const block of far) expect(offset?.(block)).toBeUndefined();
+	});
+
 	it('preserves weight differences even when a sustained fast pan saturates the springs', () => {
 		const { state, small, frame, pan, settle } = setup();
 		const largest = createMockCodeBlock({ width: 640, height: 256, creationIndex: 3 });

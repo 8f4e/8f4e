@@ -231,6 +231,7 @@ export async function generateProjectPreview({
 			: { width: size, height: size };
 		const page = await browser.newPage({
 			deviceScaleFactor: 1,
+			reducedMotion: 'reduce',
 			viewport: initialViewport,
 		});
 		const pageErrors: string[] = [];

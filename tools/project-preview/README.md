@@ -13,6 +13,7 @@ npm --prefix tools/project-preview ci
 The `icon` format finds the first valid `@home` code block, or falls back to the first root code block, places its
 top-left corner at the configured position, hides editor-only overlays, and captures a square image. The defaults
 remain a 64 by 64 pixel image with the code block at `(0, 0)`.
+The capture browser uses reduced motion so spring offsets do not shift the requested framing.
 
 ```sh
 npm --prefix tools/project-preview run build

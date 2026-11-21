@@ -5,7 +5,13 @@ import type {
 	EditorPlugin,
 	ProjectLevel,
 } from '@8f4e/editor-core';
-import { advanceViewportSpring, createViewportSpring, resetViewportSpring, type ViewportSpring } from './spring';
+import {
+	advanceViewportSpring,
+	createViewportSpring,
+	MAX_OFFSET_PIXELS,
+	resetViewportSpring,
+	type ViewportSpring,
+} from './spring';
 
 const MAX_FRAME_GAP_MS = 150;
 const MAX_CAMERA_STEP_PIXELS = 240;
@@ -15,6 +21,9 @@ const SIZE_PROFILES = [
 	{ gridCells: 500, frequency: 17, influence: 0.5 },
 	{ gridCells: 900, frequency: 13, influence: 0.64 },
 ] as const;
+const MAX_BLOCK_OFFSET_PIXELS = Math.ceil(
+	MAX_OFFSET_PIXELS * Math.max(...SIZE_PROFILES.map(profile => profile.influence))
+);
 
 interface SpringBlend {
 	gridCells: number;
@@ -25,7 +34,7 @@ interface SpringBlend {
 }
 
 function createPositionEffect(prefersReducedMotion: () => boolean) {
-	// Simulate four reference responses to the same camera motion, including for blocks outside the viewport.
+	// Keep shared responses current so blocks can start using them as soon as they approach the viewport.
 	const springs = SIZE_PROFILES.map(({ frequency }) => createViewportSpring(frequency));
 	const blendsByBlock = new WeakMap<CodeBlockGraphicData, SpringBlend>();
 	let previousProject: ProjectLevel | undefined;
@@ -36,6 +45,10 @@ function createPositionEffect(prefersReducedMotion: () => boolean) {
 	let hGrid = 0;
 	let wasInteractionSuppressed = false;
 	let moving = false;
+	let left = 0;
+	let right = 0;
+	let top = 0;
+	let bottom = 0;
 
 	const prepareBlends = (blocks: readonly CodeBlockGraphicData[], cellArea: number) => {
 		for (const block of blocks) {
@@ -60,6 +73,7 @@ function createPositionEffect(prefersReducedMotion: () => boolean) {
 	// The renderer consumes each offset before resolving the next block.
 	const offset = { x: 0, y: 0 };
 	const resolveOffset: CodeBlockOffsetResolver = block => {
+		if (block.x >= right || block.y >= bottom || block.x + block.width <= left || block.y + block.height <= top) return;
 		const blend = blendsByBlock.get(block);
 		if (!blend) return;
 		const { from, to, fromWeight, toWeight } = blend;
@@ -110,7 +124,13 @@ function createPositionEffect(prefersReducedMotion: () => boolean) {
 			if (advanceViewportSpring(spring, elapsedMs / 1000, dx, dy)) moving = true;
 			if (Math.max(Math.abs(spring.x), Math.abs(spring.y)) * SIZE_PROFILES[i].influence >= 0.5) hasOffset = true;
 		}
-		return hasOffset ? resolveOffset : undefined;
+		if (!hasOffset) return;
+		// Only move blocks whose bounds could intersect the viewport after applying the largest spring offset.
+		left = viewport.x - MAX_BLOCK_OFFSET_PIXELS;
+		right = viewport.x + viewport.width + MAX_BLOCK_OFFSET_PIXELS;
+		top = viewport.y - MAX_BLOCK_OFFSET_PIXELS;
+		bottom = viewport.y + viewport.height + MAX_BLOCK_OFFSET_PIXELS;
+		return resolveOffset;
 	};
 	return { effect, prepareBlends };
 }
