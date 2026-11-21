@@ -1,21 +1,21 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { matchEditorDirectives, parseFiniteNumber, walkProjectBlocks } from '@8f4e/editor-state';
+import { walkProjectBlocks } from '@8f4e/editor-state';
 import type { CodeError } from '@8f4e/editor-state-types';
-import { MAX_SCOPE_SAMPLE_RATE_HZ } from '../helpers/data';
+import type { ScopeDirectiveReader } from '../helpers/data';
 
 /** Report unsupported rates from source, independently of compiler readiness and widget layout. */
-export function registerScopeErrors(store: EditorPluginContext['store']): () => void {
+export function registerScopeErrors(
+	store: EditorPluginContext['store'],
+	readScopeDirectives: ScopeDirectiveReader
+): () => void {
 	const state = store.getState();
 	const refresh = () => {
 		const errors: CodeError[] = [];
 		for (const block of walkProjectBlocks(state.codeBlockRendering.rootProject)) {
-			for (const directive of matchEditorDirectives(block.parsedDirectives, [{ name: 'scope' }])) {
-				const rate = parseFiniteNumber(directive.args[1]);
-				if (rate === undefined || rate <= MAX_SCOPE_SAMPLE_RATE_HZ) continue;
+			for (const diagnostic of readScopeDirectives(block.parsedDirectives).diagnostics) {
 				errors.push({
 					codeBlockId: block.creationIndex,
-					lineNumber: directive.sourceLineIndex,
-					message: `@scope: sample rate must not exceed ${MAX_SCOPE_SAMPLE_RATE_HZ} Hz.`,
+					...diagnostic,
 				});
 			}
 		}

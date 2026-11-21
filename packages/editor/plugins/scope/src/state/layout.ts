@@ -1,4 +1,4 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import { gapCalculator } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	prepareAddressedRead,
@@ -6,21 +6,20 @@ import {
 	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
-import { createScopeDirectiveData } from '../helpers/data';
+import type { ScopeDirectiveReader } from '../helpers/data';
 import type { Scope } from '../types';
+import { createScopeHistory, resizeScopeHistory } from './history';
 
 const HEIGHT_IN_ROWS = 8;
 
 export function registerScopeLayout(
 	layout: EditorLayoutRegistry,
-	scopesByBlock: WeakMap<CodeBlockGraphicData, Scope[]>
+	scopesByBlock: WeakMap<CodeBlockGraphicData, Scope[]>,
+	readScopeDirectives: ScopeDirectiveReader
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
-		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'scope' }]).flatMap(directive => {
-			const data = createScopeDirectiveData(directive.args, directive.sourceLineIndex);
-			return data ? [data] : [];
-		});
+		const items = readScopeDirectives(codeBlock.parsedDirectives).scopes;
 		contribution.update(codeBlock, {
 			verticalSpaceAfterSourceLine: items.map(data => ({
 				sourceLineIndex: data.lineNumber,
@@ -65,12 +64,14 @@ export function registerScopeLayout(
 				read,
 			};
 			const previousIndex = previous.findIndex(scope => scope.key === key);
-			const scope =
-				previousIndex === -1
-					? { ...geometry, history: [] }
-					: Object.assign(previous.splice(previousIndex, 1)[0], geometry);
-			scope.history.splice(0, Math.max(0, scope.history.length - width));
-			scopes.push(scope);
+			if (previousIndex === -1) {
+				scopes.push({ ...geometry, history: createScopeHistory(width) });
+			} else {
+				const [scope] = previous.splice(previousIndex, 1);
+				Object.assign(scope, geometry);
+				scope.history = resizeScopeHistory(scope.history, width);
+				scopes.push(scope);
+			}
 		}
 		scopesByBlock.set(codeBlock, scopes);
 	});

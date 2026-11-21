@@ -1,6 +1,7 @@
 import { createMemoryViewManager } from '@8f4e/editor-core';
 import { readNumericValue } from '@8f4e/editor-state/memory';
 import type { Scope } from '../types';
+import { writeScopeSample } from './history';
 
 interface SamplingGroup {
 	scopes: readonly Scope[];
@@ -20,8 +21,7 @@ export function createScopeSampler(getMemory: () => WebAssembly.Memory | null) {
 		for (const scope of scopes) {
 			const value = readNumericValue(scope.read, memoryViews);
 			if (value === undefined || !Number.isFinite(value)) continue;
-			scope.history.push(value);
-			if (scope.history.length > scope.width) scope.history.shift();
+			writeScopeSample(scope.history, value);
 		}
 	};
 

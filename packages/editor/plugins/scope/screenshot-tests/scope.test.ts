@@ -3,7 +3,7 @@ import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 
-test('scope plugin renders scrolling scalar history', async () => {
+test('scope plugin renders circular scalar history', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 512;

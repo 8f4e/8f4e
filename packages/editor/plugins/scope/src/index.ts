@@ -1,6 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import drawScopes from './drawer/draw';
+import { createScopeDirectiveReader } from './helpers/data';
 import { registerScopeErrors } from './state/errors';
 import { registerScopeLayout } from './state/layout';
 import { createScopeSampler } from './state/sampling';
@@ -13,9 +14,10 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
 			const scopesByBlock = new WeakMap<CodeBlockGraphicData, Scope[]>();
+			const readScopeDirectives = createScopeDirectiveReader();
 			const sampler = createScopeSampler(getMemory);
-			const unregisterErrors = registerScopeErrors(store);
-			const unregisterLayout = registerScopeLayout(layout, scopesByBlock);
+			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
+			const unregisterLayout = registerScopeLayout(layout, scopesByBlock, readScopeDirectives);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 				drawScopes(draw, scopesByBlock.get(codeBlock) ?? []);
 			});

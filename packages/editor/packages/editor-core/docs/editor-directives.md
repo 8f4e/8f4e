@@ -304,8 +304,9 @@ The sample rate is in samples per second (Hz), up to 250 Hz. Higher rates produc
 Browser timer scheduling is best-effort and may be throttled; use `@plot` over a runtime-managed buffer for precise
 or audio-rate sampling.
 The editor samples independently of the render loop while the directive is displayed in the current project
-level. The history lives in a bounded JavaScript array, with one sample per horizontal pixel; new values
-appear at the right and older values scroll left. No WebAssembly buffer is allocated for the history.
+level. The history lives in a fixed-capacity JavaScript circular array, with one sample per horizontal pixel.
+Once full, new values overwrite the oldest slots from left to right and wrap at the right edge.
+Resizing retains the newest samples. No WebAssembly buffer is allocated for the history.
 
 ### `@textureUpload` and `@texture`
 

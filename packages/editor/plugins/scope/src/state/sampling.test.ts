@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Scope } from '../types';
+import { createScopeHistory } from './history';
 import { createScopeSampler } from './sampling';
 
 function createScope(sampleRate: number, elementIndex: number): Scope {
@@ -23,9 +24,11 @@ function createScope(sampleRate: number, elementIndex: number): Scope {
 				maxValue: 1,
 			},
 		},
-		history: [],
+		history: createScopeHistory(8),
 	};
 }
+
+const samples = (scope: Scope) => Array.from(scope.history.values.subarray(0, scope.history.count));
 
 beforeEach(() => vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] }));
 afterEach(() => vi.useRealTimers());
@@ -47,23 +50,23 @@ it('keeps one timer per rate and preserves its cadence while membership changes'
 		expect(vi.getTimerCount()).toBe(2);
 
 		vi.advanceTimersByTime(10);
-		expect(fast.history).toEqual([1]);
-		expect(first.history).toEqual([]);
-		expect(second.history).toEqual([]);
+		expect(samples(fast)).toEqual([1]);
+		expect(samples(first)).toEqual([]);
+		expect(samples(second)).toEqual([]);
 
 		vi.advanceTimersByTime(50);
-		expect(first.history).toEqual([-1]);
-		expect(second.history).toEqual([0]);
-		expect(fast.history).toEqual([1, 1]);
+		expect(samples(first)).toEqual([-1]);
+		expect(samples(second)).toEqual([0]);
+		expect(samples(fast)).toEqual([1, 1]);
 		expect(getMemory).toHaveBeenCalledTimes(3);
 
 		vi.advanceTimersByTime(40);
 		sampler.sync([second]);
 		expect(vi.getTimerCount()).toBe(1);
 		vi.advanceTimersByTime(60);
-		expect(first.history).toEqual([-1]);
-		expect(second.history).toEqual([0, 0]);
-		expect(fast.history).toEqual([1, 1]);
+		expect(samples(first)).toEqual([-1]);
+		expect(samples(second)).toEqual([0, 0]);
+		expect(samples(fast)).toEqual([1, 1]);
 		expect(getMemory).toHaveBeenCalledTimes(4);
 
 		sampler.sync([]);
