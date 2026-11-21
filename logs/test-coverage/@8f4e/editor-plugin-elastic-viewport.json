@@ -1,0 +1,28 @@
+[
+	{
+		"commit": "6a76c713cf59e9fee1e3d15939a1d54f1d1c288d",
+		"recordedAt": "2026-11-21T19:26:51.567Z",
+		"coverage": {
+			"statements": {
+				"covered": 267,
+				"total": 270,
+				"percentage": 98.88
+			},
+			"branches": {
+				"covered": 188,
+				"total": 197,
+				"percentage": 95.43
+			},
+			"functions": {
+				"covered": 22,
+				"total": 22,
+				"percentage": 100
+			},
+			"lines": {
+				"covered": 246,
+				"total": 249,
+				"percentage": 98.79
+			}
+		}
+	}
+]

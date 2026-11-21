@@ -1102,5 +1102,11 @@
 		"version": "14.0.0",
 		"benchmark": "minBLEP.8f4e",
 		"emittedBytes": 2508
+	},
+	{
+		"commit": "6a76c713cf59e9fee1e3d15939a1d54f1d1c288d",
+		"version": "14.1.0",
+		"benchmark": "minBLEP.8f4e",
+		"emittedBytes": 2508
 	}
 ]
