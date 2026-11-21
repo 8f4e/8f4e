@@ -9,6 +9,7 @@ export const slackWireVertexShader = `#version 300 es
 	layout(location = 1) in float a_thickness;
 	layout(location = 2) in vec4 a_color;
 	uniform vec2 u_pixelToClip;
+	uniform float u_slack;
 
 	flat out vec4 v_color;
 	flat out vec2 v_start;
@@ -27,7 +28,7 @@ export const slackWireVertexShader = `#version 300 es
 	}
 
 	void main() {
-		float sag = min(${MAX_SAG_PIXELS}.0, 0.25 * abs(a_endpoints.z - a_endpoints.x));
+		float sag = min(${MAX_SAG_PIXELS}.0, u_slack * abs(a_endpoints.z - a_endpoints.x));
 		int segments = sag < 0.5 ? 1 : 2 * int(ceil(sqrt(sag * 0.5)));
 		int segment = gl_VertexID / 6;
 		if (segment >= segments) {

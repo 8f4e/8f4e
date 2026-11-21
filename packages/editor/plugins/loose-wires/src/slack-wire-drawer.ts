@@ -15,6 +15,7 @@ export function createSlackWireDrawer(gl: WebGL2RenderingContext) {
 		const instanceBuffer = (buffer = requireResource(gl.createBuffer(), 'slack wire instance buffer'));
 		const vao = (vertexArray = requireResource(gl.createVertexArray(), 'slack wire vertex array'));
 		const pixelToClip = requireUniform(gl, program, 'u_pixelToClip');
+		const slackUniform = requireUniform(gl, program, 'u_slack');
 		gl.bindVertexArray(vao);
 		gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
 		gl.enableVertexAttribArray(0);
@@ -51,7 +52,7 @@ export function createSlackWireDrawer(gl: WebGL2RenderingContext) {
 				instances[used++] = color[2];
 				instances[used++] = color[3];
 			},
-			flush(): void {
+			flush(slack: number): void {
 				if (used === 0) return;
 				prepareRenderPass(gl, program, vao);
 				gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
@@ -61,6 +62,7 @@ export function createSlackWireDrawer(gl: WebGL2RenderingContext) {
 				}
 				gl.bufferSubData(gl.ARRAY_BUFFER, 0, instances, 0, used);
 				gl.uniform2f(pixelToClip, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
+				gl.uniform1f(slackUniform, slack);
 				gl.drawArraysInstanced(gl.TRIANGLES, 0, SLACK_WIRE_VERTEX_COUNT, used / INSTANCE_FLOATS);
 			},
 			releaseMemory(): void {

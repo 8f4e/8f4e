@@ -124,13 +124,18 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
-test('draws a loose wire between gallery connectors', async () => {
+test.each([
+	{ slack: undefined, screenshot: 'gallery-loose-wires' },
+	{ slack: 0, screenshot: 'gallery-zero-slack' },
+])('draws a wire between gallery connectors with $screenshot', async ({ slack, screenshot }) => {
+	const config =
+		slack === undefined ? '' : `\nnote wireConfig\n; @pos 180 60\n; @config looseWires.slack ${slack}\nnoteEnd`;
 	const view = setup({
 		wires: async () =>
 			new Response(`8f4e/v1
 constants env
 ; @pos 180 60
-constantsEnd
+constantsEnd${config}
 entry main
 module osc
 ; @pos 4 5
@@ -144,7 +149,9 @@ entryEnd`),
 	});
 	const editor = await view.mounted();
 	await vi.dynamicImportSettled();
+	await expect.poll(() => editor.state.editorConfigSchemaContributions.looseWires).toBeDefined();
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	expect(editor.state.editorConfig.looseWires).toEqual(slack === undefined ? undefined : { slack });
 	editor.pauseRendering();
 	const canvas = view.panel().querySelector('canvas')!;
 	canvas.style.width = '704px';
@@ -156,7 +163,7 @@ entryEnd`),
 	rendering.selectedCodeBlock = rendering.currentProject.blocks.find(block => block.name === 'amp');
 	editor.resize(704, 272);
 	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('gallery-loose-wires');
+	await expect(canvas).toMatchScreenshot(screenshot);
 });
 
 test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {

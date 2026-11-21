@@ -17,14 +17,14 @@ describe('pixelated slack wire shader', () => {
 		engine.destroy();
 	});
 
-	function render(x1: number, y1: number, x2: number, y2: number) {
+	function render(x1: number, y1: number, x2: number, y2: number, slack = 0.25) {
 		const gl = engine.gl;
 		const draw = vi.spyOn(gl, 'drawArraysInstanced');
 		try {
 			engine.renderFrame(() => {
 				drawer.reset();
 				drawer.drawWire(x1, y1, x2, y2, 1, [1, 1, 1, 0.5]);
-				drawer.flush();
+				drawer.flush(slack);
 			});
 			// The GPU receives a single instance even when the wire curves.
 			expect(draw).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, expect.any(Number), 1);
@@ -50,6 +50,17 @@ describe('pixelated slack wire shader', () => {
 			const column = Array.from({ length: size }, (_, y) => alphaAt(x, y)).filter(alpha => alpha !== 0);
 			expect(column).toEqual([128]);
 		}
+	});
+
+	test.each([
+		{ slack: 0, midpointY: 8 },
+		{ slack: 0.5, midpointY: 20 },
+	])('uses the supplied slack ratio $slack without moving the endpoints', ({ slack, midpointY }) => {
+		const alphaAt = render(4, 8, 28, 8, slack);
+		expect(alphaAt(4, 8)).toBe(128);
+		expect(alphaAt(28, 8)).toBe(128);
+		expect(alphaAt(16, midpointY)).toBe(128);
+		expect(alphaAt(16, 14)).toBe(0);
 	});
 
 	test('keeps vertical wires pixel-aligned after GPU memory release', () => {
