@@ -305,7 +305,7 @@ Browser timer scheduling is best-effort and may be throttled; use `@plot` over a
 or audio-rate sampling.
 The editor samples independently of the render loop while the directive is displayed in the current project
 level. The history lives in a fixed-capacity JavaScript circular array, with one sample per horizontal pixel.
-Once full, new values overwrite the oldest slots from left to right and wrap at the right edge.
+New samples always enter at the right edge and older samples scroll left, including after the array fills.
 Resizing retains the newest samples. No WebAssembly buffer is allocated for the history.
 
 ### `@textureUpload` and `@texture`

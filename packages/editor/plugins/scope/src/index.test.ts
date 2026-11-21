@@ -37,19 +37,33 @@ describe('scope plugin', () => {
 		expect(test.getMemory).toHaveBeenCalledTimes(2);
 	});
 
-	it('overwrites the oldest slots in physical order once the plot is full', async () => {
+	it('keeps the newest sample at the right edge as the history wraps', async () => {
 		const test = await setup(['module audio', 'float level -1', '; @scope level 250 -1 1', 'moduleEnd']);
 		test.render();
 		const width = test.backgrounds()[0][3]!;
 		const height = test.state.viewport.hGrid * 8;
 		vi.advanceTimersByTime(width * 4);
-		test.memoryViews.float32[test.compiled.memoryPlan.modules.audio.memory.level.byteAddress / 4] = 1;
+		const address = test.compiled.memoryPlan.modules.audio.memory.level.byteAddress / 4;
+		test.memoryViews.float32[address] = 1;
 		vi.advanceTimersByTime(4);
 		test.render();
 		expect(test.traces()).toHaveLength(width);
-		expect(test.traces()[0].slice(0, 2)).toEqual([0, 0]);
-		expect(test.traces()[1].slice(0, 2)).toEqual([1, height - 1]);
-		vi.advanceTimersByTime((width - 1) * 4);
+		expect(test.traces()[0].slice(0, 2)).toEqual([0, height - 1]);
+		expect(test.traces().at(-1)!.slice(0, 2)).toEqual([width - 1, 0]);
+		test.memoryViews.float32[address] = 0;
+		vi.advanceTimersByTime(4);
+		test.render();
+		expect(
+			test
+				.traces()
+				.slice(-2)
+				.map(([x, y]) => [x, y])
+		).toEqual([
+			[width - 2, 0],
+			[width - 1, height - 1 - Math.round((height - 1) / 2)],
+		]);
+		test.memoryViews.float32[address] = 1;
+		vi.advanceTimersByTime(width * 4);
 		test.render();
 		const points = test.traces();
 		expect(points).toHaveLength(width);

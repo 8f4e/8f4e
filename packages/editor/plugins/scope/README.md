@@ -19,8 +19,8 @@ import { createScopePlugin } from '@8f4e/editor-plugin-scope';
 const plugin = createScopePlugin({ getMemory: compiler.getMemory });
 ```
 
-Each displayed scope keeps its own fixed-capacity JavaScript circular array, sized to the plot's width. While the
-history fills, samples are right-aligned; once full, new values overwrite the oldest slots from left to right.
+Each displayed scope keeps its own fixed-capacity JavaScript circular array, sized to the plot's width. The drawer
+reads the circular history in chronological order so new samples always enter at the right and older samples scroll left.
 Histories survive layout changes to the same value binding, and resizing retains the newest samples. Sampling timers run
 independently of drawing at the requested positive rate (up to 250 Hz), subject to browser timer accuracy.
 Higher rates produce a source error: browser polling did not deliver meaningfully greater sample throughput above 250 Hz.

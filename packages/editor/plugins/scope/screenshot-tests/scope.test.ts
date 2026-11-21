@@ -3,7 +3,7 @@ import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 
-test('scope plugin renders circular scalar history', async () => {
+async function expectScopeHistoryScreenshot(sampleCount: number): Promise<void> {
 	const canvas = document.createElement('canvas');
 	canvas.width = 768;
 	canvas.height = 512;
@@ -17,7 +17,7 @@ test('scope plugin renders circular scalar history', async () => {
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 	const address = test.compiled.memoryPlan.modules.audio.memory.signal.byteAddress / 4;
-	for (let index = 0; index < 256; index++) {
+	for (let index = 0; index < sampleCount; index++) {
 		test.memoryViews.float32[address] = Math.sin((index * Math.PI) / 32);
 		vi.advanceTimersByTime(10);
 	}
@@ -34,4 +34,7 @@ test('scope plugin renders circular scalar history', async () => {
 		renderer.destroy();
 		canvas.remove();
 	}
-});
+}
+
+test('scope plugin feeds a partial history from the right', () => expectScopeHistoryScreenshot(64));
+test('scope plugin renders circular scalar history', () => expectScopeHistoryScreenshot(256));
