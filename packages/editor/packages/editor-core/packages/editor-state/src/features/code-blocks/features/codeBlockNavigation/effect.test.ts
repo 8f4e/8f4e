@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import buildDisplayModel from '../../buildDisplayModel';
+import findCodeBlockAtViewportCoordinates from '../../utils/finders/findCodeBlockAtViewportCoordinates';
 import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
 describe('codeBlockNavigation', () => {
@@ -103,6 +104,35 @@ describe('codeBlockNavigation', () => {
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+	});
+
+	it.each([
+		{ layer: 'normal', alwaysOnTop: false },
+		{ layer: 'always-on-top', alwaysOnTop: true },
+	])('raises the selected block within the $layer layer', ({ alwaysOnTop }) => {
+		rightBlock.alwaysOnTop = alwaysOnTop;
+		const overlap = createMockCodeBlock({ x: rightBlock.x + 16, y: rightBlock.y, creationIndex: 5, alwaysOnTop });
+		const overlay = createMockCodeBlock({ x: rightBlock.x + 64, y: rightBlock.y, creationIndex: 6, alwaysOnTop: true });
+		const blocks = [selectedBlock, leftBlock, rightBlock, overlap, overlay];
+		state.codeBlockRendering.currentProject.blocks = blocks;
+		const revision = state.projectChange.revision;
+		const hit = (x: number) =>
+			findCodeBlockAtViewportCoordinates(state, x - state.viewport.x, rightBlock.y + 32 - state.viewport.y);
+		codeBlockNavigation(createStateManager(state), events);
+
+		expect(hit(rightBlock.x + 32)).toBe(overlap);
+		onNavigateCodeBlockHandler({ direction: 'right' });
+
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		expect(blocks).toEqual(
+			alwaysOnTop
+				? [selectedBlock, leftBlock, overlap, overlay, rightBlock]
+				: [selectedBlock, leftBlock, overlap, rightBlock, overlay]
+		);
+		expect(hit(rightBlock.x + 32)).toBe(rightBlock);
+		expect(hit(rightBlock.x + 80)).toBe(alwaysOnTop ? rightBlock : overlay);
+		expect(state.projectChange.revision).toBe(revision);
 	});
 
 	it('should align the target highlighted line during horizontal navigation', () => {

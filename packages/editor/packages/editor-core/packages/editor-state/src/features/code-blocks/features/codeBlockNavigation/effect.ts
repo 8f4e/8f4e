@@ -5,6 +5,8 @@ import reverseGapCalculator from '../../../text-geometry/reverseGapCalculator';
 import centerViewportOnCodeBlock from '../../../viewport/centerViewportOnCodeBlock';
 import centerViewportOnCodeBlockCursor from '../../../viewport/centerViewportOnCodeBlockCursor';
 import updateViewport from '../../../viewport/updateViewport';
+import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
+import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
 import findClosestCodeBlockInDirection from '../../utils/finders/findClosestCodeBlockInDirection';
 
 type CodeBlockCursor = NonNullable<State['codeBlockRendering']['selectedCodeBlock']>['cursor'];
@@ -146,8 +148,9 @@ export function navigateToCodeBlockInDirection(
 
 	const targetBlock = findClosestCodeBlockInDirection(codeBlocks, currentBlock, direction);
 
-	// If we found a different block, select it and center viewport on it
+	// Match pointer selection: raise the target within its stacking layer before selecting it.
 	if (targetBlock !== currentBlock) {
+		replaceCodeBlocksInPlace(codeBlocks, bringCodeBlockToFrontWithinPartition(codeBlocks, targetBlock));
 		store.set('codeBlockRendering.selectedCodeBlock', targetBlock);
 
 		if (direction === 'left' || direction === 'right') {
@@ -228,7 +231,7 @@ export function goHome(store: StateManager<State>, events: EventDispatcher): voi
  * When a navigateCodeBlock event is received with a direction,
  * this effect will:
  * - Find the closest code block in the specified direction
- * - Select that code block
+ * - Raise and select that code block within its stacking layer
  * - Center the viewport on the newly selected block
  *
  * If no code block is selected, the effect does nothing.

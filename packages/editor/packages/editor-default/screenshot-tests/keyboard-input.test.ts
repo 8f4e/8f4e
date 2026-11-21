@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { createKeyboardNavigationPlugin } from '@8f4e/editor-plugin-keyboard-navigation';
 import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
@@ -112,6 +113,89 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		editor = undefined;
 		expect(key('e').defaultPrevented).toBe(false);
 	} finally {
+		editor?.dispose();
+		canvas.remove();
+	}
+});
+
+test('raises the keyboard navigation target above an overlapping block for drawing and hit testing', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 640;
+	canvas.height = 384;
+	document.body.append(canvas);
+	let editor: Editor | undefined;
+	let context!: EditorPluginContext;
+	const drawn: string[] = [];
+	const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
+	try {
+		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
+			initialProject: parseProjectSource(`8f4e/v1
+constants env
+; @pos 120 60
+constantsEnd
+note start
+; @pos 4 6
+noteEnd
+note target
+; @pos 45 6
+noteEnd
+note overlap
+; @pos 60 6
+noteEnd`),
+			plugins: [
+				createKeyboardNavigationPlugin({ inputTarget: canvas }),
+				{
+					id: 'test-draw-order',
+					setup: services => {
+						context = services;
+						return services.drawers.registerCodeBlockDrawer(({ codeBlock }) => {
+							drawn.push(codeBlock.name);
+						});
+					},
+				},
+			],
+		});
+		editor.pauseRendering();
+		const { viewport, codeBlockRendering } = editor.state;
+		const [start, target, overlap] = ['start', 'target', 'overlap'].map(
+			name => codeBlockRendering.currentProject.blocks.find(block => block.name === name)!
+		);
+		context.store.set('codeBlockRendering.selectedCodeBlock', start);
+		drawn.length = 0;
+		editor.renderFrame();
+		expect(drawn).toEqual(['start', 'target', 'overlap']);
+
+		const key = new KeyboardEvent('keydown', { key: 'ArrowRight', metaKey: true, cancelable: true });
+		canvas.dispatchEvent(key);
+		expect(key.defaultPrevented).toBe(true);
+		expect(codeBlockRendering.selectedCodeBlock).toBe(target);
+		editor.renderFrame();
+		clock.mockReturnValue(2000);
+		drawn.length = 0;
+		editor.renderFrame();
+		expect(drawn).toEqual(['start', 'overlap', 'target']);
+
+		const hit = vi.fn();
+		context.events.on('codeBlockPointerDown', hit, { capture: true });
+		context.events.dispatch(
+			'pointerdown',
+			{
+				x: overlap.x - viewport.x + 4,
+				y: overlap.y - viewport.y + 4,
+				movementX: 0,
+				movementY: 0,
+				buttons: 1,
+				altKey: false,
+				stopPropagation: false,
+				canvasWidth: viewport.width,
+				canvasHeight: viewport.height,
+			},
+			{ phase: 'capture' }
+		);
+		expect(hit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ codeBlock: target }));
+	} finally {
+		clock.mockRestore();
 		editor?.dispose();
 		canvas.remove();
 	}
