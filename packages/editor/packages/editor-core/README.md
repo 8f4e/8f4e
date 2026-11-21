@@ -236,6 +236,7 @@ connector-specific GPU resources, and compiler semantics do not depend on either
 Both input adapters emit normalized `pointerdown`, `pointermove`, `pointerup`, and `pointercancel` events.
 `InternalPointerEvent` and `CodeBlockPointerDownEvent` are shared contracts in `@8f4e/editor-state-types`.
 Core routes both adapters through the same block lookup and interaction phases, independently of module dragging.
+Block press events retain the normalized mouse-button bitmask for controls that distinguish primary presses.
 
 Controls subscribe to `codeBlockPointerDown` in capture, set `stopPropagation` when claiming the press, handle
 `codeBlockPointerMove` for drags, and release on `codeBlockPointerUp`. Ordinary block press listeners run after

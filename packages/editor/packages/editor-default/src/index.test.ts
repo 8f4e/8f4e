@@ -106,6 +106,7 @@ describe('default editor plugins', () => {
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
 				'keyboard-mode-switching',
+				'enter-group-button',
 				'group-path',
 				'keyboard-navigation',
 				'keyboard-editing',

@@ -10,12 +10,14 @@ export const codeBlockBackgroundPlugin: EditorPlugin = {
 		drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 			const color = codeBlock.disabled ? PALETTE_INDICES.surfaceSubdued : PALETTE_INDICES.surfaceBase;
 			draw.drawFill(0, 0, color, codeBlock.width, codeBlock.height);
-			const cornerColor =
-				state.codeBlockRendering.selectedCodeBlock === codeBlock
-					? PALETTE_INDICES.secondaryBase
-					: PALETTE_INDICES.inkBase;
-			const right = codeBlock.width - state.viewport.vGrid;
-			const bottom = codeBlock.height - state.viewport.hGrid;
+			const selected = state.codeBlockRendering.selectedCodeBlock === codeBlock;
+			const cornerColor = selected ? PALETTE_INDICES.secondaryBase : PALETTE_INDICES.inkBase;
+			const { vGrid, hGrid } = state.viewport;
+			if (selected) {
+				draw.drawFill(0, 0, PALETTE_INDICES.secondaryAlpha30, codeBlock.width, hGrid);
+			}
+			const right = codeBlock.width - vGrid;
+			const bottom = codeBlock.height - hGrid;
 			draw.drawGlyphs(0, 0, CORNER, cornerColor);
 			draw.drawGlyphs(right, 0, CORNER, cornerColor);
 			draw.drawGlyphs(0, bottom, CORNER, cornerColor);

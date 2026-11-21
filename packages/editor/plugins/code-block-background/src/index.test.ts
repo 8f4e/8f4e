@@ -36,7 +36,7 @@ it.each([
 	test.dispose();
 });
 
-it.each([false, true])('draws corner markers using current geometry and selection (selected=%s)', selected => {
+it.each([false, true])('draws block markers and header (selected=%s)', selected => {
 	const test = setup();
 	test.state.viewport.vGrid = 6;
 	test.state.viewport.hGrid = 10;
@@ -49,7 +49,38 @@ it.each([false, true])('draws corner markers using current geometry and selectio
 		[0, 54, textToGlyphIds('+'), color],
 		[90, 54, textToGlyphIds('+'), color],
 	]);
-	expect(test.drawFill.mock.invocationCallOrder[0]).toBeLessThan(test.drawGlyphs.mock.invocationCallOrder[0]);
+	expect(test.drawFill.mock.calls).toEqual([
+		[0, 0, PALETTE_INDICES.surfaceBase, 96, 64],
+		...(selected ? [[0, 0, PALETTE_INDICES.secondaryAlpha30, 96, 10]] : []),
+	]);
+	expect(test.drawFill.mock.invocationCallOrder.at(-1)).toBeLessThan(test.drawGlyphs.mock.invocationCallOrder[0]);
+	test.dispose();
+});
+
+it('keeps the selected header aligned with current dimensions and removes it on deselection', () => {
+	const test = setup();
+	test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+	test.render();
+	test.codeBlock.width = 128;
+	test.codeBlock.height = 80;
+	test.codeBlock.disabled = true;
+	test.state.viewport.vGrid = 8;
+	test.state.viewport.hGrid = 16;
+	test.state.featureFlags.codeLineSelection = false;
+	test.drawFill.mockClear();
+	test.drawGlyphs.mockClear();
+	test.render();
+	expect(test.drawFill.mock.calls).toEqual([
+		[0, 0, PALETTE_INDICES.surfaceSubdued, 128, 80],
+		[0, 0, PALETTE_INDICES.secondaryAlpha30, 128, 16],
+	]);
+	test.state.codeBlockRendering.selectedCodeBlock = createMockCodeBlock();
+	test.drawFill.mockClear();
+	test.drawGlyphs.mockClear();
+	test.render();
+	expect(test.drawFill).toHaveBeenCalledExactlyOnceWith(0, 0, PALETTE_INDICES.surfaceSubdued, 128, 80);
+	expect(test.drawGlyphs).toHaveBeenCalledTimes(4);
+	expect(test.drawGlyphs.mock.calls.every(call => call[3] === PALETTE_INDICES.inkBase)).toBe(true);
 	test.dispose();
 });
 
