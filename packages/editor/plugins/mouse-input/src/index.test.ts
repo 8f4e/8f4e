@@ -81,10 +81,7 @@ describe('mouse input', () => {
 	it('translates wheel movement and announces its end after scrolling pauses', () => {
 		const test = setup();
 		expect(test.wheel().defaultPrevented).toBe(true);
-		expect(test.events.dispatch).toHaveBeenCalledWith(
-			'pointermove',
-			expect.objectContaining({ movementX: -3, movementY: -5, buttons: 1 })
-		);
+		expect(test.events.dispatch).toHaveBeenCalledWith('viewportscroll', { movementX: -3, movementY: -5 });
 		vi.advanceTimersByTime(119);
 		expect(test.events.dispatch).not.toHaveBeenCalledWith('viewportscrollend', expect.anything());
 		vi.advanceTimersByTime(1);
