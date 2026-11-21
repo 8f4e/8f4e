@@ -9,7 +9,6 @@ The wire tracker uses compiler metadata and settled editor layout to find declar
 project level. Each frame reads live pointer slots from memory and uses the compiler-resolved address for fixed
 references. Endpoint offsets stay relative to their blocks; the frame's web-ui rendering geometry supplies each
 block's viewport-relative origin, including offscreen endpoints.
-Wire renderers can use the tracker from `@8f4e/editor-plugin-wires/connections` without installing the straight wire pass.
 
 The pass runs above sprites, forwards palette changes and GPU memory release to the drawer, and releases its resources on disposal.
 Each frame resets and fills one retained CPU buffer, then uploads the used range once. Dialogs suppress wires; the

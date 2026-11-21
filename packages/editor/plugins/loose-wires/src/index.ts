@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { createWireConnections, type WireConnectionVisitor } from '@8f4e/editor-plugin-wires/connections';
+import { createWireConnections, type WireConnectionVisitor } from './connections';
 import { createSlackWireDrawer } from './slack-wire-drawer';
 
 /** Draws pixelated slack wires without installing the straight wire renderer. */
