@@ -1,6 +1,6 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { createRenderGeometry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
+import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
 import { visitConnections } from './connections';
 import type { WireEndpoints, WireInput, WireOutput } from './deriveEndpoints';
 
@@ -51,7 +51,7 @@ describe('visitConnections', () => {
 		const memory = Int32Array.from(kind === 'reference' ? [] : [0, 0, outputAddress]);
 		visitConnections(
 			state,
-			createRenderGeometry().prepare(state),
+			createRenderGeometryFixture(state),
 			memory,
 			{ endpointsByBlock, outputsByByteAddress },
 			visit

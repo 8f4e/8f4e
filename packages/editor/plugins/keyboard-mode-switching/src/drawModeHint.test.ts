@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
-import { createRenderGeometry, textToGlyphIds } from '@8f4e/web-ui';
+import { textToGlyphIds } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
 
@@ -28,7 +28,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
-			renderGeometry: createRenderGeometry().prepare(test.state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).toHaveBeenCalledWith(
@@ -52,7 +52,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
-			renderGeometry: createRenderGeometry().prepare(test.state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).not.toHaveBeenCalled();

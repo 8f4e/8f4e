@@ -1,13 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import type { DialogContent } from '@8f4e/editor-state-types';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type MemoryViews,
-	textToGlyphIds,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { dialogsPlugin } from './index';
@@ -49,7 +43,7 @@ function setup(initialDialog?: DialogContent) {
 		drawers.drawModalOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
-			renderGeometry: createRenderGeometry().prepare(state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

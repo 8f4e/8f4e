@@ -2,13 +2,7 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type MemoryViews,
-	textToGlyphIds,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { entryOutlinesPlugin } from './index';
 
@@ -25,7 +19,7 @@ function setup() {
 		drawers.drawCanvasBackground({
 			draw: draw as unknown as DrawContext,
 			state,
-			renderGeometry: createRenderGeometry().prepare(state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

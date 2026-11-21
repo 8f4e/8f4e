@@ -2,8 +2,9 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, serializeProjectLevel } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createRenderGeometry, type RenderGeometry } from '@8f4e/web-ui';
+import type { RenderGeometry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
+import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
 import { createWireConnections, type WireConnectionVisitor } from './connections';
 
 const source = `8f4e/v1
@@ -46,8 +47,7 @@ async function setup(text = source) {
 	});
 	const connections = createWireConnections(state, events);
 	events.dispatch('loadProject', { project });
-	const geometry = createRenderGeometry();
-	const readConnections = (renderGeometry: RenderGeometry = geometry.prepare(state)) => {
+	const readConnections = (renderGeometry: RenderGeometry = createRenderGeometryFixture(state)) => {
 		const endpoints: Array<Parameters<WireConnectionVisitor>> = [];
 		connections.visit(renderGeometry, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
 		return endpoints;
@@ -101,7 +101,7 @@ describe('wire connections', () => {
 		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
 		sourceBlock.x = -10000;
 		const [original] = readConnections();
-		const renderGeometry = createRenderGeometry().prepare(state);
+		const renderGeometry = createRenderGeometryFixture(state);
 		const blocks = renderGeometry.blocks.map(block =>
 			block.codeBlock === sink
 				? { ...block, x: block.x + 12, y: block.y + 20 }

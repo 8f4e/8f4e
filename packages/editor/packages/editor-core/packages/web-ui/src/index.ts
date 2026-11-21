@@ -26,7 +26,7 @@ export type {
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
-export { createRenderGeometry, type RenderedCodeBlock, type RenderGeometry } from './render-geometry';
+export type { RenderedCodeBlock, RenderGeometry } from './render-geometry';
 export type {
 	EditorRenderLayer,
 	RenderLayerContext,

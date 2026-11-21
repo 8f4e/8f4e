@@ -2,13 +2,7 @@ import { EventEmitter } from 'node:events';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeError } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type MemoryViews,
-	textToGlyphIds,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { errorMessagesPlugin } from './index';
 
@@ -53,7 +47,7 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 		drawers.drawCanvasOverlays({
 			draw,
 			state,
-			renderGeometry: createRenderGeometry().prepare(state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	return { state, store, events, block, render, renderOverlay, drawFill, drawGlyphs, dispose };

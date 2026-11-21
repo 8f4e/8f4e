@@ -3,13 +3,7 @@ import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type MemoryViews,
-	textToGlyphIds,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createJumpToErrorPlugin } from './index';
 
@@ -52,7 +46,7 @@ function setup() {
 		drawers.drawCanvasOverlays({
 			draw,
 			state,
-			renderGeometry: createRenderGeometry().prepare(state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {

@@ -3,13 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState, createMockViewport } from '@8f4e/editor-state-testing';
 import type { ContextMenuItem } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import {
-	createEditorDrawerRegistry,
-	createRenderGeometry,
-	type DrawContext,
-	type MemoryViews,
-	textToGlyphIds,
-} from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { contextMenuPlugin } from './index';
@@ -60,7 +54,7 @@ function setup({
 		drawers.drawContextMenuOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
-			renderGeometry: createRenderGeometry().prepare(state),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

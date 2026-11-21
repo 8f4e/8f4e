@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, createRenderGeometry, type RenderGeometry } from '@8f4e/web-ui';
+import { createEditorDrawerRegistry, type RenderedCodeBlock } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { createTextureRuntimePlugin } from './index';
@@ -116,12 +116,17 @@ async function setup({
 	const block = state.codeBlockRendering.currentProject.blocks.find(
 		block => block.name === 'screen' || block.name === 'visuals'
 	)!;
-	const geometry = createRenderGeometry();
-	const frame = (renderGeometry: RenderGeometry = geometry.prepare(state)) => {
+	const frame = (
+		blocks: readonly RenderedCodeBlock[] = state.codeBlockRendering.currentProject.blocks.map(codeBlock => ({
+			codeBlock,
+			x: codeBlock.x - state.viewport.x,
+			y: codeBlock.y - state.viewport.y,
+		}))
+	) => {
 		const buffer = current.memory.buffer;
 		layers.draw({
 			state,
-			renderGeometry,
+			renderGeometry: { blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) },
 			memoryViews: {
 				int8: new Int8Array(buffer),
 				uint8: new Uint8Array(buffer),
@@ -230,8 +235,8 @@ it('executes once per frame for multiple textures, uploads updated pixels, and f
 
 it('uses rendered block positions for both texture placement and visibility', async () => {
 	const test = await setup({ config: '' });
-	const geometry = createRenderGeometry();
-	const { x: originalX, y: originalY } = geometry.prepare(test.state).blocksByCodeBlock.get(test.block)!;
+	const originalX = test.block.x - test.state.viewport.x;
+	const originalY = test.block.y - test.state.viewport.y;
 	const rectangles = () =>
 		test.gl.uniform4f.mock.calls
 			.filter(call => (call[0] as { name: string }).name === 'u_rectangle')
@@ -240,17 +245,11 @@ it('uses rendered block positions for both texture placement and visibility', as
 	const [original] = rectangles();
 	// Only the presentation moves even while editor-state considers the block offscreen.
 	test.block.x = -10000;
-	const frameAt = (x: number, y: number) => {
-		const blocks = geometry
-			.prepare(test.state)
-			.blocks.map(block => (block.codeBlock === test.block ? { ...block, x, y } : block));
-		test.frame({ blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) });
-	};
-	frameAt(originalX + 25, originalY - 10);
+	test.frame([{ codeBlock: test.block, x: originalX + 25, y: originalY - 10 }]);
 	expect(rectangles()).toEqual([original, [Number(original[0]) + 25, Number(original[1]) - 10, 32, 32]]);
 	// Visibility follows presentation rather than the block's logical position, in both directions.
 	test.block.x = 50;
-	frameAt(-10000, originalY);
+	test.frame([{ codeBlock: test.block, x: -10000, y: originalY }]);
 	expect(rectangles()).toHaveLength(2);
 });
 
