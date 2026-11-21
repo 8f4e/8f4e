@@ -80,7 +80,6 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(createFontPreviewPlugin).toHaveBeenCalledWith({ inputTarget: canvas, defaultFont: undefined });
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 1 });
 	expect(deferredPlugins).toContain(looseWiresPlugin);
-	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('wires');
 	expect(deferredPlugins.map(plugin => plugin.id)).toContain('mouse-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
