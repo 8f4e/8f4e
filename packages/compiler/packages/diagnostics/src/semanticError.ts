@@ -276,6 +276,14 @@ function formatSemanticMessage(
 				code +
 				')'
 			);
+		case ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER:
+			return (
+				'The pointee address prefix requires a pointer-typed identifier' +
+				(details?.identifier ? `: ${details.identifier}` : '') +
+				'. (' +
+				code +
+				')'
+			);
 		case ErrorCode.END_QUERY_REQUIRES_FIXED_REFERENCE:
 			return `end(*${details?.identifier ?? 'reference'}) requires a fixed reference connection; a mutable pointer does not retain a fixed buffer boundary. (${code})`;
 		case ErrorCode.POINTEE_ELEMENT_COUNT_UNKNOWN:

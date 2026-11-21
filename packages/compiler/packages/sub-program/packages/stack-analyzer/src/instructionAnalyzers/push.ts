@@ -123,7 +123,7 @@ function pushResolvedTargetStackItems(line: ResolvedPushLine, context: Compilati
 			const { dereferenceDepth } = (line as ResolvedReferencePushLine).arguments[0];
 			return dereferencedStackItems(
 				targetMemory.pointeeBaseType ?? getMemoryBaseType(targetMemory),
-				targetMemory.pointerDepth + 1 - dereferenceDepth
+				targetMemory.pointerDepth + 1 - Math.max(1, dereferenceDepth)
 			);
 		}
 		case 'memory': {

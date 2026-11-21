@@ -98,7 +98,14 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
 				const memory = slot.targetMemory;
-				validateDereferenceDepth(pointerArgument, memory.pointerDepth + 1, line, context);
+				const pointerDepth = getPointerDepthFromMetadata(memory);
+				if (pointerArgument.dereferenceDepth === 0 && pointerDepth === 0) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+						symbol: context.codeBlockId,
+						details: { identifier: pointerArgument.targetMemoryId },
+					});
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth + 1, line, context);
 				if (memory.allocatedByteLength < memory.elementWordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 				}
@@ -106,7 +113,14 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
-				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(memoryItem), line, context);
+				const pointerDepth = getPointerDepthFromMetadata(memoryItem);
+				if (pointerArgument.dereferenceDepth === 0 && pointerDepth === 0) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+						symbol: context.codeBlockId,
+						details: { identifier: pointerArgument.targetMemoryId },
+					});
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth, line, context);
 				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
 					...line,
 					arguments: [pointerArgument],
@@ -115,6 +129,12 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 
 			const local = context.locals[pointerArgument.targetMemoryId];
+			if (pointerArgument.dereferenceDepth === 0 && local && !isResolvedPointerLocal(local)) {
+				throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+					symbol: context.codeBlockId,
+					details: { identifier: pointerArgument.targetMemoryId },
+				});
+			}
 			if (isResolvedPointerLocal(local)) {
 				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(local), line, context);
 				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {

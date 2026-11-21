@@ -85,6 +85,18 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 	// Leading & denotes a start address; end() is classified separately as a query.
 	// Checked after all intermodular forms since &mod: and &mod:mem also start with &.
 	if (hasMemoryReferenceSigil) {
+		if (value.startsWith('&*')) {
+			const { targetMemoryId } = getMemoryPointerTarget(value.slice(1));
+			return {
+				type: ArgumentType.IDENTIFIER,
+				value,
+				referenceKind: 'memory-pointer',
+				scope: 'local',
+				targetMemoryId,
+				dereferenceDepth: 0,
+			};
+		}
+
 		const targetMemoryId = value.substring(1);
 		return {
 			type: ArgumentType.IDENTIFIER,

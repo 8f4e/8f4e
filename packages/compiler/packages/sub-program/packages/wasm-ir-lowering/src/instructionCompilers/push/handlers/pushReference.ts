@@ -9,7 +9,7 @@ export default function pushReference(line: ResolvedReferencePushLine, context: 
 	const { targetMemory } = line.resolvedTarget.slot;
 	const address = i32const(targetMemory.byteAddress);
 	const { dereferenceDepth } = line.arguments[0];
-	if (dereferenceDepth === 1) {
+	if (dereferenceDepth <= 1) {
 		return saveByteCode(context, [...address, ...typedLoad(getMemoryBaseType(targetMemory))]);
 	}
 	const { byteCode } = buildPointerDereferenceByteCode(
