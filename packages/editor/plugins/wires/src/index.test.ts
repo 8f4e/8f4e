@@ -5,6 +5,7 @@ import initState from '@8f4e/editor-state';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
+import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
 import { wiresPlugin } from './index';
 
 const source = `8f4e/v1
@@ -73,7 +74,7 @@ async function setup(text = source, installed = true) {
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
 	const render = () => {
 		gl.drawArraysInstanced.mockClear();
-		layers.draw({ state, memoryViews });
+		layers.draw({ state, memoryViews, renderGeometry: createRenderGeometryFixture(state) });
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);

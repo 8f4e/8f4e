@@ -1,11 +1,13 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
+import { createRenderGeometry } from './render-geometry';
 import { createRenderLayerRegistry } from './render-layers';
 import type { MemoryViews } from './types';
 
 const context = { gl: {} as WebGL2RenderingContext, palette: resolvePalette({}) };
-const frame = { state: createMockState(), memoryViews: {} as MemoryViews };
+const state = createMockState();
+const frame = { state, memoryViews: {} as MemoryViews, renderGeometry: createRenderGeometry().prepare(state) };
 const createLayer = () => ({ draw: vi.fn(), loadPalette: vi.fn(), releaseMemory: vi.fn(), destroy: vi.fn() });
 
 describe('render layer lifecycle', () => {

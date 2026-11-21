@@ -4,6 +4,7 @@ import type {
 	EventDispatcher,
 	State,
 } from '@8f4e/editor-state-types';
+import type { RenderGeometry } from '@8f4e/web-ui';
 import { deriveEndpoints, type WireEndpoints, type WireOutput } from './deriveEndpoints';
 
 /** Receives the viewport-relative pixel endpoints for an input and its matching output. */
@@ -40,7 +41,8 @@ export function createWireConnections(state: State, events: EventDispatcher) {
 	events.on('codeBlockLayoutsChanged', refresh);
 	return {
 		/** Visit active connections, including offscreen endpoints, using current pointer values. */
-		visit: (memory: Int32Array, visitor: WireConnectionVisitor) => visitConnections(state, memory, geometry, visitor),
+		visit: (renderGeometry: RenderGeometry, memory: Int32Array, visitor: WireConnectionVisitor) =>
+			visitConnections(state, renderGeometry, memory, geometry, visitor),
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', refresh);
 			outputsByByteAddress.clear();
@@ -50,11 +52,12 @@ export function createWireConnections(state: State, events: EventDispatcher) {
 
 export function visitConnections(
 	state: State,
+	renderGeometry: RenderGeometry,
 	memory: Int32Array,
 	{ endpointsByBlock, outputsByByteAddress }: WireGeometry,
 	visit: WireConnectionVisitor
 ): void {
-	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
+	for (const { codeBlock, x, y } of renderGeometry.blocks) {
 		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
 
 		if (!codeBlock.name) {
@@ -69,14 +72,10 @@ export function visitConnections(
 			if (!output) {
 				continue;
 			}
+			const renderedOutput = renderGeometry.blocksByCodeBlock.get(output.codeBlock);
+			if (!renderedOutput) continue;
 
-			visit(
-				codeBlock.x + input.x - state.viewport.x,
-				codeBlock.y + input.y - state.viewport.y,
-				output.codeBlock.x + output.x - state.viewport.x,
-				output.codeBlock.y + output.y - state.viewport.y,
-				isSelected
-			);
+			visit(x + input.x, y + input.y, renderedOutput.x + output.x, renderedOutput.y + output.y, isSelected);
 		}
 	}
 }

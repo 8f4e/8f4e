@@ -26,17 +26,17 @@ export function createTextureRenderLayer({
 	const visibleAddresses = new Set<number>();
 	let previousConflicts = new Set<number>();
 	return {
-		draw: ({ memoryViews }) => {
+		draw: ({ memoryViews, renderGeometry }) => {
 			const { sources, conflicts } = bindings.resolveUploads(memoryViews.int32);
 			for (const address of conflicts)
 				if (!previousConflicts.has(address))
 					logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
 			previousConflicts = conflicts;
 			visibleAddresses.clear();
-			for (const block of state.codeBlockRendering.currentProject.blocks) {
+			for (const { codeBlock: block, x: blockX, y: blockY } of renderGeometry.blocks) {
 				for (const texture of textures.viewsByBlock.get(block) ?? []) {
-					const x = block.x - state.viewport.x + texture.x;
-					const y = block.y - state.viewport.y + texture.y;
+					const x = blockX + texture.x;
+					const y = blockY + texture.y;
 					const width = texture.crop.width * texture.magnification.x;
 					const height = texture.crop.height * texture.magnification.y;
 					if (x + width <= 0 || y + height <= 0 || x >= state.viewport.width || y >= state.viewport.height) continue;

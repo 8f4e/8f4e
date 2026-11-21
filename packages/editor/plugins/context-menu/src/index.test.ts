@@ -51,7 +51,12 @@ function setup({
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawContextMenuOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawContextMenuOverlays({
+			draw: draw as unknown as DrawContext,
+			state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return { events, state, draw, render, dispose, activate, close };
 }

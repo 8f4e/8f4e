@@ -23,9 +23,9 @@ export const wiresPlugin: EditorPlugin = {
 					);
 				};
 				return {
-					draw: ({ state, memoryViews }) => {
+					draw: ({ state, memoryViews, renderGeometry }) => {
 						lines.reset();
-						if (state.dialogStack.length === 0) connections.visit(memoryViews.int32, drawConnection);
+						if (state.dialogStack.length === 0) connections.visit(renderGeometry, memoryViews.int32, drawConnection);
 						lines.flush();
 					},
 					loadPalette: nextPalette => {

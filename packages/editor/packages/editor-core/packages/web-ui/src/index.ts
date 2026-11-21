@@ -9,6 +9,8 @@ import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
 import BackgroundRenderer from './plugins/background';
+import { createRenderGeometry } from './render-geometry';
+import type { RenderLayerFrameContext } from './render-layers';
 import type { MemoryViews } from './types';
 
 export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
@@ -24,6 +26,7 @@ export type {
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
 export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
+export type { RenderedCodeBlock, RenderGeometry } from './render-geometry';
 export type {
 	EditorRenderLayer,
 	RenderLayerContext,
@@ -145,7 +148,7 @@ async function mount(
 		},
 		defaultFont
 	);
-	const layerFrame = { state, memoryViews };
+	let layerFrame: RenderLayerFrameContext;
 	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
 
 	function getSampledFps(): number {
@@ -187,13 +190,17 @@ async function mount(
 	};
 	engine.hooks.postDraw.push(renderStatsHook);
 
+	const geometry = createRenderGeometry();
 	const drawFrame = () => {
-		drawers.drawCanvasBackground({ draw, state, memoryViews });
-		drawCodeBlocks(draw, state, memoryViews, drawers);
-		drawers.drawCanvas({ draw, state, memoryViews });
-		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays({ draw, state, memoryViews });
-		drawers.drawContextMenuOverlays({ draw, state, memoryViews });
-		drawers.drawModalOverlays({ draw, state, memoryViews });
+		const renderGeometry = geometry.prepare(state);
+		layerFrame = { state, memoryViews, renderGeometry };
+		const canvasFrame = { draw, state, memoryViews, renderGeometry };
+		drawers.drawCanvasBackground(canvasFrame);
+		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
+		drawers.drawCanvas(canvasFrame);
+		if (state.featureFlags.canvasOverlays) drawers.drawCanvasOverlays(canvasFrame);
+		drawers.drawContextMenuOverlays(canvasFrame);
+		drawers.drawModalOverlays(canvasFrame);
 	};
 
 	let renderingResourcesReleased = false;

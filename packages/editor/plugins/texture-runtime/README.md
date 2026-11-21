@@ -57,8 +57,9 @@ the same buffer at different scales. One WebGL program and rectangle serve every
 interpretation, including GPU bit extraction. Views share storage by resolved upload address. Uploads with no visible views release
 storage, and GPU memory release/restoration recreates uploads without recompiling the shared program.
 
-Textures follow their block and the viewport in the existing canvas-wide overlay pass above sprites and wires. They
-may cover overlapping blocks and other editor content; they do not participate in block occlusion.
+Textures follow their block using the frame's web-ui rendering geometry in the existing canvas-wide overlay pass
+above sprites and wires. They may cover overlapping blocks and other editor content; they do not participate in
+block occlusion.
 
 `textureRuntime.enabled` defaults to false and controls only WASM execution. When enabled, `textureRuntime.entry`
 (default `main`) runs exactly once per editor frame before uploading all visible views, including frames with no

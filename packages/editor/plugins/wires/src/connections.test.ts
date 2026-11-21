@@ -1,5 +1,6 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
+import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
 import { visitConnections } from './connections';
 import type { WireEndpoints, WireInput, WireOutput } from './deriveEndpoints';
 
@@ -48,7 +49,13 @@ describe('visitConnections', () => {
 		});
 		const visit = vi.fn();
 		const memory = Int32Array.from(kind === 'reference' ? [] : [0, 0, outputAddress]);
-		visitConnections(state, memory, { endpointsByBlock, outputsByByteAddress }, visit);
+		visitConnections(
+			state,
+			createRenderGeometryFixture(state),
+			memory,
+			{ endpointsByBlock, outputsByByteAddress },
+			visit
+		);
 		expect(visit).toHaveBeenCalledExactlyOnceWith(110, 236, 450, 454, true);
 	});
 });

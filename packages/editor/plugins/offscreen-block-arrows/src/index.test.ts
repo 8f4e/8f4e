@@ -10,9 +10,9 @@ function setup() {
 	const drawers = createEditorDrawerRegistry();
 	const dispose = offscreenBlockArrowsPlugin.setup({ drawers } as unknown as EditorPluginContext);
 	const drawGlyphs = vi.fn();
-	const render = (x: number, y: number) => {
+	const render = (x: number, y: number, codeBlock = createMockCodeBlock({ x, y })) => {
 		drawGlyphs.mockClear();
-		drawers.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, createMockCodeBlock({ x, y }), state);
+		drawers.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, { codeBlock, x, y }, state);
 	};
 	return { state, drawGlyphs, render, dispose };
 }
@@ -35,14 +35,21 @@ it.each([
 	test.dispose();
 });
 
-it('uses current world coordinates and raw viewport edges after panning and resizing', () => {
+it('uses viewport-relative coordinates and raw viewport edges after panning and resizing', () => {
 	const test = setup();
 	test.render(1200, 384);
 	Object.assign(test.state.viewport, { x: 10, y: 20, width: 125, height: 63, roundedWidth: 120, roundedHeight: 48 });
-	test.render(1000, 52);
-	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(127, 52, textToGlyphIds('>'), PALETTE_INDICES.secondaryBase);
-	test.render(73, 1000);
-	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(73, 67, textToGlyphIds('v'), PALETTE_INDICES.secondaryBase);
+	test.render(990, 32);
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(117, 32, textToGlyphIds('>'), PALETTE_INDICES.secondaryBase);
+	test.render(63, 980);
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(63, 47, textToGlyphIds('v'), PALETTE_INDICES.secondaryBase);
+	test.dispose();
+});
+
+it('points toward the rendered block rather than its logical position', () => {
+	const test = setup();
+	test.render(512, -100, createMockCodeBlock({ x: 1200, y: 384 }));
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(512, 0, textToGlyphIds('^'), PALETTE_INDICES.secondaryBase);
 	test.dispose();
 });
 

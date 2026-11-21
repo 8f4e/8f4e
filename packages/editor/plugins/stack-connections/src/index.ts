@@ -50,12 +50,14 @@ export const stackConnectionsPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, state: { viewport } }) => {
+		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, state: { viewport }, renderGeometry }) => {
 			if (!selectedBlock || !rows.length) return;
-			const left = selectedBlock.x - viewport.x;
+			const renderedBlock = renderGeometry.blocksByCodeBlock.get(selectedBlock);
+			if (!renderedBlock) return;
+			const left = renderedBlock.x;
 			const x = left - viewport.vGrid;
 			if (left <= 0 || x >= viewport.width) return;
-			const top = selectedBlock.y - viewport.y;
+			const top = renderedBlock.y;
 			for (const { y, glyphs } of rows) {
 				const screenY = top + y;
 				if (screenY >= viewport.height) break;

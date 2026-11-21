@@ -43,7 +43,13 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
 	const render = (codeBlock: CodeBlockGraphicData = block) =>
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
-	const renderOverlay = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
+	const renderOverlay = () =>
+		drawers.drawCanvasOverlays({
+			draw,
+			state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	return { state, store, events, block, render, renderOverlay, drawFill, drawGlyphs, dispose };
 }
 

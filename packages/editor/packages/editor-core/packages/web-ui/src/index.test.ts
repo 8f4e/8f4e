@@ -1,5 +1,5 @@
 import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEditorDrawerRegistry } from './drawers/registry';
@@ -268,13 +268,17 @@ describe('web-ui init', () => {
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
+		const renderGeometry = mocks.drawCodeBlocks.mock.calls.at(-1)?.[4];
 
 		expect(frameState).toBe(state);
-		expect(background).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(background).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
 		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
-		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
-		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews });
+		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
+		for (const drawer of [background, canvas, overlay, lastOverlay, menu, modal]) {
+			expect(drawer.mock.calls[0][0].renderGeometry).toBe(renderGeometry);
+		}
 		expect(canvas.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
 		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(lastOverlay.mock.invocationCallOrder[0]);
 		expect(lastOverlay.mock.invocationCallOrder[0]).toBeLessThan(menu.mock.invocationCallOrder[0]);
@@ -305,7 +309,11 @@ describe('web-ui init', () => {
 	});
 
 	it('draws registered render layers above sprites in registration order', async () => {
-		const state = createMockState();
+		const block = createMockCodeBlock({ x: 40, y: 96 });
+		const state = createMockState({
+			viewport: { x: 8, y: 16 },
+			codeBlockRendering: { currentProject: { blocks: [block] } },
+		});
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const drawLayer = vi.fn();
@@ -318,6 +326,20 @@ describe('web-ui init', () => {
 		expect(drawLayer).toHaveBeenCalledOnce();
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
 		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
+		const first = mocks.drawCodeBlocks.mock.calls[0][4];
+		const firstRecord = first.blocksByCodeBlock.get(block);
+		expect(firstRecord).toMatchObject({ x: 32, y: 80 });
+		expect(drawLayer.mock.calls[0][0].renderGeometry).toBe(first);
+		expect(drawTopLayer.mock.calls[0][0].renderGeometry).toBe(first);
+
+		state.viewport.x = 16;
+		view.renderFrame();
+		const next = mocks.drawCodeBlocks.mock.calls[1][4];
+		expect(next).toBe(first);
+		expect(next.blocksByCodeBlock.get(block)).toBe(firstRecord);
+		expect(firstRecord).toMatchObject({ x: 24, y: 80 });
+		expect(drawLayer.mock.calls[1][0].renderGeometry).toBe(next);
+		expect(drawTopLayer.mock.calls[1][0].renderGeometry).toBe(next);
 		view.destroy();
 	});
 

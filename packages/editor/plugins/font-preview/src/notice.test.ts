@@ -16,6 +16,7 @@ function setupNotice() {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

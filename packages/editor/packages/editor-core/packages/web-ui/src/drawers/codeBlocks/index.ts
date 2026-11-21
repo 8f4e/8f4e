@@ -1,5 +1,6 @@
 import type { State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../../drawContext';
+import type { RenderGeometry } from '../../render-geometry';
 import type { MemoryViews } from '../../types';
 import type { EditorDrawerHost } from '../registry';
 
@@ -7,29 +8,19 @@ export default function drawCodeBlocks(
 	draw: DrawContext,
 	state: State,
 	memoryViews: MemoryViews,
-	drawers: EditorDrawerHost
+	drawers: EditorDrawerHost,
+	renderGeometry: RenderGeometry
 ): void {
-	const { x, y } = state.viewport;
+	const { width, height } = state.viewport;
 
-	const offsetX = -x;
-	const offsetY = -y;
-
-	draw.startGroup(offsetX, offsetY);
-
-	for (const codeBlock of state.codeBlockRendering.currentProject.blocks) {
-		if (
-			codeBlock.x + offsetX > -1 * codeBlock.width &&
-			codeBlock.y + offsetY > -1 * codeBlock.height &&
-			codeBlock.x + offsetX < state.viewport.width &&
-			codeBlock.y + offsetY < state.viewport.height
-		) {
-			draw.startGroup(codeBlock.x, codeBlock.y);
+	for (const renderedBlock of renderGeometry.blocks) {
+		const { codeBlock, x, y } = renderedBlock;
+		if (x > -codeBlock.width && y > -codeBlock.height && x < width && y < height) {
+			draw.startGroup(x, y);
 			drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 			draw.endGroup();
 		} else if (state.featureFlags.canvasOverlays) {
-			drawers.drawOffscreenCodeBlock(draw, codeBlock, state);
+			drawers.drawOffscreenCodeBlock(draw, renderedBlock, state);
 		}
 	}
-
-	draw.endGroup();
 }

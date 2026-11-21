@@ -28,7 +28,7 @@ hooks and GPU render-layer registration. Pass that registry through `options.dra
 ### `registerCanvasBackgroundDrawer(drawer)`
 
 Registers viewport-coordinate drawing below code blocks and above the procedural background, independently of
-`canvasOverlays`. Callbacks receive `{ draw, state, memoryViews }` and run in registration order. Registration returns an
+`canvasOverlays`. Callbacks receive `{ draw, state, memoryViews, renderGeometry }` and run in registration order. Registration returns an
 unregister function. The entry-outlines plugin draws borders and labels from core entry bounds through this hook. It uses the shared
 `CanvasDrawer` and `CanvasDrawerContext` types.
 
@@ -41,7 +41,7 @@ hook; web-ui contains no menu-specific drawing. The shared types are `CanvasDraw
 ### `registerModalOverlay(drawer)`
 
 Registers a viewport-coordinate sprite drawer after menus and ordinary canvas overlays. This stage runs even
-when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, memoryViews }` and registration
+when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, memoryViews, renderGeometry }` and registration
 returns an unregister function. `@8f4e/editor-plugin-dialogs` owns dialog layout and drawing through this hook;
 web-ui contains no dialog-specific rendering.
 
@@ -103,10 +103,18 @@ interface FontAtlas {
 ## State Usage
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
+It prepares its renderer-owned `RenderGeometry` before each frame, containing a `RenderedCodeBlock` for every block in the active project,
+including offscreen blocks. Each object references its original editor-state `codeBlock` and has a separate
+viewport-relative pixel origin (`x`, `y`). This is the block's presented position, distinct from its logical position in state.
+The ordered `blocks` array and `blocksByCodeBlock` map reference the same objects. Canvas drawers and GPU render layers
+receive this shared geometry so cross-block drawing can use the presented position of each endpoint. Consume it as read-only
+during drawing, without retaining the geometry or individual records across frames: web-ui reuses this storage and updates the
+positions before the next frame. Editor-state remains the owner of logical block positions and hit testing.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
-Web-ui retains traversal, culling, and block-relative coordinates. A single replaceable
-`registerOffscreenCodeBlockDrawer(drawer)` callback handles offscreen blocks in the same traversal using world
-coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
+The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
+the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
+`registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, renderedBlock, state)` and handles offscreen blocks
+in the same traversal using viewport coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
 `canvasOverlays` controls these decorations. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow geometry and drawing.
 `@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
 and is installed before code rendering.

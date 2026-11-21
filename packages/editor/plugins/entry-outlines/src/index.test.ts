@@ -16,7 +16,12 @@ function setup() {
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const method of Object.values(draw)) method.mockClear();
-		drawers.drawCanvasBackground({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawCanvasBackground({
+			draw: draw as unknown as DrawContext,
+			state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return {
 		state,

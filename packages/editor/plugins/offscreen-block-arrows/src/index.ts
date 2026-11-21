@@ -7,14 +7,14 @@ const [RIGHT, LEFT, DOWN, UP] = ['>', '<', 'v', '^'].map(textToGlyphIds);
 export const offscreenBlockArrowsPlugin: EditorPlugin = {
 	id: 'offscreen-block-arrows',
 	setup: ({ drawers }) =>
-		drawers.registerOffscreenCodeBlockDrawer((draw, codeBlock, state) => {
-			const { x, y, width, height, vGrid, hGrid } = state.viewport;
-			const centerX = x + Math.round(width / 2);
-			const centerY = y + Math.round(height / 2);
-			const deltaX = codeBlock.x - centerX;
-			const deltaY = codeBlock.y - centerY;
-			const horizontalDistance = deltaX >= 0 ? x + width - centerX : centerX - x;
-			const verticalDistance = deltaY >= 0 ? y + height - centerY : centerY - y;
+		drawers.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => {
+			const { width, height, vGrid, hGrid } = state.viewport;
+			const centerX = Math.round(width / 2);
+			const centerY = Math.round(height / 2);
+			const deltaX = renderedBlock.x - centerX;
+			const deltaY = renderedBlock.y - centerY;
+			const horizontalDistance = deltaX >= 0 ? width - centerX : centerX;
+			const verticalDistance = deltaY >= 0 ? height - centerY : centerY;
 			const horizontalScale = horizontalDistance / Math.abs(deltaX);
 			const verticalScale = verticalDistance / Math.abs(deltaY);
 			const scale = Math.min(horizontalScale, verticalScale);

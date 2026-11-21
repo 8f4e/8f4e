@@ -42,7 +42,13 @@ function setup() {
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
-	const render = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
+	const render = () =>
+		drawers.drawCanvasOverlays({
+			draw,
+			state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {
 		const event = {
 			x: state.viewport.width - 2 * state.viewport.vGrid,

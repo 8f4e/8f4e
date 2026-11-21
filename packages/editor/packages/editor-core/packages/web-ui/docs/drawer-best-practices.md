@@ -27,6 +27,7 @@ This keeps memory churn low and gives the garbage collector less work during int
 
 - Treat editor state as immutable input. Drawers should not mutate `state`, code block graphic data, memory views, or sprite lookup tables.
 - Resolve layout-heavy data before drawing when it naturally belongs in editor-state graphic data.
+- Draw block-local elements at their local coordinates; the block drawer's `draw` context already places them at the presented block origin. For canvas-wide or GPU drawing tied to blocks, use the objects in the current frame's `renderGeometry` instead of recomputing positions from the viewport and editor state. Treat rendering geometry as read-only and frame-scoped, since web-ui reuses its storage across frames.
 - Use viewport grid sizes for placement and dimensions so drawer output stays aligned with the rest of the code block renderer.
 - Exit early when required sprite lookups, widgets, memory views, or renderable data are missing.
 

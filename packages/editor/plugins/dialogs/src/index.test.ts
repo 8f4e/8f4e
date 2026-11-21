@@ -40,7 +40,12 @@ function setup(initialDialog?: DialogContent) {
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawModalOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		drawers.drawModalOverlays({
+			draw: draw as unknown as DrawContext,
+			state,
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return { events, store, state, render, draw, dispose };
 }

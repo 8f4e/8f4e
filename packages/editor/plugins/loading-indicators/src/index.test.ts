@@ -36,6 +36,7 @@ function setup(width = 320, height = 160, plugin = pluginWithMotion) {
 		drawers.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: store.getState(),
+			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};
