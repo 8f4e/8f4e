@@ -23,7 +23,7 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "vitest": "4.1.12",
-    "@types/node": "24.13.2",
+    "@types/node": "24.19.2",
     "@8f4e/editor-state": "*"
   }
 }

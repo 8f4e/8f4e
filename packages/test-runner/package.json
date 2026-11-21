@@ -25,6 +25,6 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "@8f4e/project-preparser": "*",
-    "@types/node": "24.13.2"
+    "@types/node": "24.19.2"
   }
 }

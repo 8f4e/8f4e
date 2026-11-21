@@ -30,6 +30,6 @@
   },
   "devDependencies": {
     "@8f4e/tokenizer": "*",
-    "@types/node": "24.13.2"
+    "@types/node": "24.19.2"
   }
 }
