@@ -1,7 +1,8 @@
 # Wires plugin
 
-`@8f4e/editor-plugin-wires` owns wire endpoint layout and the WebGL wire pass. The default, gallery, and landing
-compositions install `wiresPlugin` and `connectorsPlugin` separately. Neither plugin depends on the other.
+`@8f4e/editor-plugin-wires` owns wire endpoint layout and the straight WebGL wire pass. The default and landing
+editors install `wiresPlugin` and `connectorsPlugin` separately. Neither plugin depends on the other. The gallery
+editor uses [`@8f4e/editor-plugin-loose-wires`](../loose-wires/README.md) instead.
 
 The wire tracker uses compiler metadata and settled editor layout to find declaration, fixed reference, and group
 `expose` endpoints, including endpoints outside the viewport. It indexes outputs by byte address for the current

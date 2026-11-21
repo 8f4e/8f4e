@@ -87,7 +87,7 @@ it('starts without storage and reports empty-project readiness after initializat
 			'code-block-background',
 			'code-rendering',
 			'connectors',
-			'wires',
+			'loose-wires',
 			'error-messages',
 			'jump-to-error',
 			'loading-indicators',

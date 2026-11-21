@@ -124,6 +124,65 @@ test('reveals a successfully loaded empty project', async () => {
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
 });
 
+test.each([
+	{ slack: undefined, screenshot: 'gallery-loose-wires' },
+	{ slack: 0, screenshot: 'gallery-zero-slack' },
+])('draws a wire between gallery connectors with $screenshot', async ({ slack, screenshot }) => {
+	const config =
+		slack === undefined ? '' : `\nnote wireConfig\n; @pos 180 60\n; @config looseWires.slack ${slack}\nnoteEnd`;
+	const view = setup({
+		wires: async () =>
+			new Response(`8f4e/v1
+constants env
+; @pos 180 60
+constantsEnd${config}
+entry main
+module osc
+; @pos 4 5
+float out 0.5
+moduleEnd
+module amp
+; @pos 48 5
+float* in &osc:out
+moduleEnd
+entryEnd`),
+	});
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	await expect.poll(() => editor.state.editorConfigSchemaContributions.looseWires).toBeDefined();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	expect(editor.state.editorConfig.looseWires).toEqual(slack === undefined ? undefined : { slack });
+	editor.pauseRendering();
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '704px';
+	canvas.style.height = '272px';
+	await expect.poll(() => editor.state.viewport.width).toBe(704);
+	// Refresh the overlay layout without transient loading times in the capture.
+	editor.state.loadingIndicators = [];
+	const rendering = editor.state.codeBlockRendering;
+	rendering.selectedCodeBlock = rendering.currentProject.blocks.find(block => block.name === 'amp');
+	editor.resize(704, 272);
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot(screenshot);
+	if (slack === 0) {
+		const uniform1f = vi.spyOn(canvas.getContext('webgl2')!, 'uniform1f');
+		editor.renderFrame();
+		const [slackUniform, initialSlack] = uniform1f.mock.calls.at(-1)!;
+		expect(initialSlack).toBe(0);
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', cancelable: true }));
+		expect(editor.state.editorMode).toBe('edit');
+		const configNote = rendering.currentProject.blocks.find(block => block.name === 'wireConfig')!;
+		editor.editing.applyEdits({
+			expectedRevision: editor.editing.getRevision(),
+			edits: [{ type: 'delete', blockId: getEditorBlockId(configNote) }],
+		});
+		expect(editor.state.editorConfig.looseWires).toBeUndefined();
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+		editor.renderFrame();
+		expect(uniform1f).toHaveBeenLastCalledWith(slackUniform, 0.25);
+	}
+});
+
 test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {
 	const view = setup({ empty: async () => new Response('8f4e/v1') });
 	const editor = await view.mounted();
