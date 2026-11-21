@@ -39,17 +39,6 @@ describe('findClosestCodeBlockInDirection', () => {
 
 			expect(result.name).toBe('selected');
 		});
-
-		it('should skip viewport-anchored blocks as navigation targets', () => {
-			const selected = createMockCodeBlock({ name: 'selected', x: 0, y: 0 });
-			const anchoredRight = createMockCodeBlock({ name: 'anchored', x: 200, y: 0, viewportAnchor: 'top-right' });
-			const worldRight = createMockCodeBlock({ name: 'world', x: 400, y: 0 });
-			const codeBlocks = [selected, anchoredRight, worldRight];
-
-			const result = findClosestCodeBlockInDirection(codeBlocks, selected, 'right');
-
-			expect(result.name).toBe('world');
-		});
 	});
 
 	describe('left direction', () => {
@@ -136,17 +125,6 @@ describe('findClosestCodeBlockInDirection', () => {
 	});
 
 	describe('edge cases', () => {
-		it('should allow navigation from a viewport-anchored selected block to a world-space block', () => {
-			const selected = createMockCodeBlock({ name: 'selected', x: 0, y: 0, viewportAnchor: 'top-left' });
-			const worldRight = createMockCodeBlock({ name: 'world', x: 200, y: 0 });
-			const anchoredRight = createMockCodeBlock({ name: 'anchored', x: 300, y: 0, viewportAnchor: 'bottom-right' });
-			const codeBlocks = [selected, worldRight, anchoredRight];
-
-			const result = findClosestCodeBlockInDirection(codeBlocks, selected, 'right');
-
-			expect(result.name).toBe('world');
-		});
-
 		it('should handle only the selected block', () => {
 			const selected = createMockCodeBlock({ name: 'selected', x: 0, y: 0 });
 			const codeBlocks = [selected];

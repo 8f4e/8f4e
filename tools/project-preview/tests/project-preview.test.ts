@@ -4,14 +4,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { chromium } from 'playwright';
 import sharp from 'sharp';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { generateProjectPreview } from '../src/index';
 
 const execFileAsync = promisify(execFile);
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, '..');
 const fixturePath = path.join(testDirectory, 'fixtures', 'home.8f4e');
 const noHomeFixturePath = path.join(testDirectory, 'fixtures', 'no-home.8f4e');
+const wideHomeFixturePath = path.join(testDirectory, 'fixtures', 'wide-home.8f4e');
 const audioFixturePath = path.resolve(packageRoot, '../../packages/examples/src/projects/audio/audioBuffer.8f4e');
 const temporaryDirectory = path.join(testDirectory, '.tmp');
 const gifOutputPath = path.join(temporaryDirectory, 'home-icon.gif');
@@ -105,6 +108,59 @@ describe('8f4e-preview', () => {
 
 		expect(alignedDifference / comparedChannels).toBeLessThan(2);
 		expect(unshiftedDifference / comparedChannels).toBeGreaterThan(5);
+	}, 30_000);
+
+	it('frames a heavy block at the exact offset even with elastic panning loaded', async () => {
+		const launch = chromium.launch.bind(chromium);
+		const launchSpy = vi.spyOn(chromium, 'launch').mockImplementationOnce(async options => {
+			const browser = await launch(options);
+			const newPage = browser.newPage.bind(browser);
+			vi.spyOn(browser, 'newPage').mockImplementationOnce(async options => {
+				const page = await newPage(options);
+				const goto = page.goto.bind(page);
+				vi.spyOn(page, 'goto').mockImplementationOnce(async (url, options) => {
+					const response = await goto(url, options);
+					// Exercise the real renderer after the optional spring has started, regardless of load timing.
+					await page.waitForFunction(() => {
+						const { state } = window as unknown as {
+							state?: { loadingIndicators: { id: string; status: string }[] };
+						};
+						return state?.loadingIndicators.some(
+							indicator => indicator.id === 'plugin:elastic-viewport' && indicator.status === 'done'
+						);
+					});
+					await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+					return response;
+				});
+				return page;
+			});
+			return browser;
+		});
+		const position = { x: 24, y: 32 };
+		try {
+			await generateProjectPreview({
+				format: 'icon',
+				inputPath: wideHomeFixturePath,
+				outputPath: largeGifOutputPath,
+				size: 256,
+				position,
+			});
+		} finally {
+			launchSpy.mockRestore();
+		}
+
+		const { data, info } = await sharp(largeGifOutputPath).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+		const topLeft = { x: info.width, y: info.height };
+		for (let y = 0; y < info.height; y++) {
+			for (let x = 0; x < info.width; x++) {
+				const index = (y * info.width + x) * info.channels;
+				if (data[index] === 0x20 && data[index + 1] === 0x50 && data[index + 2] === 0x80) {
+					topLeft.x = Math.min(topLeft.x, x);
+					topLeft.y = Math.min(topLeft.y, y);
+				}
+			}
+		}
+		expect(topLeft).toEqual(position);
 	}, 30_000);
 
 	it('rejects invalid sizes and position offsets', async () => {

@@ -49,11 +49,12 @@ function setup({
 		store.dispose();
 	});
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
-	const render = () => {
+	const render = (viewport = state.viewport) => {
 		for (const fn of Object.values(draw)) fn.mockClear();
 		drawers.drawContextMenuOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
+			viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
@@ -143,6 +144,20 @@ it('reflows on resize, grid changes, and viewport movement without changing the 
 	expect(test.state.contextMenu).toMatchObject(anchor);
 	test.events.dispatch('contextMenuPointerDown', { x: 48, y: 45 });
 	expect(test.activate).toHaveBeenCalledExactlyOnceWith({ index: 1, x: 48, y: 45 });
+});
+it('draws at the presented viewport without rebuilding labels or moving logical hit areas', () => {
+	const test = setup({ x: 160, y: 160 });
+	Object.assign(test.state.viewport, { x: 112, y: 80 });
+	test.events.dispatch('viewportChanged', { previousX: 0, previousY: 0, x: 112, y: 80, source: 'navigation' });
+	test.render();
+	expect(test.draw.startGroup).toHaveBeenCalledWith(48, 80);
+	const firstLabel = test.draw.drawGlyphs.mock.calls[0][2];
+
+	test.render({ ...test.state.viewport, x: 24, y: 32 });
+	expect(test.draw.startGroup).toHaveBeenCalledWith(136, 128);
+	expect(test.draw.drawGlyphs.mock.calls[0][2]).toBe(firstLabel);
+	test.events.dispatch('contextMenuPointerDown', { x: 56, y: 104 });
+	expect(test.activate).toHaveBeenCalledExactlyOnceWith({ index: 1, x: 56, y: 104 });
 });
 it('isolates editors and unregisters its presentation without clearing core menu content', () => {
 	const first = setup();

@@ -324,8 +324,6 @@ entryEnd`);
 				y: 0,
 				width: 200,
 				height: 200,
-				roundedWidth: 200,
-				roundedHeight: 200,
 				vGrid: 8,
 				hGrid: 16,
 			},

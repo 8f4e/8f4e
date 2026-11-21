@@ -2,8 +2,8 @@
 
 ## Core Boundaries
 
-- Editor-core owns plugin installation, initialization and the frame loop. Advance viewport animation before
-  each render. Finish initial project and font loading before drawing and emit `ready` after the first render.
+- Editor-core owns plugin installation, initialization and the frame loop. Pass the frame timestamp to web-ui.
+  Finish initial project and font loading before drawing and emit `ready` after the first render.
   Dispose plugins in reverse installation order and continue cleanup if a disposer throws.
 - Editor-state owns the project tree, entry assignment and bounds, history, generic source operations, folding,
   text geometry and pointer routing. Keep editor `@group` behavior, authoring commands and browser input in plugins.
@@ -11,7 +11,8 @@
 - Keep raw menu items, dialog content, actions and input blocking in state. Presentation plugins own their
   geometry, hit testing and drawing. Entry assignment works independently of the outline drawer.
 - Web-ui owns font/color configuration, atlas loading, drawing and GPU resources. Register its configuration
-  before plugin setup and project loading. Editor-state depends on generic grid dimensions.
+  before plugin setup and project loading. Web-ui animates the presented camera; editor-state commits the logical
+  destination and depends on generic grid dimensions.
 - Keep raw loading records, contributor-owned errors and assertion results in state. Producers own outcomes and
   presentation plugins own derived geometry and visibility. Replacing a loading ID invalidates older handles.
 - Emit `compilationInputChanged` on compiler-input revisions and consume accepted program artifacts to update
@@ -31,8 +32,7 @@
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
   Keep remembered viewport and selection in memory. Use canonical detached project snapshots from
   `pureHelpers/projectSerialization`. Project-save owns the text file format.
-- The layout coordinator tracks ownership and anchors per project level. Viewport changes reposition active
-  anchors without rebuilding membership or source layout. Publish `codeBlockLayoutsChanged { project, codeBlocks }`
+- The layout coordinator tracks ownership per project level. Publish `codeBlockLayoutsChanged { project, codeBlocks }`
   after the affected blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.

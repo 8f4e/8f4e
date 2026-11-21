@@ -3,7 +3,6 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import { advanceViewportAnimation } from '../../../viewport/animateViewport';
 import buildDisplayModel from '../../buildDisplayModel';
 import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
@@ -17,11 +16,6 @@ describe('codeBlockNavigation', () => {
 	let rightBlock: CodeBlockGraphicData;
 	let upBlock: CodeBlockGraphicData;
 	let downBlock: CodeBlockGraphicData;
-
-	function finishViewportAnimation(): void {
-		advanceViewportAnimation(state, 0, events);
-		advanceViewportAnimation(state, 500, events);
-	}
 
 	beforeEach(() => {
 		// Create mock code blocks using shared utility
@@ -111,41 +105,6 @@ describe('codeBlockNavigation', () => {
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
 	});
 
-	it('should skip viewport-anchored blocks during directional navigation', () => {
-		const anchoredRight = createMockCodeBlock({
-			x: 300,
-			y: 200,
-			creationIndex: 5,
-			name: 'anchored-right',
-			viewportAnchor: 'top-right',
-		});
-		state.codeBlockRendering.currentProject.blocks = [selectedBlock, anchoredRight, rightBlock];
-
-		codeBlockNavigation(createStateManager(state), events);
-
-		onNavigateCodeBlockHandler({ direction: 'right' });
-
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
-	});
-
-	it('should navigate from a viewport-anchored selected block to a world-space block', () => {
-		const anchoredSelected = createMockCodeBlock({
-			x: 200,
-			y: 200,
-			creationIndex: 0,
-			name: 'anchored-selected',
-			viewportAnchor: 'top-left',
-		});
-		state.codeBlockRendering.selectedCodeBlock = anchoredSelected;
-		state.codeBlockRendering.currentProject.blocks = [anchoredSelected, rightBlock];
-
-		codeBlockNavigation(createStateManager(state), events);
-
-		onNavigateCodeBlockHandler({ direction: 'right' });
-
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
-	});
-
 	it('should align the target highlighted line during horizontal navigation', () => {
 		selectedBlock.code = ['zero', 'one', 'two', 'three'];
 		selectedBlock.displayModel = buildDisplayModel(selectedBlock.code, { isExpandedForEditing: true });
@@ -197,13 +156,12 @@ describe('codeBlockNavigation', () => {
 		selectedBlock.cursor.col = 2;
 		selectedBlock.cursor.y = 2 * state.viewport.hGrid;
 
-		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up');
+		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up', events);
 
 		expect(result).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
 		expect(selectedBlock.cursor.row).toBe(0);
 		expect(selectedBlock.cursor.y).toBe(0);
-		finishViewportAnimation();
 		expect(state.viewport.y).toBe(-176);
 		expect(events.dispatch).toHaveBeenCalledWith(
 			'viewportChanged',
@@ -224,7 +182,7 @@ describe('codeBlockNavigation', () => {
 		const onSelectedRowChanged = vi.fn();
 		store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.row', onSelectedRowChanged);
 
-		const result = navigateToCodeBlockInDirection(store, 'up');
+		const result = navigateToCodeBlockInDirection(store, 'up', events);
 
 		expect(result).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
@@ -239,13 +197,12 @@ describe('codeBlockNavigation', () => {
 		selectedBlock.cursor.col = 1;
 		selectedBlock.cursor.y = state.viewport.hGrid;
 
-		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down');
+		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down', events);
 
 		expect(result).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
 		expect(selectedBlock.cursor.row).toBe(3);
 		expect(selectedBlock.cursor.y).toBe(3 * state.viewport.hGrid);
-		finishViewportAnimation();
 		expect(state.viewport.y).toBe(-128);
 		expect(events.dispatch).toHaveBeenCalledWith(
 			'viewportChanged',
@@ -268,7 +225,7 @@ describe('codeBlockNavigation', () => {
 		upBlock.cursor.col = 0;
 		upBlock.cursor.y = 0;
 
-		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up');
+		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up', events);
 
 		expect(result).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(upBlock);
@@ -290,7 +247,7 @@ describe('codeBlockNavigation', () => {
 		downBlock.cursor.col = 1;
 		downBlock.cursor.y = 2 * state.viewport.hGrid;
 
-		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down');
+		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down', events);
 
 		expect(result).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(downBlock);
@@ -308,13 +265,12 @@ describe('codeBlockNavigation', () => {
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 
-		finishViewportAnimation();
 		expect(Math.abs(state.viewport.x % state.viewport.vGrid)).toBe(0);
 		expect(Math.abs(state.viewport.y % state.viewport.hGrid)).toBe(0);
 		expect(state.viewport.y).toBe(-176);
 	});
 
-	it.each(['view', 'edit'] as const)('animates viewport navigation in %s mode', editorMode => {
+	it.each(['view', 'edit'] as const)('commits the viewport once during navigation in %s mode', editorMode => {
 		state = createMockState({
 			editorMode,
 			codeBlockRendering: {
@@ -326,8 +282,6 @@ describe('codeBlockNavigation', () => {
 				y: 0,
 				width: 800,
 				height: 600,
-				roundedWidth: 800,
-				roundedHeight: 600,
 				vGrid: 8,
 				hGrid: 16,
 			},
@@ -342,31 +296,14 @@ describe('codeBlockNavigation', () => {
 
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
 		expect(onSelectionChanged).toHaveBeenCalledWith(rightBlock);
-		expect(state.viewportAnimation.active).toBe(true);
-		expect(state.viewportAnimation.targetX).toBe(48);
-		expect(state.viewportAnimation.targetY).toBe(-96);
-		expect(state.viewport.x).toBe(0);
-		expect(state.viewport.y).toBe(0);
-
-		advanceViewportAnimation(state, 0, events);
-		advanceViewportAnimation(state, 250, events);
-
-		expect(state.viewport.x).toBe(24);
-		expect(state.viewport.y).toBe(-48);
-		expect(state.viewportAnimation.active).toBe(true);
-
-		advanceViewportAnimation(state, 500, events);
-
-		expect(state.viewport.x).toBe(state.viewportAnimation.targetX);
-		expect(state.viewport.y).toBe(state.viewportAnimation.targetY);
-		expect(state.viewportAnimation.active).toBe(false);
-		expect(events.dispatch).toHaveBeenCalledWith(
-			'viewportChanged',
-			expect.objectContaining({
-				x: state.viewport.x,
-				y: state.viewport.y,
-			})
-		);
+		expect(state.viewport).toMatchObject({ x: 48, y: -96 });
+		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportChanged', {
+			previousX: 0,
+			previousY: 0,
+			x: 48,
+			y: -96,
+			source: 'navigation',
+		});
 	});
 
 	it('should not change selection if no block found in direction', () => {
@@ -378,25 +315,26 @@ describe('codeBlockNavigation', () => {
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
 	describe('jumpToCodeBlock', () => {
 		it('should jump to code block by creationIndex', () => {
-			const result = jumpToCodeBlock(createStateManager(state), 2);
-			finishViewportAnimation();
+			const result = jumpToCodeBlock(createStateManager(state), 2, events);
 			expect(result).toBe(true);
 			expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
-			expect(events.dispatch).toHaveBeenCalledWith(
+			expect(events.dispatch).toHaveBeenCalledExactlyOnceWith(
 				'viewportChanged',
 				expect.objectContaining({
 					x: state.viewport.x,
 					y: state.viewport.y,
+					source: 'navigation',
 				})
 			);
 		});
 
 		it('should return false when creationIndex does not match', () => {
-			const result = jumpToCodeBlock(createStateManager(state), 999);
+			const result = jumpToCodeBlock(createStateManager(state), 999, events);
 			expect(result).toBe(false);
 			// selectedCodeBlock should remain unchanged
 			expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
@@ -405,8 +343,7 @@ describe('codeBlockNavigation', () => {
 		it('should center viewport on the jumped-to code block', () => {
 			downBlock.cursor.y = 3 * state.viewport.hGrid;
 
-			jumpToCodeBlock(createStateManager(state), 4);
-			finishViewportAnimation();
+			jumpToCodeBlock(createStateManager(state), 4, events);
 
 			expect(state.viewport.y).toBe(downBlock.y + downBlock.cursor.y - state.viewport.height / 2);
 		});
@@ -435,13 +372,10 @@ describe('codeBlockNavigation', () => {
 					y: 20,
 					width: 200,
 					height: 200,
-					roundedWidth: 200,
-					roundedHeight: 200,
 				},
 			});
 
-			goHome(createStateManager(state));
-			finishViewportAnimation();
+			goHome(createStateManager(state), events);
 
 			expect(state.codeBlockRendering.selectedCodeBlock).toBe(firstHome);
 			expect(state.viewport.x).toBe(48);
@@ -465,20 +399,17 @@ describe('codeBlockNavigation', () => {
 					y: 0,
 					width: 200,
 					height: 200,
-					roundedWidth: 200,
-					roundedHeight: 200,
 				},
 			});
 
-			goHome(createStateManager(state));
-			finishViewportAnimation();
+			goHome(createStateManager(state), events);
 
 			expect(state.codeBlockRendering.selectedCodeBlock).toBe(homeBlock);
 			expect(state.viewport.x).toBe(48);
 			expect(state.viewport.y).toBe(96);
 		});
 
-		it('should dispatch viewportChanged after goHome changes the viewport', () => {
+		it('dispatches a single navigation event when going home changes the viewport', () => {
 			const homeBlock = createMockCodeBlock({
 				name: 'home-dispatch',
 				isHome: true,
@@ -490,14 +421,14 @@ describe('codeBlockNavigation', () => {
 				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
 			});
 
-			goHome(createStateManager(state));
-			finishViewportAnimation();
+			goHome(createStateManager(state), events);
 
-			expect(events.dispatch).toHaveBeenCalledWith(
+			expect(events.dispatch).toHaveBeenCalledExactlyOnceWith(
 				'viewportChanged',
 				expect.objectContaining({
 					x: state.viewport.x,
 					y: state.viewport.y,
+					source: 'navigation',
 				})
 			);
 		});
@@ -514,8 +445,7 @@ describe('codeBlockNavigation', () => {
 				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [disabledHome, otherHome] } },
 			});
 
-			goHome(createStateManager(state));
-			finishViewportAnimation();
+			goHome(createStateManager(state), events);
 
 			expect(state.codeBlockRendering.selectedCodeBlock).toBe(disabledHome);
 		});
@@ -529,8 +459,7 @@ describe('codeBlockNavigation', () => {
 				},
 			});
 
-			goHome(createStateManager(state));
-			finishViewportAnimation();
+			goHome(createStateManager(state), events);
 
 			expect(state.viewport.x).toBe(0);
 			expect(state.viewport.y).toBe(0);

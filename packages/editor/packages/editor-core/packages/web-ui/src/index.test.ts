@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
@@ -37,7 +38,7 @@ const mocks = vi.hoisted(() => {
 		engine,
 		background,
 		// biome-ignore lint/complexity/useArrowFunction: The background renderer is constructed with new.
-		BackgroundRenderer: vi.fn(function () {
+		BackgroundRenderer: vi.fn(function (_engine: typeof engine, _readViewportOrigin: () => { x: number; y: number }) {
 			return background;
 		}),
 		drawCodeBlocks: vi.fn(),
@@ -107,6 +108,19 @@ describe('web-ui init', () => {
 		expect(mocks.engine.drawSprite).toHaveBeenCalledExactlyOnceWith(4, 8, 256, 0, 12, 16);
 		view.destroy();
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
+	});
+
+	it('supplies the current presented viewport origin to the procedural background', async () => {
+		const store = createStateManager(createMockState({ viewport: { x: -23, y: 12 } }));
+		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), { loading });
+		const readViewportOrigin = mocks.BackgroundRenderer.mock.lastCall![1];
+		expect(readViewportOrigin()).toMatchObject({ x: -23, y: 12 });
+
+		store.set('viewport', { ...store.getState().viewport, x: 44, y: -39 });
+		view.renderFrame();
+		expect(readViewportOrigin()).toMatchObject({ x: 44, y: -39 });
+		view.destroy();
+		store.dispose();
 	});
 
 	it('loads the configured font and installs its grid before initializing render layers', async () => {
@@ -271,11 +285,12 @@ describe('web-ui init', () => {
 		const renderGeometry = mocks.drawCodeBlocks.mock.calls.at(-1)?.[4];
 
 		expect(frameState).toBe(state);
-		expect(background).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
+		const frame = { draw: expect.anything(), state, viewport: state.viewport, memoryViews, renderGeometry };
+		expect(background).toHaveBeenCalledWith(frame);
 		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
-		expect(canvas).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
+		expect(canvas).toHaveBeenCalledWith(frame);
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
-		expect(overlay).toHaveBeenCalledWith({ draw: expect.anything(), state, memoryViews, renderGeometry });
+		expect(overlay).toHaveBeenCalledWith(frame);
 		for (const drawer of [background, canvas, overlay, lastOverlay, menu, modal]) {
 			expect(drawer.mock.calls[0][0].renderGeometry).toBe(renderGeometry);
 		}
@@ -343,27 +358,89 @@ describe('web-ui init', () => {
 		view.destroy();
 	});
 
-	it('draws supplied viewport state without advancing navigation', async () => {
+	it('prepares one position effect per frame and shares displaced geometry without editing block positions', async () => {
+		const block = createMockCodeBlock({ x: 40, y: 96 });
+		const otherBlock = createMockCodeBlock({ x: 800, y: 96 });
+		const state = createMockState({
+			viewport: { x: 8, y: 16 },
+			codeBlockRendering: { currentProject: { blocks: [block, otherBlock] } },
+		});
+		const drawers = createEditorDrawerRegistry();
+		const drawBackground = vi.fn();
+		const drawLayer = vi.fn();
+		drawers.registerCanvasBackgroundDrawer(drawBackground);
+		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
+		const resolveOffset = vi.fn((candidate: typeof block) => (candidate === block ? { x: 6, y: -3 } : undefined));
+		const effect = vi.fn(() => resolveOffset);
+		const removePrevious = drawers.registerCodeBlockPositionEffect(effect);
+		const remove = drawers.registerCodeBlockPositionEffect(effect);
+		removePrevious();
+
+		const view = await init(createStateManager(state), createMockEventDispatcher(), createMemoryViews(), {
+			loading,
+			drawers,
+		});
+		view.renderFrame(1250);
+
+		expect(effect).toHaveBeenCalledExactlyOnceWith(state, 1250, false);
+		expect(resolveOffset.mock.calls).toEqual([[block], [otherBlock]]);
+		const geometry = mocks.drawCodeBlocks.mock.calls[0][4];
+		const record = geometry.blocksByCodeBlock.get(block);
+		expect(record).toMatchObject({ x: 38, y: 77 });
+		expect(geometry.blocksByCodeBlock.get(otherBlock)).toMatchObject({ x: 792, y: 80 });
+		expect(drawBackground.mock.calls[0][0].renderGeometry).toBe(geometry);
+		expect(drawLayer.mock.calls[0][0].renderGeometry).toBe(geometry);
+		expect(block).toMatchObject({ x: 40, y: 96 });
+		expect(state.viewport).toMatchObject({ x: 8, y: 16 });
+
+		remove();
+		view.renderFrame(1270);
+
+		expect(effect).toHaveBeenCalledOnce();
+		expect(mocks.drawCodeBlocks.mock.calls[1][4]).toBe(geometry);
+		expect(geometry.blocksByCodeBlock.get(block)).toBe(record);
+		expect(record).toMatchObject({ x: 32, y: 80 });
+		view.destroy();
+	});
+
+	it('shares a single visual camera without mutating the committed viewport or applying block springs', async () => {
+		const block = createMockCodeBlock({ x: 180, y: 96 });
 		const state = createMockState({
 			viewport: { x: 24, y: 32 },
-			viewportAnimation: { active: true, startX: 0, startY: 0, targetX: 100, targetY: 200 },
+			codeBlockRendering: { currentProject: { blocks: [block] } },
 		});
-		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-		const view = await init(createStateManager(state), events, createMemoryViews(), {
-			loading,
-		});
-		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
-		const viewport = structuredClone(state.viewport);
-		const animation = { ...state.viewportAnimation };
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: vi.fn(emitter.emit.bind(emitter)),
+		};
+		const drawers = createEditorDrawerRegistry();
+		const onBackground = vi.fn();
+		const effect = vi.fn(() => () => ({ x: 12, y: 0 }));
+		drawers.registerCanvasBackgroundDrawer(onBackground);
+		drawers.registerCodeBlockPositionEffect(effect);
+		const store = createStateManager(state);
+		const view = await init(store, events, createMemoryViews(), { loading, drawers });
+		const readViewportOrigin = mocks.BackgroundRenderer.mock.lastCall![1];
+		state.viewport.x = 124;
+		state.viewport.y = 72;
+		events.dispatch('viewportChanged', { previousX: 24, previousY: 32, x: 124, y: 72, source: 'navigation' });
 		events.dispatch.mockClear();
-		view.renderFrame();
-		view.renderFrame();
-		expect(mocks.drawCodeBlocks).toHaveBeenCalledTimes(2);
-		expect(mocks.drawCodeBlocks.mock.calls.at(-1)?.[1]).toBe(state);
-		expect(state.viewport).toEqual(viewport);
-		expect(state.viewportAnimation).toEqual(animation);
+		view.renderFrame(1000);
+		view.renderFrame(1100);
+		const { viewport, renderGeometry } = onBackground.mock.lastCall![0];
+		expect(viewport).toBe(readViewportOrigin());
+		expect(viewport).toMatchObject({ x: 74, y: 52 });
+		expect(renderGeometry.blocksByCodeBlock.get(block)).toMatchObject({ x: 106, y: 44 });
+		expect(effect).toHaveBeenLastCalledWith(state, 1100, true);
+		expect(state.viewport).toMatchObject({ x: 124, y: 72 });
+		view.renderFrame(1200);
+		expect(readViewportOrigin()).toMatchObject({ x: 124, y: 72 });
 		expect(events.dispatch).not.toHaveBeenCalled();
 		view.destroy();
+		expect(emitter.listenerCount('viewportChanged')).toBe(0);
+		store.dispose();
 	});
 
 	it('releases rendering resources and restores the latest deferred size before drawing', async () => {

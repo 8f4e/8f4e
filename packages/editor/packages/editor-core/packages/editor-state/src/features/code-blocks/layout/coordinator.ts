@@ -5,17 +5,10 @@ import type {
 	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
-import { resolveViewportAnchoredPosition } from '../features/directives/viewport/resolve';
 import { partitionCodeBlocksByAlwaysOnTop } from '../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../replaceCodeBlocksInPlace';
 import { calculateBlockLayout } from './calculateBlockLayout';
 import type { LayoutRegistry } from './registry';
-
-interface ProjectLayout {
-	/** Ownership snapshot, refreshed only when the project's block collection changes. */
-	blocks: readonly CodeBlockGraphicData[];
-	anchoredBlocks: Set<CodeBlockGraphicData>;
-}
 
 /** Own group membership, contribution settling, and final geometry before publishing completed layouts. */
 export function createLayoutCoordinator(
@@ -25,12 +18,13 @@ export function createLayoutCoordinator(
 	layout: LayoutRegistry
 ) {
 	let owners = new WeakMap<CodeBlockGraphicData, ProjectLevel>();
-	let projects = new WeakMap<ProjectLevel, ProjectLayout>();
+	// Ownership snapshots, refreshed only when a project's block collection changes.
+	let projects = new WeakMap<ProjectLevel, readonly CodeBlockGraphicData[]>();
 	const pending = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 	let calculating = false;
 
 	const unregisterProject = (project: ProjectLevel): void => {
-		for (const block of projects.get(project)?.blocks ?? []) {
+		for (const block of projects.get(project) ?? []) {
 			owners.delete(block);
 			if (block.childProject) unregisterProject(block.childProject);
 		}
@@ -40,16 +34,14 @@ export function createLayoutCoordinator(
 	const syncProject = (project: ProjectLevel): void => {
 		const registered = projects.get(project);
 		if (
-			registered?.blocks.length === project.blocks.length &&
-			registered.blocks.every((block, index) => block === project.blocks[index])
+			registered?.length === project.blocks.length &&
+			registered.every((block, index) => block === project.blocks[index])
 		)
 			return;
 		unregisterProject(project);
-		const anchoredBlocks = new Set<CodeBlockGraphicData>();
-		projects.set(project, { blocks: [...project.blocks], anchoredBlocks });
+		projects.set(project, [...project.blocks]);
 		for (const block of project.blocks) {
 			owners.set(block, project);
-			if (block.viewportAnchor) anchoredBlocks.add(block);
 			if (block.childProject) syncProject(block.childProject);
 		}
 	};
@@ -59,40 +51,6 @@ export function createLayoutCoordinator(
 		projects = new WeakMap();
 		pending.clear();
 		syncProject(root);
-	};
-
-	const positionBlock = (project: ProjectLevel, block: CodeBlockGraphicData): void => {
-		if (!block.viewportAnchor) {
-			block.x = block.gridX * state.viewport.vGrid;
-			block.y = block.gridY * state.viewport.hGrid;
-			return;
-		}
-		if (block === state.codeBlockRendering.draggedCodeBlock) return;
-		const viewport = project === state.codeBlockRendering.currentProject ? state.viewport : project.viewport;
-		const position = resolveViewportAnchoredPosition({
-			anchor: block.viewportAnchor,
-			posX: block.gridX,
-			posY: block.gridY,
-			viewportX: viewport?.x ?? 0,
-			viewportY: viewport?.y ?? 0,
-			viewportWidth: state.viewport.roundedWidth,
-			viewportHeight: state.viewport.roundedHeight,
-			blockWidth: block.width,
-			blockHeight: block.height,
-			vGrid: state.viewport.vGrid,
-			hGrid: state.viewport.hGrid,
-		});
-		block.x = position.x;
-		block.y = position.y;
-	};
-
-	const calculateBlock = (project: ProjectLevel, block: CodeBlockGraphicData): boolean => {
-		const stackingChanged = calculateBlockLayout(block, state, directives, layout.getContribution(block));
-		const anchoredBlocks = projects.get(project)!.anchoredBlocks;
-		if (block.viewportAnchor) anchoredBlocks.add(block);
-		else anchoredBlocks.delete(block);
-		positionBlock(project, block);
-		return stackingChanged;
 	};
 
 	const flush = (): void => {
@@ -111,7 +69,7 @@ export function createLayoutCoordinator(
 				}
 				blocks.delete(block);
 				if (owners.get(block) !== project) continue;
-				if (calculateBlock(project, block)) reordered.add(project);
+				if (calculateBlockLayout(block, state, directives, layout.getContribution(block))) reordered.add(project);
 				layout.publish({ codeBlock: block, state });
 				completed.get(project)!.add(block);
 			}
@@ -149,12 +107,6 @@ export function createLayoutCoordinator(
 		flush();
 	};
 
-	const positionAnchoredBlocks = (): void => {
-		const project = state.codeBlockRendering.currentProject;
-		for (const block of projects.get(project)?.anchoredBlocks ?? []) positionBlock(project, block);
-	};
-	events.on('viewportChanged', positionAnchoredBlocks);
-	events.on('viewportResized', positionAnchoredBlocks);
 	reset(state.codeBlockRendering.rootProject);
 
 	return {
@@ -162,9 +114,5 @@ export function createLayoutCoordinator(
 		syncProject,
 		refreshBlocks,
 		refreshProject,
-		dispose: () => {
-			events.off('viewportChanged', positionAnchoredBlocks);
-			events.off('viewportResized', positionAnchoredBlocks);
-		},
 	};
 }

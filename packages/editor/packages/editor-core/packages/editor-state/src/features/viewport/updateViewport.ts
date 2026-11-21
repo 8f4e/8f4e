@@ -1,9 +1,15 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EditorLifecycleEvents, EventDispatcher, State } from '@8f4e/editor-state-types';
 
 /**
  * Applies viewport position updates through a single commit path.
  */
-export default function updateViewport(state: State, x: number, y: number, events: EventDispatcher): boolean {
+export default function updateViewport(
+	state: State,
+	x: number,
+	y: number,
+	events: EventDispatcher,
+	source?: EditorLifecycleEvents['viewportChanged']['source']
+): boolean {
 	const previousX = state.viewport.x;
 	const previousY = state.viewport.y;
 	const nextX = Math.round(x);
@@ -15,12 +21,13 @@ export default function updateViewport(state: State, x: number, y: number, event
 	const changed = state.viewport.x !== previousX || state.viewport.y !== previousY;
 
 	if (changed) {
-		const event = {
+		const event: EditorLifecycleEvents['viewportChanged'] = {
 			previousX,
 			previousY,
 			x: state.viewport.x,
 			y: state.viewport.y,
 		};
+		if (source !== undefined) event.source = source;
 		events.dispatch('viewportChanged', event);
 	}
 

@@ -1,5 +1,6 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { createFontPreviewPlugin } from '@8f4e/editor-plugin-font-preview';
 import { createGroupPathPlugin } from '@8f4e/editor-plugin-group-path';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
@@ -11,6 +12,7 @@ vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
 vi.mock('glugglugglug', () => ({ Engine: class {} }));
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
+vi.mock('@8f4e/editor-plugin-elastic-viewport', { spy: true });
 vi.mock('@8f4e/editor-plugin-font-preview', { spy: true });
 vi.mock('@8f4e/editor-plugin-group-path', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
@@ -30,7 +32,13 @@ it('starts without storage and reports empty-project readiness after initializat
 			finish = resolve;
 		})
 	);
-	const browserWindow = { navigator: {}, matchMedia: vi.fn((_query: string) => ({ matches: false })) };
+	const reducedMotion = { matches: false };
+	const browserWindow = {
+		navigator: {},
+		matchMedia: vi.fn((query: string) =>
+			query === '(prefers-reduced-motion: reduce)' ? reducedMotion : { matches: false }
+		),
+	};
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
 	const onInitialProjectLoaded = vi.fn();
 	const mounting = mountGalleryEditor(canvas, {
@@ -56,11 +64,17 @@ it('starts without storage and reports empty-project readiness after initializat
 		'deferred-loader',
 	]);
 	expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
+	expect(createElasticViewportPlugin).not.toHaveBeenCalled();
 	const deferredPlugins = await loadDeferredPlugins();
 	expect(browserWindow.matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
 	expect(
 		browserWindow.matchMedia.mock.calls.filter(([query]) => query === '(prefers-reduced-motion: reduce)')
 	).toHaveLength(1);
+	expect(createElasticViewportPlugin).toHaveBeenCalledOnce();
+	const motionOptions = vi.mocked(createElasticViewportPlugin).mock.calls[0][0];
+	expect(motionOptions.prefersReducedMotion()).toBe(false);
+	reducedMotion.matches = true;
+	expect(motionOptions.prefersReducedMotion()).toBe(true);
 	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 	expect(createFontPreviewPlugin).toHaveBeenCalledWith({ inputTarget: canvas, defaultFont: undefined });
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 1 });
@@ -80,7 +94,9 @@ it('starts without storage and reports empty-project readiness after initializat
 			'dialogs',
 			'context-menu',
 			'block-authoring',
+			'coordinate-grid',
 			'entry-outlines',
+			'elastic-viewport',
 			'offscreen-block-arrows',
 			'stack-connections',
 			'keyboard-navigation',
@@ -108,7 +124,14 @@ it('defaults to Departure Mono and omits keyboard plugins on coarse-pointer brow
 	expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('departuremono7x14');
 	const plugins = await loadDeferredPlugins();
 	expect(plugins.map(plugin => plugin.id)).toEqual(
-		expect.arrayContaining(['mouse-input', 'touch-input', 'enter-group-button', 'group-path'])
+		expect.arrayContaining([
+			'mouse-input',
+			'touch-input',
+			'enter-group-button',
+			'group-path',
+			'elastic-viewport',
+			'coordinate-grid',
+		])
 	);
 	expect(createGroupPathPlugin).toHaveBeenCalledWith({ topRow: 0 });
 	for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])

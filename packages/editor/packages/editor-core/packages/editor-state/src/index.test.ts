@@ -1,30 +1,11 @@
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
-import animateViewport, { advanceViewportAnimation } from './features/viewport/animateViewport';
 import initState from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
 
 describe('editor state lifecycle', () => {
-	it.each(['view', 'edit'] as const)('cancels active viewport animation when disposing in %s mode', editorMode => {
-		const events = createMockEventDispatcherWithVitest();
-		const store = initState(events, {
-			callbacks: {},
-		});
-		store.set('editorMode', editorMode);
-		const state = store.getState();
-		animateViewport(state, 80, 160);
-		expect(state.viewportAnimation.active).toBe(true);
-
-		store.dispose();
-		expect(state.viewportAnimation.active).toBe(false);
-
-		advanceViewportAnimation(state, 250, events);
-		expect(state.viewport.x).toBe(0);
-		expect(state.viewport.y).toBe(0);
-	});
-
 	it('starts in view mode before a project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {

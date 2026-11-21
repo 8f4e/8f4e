@@ -41,6 +41,9 @@ entryEnd`;
 			message: 'Assertion failed: expected nonzero, received 0',
 		});
 		await expect.poll(() => block().gaps.get(3)?.size).toBeGreaterThan(0);
+		await expect
+			.poll(() => editor.state.loadingIndicators.find(item => item.id === 'plugin:coordinate-grid')?.status)
+			.toBe('done');
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
 		// Let completed startup indicators hide before capturing the assertion layout.

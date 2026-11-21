@@ -22,7 +22,7 @@ That leaves a gap between:
 As a result, regressions in composed editor scenes can slip through without an ergonomic test harness:
 
 - z-order and overwrite behavior when blocks overlap
-- viewport clipping and anchored block placement
+- viewport clipping and world-space block placement
 - collapsed/hidden block rendering
 - line-number and tab-stop alignment
 - multi-block composition bugs that only show up after the final scene is painted
@@ -57,13 +57,13 @@ The main snapshot coverage should live in `editor-state`, while the ASCII render
 - Keep dependencies limited to editor-state and shared pure helpers.
 
 ### Step 2: Define scene composition and paint-order rules
-- Mirror production ordering for normal blocks, viewport-anchored blocks, always-on-top blocks, widgets, and overlays that should affect snapshots.
+- Mirror production ordering for normal blocks, always-on-top blocks, widgets, and overlays that should affect snapshots.
 - Render into a shared 2D character buffer with overwrite semantics.
 - Keep the glyph vocabulary intentionally small and stable so snapshots stay readable.
 
 ### Step 3: Add initial snapshot coverage in editor-state
 - Add whole-scene snapshot tests for overlapping blocks and z-order.
-- Add coverage for collapsed blocks, tab alignment, and viewport-anchored placement.
+- Add coverage for collapsed blocks, tab alignment, and viewport clipping.
 - Keep rare browser/image tests focused on rasterization fidelity and real renderer behavior.
 
 ## Success Criteria

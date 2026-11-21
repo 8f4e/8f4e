@@ -28,6 +28,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
+			viewport: test.state.viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews,
 		});
@@ -52,6 +53,7 @@ describe('keyboard mode hints', () => {
 		test.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: test.state,
+			viewport: test.state.viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews,
 		});

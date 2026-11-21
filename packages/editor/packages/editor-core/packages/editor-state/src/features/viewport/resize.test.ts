@@ -3,7 +3,7 @@ import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import resize from './resize';
 
 describe('resize', () => {
-	it('updates raw and grid-rounded viewport dimensions', () => {
+	it('keeps exact viewport dimensions even when they do not align with the grid', () => {
 		const state = createMockState({
 			viewport: {
 				x: 5,
@@ -18,7 +18,5 @@ describe('resize', () => {
 		const viewport = state.viewport;
 		expect(viewport.width).toBe(123);
 		expect(viewport.height).toBe(95);
-		expect(viewport.roundedWidth).toBe(120);
-		expect(viewport.roundedHeight).toBe(90);
 	});
 });

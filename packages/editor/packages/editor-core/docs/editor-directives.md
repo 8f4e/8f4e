@@ -769,60 +769,8 @@ moduleEnd
 
 **Important:**
 
-- The `@pos` directive is the source of truth for block position in saved projects
+- The `@pos` directive is the source of truth for a block's position in the project grid
 - During drag, `@pos` updates only on drag end (not during the drag)
-- When `@viewport` is also present, `@pos` stores the inward offset from the anchored corner instead of world-space coordinates (see `@viewport`)
-
-### `@viewport`
-
-Pin a code block to a viewport corner so it stays visible as you pan around the project.
-
-```txt
-; @viewport <top-left|top-right|bottom-left|bottom-right>
-```
-
-When this directive is present, `@pos` is interpreted as an **inward offset** from the specified corner of the visible viewport instead of world-space grid coordinates.
-
-**Accepted values:**
-
-- `top-left`
-- `top-right`
-- `bottom-left`
-- `bottom-right`
-
-**Offset semantics** — positive `@pos` values always move inward from the anchored edges:
-
-- `top-left`: `+x` moves right, `+y` moves down
-- `top-right`: `+x` moves left, `+y` moves down
-- `bottom-left`: `+x` moves right, `+y` moves up
-- `bottom-right`: `+x` moves left, `+y` moves up
-
-`; @pos 0 0` with any anchor means "flush against the anchored corner".
-
-**Clamping:**
-Viewport-anchored blocks are always clamped to remain visible. If a block would be placed outside the viewport due to a large or negative `@pos` offset, its position is clamped so the anchored corner stays within the visible area. Oversized blocks pin the anchored corner and allow overflow only on the opposite side.
-
-**Dragging:**
-Dragging a viewport-anchored block works normally. When the drag ends, `@pos` is rewritten in anchored coordinates (not world-space), and `@viewport` is left unchanged.
-
-**Important:**
-
-- `@viewport` changes how `@pos` is interpreted but does **not** replace it. `@pos` remains the only persisted coordinate.
-- When `@viewport` is absent the block uses normal world-space placement.
-- Only the first `@viewport` directive in a block takes effect; duplicates are ignored.
-- An unknown anchor value (anything other than the four listed above) is treated as if `@viewport` were absent.
-
-Example:
-
-```txt
-module hud
-; @viewport top-right
-; @pos 2 1
-output out 1
-moduleEnd
-```
-
-This places the block two grid cells inward from the right edge and one grid cell down from the top edge of the viewport, regardless of where the user pans.
 
 ### `@alwaysOnTop`
 
@@ -844,20 +792,18 @@ Clicking an always-on-top block brings it to the front of the always-on-top segm
 
 - Rendering and hit-testing both derive from the same `codeBlocks` array order; no separate rendering pass is used.
 - The directive takes no arguments; any text after `@alwaysOnTop` is ignored.
-- `@alwaysOnTop` is compatible with `@viewport`; a viewport-anchored block may also be always-on-top.
 
 Example:
 
 ```txt
 module overlay
 ; @alwaysOnTop
-; @viewport top-left
 ; @pos 1 1
 output status 1
 moduleEnd
 ```
 
-This block stays pinned to the top-left corner of the viewport and is always rendered above all normal code blocks.
+This block stays at `(1, 1)` in the project grid and is always rendered above normal code blocks.
 
 ### `@group`
 

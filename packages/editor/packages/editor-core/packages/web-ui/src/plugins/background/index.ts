@@ -5,28 +5,35 @@ import { createProgram, prepareRenderPass, removeHook, requireResource, requireU
 import { BACKGROUND_DOTS } from './dot-settings';
 import { fragmentShaderSource, vertexShaderSource } from './shaders';
 
-/** Draws the editor's base and alternating dots without atlas masks or per-dot instance data. */
+type ViewportOrigin = Readonly<{ x: number; y: number }>;
+
+/** Draws the editor's base and world-anchored dots without atlas masks or per-dot instance data. */
 export default class BackgroundRenderer {
 	private readonly program: WebGLProgram;
 	private readonly vertexArray: WebGLVertexArrayObject;
 	private readonly patternScaleLocation: WebGLUniformLocation;
+	private readonly patternOffsetLocation: WebGLUniformLocation;
 	private readonly dotBoundsLocation: WebGLUniformLocation;
 	private readonly colorLocations: WebGLUniformLocation[];
 	private readonly colors = [new Float32Array(4), new Float32Array(4), new Float32Array(4)];
 	private readonly dotBounds = new Float32Array(4);
-	private inversePatternWidth = 0;
-	private inversePatternHeight = 0;
+	private patternWidth = 1;
+	private patternHeight = 1;
 	private visible = false;
 	private destroyed = false;
 	private readonly drawHook: RenderHook = () => this.draw();
 
-	constructor(private readonly host: RenderPluginHost) {
+	constructor(
+		private readonly host: RenderPluginHost,
+		private readonly readViewportOrigin?: () => ViewportOrigin
+	) {
 		const gl = host.gl;
 		const program = createProgram(gl, vertexShaderSource, fragmentShaderSource, 'background');
 		let vertexArray: WebGLVertexArrayObject | null = null;
 		try {
 			vertexArray = requireResource(gl.createVertexArray(), 'background vertex array');
 			this.patternScaleLocation = requireUniform(gl, program, 'u_patternScale');
+			this.patternOffsetLocation = requireUniform(gl, program, 'u_patternOffset');
 			this.dotBoundsLocation = requireUniform(gl, program, 'u_dotBounds');
 			this.colorLocations = ['u_baseColor', 'u_evenColor', 'u_oddColor'].map(name => requireUniform(gl, program, name));
 		} catch (error) {
@@ -44,8 +51,8 @@ export default class BackgroundRenderer {
 		{ cellWidth: characterWidth, cellHeight: characterHeight }: Pick<SpriteAtlasGrid, 'cellWidth' | 'cellHeight'>
 	): void {
 		const backgroundDot = BACKGROUND_DOTS[font];
-		this.inversePatternWidth = 1 / (characterWidth * 2);
-		this.inversePatternHeight = 1 / characterHeight;
+		this.patternWidth = characterWidth * 2;
+		this.patternHeight = characterHeight;
 		this.dotBounds.set([
 			backgroundDot.x / characterWidth,
 			backgroundDot.y / characterHeight,
@@ -78,10 +85,17 @@ export default class BackgroundRenderer {
 		const gl = this.host.gl;
 		// The background shares the raw context with render hooks; establish every state needed by this pass.
 		prepareRenderPass(gl, this.program, this.vertexArray);
+		const origin = this.readViewportOrigin?.();
+		// Wrap before uploading so large world coordinates retain pixel precision and column parity.
+		gl.uniform2f(
+			this.patternOffsetLocation,
+			((origin?.x ?? 0) % this.patternWidth) / this.patternWidth,
+			((origin?.y ?? 0) % this.patternHeight) / this.patternHeight
+		);
 		gl.uniform2f(
 			this.patternScaleLocation,
-			gl.drawingBufferWidth * this.inversePatternWidth,
-			gl.drawingBufferHeight * this.inversePatternHeight
+			gl.drawingBufferWidth / this.patternWidth,
+			gl.drawingBufferHeight / this.patternHeight
 		);
 		gl.uniform4fv(this.dotBoundsLocation, this.dotBounds);
 		for (let index = 0; index < this.colors.length; index++)

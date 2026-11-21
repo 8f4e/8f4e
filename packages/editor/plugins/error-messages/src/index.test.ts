@@ -47,6 +47,7 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 		drawers.drawCanvasOverlays({
 			draw,
 			state,
+			viewport: state.viewport,
 			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});

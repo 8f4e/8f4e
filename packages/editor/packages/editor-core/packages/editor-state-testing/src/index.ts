@@ -87,8 +87,6 @@ export function createMockViewport(x = 0, y = 0, width = 800, height = 600): Vie
 		y,
 		width,
 		height,
-		roundedWidth: width,
-		roundedHeight: height,
 		vGrid: 8,
 		hGrid: 16,
 	};
@@ -208,17 +206,8 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			y: 0,
 			width: 1024,
 			height: 768,
-			roundedWidth: 1024,
-			roundedHeight: 768,
 			vGrid: 8,
 			hGrid: 16,
-		},
-		viewportAnimation: {
-			startX: 0,
-			startY: 0,
-			targetX: 0,
-			targetY: 0,
-			active: false,
 		},
 	};
 

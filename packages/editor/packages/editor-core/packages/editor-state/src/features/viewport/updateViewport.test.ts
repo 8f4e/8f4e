@@ -25,14 +25,17 @@ describe('updateViewport', () => {
 		});
 	});
 
-	it('does not dispatch movement events when the viewport position is unchanged', () => {
-		const state = createMockState();
-		const events = createMockEventDispatcherWithVitest();
+	it.each([undefined, 'navigation', 'pan'] as const)(
+		'does not dispatch %s updates when the position is unchanged',
+		source => {
+			const state = createMockState();
+			const events = createMockEventDispatcherWithVitest();
 
-		updateViewport(state, state.viewport.x, state.viewport.y, events);
+			updateViewport(state, state.viewport.x, state.viewport.y, events, source);
 
-		expect(events.dispatch).not.toHaveBeenCalled();
-	});
+			expect(events.dispatch).not.toHaveBeenCalled();
+		}
+	);
 
 	it('rounds fractional viewport coordinates before storing state and dispatching events', () => {
 		const state = createMockState({

@@ -12,19 +12,13 @@ import disabledDirective from './disabled/plugin';
 import hideDirective from './hide/plugin';
 import homeDirective from './home/plugin';
 import { matchEditorDirectives } from './utils';
-import viewportDirective from './viewport/plugin';
 
-export type {
-	DirectiveBlockState,
-	DirectiveDerivedState,
-	ViewportAnchor,
-} from '@8f4e/editor-state-types';
+export type { DirectiveBlockState, DirectiveDerivedState } from '@8f4e/editor-state-types';
 
 export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	disabledDirective,
 	homeDirective,
 	hideDirective,
-	viewportDirective,
 	alwaysOnTopDirective,
 ];
 

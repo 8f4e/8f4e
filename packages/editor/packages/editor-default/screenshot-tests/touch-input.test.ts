@@ -79,9 +79,9 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		const { x: blockX, y: blockY } = targetBlock();
 		const { x, y } = state.viewport;
-		await expect
-			.poll(() => state.loadingIndicators.find(item => item.id === 'plugin:jump-to-error')?.status)
-			.toBe('done');
+		for (const id of ['jump-to-error', 'coordinate-grid']) {
+			await expect.poll(() => state.loadingIndicators.find(item => item.id === `plugin:${id}`)?.status).toBe('done');
+		}
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/before-touch-pan.viewport.snap');
@@ -98,7 +98,10 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		expect({ x: block.x, y: block.y }).toEqual({ x: blockX, y: blockY });
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		context.store.set('loadingIndicators', []);
+		// Capture the settled view, not a transient spring offset from the touch gesture.
+		const clock = vi.spyOn(performance, 'now').mockReturnValueOnce(performance.now() + 200);
 		editor.renderFrame();
+		clock.mockRestore();
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/after-touch-pan.viewport.snap');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock?.name).toBe('target');

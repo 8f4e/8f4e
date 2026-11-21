@@ -1,12 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import {
-	createCodeErrorBlockLookup,
-	gapCalculator,
-	stopViewportAnimation,
-	updateViewport,
-	walkProjectBlocks,
-} from '@8f4e/editor-state';
+import { createCodeErrorBlockLookup, gapCalculator, updateViewport, walkProjectBlocks } from '@8f4e/editor-state';
 import type { InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
@@ -87,7 +81,6 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 				const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber];
 				if (row === undefined) return;
 				const lineY = codeBlock.y + (gapCalculator(row, codeBlock.gaps) + 0.5) * state.viewport.hGrid;
-				stopViewportAnimation(state);
 				updateViewport(
 					state,
 					codeBlock.x + codeBlock.width / 2 - state.viewport.width / 2,

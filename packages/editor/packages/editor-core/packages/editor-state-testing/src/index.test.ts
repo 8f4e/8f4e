@@ -79,8 +79,6 @@ describe('editor-state testing utilities', () => {
 			y: 20,
 			width: 300,
 			height: 200,
-			roundedWidth: 300,
-			roundedHeight: 200,
 		});
 	});
 

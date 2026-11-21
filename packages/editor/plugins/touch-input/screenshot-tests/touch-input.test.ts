@@ -39,10 +39,10 @@ test('native one-finger dragging pans without clicking or moving blocks, while t
 		const { x, y } = editor.state.viewport;
 		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(120, 146) });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(140, 162) });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(137, 159) });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		await expect.poll(() => editor.state.viewport.x).toBe(x - 40);
-		expect(editor.state.viewport.y).toBe(y - 32);
+		await expect.poll(() => editor.state.viewport.x).toBe(x - 37);
+		expect(editor.state.viewport.y).toBe(y - 29);
 		expect({ x: block.x, y: block.y }).toEqual({ x: blockX, y: blockY });
 		expect(pressed).not.toHaveBeenCalled();
 		expect(serializeToProject(editor.state)).toEqual(source);

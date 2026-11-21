@@ -22,8 +22,8 @@ export const entryOutlinesPlugin: EditorPlugin = {
 			entries = prepare();
 		};
 		store.subscribe('codeBlockRendering.entryBounds', update);
-		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, state }) => {
-			draw.startGroup(-state.viewport.x, -state.viewport.y);
+		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
+			draw.startGroup(-viewport.x, -viewport.y);
 			for (const {
 				bounds: { x, y, width, height },
 				glyphs,
@@ -32,7 +32,7 @@ export const entryOutlinesPlugin: EditorPlugin = {
 				draw.drawFill(x, y + height - 1, PALETTE_INDICES.strokeBase, width, 1);
 				draw.drawFill(x, y, PALETTE_INDICES.strokeBase, 1, height);
 				draw.drawFill(x + width - 1, y, PALETTE_INDICES.strokeBase, 1, height);
-				draw.drawGlyphs(x + state.viewport.vGrid, y, glyphs, PALETTE_INDICES.inkStrong);
+				draw.drawGlyphs(x + viewport.vGrid, y, glyphs, PALETTE_INDICES.inkStrong);
 			}
 			draw.endGroup();
 		});

@@ -140,13 +140,6 @@ export interface CodeBlockGraphicData {
 	 */
 	parsedDirectives: ParsedDirectiveRecord[];
 	/**
-	 * Viewport anchor set by `; @viewport <corner>`.
-	 * When present, `@pos` is interpreted as an inward offset from the specified viewport corner,
-	 * and `gridX`/`gridY` store those anchored offsets rather than world-space grid coordinates.
-	 * Undefined when no valid `@viewport` directive is present (world-space placement).
-	 */
-	viewportAnchor?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-	/**
 	 * When true, this block belongs to the always-on-top z-order partition and renders above
 	 * all normal blocks. Set by `; @alwaysOnTop`. Defaults to false.
 	 */
