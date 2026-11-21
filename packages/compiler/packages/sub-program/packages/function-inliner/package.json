@@ -29,6 +29,6 @@
     "@8f4e/wasm-ir-pruner": "*"
   },
   "devDependencies": {
-    "@types/node": "24.13.2"
+    "@types/node": "24.19.2"
   }
 }
