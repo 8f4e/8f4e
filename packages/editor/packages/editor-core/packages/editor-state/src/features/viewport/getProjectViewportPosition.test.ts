@@ -1,28 +1,34 @@
-import { describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockViewport } from '~/pureHelpers/testingUtils/testUtils';
+import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
+import { describe, expect, it, vi } from 'vitest';
+import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import getProjectViewportPosition from './getProjectViewportPosition';
 
 describe('project viewport placement', () => {
-	it('prefers a remembered origin over a home block', () => {
-		const home = createMockCodeBlock({ isHome: true, x: 2000, y: 1000 });
-		expect(
-			getProjectViewportPosition(
-				{ entries: [], path: '', blocks: [home], viewport: { x: 0, y: 0 } },
-				createMockViewport()
-			)
-		).toEqual({ x: 0, y: 0 });
+	it('prefers a remembered origin over contributed first-visit placement', () => {
+		const events = createMockEventDispatcherWithVitest();
+		expect(getProjectViewportPosition({ entries: [], path: '', blocks: [], viewport: { x: 0, y: 0 } }, events)).toEqual(
+			{ x: 0, y: 0 }
+		);
+		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
-	it('uses home alignment on the first visit', () => {
-		const home = createMockCodeBlock({ isHome: true, homeAlignment: 'left', x: 1000, y: 1000, width: 80, height: 80 });
-		expect(getProjectViewportPosition({ entries: [], path: 'Audio', blocks: [home] }, createMockViewport())).toEqual({
-			x: 840,
-			y: 736,
+	it('uses a contributed position on a first visit', () => {
+		const events = createMockEventDispatcherWithVitest();
+		const project = { entries: [], path: 'Audio', blocks: [] };
+		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
+			expect(name).toBe('resolveInitialProjectViewport');
+			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
+			expect(request.project).toBe(project);
+			expect(request.position).toEqual({ x: 0, y: 0 });
+			request.position = { x: 840, y: 736 };
 		});
+		expect(getProjectViewportPosition(project, events)).toEqual({ x: 840, y: 736 });
+		expect(events.dispatch).toHaveBeenCalledTimes(1);
 	});
 
-	it('starts at the origin without a remembered view or home block', () => {
-		expect(getProjectViewportPosition({ entries: [], path: 'Audio', blocks: [] }, createMockViewport())).toEqual({
+	it('starts at the origin without a remembered view or contribution', () => {
+		const events = createMockEventDispatcherWithVitest();
+		expect(getProjectViewportPosition({ entries: [], path: 'Audio', blocks: [] }, events)).toEqual({
 			x: 0,
 			y: 0,
 		});

@@ -22,7 +22,7 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 		store.set('codeBlockRendering.currentProject', project);
 		if (project.selectedBlock && !project.blocks.includes(project.selectedBlock)) project.selectedBlock = undefined;
 		store.set('codeBlockRendering.selectedCodeBlock', project.selectedBlock);
-		const { x, y } = getProjectViewportPosition(project, state.viewport);
+		const { x, y } = getProjectViewportPosition(project, events);
 		updateViewport(state, x, y, events);
 	}
 

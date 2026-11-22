@@ -17,11 +17,7 @@ describe('contextMenu effect', () => {
 		await vi
 			.mocked(events.on)
 			.mock.calls.find(([name]) => name === 'contextmenu')![1]({ x: 100, y: 112 });
-		expect(state.contextMenu.items.at(-1)?.divider).not.toBe(true);
-		if (contributed) {
-			expect(state.contextMenu.items.at(-1)?.action).toBe('inspect');
-			expect(state.contextMenu.items.at(-2)?.divider).toBe(true);
-		}
+		expect(state.contextMenu.items).toEqual(contributed ? [{ title: 'Inspect', action: 'inspect' }] : []);
 		dispose();
 		store.dispose();
 	});
@@ -46,7 +42,7 @@ describe('contextMenu effect', () => {
 		expect(state.contextMenu.items[1].title).toContain('Page 1');
 		await onMenuBack();
 		expect(state.contextMenu.items.some(item => item.action === 'menuBack')).toBe(false);
-		expect(state.contextMenu.items.some(item => item.action === 'goHome')).toBe(true);
+		expect(state.contextMenu.items.some(item => item.action === 'new')).toBe(true);
 		unregister();
 		cleanup();
 		store.dispose();

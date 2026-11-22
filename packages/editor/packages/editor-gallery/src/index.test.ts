@@ -57,6 +57,7 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
 		'project-file-session',
+		'home',
 		'code-block-background',
 		'code-rendering',
 		'loading-indicators',

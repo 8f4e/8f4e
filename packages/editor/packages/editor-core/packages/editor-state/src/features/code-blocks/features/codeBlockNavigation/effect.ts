@@ -2,7 +2,6 @@ import type { Direction, EventDispatcher, NavigateCodeBlockEvent, State } from '
 import type { StateManager } from '@8f4e/state-manager';
 import gapCalculator from '../../../text-geometry/gapCalculator';
 import reverseGapCalculator from '../../../text-geometry/reverseGapCalculator';
-import centerViewportOnCodeBlock from '../../../viewport/centerViewportOnCodeBlock';
 import centerViewportOnCodeBlockCursor from '../../../viewport/centerViewportOnCodeBlockCursor';
 import updateViewport from '../../../viewport/updateViewport';
 import findClosestCodeBlockInDirection from '../../utils/finders/findClosestCodeBlockInDirection';
@@ -198,30 +197,6 @@ export function jumpToCodeBlock(
 }
 
 /**
- * Centers the viewport on the first @home code block, or defaults to origin.
- *
- * Selects the first code block with isHome=true (regardless of disabled state),
- * centers the viewport on it. If no home block exists, centers the viewport at (0,0).
- *
- * @param store - The editor state manager
- * @param events - The event dispatcher
- */
-export function goHome(store: StateManager<State>, events: EventDispatcher): void {
-	const state = store.getState();
-	const homeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.isHome);
-
-	if (homeBlock) {
-		store.set('codeBlockRendering.selectedCodeBlock', homeBlock);
-		const { x, y } = centerViewportOnCodeBlock(state.viewport, homeBlock, {
-			alignment: homeBlock.homeAlignment,
-		});
-		updateViewport(state, x, y, events, 'navigation');
-	} else {
-		updateViewport(state, 0, 0, events, 'navigation');
-	}
-}
-
-/**
  * Code block directional navigation effect.
  *
  * Listens for navigateCodeBlock events to enable navigation between code blocks.
@@ -241,11 +216,6 @@ export default function codeBlockNavigation(store: StateManager<State>, events: 
 		navigateToCodeBlockInDirection(store, event.direction, events);
 	};
 
-	const onGoHome = () => {
-		goHome(store, events);
-	};
-
 	// Register the abstract navigation event handler
 	events.on('navigateCodeBlock', onNavigateCodeBlock);
-	events.on('goHome', onGoHome);
 }

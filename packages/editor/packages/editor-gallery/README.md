@@ -28,7 +28,8 @@ The composition installs the compiler first, with lazy standard-library include 
 loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, immediate stack
 producer highlights, and tooltips. Stack Connections draws links beside the selected code block from each operand
 producer to the highlighted instruction.
-Compiler coordination, file-session tracking, URL loading, block backgrounds, code rendering, and loading indicators are eager.
+Compiler coordination, file-session tracking, URL loading, home navigation, block backgrounds, code rendering, and loading indicators are eager.
+`@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and

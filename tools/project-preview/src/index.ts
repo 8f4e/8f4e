@@ -56,7 +56,7 @@ export interface GenerateProjectPreviewOptions {
 }
 
 interface PreviewCodeBlock {
-	isHome: boolean;
+	parsedDirectives: { name: string; args: string[] }[];
 	x: number;
 	y: number;
 }
@@ -323,9 +323,16 @@ export async function generateProjectPreview({
 		await page.evaluate(async previewPosition => {
 			const previewWindow = globalThis as unknown as PreviewWindow;
 			const state = previewWindow.state;
+			const blocks = state?.codeBlockRendering.rootProject.blocks;
 			const targetBlock =
-				state?.codeBlockRendering.rootProject.blocks.find(block => block.isHome) ??
-				state?.codeBlockRendering.rootProject.blocks[0];
+				blocks?.find(block =>
+					block.parsedDirectives.some(
+						directive =>
+							directive.name === 'home' &&
+							directive.args.length <= 1 &&
+							['center', 'left', 'right', 'top', 'bottom'].includes(directive.args[0] ?? 'center')
+					)
+				) ?? blocks?.[0];
 			if (!state || !targetBlock) {
 				throw new Error('Preview code block disappeared before capture');
 			}

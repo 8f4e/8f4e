@@ -8,4 +8,10 @@ describe('main menu', () => {
 		expect(items.some(item => item.action === 'new')).toBe(projectCreation);
 		expect(items.some((item, index) => item.divider && items[index + 1]?.divider)).toBe(false);
 	});
+
+	it('separates built-in and contributed actions only when both exist', () => {
+		const contribution = { title: 'Inspect', action: 'inspect' };
+		const items = mainMenu(createMockState({ featureFlags: { projectCreation: true } }), [contribution]);
+		expect(items).toEqual([{ title: 'New Project', action: 'new', close: true }, { divider: true }, contribution]);
+	});
 });

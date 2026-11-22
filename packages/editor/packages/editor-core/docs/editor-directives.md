@@ -633,7 +633,9 @@ Use this to bookmark important modules, functions, or other blocks in large proj
 
 ### `@home`
 
-Mark a code block as the home block for initial viewport placement.
+Mark a code block as the home block for initial viewport placement. This directive is provided by the
+[`@8f4e/editor-plugin-home`](../../../plugins/home/README.md) plugin, installed by the default, gallery, and landing
+editor compositions.
 
 ```txt
 ; @home [center|left|right|top|bottom]
@@ -643,7 +645,7 @@ When a project loads, the viewport moves to the first code block containing the 
 
 **Behavior:**
 
-- **Project Load**: On load, viewport moves to the first block with `@home` (determined by code block order).
+- **Project Load**: On load or the first visit to a project group, the viewport moves to the first block with `@home` (determined by code block order). Remembered group positions take precedence on subsequent visits.
 - **Multiple @home**: If multiple blocks have `@home`, only the first one (by project order) is used.
 - **No @home**: If no blocks have `@home`, viewport defaults to `(0,0)`.
 - **Alignment**: Optional alignment hints are: `center` (default), `left`, `right`, `top`, or `bottom`.

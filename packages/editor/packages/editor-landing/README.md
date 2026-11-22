@@ -35,7 +35,9 @@ remain available on non-coarse pointers; no keyboard mode toggle or hint is inst
 rendering controls, compiler diagnostics, and disposal follow the
 [gallery editor's lifecycle](../editor-gallery/README.md).
 
-The compiler, URL loader, block backgrounds, and code rendering load eagerly. Core's `ready` event
+The compiler, URL loader, home navigation, block backgrounds, and code rendering load eagerly.
+`@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` even without a context menu.
+Core's `ready` event
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and the worker runtime throughout the project. Font payloads remain lazy.
 Keyboard input follows pointer capabilities; the host owns scrolling, visibility, loading UI, and canvas layout.

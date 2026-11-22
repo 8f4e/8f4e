@@ -1,11 +1,11 @@
 import { EventEmitter } from 'node:events';
+import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import centerViewportOnCodeBlock from '../viewport/centerViewportOnCodeBlock';
 import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
@@ -88,7 +88,7 @@ describe('code block rendering cursor selection', () => {
 	});
 });
 
-describe('code block rendering home directive', () => {
+describe('code block rendering project loading', () => {
 	it('renders root project-scope source as an editable code block', () => {
 		const state = createMockState({
 			initialProjectState: {
@@ -311,13 +311,11 @@ entryEnd`);
 		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['replacement']);
 	});
 
-	it('centers the initial viewport using the home alignment hint without selecting the block', () => {
+	it('resolves initial placement with settled project layout without selecting a block', () => {
 		const state = createMockState({
 			initialProjectState: {
 				...EMPTY_DEFAULT_PROJECT,
-				execution: [
-					{ type: 'module', id: 0, code: ['module home', '; @home top', '; @pos 10 20', 'moduleEnd'], entry: 'main' },
-				],
+				execution: [{ type: 'module', id: 0, code: ['module main', '; @pos 10 20', 'moduleEnd'], entry: 'main' }],
 			},
 			viewport: {
 				x: 0,
@@ -331,6 +329,14 @@ entryEnd`);
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
+		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
+			if (name !== 'resolveInitialProjectViewport') return;
+			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
+			expect(request.project).toBe(state.codeBlockRendering.currentProject);
+			expect(request.project.blocks[0]).toMatchObject({ x: 80, y: 320, height: 48 });
+			expect(request.project.blocks[0].width).toBeGreaterThan(0);
+			request.position = { x: 80, y: 320 };
+		});
 		codeBlockRenderingEffect(
 			store,
 			events,
@@ -340,14 +346,9 @@ entryEnd`);
 		store.set('initialProjectState', state.initialProjectState);
 
 		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
-		const [homeBlock] = state.codeBlockRendering.currentProject.blocks;
-		expect(homeBlock.isHome).toBe(true);
-		expect(homeBlock.homeAlignment).toBe('top');
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(centerViewportOnCodeBlock(state.viewport, homeBlock, { alignment: 'top' })).toEqual({
-			x: state.viewport.x,
-			y: state.viewport.y,
-		});
+		expect(state.viewport).toMatchObject({ x: 80, y: 320 });
+		expect(events.dispatch).toHaveBeenCalledWith('resolveInitialProjectViewport', expect.any(Object));
 	});
 });
 

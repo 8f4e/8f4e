@@ -2,6 +2,7 @@ import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
@@ -41,6 +42,7 @@ export async function mountLandingEditor(
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			homePlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			createProjectUrlLoaderPlugin({

@@ -52,7 +52,6 @@ export function createCodeBlockGraphicData(
 		blockType: 'unknown',
 		projectPath,
 		disabled: false,
-		isHome: false,
 		alwaysOnTop: false,
 		parsedDirectives,
 	};

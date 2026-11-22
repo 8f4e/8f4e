@@ -1,5 +1,12 @@
 8f4e/v1
 
+note invalidHome
+; @pos 100 100
+; @home middle
+; @home left extra
+These invalid markers must not override the valid home block below.
+noteEnd
+
 note wide
 ; @pos 10 10
 ; @home

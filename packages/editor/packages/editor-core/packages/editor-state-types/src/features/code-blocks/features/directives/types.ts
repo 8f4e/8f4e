@@ -1,12 +1,8 @@
-import type { ViewportBlockAlignment } from '../../../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from '../../buildDisplayModel';
 import type { ParsedDirectiveRecord } from '../../types';
 
 export interface DirectiveBlockState {
 	disabled: boolean;
-	isHome: boolean;
-	/** Effective viewport alignment for `; @home [alignment]`. Present only when the block is a valid home block. */
-	homeAlignment?: ViewportBlockAlignment;
 	/** When true the block is always rendered above normal blocks. Set by `; @alwaysOnTop`. */
 	alwaysOnTop?: boolean;
 }

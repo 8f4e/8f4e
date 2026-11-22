@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mainMenu } from '../../src/features/menu/menus';
 import { createMockState } from '../../src/pureHelpers/testingUtils/testUtils';
 
-describe('menus - go home entry', () => {
+describe('menus - main menu', () => {
 	it('adds a go-back action when rendering a nested project slice', () => {
 		const rootCodeBlocks = [];
 		const nestedProjectCodeBlocks = [];
@@ -30,7 +30,7 @@ describe('menus - go home entry', () => {
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
 
-	it('shows "Go @home" even when no home block exists', () => {
+	it('starts with the new-project action when there are no navigation actions', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [] } },
@@ -38,8 +38,6 @@ describe('menus - go home entry', () => {
 
 		const menu = mainMenu(mockState);
 
-		const goHomeItem = menu.find(item => item.title === 'Go @home');
-
-		expect(goHomeItem).toEqual({ title: 'Go @home', action: 'goHome', close: true });
+		expect(menu).toEqual([{ title: 'New Project', action: 'new', close: true }]);
 	});
 });

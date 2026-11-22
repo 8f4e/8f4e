@@ -26,8 +26,6 @@ export function calculateBlockLayout(
 	const displayModel = directiveState.displayModel;
 	block.displayModel = displayModel;
 	block.disabled = directiveState.blockState.disabled;
-	block.isHome = directiveState.blockState.isHome;
-	block.homeAlignment = directiveState.blockState.homeAlignment;
 	block.lineNumberColumnWidth = block.code.length.toString().length;
 	block.isCollapsed = displayModel.isCollapsed;
 	const draft: BlockLayoutDraft = {

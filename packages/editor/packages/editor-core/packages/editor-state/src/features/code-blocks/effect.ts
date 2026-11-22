@@ -123,7 +123,7 @@ export default function codeBlockRendering(
 		store.set('codeBlockRendering.rootProject', rootProject);
 		store.set('codeBlockRendering.currentProject', currentProject);
 		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
-		const { x, y } = getProjectViewportPosition(currentProject, state.viewport);
+		const { x, y } = getProjectViewportPosition(currentProject, events);
 		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);
 	};

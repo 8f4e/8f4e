@@ -70,6 +70,10 @@ their payloads for subscriptions and synchronous/asynchronous dispatch. Required
 block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
+Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level
+and before committing a viewport for its first visit. Plugins may synchronously replace the request's pixel
+`position`, which defaults to the origin. Remembered positions bypass this request.
+
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
 and dispatcher remain available. It does not track individual registrations. Setup and cleanup errors propagate.
@@ -104,7 +108,8 @@ close behavior and dispatches its action or selector. `closeContextMenu` closes 
 
 Use `menus.registerItem('mainMenu', provider)` for the background menu. Its providers receive `{ state }`, and
 contributions appear in registration order after the built-in items. Main-menu contributions are rebuilt when the
-menu opens or is revisited, just like block-menu contributions. A divider separates the contributed items when present.
+menu opens or is revisited, just like block-menu contributions. A divider separates them from built-in items
+when both are present.
 
 Register a complete submenu with `menus.registerMenu(id, (state, payload) => items)`. Generators may return an
 array or a promise and receive current state whenever the menu opens or is revisited. Open it through

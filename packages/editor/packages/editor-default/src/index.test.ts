@@ -86,6 +86,7 @@ describe('default editor plugins', () => {
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
 			'project-file-session',
+			'home',
 			'project-url-loader',
 			'session-persistence',
 			'code-block-background',

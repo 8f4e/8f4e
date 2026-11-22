@@ -102,8 +102,6 @@ export function reconstructProject(
 			blockType: codeBlock.blockType,
 			entry: codeBlock.entry,
 			disabled: codeBlock.disabled ?? directiveState.blockState.disabled,
-			isHome: directiveState.blockState.isHome,
-			homeAlignment: directiveState.blockState.homeAlignment,
 			alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
 			parsedDirectives: blockParsedDirectives,
 			...overrides,
