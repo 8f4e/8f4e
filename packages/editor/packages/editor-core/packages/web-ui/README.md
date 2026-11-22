@@ -60,7 +60,7 @@ ownership of the supplied renderer and destroys it on disposal or startup failur
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
-- `events: EventDispatcher` - Announces layout grid size changes
+- `events: EventDispatcher` - Announces layout grid size changes and readiness
 - `renderer: WebUiRenderer` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
 - `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. It is preloaded alongside project preparation and remains the default for later configuration changes.
@@ -149,10 +149,13 @@ palette indices. The renderer prepares up to 256 palette colors as premultiplied
 values in a 4 KiB uniform buffer.
 Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
 `gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry without knowing about fonts
-or atlases. Pending font loads cannot replace a newer selection or update a destroyed renderer.
+or atlases. The editor has no grid until the initial atlas is installed. During later font changes, the current
+grid remains usable for rendering while `state.gridSizeReady` is false. Once the selected atlas has been installed
+and any changed dimensions have been applied to layout, web-ui publishes `gridSizeReady`. Same-sized atlas changes,
+cancellation back to the applied font and failed replacements also settle readiness, without invalidating unchanged
+grid geometry. Pending font loads cannot replace a newer selection or update a destroyed renderer.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
 Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
-The startup rendering sequence and initial font readiness remain unchanged.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
 in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
 

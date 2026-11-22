@@ -23,7 +23,7 @@ function setup(
 	const events = initEvents();
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });

@@ -13,6 +13,21 @@ describe('editor state lifecycle', () => {
 		});
 
 		expect(store.getState().editorMode).toBe('view');
+		expect(store.getState().gridSizeReady).toBe(false);
+		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+
+		store.dispose();
+	});
+
+	it('can initialize with an explicitly supplied grid', () => {
+		const events = createMockEventDispatcherWithVitest();
+		const store = initState(events, {
+			callbacks: {},
+			initialGridSize: { vGrid: 6, hGrid: 12 },
+		});
+
+		expect(store.getState().viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(store.getState().gridSizeReady).toBe(true);
 
 		store.dispose();
 	});
@@ -65,6 +80,7 @@ describe('editor state lifecycle', () => {
 		};
 		const store = initState(events, {
 			callbacks: {},
+			initialGridSize: { vGrid: 8, hGrid: 16 },
 		});
 		events.dispatch('enterEditMode');
 		const state = store.getState();

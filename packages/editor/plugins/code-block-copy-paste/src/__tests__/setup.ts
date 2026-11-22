@@ -23,7 +23,7 @@ export function setup() {
 	const writeClipboardText = vi.fn(async (text: string) => {
 		clipboard = text;
 	});
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,

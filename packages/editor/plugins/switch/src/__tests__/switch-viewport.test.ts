@@ -35,9 +35,7 @@ entryEnd`);
 			for (const callback of listeners.get(name) ?? []) callback(event);
 		},
 	};
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	store.set('editorMode', 'edit');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({

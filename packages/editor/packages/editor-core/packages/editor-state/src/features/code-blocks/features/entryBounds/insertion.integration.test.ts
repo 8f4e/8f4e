@@ -4,7 +4,7 @@ import { createEvents } from './__tests__/events';
 
 it('assigns inserted source to the containing entry without a presentation plugin', () => {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	const state = store.getState();
 	try {
 		events.dispatch('loadProject', {

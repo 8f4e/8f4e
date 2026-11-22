@@ -14,7 +14,7 @@ afterEach(() => {
 function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReducedMotion: () => false })) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	const drawers = createEditorDrawerRegistry();
 	const state = store.getState();
 	state.viewport = createMockViewport();

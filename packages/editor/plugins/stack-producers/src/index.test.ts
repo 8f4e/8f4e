@@ -20,7 +20,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	store.set('initialProjectState', project);
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;

@@ -11,13 +11,15 @@ export interface EditorLifecycleEvents {
 	beforeProjectEdit: void;
 	compilationInputChanged: void;
 	compilationSucceeded: ProgramArtifacts;
-	/** Source arrays have changed; core synchronously refreshes their derived metadata and layout. */
+	/** Source arrays have changed; core synchronously refreshes their derived metadata and any available layout. */
 	codeBlockSourcesChanged: { codeBlocks: readonly CodeBlockGraphicData[] };
 	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
+	/** The requested grid dimensions are available and layout has settled. */
+	gridSizeReady: void;
 	memoryValuesChanged: void;
-	/** Synchronously resolve first-visit placement after the project level's layout has settled. */
+	/** Resolve first-visit placement after source and any available layout have settled. */
 	resolveInitialProjectViewport: { project: ProjectLevel; position: Position };
 	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
 	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };

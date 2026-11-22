@@ -15,7 +15,7 @@ function setup(onCompleted: (event: CodeBlockLayoutsChangedEvent) => void = () =
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	// Register before core: completed geometry must not depend on subscription order.
 	events.on('codeBlockLayoutsChanged', onCompleted);
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	cleanups.push(store.dispose);
 	events.dispatch('resize', { canvasWidth: 1024, canvasHeight: 768 });
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });

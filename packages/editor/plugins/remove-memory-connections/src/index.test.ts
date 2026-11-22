@@ -14,9 +14,7 @@ function setup(
 ) {
 	const events = createEvents();
 
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? removeMemoryConnectionsPlugin.setup({

@@ -1,8 +1,11 @@
-import { type Editor, getEditorBlockId } from '@8f4e/editor-core';
+import { parseProjectSource } from '@8f4e/compiler';
+import { type Editor, type EventDispatcher, getEditorBlockId } from '@8f4e/editor-core';
 import { mountDefaultEditor } from '@8f4e/editor-default';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
+import { centerViewportOnCodeBlock } from '@8f4e/editor-state';
 import { expect, test } from 'vitest';
 import { cdp } from 'vitest/browser';
 
@@ -56,6 +59,67 @@ test('uses PixelCode on coarse pointers and restores it after a project font ove
 		await expect.poll(() => editor!.state.viewport.hGrid).toBe(12);
 		expect(editor.state.viewport.vGrid).toBe(6);
 		expect(editor.state.editorConfig.font).toBeUndefined();
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
+});
+
+test('positions home using the installed mobile grid on the first frame and the new grid on project replacement', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+	const canvas = document.createElement('canvas');
+	canvas.width = 390;
+	canvas.height = 240;
+	document.body.append(canvas);
+	const initialProjectUrl = `data:text/plain,${encodeURIComponent(
+		'8f4e/v1\nnote mobileHome\n; @home top\n; @pos 30 40\nMobile home\nnoteEnd'
+	)}`;
+	let editor: Editor | undefined;
+	let events!: EventDispatcher;
+	let firstFrame: { x: number; y: number; vGrid: number; hGrid: number; gridSizeReady: boolean } | undefined;
+	try {
+		editor = await mountDefaultEditor(canvas, {
+			storage: {} as Storage,
+			initialProjectUrl,
+			plugins: [
+				homePlugin,
+				createProjectUrlLoaderPlugin({ fetch: globalThis.fetch, initialProjectUrl }),
+				codeBlockBackgroundPlugin,
+				codeRenderingPlugin,
+				{
+					id: 'first-frame',
+					setup: context => {
+						events = context.events;
+						return context.drawers.registerCanvasDrawer(({ state, viewport }) => {
+							const { x, y, vGrid, hGrid } = viewport;
+							firstFrame ??= { x, y, vGrid, hGrid, gridSizeReady: state.gridSizeReady };
+						});
+					},
+				},
+			],
+		});
+		editor.pauseRendering();
+		const state = editor.state;
+		const firstHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'mobileHome')!;
+		const initialPosition = centerViewportOnCodeBlock(state.viewport, firstHome, { alignment: 'top' });
+		expect(firstFrame).toEqual({ ...initialPosition, vGrid: 6, hGrid: 12, gridSizeReady: true });
+		expect(state.viewport).toMatchObject(initialPosition);
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		await expect(canvas).toMatchScreenshot('mobile-home-position');
+
+		events.dispatch('loadProject', {
+			project: parseProjectSource(
+				'8f4e/v1\nnote nextHome\n; @config font ibmvga8x16\n; @home bottom\n; @pos 100 50\nNext home\nnoteEnd'
+			),
+		});
+		expect(state.gridSizeReady).toBe(false);
+		await expect.poll(() => state.gridSizeReady).toBe(true);
+		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+		const nextHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nextHome')!;
+		expect(state.viewport).toMatchObject(centerViewportOnCodeBlock(state.viewport, nextHome, { alignment: 'bottom' }));
+		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 	} finally {
 		editor?.dispose();
 		canvas.remove();

@@ -12,7 +12,11 @@ afterEach(() => {
 function setup(codeLineSelection = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { codeLineSelection } });
+	const store = initState(events, {
+		callbacks: {},
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		featureFlags: { codeLineSelection },
+	});
 	cleanups.push(store.dispose);
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
 	return { store, state: store.getState(), events, load };

@@ -29,7 +29,7 @@ function createEvents(): EventDispatcher {
 const cleanups: Array<() => void> = [];
 
 function setupState(events: EventDispatcher, options: Options, installed = true) {
-	const store = initState(events, options);
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, ...options });
 	const disposePlugin = installed
 		? toggleSkipExecutionPlugin.setup({
 				store,

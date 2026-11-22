@@ -33,7 +33,11 @@ entryEnd`;
 function setup(source: string, editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, editorConfigSchemaContributions });
+	const store = initState(events, {
+		callbacks: {},
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		editorConfigSchemaContributions,
+	});
 	cleanups.push(store.dispose);
 	const withEnv = source.replace('8f4e/v1\n', '8f4e/v1\nconstants env\n; @pos -100 -100\nconstantsEnd\n');
 	events.dispatch('loadProject', { project: parseProjectSource(withEnv) });

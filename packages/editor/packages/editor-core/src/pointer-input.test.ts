@@ -11,7 +11,11 @@ afterEach(() => {
 
 function setup(moduleDragging = true) {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, featureFlags: { moduleDragging } });
+	const store = initState(events, {
+		callbacks: {},
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		featureFlags: { moduleDragging },
+	});
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,

@@ -5,7 +5,7 @@ import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock } from '../../index';
 it('returns the created block after entry assignment, source preparation and layout settle', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	try {
 		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
 		events.dispatch('enterEditMode');

@@ -73,7 +73,7 @@ async function setup({
 	if (hold) instantiate.mockReturnValueOnce(pending as never);
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	const state = store.getState();
 	Object.assign(state.viewport, { x: 0, y: 0, width: 640, height: 480 });
 	const publishMetadata = ({

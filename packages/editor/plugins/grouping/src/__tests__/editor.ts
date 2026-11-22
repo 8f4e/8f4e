@@ -31,7 +31,7 @@ entryEnd`;
 export function setup({ code = source, installed = true, mode = 'edit' as 'edit' | 'view' } = {}) {
 	const events = createEvents();
 	const writeClipboardText = vi.fn(async (_text: string) => {});
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed

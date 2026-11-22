@@ -14,7 +14,7 @@ afterEach(() => {
 function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('loadProject', {
 		project: { ...EMPTY_DEFAULT_PROJECT, execution: [{ type: 'module', id: 0, entry: 'main', code }] },
 	});

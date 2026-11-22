@@ -14,6 +14,7 @@ function setup(source: string) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, {
 		callbacks: {},
+		initialGridSize: { vGrid: 8, hGrid: 16 },
 		editorConfigSchemaContributions: { test: { root: 'testSetting', schema: { type: 'string', enum: ['sample'] } } },
 	});
 	cleanups.push(store.dispose);

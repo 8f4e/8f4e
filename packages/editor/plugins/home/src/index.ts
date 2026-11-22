@@ -57,6 +57,16 @@ export const homePlugin: EditorPlugin = {
 	id: 'home',
 	setup: ({ store, events, menus }) => {
 		const state = store.getState();
+		let pendingHome: { project: ProjectLevel; select: boolean } | undefined;
+		const clearPendingHome = () => {
+			pendingHome = undefined;
+		};
+		const onCurrentProjectChanged = (project: ProjectLevel) => {
+			if (pendingHome && pendingHome.project !== project) clearPendingHome();
+		};
+		const onViewportChanged = ({ source }: EditorLifecycleEvents['viewportChanged']) => {
+			if (source !== undefined) clearPendingHome();
+		};
 		const refreshErrors = () => {
 			const errors = findDuplicateHomeErrors(state.codeBlockRendering.rootProject);
 			const previous = state.codeErrors.home ?? [];
@@ -73,6 +83,12 @@ export const homePlugin: EditorPlugin = {
 			}
 		};
 		const onResolveInitialProjectViewport = (event: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
+			if (!state.gridSizeReady) {
+				if (event.project === state.codeBlockRendering.currentProject) {
+					pendingHome = { project: event.project, select: false };
+				}
+				return;
+			}
 			const home = findHome(event.project);
 			if (home) {
 				Object.assign(
@@ -81,26 +97,50 @@ export const homePlugin: EditorPlugin = {
 				);
 			}
 		};
-		const onGoHome = () => {
-			const home = findHome(state.codeBlockRendering.currentProject);
-			if (home) store.set('codeBlockRendering.selectedCodeBlock', home.codeBlock);
+		const moveToHome = (project: ProjectLevel, select: boolean) => {
+			const home = findHome(project);
+			if (!home && !select) return;
+			if (home && select) store.set('codeBlockRendering.selectedCodeBlock', home.codeBlock);
 			const { x, y } = home
 				? centerViewportOnCodeBlock(state.viewport, home.codeBlock, { alignment: home.alignment })
 				: { x: 0, y: 0 };
-			updateViewport(state, x, y, events, 'navigation');
+			updateViewport(state, x, y, events, select ? 'navigation' : undefined);
+		};
+		const onGridSizeReady = () => {
+			const pending = pendingHome;
+			clearPendingHome();
+			if (pending?.project === state.codeBlockRendering.currentProject) {
+				moveToHome(pending.project, pending.select);
+			}
+		};
+		const onGoHome = () => {
+			const project = state.codeBlockRendering.currentProject;
+			if (!state.gridSizeReady && findHome(project)) {
+				pendingHome = { project, select: true };
+				return;
+			}
+			clearPendingHome();
+			moveToHome(project, true);
 		};
 
 		store.subscribe('projectChange', refreshErrors);
+		store.subscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 		refreshErrors();
 		events.on('resolveInitialProjectViewport', onResolveInitialProjectViewport);
+		events.on('gridSizeReady', onGridSizeReady);
+		events.on('viewportChanged', onViewportChanged);
 		events.on('goHome', onGoHome);
 		const unregisterMenuItem = menus.registerItem('mainMenu', ({ state }) => {
 			if (state.editorMode === 'edit') return { title: 'Go @home', action: 'goHome', close: true };
 		});
 		return () => {
 			unregisterMenuItem();
+			clearPendingHome();
 			events.off('resolveInitialProjectViewport', onResolveInitialProjectViewport);
+			events.off('gridSizeReady', onGridSizeReady);
+			events.off('viewportChanged', onViewportChanged);
 			events.off('goHome', onGoHome);
+			store.unsubscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 			store.unsubscribe('projectChange', refreshErrors);
 			if (state.codeErrors.home !== undefined) {
 				const errors = { ...state.codeErrors };

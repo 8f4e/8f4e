@@ -17,7 +17,7 @@ async function setup(source: string) {
 	const project = parseProjectSource(source);
 	const compiled = await compileProject(project);
 	const events = createEvents();
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	const tooltip = createTooltip(store, events);
 	cleanups.push(() => {
 		tooltip.dispose();

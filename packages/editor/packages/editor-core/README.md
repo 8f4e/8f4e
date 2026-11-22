@@ -70,9 +70,10 @@ their payloads for subscriptions and synchronous/asynchronous dispatch. Required
 block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
-Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level
-and before committing a viewport for its first visit. Plugins may synchronously replace the request's pixel
-`position`, which defaults to the origin. Remembered positions bypass this request.
+Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level's
+source and available layout, before committing a viewport for its first visit. Plugins may synchronously replace the
+request's pixel `position`, which defaults to the origin, when `state.gridSizeReady` is true. Otherwise placement
+may be deferred until `gridSizeReady`, which follows the grid's settled layout. Remembered positions bypass this request.
 
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
@@ -155,8 +156,9 @@ after the same line add together; minimum widths combine by maximum, in editor c
 display rows and skips hidden lines. Each update replaces this contribution's complete request for that block.
 `contribution.remove(codeBlock)` clears one block, and `contribution.dispose()` removes the owner's requests.
 
-`layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
-layout, including source, compiler metadata, grid size, and contribution changes. It returns an unsubscribe function.
+`layout.subscribe(listener)` reports the visible blocks when positive grid dimensions are available and reports them
+again when core calculates their layout, including source, compiler metadata, grid size, and contribution changes.
+It returns an unsubscribe function.
 Each block retains `tabStopsByLine`, derived from its cached directive records when source changes. Caret movement,
 pointer placement, sizing and presentation reuse those tab stops. Block navigation also uses the settled display model.
 Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or

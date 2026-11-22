@@ -48,7 +48,10 @@ async function setup(text = source, installed = true) {
 	};
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		callbacks: { getWordFromMemory: address => memoryViews.int32[address] },
+	});
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? wiresPlugin.setup({

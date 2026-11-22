@@ -46,6 +46,7 @@ export async function setup(
 	};
 	const events = createEvents();
 	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},

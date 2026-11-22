@@ -42,7 +42,10 @@ async function setup(text = source) {
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		callbacks: { getWordFromMemory: address => memoryViews.int32[address] },
+	});
 	const drawers = createEditorDrawerRegistry();
 	const registerRenderLayer = vi.spyOn(drawers, 'registerRenderLayer');
 	const dispose = connectorsPlugin.setup({

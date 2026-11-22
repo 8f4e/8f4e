@@ -19,11 +19,8 @@ export function createCodeBlockGraphicData(
 	const name = (overrides.name ?? getCodeBlockNameFromSource(code)) || 'code-block';
 	const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
 
-	const defaultVGrid = 8;
-	const defaultHGrid = 16;
-
-	const gridX = overrides.gridX ?? Math.round(x / defaultVGrid);
-	const gridY = overrides.gridY ?? Math.round(y / defaultHGrid);
+	const gridX = overrides.gridX ?? 0;
+	const gridY = overrides.gridY ?? 0;
 
 	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {

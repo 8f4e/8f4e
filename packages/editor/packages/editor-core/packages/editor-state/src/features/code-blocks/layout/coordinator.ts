@@ -54,7 +54,7 @@ export function createLayoutCoordinator(
 	};
 
 	const flush = (): void => {
-		if (calculating) return;
+		if (calculating || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		calculating = true;
 		const completed = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 		const reordered = new Set<ProjectLevel>();

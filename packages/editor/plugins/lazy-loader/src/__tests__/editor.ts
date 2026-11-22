@@ -28,7 +28,7 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 			for (const listener of listeners.get(name) ?? []) listener(event);
 		},
 	};
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });

@@ -55,7 +55,10 @@ export async function setup(
 	let currentMemory: WebAssembly.Memory | null = memory;
 	const getMemory = vi.fn(() => currentMemory);
 	const events = createEvents();
-	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		callbacks: { getWordFromMemory: address => memoryViews.int32[address] },
+	});
 	const state = store.getState();
 	const dispose = installed
 		? createScopePlugin({ getMemory }).setup({

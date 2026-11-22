@@ -19,7 +19,7 @@ async function setup(blockType: 'module' | 'function') {
 	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	cleanups.push(store.dispose);
 	store.set('initialProjectState', project);
 	const state = store.getState();

@@ -10,9 +10,7 @@ const cleanups: Array<() => void> = [];
 function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'edit' | 'view' = 'edit') {
 	const events = createEvents();
 
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	let pluginCleanup = installed
 		? favoritesPlugin.setup({
 				store,

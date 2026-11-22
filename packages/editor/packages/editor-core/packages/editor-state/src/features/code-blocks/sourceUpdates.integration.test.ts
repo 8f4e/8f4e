@@ -1,13 +1,111 @@
 import { EventEmitter } from 'node:events';
 import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { expect, it } from 'vitest';
-import initState from '~/index';
+import { expect, it, vi } from 'vitest';
+import initState, { markGridSizePending, setGridSize } from '~/index';
+
+it('settles source and configuration immediately, but publishes pixel layout only once the grid is available', () => {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, {
+		callbacks: {},
+		editorConfigSchemaContributions: { test: { root: 'test', schema: { type: 'string' } } },
+	});
+	const state = store.getState();
+	const onLayout = vi.fn();
+	const unsubscribeLayout = store.layout.subscribe(onLayout);
+	const notifications: string[] = [];
+	events.on('codeBlockLayoutsChanged', () => notifications.push('layout'));
+	events.on('gridSizeChanged', () => {
+		// Core handles this notification before consumers and settles the affected geometry.
+		expect(state.gridSizeReady).toBe(false);
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		expect(block.x).toBe(4 * state.viewport.vGrid);
+		expect(block.y).toBe(5 * state.viewport.hGrid);
+		notifications.push('grid-changed');
+	});
+	events.on('gridSizeReady', () => {
+		expect(state.gridSizeReady).toBe(true);
+		notifications.push('grid-ready');
+	});
+	try {
+		events.dispatch('loadProject', {
+			project: parseProjectSource(`8f4e/v1
+entry main
+module sample
+; @pos 4 5
+; @config test enabled
+moduleEnd
+entryEnd`),
+		});
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+		expect(state.gridSizeReady).toBe(false);
+		expect(state.editorConfig.test).toBe('enabled');
+		expect(state.compilerInputRevision).toBeGreaterThan(0);
+		expect(block).toMatchObject({ gridX: 4, gridY: 5, x: 0, y: 0, width: 0, height: 0 });
+		expect(state.codeBlockRendering.entryBounds).toEqual([]);
+		expect(onLayout).not.toHaveBeenCalled();
+		expect(notifications).toEqual([]);
+
+		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
+		expect(block).toMatchObject({ x: 24, y: 60, height: 48 });
+		expect(block.width).toBeGreaterThan(0);
+		expect(state.codeBlockRendering.entryBounds).toHaveLength(1);
+		expect(onLayout).toHaveBeenCalled();
+		expect(notifications).toEqual(['layout', 'grid-changed', 'grid-ready']);
+
+		notifications.length = 0;
+		markGridSizePending(state);
+		expect(state.gridSizeReady).toBe(false);
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
+		expect(notifications).toEqual(['grid-ready']);
+
+		notifications.length = 0;
+		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
+		expect(notifications).toEqual([]);
+
+		setGridSize(state, events, { vGrid: 7, hGrid: 14 });
+		expect(block).toMatchObject({ x: 28, y: 70, height: 56 });
+		expect(notifications).toEqual(['layout', 'grid-changed', 'grid-ready']);
+	} finally {
+		unsubscribeLayout();
+		store.dispose();
+	}
+});
+
+it('continues laying out source while a replacement grid is pending', () => {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 6, hGrid: 12 } });
+	const state = store.getState();
+	const onLayout = vi.fn();
+	const unsubscribeLayout = store.layout.subscribe(onLayout);
+	try {
+		markGridSizePending(state);
+		events.dispatch('loadProject', {
+			project: parseProjectSource('8f4e/v1\nnote sample\n; @pos 4 5\nnoteEnd'),
+		});
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		expect(state.gridSizeReady).toBe(false);
+		expect(block).toMatchObject({ x: 24, y: 60, height: 36 });
+		expect(block.width).toBeGreaterThan(0);
+		expect(onLayout).toHaveBeenCalledWith(expect.objectContaining({ codeBlock: block, state }));
+
+		setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+		expect(block).toMatchObject({ x: 32, y: 80, height: 48 });
+		expect(state.gridSizeReady).toBe(true);
+	} finally {
+		unsubscribeLayout();
+		store.dispose();
+	}
+});
 
 it('announces completed layouts after nested source and contribution updates during project loading', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	const state = store.getState();
 	const contribution = store.layout.createContribution();
 	const completedLayouts: boolean[] = [];
@@ -52,7 +150,7 @@ noteEnd`),
 it('notifies only affected blocks after dependent layout contributions settle', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	events.dispatch('loadProject', {
 		project: parseProjectSource(`8f4e/v1
 note first

@@ -28,9 +28,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		if (isInteger) memoryViews.int32[address] = value;
 		else memoryViews.float32[address] = value;
 	});
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed

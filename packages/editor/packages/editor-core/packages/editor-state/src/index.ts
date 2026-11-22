@@ -76,7 +76,7 @@ export default function init(
 
 	// Create base state
 	const baseState = {
-		...createDefaultState(),
+		...createDefaultState(options.initialGridSize),
 		callbacks: options.callbacks,
 		featureFlags,
 		editorConfigSchemaContributions: options.editorConfigSchemaContributions ?? {},
@@ -174,6 +174,7 @@ export {
 } from './features/text-geometry/tabLayout';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { markGridSizePending, setGridSize } from './features/viewport/gridSize';
 export { default as updateViewport } from './features/viewport/updateViewport';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
 export { createCodeErrorBlockLookup, default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';

@@ -13,7 +13,7 @@ export function setup(mode: 'view' | 'edit' = 'view') {
 	const inputTarget = new EventTarget() as HTMLElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	store.set('editorMode', mode);
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createKeyboardModeSwitchingPlugin({ inputTarget }).setup({

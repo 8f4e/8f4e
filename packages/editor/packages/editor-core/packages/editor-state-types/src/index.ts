@@ -33,7 +33,7 @@ import type {
 	MenuStackEntry,
 } from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
-import type { ProjectViewport, Viewport } from './features/viewport/types';
+import type { GridSize, ProjectViewport, Viewport } from './features/viewport/types';
 import type {
 	CodeBlockPointerDownEvent,
 	CodeError,
@@ -147,6 +147,8 @@ export type {
 export interface Options {
 	featureFlags?: FeatureFlagsConfig;
 	callbacks: Callbacks;
+	/** Supply known character-cell dimensions for a host that already has a grid. */
+	initialGridSize?: GridSize;
 	/** Optional host-provided schema contributions for project-level editor config. */
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
@@ -214,6 +216,8 @@ export interface State {
 	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
+	/** Whether the requested grid dimensions are installed and layout is settled. The previous grid remains usable while pending. */
+	gridSizeReady: boolean;
 	viewport: Viewport;
 }
 

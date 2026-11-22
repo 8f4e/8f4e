@@ -11,7 +11,7 @@ afterEach(() => {
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	events.dispatch('loadProject', {

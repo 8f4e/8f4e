@@ -117,12 +117,10 @@ async function mount(
 	const font = getConfiguredFont(state.editorConfig, defaultFont);
 	const fontAtlas = font === defaultFont ? initialFontAtlas : await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
-	updateGridSize(state, events, fontAtlas);
 	let frameStartedAt = performance.now();
 	engine.hooks.preDraw.push(() => {
 		frameStartedAt = performance.now();
 	});
-	const viewportTransition = createViewportTransition(state.viewport);
 	const presentedViewport = { ...state.viewport };
 	const prefersReducedMotion = options.prefersReducedMotion ?? (() => false);
 	const background = new BackgroundRenderer(engine, () => presentedViewport);
@@ -143,15 +141,18 @@ async function mount(
 		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
-	installFontAtlas(fontAtlas, font);
 	const drawers = options.drawers ?? createEditorDrawerRegistry();
 	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
 	try {
+		installFontAtlas(fontAtlas, font);
+		updateGridSize(state, events, fontAtlas);
+		Object.assign(presentedViewport, state.viewport);
 		renderLayers = drawers.attachRenderLayers({ gl: engine.gl, palette });
 	} catch (error) {
 		background.destroy();
 		throw error;
 	}
+	const viewportTransition = createViewportTransition(state.viewport);
 	const { onViewportChanged, reset: resetViewportTransition } = viewportTransition;
 	const guardPointerPress = (event: InternalPointerEvent) => {
 		if (viewportTransition.isTransitioning() && !prefersReducedMotion()) event.stopPropagation = true;

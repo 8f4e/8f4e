@@ -19,7 +19,7 @@ const content: DialogContent = {
 
 function setup(initialDialog?: DialogContent) {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 768 });
 	if (initialDialog) events.dispatch('addDialog', initialDialog);
 	const state = store.getState();

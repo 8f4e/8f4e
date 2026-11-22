@@ -49,7 +49,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		);
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
-		const store = initState(events, { callbacks: {} });
+		const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
@@ -104,7 +104,7 @@ push amount
 functionEnd float`);
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
-		const store = initState(events, { callbacks: {} });
+		const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
@@ -163,7 +163,7 @@ moduleEnd
 entryEnd`);
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
-		const store = initState(events, { callbacks: {} });
+		const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();

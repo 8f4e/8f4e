@@ -1,4 +1,4 @@
-import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock, setGridSize } from '@8f4e/editor-state';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProgramArtifacts, WebUiRenderer } from './index';
 import type { EditorPluginContext } from './plugins';
@@ -15,12 +15,14 @@ const storeState: {
 	globalEditorDirectives: Record<string, unknown>;
 	editorConfig: Record<string, unknown>;
 	info: Record<string, unknown>;
+	gridSizeReady: boolean;
 	viewport: { hGrid: number; vGrid: number };
 } = {
 	globalEditorDirectives: {},
 	editorConfig: {},
 	info: {},
-	viewport: { hGrid: 16, vGrid: 8 },
+	gridSizeReady: false,
+	viewport: { hGrid: 0, vGrid: 0 },
 };
 
 const store = {
@@ -76,7 +78,10 @@ vi.mock('@8f4e/editor-state', async importOriginal => ({
 
 vi.mock('@8f4e/web-ui', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/web-ui')>()),
-	default: vi.fn(async () => view),
+	default: vi.fn(async (stateStore: EditorPluginContext['store'], stateEvents: EditorPluginContext['events']) => {
+		setGridSize(stateStore.getState(), stateEvents, { vGrid: 8, hGrid: 16 });
+		return view;
+	}),
 	registerWebUiConfig: vi.fn(),
 }));
 
@@ -240,6 +245,8 @@ describe('editor init', () => {
 		view.destroy.mockClear();
 		storeState.editorConfig = {};
 		storeState.info = {};
+		storeState.gridSizeReady = false;
+		storeState.viewport = { hGrid: 0, vGrid: 0 };
 	});
 
 	it('sizes the viewport before loading initial project content', async () => {
@@ -248,9 +255,11 @@ describe('editor init', () => {
 
 		await init(canvas, { renderer });
 
-		expect(events.dispatch.mock.calls.slice(0, 3)).toEqual([
+		expect(events.dispatch.mock.calls.slice(0, 5)).toEqual([
 			['resize', { canvasWidth: 640, canvasHeight: 480 }],
 			['loadProject', { project: EMPTY_DEFAULT_PROJECT }],
+			['gridSizeChanged'],
+			['gridSizeReady'],
 			['ready'],
 		]);
 		expect(events.dispatchAsync).toHaveBeenCalledExactlyOnceWith('init');
@@ -298,9 +307,10 @@ describe('editor init', () => {
 		};
 		const ready = vi.fn();
 		const projectInstalled = vi.fn();
-		vi.mocked(initView).mockImplementationOnce(async (_store, _events, _canvas, _memory, options) => {
+		vi.mocked(initView).mockImplementationOnce(async (stateStore, stateEvents, _canvas, _memory, options) => {
 			await options?.initialProjectReady;
 			await fontPending;
+			setGridSize(stateStore.getState(), stateEvents, { vGrid: 5, hGrid: 8 });
 			return view;
 		});
 		const mounting = init({ width: 640, height: 480 } as HTMLCanvasElement, {
@@ -328,10 +338,14 @@ describe('editor init', () => {
 		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
 		expect(loadedState.initialProjectState!.notes).toEqual(project.notes);
 		expect(loadedState.editorConfig.font).toBe('spleen5x8');
+		expect(loadedState.gridSizeReady).toBe(false);
+		expect(loadedState.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		expect(view.renderFrame).not.toHaveBeenCalled();
 		expect(ready).not.toHaveBeenCalled();
 		finishFont();
 		const editor = await mounting;
+		expect(editor.state.gridSizeReady).toBe(true);
+		expect(editor.state.viewport).toMatchObject({ vGrid: 5, hGrid: 8 });
 		expect(ready).toHaveBeenCalledOnce();
 		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(ready.mock.invocationCallOrder[0]);
 		editor.dispose();

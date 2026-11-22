@@ -1,4 +1,5 @@
 import type { ResolvedPalette } from '@8f4e/editor-palette';
+import { markGridSizePending, setGridSize } from '@8f4e/editor-state';
 import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -7,10 +8,7 @@ import type { FontChangedEvent } from './types';
 
 export function updateGridSize(state: State, events: EventDispatcher, atlas: FontAtlas): void {
 	const { cellHeight, cellWidth } = atlas.grid;
-	if (state.viewport.hGrid === cellHeight && state.viewport.vGrid === cellWidth) return;
-	state.viewport.hGrid = cellHeight;
-	state.viewport.vGrid = cellWidth;
-	events.dispatch('gridSizeChanged');
+	setGridSize(state, events, { hGrid: cellHeight, vGrid: cellWidth });
 }
 
 export function subscribeToAppearance(
@@ -26,12 +24,24 @@ export function subscribeToAppearance(
 	let generation = 0;
 	let fontLoading: LoadingIndicatorHandle | undefined;
 	let appliedFont = getConfiguredFont(state.editorConfig, defaultFont);
+	const restoreAppliedGrid = () => {
+		const { hGrid, vGrid } = state.viewport;
+		setGridSize(state, events, { hGrid, vGrid });
+	};
 	const updateFont = async () => {
 		const currentGeneration = ++generation;
 		fontLoading?.cancel();
 		fontLoading = undefined;
 		const font = getConfiguredFont(state.editorConfig, defaultFont);
-		if (font === appliedFont) return;
+		if (font === appliedFont) {
+			if (!state.gridSizeReady) {
+				// Configuration can resolve during a source refresh. Let that refresh settle layout first.
+				await Promise.resolve();
+				if (!disposed && currentGeneration === generation) restoreAppliedGrid();
+			}
+			return;
+		}
+		markGridSizePending(state);
 		const indicator = loading.add({ id: 'font', message: `Loading font ${font}...` });
 		fontLoading = indicator;
 		try {
@@ -44,6 +54,7 @@ export function subscribeToAppearance(
 			indicator.done();
 		} catch (error) {
 			indicator.fail();
+			if (!disposed && currentGeneration === generation) restoreAppliedGrid();
 			throw error;
 		} finally {
 			indicator.cancel();

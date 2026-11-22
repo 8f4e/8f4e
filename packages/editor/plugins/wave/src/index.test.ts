@@ -28,9 +28,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed

@@ -23,9 +23,7 @@ moduleEnd
 entryEnd`);
 	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const events = createEvents();
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed

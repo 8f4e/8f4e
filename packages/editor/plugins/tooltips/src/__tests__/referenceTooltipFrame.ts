@@ -38,7 +38,7 @@ entryEnd`);
 	const compiled = await compileProject(project);
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	const events = createEvents();
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	const drawers = createEditorDrawerRegistry();
 	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 	const removePreparation = store.layout.subscribe(({ codeBlock }) => {

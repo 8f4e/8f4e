@@ -41,7 +41,7 @@ noteEnd`;
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
 	const state = store.getState();
 	const group = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'patch')!;

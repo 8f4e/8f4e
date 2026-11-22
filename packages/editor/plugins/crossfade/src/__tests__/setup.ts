@@ -51,6 +51,7 @@ export async function setup(
 		memoryViews[isInteger ? 'int32' : 'float32'][address] = value;
 	});
 	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},

@@ -8,6 +8,17 @@ touch movement. Web-ui can present a transition without changing the logical vie
 `state.viewport` contains pixel coordinates `x` and `y`, canvas dimensions `width` and `height`, and grid sizes
 `vGrid` (column width) and `hGrid` (row height).
 
+Grid dimensions start at zero, without assuming a font's cell size. Source loading, configuration resolution, and
+compilation may proceed immediately; pixel layout waits for positive grid dimensions. Hosts with a known grid may
+provide `initialGridSize` to initialize editor-state without a renderer.
+
+`markGridSizePending(state)` marks the requested grid unavailable (`state.gridSizeReady = false`) while keeping
+the previously installed dimensions usable for layout and drawing. `setGridSize(state, events, size)` installs the
+positive dimensions, dispatches `gridSizeChanged` when they differ (settling layout synchronously), marks
+`gridSizeReady` true, and dispatches `gridSizeReady` on a change or pending completion. A pending grid can resolve to
+the same dimensions. Geometry-dependent placement must wait for readiness; ordinary font changes need not reposition
+an existing viewport.
+
 Block positions use world coordinates. Canvas coordinates are relative to the canvas's top-left corner; convert
 between them with the viewport offset:
 
@@ -36,8 +47,8 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   transition belongs to web-ui, not editor-state.
 - Each project level remembers its viewport in browser memory. `getProjectViewportPosition` uses that remembered
   position or dispatches `resolveInitialProjectViewport { project, position }` for a first visit.
-  Plugins may replace the default origin synchronously after block layout is settled. Project serializers omit
-  remembered views.
+  Plugins may replace the default origin synchronously when layout and the selected grid are ready, or defer placement
+  until `gridSizeReady`. Project serializers omit remembered views.
 
 ## Rendering ownership
 
@@ -52,4 +63,5 @@ Editor-state stores no border lines, cached center, or arrow presentation data.
 - Input effects: `effect.ts`
 - Centering: `centerViewportOnCodeBlock.ts` and `centerViewportOnCodeBlockCursor.ts`
 - Grid alignment for navigation targets: `roundToGrid.ts`
+- Grid availability and updates: `gridSize.ts`
 - Remembered views and initial placement: `getProjectViewportPosition.ts`

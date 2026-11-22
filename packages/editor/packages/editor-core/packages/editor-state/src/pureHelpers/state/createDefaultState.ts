@@ -1,7 +1,7 @@
-import type { ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
+import type { GridSize, ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
 import { defaultFeatureFlags } from './featureFlags';
 
-export default function createDefaultState() {
+export default function createDefaultState(initialGridSize?: GridSize) {
 	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	return {
@@ -65,13 +65,14 @@ export default function createDefaultState() {
 		assertionResults: [],
 		dialog: { id: '', text: '', title: '', buttons: [] },
 		dialogStack: [],
+		gridSizeReady: initialGridSize !== undefined,
 		viewport: {
 			x: 0,
 			y: 0,
 			width: 0,
 			height: 0,
-			vGrid: 8,
-			hGrid: 16,
+			vGrid: initialGridSize?.vGrid ?? 0,
+			hGrid: initialGridSize?.hGrid ?? 0,
 		},
 	};
 }

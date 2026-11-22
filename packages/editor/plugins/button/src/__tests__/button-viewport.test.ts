@@ -21,9 +21,7 @@ moduleEnd
 entryEnd`);
 	const compiled = await compileProject(project);
 	const events = createEvents();
-	const store = initState(events, {
-		callbacks: {},
-	});
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	store.set('editorMode', 'edit');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createButtonPlugin({ writeMemory: () => {} }).setup({

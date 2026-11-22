@@ -69,7 +69,8 @@ path; ordinary layout invalidations do not reparse source. `layout/coordinator.t
 edits and layout notifications. Renaming a group retains its runtime identity while updating its source path.
 
 The coordinator queues changed blocks by owning group, settles nested plugin contributions, and projects grid
-positions to world pixels before publishing completion for each affected group. Panning and resizing do not move
+positions to world pixels before publishing completion for each affected group. Pixel layout waits for the first
+positive grid dimensions; while a replacement grid is pending, the previously installed grid remains usable. Panning and resizing do not move
 blocks in the project. Other blocks can still be in the middle of a source update and must not be read as part of a
 completion notification.
 
@@ -115,7 +116,8 @@ presentation, including horizontal placement derived from shared tab/source geom
 remembered position and selected block. If the group block was selected before entry, returning reselects it.
 Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
 are not restored. A remembered position always takes precedence, including a remembered origin.
-Only first visits resolve the initial viewport through the `resolveInitialProjectViewport` event after layout settles.
+Only first visits resolve the initial viewport through the `resolveInitialProjectViewport` event after source and
+any available layout settle. Placement plugins wait for the `gridSizeReady` event if the selected grid is pending.
 Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
 in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
 exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving

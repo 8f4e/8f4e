@@ -16,7 +16,11 @@ function setup(captureWheel = true, viewportDragging = true) {
 		focus: vi.fn(),
 	}) as unknown as HTMLElement;
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });
+	const store = initState(events, {
+		initialGridSize: { vGrid: 8, hGrid: 16 },
+		callbacks: {},
+		featureFlags: { viewportDragging },
+	});
 	const dispose = createMouseInputPlugin({ inputTarget, captureWheel }).setup({
 		store,
 		events,

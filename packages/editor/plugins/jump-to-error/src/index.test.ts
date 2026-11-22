@@ -15,7 +15,7 @@ afterEach(() => {
 function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {} });
+	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
 	events.dispatch('loadProject', {
 		project: {

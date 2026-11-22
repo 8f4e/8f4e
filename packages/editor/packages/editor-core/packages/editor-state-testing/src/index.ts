@@ -200,6 +200,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		globalEditorDirectives: {},
 		dialog: { id: '', text: '', title: '', buttons: [] },
 		dialogStack: [],
+		gridSizeReady: true,
 		viewport: {
 			x: 0,
 			y: 0,
