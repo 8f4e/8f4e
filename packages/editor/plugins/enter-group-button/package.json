@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-enter-group-button",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Inline project group navigation button for the 8f4e editor",
   "type": "module",
