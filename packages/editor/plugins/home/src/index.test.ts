@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
+import type { EditorPluginContext } from '@8f4e/editor-core';
 import initState, { applyCodeBlockSourceEdits, centerViewportOnCodeBlock } from '@8f4e/editor-state';
-import type { ViewportBlockAlignment } from '@8f4e/editor-state-types';
+import type { ProjectLevel, ViewportBlockAlignment } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { homePlugin } from './index';
 
@@ -11,21 +11,25 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(installed = true) {
+function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	const disposePlugin = installed
-		? homePlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
-			})
-		: () => {};
+	const unregisterMenuItem = vi.fn();
+	const registerItem = vi.spyOn(store.menus, 'registerItem').mockReturnValue(unregisterMenuItem);
+	let cleanup: (() => void) | undefined = homePlugin.setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		drawers: {} as EditorPluginContext['drawers'],
+	});
+	const disposePlugin = () => {
+		cleanup?.();
+		cleanup = undefined;
+	};
 	cleanups.push(store.dispose, disposePlugin);
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
 	const state = store.getState();
@@ -35,7 +39,30 @@ function setup(installed = true) {
 	const position = () => ({ x: state.viewport.x, y: state.viewport.y });
 	const expectedPosition = (name: string, alignment: ViewportBlockAlignment) =>
 		centerViewportOnCodeBlock(state.viewport, block(name), { alignment });
-	return { state, store, events, load, block, position, expectedPosition, disposePlugin };
+	const resolveInitial = (
+		project: ProjectLevel = state.codeBlockRendering.currentProject,
+		position = { x: 0, y: 0 }
+	) => {
+		events.dispatch('resolveInitialProjectViewport', { project, position });
+		return position;
+	};
+	const menu = () => {
+		expect(registerItem).toHaveBeenCalledExactlyOnceWith('mainMenu', expect.any(Function));
+		return registerItem.mock.calls[0][1]({ state });
+	};
+	return {
+		state,
+		store,
+		events,
+		load,
+		block,
+		position,
+		expectedPosition,
+		resolveInitial,
+		menu,
+		unregisterMenuItem,
+		disposePlugin,
+	};
 }
 
 describe('home viewport navigation', () => {
@@ -49,7 +76,7 @@ describe('home viewport navigation', () => {
 	] as const)('honors @home%s on initial placement without selecting the block', (args, alignment) => {
 		const test = setup();
 		test.load(`note target\n; @pos 100 200\n; @home${args}\nnoteEnd`);
-		expect(test.position()).toEqual(test.expectedPosition('target', alignment));
+		expect(test.resolveInitial()).toEqual(test.expectedPosition('target', alignment));
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 	});
 
@@ -70,7 +97,7 @@ note later
 ; @home top
 noteEnd`);
 		expect(test.block('first').disabled).toBe(true);
-		expect(test.position()).toEqual(test.expectedPosition('first', 'left'));
+		expect(test.resolveInitial()).toEqual(test.expectedPosition('first', 'left'));
 		Object.assign(test.state.viewport, { x: 128, y: 256 });
 		const changed = vi.fn();
 		test.events.on('viewportChanged', changed);
@@ -130,7 +157,7 @@ noteEnd`);
 	it('falls back to the origin without discarding selection if no valid home exists', () => {
 		const test = setup();
 		test.load('note target\n; @pos 100 200\n; @home diagonal\nnoteEnd');
-		expect(test.position()).toEqual({ x: 0, y: 0 });
+		expect(test.resolveInitial(undefined, { x: 128, y: 256 })).toEqual({ x: 128, y: 256 });
 		test.store.set('codeBlockRendering.selectedCodeBlock', test.block('target'));
 		Object.assign(test.state.viewport, { x: 128, y: 256 });
 		test.events.dispatch('goHome');
@@ -138,7 +165,7 @@ noteEnd`);
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
 	});
 
-	it('positions new group visits, but preserves remembered positions on later visits', () => {
+	it('resolves home within the requested project level', () => {
 		const test = setup();
 		test.load(`note rootHome
 ; @pos 100 200
@@ -155,52 +182,123 @@ entryEnd
 groupEnd
 entryEnd`);
 		const group = test.block('audio');
-		const rootPosition = { x: 128, y: 256 };
-		Object.assign(test.state.viewport, rootPosition);
+		const rootProject = test.state.codeBlockRendering.rootProject;
+		const expectedRootPosition = test.expectedPosition('rootHome', 'left');
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
+		expect(test.resolveInitial(group.childProject!)).toEqual(test.expectedPosition('child', 'right'));
+		expect(test.resolveInitial(rootProject)).toEqual(expectedRootPosition);
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		Object.assign(test.state.viewport, { x: 0, y: 0 });
-		test.events.dispatch('goToParentProjectGroup');
-		expect(test.position()).toEqual(rootPosition);
-		test.events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(test.position()).toEqual({ x: 0, y: 0 });
 		test.events.dispatch('goHome');
 		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('child'));
 	});
 
-	it('contributes the main menu action only in edit mode, even without home blocks', async () => {
+	it('contributes the main menu action only in edit mode, even without home blocks', () => {
 		const test = setup();
 		test.load('note target\n; @pos 100 200\nnoteEnd');
 		test.events.dispatch('enterEditMode');
-		test.events.dispatch('contextmenu', { x: 600, y: 350 });
-		await Promise.resolve();
-		const items = test.state.contextMenu.items;
-		const index = items.findIndex(item => item.action === 'goHome');
-		expect(items[index]).toEqual({ title: 'Go @home', action: 'goHome', close: true });
-		Object.assign(test.state.viewport, { x: -128, y: -256 });
-		test.events.dispatch('activateContextMenuItem', { index, x: 0, y: 0 });
-		expect(test.state.contextMenu.open).toBe(false);
-		expect(test.position()).toEqual({ x: 0, y: 0 });
+		expect(test.menu()).toEqual({ title: 'Go @home', action: 'goHome', close: true });
 		test.store.set('editorMode', 'view');
-		test.events.dispatch('contextmenu', { x: 600, y: 350 });
-		await Promise.resolve();
-		expect(test.state.contextMenu.items.some(item => item.action === 'goHome')).toBe(false);
+		expect(test.menu()).toBeUndefined();
 	});
 
-	it.each(['not installed', 'disposed'])('has no behavior or menu when %s', async status => {
-		const test = setup(status !== 'not installed');
-		if (status === 'disposed') test.disposePlugin();
+	it('unregisters navigation and the menu contribution on disposal', () => {
+		const test = setup();
+		test.disposePlugin();
 		test.load('note target\n; @pos 100 200\n; @home\nnoteEnd');
-		expect(test.position()).toEqual({ x: 0, y: 0 });
+		expect(test.resolveInitial()).toEqual({ x: 0, y: 0 });
 		Object.assign(test.state.viewport, { x: 128, y: 256 });
 		test.events.dispatch('goHome');
 		expect(test.position()).toEqual({ x: 128, y: 256 });
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		test.events.dispatch('enterEditMode');
-		test.events.dispatch('contextmenu', { x: 600, y: 350 });
-		await Promise.resolve();
-		expect(test.state.contextMenu.items.some(item => item.action === 'goHome')).toBe(false);
+		expect(test.unregisterMenuItem).toHaveBeenCalledOnce();
+	});
+});
+
+describe('home diagnostics', () => {
+	const duplicateMessage = 'Duplicate @home directive in this project level.';
+
+	it('reports duplicate declarations on the same line, in the same block, and across blocks', () => {
+		const test = setup();
+		test.load(`note first
+; @home @home right
+; @home invalid
+noteEnd
+note second
+; @home left
+noteEnd`);
+		expect(test.state.codeErrors.home).toEqual([
+			{ codeBlockId: test.block('first').creationIndex, lineNumber: 1, message: duplicateMessage },
+			{ codeBlockId: test.block('first').creationIndex, lineNumber: 2, message: duplicateMessage },
+			{ codeBlockId: test.block('second').creationIndex, lineNumber: 1, message: duplicateMessage },
+		]);
+		expect(test.resolveInitial()).toEqual(test.expectedPosition('first', 'right'));
+	});
+
+	it('allows a separate home in each project level and checks unvisited groups', () => {
+		const test = setup();
+		test.load(`note rootHome
+; @home
+noteEnd
+entry main
+group audio
+entry main
+module child
+; @home
+moduleEnd
+module duplicate
+; @home
+moduleEnd
+entryEnd
+groupEnd
+group visual
+entry main
+module screen
+; @home
+moduleEnd
+entryEnd
+groupEnd
+entryEnd`);
+		const duplicate = test.block('audio').childProject!.blocks.find(block => block.name === 'duplicate')!;
+		expect(test.state.codeErrors.home).toEqual([
+			{ codeBlockId: duplicate.creationIndex, lineNumber: 1, message: duplicateMessage },
+		]);
+	});
+
+	it('refreshes duplicate errors after source edits and project replacement', () => {
+		const test = setup();
+		test.load(`note first
+; @home
+noteEnd
+note second
+noteEnd`);
+		const second = test.block('second');
+		const editSecond = (code: string[]) =>
+			applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [{ codeBlock: second, code }]);
+		expect(test.state.codeErrors.home ?? []).toEqual([]);
+		editSecond(['note second', '; @home', 'noteEnd']);
+		expect(test.state.codeErrors.home).toEqual([
+			{ codeBlockId: second.creationIndex, lineNumber: 1, message: duplicateMessage },
+		]);
+		editSecond(['note second', 'noteEnd']);
+		expect(test.state.codeErrors.home).toEqual([]);
+		editSecond(['note second', '; @home', 'noteEnd']);
+		expect(test.state.codeErrors.home).toHaveLength(1);
+		test.load('note replacement\n; @home\nnoteEnd');
+		expect(test.state.codeErrors.home).toEqual([]);
+	});
+
+	it('removes only its own diagnostics and stops publishing on disposal', () => {
+		const test = setup();
+		const duplicateSource = 'note target\n; @home\n; @home\nnoteEnd';
+		test.load(duplicateSource);
+		expect(test.state.codeErrors.home).toHaveLength(1);
+		const otherErrors = [{ message: 'Other contributor' }];
+		test.store.set('codeErrors.other', otherErrors);
+		test.disposePlugin();
+		expect(test.state.codeErrors.home).toBeUndefined();
+		expect(test.state.codeErrors.other).toBe(otherErrors);
+		test.load(duplicateSource);
+		expect(test.state.codeErrors.home).toBeUndefined();
 	});
 });

@@ -641,13 +641,13 @@ editor compositions.
 ; @home [center|left|right|top|bottom]
 ```
 
-When a project loads, the viewport moves to the first code block containing the `@home` directive. If no code block contains `@home`, the viewport defaults to position `(0,0)`.
+When a project loads, the viewport moves to the first code block containing a valid `@home` directive. If no code block contains a valid `@home`, the viewport defaults to position `(0,0)`.
 
 **Behavior:**
 
-- **Project Load**: On load or the first visit to a project group, the viewport moves to the first block with `@home` (determined by code block order). Remembered group positions take precedence on subsequent visits.
-- **Multiple @home**: If multiple blocks have `@home`, only the first one (by project order) is used.
-- **No @home**: If no blocks have `@home`, viewport defaults to `(0,0)`.
+- **Project Load**: On load or the first visit to a project group, the viewport moves to the first block with a valid `@home` (determined by code block order). Remembered group positions take precedence on subsequent visits.
+- **Multiple @home**: Additional declarations in the same project level receive a source error, including repeats within one block. Navigation still uses the first block with a valid `@home` (by project order), and its last valid alignment. Each project group may declare its own home.
+- **No @home**: If no blocks have a valid `@home`, viewport defaults to `(0,0)`.
 - **Alignment**: Optional alignment hints are: `center` (default), `left`, `right`, `top`, or `bottom`.
 - **During Editing**: Use the "Go @home" main menu action (right-click on empty space) to return the viewport to the home block at any time using the same alignment rule.
 
@@ -674,7 +674,7 @@ moduleEnd
 **Important:**
 
 - Use `@home` to define the starting view for your project.
-- Only one `@home` directive takes effect (the first block in project order).
+- Declare at most one `@home` per project level.
 
 ### `@hide`
 

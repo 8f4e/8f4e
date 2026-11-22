@@ -1,6 +1,11 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { centerViewportOnCodeBlock, matchEditorDirectives, updateViewport } from '@8f4e/editor-state';
-import type { EditorLifecycleEvents, ProjectLevel, ViewportBlockAlignment } from '@8f4e/editor-state-types';
+import {
+	centerViewportOnCodeBlock,
+	matchEditorDirectives,
+	updateViewport,
+	walkProjectLevels,
+} from '@8f4e/editor-state';
+import type { CodeError, EditorLifecycleEvents, ProjectLevel, ViewportBlockAlignment } from '@8f4e/editor-state-types';
 
 const directiveDefinitions = [{ name: 'home' }];
 
@@ -27,10 +32,45 @@ function findHome(project: ProjectLevel) {
 	}
 }
 
+function findDuplicateHomeErrors(rootProject: ProjectLevel): CodeError[] {
+	const errors: CodeError[] = [];
+	for (const project of walkProjectLevels(rootProject)) {
+		let seenHome = false;
+		for (const block of project.blocks) {
+			for (const directive of matchEditorDirectives(block.parsedDirectives, directiveDefinitions)) {
+				if (seenHome) {
+					errors.push({
+						codeBlockId: block.creationIndex,
+						lineNumber: directive.sourceLineIndex,
+						message: 'Duplicate @home directive in this project level.',
+					});
+				}
+				seenHome = true;
+			}
+		}
+	}
+	return errors;
+}
+
 export const homePlugin: EditorPlugin = {
 	id: 'home',
 	setup: ({ store, events, menus }) => {
 		const state = store.getState();
+		const refreshErrors = () => {
+			const errors = findDuplicateHomeErrors(state.codeBlockRendering.rootProject);
+			const previous = state.codeErrors.home ?? [];
+			if (
+				errors.length !== previous.length ||
+				errors.some(
+					(error, index) =>
+						error.codeBlockId !== previous[index].codeBlockId ||
+						error.lineNumber !== previous[index].lineNumber ||
+						error.message !== previous[index].message
+				)
+			) {
+				store.set('codeErrors.home', errors);
+			}
+		};
 		const onResolveInitialProjectViewport = (event: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
 			const home = findHome(event.project);
 			if (home) {
@@ -49,6 +89,8 @@ export const homePlugin: EditorPlugin = {
 			updateViewport(state, x, y, events, 'navigation');
 		};
 
+		store.subscribe('projectChange', refreshErrors);
+		refreshErrors();
 		events.on('resolveInitialProjectViewport', onResolveInitialProjectViewport);
 		events.on('goHome', onGoHome);
 		const unregisterMenuItem = menus.registerItem('mainMenu', ({ state }) => {
@@ -58,6 +100,12 @@ export const homePlugin: EditorPlugin = {
 			unregisterMenuItem();
 			events.off('resolveInitialProjectViewport', onResolveInitialProjectViewport);
 			events.off('goHome', onGoHome);
+			store.unsubscribe('projectChange', refreshErrors);
+			if (state.codeErrors.home !== undefined) {
+				const errors = { ...state.codeErrors };
+				delete errors.home;
+				store.set('codeErrors', errors);
+			}
 		};
 	},
 };

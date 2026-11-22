@@ -13,7 +13,7 @@ describe('menus - main menu', () => {
 			},
 		});
 
-		const menu = mainMenu(mockState);
+		const menu = mainMenu(mockState, []);
 
 		expect(menu.find(item => item.action === 'goToParentProjectGroup')).toEqual({
 			title: 'Go back',
@@ -25,7 +25,7 @@ describe('menus - main menu', () => {
 	it('does not add a go-back action at the project root', () => {
 		const mockState = createMockState();
 
-		const menu = mainMenu(mockState);
+		const menu = mainMenu(mockState, []);
 
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
@@ -36,7 +36,7 @@ describe('menus - main menu', () => {
 			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [] } },
 		});
 
-		const menu = mainMenu(mockState);
+		const menu = mainMenu(mockState, []);
 
 		expect(menu).toEqual([{ title: 'New Project', action: 'new', close: true }]);
 	});
