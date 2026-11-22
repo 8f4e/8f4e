@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/web-ui-testing",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Browser-free renderer for editor scene snapshot tests",
   "type": "module",
