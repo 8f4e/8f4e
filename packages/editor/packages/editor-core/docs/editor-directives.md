@@ -646,7 +646,7 @@ When a project loads, the viewport moves to the first code block containing a va
 **Behavior:**
 
 - **Project Load**: On load or the first visit to a project group, the viewport moves to the first block with a valid `@home` (determined by code block order). Remembered group positions take precedence on subsequent visits.
-- **Multiple @home**: Additional declarations in the same project level receive a source error, including repeats within one block. Navigation still uses the first block with a valid `@home` (by project order), and its last valid alignment. Each project group may declare its own home.
+- **Multiple @home**: Additional declarations in the same project level receive a source error, including repeats within one block. Raising blocks does not change which declarations receive errors. Navigation still uses the first block with a valid `@home` (by project order), and its last valid alignment. Each project group may declare its own home.
 - **No @home**: If no blocks have a valid `@home`, viewport defaults to `(0,0)`.
 - **Alignment**: Optional alignment hints are: `center` (default), `left`, `right`, `top`, or `bottom`.
 - **During Editing**: Use the "Go @home" main menu action (right-click on empty space) to return the viewport to the home block at any time using the same alignment rule.

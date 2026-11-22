@@ -36,7 +36,8 @@ function findDuplicateHomeErrors(rootProject: ProjectLevel): CodeError[] {
 	const errors: CodeError[] = [];
 	for (const project of walkProjectLevels(rootProject)) {
 		let seenHome = false;
-		for (const block of project.blocks) {
+		// Diagnostic ownership must not follow the mutable draw order used by navigation.
+		for (const block of [...project.blocks].sort((a, b) => a.creationIndex - b.creationIndex)) {
 			for (const directive of matchEditorDirectives(block.parsedDirectives, directiveDefinitions)) {
 				if (seenHome) {
 					errors.push({

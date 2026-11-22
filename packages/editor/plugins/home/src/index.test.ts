@@ -265,6 +265,52 @@ entryEnd`);
 		]);
 	});
 
+	it('keeps duplicate errors on the same declaration after a block is raised and unrelated source changes', () => {
+		const test = setup();
+		test.load(`note first
+; @pos 10 10
+; @home left
+noteEnd
+note second
+; @pos 70 10
+; @home right
+noteEnd
+note other
+; @pos 20 30
+; Original comment
+noteEnd`);
+		const first = test.block('first');
+		const second = test.block('second');
+		const errors = test.state.codeErrors.home;
+		expect(errors).toEqual([{ codeBlockId: second.creationIndex, lineNumber: 2, message: duplicateMessage }]);
+		expect(test.resolveInitial()).toEqual(test.expectedPosition('first', 'left'));
+
+		const { viewport } = test.state;
+		const pointer = {
+			x: first.x - viewport.x + 1,
+			y: first.y - viewport.y + 1,
+			movementX: 0,
+			movementY: 0,
+			buttons: 1,
+			stopPropagation: false,
+			canvasWidth: viewport.width,
+			canvasHeight: viewport.height,
+			altKey: false,
+		};
+		test.events.dispatch('pointerdown', pointer);
+		test.events.dispatch('pointerup', { ...pointer, buttons: 0 });
+		const blocks = test.state.codeBlockRendering.currentProject.blocks;
+		expect(blocks.indexOf(first)).toBeGreaterThan(blocks.indexOf(second));
+		expect(test.resolveInitial()).toEqual(test.expectedPosition('second', 'right'));
+
+		applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+			{ codeBlock: test.block('other'), code: ['note other', '; @pos 20 30', '; Updated comment', 'noteEnd'] },
+		]);
+		expect(test.state.codeErrors.home).toBe(errors);
+		test.events.dispatch('goHome');
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(second);
+	});
+
 	it('refreshes duplicate errors after source edits and project replacement', () => {
 		const test = setup();
 		test.load(`note first

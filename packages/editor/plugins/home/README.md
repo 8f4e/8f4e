@@ -9,8 +9,9 @@ directive exists, the default position is the origin. When a block contains mult
 last valid one supplies its alignment.
 
 Each project level may declare one home. Every additional `@home` declaration in that level receives a
-source-located error in `state.codeErrors.home`, including repeated declarations within one block. These errors
-update with project changes and do not change which block or alignment is used for navigation.
+source-located error in `state.codeErrors.home`, including repeated declarations within one block. Diagnostics
+follow block creation order so raising blocks does not move errors between declarations. These errors update with
+project changes and do not change which block or alignment is used for navigation.
 
 The Go @home main menu item appears in edit mode. Activating it selects the first home block and navigates to it,
 or navigates to the origin without changing the selection when no home block exists. It leaves project source and
