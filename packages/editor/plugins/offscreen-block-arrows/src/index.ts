@@ -2,7 +2,7 @@ import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
-const [RIGHT, LEFT, DOWN, UP] = ['>', '<', 'v', '^'].map(textToGlyphIds);
+const [RIGHT, LEFT, DOWN, UP] = ['►', '◄', '▼', '▲'].map(textToGlyphIds);
 
 export const offscreenBlockArrowsPlugin: EditorPlugin = {
 	id: 'offscreen-block-arrows',

@@ -18,11 +18,11 @@ function setup() {
 }
 
 it.each([
-	[512, -100, 512, 0, '^'],
-	[1200, 384, 1016, 384, '>'],
-	[512, 900, 512, 752, 'v'],
-	[-100, 384, 0, 384, '<'],
-	[1200, -100, 1016, 24, '>'],
+	[512, -100, 512, 0, '▲'],
+	[1200, 384, 1016, 384, '►'],
+	[512, 900, 512, 752, '▼'],
+	[-100, 384, 0, 384, '◄'],
+	[1200, -100, 1016, 24, '►'],
 ] as const)('draws an arrow toward (%i, %i)', (x, y, arrowX, arrowY, glyph) => {
 	const test = setup();
 	test.render(x, y);
@@ -40,16 +40,16 @@ it('uses viewport-relative coordinates and raw viewport edges after panning and 
 	test.render(1200, 384);
 	Object.assign(test.state.viewport, { x: 10, y: 20, width: 125, height: 63 });
 	test.render(990, 32);
-	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(117, 32, textToGlyphIds('>'), PALETTE_INDICES.secondaryBase);
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(117, 32, textToGlyphIds('►'), PALETTE_INDICES.secondaryBase);
 	test.render(63, 980);
-	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(63, 47, textToGlyphIds('v'), PALETTE_INDICES.secondaryBase);
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(63, 47, textToGlyphIds('▼'), PALETTE_INDICES.secondaryBase);
 	test.dispose();
 });
 
 it('points toward the rendered block rather than its logical position', () => {
 	const test = setup();
 	test.render(512, -100, createMockCodeBlock({ x: 1200, y: 384 }));
-	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(512, 0, textToGlyphIds('^'), PALETTE_INDICES.secondaryBase);
+	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(512, 0, textToGlyphIds('▲'), PALETTE_INDICES.secondaryBase);
 	test.dispose();
 });
 
