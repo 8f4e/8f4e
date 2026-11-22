@@ -1,5 +1,5 @@
 import type { PaletteIndex } from '@8f4e/editor-palette';
-import { FILL_SPRITE_ID, type FontAtlas, type GlyphIds } from '@8f4e/sprite-generator';
+import { FILL_SPRITE_ID, type GlyphIds } from '@8f4e/sprite-generator';
 import type { SpriteCell } from './spriteCell';
 
 /** Receives viewport-relative sprite positions in pixels and optional destination sizes. */
@@ -14,7 +14,6 @@ export class DrawContext {
 	private groupDepth = 0;
 	private readonly groupX: number[] = [];
 	private readonly groupY: number[] = [];
-	private readonly visibleGlyphs = new Uint8Array(FILL_SPRITE_ID);
 
 	constructor(
 		private readonly target: SpriteTarget,
@@ -22,29 +21,6 @@ export class DrawContext {
 	) {}
 	setCharacterWidth(width: number): void {
 		this.characterWidth = width;
-	}
-	/** Update font metrics and visible glyph coverage when the renderer installs an atlas. */
-	setFontAtlas({ image, grid }: FontAtlas): void {
-		const { cellWidth, cellHeight, columns } = grid;
-		this.setCharacterWidth(cellWidth);
-		this.visibleGlyphs.fill(0);
-		for (let glyph = 0; glyph < FILL_SPRITE_ID; glyph++) {
-			const x = (glyph % columns) * cellWidth;
-			const y = Math.floor(glyph / columns) * cellHeight;
-			for (let row = 0; row < cellHeight && !this.visibleGlyphs[glyph]; row++) {
-				const offset = (y + row) * image.width + x;
-				for (let column = 0; column < cellWidth; column++) {
-					if (image.data[offset + column] !== 0) {
-						this.visibleGlyphs[glyph] = 1;
-						break;
-					}
-				}
-			}
-		}
-	}
-	/** Whether the installed font has any visible pixels for a prepared glyph ID. */
-	hasVisibleGlyph(glyph: number): boolean {
-		return this.visibleGlyphs[glyph] === 1;
 	}
 	drawSprite(x: number, y: number, spriteId: number, color: PaletteIndex, width?: number, height?: number): void {
 		this.target.drawSprite(x + this.offsetX, y + this.offsetY, spriteId, color, width, height);

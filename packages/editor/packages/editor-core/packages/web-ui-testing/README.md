@@ -6,8 +6,6 @@ viewport, including trailing spaces and empty rows. Use file snapshots when comp
 
 The helper uses the installed font's cell dimensions and renders sprite submissions in order. Font bitmaps and GPU
 effects are not simulated. The package does not depend on web-ui, so both web-ui and its plugins can use it in tests.
-CP437 arrows and pointers are represented by their ASCII directions (`<`, `>`, `^`, `v`), keeping their meaning in
-text snapshots independently of the selected font's appearance.
 
 Browser tests that exercise native input can keep their canvas and pass `createAsciiCanvasRenderer(canvas)` to the
 editor. Compare `readAsciiViewport(canvas)` with a `*.viewport.snap` file. The canvas still handles focus and resizing,

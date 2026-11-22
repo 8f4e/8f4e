@@ -137,8 +137,6 @@ blocks, culling, the shader background, and canvas drawers from this same camera
 presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.
 
 The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
-Drawers can check `draw.hasVisibleGlyph(glyphId)` for optional UI symbols before selecting a fallback. This reads
-the visible pixel coverage of the installed atlas, including after font changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
 `DrawContext` owns nested coordinate groups and sends viewport-relative sprite positions to a `SpriteTarget`.
 The browser renderer uses the Glugglugglug engine as that target.

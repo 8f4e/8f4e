@@ -4,14 +4,13 @@ import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { offscreenBlockArrowsPlugin } from '../src/index';
 
-test.each(['origin', 'panned', 'fallback'])('draws offscreen arrows at raw viewport edges: %s', async position => {
+test.each(['origin', 'panned'])('draws offscreen arrows at raw viewport edges: %s', async position => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 641;
 	canvas.height = 383;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
 		renderer: new Engine(canvas),
-		defaultFont: position === 'fallback' ? 'spleen6x12' : undefined,
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants visible', '; @pos 0 0', 'constantsEnd'] }],
@@ -32,8 +31,8 @@ test.each(['origin', 'panned', 'fallback'])('draws offscreen arrows at raw viewp
 	});
 	editor.pauseRendering();
 	try {
-		editor.state.viewport.x = position === 'panned' ? 24 : 0;
-		editor.state.viewport.y = position === 'panned' ? 32 : 0;
+		editor.state.viewport.x = position === 'origin' ? 0 : 24;
+		editor.state.viewport.y = position === 'origin' ? 0 : 32;
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot(`offscreen-block-arrows-${position}`);
 	} finally {

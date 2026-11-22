@@ -1,4 +1,4 @@
-import { FILL_SPRITE_ID, textToGlyphIds } from '@8f4e/sprite-generator';
+import { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import { expect, it } from 'vitest';
 import { AsciiRenderer } from './index';
 
@@ -21,13 +21,4 @@ it('does not overwrite visible text with clipped or transparent sprites, and cle
 	renderer.resize(2, 1);
 	renderer.renderFrame(() => {});
 	expect(renderer.toText()).toBe('  ');
-});
-
-it('represents CP437 pointers and arrows by their ASCII directions in scene snapshots', () => {
-	const renderer = new AsciiRenderer(8, 1);
-	renderer.setPalette(Uint8Array.of(255, 255, 255, 255));
-	renderer.renderFrame(() => {
-		textToGlyphIds('►→◄←▲↑▼↓').forEach((glyph, x) => renderer.drawSprite(x, 0, glyph, 0));
-	});
-	expect(renderer.toText()).toBe('>><<^^vv');
 });

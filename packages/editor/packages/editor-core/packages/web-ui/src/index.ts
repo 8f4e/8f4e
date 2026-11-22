@@ -140,7 +140,7 @@ async function mount(
 	function installFontAtlas(atlas: FontAtlas, font: Font): void {
 		engine.setSpriteAtlas(atlas.image, atlas.grid);
 		background.setFont(font, atlas.grid);
-		draw.setFontAtlas(atlas);
+		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
 	installFontAtlas(fontAtlas, font);
