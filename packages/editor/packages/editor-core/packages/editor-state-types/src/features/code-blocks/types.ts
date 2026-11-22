@@ -10,7 +10,6 @@ import type {
 	ProjectMemoryExposure,
 } from '@8f4e/language-spec';
 import type { Position } from '../../shared/types';
-import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
 
 /**
@@ -121,18 +120,6 @@ export interface CodeBlockGraphicData {
 	 * Defaults to false.
 	 */
 	disabled: boolean;
-	/**
-	 * When true, marks this block as the home block for initial viewport placement.
-	 * The viewport centers on the first block with isHome=true when a project loads.
-	 * Derived from ; @home directive.
-	 * Defaults to false.
-	 */
-	isHome: boolean;
-	/**
-	 * Optional viewport alignment hint derived from `; @home [center|left|right|top|bottom]`.
-	 * When omitted, home navigation falls back to centered placement.
-	 */
-	homeAlignment?: ViewportBlockAlignment;
 	/**
 	 * Parsed directive records derived from this block's code lines during the central update pass.
 	 * Covers editor directives (`; @name`).

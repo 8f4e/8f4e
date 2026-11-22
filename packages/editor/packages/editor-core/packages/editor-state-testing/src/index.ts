@@ -73,7 +73,6 @@ export function createMockCodeBlock(
 		blockType: 'unknown',
 		projectPath,
 		disabled: false,
-		isHome: false,
 		alwaysOnTop: false,
 		parsedDirectives: [],
 	};

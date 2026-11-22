@@ -19,10 +19,7 @@ export default function contextMenu(
 ): () => void {
 	const state = store.getState();
 	const unregisterMenus = [
-		registry.registerMenu('mainMenu', state => {
-			const contributions = registry.getItems('mainMenu', { state });
-			return [...menus.mainMenu(state), ...(contributions.length ? [{ divider: true }, ...contributions] : [])];
-		}),
+		registry.registerMenu('mainMenu', state => menus.mainMenu(state, registry.getItems('mainMenu', { state }))),
 		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: CodeBlockGraphicData }) =>
 			menus.moduleMenu(state, codeBlock, registry.getItems('moduleMenu', { state, codeBlock }))
 		),

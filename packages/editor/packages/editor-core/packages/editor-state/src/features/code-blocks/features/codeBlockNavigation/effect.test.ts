@@ -4,13 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import buildDisplayModel from '../../buildDisplayModel';
-import codeBlockNavigation, { goHome, jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
+import codeBlockNavigation, { jumpToCodeBlock, navigateToCodeBlockInDirection } from './effect';
 
 describe('codeBlockNavigation', () => {
 	let state: ReturnType<typeof createMockState>;
 	let events: ReturnType<typeof createMockEventDispatcherWithVitest>;
 	let onNavigateCodeBlockHandler: (event: NavigateCodeBlockEvent) => void;
-	let onGoHomeHandler: () => void;
 	let selectedBlock: CodeBlockGraphicData;
 	let leftBlock: CodeBlockGraphicData;
 	let rightBlock: CodeBlockGraphicData;
@@ -56,11 +55,9 @@ describe('codeBlockNavigation', () => {
 		// Create mock event dispatcher using shared utility
 		events = createMockEventDispatcherWithVitest();
 		(events.on as ReturnType<typeof vi.fn>).mockImplementation(
-			(eventName: string, callback: ((event: NavigateCodeBlockEvent) => void) | (() => void)) => {
+			(eventName: string, callback: (event: NavigateCodeBlockEvent) => void) => {
 				if (eventName === 'navigateCodeBlock') {
-					onNavigateCodeBlockHandler = callback as (event: NavigateCodeBlockEvent) => void;
-				} else if (eventName === 'goHome') {
-					onGoHomeHandler = callback as () => void;
+					onNavigateCodeBlockHandler = callback;
 				}
 			}
 		);
@@ -71,13 +68,6 @@ describe('codeBlockNavigation', () => {
 		codeBlockNavigation(createStateManager(state), events);
 
 		expect(events.on).toHaveBeenCalledWith('navigateCodeBlock', expect.any(Function));
-	});
-
-	it('should register a goHome event handler', () => {
-		// Initialize the effect
-		codeBlockNavigation(createStateManager(state), events);
-
-		expect(events.on).toHaveBeenCalledWith('goHome', expect.any(Function));
 	});
 
 	it('should do nothing when no code block is selected', () => {
@@ -346,140 +336,6 @@ describe('codeBlockNavigation', () => {
 			jumpToCodeBlock(createStateManager(state), 4, events);
 
 			expect(state.viewport.y).toBe(downBlock.y + downBlock.cursor.y - state.viewport.height / 2);
-		});
-	});
-
-	describe('goHome', () => {
-		it('should center viewport on the first home block and select it', () => {
-			const firstHome = createMockCodeBlock({
-				name: 'home-1',
-				x: 100,
-				y: 100,
-				isHome: true,
-				homeAlignment: 'center',
-			});
-			const secondHome = createMockCodeBlock({
-				name: 'home-2',
-				x: 400,
-				y: 400,
-				isHome: true,
-			});
-
-			state = createMockState({
-				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [firstHome, secondHome] } },
-				viewport: {
-					x: 10,
-					y: 20,
-					width: 200,
-					height: 200,
-				},
-			});
-
-			goHome(createStateManager(state), events);
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(firstHome);
-			expect(state.viewport.x).toBe(48);
-			expect(state.viewport.y).toBe(48);
-		});
-
-		it('should honor home alignment hints when centering the viewport', () => {
-			const homeBlock = createMockCodeBlock({
-				name: 'home-bottom',
-				x: 100,
-				y: 200,
-				width: 100,
-				height: 100,
-				isHome: true,
-				homeAlignment: 'bottom',
-			});
-			state = createMockState({
-				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
-				viewport: {
-					x: 0,
-					y: 0,
-					width: 200,
-					height: 200,
-				},
-			});
-
-			goHome(createStateManager(state), events);
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(homeBlock);
-			expect(state.viewport.x).toBe(48);
-			expect(state.viewport.y).toBe(96);
-		});
-
-		it('dispatches a single navigation event when going home changes the viewport', () => {
-			const homeBlock = createMockCodeBlock({
-				name: 'home-dispatch',
-				isHome: true,
-				homeAlignment: 'center',
-				x: 100,
-				y: 100,
-			});
-			state = createMockState({
-				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [homeBlock] } },
-			});
-
-			goHome(createStateManager(state), events);
-
-			expect(events.dispatch).toHaveBeenCalledExactlyOnceWith(
-				'viewportChanged',
-				expect.objectContaining({
-					x: state.viewport.x,
-					y: state.viewport.y,
-					source: 'navigation',
-				})
-			);
-		});
-
-		it('should use a disabled home block if it is first', () => {
-			const disabledHome = createMockCodeBlock({
-				name: 'home-disabled',
-				isHome: true,
-				disabled: true,
-			});
-			const otherHome = createMockCodeBlock({ name: 'home-other', isHome: true });
-
-			state = createMockState({
-				codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [disabledHome, otherHome] } },
-			});
-
-			goHome(createStateManager(state), events);
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(disabledHome);
-		});
-
-		it('should center on origin when no home block exists', () => {
-			state = createMockState({
-				viewport: { x: 25, y: -10 },
-				codeBlockRendering: {
-					currentProject: { entries: [], path: '', blocks: [selectedBlock] },
-					selectedCodeBlock: selectedBlock,
-				},
-			});
-
-			goHome(createStateManager(state), events);
-
-			expect(state.viewport.x).toBe(0);
-			expect(state.viewport.y).toBe(0);
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
-		});
-
-		it('should respond to goHome event', () => {
-			const homeBlock = createMockCodeBlock({
-				name: 'home-event',
-				isHome: true,
-				x: 160,
-				y: 80,
-			});
-			state.codeBlockRendering.currentProject.blocks = [homeBlock, ...state.codeBlockRendering.currentProject.blocks];
-
-			codeBlockNavigation(createStateManager(state), events);
-
-			onGoHomeHandler();
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(homeBlock);
 		});
 	});
 });

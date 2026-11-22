@@ -32,10 +32,12 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   leaves the viewport at its final pixel position without aligning it to the grid.
 - `centerViewportOnCodeBlock(viewport, block, options)` calculates a grid-aligned target with optional alignment.
   `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.
-- Directional navigation, jumping to a block and going home commit the destination immediately. Any visual
+- Directional navigation and jumping to a block commit the destination immediately. Any visual
   transition belongs to web-ui, not editor-state.
 - Each project level remembers its viewport in browser memory. `getProjectViewportPosition` uses that remembered
-  position, then the first home block's placement, or the origin. Project serializers omit remembered views.
+  position or dispatches `resolveInitialProjectViewport { project, position }` for a first visit.
+  Plugins may replace the default origin synchronously after block layout is settled. Project serializers omit
+  remembered views.
 
 ## Rendering ownership
 
@@ -50,4 +52,4 @@ Editor-state stores no border lines, cached center, or arrow presentation data.
 - Input effects: `effect.ts`
 - Centering: `centerViewportOnCodeBlock.ts` and `centerViewportOnCodeBlockCursor.ts`
 - Grid alignment for navigation targets: `roundToGrid.ts`
-- Remembered views and home placement: `getProjectViewportPosition.ts`
+- Remembered views and initial placement: `getProjectViewportPosition.ts`

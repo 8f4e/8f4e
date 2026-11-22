@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
@@ -64,12 +64,11 @@ describe('projectGroupNavigation', () => {
 		expect(state.codeBlockRendering.rootProject.selectedBlock).toBeUndefined();
 	});
 
-	it('restores the latest viewport of the parent and revisited group instead of their home blocks', () => {
+	it('restores the latest viewport of the parent and revisited group instead of resolving initial placement', () => {
 		const group = createMockCodeBlock({
 			name: 'Audio',
-			isHome: true,
 			x: 2000,
-			childProject: { entries: [], path: '', blocks: [createMockCodeBlock({ isHome: true, x: 1000 })] },
+			childProject: { entries: [], path: '', blocks: [createMockCodeBlock({ x: 1000 })] },
 		});
 		const { state, events, dispatch } = setupNavigation([group]);
 		const revision = state.projectChange.revision;
@@ -92,6 +91,9 @@ describe('projectGroupNavigation', () => {
 		dispatch('goToParentProjectGroup');
 		expect(state.viewport).toMatchObject({ x: 128, y: 192 });
 		expect(state.projectChange.revision).toBe(revision);
+		expect(
+			vi.mocked(events.dispatch).mock.calls.filter(([name]) => name === 'resolveInitialProjectViewport')
+		).toHaveLength(1);
 	});
 
 	it('keeps independent positions at each depth when jumping directly to the root', () => {
@@ -121,17 +123,15 @@ describe('projectGroupNavigation', () => {
 		expect(state.viewport).toMatchObject({ x: 128, y: 256 });
 	});
 
-	it('uses the home block on the first visit to a group', () => {
-		const homeBlock = createMockCodeBlock({
-			isHome: true,
-			homeAlignment: 'left',
-			x: 1000,
-			y: 1000,
-			width: 80,
-			height: 80,
+	it('uses contributed placement on the first visit to a group', () => {
+		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [] } });
+		const { state, events, dispatch } = setupNavigation([group]);
+		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
+			if (name !== 'resolveInitialProjectViewport') return;
+			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
+			expect(request.project).toBe(group.childProject);
+			request.position = { x: 840, y: 736 };
 		});
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [homeBlock] } });
-		const { state, dispatch } = setupNavigation([group]);
 
 		dispatch('openProjectGroup', { codeBlock: group });
 

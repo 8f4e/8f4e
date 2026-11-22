@@ -114,8 +114,9 @@ presentation, including horizontal placement derived from shared tab/source geom
 **Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
 remembered position and selected block. If the group block was selected before entry, returning reselects it.
 Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
-are not restored. A remembered position always takes precedence over `@home`, including a remembered origin.
-Only first visits use the first `@home` block (including its alignment), or `(0, 0)` if none exists. Positions live only
+are not restored. A remembered position always takes precedence, including a remembered origin.
+Only first visits resolve the initial viewport through the `resolveInitialProjectViewport` event after layout settles.
+Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
 in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
 exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving
 selections to the new live blocks. They preserve the active level, falling back to the root if that level was removed.

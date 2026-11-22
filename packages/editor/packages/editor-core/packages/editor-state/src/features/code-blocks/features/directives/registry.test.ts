@@ -39,37 +39,17 @@ describe('directive registry', () => {
 	});
 
 	it('derives block state and display rows', () => {
-		const code = ['module foo', '; @disabled @home @testDirective', '; @rowDisplay 3', 'moduleEnd'];
+		const code = ['module foo', '; @disabled @testDirective', '; @rowDisplay 3', 'moduleEnd'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
-		expect(result.blockState).toEqual({ disabled: true, isHome: true, homeAlignment: 'center' });
+		expect(result.blockState).toEqual({ disabled: true });
 		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
 	});
 
 	it('ignores unregistered directives', () => {
-		const code = ['; @unknown', '; @home', '; @unregistered'];
+		const code = ['; @unknown', '; @unregistered'];
 		const result = deriveDirectiveState(code, parseBlockDirectives(code));
 
-		expect(result.blockState).toEqual({
-			disabled: false,
-			isHome: true,
-			homeAlignment: 'center',
-		});
-	});
-
-	it('derives optional home alignment from @home', () => {
-		const code = ['module foo', '; @home bottom', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.blockState.isHome).toBe(true);
-		expect(result.blockState.homeAlignment).toBe('bottom');
-	});
-
-	it('ignores invalid @home arguments', () => {
-		const code = ['module foo', '; @home middle', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
-
-		expect(result.blockState.isHome).toBe(false);
-		expect(result.blockState.homeAlignment).toBeUndefined();
+		expect(result.blockState).toEqual({ disabled: false });
 	});
 
 	it('collapses everything after @hide while unselected', () => {
@@ -93,10 +73,9 @@ describe('directive registry', () => {
 	});
 
 	it('applies standalone and trailing directives and aliases uniformly', () => {
-		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @home @testDirective'];
+		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @testDirective'];
 		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
 		expect(derived.blockState.alwaysOnTop).toBe(true);
 		expect(derived.blockState.disabled).toBe(true);
-		expect(derived.blockState.isHome).toBe(true);
 	});
 });

@@ -227,7 +227,7 @@ If a directive needs more context than a single line, keep that extra derivation
 Use `plugin.ts` to contribute block-level metadata such as:
 
 - `disabled`
-- `isHome`
+- `alwaysOnTop`
 - display transforms such as `@hide`
 
 If a directive changes how code should be displayed, that should be modeled as a directive-owned contribution to the display model, not as a renderer hack in `codeBlockRendering`.
