@@ -1,8 +1,13 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { textToGlyphIds } from '@8f4e/web-ui';
+import { type DrawContext, type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
-const [RIGHT, LEFT, DOWN, UP] = ['>', '<', 'v', '^'].map(textToGlyphIds);
+// Prefer filled pointers, then arrows, and retain ASCII for fonts missing both.
+const [RIGHT, LEFT, DOWN, UP] = ['►→>', '◄←<', '▼↓v', '▲↑^'].map(textToGlyphIds);
+
+function selectArrow(draw: DrawContext, [pointer, arrow, ascii]: GlyphIds): number {
+	return draw.hasVisibleGlyph(pointer) ? pointer : draw.hasVisibleGlyph(arrow) ? arrow : ascii;
+}
 
 export const offscreenBlockArrowsPlugin: EditorPlugin = {
 	id: 'offscreen-block-arrows',
@@ -21,17 +26,17 @@ export const offscreenBlockArrowsPlugin: EditorPlugin = {
 			const arrowX = Math.round(centerX + deltaX * scale);
 			const arrowY = Math.round(centerY + deltaY * scale);
 			if (horizontalScale < verticalScale) {
-				draw.drawGlyphs(
+				draw.drawSprite(
 					arrowX - (deltaX >= 0 ? vGrid : 0),
 					arrowY,
-					deltaX >= 0 ? RIGHT : LEFT,
+					selectArrow(draw, deltaX >= 0 ? RIGHT : LEFT),
 					PALETTE_INDICES.secondaryBase
 				);
 			} else {
-				draw.drawGlyphs(
+				draw.drawSprite(
 					arrowX,
 					arrowY - (deltaY >= 0 ? hGrid : 0),
-					deltaY >= 0 ? DOWN : UP,
+					selectArrow(draw, deltaY >= 0 ? DOWN : UP),
 					PALETTE_INDICES.secondaryBase
 				);
 			}

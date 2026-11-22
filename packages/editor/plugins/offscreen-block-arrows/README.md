@@ -3,6 +3,8 @@
 `offscreenBlockArrowsPlugin` draws viewport-edge arrows toward offscreen code blocks. It owns the projection from
 the viewport center to the block's rendered position, glyph offsets, and palette selection. Drawing reads current raw
 viewport dimensions and grid sizes; no arrow geometry is stored in editor-state.
+Indicators prefer the filled CP437 pointers `◄ ► ▲ ▼`, falling back to ordinary directional arrows or ASCII when the
+installed font lacks the corresponding glyphs.
 
 Web-ui keeps its single block traversal and calls `registerOffscreenCodeBlockDrawer` for each offscreen block,
 using viewport-relative coordinates. This is one replaceable callback: later registrations win. Disposal clears the callback

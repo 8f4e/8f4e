@@ -1,5 +1,16 @@
-import { FILL_SPRITE_ID } from '@8f4e/sprite-generator';
+import { CP437_CHARACTERS, FILL_SPRITE_ID } from '@8f4e/sprite-generator';
 import type { RenderHooks, SpriteAtlasGrid, SpriteAtlasImage } from 'glugglugglug';
+
+const ASCII_DIRECTIONS: Partial<Record<string, string>> = {
+	'►': '>',
+	'→': '>',
+	'◄': '<',
+	'←': '<',
+	'▲': '^',
+	'↑': '^',
+	'▼': 'v',
+	'↓': 'v',
+};
 
 /** A sprite-only snapshot target; shaders, wires, and font bitmap details are not rendered. */
 export class AsciiRenderer {
@@ -55,7 +66,11 @@ export class AsciiRenderer {
 		this.frameStats.spriteCount++;
 		if (spriteId === 32 || !this.palette[color * 4 + 3]) return;
 		const glyph =
-			spriteId === FILL_SPRITE_ID ? ' ' : spriteId > 32 && spriteId < 127 ? String.fromCharCode(spriteId) : '?';
+			spriteId === FILL_SPRITE_ID
+				? ' '
+				: spriteId > 32 && spriteId < 127
+					? String.fromCharCode(spriteId)
+					: (ASCII_DIRECTIONS[CP437_CHARACTERS[spriteId]] ?? '?');
 		const left = Math.max(0, cellEdge(x, this.cellWidth));
 		const right = Math.min(this.columns, cellEdge(x + width, this.cellWidth));
 		if (left >= right) return;
