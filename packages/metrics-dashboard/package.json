@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@8f4e/config": "*",
-    "@observablehq/plot": "0.6.17",
-    "vite": "7.3.7"
+    "@observablehq/plot": "0.6.19",
+    "vite": "7.3.8"
   }
 }

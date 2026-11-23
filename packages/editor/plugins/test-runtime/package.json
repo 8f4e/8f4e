@@ -29,7 +29,7 @@
     "@8f4e/compiler": "*",
     "vitest": "4.1.12",
     "@8f4e/state-manager": "*",
-    "vite": "7.3.7",
+    "vite": "7.3.8",
     "@types/node": "24.13.2"
   }
 }
