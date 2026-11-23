@@ -63,8 +63,6 @@ export interface WebUiOptions {
 	loading: EditorLoadingRegistry;
 	/** Per-editor font used when project configuration does not select one. Defaults to ibmvga8x16. */
 	defaultFont?: Font;
-	/** Startup project preparation may run alongside the initial font download. */
-	initialProjectReady?: Promise<void>;
 	/** Read the host's live motion preference without creating browser listeners in web-ui. */
 	prefersReducedMotion?: () => boolean;
 	drawers?: EditorDrawerHost;
@@ -113,9 +111,8 @@ async function mount(
 ) {
 	const state = store.getState();
 	const defaultFont = options.defaultFont ?? DEFAULT_FONT;
-	const [initialFontAtlas] = await Promise.all([loadFontAtlas(defaultFont), options.initialProjectReady]);
 	const font = getConfiguredFont(state.editorConfig, defaultFont);
-	const fontAtlas = font === defaultFont ? initialFontAtlas : await loadFontAtlas(font);
+	const fontAtlas = await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	let frameStartedAt = performance.now();
 	engine.hooks.preDraw.push(() => {

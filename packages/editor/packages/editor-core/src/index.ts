@@ -211,7 +211,7 @@ export default async function init(
 		};
 		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
-		const initialProjectReady = events.dispatchAsync('init');
+		await events.dispatchAsync('prepareInitialProject');
 		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
 		const reducedMotion = browserWindow?.matchMedia?.('(prefers-reduced-motion: reduce)');
 
@@ -219,7 +219,6 @@ export default async function init(
 		view = await initView(store, events, renderer, memoryViews, {
 			loading: store.loading,
 			defaultFont: options.defaultFont,
-			initialProjectReady,
 			prefersReducedMotion: () => reducedMotion?.matches ?? false,
 			drawers,
 			renderStatsIntervalFrames: options.renderStatsIntervalFrames,

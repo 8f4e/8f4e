@@ -33,15 +33,9 @@ function setup() {
 	const loading = { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) };
 	const applyPalette = vi.fn();
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-	const subscribe = vi.spyOn(store, 'subscribe');
 	const dispose = subscribeToAppearance(store, events, loading, applyFont, applyPalette);
 	cleanups.push(store.dispose, dispose);
-	// StateManager intentionally discards subscriber return values; capture the font callback when a test needs its rejection.
-	const requestFont = (font: string) => {
-		state.editorConfig.font = font;
-		return subscribe.mock.calls.find(([selector]) => selector === 'editorConfig.font')![1](font);
-	};
-	return { state, store, applyFont, applyPalette, events, dispose, loading, requestFont };
+	return { state, store, applyFont, applyPalette, events, dispose, loading };
 }
 
 describe('appearance subscriptions', () => {
@@ -72,10 +66,10 @@ describe('appearance subscriptions', () => {
 		test.store.set('editorConfig.color', { primary: '#00ff00' });
 		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
 		test.events.dispatch.mockImplementation((name: string) => {
-			if (name === 'gridSizeChanged' || name === 'gridSizeReady') {
+			if (name === 'gridSizeChanged' || name === 'fontChanged') {
 				expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
 				expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
-				expect(test.state.gridSizeReady).toBe(name === 'gridSizeReady');
+				expect(test.state.gridSizeReady).toBe(name === 'fontChanged');
 			}
 		});
 		newer.resolve(atlas);
@@ -89,7 +83,6 @@ describe('appearance subscriptions', () => {
 		expect(loadFontAtlas.mock.calls).toEqual([['terminus8x16'], ['x11miscfixed6x10']]);
 		expect(test.events.dispatch.mock.calls).toEqual([
 			['gridSizeChanged'],
-			['gridSizeReady'],
 			['fontChanged', { font: 'x11miscfixed6x10' }],
 		]);
 	});
@@ -119,7 +112,7 @@ describe('appearance subscriptions', () => {
 		await Promise.resolve();
 		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'terminus8x16');
 		expect(test.state.gridSizeReady).toBe(true);
-		expect(test.events.dispatch.mock.calls).toEqual([['gridSizeReady'], ['fontChanged', { font: 'terminus8x16' }]]);
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('fontChanged', { font: 'terminus8x16' });
 	});
 
 	it('cancels a pending change when returning to the active font without loading or uploading it again', async () => {
@@ -141,7 +134,7 @@ describe('appearance subscriptions', () => {
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('terminus8x16');
 		expect(test.loading.add).toHaveBeenCalledOnce();
 		expect(test.applyFont).not.toHaveBeenCalled();
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeReady');
+		expect(test.events.dispatch).not.toHaveBeenCalled();
 	});
 
 	it('ignores readiness from a reversion superseded before source layout settles', async () => {
@@ -163,7 +156,6 @@ describe('appearance subscriptions', () => {
 		expect(test.state.gridSizeReady).toBe(true);
 		expect(test.events.dispatch.mock.calls).toEqual([
 			['gridSizeChanged'],
-			['gridSizeReady'],
 			['fontChanged', { font: 'x11miscfixed6x10' }],
 		]);
 	});
@@ -173,15 +165,21 @@ describe('appearance subscriptions', () => {
 		const pending = deferred<FontAtlas>();
 		const error = new Error('Font unavailable');
 		loadFontAtlas.mockReturnValueOnce(pending.promise);
-		const request = test.requestFont('x11miscfixed6x10');
+		test.store.set('editorConfig.font', 'x11miscfixed6x10');
 		expect(test.state.gridSizeReady).toBe(false);
 		pending.reject(error);
-		await expect(request).rejects.toBe(error);
+		await pending.promise.catch(() => undefined);
 		expect(test.state.gridSizeReady).toBe(true);
 		expect(test.state.viewport).toMatchObject({ hGrid: 16, vGrid: 8 });
 		expect(test.applyFont).not.toHaveBeenCalled();
 		expect(test.loading.add.mock.results[0].value.fail).toHaveBeenCalledOnce();
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeReady');
+		expect(test.events.dispatch).not.toHaveBeenCalled();
+		expect(test.state.console.logs).toEqual([
+			expect.objectContaining({
+				level: 'error',
+				message: 'Failed to load font x11miscfixed6x10: Error: Font unavailable',
+			}),
+		]);
 	});
 
 	it('does not restore readiness when a superseded replacement font fails', async () => {
@@ -189,16 +187,41 @@ describe('appearance subscriptions', () => {
 		const older = deferred<FontAtlas>();
 		const newer = deferred<FontAtlas>();
 		loadFontAtlas.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
-		const olderRequest = test.requestFont('terminus8x16');
-		const newerRequest = test.requestFont('x11miscfixed6x10');
-		const error = new Error('Font unavailable');
-		older.reject(error);
-		await expect(olderRequest).rejects.toBe(error);
+		test.store.set('editorConfig.font', 'terminus8x16');
+		test.store.set('editorConfig.font', 'x11miscfixed6x10');
+		older.reject(new Error('Font unavailable'));
+		await older.promise.catch(() => undefined);
 		expect(test.state.gridSizeReady).toBe(false);
+		expect(test.state.viewport).toMatchObject({ hGrid: 16, vGrid: 8 });
 		expect(test.events.dispatch).not.toHaveBeenCalled();
-		newer.resolve({ grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas);
-		await newerRequest;
+		expect(test.applyFont).not.toHaveBeenCalled();
+		expect(test.loading.add.mock.results[0].value.cancel).toHaveBeenCalled();
+		expect(test.loading.add.mock.results[0].value.fail).not.toHaveBeenCalled();
+		expect(test.loading.add.mock.results[1].value.cancel).not.toHaveBeenCalled();
+		expect(test.loading.add.mock.results[1].value.fail).not.toHaveBeenCalled();
+		expect(test.state.console.logs).toEqual([]);
+		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
+		newer.resolve(atlas);
+		await newer.promise;
 		expect(test.state.gridSizeReady).toBe(true);
+		expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+		expect(test.loading.add.mock.results[1].value.done).toHaveBeenCalledOnce();
+	});
+
+	it('ignores a rejected font load after disposal', async () => {
+		const test = setup();
+		const pending = deferred<FontAtlas>();
+		loadFontAtlas.mockReturnValueOnce(pending.promise);
+		test.store.set('editorConfig.font', 'terminus8x16');
+		test.dispose();
+		pending.reject(new Error('Font unavailable'));
+		await pending.promise.catch(() => undefined);
+		expect(test.loading.add.mock.results[0].value.cancel).toHaveBeenCalled();
+		expect(test.loading.add.mock.results[0].value.fail).not.toHaveBeenCalled();
+		expect(test.applyFont).not.toHaveBeenCalled();
+		expect(test.events.dispatch).not.toHaveBeenCalled();
+		expect(test.state.console.logs).toEqual([]);
 	});
 
 	it('ignores configuration resolving to the same active default font', () => {

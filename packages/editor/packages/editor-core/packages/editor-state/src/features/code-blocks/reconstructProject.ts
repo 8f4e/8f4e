@@ -46,17 +46,14 @@ const getHighestProjectBlockId = (currentProject: ProjectObjectModel): number =>
 export function reconstructProject(
 	project: ProjectObjectModel,
 	directives: EditorDirectiveDefinition[],
-	viewport: Pick<Viewport, 'x' | 'y' | 'vGrid' | 'hGrid'>,
-	previous?: Pick<CodeBlockRendering, 'rootProject' | 'currentProject' | 'selectedCodeBlock'>
+	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
+	previous?: Pick<CodeBlockRendering, 'rootProject' | 'currentProject'>
 ) {
 	const previousLevels = new Map<string, ProjectLevel>();
 	const previousBlocks = new Map<string, CodeBlockGraphicData>();
 	const previousGroups = new Map<string, CodeBlockGraphicData>();
 	const recreatedBlocks = new Map<CodeBlockGraphicData, CodeBlockGraphicData>();
 	if (previous) {
-		const previousCurrent = previous.currentProject;
-		previousCurrent.viewport = { x: viewport.x, y: viewport.y };
-		previousCurrent.selectedBlock = previous.selectedCodeBlock;
 		for (const level of walkProjectLevels(previous.rootProject)) {
 			previousLevels.set(level.path, level);
 			for (const block of level.blocks) {

@@ -5,7 +5,9 @@ import type { Position } from './types';
 
 /** Core lifecycle notifications. Plugin action names remain open and infer payloads from their handlers. */
 export interface EditorLifecycleEvents {
-	init: void;
+	/** Prepare initial project source before the font atlas or grid becomes available. Handlers must not await rendering or geometry. */
+	prepareInitialProject: void;
+	/** Initial project, grid, and viewport have settled and the first frame has drawn. */
 	ready: void;
 	dispose: void;
 	beforeProjectEdit: void;
@@ -16,10 +18,8 @@ export interface EditorLifecycleEvents {
 	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
-	/** The requested grid dimensions are available and layout has settled. */
-	gridSizeReady: void;
 	memoryValuesChanged: void;
-	/** Resolve first-visit placement after source and any available layout have settled. */
+	/** Resolve first-visit placement after the destination project source and layout have settled. */
 	resolveInitialProjectViewport: { project: ProjectLevel; position: Position };
 	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
 	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };

@@ -28,7 +28,7 @@ describe('project URL loader plugin', () => {
 			expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true);
 		});
 		expect(test.fetch).not.toHaveBeenCalled();
-		test.events.dispatch('init');
+		test.events.dispatch('prepareInitialProject');
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
 			{ id: 'project-url', message: 'Loading project...', status: 'loading' },
 		]);
@@ -43,7 +43,7 @@ describe('project URL loader plugin', () => {
 
 	it('does no startup fetch or notification when there is no initial URL', async () => {
 		const test = setup();
-		await test.dispatchAsync('init');
+		await test.dispatchAsync('prepareInitialProject');
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(test.fetch).not.toHaveBeenCalled();
 		expect(test.onLoaded).not.toHaveBeenCalled();
@@ -57,7 +57,7 @@ describe('project URL loader plugin', () => {
 	])('reports %s and loads an empty project', async (_name, response) => {
 		const fetch = vi.fn<typeof globalThis.fetch>(response);
 		const test = setup(fetch, url);
-		test.events.dispatch('init');
+		test.events.dispatch('prepareInitialProject');
 		await vi.waitFor(() =>
 			expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true)
 		);
@@ -73,7 +73,7 @@ describe('project URL loader plugin', () => {
 
 	it('reports an empty project as successfully loaded', async () => {
 		const test = setup(vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response('8f4e/v1')), url);
-		await test.dispatchAsync('init');
+		await test.dispatchAsync('prepareInitialProject');
 		expect(test.onLoaded).toHaveBeenCalledOnce();
 		expect(test.onError).not.toHaveBeenCalled();
 		expect(test.state.initialProjectState).toMatchObject({
@@ -86,7 +86,7 @@ describe('project URL loader plugin', () => {
 	it('removes its startup listener on disposal', () => {
 		const test = setup(undefined, url);
 		test.disposePlugin();
-		test.events.dispatch('init');
+		test.events.dispatch('prepareInitialProject');
 		expect(test.fetch).not.toHaveBeenCalled();
 	});
 
@@ -101,7 +101,7 @@ describe('project URL loader plugin', () => {
 			vi.fn<typeof globalThis.fetch>(() => pending),
 			url
 		);
-		const loading = test.dispatchAsync('init');
+		const loading = test.dispatchAsync('prepareInitialProject');
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
 			{ id: 'project-url', message: 'Loading project...', status: 'loading' },
 		]);

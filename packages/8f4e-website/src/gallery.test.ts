@@ -116,6 +116,29 @@ test('keeps the loading canvas while mounting waits for the project and reveals 
 	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
 });
 
+test('keeps the loading status visible after source success until the editor has mounted', async () => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ delayedMount: async () => new Response(source) });
+	await view.started();
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	const canvas = view.panel().querySelector('canvas')!;
+	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
+	options.onInitialProjectLoaded?.();
+	await new Promise(requestAnimationFrame);
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	expect(status.hidden).toBe(false);
+	expect(status.textContent).toBe('Loading project…');
+
+	finish({ editing: {}, navigation: {}, dispose: vi.fn() } as unknown as GalleryEditorInstance);
+	await view.mounted();
+	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
+	expect(status.hidden).toBe(true);
+});
+
 test('reveals a successfully loaded empty project', async () => {
 	const view = setup({ empty: async () => new Response('8f4e/v1') });
 	await view.mounted();
@@ -505,6 +528,27 @@ test('disposes an editor when loading fails before its mount promise resolves', 
 	expect(view.panel().querySelector('[role="status"]')?.textContent).toContain('This project could not be loaded.');
 });
 
+test('reports a mount failure even after the project source has loaded', async () => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<GalleryEditorInstance>((_, reject) => {
+		fail = reject;
+	});
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ fontFailure: async () => new Response(source) });
+	await view.started();
+	const canvas = view.panel().querySelector('canvas')!;
+	vi.mocked(mountGalleryEditor).mock.calls[0][1]!.onInitialProjectLoaded?.();
+	await new Promise(requestAnimationFrame);
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	const error = new Error('Font unavailable');
+	fail(error);
+	await expect(view.mounted()).rejects.toBe(error);
+	await vi.waitFor(() => expect(canvas.isConnected).toBe(false));
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	expect(status.hidden).toBe(false);
+	expect(status.textContent).toContain('This project could not be loaded.');
+});
+
 test('disposes a pending selection and ignores callbacks after the gallery is disposed', async () => {
 	let finish!: (editor: GalleryEditorInstance) => void;
 	const pending = new Promise<GalleryEditorInstance>(resolve => {
@@ -529,7 +573,7 @@ test('disposes a pending selection and ignores callbacks after the gallery is di
 	expect(status.hidden).toBe(false);
 });
 
-test('retries a timed-out selection without reviving its late mount', async () => {
+test('retries a mount timed out after source success without reviving its late completion', async () => {
 	let finish!: (editor: GalleryEditorInstance) => void;
 	const pending = new Promise<GalleryEditorInstance>(resolve => {
 		finish = resolve;
@@ -542,6 +586,10 @@ test('retries a timed-out selection without reviving its late mount', async () =
 	await view.started();
 	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
+	options.onInitialProjectLoaded?.();
+	await new Promise(requestAnimationFrame);
+	expect(clearTimeout).not.toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
+	expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(false);
 	const timeout = timeouts.mock.calls[timeoutIndex][0] as () => void;
 	timeout();
 	expect(clearTimeout).toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);

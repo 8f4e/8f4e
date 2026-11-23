@@ -54,16 +54,17 @@ Editor-state parses and resolves configuration generically; web-ui owns supporte
 
 ### `init(store, events, renderer, memoryViews, options)`
 
-Initializes the web UI without drawing or scheduling frames. Editor-core owns the browser frame loop. Web-ui takes
-ownership of the supplied renderer and destroys it on disposal or startup failure.
+Initializes the web UI after project source and configuration have settled, without drawing or scheduling frames.
+Editor-core owns the browser frame loop. Web-ui takes ownership of the supplied renderer and destroys it on disposal
+or startup failure.
 
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
-- `events: EventDispatcher` - Announces layout grid size changes and readiness
+- `events: EventDispatcher` - Announces layout grid size changes
 - `renderer: WebUiRenderer` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
-- `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. It is preloaded alongside project preparation and remains the default for later configuration changes.
+- `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. Only the selected font is loaded at startup; the default still applies to later configuration changes.
 - `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
 - `options.onRenderStats` - Optional callback for sampled render statistics
 - `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
@@ -136,7 +137,8 @@ blocks, culling, the shader background, and canvas drawers from this same camera
 `viewport`; layout and hit testing keep using `state.viewport`. The glide suppresses separate block offsets and new pointer
 presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.
 
-The renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to font and color changes.
+After source preparation, the renderer loads its initial atlas and palette from `state.editorConfig`, then subscribes to
+font and color changes.
 Theme-only changes retain the atlas and prepared glyph IDs. Registered render layers receive the same resolved palette.
 `DrawContext` owns nested coordinate groups and sends viewport-relative sprite positions to a `SpriteTarget`.
 The browser renderer uses the Glugglugglug engine as that target.
@@ -147,13 +149,14 @@ prepared glyph/color cells. `drawNumericText()` trusts formatted live readouts t
 uses their character codes directly, without validation or Unicode mapping. All drawing methods accept explicit
 palette indices. The renderer prepares up to 256 palette colors as premultiplied float32
 values in a 4 KiB uniform buffer.
-Web-ui installs font grid dimensions into `state.viewport.hGrid` and `state.viewport.vGrid` and dispatches
-`gridSizeChanged` when those dimensions change. Editor-state refreshes block geometry without knowing about fonts
-or atlases. The editor has no grid until the initial atlas is installed. During later font changes, the current
+Web-ui supplies the installed font's grid dimensions to editor-state, which updates `state.viewport.hGrid` and
+`state.viewport.vGrid`, dispatches `gridSizeChanged` when those dimensions change, and refreshes block geometry
+without knowing about fonts or atlases. The editor has no grid until the initial atlas is installed. During later font changes, the current
 grid remains usable for rendering while `state.gridSizeReady` is false. Once the selected atlas has been installed
-and any changed dimensions have been applied to layout, web-ui publishes `gridSizeReady`. Same-sized atlas changes,
-cancellation back to the applied font and failed replacements also settle readiness, without invalidating unchanged
-grid geometry. Pending font loads cannot replace a newer selection or update a destroyed renderer.
+and any changed dimensions have been applied to layout, editor-state sets `state.gridSizeReady` and completes pending
+first-visit viewport placement. Same-sized atlas changes, cancellation back to the applied font and failed replacements
+also settle readiness, without invalidating unchanged grid geometry. Pending font loads cannot replace a newer selection
+or update a destroyed renderer. A failed current replacement reports the error and retains the applied atlas and grid.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
 Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
 Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin

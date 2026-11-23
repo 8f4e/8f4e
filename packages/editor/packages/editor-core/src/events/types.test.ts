@@ -27,7 +27,7 @@ it('requires lifecycle payloads and infers them from their event names', () => {
 	};
 	expectTypeOf(check).toBeFunction();
 	const checkAsync = (events: ReturnType<typeof createEvents>, project: ProjectLevel) => {
-		events.dispatchAsync('init');
+		events.dispatchAsync('prepareInitialProject');
 		events.dispatchAsync('codeBlockLayoutsChanged', { project, codeBlocks: [] });
 		// @ts-expect-error Async delivery enforces the same required payload.
 		events.dispatchAsync('codeBlockLayoutsChanged');

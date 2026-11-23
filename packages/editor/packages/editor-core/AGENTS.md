@@ -3,7 +3,8 @@
 ## Core Boundaries
 
 - Editor-core owns plugin installation, initialization and the frame loop. Pass the frame timestamp to web-ui.
-  Finish initial project and font loading before drawing and emit `ready` after the first render.
+  Await source-only `prepareInitialProject` before loading the selected font and settling layout and first-visit
+  placement. Draw the first frame, then emit `ready`.
   Dispose plugins in reverse installation order and continue cleanup if a disposer throws.
 - Editor-state owns the project tree, entry assignment and bounds, history, generic source operations, folding,
   text geometry and pointer routing. Keep editor `@group` behavior, authoring commands and browser input in plugins.

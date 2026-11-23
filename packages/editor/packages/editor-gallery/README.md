@@ -10,11 +10,15 @@ the worker runtime, selected controls and visualizations, and live editing. Its 
 ```ts
 import { mountGalleryEditor } from '@8f4e/editor-gallery';
 
+let sourceLoaded = false;
 const editor = await mountGalleryEditor(canvas, {
 	initialProjectUrl: '/examples/demo.8f4e',
 	captureWheel: false,
-	onInitialProjectLoaded: () => canvas.classList.add('editor-ready'),
+	onInitialProjectLoaded: () => {
+		sourceLoaded = true;
+	},
 });
+if (sourceLoaded) canvas.classList.add('editor-ready');
 
 editor.dispose();
 ```
@@ -77,8 +81,9 @@ use `view` scope: signals in unopened groups wait until that level is visited. T
 Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
 Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
-the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and the first render. Project
-fetching/parsing and the selected default font download run in parallel.
+the mount promise resolves. Mounting waits for URL fetching/parsing, then font-atlas loading using the prepared
+project's configuration or the default, layout and the first render. Reveal the canvas after successful source loading
+and mount completion, rather than in the source-loaded callback.
 
 Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
 initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas

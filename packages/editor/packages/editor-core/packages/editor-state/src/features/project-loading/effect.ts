@@ -6,7 +6,7 @@ import { EMPTY_DEFAULT_PROJECT } from './emptyDefaultProject';
 
 export default function projectLoading(store: StateManager<State>, events: EventDispatcher): void {
 	events.on('loadProject', ({ project }: { project: ProjectObjectModel }) => {
-		restoreProject(store, project, 'replace');
+		restoreProject(store, events, project, 'replace');
 	});
 	events.on('new', () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT }));
 }

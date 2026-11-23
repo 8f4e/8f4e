@@ -1,5 +1,5 @@
 import type { ResolvedPalette } from '@8f4e/editor-palette';
-import { markGridSizePending, setGridSize } from '@8f4e/editor-state';
+import { logError, markGridSizePending, setGridSize } from '@8f4e/editor-state';
 import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -53,9 +53,10 @@ export function subscribeToAppearance(
 			events.dispatch('fontChanged', { font } satisfies FontChangedEvent);
 			indicator.done();
 		} catch (error) {
+			if (disposed || currentGeneration !== generation) return;
+			logError(state, `Failed to load font ${font}: ${String(error)}`);
 			indicator.fail();
 			if (!disposed && currentGeneration === generation) restoreAppliedGrid();
-			throw error;
 		} finally {
 			indicator.cancel();
 			if (fontLoading === indicator) fontLoading = undefined;

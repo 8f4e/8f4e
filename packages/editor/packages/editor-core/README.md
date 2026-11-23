@@ -57,10 +57,11 @@ once supplied and passes ownership to web-ui at initialization. The canvas still
 
 A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, layout, loading, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
-Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
-passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
-loads the per-editor default font atlas in parallel. The renderer waits for both and loads any different font selected by
-the project before drawing. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
+Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches and awaits
+`prepareInitialProject` for startup plugins to fetch, parse, or restore project source. This phase must not wait for
+rendering or pixel geometry: web-ui starts afterward and loads the font selected by the prepared project's configuration
+(or the per-editor default). It installs the atlas and grid; editor-state settles layout and the initial viewport before
+core draws the first frame. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
 after this sequence. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
@@ -71,9 +72,9 @@ block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names 
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
 Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level's
-source and available layout, before committing a viewport for its first visit. Plugins may synchronously replace the
-request's pixel `position`, which defaults to the origin, when `state.gridSizeReady` is true. Otherwise placement
-may be deferred until `gridSizeReady`, which follows the grid's settled layout. Remembered positions bypass this request.
+source and layout, before committing a viewport for its first visit. Plugins may synchronously replace the request's
+pixel `position`, which defaults to the origin. If the requested grid is not ready, core defers resolution until layout
+settles. Remembered positions bypass this request.
 
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
@@ -390,8 +391,9 @@ for compilation inputs.
 ## Project loading
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
-`{ project }` later. Core loads initial content after sizing the viewport. Project preparation through `init` runs
-alongside the default font download; both complete before rendering and the `ready` event.
+`{ project }` later. Core loads initial content after sizing the viewport. Project preparation through
+`prepareInitialProject` completes before the renderer loads the selected font, settles layout and first-visit placement,
+and draws the first frame. The `ready` event follows that frame.
 Open From Disk belongs to the project-open plugin. Core has no file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 

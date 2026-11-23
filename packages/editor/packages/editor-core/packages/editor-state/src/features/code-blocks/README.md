@@ -104,9 +104,9 @@ Project-group blocks use the same `CodeBlockGraphicData` representation as other
 `rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
 resolve levels and parents by path, without recovering identity from block arrays.
 
-`reconstructProject.ts` builds graphical project trees and reconciles remembered views, selections, and existing
+`reconstructProject.ts` builds graphical project trees and transfers remembered views, selections, and existing
 positions for same-project edits. The block effect installs the result and owns selection reset, layout/source
-refresh coordination, viewport updates, and compiler-input notifications.
+refresh coordination, viewport placement requests, and compiler-input notifications.
 
 Core retains the selected source row/column, pointer-to-source mapping, and shared vertical coordinates for line
 highlighting, tooltips, viewport centering, and navigation. The keyboard-editing plugin owns caret movement and
@@ -117,8 +117,9 @@ remembered position and selected block. If the group block was selected before e
 Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
 are not restored. A remembered position always takes precedence, including a remembered origin.
 Only first visits resolve the initial viewport through the `resolveInitialProjectViewport` event after source and
-any available layout settle. Placement plugins wait for the `gridSizeReady` event if the selected grid is pending.
-Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
+layout settle. Core defers this request while the selected grid is pending and applies the synchronous plugin
+contribution once the grid is installed. A level left before placement remains unvisited, and manual navigation
+takes precedence over pending placement. Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
 in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
 exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving
 selections to the new live blocks. They preserve the active level, falling back to the root if that level was removed.

@@ -25,10 +25,6 @@ it('settles source and configuration immediately, but publishes pixel layout onl
 		expect(block.y).toBe(5 * state.viewport.hGrid);
 		notifications.push('grid-changed');
 	});
-	events.on('gridSizeReady', () => {
-		expect(state.gridSizeReady).toBe(true);
-		notifications.push('grid-ready');
-	});
 	try {
 		events.dispatch('loadProject', {
 			project: parseProjectSource(`8f4e/v1
@@ -54,14 +50,16 @@ entryEnd`),
 		expect(block.width).toBeGreaterThan(0);
 		expect(state.codeBlockRendering.entryBounds).toHaveLength(1);
 		expect(onLayout).toHaveBeenCalled();
-		expect(notifications).toEqual(['layout', 'grid-changed', 'grid-ready']);
+		expect(notifications).toEqual(['layout', 'grid-changed']);
+		expect(state.gridSizeReady).toBe(true);
 
 		notifications.length = 0;
 		markGridSizePending(state);
 		expect(state.gridSizeReady).toBe(false);
 		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
 		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
-		expect(notifications).toEqual(['grid-ready']);
+		expect(notifications).toEqual([]);
+		expect(state.gridSizeReady).toBe(true);
 
 		notifications.length = 0;
 		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
@@ -69,7 +67,8 @@ entryEnd`),
 
 		setGridSize(state, events, { vGrid: 7, hGrid: 14 });
 		expect(block).toMatchObject({ x: 28, y: 70, height: 56 });
-		expect(notifications).toEqual(['layout', 'grid-changed', 'grid-ready']);
+		expect(notifications).toEqual(['layout', 'grid-changed']);
+		expect(state.gridSizeReady).toBe(true);
 	} finally {
 		unsubscribeLayout();
 		store.dispose();

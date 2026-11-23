@@ -29,7 +29,7 @@ export function mountGalleryEditorSession({
 
 	let editor: GalleryEditorInstance | undefined;
 	let bridge: EditorWebMcpBridge | undefined;
-	let loaded = false;
+	let sourceLoaded = false;
 	let bridgeStarted = false;
 	let disposed = false;
 	let revealFrame = 0;
@@ -49,7 +49,7 @@ export function mountGalleryEditorSession({
 	}
 
 	async function connectBridge(): Promise<void> {
-		if (disposed || !loaded || !editor || bridgeStarted) return;
+		if (disposed || !sourceLoaded || !editor || bridgeStarted) return;
 		bridgeStarted = true;
 		const mountedEditor = editor;
 		try {
@@ -80,9 +80,6 @@ export function mountGalleryEditorSession({
 	}
 
 	function reveal(): void {
-		if (disposed) return;
-		loaded = true;
-		void connectBridge();
 		window.clearTimeout(loadTimeout);
 		revealFrame = window.requestAnimationFrame(() => {
 			if (disposed) return;
@@ -99,7 +96,9 @@ export function mountGalleryEditorSession({
 				touchNavigation: { axis: 'horizontal' },
 				includeKeyboardModeSwitching,
 				initialProjectUrl: projectUrl,
-				onInitialProjectLoaded: reveal,
+				onInitialProjectLoaded: () => {
+					if (!disposed) sourceLoaded = true;
+				},
 				onInitialProjectLoadError: showError,
 			});
 			if (disposed) {
@@ -107,6 +106,7 @@ export function mountGalleryEditorSession({
 				return;
 			}
 			editor = mountedEditor;
+			if (sourceLoaded) reveal();
 			void connectBridge();
 		} catch (error) {
 			showError(error);

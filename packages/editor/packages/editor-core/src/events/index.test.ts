@@ -13,7 +13,7 @@ describe('event dispatcher', () => {
 		expect(normal).toHaveBeenCalledTimes(phase === 'normal' ? 1 : 0);
 	});
 
-	it('waits for asynchronous startup work while starting every listener immediately', async () => {
+	it('waits for asynchronous project preparation while starting every listener immediately', async () => {
 		const events = createEventDispatcher();
 		let finish!: () => void;
 		const pending = new Promise<void>(resolve => {
@@ -21,9 +21,9 @@ describe('event dispatcher', () => {
 		});
 		const restore = vi.fn();
 		const completed = vi.fn();
-		events.on('init', async () => await pending);
-		events.on('init', restore);
-		const initializing = events.dispatchAsync('init').then(completed);
+		events.on('prepareInitialProject', async () => await pending);
+		events.on('prepareInitialProject', restore);
+		const initializing = events.dispatchAsync('prepareInitialProject').then(completed);
 		expect(restore).toHaveBeenCalledOnce();
 		await Promise.resolve();
 		expect(completed).not.toHaveBeenCalled();

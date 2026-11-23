@@ -8,12 +8,11 @@ import type {
 import type { StateManager } from '@8f4e/state-manager';
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
-import { isRestoringProjectEdit } from '../project-changes';
+import { isRestoringProjectEdit } from '../project-changes/restoring';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
-import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
-import updateViewport from '../viewport/updateViewport';
+import { placeCurrentProjectViewport, rememberCurrentProjectView } from '../viewport/updateViewport';
 import { createLayoutCoordinator } from './layout/coordinator';
 import type { LayoutRegistry } from './layout/registry';
 import { reconstructProject } from './reconstructProject';
@@ -111,6 +110,7 @@ export default function codeBlockRendering(
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		const sameProject = isRestoringProjectEdit(state);
+		if (sameProject) rememberCurrentProjectView(state);
 		const { rootProject, currentProject, nextCodeBlockCreationIndex } = reconstructProject(
 			state.initialProjectState,
 			directives,
@@ -123,9 +123,8 @@ export default function codeBlockRendering(
 		store.set('codeBlockRendering.rootProject', rootProject);
 		store.set('codeBlockRendering.currentProject', currentProject);
 		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
-		const { x, y } = getProjectViewportPosition(currentProject, events);
-		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);
+		placeCurrentProjectViewport(state, events);
 	};
 
 	refreshCurrentProjectSources();

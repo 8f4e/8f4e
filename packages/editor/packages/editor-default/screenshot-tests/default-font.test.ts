@@ -6,6 +6,7 @@ import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { centerViewportOnCodeBlock } from '@8f4e/editor-state';
+import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { expect, test } from 'vitest';
 import { cdp } from 'vitest/browser';
 
@@ -79,6 +80,7 @@ test('positions home using the installed mobile grid on the first frame and the 
 	let editor: Editor | undefined;
 	let events!: EventDispatcher;
 	let firstFrame: { x: number; y: number; vGrid: number; hGrid: number; gridSizeReady: boolean } | undefined;
+	const placements: Array<{ name: string | undefined; vGrid: number; hGrid: number }> = [];
 	try {
 		editor = await mountDefaultEditor(canvas, {
 			storage: {} as Storage,
@@ -92,10 +94,19 @@ test('positions home using the installed mobile grid on the first frame and the 
 					id: 'first-frame',
 					setup: context => {
 						events = context.events;
-						return context.drawers.registerCanvasDrawer(({ state, viewport }) => {
+						const onResolvePosition = ({ project }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
+							const { vGrid, hGrid } = context.store.getState().viewport;
+							placements.push({ name: project.blocks.find(block => block.blockType === 'note')?.name, vGrid, hGrid });
+						};
+						events.on('resolveInitialProjectViewport', onResolvePosition);
+						const unregister = context.drawers.registerCanvasDrawer(({ state, viewport }) => {
 							const { x, y, vGrid, hGrid } = viewport;
 							firstFrame ??= { x, y, vGrid, hGrid, gridSizeReady: state.gridSizeReady };
 						});
+						return () => {
+							unregister();
+							events.off('resolveInitialProjectViewport', onResolvePosition);
+						};
 					},
 				},
 			],
@@ -105,6 +116,7 @@ test('positions home using the installed mobile grid on the first frame and the 
 		const firstHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'mobileHome')!;
 		const initialPosition = centerViewportOnCodeBlock(state.viewport, firstHome, { alignment: 'top' });
 		expect(firstFrame).toEqual({ ...initialPosition, vGrid: 6, hGrid: 12, gridSizeReady: true });
+		expect(placements).toEqual([{ name: 'mobileHome', vGrid: 6, hGrid: 12 }]);
 		expect(state.viewport).toMatchObject(initialPosition);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		await expect(canvas).toMatchScreenshot('mobile-home-position');
@@ -115,11 +127,51 @@ test('positions home using the installed mobile grid on the first frame and the 
 			),
 		});
 		expect(state.gridSizeReady).toBe(false);
+		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(placements).toHaveLength(1);
 		await expect.poll(() => state.gridSizeReady).toBe(true);
 		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+		expect(placements).toEqual([
+			{ name: 'mobileHome', vGrid: 6, hGrid: 12 },
+			{ name: 'nextHome', vGrid: 8, hGrid: 16 },
+		]);
 		const nextHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nextHome')!;
 		expect(state.viewport).toMatchObject(centerViewportOnCodeBlock(state.viewport, nextHome, { alignment: 'bottom' }));
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+
+		// Cancel a replacement while editing the new home's source. Placement must use the latest layout.
+		events.dispatch('loadProject', {
+			project: parseProjectSource('8f4e/v1\nnote cancelledFontHome\n; @mode edit\n; @home\n; @pos 10 10\nnoteEnd'),
+		});
+		expect(state.gridSizeReady).toBe(false);
+		const cancelledFontHome = state.codeBlockRendering.currentProject.blocks.find(
+			block => block.name === 'cancelledFontHome'
+		)!;
+		editor.editing.applyEdits({
+			expectedRevision: editor.editing.getRevision(),
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(cancelledFontHome),
+					code: [
+						'note cancelledFontHome',
+						'; @mode edit',
+						'; @config font ibmvga8x16',
+						'; @home left',
+						'; @pos 150 70',
+						'noteEnd',
+					],
+				},
+			],
+		});
+		await expect.poll(() => state.gridSizeReady).toBe(true);
+		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+		expect(placements.at(-1)).toEqual({ name: 'cancelledFontHome', vGrid: 8, hGrid: 16 });
+		expect(placements).toHaveLength(3);
+		const editedHome = state.codeBlockRendering.currentProject.blocks.find(
+			block => block.name === 'cancelledFontHome'
+		)!;
+		expect(state.viewport).toMatchObject(centerViewportOnCodeBlock(state.viewport, editedHome, { alignment: 'left' }));
 	} finally {
 		editor?.dispose();
 		canvas.remove();

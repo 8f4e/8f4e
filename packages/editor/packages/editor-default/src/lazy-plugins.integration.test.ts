@@ -72,7 +72,7 @@ function restoreSession(directive: string, nested = false) {
 	});
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
-	events.dispatch('init');
+	events.dispatch('prepareInitialProject');
 	const state = store.getState();
 	const outer = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outer');
 	const inner = outer?.childProject?.blocks.find(block => block.name === 'inner');

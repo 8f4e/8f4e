@@ -50,10 +50,10 @@ export function createProjectUrlLoaderPlugin({
 					indicator.cancel();
 				}
 			};
-			events.on('init', loadInitialProject);
+			events.on('prepareInitialProject', loadInitialProject);
 			return () => {
 				disposed = true;
-				events.off('init', loadInitialProject);
+				events.off('prepareInitialProject', loadInitialProject);
 				for (const indicator of pendingLoads) indicator.cancel();
 				pendingLoads.clear();
 			};

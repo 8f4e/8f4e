@@ -176,6 +176,37 @@ describe('editor init', () => {
 		expect(view.destroy).not.toHaveBeenCalled();
 	});
 
+	it('disposes installed plugins and the renderer if asynchronous source preparation rejects', async () => {
+		const { default: init } = await import('./index');
+		const { default: initEvents } = await import('./events');
+		const { default: initView } = await import('@8f4e/web-ui');
+		const actualEvents = await vi.importActual<typeof import('./events')>('./events');
+		vi.mocked(initEvents).mockReturnValueOnce(actualEvents.default());
+		vi.mocked(initView).mockClear();
+		const error = new Error('source preparation failed');
+		const cleanup = vi.fn();
+		await expect(
+			init({ width: 640, height: 480 } as HTMLCanvasElement, {
+				renderer,
+				plugins: [
+					{
+						id: 'broken-source-loader',
+						setup: ({ events }) => {
+							events.on('prepareInitialProject', async () => {
+								throw error;
+							});
+							return cleanup;
+						},
+					},
+				],
+			})
+		).rejects.toBe(error);
+		expect(cleanup).toHaveBeenCalledOnce();
+		expect(renderer.destroy).toHaveBeenCalledOnce();
+		expect(initView).not.toHaveBeenCalled();
+		expect(view.renderFrame).not.toHaveBeenCalled();
+	});
+
 	it('sets up plugins with state and drawing services before dispatching lifecycle events', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
@@ -256,20 +287,19 @@ describe('editor init', () => {
 
 		await init(canvas, { renderer });
 
-		expect(events.dispatch.mock.calls.slice(0, 5)).toEqual([
+		expect(events.dispatch.mock.calls.slice(0, 4)).toEqual([
 			['resize', { canvasWidth: 640, canvasHeight: 480 }],
 			['loadProject', { project: EMPTY_DEFAULT_PROJECT }],
 			['gridSizeChanged'],
-			['gridSizeReady'],
 			['ready'],
 		]);
-		expect(events.dispatchAsync).toHaveBeenCalledExactlyOnceWith('init');
+		expect(events.dispatchAsync).toHaveBeenCalledExactlyOnceWith('prepareInitialProject');
 		expect(view.resize).toHaveBeenCalledWith(640, 480);
 		expect(view.renderFrame).toHaveBeenCalledOnce();
 		expect(view.resize.mock.invocationCallOrder[0]).toBeLessThan(view.renderFrame.mock.invocationCallOrder[0]);
 	});
 
-	it('loads an explicitly supplied initial project before the initialization hook', async () => {
+	it('loads an explicitly supplied initial project before the source preparation hook', async () => {
 		const { default: init } = await import('./index');
 		const project = { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note initial', 'noteEnd'] }] };
 		await init({ width: 640, height: 480 } as HTMLCanvasElement, {
@@ -277,12 +307,13 @@ describe('editor init', () => {
 			initialProject: project,
 		});
 		const load = events.dispatch.mock.calls.findIndex(([name]) => name === 'loadProject');
-		const ready = events.dispatch.mock.calls.findIndex(([name]) => name === 'ready');
 		expect(events.dispatch.mock.calls[load][1]).toEqual({ project });
-		expect(load).toBeLessThan(ready);
+		expect(events.dispatch.mock.invocationCallOrder[load]).toBeLessThan(
+			events.dispatchAsync.mock.invocationCallOrder[0]
+		);
 	});
 
-	it('waits for project preparation and font initialization before announcing readiness', async () => {
+	it('settles project source, font dimensions, and the initial viewport in sequence before the first frame', async () => {
 		const { default: init } = await import('./index');
 		const { default: initState } = await import('@8f4e/editor-state');
 		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
@@ -304,12 +335,13 @@ describe('editor init', () => {
 		});
 		const project = {
 			...EMPTY_DEFAULT_PROJECT,
-			notes: [{ id: 0, code: ['note loaded', '; @config font spleen5x8', 'noteEnd'] }],
+			notes: [{ id: 0, code: ['note loaded', '; @config font spleen5x8', '; @pos 8 9', 'noteEnd'] }],
 		};
 		const ready = vi.fn();
 		const projectInstalled = vi.fn();
-		vi.mocked(initView).mockImplementationOnce(async (stateStore, stateEvents, _canvas, _memory, options) => {
-			await options?.initialProjectReady;
+		const resolveViewport = vi.fn();
+		vi.mocked(initView).mockImplementationOnce(async (stateStore, stateEvents) => {
+			expect(stateStore.getState().editorConfig.font).toBe('spleen5x8');
 			await fontPending;
 			setGridSize(stateStore.getState(), stateEvents, { vGrid: 5, hGrid: 8 });
 			return view;
@@ -319,11 +351,21 @@ describe('editor init', () => {
 			plugins: [
 				{
 					id: 'project-preparation',
-					setup: ({ events }) => {
-						events.on('init', async () => {
+					setup: ({ store, events }) => {
+						events.on('prepareInitialProject', async () => {
 							await projectPending;
 							events.dispatch('loadProject', { project });
 							projectInstalled();
+						});
+						events.on('resolveInitialProjectViewport', ({ project, position }) => {
+							const state = store.getState();
+							expect(state.gridSizeReady).toBe(true);
+							expect(project).toBe(state.codeBlockRendering.currentProject);
+							const block = project.blocks.find(block => block.name === 'loaded')!;
+							expect(block).toMatchObject({ x: 40, y: 72 });
+							expect(block.width).toBeGreaterThan(0);
+							Object.assign(position, { x: block.x, y: block.y });
+							resolveViewport();
 						});
 						events.on('ready', ready);
 						return () => {};
@@ -332,21 +374,27 @@ describe('editor init', () => {
 			],
 		});
 		await Promise.resolve();
-		expect(initView).toHaveBeenCalledOnce();
+		expect(initView).not.toHaveBeenCalled();
+		expect(resolveViewport).not.toHaveBeenCalled();
 		expect(ready).not.toHaveBeenCalled();
 		finishProject();
-		await vi.waitFor(() => expect(projectInstalled).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(initView).toHaveBeenCalledOnce());
+		expect(projectInstalled).toHaveBeenCalledOnce();
 		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
 		expect(loadedState.initialProjectState!.notes).toEqual(project.notes);
 		expect(loadedState.editorConfig.font).toBe('spleen5x8');
+		expect(loadedState.compilerInputRevision).toBeGreaterThan(0);
 		expect(loadedState.gridSizeReady).toBe(false);
 		expect(loadedState.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+		expect(resolveViewport).not.toHaveBeenCalled();
 		expect(view.renderFrame).not.toHaveBeenCalled();
 		expect(ready).not.toHaveBeenCalled();
 		finishFont();
 		const editor = await mounting;
 		expect(editor.state.gridSizeReady).toBe(true);
-		expect(editor.state.viewport).toMatchObject({ vGrid: 5, hGrid: 8 });
+		expect(editor.state.viewport).toMatchObject({ vGrid: 5, hGrid: 8, x: 40, y: 72 });
+		expect(resolveViewport).toHaveBeenCalledOnce();
+		expect(resolveViewport.mock.invocationCallOrder[0]).toBeLessThan(view.renderFrame.mock.invocationCallOrder[0]);
 		expect(ready).toHaveBeenCalledOnce();
 		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(ready.mock.invocationCallOrder[0]);
 		editor.dispose();

@@ -91,13 +91,14 @@ PWA hosts can pass `pwaUpdates: navigator.serviceWorker` to load the independent
 the first render. It shows a dialog when a new version starts downloading and offers **Reload** when it is ready.
 First installation is silent. The host retains service-worker registration, caching, and controller-change reloads.
 
-Use `onInitialProjectLoaded()` to reveal installed initial content and `onInitialProjectLoadError(error)` to report
+Use `onInitialProjectLoaded()` to identify successful initial source loading and `onInitialProjectLoadError(error)` to report
 a failed initial URL request or parse. With no URL, the success callback runs after editor initialization and synchronous
 session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
 as success; compilation and asset loading continue independently.
 
-Callbacks can run before the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and
-the first render. Project fetching/parsing and the selected default font download run in parallel. Custom plugin
+Callbacks can run before the mount promise resolves; reveal the canvas after successful loading and mount completion.
+Mounting waits for project source preparation, then font-atlas
+loading using the prepared project's configuration or the default, layout and the first render. Custom plugin
 compositions provide their own asynchronous loading notifications.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,

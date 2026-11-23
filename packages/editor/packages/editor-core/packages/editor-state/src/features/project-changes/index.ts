@@ -1,14 +1,10 @@
-import type { ProjectChange, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { resolvePendingProjectViewport } from '../viewport/updateViewport';
+import { restoring } from './restoring';
 
 type ProjectStore = Pick<StateManager<State>, 'getState' | 'set'>;
-const restoring = new WeakMap<State, Exclude<ProjectChange['kind'], 'edit'>>();
-
-export function isRestoringProjectEdit(state: State): boolean {
-	const kind = restoring.get(state);
-	return kind === 'checkpoint' || kind === 'restore';
-}
 
 /** Publish once after a completed persisted edit and its derived state have been updated. */
 export function publishProjectChange(store: ProjectStore, kind: ProjectChange['kind'] = 'edit'): void {
@@ -20,6 +16,7 @@ export function publishProjectChange(store: ProjectStore, kind: ProjectChange['k
 /** Restore the whole snapshot before announcing it, including any regenerated environment constants. */
 export function restoreProject(
 	store: ProjectStore,
+	events: EventDispatcher,
 	project: ProjectObjectModel,
 	kind: Exclude<ProjectChange['kind'], 'edit'>
 ): void {
@@ -33,5 +30,9 @@ export function restoreProject(
 		if (previousKind) restoring.set(state, previousKind);
 		else restoring.delete(state);
 	}
-	if (!previousKind) publishProjectChange(store, kind);
+	if (!previousKind) {
+		publishProjectChange(store, kind);
+		// Synchronous project-change subscribers may update layout contributions.
+		resolvePendingProjectViewport(state, events);
+	}
 }

@@ -63,7 +63,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		const initializing = Promise.all(emitter.listeners('init').map(listener => listener()));
+		const initializing = Promise.all(emitter.listeners('prepareInitialProject').map(listener => listener()));
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(getProjectModules(JSON.parse(saved))).toEqual([]);

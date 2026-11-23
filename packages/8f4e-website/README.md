@@ -14,8 +14,8 @@ controls the canvas size. Homepage editors leave wheel scrolling to the surround
 without a mode-switching plugin. Audio contexts are supplied only to gallery editors.
 
 `src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
-`src/main.ts` mounts it. The homepage reveals canvases through the landing editor's initial-project completion callback
-and displays a reload message when URL loading fails.
+`src/main.ts` mounts it. The homepage reveals canvases only after successful source loading and editor mounting,
+including the first rendered frame. It displays a reload message when source loading or mounting fails.
 
 From the workspace root:
 
@@ -69,10 +69,10 @@ mounts finish independently; a disposed selection releases any editor that arriv
 Returning to an example reloads its source; edits remain only for that editor's lifetime.
 The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
 A link opens the example in the full editor.
-The loading indicator stays visible until the initial-project completion callback arrives. Successful empty projects
-are revealed too. A load-error callback offers a retry immediately; a 30-second timeout handles stalled initialization
-or fetching. Switching examples disposes the previous editor without waiting for its fetch. The gallery does not inspect
-project contents or poll editor state to infer completion.
+The loading indicator stays visible until the project source has loaded and the editor has mounted, including its first
+rendered frame. Successful empty projects are revealed too. A load-error callback offers a retry immediately; a
+30-second timeout covers source fetching and renderer initialization. Switching examples disposes the previous editor
+without waiting for its fetch. The gallery does not inspect project contents or poll editor state to infer completion.
 
 Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
 callbacks, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under

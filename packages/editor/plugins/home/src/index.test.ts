@@ -90,7 +90,7 @@ describe('home viewport navigation', () => {
 	] as const)('honors @home%s on initial placement without selecting the block', (args, alignment) => {
 		const test = setup();
 		test.load(`note target\n; @pos 100 200\n; @home${args}\nnoteEnd`);
-		expect(test.resolveInitial()).toEqual(test.expectedPosition('target', alignment));
+		expect(test.position()).toEqual(test.expectedPosition('target', alignment));
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 	});
 
@@ -232,19 +232,24 @@ entryEnd`);
 describe('home navigation while waiting for grid dimensions', () => {
 	it('positions the initial home using the actual grid after layout settles, only once', () => {
 		const test = setup(false);
+		const resolveInitial = vi.fn();
+		test.events.on('resolveInitialProjectViewport', resolveInitial);
 		test.load('note target\n; @pos 100 200\n; @home top\nnoteEnd');
 		expect(test.position()).toEqual({ x: 0, y: 0 });
+		expect(resolveInitial).not.toHaveBeenCalled();
 
 		test.gridReady();
 		expect(test.block('target')).toMatchObject({ x: 600, y: 2400 });
 		expect(test.position()).toEqual(test.expectedPosition('target', 'top'));
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(resolveInitial).toHaveBeenCalledOnce();
 
 		const homePosition = test.position();
 		test.gridPending();
 		test.gridReady(TEST_GRID_SIZE);
 		expect(test.position()).toEqual(homePosition);
 		expect(test.position()).not.toEqual(test.expectedPosition('target', 'top'));
+		expect(resolveInitial).toHaveBeenCalledOnce();
 	});
 
 	it('only positions the latest of multiple projects loaded before the grid is ready', () => {
@@ -358,7 +363,7 @@ entryEnd`);
 		expect(test.position()).toEqual({ x: 32, y: 48 });
 	});
 
-	it('waits to select and position an explicit Go @home action until the grid is ready', () => {
+	it('uses the installed grid for an explicit Go @home action while a replacement font loads', () => {
 		const test = setup();
 		test.load(`note target
 ; @pos 100 200
@@ -371,13 +376,14 @@ noteEnd`);
 		test.navigate(32, 48, 'pan');
 		test.gridPending();
 		test.events.dispatch('goHome');
-		expect(test.position()).toEqual({ x: 32, y: 48 });
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-
-		test.gridReady();
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
 		expect(test.block('target').isCollapsed).toBe(false);
 		expect(test.position()).toEqual(test.expectedPosition('target', 'bottom'));
+		const homePosition = test.position();
+
+		test.gridReady();
+		expect(test.position()).toEqual(homePosition);
+		expect(test.position()).not.toEqual(test.expectedPosition('target', 'bottom'));
 	});
 
 	it('an explicit Go @home with no valid home can return to the origin without grid dimensions', () => {

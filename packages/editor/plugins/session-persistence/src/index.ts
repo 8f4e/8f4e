@@ -38,9 +38,9 @@ export function createSessionPersistencePlugin({
 				store.subscribe('projectChange', save);
 				save();
 			};
-			events.on('init', initialize);
+			events.on('prepareInitialProject', initialize);
 			return () => {
-				events.off('init', initialize);
+				events.off('prepareInitialProject', initialize);
 				store.unsubscribe('projectChange', save);
 			};
 		},
