@@ -8,7 +8,9 @@ source instead of adding a position directive that changes execution order. The 
 an empty project so plugins can observe the same replacement path.
 
 Undo and redo restore `initialProjectState` directly within the current project. They do not dispatch the action for
-loading an unrelated project. File associations, disk imports, URL fetching, and session persistence belong to plugins.
+loading an unrelated project. The shared restoration flow requests viewport placement once after the completed
+project change and synchronous layout contributions. File associations, disk imports, URL fetching, and session
+persistence belong to plugins.
 
 `@8f4e/editor-core` loads its `initialProject` option (or an empty project) after the first resize, then awaits
 `prepareInitialProject` handlers so that project loading and configuration settle before the selected atlas is loaded.

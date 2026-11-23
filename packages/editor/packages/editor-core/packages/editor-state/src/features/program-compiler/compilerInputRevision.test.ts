@@ -139,6 +139,12 @@ describe('compiler input revision', () => {
 	});
 
 	it('announces changes after adding, disabling, enabling, and deleting a block', async () => {
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockActions(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.compilerInputRevision).toBe(1);

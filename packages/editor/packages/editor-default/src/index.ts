@@ -22,7 +22,6 @@ export function createDefaultEditorPlugins(options: {
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
-	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
@@ -44,7 +43,7 @@ export function createDefaultEditorPlugins(options: {
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
 			initialProjectUrl: options.initialProjectUrl,
-			onError: options.onInitialProjectLoadError,
+			failureMode: 'empty-project',
 		}),
 		createSessionPersistencePlugin({
 			storage: options.storage,
@@ -78,8 +77,6 @@ export interface DefaultEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** The initial URL request or source parsing failed. */
-	onInitialProjectLoadError?: (error: unknown) => void;
 	/** Show Open From Disk in the project-open plugin menu. */
 	showOpenMenuItem?: boolean;
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
@@ -101,7 +98,6 @@ export async function mountDefaultEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoadError,
 		showOpenMenuItem = true,
 		includeKeyboardModeSwitching,
 		storage = localStorage,
@@ -120,7 +116,6 @@ export async function mountDefaultEditor(
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
-					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
 					captureWheel,

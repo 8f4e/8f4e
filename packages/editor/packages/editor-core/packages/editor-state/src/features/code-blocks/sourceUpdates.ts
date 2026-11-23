@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { updateProjectGroupMemoryExposureDeclarations } from '../../pureHelpers/projectGroupMemoryExposures';
@@ -7,6 +7,7 @@ import resolveEditorConfig from '../global-editor-directives/resolve';
 import { getTabStopsByLine } from '../text-geometry/tabLayout';
 import { updateEnvConstantsBlock } from './features/auto-env-constants/effect';
 import parsePos from './features/directives/pos/data';
+import { deriveDirectiveFacts } from './features/directives/registry';
 import getBlockType from './utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from './utils/parseBlockDirectives';
@@ -23,8 +24,9 @@ function isProjectScopeSourceLine(line: string): boolean {
 }
 
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
-export function updateBlockSource(block: CodeBlockGraphicData): void {
+export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
+	block.disabled = deriveDirectiveFacts(block.code, block.parsedDirectives, directives).blockState.disabled;
 	updateProjectGroupMemoryExposureDeclarations(block);
 	block.tabStopsByLine = getTabStopsByLine(block.code.length, block.parsedDirectives);
 	const previousName = block.name;
@@ -45,7 +47,7 @@ export function updateBlockSource(block: CodeBlockGraphicData): void {
 		block.blockType === 'unknown' &&
 		block.code.every(isProjectScopeSourceLine) &&
 		(hasProjectScopeInstruction || block.isProjectScope === true);
-	for (const child of block.childProject?.blocks ?? []) updateBlockSource(child);
+	for (const child of block.childProject?.blocks ?? []) updateBlockSource(child, directives);
 }
 
 /** One source-update path: metadata, generated environment source, global configuration, then layout. */
@@ -53,9 +55,10 @@ export function refreshBlockSources(
 	store: StateManager<State>,
 	events: EventDispatcher,
 	blocks: readonly CodeBlockGraphicData[],
+	directives: EditorDirectiveDefinition[],
 	refreshLayouts: () => void
 ): void {
-	for (const block of blocks) updateBlockSource(block);
+	for (const block of blocks) updateBlockSource(block, directives);
 	updateEnvConstantsBlock(store, events);
 	resolveEditorConfig(store);
 	refreshLayouts();

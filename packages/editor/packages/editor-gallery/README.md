@@ -10,15 +10,11 @@ the worker runtime, selected controls and visualizations, and live editing. Its 
 ```ts
 import { mountGalleryEditor } from '@8f4e/editor-gallery';
 
-let sourceLoadFailed = false;
 const editor = await mountGalleryEditor(canvas, {
 	initialProjectUrl: '/examples/demo.8f4e',
 	captureWheel: false,
-	onInitialProjectLoadError: () => {
-		sourceLoadFailed = true;
-	},
 });
-if (!sourceLoadFailed) canvas.classList.add('editor-ready');
+canvas.classList.add('editor-ready');
 
 editor.dispose();
 ```
@@ -83,11 +79,11 @@ Runtime, MIDI, and asset plugins use
 Imports and compilation finish independently of mounting. The mount promise resolves after URL fetching/parsing,
 then font-atlas loading using the prepared project's configuration or the default, layout, and the first render.
 
-Without `initialProjectUrl`, the editor starts with an empty project. A URL failure also installs an empty project and
-reports the error through `onInitialProjectLoadError(error)` before the mount promise resolves. The host owns page URLs,
-loading/error UI, canvas layout, visibility management, and any WebMCP bridge.
+Without `initialProjectUrl`, the editor starts with an empty project. A failed initial URL request or parse rejects the
+mount promise before the first render; the host can reveal the canvas on fulfillment and display errors on rejection.
+The host owns page URLs, loading/error UI, canvas layout, visibility management, and any WebMCP bridge.
 
-`GalleryEditorMountOptions` supports `initialProjectUrl`, `onInitialProjectLoadError`, `sharedAudioContext`,
+`GalleryEditorMountOptions` supports `initialProjectUrl`, `sharedAudioContext`,
 `captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes

@@ -64,15 +64,10 @@ export function mountHomepageEditors(): () => void {
 			return pendingMount;
 		}
 
-		let sourceLoadFailed = false;
 		const mountPromise = mountLandingEditor(canvas, {
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
 			initialProjectUrl: canvas.dataset.projectPath ? getHomepageProjectUrl(canvas.dataset.projectPath) : undefined,
-			onInitialProjectLoadError: error => {
-				sourceLoadFailed = true;
-				showProjectLoadError(canvas, error);
-			},
 		})
 			.then(editor => {
 				if (disposed) {
@@ -82,15 +77,12 @@ export function mountHomepageEditors(): () => void {
 
 				editorByCanvas.set(canvas, editor);
 				renderingObserver.observe(canvas);
-				if (!sourceLoadFailed) {
-					canvas.parentElement?.querySelector('.editor-load-error')?.remove();
-					revealEditorAfterMount(canvas);
-				}
+				canvas.parentElement?.querySelector('.editor-load-error')?.remove();
+				revealEditorAfterMount(canvas);
 				return editor;
 			})
 			.catch(error => {
 				editorMountPromiseByCanvas.delete(canvas);
-				if (!sourceLoadFailed) showProjectLoadError(canvas, error);
 				throw error;
 			});
 
@@ -107,7 +99,7 @@ export function mountHomepageEditors(): () => void {
 			const canvas = entry.target as HTMLCanvasElement;
 			void mountEditor(canvas)
 				.then(() => mountingObserver.unobserve(canvas))
-				.catch(error => console.error('Failed to mount editor:', error));
+				.catch(error => showProjectLoadError(canvas, error));
 		}
 	});
 	for (const canvas of canvases) {

@@ -61,9 +61,11 @@ This feature contains several subfeatures under `features/` that handle specific
 New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
 Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
-Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and update block type and valid grid
-coordinates, regenerate environment source, resolve global configuration, then refresh layouts. An incomplete or
-invalid position directive retains the existing block position. Interactive and programmatic edits use this same
+Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and derive compiler-relevant block
+flags such as `disabled`, update block type and valid grid coordinates, regenerate environment source, resolve global
+configuration, then refresh layouts. Compiler inputs settle without pixel geometry; layout derives presentation
+and stacking without writing compiler-relevant flags. An incomplete or invalid position directive retains the
+existing block position. Interactive and programmatic edits use this same
 path; ordinary layout invalidations do not reparse source. `layout/coordinator.ts` tracks each block's owning
 `ProjectLevel`. Ownership is registered on project loading and block-collection changes, independently of source
 edits and layout notifications. Renaming a group retains its runtime identity while updating its source path.
@@ -106,7 +108,7 @@ resolve levels and parents by path, without recovering identity from block array
 
 `reconstructProject.ts` builds graphical project trees and transfers remembered views, selections, and existing
 positions for same-project edits. The block effect installs the result and owns selection reset, layout/source
-refresh coordination, viewport placement requests, and compiler-input notifications.
+refresh coordination, and compiler-input notifications.
 
 Core retains the selected source row/column, pointer-to-source mapping, and shared vertical coordinates for line
 highlighting, tooltips, viewport centering, and navigation. The keyboard-editing plugin owns caret movement and
@@ -116,9 +118,10 @@ presentation, including horizontal placement derived from shared tab/source geom
 remembered position and selected block. If the group block was selected before entry, returning reselects it.
 Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
 are not restored. A remembered position always takes precedence, including a remembered origin.
-Only first visits resolve the initial viewport through the `resolveInitialProjectViewport` event after source and
-layout settle. Core defers this request while the selected grid is pending and applies the synchronous plugin
-contribution once the grid is installed. A level left before placement remains unvisited, and manual navigation
+Project restoration captures the departing view for same-project edits and requests placement once after the
+project change and synchronous layout contributions settle. Only first visits resolve the initial viewport through
+the `resolveInitialProjectViewport` event. Core defers this request while the selected grid is pending and applies
+the synchronous plugin contribution once the grid is installed. A level left before placement remains unvisited, and manual navigation
 takes precedence over pending placement. Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
 in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
 exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving

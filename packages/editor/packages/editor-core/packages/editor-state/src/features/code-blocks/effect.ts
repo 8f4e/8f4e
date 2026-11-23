@@ -8,11 +8,10 @@ import type {
 import type { StateManager } from '@8f4e/state-manager';
 import resolveEditorConfig from '../global-editor-directives/resolve';
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
-import { isRestoringProjectEdit } from '../project-changes/restoring';
+import { isRestoringProjectEdit } from '../project-changes';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
-import { placeCurrentProjectViewport, rememberCurrentProjectView } from '../viewport/updateViewport';
 import { createLayoutCoordinator } from './layout/coordinator';
 import type { LayoutRegistry } from './layout/registry';
 import { reconstructProject } from './reconstructProject';
@@ -65,7 +64,13 @@ export default function codeBlockRendering(
 
 	const refreshCurrentProjectSources = () => {
 		coordinator.syncProject(state.codeBlockRendering.currentProject);
-		refreshBlockSources(store, events, state.codeBlockRendering.currentProject.blocks, refreshCurrentProjectLayout);
+		refreshBlockSources(
+			store,
+			events,
+			state.codeBlockRendering.currentProject.blocks,
+			directives,
+			refreshCurrentProjectLayout
+		);
 	};
 
 	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
@@ -80,11 +85,11 @@ export default function codeBlockRendering(
 
 	const updateSelectedCodeBlockSource = () => {
 		const block = state.codeBlockRendering.selectedCodeBlock;
-		if (block) refreshBlockSources(store, events, [block], () => updateEditedCodeBlock(block));
+		if (block) refreshBlockSources(store, events, [block], directives, () => updateEditedCodeBlock(block));
 	};
 
 	const onSourcesChanged = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
-		refreshBlockSources(store, events, codeBlocks, () => refreshBlockLayouts(codeBlocks));
+		refreshBlockSources(store, events, codeBlocks, directives, () => refreshBlockLayouts(codeBlocks));
 	};
 
 	const updateHideSelectionTransition = (
@@ -110,7 +115,6 @@ export default function codeBlockRendering(
 
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		const sameProject = isRestoringProjectEdit(state);
-		if (sameProject) rememberCurrentProjectView(state);
 		const { rootProject, currentProject, nextCodeBlockCreationIndex } = reconstructProject(
 			state.initialProjectState,
 			directives,
@@ -124,7 +128,6 @@ export default function codeBlockRendering(
 		store.set('codeBlockRendering.currentProject', currentProject);
 		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
 		incrementCompilerInputRevision(store);
-		placeCurrentProjectViewport(state, events);
 	};
 
 	refreshCurrentProjectSources();

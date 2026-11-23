@@ -91,7 +91,6 @@ export function mountGalleryEditorSession({
 				touchNavigation: { axis: 'horizontal' },
 				includeKeyboardModeSwitching,
 				initialProjectUrl: projectUrl,
-				onInitialProjectLoadError: showError,
 			});
 			if (disposed) {
 				mountedEditor.dispose();

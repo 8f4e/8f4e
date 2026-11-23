@@ -116,7 +116,7 @@ test('reports URL loading failures on the homepage without revealing an empty ed
 	const view = setup(async () => {
 		throw new Error('Offline');
 	});
-	await view.mounted();
+	await expect(view.mounted()).rejects.toThrow('Offline');
 	await vi.waitFor(() =>
 		expect(view.frame.querySelector('[role="alert"]')?.textContent).toContain('This project could not be loaded.')
 	);

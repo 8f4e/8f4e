@@ -3,7 +3,7 @@ import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { expect, it, vi } from 'vitest';
-import initState, { markGridSizePending, setGridSize } from '~/index';
+import initState, { applyCodeBlockSourceEdits, markGridSizePending, serializeToProject, setGridSize } from '~/index';
 
 it('settles source and configuration immediately, but publishes pixel layout only once the grid is available', () => {
 	const emitter = new EventEmitter();
@@ -102,6 +102,63 @@ it('continues laying out source while a replacement grid is pending', () => {
 		store.dispose();
 	}
 });
+
+it.each([
+	{ directive: 'disabled', initiallyDisabled: true },
+	{ directive: 'disabled', initiallyDisabled: false },
+	{ directive: 'customDisabled', initiallyDisabled: true },
+	{ directive: 'customDisabled', initiallyDisabled: false },
+])(
+	'settles @$directive before the compiler revision with no grid (initially disabled: $initiallyDisabled)',
+	({ directive, initiallyDisabled }) => {
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		const store = initState(events, { callbacks: {} });
+		const state = store.getState();
+		const unregisterDirective = store.directives.register({
+			name: 'customDisabled',
+			apply: (_, draft) => {
+				draft.blockState.disabled = true;
+			},
+		});
+		const code = (disabled: boolean) => ['module sample', ...(disabled ? [`; @${directive}`] : []), 'moduleEnd'];
+		const snapshot = () => ({ revision: state.compilerInputRevision, project: serializeToProject(state) });
+		const changed = vi.fn<(value: ReturnType<typeof snapshot>) => void>();
+		try {
+			events.dispatch('loadProject', {
+				project: parseProjectSource(`8f4e/v1\nentry main\n${code(initiallyDisabled).join('\n')}\nentryEnd`),
+			});
+			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+			expect(block.disabled).toBe(initiallyDisabled);
+			expect(state.gridSizeReady).toBe(false);
+			const previousRevision = state.compilerInputRevision;
+			events.on('compilationInputChanged', () => changed(snapshot()));
+
+			const nextCode = code(!initiallyDisabled);
+			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: nextCode }]);
+			expect(changed).toHaveBeenCalledOnce();
+			expect(block.disabled).toBe(!initiallyDisabled);
+			expect(state.gridSizeReady).toBe(false);
+			const settled = changed.mock.calls[0][0];
+			expect(settled.revision).toBe(previousRevision + 1);
+			const compilerModule = settled.project.execution.find(block => block.type === 'module')!;
+			expect(compilerModule.code).toEqual(nextCode);
+			expect(compilerModule.disabled).toBe(initiallyDisabled ? undefined : true);
+			expect(snapshot()).toEqual(settled);
+
+			setGridSize(state, events, { vGrid: 6, hGrid: 12 });
+			expect(snapshot()).toEqual(settled);
+			expect(changed).toHaveBeenCalledOnce();
+		} finally {
+			unregisterDirective();
+			store.dispose();
+		}
+	}
+);
 
 it('announces completed layouts after nested source and contribution updates during project loading', () => {
 	const emitter = new EventEmitter();

@@ -1,9 +1,13 @@
 import type { EditorLifecycleEvents, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
-import { isRestoringProject } from '../project-changes/restoring';
 import getProjectViewportPosition from './getProjectViewportPosition';
 
 /** A first visit awaiting settled geometry, scoped to its editor state and project level. */
 const pendingProjectViewport = new WeakMap<State, ProjectLevel>();
+
+/** Discard an unplaced project when navigation or replacement supersedes it. */
+export function cancelPendingProjectViewport(state: State): void {
+	pendingProjectViewport.delete(state);
+}
 
 /**
  * Applies viewport position updates through a single commit path.
@@ -16,7 +20,7 @@ export default function updateViewport(
 	source?: EditorLifecycleEvents['viewportChanged']['source']
 ): boolean {
 	// An explicit navigation takes ownership of the view even if its target is the current position.
-	if (source !== undefined) pendingProjectViewport.delete(state);
+	if (source !== undefined) cancelPendingProjectViewport(state);
 	const previousX = state.viewport.x;
 	const previousY = state.viewport.y;
 	const nextX = Math.round(x);
@@ -50,23 +54,23 @@ export function rememberCurrentProjectView(state: State): void {
 	currentProject.selectedBlock = selectedCodeBlock;
 }
 
-/** Restore a remembered position immediately, or resolve the first visit once source and grid are ready. */
+/** Once source has settled, restore memory immediately or defer first-visit placement until the grid is ready. */
 export function placeCurrentProjectViewport(state: State, events: EventDispatcher): void {
 	const project = state.codeBlockRendering.currentProject;
-	pendingProjectViewport.delete(state);
-	if (!project.viewport && (!state.gridSizeReady || isRestoringProject(state))) {
+	cancelPendingProjectViewport(state);
+	if (!project.viewport && !state.gridSizeReady) {
 		pendingProjectViewport.set(state, project);
-		if (!state.gridSizeReady) updateViewport(state, 0, 0, events);
+		updateViewport(state, 0, 0, events);
 		return;
 	}
 	const { x, y } = getProjectViewportPosition(project, events);
 	updateViewport(state, x, y, events);
 }
 
-/** Called after project restoration or a grid handoff, when source and layout may have settled. */
+/** Finish a pending first visit after the grid handoff settles layout. */
 export function resolvePendingProjectViewport(state: State, events: EventDispatcher): void {
-	if (!state.gridSizeReady || isRestoringProject(state)) return;
+	if (!state.gridSizeReady) return;
 	const pending = pendingProjectViewport.get(state);
-	pendingProjectViewport.delete(state);
 	if (pending && pending === state.codeBlockRendering.currentProject) placeCurrentProjectViewport(state, events);
+	else cancelPendingProjectViewport(state);
 }

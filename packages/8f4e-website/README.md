@@ -14,8 +14,9 @@ controls the canvas size. Homepage editors leave wheel scrolling to the surround
 without a mode-switching plugin. Audio contexts are supplied only to gallery editors.
 
 `src/homepage.ts` exports `mountHomepageEditors`, which owns the homepage editors, visibility observers, and disposal;
-`src/main.ts` mounts it. The homepage reveals canvases only after successful source loading and editor mounting,
-including the first rendered frame. It displays a reload message when source loading or mounting fails.
+`src/main.ts` mounts it. The homepage reveals canvases when editor mounting fulfills, after loading any requested
+project and drawing the first frame. If source or renderer initialization fails, mounting rejects and the homepage
+displays a reload message.
 
 From the workspace root:
 
@@ -70,12 +71,12 @@ Returning to an example reloads its source; edits remain only for that editor's 
 The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
 A link opens the example in the full editor.
 The loading indicator stays visible until the project source has loaded and the editor has mounted, including its first
-rendered frame. Successful empty projects are revealed too. A load-error callback offers a retry immediately; a
-30-second timeout covers source fetching and renderer initialization. Switching examples disposes the previous editor
+rendered frame. Successful empty projects are revealed too. A rejected mount offers a retry; a 30-second timeout
+covers source fetching and renderer initialization. Switching examples disposes the previous editor
 without waiting for its fetch. The gallery does not inspect project contents or poll editor state to infer completion.
 
-Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
-load errors, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
+Browser integration tests cover both website views with delayed responses, valid empty projects, mount failures/retry,
+and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
 `src/__screenshots__/gallery.test.ts/` and is shared across platforms because editor glyphs use bitmap masks.
 
 The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source

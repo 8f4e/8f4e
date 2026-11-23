@@ -115,6 +115,12 @@ describe('project revision', () => {
 	});
 
 	it('advances for adding, disabling, enabling, and deleting a block, but not for a repeated delete', async () => {
+		rendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 		codeBlockActions(store, events);
 		await dispatchAsync('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expect(state.projectChange.revision).toBe(1);

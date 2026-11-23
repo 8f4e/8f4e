@@ -14,7 +14,7 @@ import {
 } from '@8f4e/language-spec';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
 import parsePos from './features/directives/pos/data';
-import { deriveDirectiveState } from './features/directives/registry';
+import { deriveDirectiveFacts } from './features/directives/registry';
 import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -82,7 +82,7 @@ export function reconstructProject(
 		const posResult = parsePos(blockParsedDirectives);
 		const gridX = posResult ? posResult.x : previousBlock ? previousBlock.gridX : 0;
 		const gridY = posResult ? posResult.y : previousBlock ? previousBlock.gridY : 0;
-		const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
+		const directiveState = deriveDirectiveFacts(codeBlock.code, blockParsedDirectives, directives);
 
 		const graphicData = createCodeBlockGraphicData({
 			width: 0,
@@ -98,7 +98,7 @@ export function reconstructProject(
 			creationIndex: codeBlock.id,
 			blockType: codeBlock.blockType,
 			entry: codeBlock.entry,
-			disabled: codeBlock.disabled ?? directiveState.blockState.disabled,
+			disabled: directiveState.blockState.disabled,
 			alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
 			parsedDirectives: blockParsedDirectives,
 			...overrides,

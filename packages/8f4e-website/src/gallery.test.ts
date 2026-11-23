@@ -503,7 +503,7 @@ test('reports a failed request immediately and loads the project when retried', 
 			return new Response(source);
 		},
 	});
-	await view.mounted();
+	await expect(view.mounted()).rejects.toThrow('Offline');
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	await vi.waitFor(() => expect(status.textContent).toContain('This project could not be loaded.'));
 	expect(view.panel().querySelector('canvas')).toBeNull();
@@ -511,19 +511,6 @@ test('reports a failed request immediately and loads the project when retried', 
 	await view.mounted(1);
 	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-});
-
-test('disposes an editor when loading fails before its mount promise resolves', async () => {
-	const dispose = vi.fn();
-	vi.mocked(mountGalleryEditor).mockImplementationOnce(async (_canvas, options) => {
-		options?.onInitialProjectLoadError?.(new Error('Offline'));
-		return { dispose } as unknown as GalleryEditorInstance;
-	});
-	const view = setup({ early: async () => new Response(source) });
-	await view.mounted();
-	await vi.waitFor(() => expect(dispose).toHaveBeenCalledOnce());
-	expect(view.panel().querySelector('canvas')).toBeNull();
-	expect(view.panel().querySelector('[role="status"]')?.textContent).toContain('This project could not be loaded.');
 });
 
 test('reports a rejected mount without revealing the editor', async () => {
@@ -546,24 +533,32 @@ test('reports a rejected mount without revealing the editor', async () => {
 	expect(status.textContent).toContain('This project could not be loaded.');
 });
 
-test('disposes a pending selection and ignores late errors after the gallery is disposed', async () => {
+test.each(['fulfilled', 'rejected'])('ignores a %s mount after the gallery is disposed', async outcome => {
 	let finish!: (editor: GalleryEditorInstance) => void;
-	const pending = new Promise<GalleryEditorInstance>(resolve => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<GalleryEditorInstance>((resolve, reject) => {
 		finish = resolve;
+		fail = reject;
 	});
 	const disposeEditor = vi.fn();
 	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ pending: async () => new Response(source) });
 	await view.started();
 	const canvas = view.panel().querySelector('canvas')!;
-	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	view.dispose();
 	expect(canvas.isConnected).toBe(false);
 
-	options.onInitialProjectLoadError?.(new Error('Late failure'));
-	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
-	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	if (outcome === 'fulfilled') {
+		finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
+		await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	} else {
+		const error = new Error('Late failure');
+		fail(error);
+		await expect(view.mounted()).rejects.toBe(error);
+		await new Promise(requestAnimationFrame);
+		expect(disposeEditor).not.toHaveBeenCalled();
+	}
 	expect(canvas.classList.contains('editor-ready')).toBe(false);
 	expect(status.textContent).toBe('Loading project…');
 	expect(status.hidden).toBe(false);
@@ -580,7 +575,6 @@ test('retries a timed-out pending mount without reviving its late completion', a
 	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ timeout: async () => new Response(source) });
 	await view.started();
-	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
 	await new Promise(requestAnimationFrame);
 	expect(clearTimeout).not.toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
@@ -595,7 +589,6 @@ test('retries a timed-out pending mount without reviving its late completion', a
 	await view.mounted(1);
 	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
 
-	options.onInitialProjectLoadError?.(new Error('Late failure'));
 	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
 	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
 	expect(status.hidden).toBe(true);

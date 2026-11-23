@@ -25,7 +25,6 @@ export function calculateBlockLayout(
 	);
 	const displayModel = directiveState.displayModel;
 	block.displayModel = displayModel;
-	block.disabled = directiveState.blockState.disabled;
 	block.lineNumberColumnWidth = block.code.length.toString().length;
 	block.isCollapsed = displayModel.isCollapsed;
 	const draft: BlockLayoutDraft = {

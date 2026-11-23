@@ -3,7 +3,14 @@ import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, expect, it, vi } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, markGridSizePending, setGridSize, updateViewport } from '../../index';
+import initState, {
+	applyCodeBlockSourceEdits,
+	createEditorEditingHandle,
+	getEditorBlockId,
+	markGridSizePending,
+	setGridSize,
+	updateViewport,
+} from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -122,6 +129,37 @@ it('uses layout contributions from project-change subscribers when replacing a p
 	expect(test.position()).toEqual({ x: block.x, y: block.y + block.height });
 });
 
+it('returns to the remembered parent only after project-change subscribers finish deleting the open group', () => {
+	const test = setup();
+	const { state, events, store } = test;
+	setGridSize(state, events, TEST_GRID_SIZE);
+	test.load(groupProject);
+	events.dispatch('enterEditMode');
+	const { handle, navigation, dispose } = createEditorEditingHandle(store, events);
+	cleanups.push(dispose);
+	const groupId = getEditorBlockId(test.block('audio'));
+	updateViewport(state, 12, -20, events, 'pan');
+	navigation.openGroup(groupId);
+	updateViewport(state, 32, -16, events, 'pan');
+
+	const notifications: string[] = [];
+	store.subscribe('projectChange', () => {
+		expect(state.codeBlockRendering.currentProject.path).toBe('');
+		expect(test.position()).toEqual({ x: 32, y: -16 });
+		notifications.push('projectChange');
+	});
+	events.on('viewportChanged', () => notifications.push('viewportChanged'));
+	handle.applyEdits({
+		expectedRevision: handle.getRevision(),
+		edits: [{ type: 'delete', blockId: groupId }],
+	});
+
+	expect(notifications).toEqual(['projectChange', 'viewportChanged']);
+	expect(test.position()).toEqual({ x: 12, y: -20 });
+	// The remembered parent does not need a new first-visit position.
+	expect(test.resolver).toHaveBeenCalledTimes(2);
+});
+
 it.each([TEST_GRID_SIZE, { vGrid: 6, hGrid: 12 }])(
 	'resolves pending placement when a live grid installation completes with $vGrid×$hGrid dimensions',
 	grid => {
@@ -200,6 +238,25 @@ it('preserves unplaced first visits across undo without remembering their tempor
 		{ codeBlock: test.block('sample'), code: ['note sample', '; @pos 30 40', 'noteEnd'] },
 	]);
 	test.events.dispatch('undo');
+	expect(test.state.codeBlockRendering.currentProject.viewport).toBeUndefined();
+	expect(test.resolver).not.toHaveBeenCalled();
+	setGridSize(test.state, test.events, TEST_GRID_SIZE);
+	expect(test.resolver).toHaveBeenCalledOnce();
+	expect(test.position()).toEqual({ x: 80, y: 320 });
+});
+
+it('does not remember the temporary origin across a checkpoint that regenerates environment source', () => {
+	const test = setup();
+	test.load('note sample\n; @pos 10 20\nnoteEnd');
+	test.events.dispatch('enterEditMode');
+	const { handle, dispose } = createEditorEditingHandle(test.store, test.events);
+	cleanups.push(dispose);
+	handle.applyEdits({
+		expectedRevision: handle.getRevision(),
+		edits: [{ type: 'delete', blockId: getEditorBlockId(test.block('env')) }],
+	});
+
+	expect(test.block('env')).toBeDefined();
 	expect(test.state.codeBlockRendering.currentProject.viewport).toBeUndefined();
 	expect(test.resolver).not.toHaveBeenCalled();
 	setGridSize(test.state, test.events, TEST_GRID_SIZE);

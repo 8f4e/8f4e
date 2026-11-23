@@ -34,12 +34,12 @@ export function createDirectiveRegistry(): EditorDirectiveRegistry & { definitio
 	};
 }
 
-export function deriveDirectiveState(
+/** Resolve source-owned directive facts without building display rows. */
+export function deriveDirectiveFacts(
 	code: string[],
 	parsedDirectives: ParsedDirectiveRecord[],
-	options: DirectiveDeriveOptions = {},
 	definitions: EditorDirectiveDefinition[] = directiveDefinitions
-): DirectiveDerivedState {
+): Pick<DirectiveDerivedState, 'blockState' | 'displayState'> {
 	const directives = matchEditorDirectives(parsedDirectives, definitions);
 	const draft: DirectiveDerivedStateDraft = {
 		sourceCode: code,
@@ -57,8 +57,20 @@ export function deriveDirectiveState(
 	return {
 		blockState: draft.blockState,
 		displayState: draft.displayState,
+	};
+}
+
+export function deriveDirectiveState(
+	code: string[],
+	parsedDirectives: ParsedDirectiveRecord[],
+	options: DirectiveDeriveOptions = {},
+	definitions: EditorDirectiveDefinition[] = directiveDefinitions
+): DirectiveDerivedState {
+	const facts = deriveDirectiveFacts(code, parsedDirectives, definitions);
+	return {
+		...facts,
 		displayModel: buildDisplayModel(code, {
-			...draft.displayState,
+			...facts.displayState,
 			isExpandedForEditing: options.isExpandedForEditing,
 		}),
 	};

@@ -19,8 +19,6 @@ export interface LandingEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** The initial URL request or source parsing failed. */
-	onInitialProjectLoadError?: (error: unknown) => void;
 }
 
 export async function mountLandingEditor(
@@ -33,7 +31,6 @@ export async function mountLandingEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoadError,
 	}: LandingEditorMountOptions = {}
 ): Promise<LandingEditorInstance> {
 	const compiler = createCompilerPlugin();
@@ -46,7 +43,6 @@ export async function mountLandingEditor(
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,
-				onError: onInitialProjectLoadError,
 			}),
 			createDeferredPluginLoaderPlugin({
 				load: () =>

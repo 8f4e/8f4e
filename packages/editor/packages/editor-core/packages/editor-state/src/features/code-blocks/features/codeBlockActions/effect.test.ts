@@ -3,6 +3,9 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
+import codeBlockRendering from '../../effect';
+import { createLayoutRegistry } from '../../layout/registry';
+import { directiveDefinitions } from '../directives/registry';
 import codeBlockActions from './effect';
 
 describe('codeBlockActions - insertion', () => {
@@ -84,6 +87,17 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 		mockState = createMockState();
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
+		mockEvents.dispatch = vi.fn((name, payload) => {
+			for (const [eventName, handler] of vi.mocked(mockEvents.on).mock.calls) {
+				if (eventName === name) handler(payload);
+			}
+		});
+		codeBlockRendering(
+			store,
+			mockEvents,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 	});
 
 	it('should toggle disabled state from false to true', () => {
@@ -103,7 +117,7 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 	});
 
 	it('should toggle disabled state from true to false', () => {
-		const codeBlock = createMockCodeBlock({ disabled: true });
+		const codeBlock = createMockCodeBlock({ code: ['module test', '; @disabled', 'moduleEnd'], disabled: true });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockActions(store, mockEvents);

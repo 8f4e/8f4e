@@ -93,9 +93,9 @@ First installation is silent. The host retains service-worker registration, cach
 
 The mount promise resolves after project source preparation, then font-atlas loading using the prepared project's
 configuration or the default, layout, and the first render. Compilation and asset loading continue independently.
-If an initial URL request or parse fails, the standard URL loader installs an empty project and reports the error through
-`onInitialProjectLoadError(error)`. The mount can still resolve, so a host can handle this error separately and reveal the
-canvas after successful mount completion. Custom plugin compositions provide their own project loading and error handling.
+If an initial URL request or parse fails, the default composition's URL loader logs the error, retains a failed loading
+status, and installs an empty project so the user can continue authoring. Custom plugin compositions provide their own
+project loading and error handling.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,

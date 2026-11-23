@@ -6,11 +6,12 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 export function createProjectUrlLoaderPlugin({
 	fetch,
 	initialProjectUrl,
-	onError,
+	failureMode = 'reject',
 }: {
 	fetch: typeof globalThis.fetch;
 	initialProjectUrl?: string;
-	onError?: (error: unknown) => void;
+	/** By default an initial source failure rejects mounting; authoring hosts can recover with an empty project. */
+	failureMode?: 'reject' | 'empty-project';
 }): EditorPlugin {
 	return {
 		id: 'project-url-loader',
@@ -31,10 +32,10 @@ export function createProjectUrlLoaderPlugin({
 						project = parseProjectSource(source);
 					} catch (error) {
 						if (disposed) return;
-						indicator.fail();
 						logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
+						if (failureMode === 'reject') throw error;
+						indicator.fail();
 						events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-						onError?.(error);
 						return;
 					}
 					events.dispatch('loadProject', { project });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
+import { directiveDefinitions } from './features/directives/registry';
 import { updateBlockSource } from './sourceUpdates';
 
 describe('source metadata project scope', () => {
@@ -9,13 +10,13 @@ describe('source metadata project scope', () => {
 			projectPath: '',
 			blockType: 'unknown',
 		});
-		updateBlockSource(block);
+		updateBlockSource(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(true);
 	});
 
 	it('keeps an existing project-scope block while it is temporarily empty', () => {
 		const block = createMockCodeBlock({ code: [''], projectPath: '', isProjectScope: true, blockType: 'unknown' });
-		updateBlockSource(block);
+		updateBlockSource(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(true);
 	});
 
@@ -26,7 +27,7 @@ describe('source metadata project scope', () => {
 			isProjectScope: true,
 			blockType: 'unknown',
 		});
-		updateBlockSource(block);
+		updateBlockSource(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(false);
 		expect(block.blockType).toBe('module');
 	});

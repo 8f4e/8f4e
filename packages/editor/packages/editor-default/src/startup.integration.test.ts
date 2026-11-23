@@ -32,14 +32,12 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const disposers: Array<() => void> = [];
-	const onInitialProjectLoadError = vi.fn();
 	try {
 		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: storage as Storage,
 			storageKey: 'session',
 			initialProjectUrl: 'https://example.com/project.8f4e',
-			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 			renderFrame: () => {},
 			writeMemory: () => {},
@@ -87,7 +85,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 					?.gaps.get(2)?.size
 			).toBe(8)
 		);
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(store.getState().codeBlockRendering.currentProject.blocks.some(block => block.name === 'oldSession')).toBe(
 			false
 		);

@@ -141,7 +141,7 @@ describe('default editor plugins', () => {
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
-			onError: undefined,
+			failureMode: 'empty-project',
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage: expect.anything(),
@@ -202,20 +202,17 @@ describe('default editor plugins', () => {
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const storage = {} as Storage;
 		const initialProjectUrl = 'https://example.com/project.8f4e';
-		const onInitialProjectLoadError = vi.fn();
 		const editor = await mountDefaultEditor(canvas, {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
-			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 		});
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl,
-			onError: onInitialProjectLoadError,
+			failureMode: 'empty-project',
 		});
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		await loadDeferredPlugins();
 		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
 			document: canvas.ownerDocument,
@@ -238,11 +235,9 @@ describe('default editor plugins', () => {
 			})
 		);
 		const mounted = vi.fn();
-		const onInitialProjectLoadError = vi.fn();
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const mounting = mountDefaultEditor(canvas, {
 			storage: {} as Storage,
-			onInitialProjectLoadError,
 		}).then(editor => {
 			mounted(editor);
 			return editor;
@@ -254,7 +249,6 @@ describe('default editor plugins', () => {
 		const editor = await mounting;
 		expect(editor).toBe(coreEditor);
 		expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		editor.dispose();
 	});
 
