@@ -238,6 +238,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	await expect.poll(() => editor.state.viewport.width).toBe(640);
 	const sources = editor.state.codeBlockRendering.rootProject.blocks.map(block => [...block.code]);
 	const revision = editor.editing.getRevision();
+	const sourceFont = editor.state.editorConfig.font;
 	const key = (key: string) => {
 		const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
 		canvas.dispatchEvent(event);
@@ -245,10 +246,12 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	};
 	expect(key('F8').defaultPrevented).toBe(true);
 	await expect.poll(() => editor.state.viewport.hGrid).toBe(12);
-	expect(editor.state.editorConfig.font).toBe('spleen6x12');
+	expect(editor.state.appearance.fontOverride).toBe('spleen6x12');
+	expect(editor.state.editorConfig.font).toBe(sourceFont);
 	expect(key('F9').defaultPrevented).toBe(true);
 	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
-	expect(editor.state.editorConfig.font).toBe('ibmvga8x16');
+	expect(editor.state.appearance.fontOverride).toBe('ibmvga8x16');
+	expect(editor.state.editorConfig.font).toBe(sourceFont);
 	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
 	editor.state.loadingIndicators = [];
 	editor.resize(640, 400);
@@ -256,6 +259,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	expect(editor.state.codeBlockRendering.rootProject.blocks.map(block => block.code)).toEqual(sources);
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
+	expect(editor.state.appearance.fontOverride).toBeUndefined();
 	expect(key('F9').defaultPrevented).toBe(false);
 });
 

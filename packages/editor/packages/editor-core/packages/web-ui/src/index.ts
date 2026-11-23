@@ -10,7 +10,7 @@ import loadFontAtlas, { DEFAULT_FONT, type Font, type FontAtlas } from '@8f4e/sp
 import type { StateManager } from '@8f4e/state-manager';
 import type { Engine } from 'glugglugglug';
 import { subscribeToAppearance, updateGridSize } from './appearance';
-import { getConfiguredFont, getConfiguredPalette } from './config';
+import { getAppearanceFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
@@ -21,7 +21,7 @@ import type { MemoryViews } from './types';
 import { createViewportTransition } from './viewport-transition';
 
 export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
-export { registerWebUiConfig } from './config';
+export { getAppearanceFont, registerWebUiConfig } from './config';
 export { DrawContext, type SpriteTarget } from './drawContext';
 export type {
 	CanvasDrawer,
@@ -111,7 +111,7 @@ async function mount(
 ) {
 	const state = store.getState();
 	const defaultFont = options.defaultFont ?? DEFAULT_FONT;
-	const font = getConfiguredFont(state.editorConfig, defaultFont);
+	const font = getAppearanceFont(state, defaultFont);
 	const fontAtlas = await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
 	let frameStartedAt = performance.now();

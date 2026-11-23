@@ -13,6 +13,7 @@ import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/lang
 import type { StateManager } from '@8f4e/state-manager';
 import { walkProjectBlocks, walkProjectLevels } from '../../pureHelpers/projectTree';
 import {
+	clearEnvironmentOwnership,
 	findEnvironmentBlock,
 	generateEnvironmentSource,
 	normalizeEnvironmentSource,
@@ -22,8 +23,7 @@ import { isOrdinaryCommentLine } from '../code-blocks/features/directives/utils'
 import type { createLayoutCoordinator } from '../code-blocks/layout/coordinator';
 import type { ProjectMembership } from '../code-blocks/projectMembership';
 import { reconstructProject } from '../code-blocks/reconstructProject';
-import { prepareProjectSources, refreshBlockSources } from '../code-blocks/sourceUpdates';
-import getBlockType from '../code-blocks/utils/codeParsers/getBlockType';
+import { prepareProjectSources, refreshBlockSources, supportsExecutionEntry } from '../code-blocks/sourceUpdates';
 import { createCodeBlockGraphicData } from '../code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../code-blocks/utils/getCodeBlockNameFromSource';
 import resolveEditorConfig from '../global-editor-directives/resolve';
@@ -39,7 +39,6 @@ type EditKind = 'edit' | 'checkpoint';
 /** Internal mutation service; the plugin-facing contract exposes only live edits. */
 export interface ProjectEditService extends ProjectEdits {
 	restore(project: ProjectObjectModel, kind: RestoreKind): void;
-	refreshConfig(): void;
 }
 
 interface SourceBefore {
@@ -160,7 +159,7 @@ export function createProjectEditService(
 
 	const settlePending = (mutation: Mutation) => {
 		// A schema may be registered synchronously while resolving configuration. Only
-		// explicit refresh requests repeat that phase; generated source cannot feed it back.
+		// schema changes repeat that phase; generated source cannot feed it back.
 		while (configPending) {
 			configPending = false;
 			resolveEditorConfig(store, environment);
@@ -207,14 +206,14 @@ export function createProjectEditService(
 	};
 
 	const createBlock = (source: ProjectSourceBlock, project: ProjectLevel): CodeBlockGraphicData => {
-		const code = [...source.code];
+		const code = project === rendering.rootProject ? clearEnvironmentOwnership([...source.code]) : [...source.code];
 		const name = getCodeBlockNameFromSource(code);
 		const block = createCodeBlockGraphicData({
 			code,
 			name,
 			projectPath: project.path,
 			creationIndex: rendering.nextCodeBlockCreationIndex++,
-			entry: source.entry ?? (getBlockType(code) === 'module' || source.childProject ? 'main' : undefined),
+			entry: source.entry,
 		});
 		if (source.childProject) {
 			const child: ProjectLevel = {
@@ -229,11 +228,7 @@ export function createProjectEditService(
 	};
 
 	const rememberEntry = (project: ProjectLevel, block: CodeBlockGraphicData) => {
-		if (
-			(block.blockType === 'module' || block.childProject) &&
-			block.entry !== undefined &&
-			!project.entries.includes(block.entry)
-		) {
+		if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
 			project.entries.push(block.entry);
 		}
 	};
@@ -275,14 +270,18 @@ export function createProjectEditService(
 			candidates.set(codeBlock, update);
 		}
 		for (const [block, update] of candidates) {
-			if (update.code !== undefined && block === environment) {
-				update.code = normalizeEnvironmentSource(update.code, state.envConstantContributions, {
-					x: block.gridX,
-					y: block.gridY,
-				});
+			if (update.code !== undefined) {
+				if (block === environment) {
+					update.code = normalizeEnvironmentSource(update.code, state.envConstantContributions, {
+						x: block.gridX,
+						y: block.gridY,
+					});
+				} else if (membership.getOwner(block) === rendering.rootProject) {
+					update.code = clearEnvironmentOwnership(update.code);
+				}
 			}
-			if (block === environment) delete update.entry;
 			if (update.code && sameSource(update.code, block.code)) delete update.code;
+			if (block === environment || (update.code === undefined && !supportsExecutionEntry(block))) delete update.entry;
 			if (update.entry === block.entry) delete update.entry;
 			if (update.code === undefined && update.entry === undefined) candidates.delete(block);
 		}
@@ -305,19 +304,16 @@ export function createProjectEditService(
 					continue;
 				}
 				if (update.code && setSource(mutation, block, update.code)) editedBlocks.push(block);
-				if (update.entry !== undefined) {
+			}
+			refreshBlockSources(editedBlocks, directives, membership);
+			for (const [block, update] of candidates) {
+				// Requested entries apply to the final source type, not an intermediate
+				// incomplete draft or the type before the source edit.
+				if (update.entry !== undefined && supportsExecutionEntry(block)) {
 					rememberSource(mutation, block);
 					block.entry = update.entry;
 				}
-			}
-			refreshBlockSources(editedBlocks, directives, membership);
-			for (const block of editedBlocks) {
-				if (block.blockType === 'module' && block.entry === undefined) block.entry = 'main';
-			}
-			for (const [block, update] of candidates) {
-				if (update.entry !== undefined || mutation.before.get(block)?.entry !== block.entry) {
-					rememberEntry(membership.getOwner(block)!, block);
-				}
+				rememberEntry(membership.getOwner(block)!, block);
 			}
 			for (const block of deletes) {
 				const owner = membership.getOwner(block)!;
@@ -448,5 +444,5 @@ export function createProjectEditService(
 		mutation.prepareEnvironment = environment !== undefined;
 		coordinator.refreshProject(rendering.currentProject);
 	});
-	return { apply, restore, refreshConfig };
+	return { apply, restore };
 }

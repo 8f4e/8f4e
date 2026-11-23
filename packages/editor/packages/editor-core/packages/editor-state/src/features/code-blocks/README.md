@@ -47,7 +47,9 @@ Code blocks are categorized by type, which determines compilation and rendering 
 - **`note`** - Editor-only notes
 - **`unknown`** - Unclassified blocks (fallback)
 
-Block types are automatically detected and updated based on code content.
+Block types are automatically detected and updated based on code content without replacing the block. An incomplete
+declaration retains its last execution entry; a completed non-execution block clears it. Converting that block back to
+a module uses an explicitly assigned entry or `main`. Empty authored entry sections remain part of the project.
 
 ## Subfeatures
 

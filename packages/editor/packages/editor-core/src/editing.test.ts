@@ -482,6 +482,68 @@ describe('public editor editing handle', () => {
 		expect(result.revision).toBe(editing.getRevision());
 	});
 
+	it.each([
+		{ code: ['note converted', 'noteEnd'], requestedEntry: undefined, expectedEntry: 'main' },
+		{ code: ['function converted', 'functionEnd'], requestedEntry: 'requested', expectedEntry: 'requested' },
+		{ code: ['constants converted', 'constantsEnd'], requestedEntry: undefined, expectedEntry: 'main' },
+		{ code: ['includes', 'includesEnd'], requestedEntry: undefined, expectedEntry: 'main' },
+		{ code: ['pass env'], requestedEntry: undefined, expectedEntry: 'main' },
+	])(
+		'settles entry assignment when converting a module to $code and back',
+		({ code, requestedEntry, expectedEntry }) => {
+			const { editing, state, store } = setup({
+				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				entries: ['alternate', 'empty'],
+				execution: [{ type: 'module', id: 0, entry: 'alternate', code: ['module original', 'moduleEnd'] }],
+			});
+			const project = state.codeBlockRendering.currentProject;
+			const target = project.blocks.find(block => block.name === 'original')!;
+			const blockId = getEditorBlockId(target);
+			store.set('codeBlockRendering.selectedCodeBlock', target);
+
+			editing.applyEdits({ expectedRevision: editing.getRevision(), edits: [{ type: 'update', blockId, code }] });
+
+			expect(target.entry).toBeUndefined();
+			expect(project.entries).toEqual(['alternate', 'empty']);
+			expect(serializeToProject(state).execution).toEqual([]);
+
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [{ type: 'update', blockId, code: ['module converted', 'moduleEnd'], entry: requestedEntry }],
+			});
+
+			expect(target.entry).toBe(expectedEntry);
+			expect(project.entries).toEqual(['alternate', 'empty', expectedEntry]);
+			expect(serializeToProject(state).entries).toEqual(project.entries);
+			expect(serializeToProject(state).execution).toMatchObject([{ type: 'module', id: 0, entry: expectedEntry }]);
+			expect(project.blocks.find(block => getEditorBlockId(block) === blockId)).toBe(target);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
+		}
+	);
+
+	it('preserves a module entry while its source is temporarily incomplete', () => {
+		const { editing, state } = setup({
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			entries: ['alternate'],
+			execution: [{ type: 'module', id: 0, entry: 'alternate', code: ['module original', 'moduleEnd'] }],
+		});
+		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const blockId = getEditorBlockId(target);
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId, code: ['module original'] }],
+		});
+		expect(target.blockType).toBe('unknown');
+		expect(target.entry).toBe('alternate');
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId, code: ['module original', 'moduleEnd'] }],
+		});
+		expect(target.entry).toBe('alternate');
+		expect(serializeToProject(state).execution).toMatchObject([{ type: 'module', id: 0, entry: 'alternate' }]);
+		expect(state.codeBlockRendering.rootProject.entries).toEqual(['alternate']);
+	});
+
 	it('accepts malformed source but rejects explicit entry membership for non-execution blocks', () => {
 		const { editing, state, compilationChanged } = setup();
 		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;

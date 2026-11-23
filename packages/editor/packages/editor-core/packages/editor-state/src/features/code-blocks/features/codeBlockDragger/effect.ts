@@ -24,18 +24,19 @@ export default function codeBlockDragger(
 	events: EventDispatcher
 ): () => void {
 	const state = store.getState();
-	// dragSet holds the blocks being dragged together. It's computed fresh on each pointerdown
-	// and cleared on pointerup, so concurrent drags are not a concern (only one drag at a time).
+	// Resolve targets on pointerdown and keep them current when the visible collection changes.
+	// Pointer moves only visit the prepared targets, not the entire project.
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
 
+	function discardPreview(block: CodeBlockGraphicData) {
+		block.x = block.gridX * state.viewport.vGrid;
+		block.y = block.gridY * state.viewport.hGrid;
+	}
+
 	function finishDrag() {
 		if (didDrag) {
-			const { vGrid, hGrid } = state.viewport;
-			for (const block of dragSet) {
-				block.x = block.gridX * vGrid;
-				block.y = block.gridY * hGrid;
-			}
+			for (const block of dragSet) discardPreview(block);
 		}
 		state.codeBlockRendering.draggedCodeBlock = undefined;
 		dragSet = [];
@@ -46,10 +47,24 @@ export default function codeBlockDragger(
 		return state.gridSizeReady && state.viewport.vGrid > 0 && state.viewport.hGrid > 0;
 	}
 
-	function survivingTargets() {
+	function refreshDragTargets() {
+		if (dragSet.length === 0) return;
 		const { currentProject, draggedCodeBlock } = state.codeBlockRendering;
-		if (!canDrag() || !draggedCodeBlock || !currentProject.blocks.includes(draggedCodeBlock)) return [];
-		return dragSet.filter(block => currentProject.blocks.includes(block));
+		const members = new Set(currentProject.blocks);
+		if (!draggedCodeBlock || !members.has(draggedCodeBlock)) {
+			finishDrag();
+			return;
+		}
+		dragSet = dragSet.filter(block => {
+			if (members.has(block)) return true;
+			if (didDrag) discardPreview(block);
+			return false;
+		});
+		if (dragSet.length === 0) finishDrag();
+	}
+
+	function canContinueDrag() {
+		return canDrag() && state.codeBlockRendering.draggedCodeBlock && dragSet.length > 0;
 	}
 
 	function onPointerDown(event: InternalPointerEvent) {
@@ -78,6 +93,7 @@ export default function codeBlockDragger(
 		};
 		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
 		dragSet = dragTargets.targets;
+		refreshDragTargets();
 
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
@@ -96,8 +112,7 @@ export default function codeBlockDragger(
 
 	function onPointerMove(event: InternalPointerEvent) {
 		const { movementX, movementY } = event;
-		const targets = survivingTargets();
-		if (targets.length === 0) {
+		if (!canContinueDrag()) {
 			finishDrag();
 			return;
 		}
@@ -105,8 +120,7 @@ export default function codeBlockDragger(
 			didDrag = true;
 		}
 
-		// A project edit can remove a target while the pointer is held.
-		for (const block of targets) {
+		for (const block of dragSet) {
 			block.x += movementX;
 			block.y += movementY;
 		}
@@ -114,9 +128,8 @@ export default function codeBlockDragger(
 	}
 
 	function onPointerUp() {
-		const targets = survivingTargets();
 		const primaryBlock = state.codeBlockRendering.draggedCodeBlock;
-		if (!didDrag || targets.length === 0 || !primaryBlock) {
+		if (!didDrag || !canContinueDrag() || !primaryBlock) {
 			finishDrag();
 			return;
 		}
@@ -135,7 +148,7 @@ export default function codeBlockDragger(
 		const edits: { codeBlock: CodeBlockGraphicData; code: string[] }[] = [];
 
 		// Snap all blocks in drag set to grid using the same pixel delta
-		for (const block of targets) {
+		for (const block of dragSet) {
 			const gridX = Math.round((block.x + deltaX) / vGrid);
 			const gridY = Math.round((block.y + deltaY) / hGrid);
 			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });
@@ -151,6 +164,7 @@ export default function codeBlockDragger(
 	events.on('pointermove', onPointerMove);
 	events.on('pointerup', onPointerUp);
 	events.on('gridSizeChanged', finishDrag);
+	store.subscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
 
 	return () => {
 		finishDrag();
@@ -158,5 +172,6 @@ export default function codeBlockDragger(
 		events.off('pointermove', onPointerMove);
 		events.off('pointerup', onPointerUp);
 		events.off('gridSizeChanged', finishDrag);
+		store.unsubscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
 	};
 }

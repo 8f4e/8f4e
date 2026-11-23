@@ -30,8 +30,12 @@ export function registerWebUiConfig(store: StateManager<State>): void {
 	store.set('editorConfigValidators.color', colorEditorConfigValidator);
 }
 
-export function getConfiguredFont(config: EditorConfig, defaultFont: Font = DEFAULT_FONT): Font {
-	return (config.font as Font | undefined) ?? defaultFont;
+/** Choose the renderer font without modifying resolved project configuration. */
+export function getAppearanceFont(
+	state: Pick<State, 'appearance' | 'editorConfig'>,
+	defaultFont: Font = DEFAULT_FONT
+): Font {
+	return ((state.appearance.fontOverride ?? state.editorConfig.font) as Font | undefined) ?? defaultFont;
 }
 
 export function getConfiguredPalette(config: EditorConfig) {

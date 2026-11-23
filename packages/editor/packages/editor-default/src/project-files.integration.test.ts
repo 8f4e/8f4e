@@ -78,7 +78,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 		return event;
 	};
 	const openMenu = () => events.dispatchAsync('contextmenu', { x: 800, y: 400 });
-	return { events, state, handle, browserWindow, keydown, openMenu, disposePlugin };
+	return { events, store, state, handle, browserWindow, keydown, openMenu, disposePlugin };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -136,6 +136,29 @@ entryEnd`),
 		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'right.8f4e'));
 		await test.events.dispatchAsync('importProject');
 		expect(test.state.editorConfig.export?.fileName).toBe('right');
+	});
+	it('preserves authored environment source before the generated block when saving and reopening', async () => {
+		const test = setup();
+		const authoredCode = ['constants env', '; @pos -5 -5', 'const KEEP 1', 'constantsEnd'];
+		test.store.set('envConstantContributions.provider', ['const GENERATED 2']);
+		test.store.projectEdits.apply({
+			inserts: [{ project: test.state.codeBlockRendering.rootProject, source: { code: authoredCode } }],
+		});
+		await test.events.dispatchAsync('saveProject');
+		const savedSource = await test.handle.writable.write.mock.calls[0][0].text();
+		expect(savedSource).toContain('const KEEP 1');
+		expect(savedSource).toContain('const GENERATED 2');
+		expect(savedSource.indexOf('const KEEP 1')).toBeLessThan(savedSource.indexOf('const GENERATED 2'));
+		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'duplicate-env.8f4e'));
+		await test.events.dispatchAsync('importProject');
+		const blocks = test.state.codeBlockRendering.rootProject.blocks;
+		const authored = blocks.find(block => block.code.includes('const KEEP 1'))!;
+		const generated = blocks.find(block => block.code.includes('const GENERATED 2'))!;
+		expect(authored).toMatchObject({ code: authoredCode });
+		expect(generated).toMatchObject({ gridX: 0, gridY: 0 });
+		test.store.set('envConstantContributions.provider', ['const GENERATED 3']);
+		expect(authored.code).toEqual(authoredCode);
+		expect(generated.code).toContain('const GENERATED 3');
 	});
 	it.each(['loadProject', 'new'])('clears the association on %s', async action => {
 		const test = setup();

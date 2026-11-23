@@ -4,7 +4,7 @@ import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f
 import type { EditorConfigEntry, EventDispatcher } from '@8f4e/editor-state-types';
 import { DEFAULT_FONT, FONT_NAMES } from '@8f4e/sprite-generator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getConfiguredFont, getConfiguredPalette, registerWebUiConfig } from './config';
+import { getAppearanceFont, getConfiguredPalette, registerWebUiConfig } from './config';
 
 function entry(path: string, value: string): EditorConfigEntry {
 	return { path, value, sourceLineIndex: 1, codeBlockId: 0 };
@@ -22,10 +22,10 @@ describe('web-ui configuration', () => {
 	afterEach(() => store.dispose());
 
 	it('supplies rendering defaults without adding them to project configuration', () => {
-		const config = {};
-		expect(getConfiguredFont(config)).toBe(DEFAULT_FONT);
-		expect(getConfiguredPalette(config)).toEqual(resolvePalette());
-		expect(config).toEqual({});
+		const state = store.getState();
+		expect(getAppearanceFont(state)).toBe(DEFAULT_FONT);
+		expect(getConfiguredPalette(state.editorConfig)).toEqual(resolvePalette());
+		expect(state.editorConfig).toEqual({});
 	});
 
 	it('registers validation for every supported font', () => {

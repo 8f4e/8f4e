@@ -195,6 +195,8 @@ export interface State {
 	featureFlags: FeatureFlags;
 	editorMode: EditorMode;
 	editorConfig: EditorConfig;
+	/** Transient renderer settings, separate from the project's resolved configuration. */
+	appearance: { fontOverride?: string };
 	editorConfigValidators: EditorConfigValidatorRegistry;
 	editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry;
 	historyStack: ProjectObjectModel[];

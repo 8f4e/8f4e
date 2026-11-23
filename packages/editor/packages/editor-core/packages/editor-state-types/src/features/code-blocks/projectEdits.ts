@@ -12,7 +12,12 @@ export interface ProjectSourceBlock {
 
 /** Final intended changes to the attached project tree. Internal callers supply coherent, attached targets. */
 export interface ProjectEditPlan {
-	updates?: readonly { codeBlock: CodeBlockGraphicData; code?: readonly string[]; entry?: string }[];
+	updates?: readonly {
+		codeBlock: CodeBlockGraphicData;
+		code?: readonly string[];
+		/** Requested execution entry, applicable to modules and project groups in the settled source. */
+		entry?: string;
+	}[];
 	inserts?: readonly { project: ProjectLevel; source: ProjectSourceBlock }[];
 	deletes?: readonly CodeBlockGraphicData[];
 }
@@ -26,6 +31,4 @@ export interface ProjectEditResult {
 /** Synchronous project mutation and settlement. Callers own edit-mode policy; the compiler validates the source. */
 export interface ProjectEdits {
 	apply(plan: ProjectEditPlan, kind?: 'edit' | 'checkpoint'): ProjectEditResult;
-	/** Restore configuration from authored project source after a temporary override. */
-	refreshConfig(): void;
 }

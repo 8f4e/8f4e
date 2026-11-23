@@ -75,6 +75,52 @@ it('keeps an authored duplicate name editable instead of transferring generated 
 	expect(root.blocks).toContain(environment);
 });
 
+it('keeps the generated ownership header exclusive when root environment source is copied or edited', () => {
+	const { state, store, events, load } = setup();
+	store.set('envConstantContributions.test', ['const GENERATED 1']);
+	load('constants env\n; @pos 7 9\nconstantsEnd');
+	const root = state.codeBlockRendering.rootProject;
+	const environment = root.blocks[0];
+	const copy = environment.code.map(line => (line.startsWith('; @pos') ? '; @pos -10 -10' : line));
+	const {
+		insertedBlocks: [authored],
+	} = store.projectEdits.apply({ inserts: [{ project: root, source: { code: copy } }] });
+	expect(authored.code).toContain('const GENERATED 1');
+	expect(authored.code).not.toContain('; Auto-generated environment constants');
+	expect(authored.code).not.toContain('; Changes will be overwritten');
+	const edited = copy.map(line => (line === 'const GENERATED 1' ? 'const KEEP 2' : line));
+	store.projectEdits.apply({ updates: [{ codeBlock: authored, code: edited }] });
+	const authoredCode = authored.code;
+	expect(authoredCode).toContain('const KEEP 2');
+	expect(authoredCode).not.toContain('; Auto-generated environment constants');
+	events.dispatch('loadProject', { project: serializeToProject(state) });
+	store.set('envConstantContributions.test', ['const GENERATED 3']);
+	const restored = state.codeBlockRendering.rootProject.blocks;
+	expect(restored.find(block => block.code.includes('const KEEP 2'))?.code).toEqual(authoredCode);
+	expect(restored.find(block => block.code.includes('const GENERATED 3'))).toMatchObject({ gridX: 7, gridY: 9 });
+});
+
+it.each(['', '; Auto-generated environment constants\n; Changes will be overwritten\n'])(
+	'preserves authored environment blocks when the loaded source has ambiguous ownership (%j)',
+	header => {
+		const { state, store, load } = setup();
+		load(
+			`constants env\n; @pos -10 0\n${header}const LEFT 1\nconstantsEnd\nconstants env\n; @pos 10 0\n${header}const RIGHT 2\nconstantsEnd`
+		);
+		const blocks = state.codeBlockRendering.rootProject.blocks;
+		expect(blocks).toHaveLength(3);
+		const left = blocks.find(block => block.code.includes('const LEFT 1'))!;
+		const right = blocks.find(block => block.code.includes('const RIGHT 2'))!;
+		const generated = blocks.find(block => block.code.includes('; Auto-generated environment constants'))!;
+		store.set('envConstantContributions.test', ['const GENERATED 3']);
+		expect(left.code).toContain('const LEFT 1');
+		expect(right.code).toContain('const RIGHT 2');
+		expect(left.code).not.toContain('; Auto-generated environment constants');
+		expect(right.code).not.toContain('; Auto-generated environment constants');
+		expect(generated.code).toContain('const GENERATED 3');
+	}
+);
+
 it('derives the final generated source only once when authored config and its position change together', () => {
 	const { state, store, load } = setup();
 	const derive = vi.fn();

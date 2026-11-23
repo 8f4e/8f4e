@@ -110,6 +110,7 @@ export interface CodeBlockGraphicData {
 	/**
 	 * Execution entry name used by module and project-group blocks in the compiler export pipeline.
 	 * This is separate from the visual `; @group` directive.
+	 * Incomplete source may retain its last entry until it becomes a non-execution block.
 	 */
 	entry?: string;
 	/** Canonical path of the project group that owns this block. */

@@ -150,6 +150,37 @@ noteEnd`);
 		expect(compilerChanged).toHaveBeenCalledOnce();
 	});
 
+	it('ignores entry assignments for non-execution blocks and retains the previous entry during incomplete edits', () => {
+		const test = setup('8f4e/v1\nnote sample\nnoteEnd\nentry alternate\nmodule target\nmoduleEnd\nentryEnd');
+		const { store, state, events, block, projectChanged, compilerChanged, sourcesChanged } = test;
+		test.load();
+		const sample = block('sample');
+		const target = block('target');
+		const before = serializeToProject(state);
+		const beforeCheckpoint = vi.fn();
+		events.on('beforeProjectEdit', beforeCheckpoint);
+		projectChanged.mockClear();
+		compilerChanged.mockClear();
+		sourcesChanged.mockClear();
+
+		expect(store.projectEdits.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, 'checkpoint').changed).toBe(
+			false
+		);
+		expect(sample.entry).toBeUndefined();
+		expect(serializeToProject(state)).toEqual(before);
+		expect(beforeCheckpoint).not.toHaveBeenCalled();
+		expect(projectChanged).not.toHaveBeenCalled();
+		expect(compilerChanged).not.toHaveBeenCalled();
+		expect(sourcesChanged).not.toHaveBeenCalled();
+
+		store.projectEdits.apply({ updates: [{ codeBlock: target, code: ['module target'], entry: 'unused' }] });
+		expect(target.blockType).toBe('unknown');
+		expect(target.entry).toBe('alternate');
+		store.projectEdits.apply({ updates: [{ codeBlock: target, code: ['module target', 'moduleEnd'] }] });
+		expect(target.entry).toBe('alternate');
+		expect(state.codeBlockRendering.rootProject.entries).toEqual(['alternate']);
+	});
+
 	it('treats generated environment source as downstream of global configuration', () => {
 		const test = setup('8f4e/v1\nnote settings\n; @config test 10\nnoteEnd');
 		const { store, state, block, projectChanged, compilerChanged } = test;

@@ -74,10 +74,13 @@ test('previews fonts through the default composition without changing saved sour
 				},
 			],
 		});
-		expect(editor.state.editorConfig.font).toBe('x11miscfixed6x10');
+		expect(editor.state.editorConfig.font).toBe('terminus10x18');
+		expect(editor.state.appearance.fontOverride).toBe('x11miscfixed6x10');
+		expect(editor.state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
 		context.events.dispatch('loadProject', { project });
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		expect(editor.state.editorConfig.font).toBe(sourceFont);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
 		editor.resize(240, 400);
 		context.store.set('editorConfig.font', 'departuremono7x14');
 		await expect.poll(() => editor!.state.viewport.hGrid).toBe(14);

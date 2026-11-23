@@ -3,7 +3,7 @@ import { logError, markGridSizePending, setGridSize } from '@8f4e/editor-state';
 import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
-import { getConfiguredFont, getConfiguredPalette } from './config';
+import { getAppearanceFont, getConfiguredPalette } from './config';
 import type { FontChangedEvent } from './types';
 
 export function updateGridSize(state: State, events: EventDispatcher, atlas: FontAtlas): void {
@@ -22,17 +22,18 @@ export function subscribeToAppearance(
 	const state = store.getState();
 	let disposed = false;
 	let generation = 0;
-	let fontLoading: LoadingIndicatorHandle | undefined;
-	let appliedFont = getConfiguredFont(state.editorConfig, defaultFont);
+	let fontLoading: { font: Font; indicator: LoadingIndicatorHandle } | undefined;
+	let appliedFont = getAppearanceFont(state, defaultFont);
 	const restoreAppliedGrid = () => {
 		const { hGrid, vGrid } = state.viewport;
 		setGridSize(state, events, { hGrid, vGrid });
 	};
 	const updateFont = async () => {
+		const font = getAppearanceFont(state, defaultFont);
+		if (fontLoading?.font === font) return;
 		const currentGeneration = ++generation;
-		fontLoading?.cancel();
+		fontLoading?.indicator.cancel();
 		fontLoading = undefined;
-		const font = getConfiguredFont(state.editorConfig, defaultFont);
 		if (font === appliedFont) {
 			if (!state.gridSizeReady) {
 				// Configuration can resolve during a source refresh. Let that refresh settle layout first.
@@ -43,7 +44,7 @@ export function subscribeToAppearance(
 		}
 		markGridSizePending(state);
 		const indicator = loading.add({ id: 'font', message: `Loading font ${font}...` });
-		fontLoading = indicator;
+		fontLoading = { font, indicator };
 		try {
 			const atlas = await loadFontAtlas(font);
 			if (disposed || currentGeneration !== generation) return;
@@ -59,18 +60,20 @@ export function subscribeToAppearance(
 			if (!disposed && currentGeneration === generation) restoreAppliedGrid();
 		} finally {
 			indicator.cancel();
-			if (fontLoading === indicator) fontLoading = undefined;
+			if (fontLoading?.indicator === indicator) fontLoading = undefined;
 		}
 	};
 	const updatePalette = () => applyPalette(getConfiguredPalette(state.editorConfig));
 	store.subscribe('editorConfig.font', updateFont);
+	store.subscribe('appearance.fontOverride', updateFont);
 	store.subscribe('editorConfig.color', updatePalette);
 
 	return () => {
 		disposed = true;
-		fontLoading?.cancel();
+		fontLoading?.indicator.cancel();
 		fontLoading = undefined;
 		store.unsubscribe('editorConfig.font', updateFont);
+		store.unsubscribe('appearance.fontOverride', updateFont);
 		store.unsubscribe('editorConfig.color', updatePalette);
 	};
 }

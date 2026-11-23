@@ -23,6 +23,11 @@ function isProjectScopeSourceLine(line: string): boolean {
 	);
 }
 
+/** Modules and structural project-group blocks can own execution entries. */
+export function supportsExecutionEntry(block: Pick<CodeBlockGraphicData, 'blockType' | 'childProject'>): boolean {
+	return block.blockType === 'module' || block.childProject !== undefined;
+}
+
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
@@ -50,6 +55,13 @@ export function updateBlockSource(block: CodeBlockGraphicData, directives: Edito
 		block.blockType === 'unknown' &&
 		block.code.every(isProjectScopeSourceLine) &&
 		(hasProjectScopeInstruction || block.isProjectScope === true);
+	// Unknown source may be an incomplete module rather than a conversion. Keep its
+	// last entry until the user finishes declaring a non-execution block.
+	if (supportsExecutionEntry(block)) {
+		block.entry ??= 'main';
+	} else if (block.isProjectScope || block.blockType !== 'unknown') {
+		block.entry = undefined;
+	}
 }
 
 function partitionProjectBlocks(project: ProjectLevel): void {

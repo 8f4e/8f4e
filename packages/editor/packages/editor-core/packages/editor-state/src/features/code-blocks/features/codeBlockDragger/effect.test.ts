@@ -253,15 +253,74 @@ describe('codeBlockDragger', () => {
 		};
 		pointerdownHandlers[0](pointer);
 		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		expect(second).toMatchObject({ x: 210, y: 220 });
 		projectEdits.apply({ deletes: [second] });
+		// The detached target's preview is discarded as soon as membership settles.
+		expect(second).toMatchObject({ x: 200, y: 200 });
 		// Collection settlement recomputes layout, so continue dragging the surviving target.
 		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		expect(second).toMatchObject({ x: 200, y: 200 });
 		pointerupHandlers[0]();
 		expect(state.codeBlockRendering.currentProject.blocks).toEqual([first]);
 		expect(first.code).toContain('; @pos 6 6');
 		expect(second.code).toContain('; @pos 20 10');
 		expect(state.projectChange.revision).toBe(2);
 		expect(state.compilerInputRevision).toBe(2);
+	});
+
+	it('cancels the entire drag when its primary block is deleted', () => {
+		const first = createMockCodeBlock({
+			code: ['module first', '; @pos 5 5', 'moduleEnd'],
+			gridX: 5,
+			gridY: 5,
+			x: 50,
+			y: 100,
+			creationIndex: 0,
+		});
+		const second = createMockCodeBlock({
+			code: ['module second', '; @pos 20 10', 'moduleEnd'],
+			gridX: 20,
+			gridY: 10,
+			x: 200,
+			y: 200,
+			creationIndex: 1,
+		});
+		state.codeBlockRendering.currentProject.blocks = [first, second];
+		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
+			if (name === 'resolveCodeBlockDragTargets') {
+				const request = payload as import('./effect').ResolveCodeBlockDragTargetsEvent;
+				request.targets = [first, second];
+			}
+		});
+		const projectEdits = installDragger();
+		const pointer = {
+			x: 50,
+			y: 100,
+			altKey: true,
+			buttons: 1,
+			movementX: 0,
+			movementY: 0,
+			stopPropagation: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+		};
+		pointerdownHandlers[0](pointer);
+		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		expect(first).toMatchObject({ x: 60, y: 120 });
+		expect(second).toMatchObject({ x: 210, y: 220 });
+		projectEdits.apply({ deletes: [first] });
+		expect(first).toMatchObject({ x: 50, y: 100 });
+		expect(second).toMatchObject({ x: 200, y: 200 });
+		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		const move = { ...pointer, movementX: 10, movementY: 20 };
+		pointermoveHandlers[0](move);
+		pointerupHandlers[0]();
+		expect(move.stopPropagation).toBe(false);
+		expect(state.codeBlockRendering.currentProject.blocks).toEqual([second]);
+		expect(second).toMatchObject({ x: 200, y: 200, gridX: 20, gridY: 10 });
+		expect(second.code).toContain('; @pos 20 10');
+		expect(state.projectChange.revision).toBe(1);
+		expect(state.compilerInputRevision).toBe(1);
 	});
 
 	it('cancels and discards the drag preview when a replacement grid is pending', () => {

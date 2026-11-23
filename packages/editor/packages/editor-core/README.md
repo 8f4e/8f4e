@@ -349,7 +349,10 @@ Plugins can contribute source to the generated root-project `env` constants bloc
 `store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines after
 resolving authored project configuration and recompiles when generated source changes. Contributions update the root
 block regardless of which project group is visible. Its position is editable, but its generated content and identity
-are managed by core; deleting or renaming that block does not remove the environment. Each plugin removes its own
+are managed by core; deleting or renaming that block does not remove the environment. The generated source header
+identifies that block when reopening a saved project. Copies and edits of other root environment blocks cannot claim
+the header, and loading an ambiguous set of environment blocks preserves their authored content rather than overwriting
+an arbitrary block. An unmarked sole root `constants env` can supply the initial generated position. Each plugin removes its own
 contribution key when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
@@ -424,8 +427,8 @@ Configure editor settings with `; @config <path> <value>`.
 
 - Web-ui contributes the schemas and validation for `font` and color overrides. Editor-state handles their
   `@config` directives through the same generic configuration registry used by plugins.
-- `store.projectEdits.refreshConfig()` re-resolves source configuration after removing a temporary override and
-  its subscriptions. Any resulting environment source changes settle before publishing a completed project change.
+- Resolved `editorConfig` contains authored settings. Temporary font selections belong to
+  `state.appearance.fontOverride`; web-ui selects the override without changing or re-resolving project configuration.
 - Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, `testRuntime.enabled`, and `textureRuntime.enabled` settings.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
@@ -462,8 +465,8 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 ```
 
 The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default and gallery desktop editors, the independent
-font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change source or saved
-files; loading a project restores its configured font.
+font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change the resolved
+source configuration or saved files; loading a project clears the preview after its source configuration settles.
 Web-ui emits `fontChanged` with `{ font }` after installing a different font atlas and settling its grid. The
 font-preview plugin uses this notification to show the new font's name, credits and all 256 characters in a 16×16 grid
 for three seconds. The panel scales down to fit smaller viewports.
