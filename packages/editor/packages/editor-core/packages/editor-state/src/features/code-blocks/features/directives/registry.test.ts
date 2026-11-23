@@ -1,7 +1,7 @@
 import type { EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../../utils/parseBlockDirectives';
-import { createDirectiveRegistry, deriveDirectiveState, directiveDefinitions } from './registry';
+import { createDirectiveRegistry, deriveDirectiveFacts, directiveDefinitions } from './registry';
 
 const contributedDirectives: EditorDirectiveDefinition[] = [
 	{
@@ -32,49 +32,36 @@ describe('directive registry', () => {
 		});
 		const code = ['; @customFlag'];
 		const records = parseBlockDirectives(code);
-		expect(deriveDirectiveState(code, records, {}, first.definitions).blockState.disabled).toBe(true);
-		expect(deriveDirectiveState(code, records, {}, second.definitions).blockState.disabled).toBe(false);
+		expect(deriveDirectiveFacts(code, records, first.definitions).blockState.disabled).toBe(true);
+		expect(deriveDirectiveFacts(code, records, second.definitions).blockState.disabled).toBe(false);
 		unregister();
-		expect(deriveDirectiveState(code, records, {}, first.definitions).blockState.disabled).toBe(false);
+		expect(deriveDirectiveFacts(code, records, first.definitions).blockState.disabled).toBe(false);
 	});
 
-	it('derives block state and display rows', () => {
+	it('derives block and display facts', () => {
 		const code = ['module foo', '; @disabled @testDirective', '; @rowDisplay 3', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
-		expect(result.blockState).toEqual({ disabled: true });
-		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
+		const result = deriveDirectiveFacts(code, parseBlockDirectives(code), definitions);
+		expect(result.blockState).toEqual({ disabled: true, alwaysOnTop: false });
+		expect(result.displayState).toEqual({});
 	});
 
 	it('ignores unregistered directives', () => {
 		const code = ['; @unknown', '; @unregistered'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
+		const result = deriveDirectiveFacts(code, parseBlockDirectives(code));
 
-		expect(result.blockState).toEqual({ disabled: false });
+		expect(result.blockState).toEqual({ disabled: false, alwaysOnTop: false });
 	});
 
-	it('collapses everything after @hide while unselected', () => {
+	it('derives the authored fold location', () => {
 		const code = ['module foo', '; @hide', 'push 1', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code));
+		const result = deriveDirectiveFacts(code, parseBlockDirectives(code));
 
 		expect(result.displayState).toEqual({ hideAfterSourceLineIndex: 1 });
-		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 1]);
-		expect(result.displayModel.lines[2]).toEqual({ sourceLineIndex: 1, text: '...', isPlaceholder: true });
-		expect(result.displayModel.isCollapsed).toBe(true);
-	});
-
-	it('expands hidden code while editing', () => {
-		const code = ['module foo', '; @hide', 'push 1', 'moduleEnd'];
-		const result = deriveDirectiveState(code, parseBlockDirectives(code), {
-			isExpandedForEditing: true,
-		});
-
-		expect(result.displayModel.displayRowToSourceLineIndex).toEqual([0, 1, 2, 3]);
-		expect(result.displayModel.isCollapsed).toBe(false);
 	});
 
 	it('applies standalone and trailing directives and aliases uniformly', () => {
 		const code = ['; @inline', 'int other 1 ; @rowDisplay 3 @testDirective'];
-		const derived = deriveDirectiveState(code, parseBlockDirectives(code), {}, definitions);
+		const derived = deriveDirectiveFacts(code, parseBlockDirectives(code), definitions);
 		expect(derived.blockState.alwaysOnTop).toBe(true);
 		expect(derived.blockState.disabled).toBe(true);
 	});

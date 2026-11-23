@@ -64,8 +64,8 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 								services.events.dispatch('compilationSucceeded', {
 									memoryRef: memory,
 								});
-							services.events.on('init', publish);
-							return () => services.events.off('init', publish);
+							services.events.on('prepareInitialProject', publish);
+							return () => services.events.off('prepareInitialProject', publish);
 						},
 					},
 					createLazyPluginLoaderPlugin([

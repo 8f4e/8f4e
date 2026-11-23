@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, serializeToProject } from '../../../index';
+import initState, { applyCodeBlockSourceEdits, serializeToProject, setGridSize } from '../../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -12,6 +13,7 @@ function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	events.dispatch('loadProject', {

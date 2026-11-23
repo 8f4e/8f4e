@@ -1,7 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createMemoryViewManager } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry, type DrawContext } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
@@ -56,6 +57,7 @@ export async function setup(
 	const getMemory = vi.fn(() => currentMemory);
 	const events = createEvents();
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	const dispose = installed
 		? createScopePlugin({ getMemory }).setup({

@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
@@ -50,6 +51,7 @@ entryEnd`
 	const store = initState(events, {
 		callbacks: {},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	store.set('editorMode', 'edit');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = tooltipsPlugin.setup({

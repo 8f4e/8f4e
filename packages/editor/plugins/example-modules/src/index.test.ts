@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -30,6 +31,7 @@ function setup({
 	const store = initState(events, {
 		callbacks: {},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	let pluginCleanup = installed
 		? createExampleModulesPlugin({ sources }).setup({
 				store,

@@ -41,9 +41,12 @@ neither notification, preserving pending edits, revisions, history, and persiste
 edits independently of whether the history effect is installed or `featureFlags.historyTracking` is enabled.
 
 Project loading, API operations, and history use the shared `restoreProject` helper to install `initialProjectState`.
-It publishes a single change after rendering and generated environment constants have updated, suppressing intermediate edit
-notifications during restoration. Undo, redo, and API batches preserve the file association within the current
-project. Unrelated replacements dispatch `loadProject` and publish a `replace` change.
+It captures the current view before same-project reconstruction, prepares the generated root environment source before
+installing the snapshot, and publishes a single change after source metadata settles, suppressing intermediate edit
+notifications during restoration.
+Viewport placement follows synchronous project-change subscribers and their layout contributions. Undo, redo, and
+API batches preserve the file association within the current project. Unrelated replacements dispatch `loadProject`
+and publish a `replace` change.
 
 The session-persistence plugin subscribes only to `projectChange`. It saves once after startup restoration, then
 saves once per completed project change. History also subscribes only to this record. Disposal cancels pending

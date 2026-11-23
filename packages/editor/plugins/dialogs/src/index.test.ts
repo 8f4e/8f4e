@@ -1,5 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { DialogContent } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -20,6 +21,7 @@ const content: DialogContent = {
 function setup(initialDialog?: DialogContent) {
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 768 });
 	if (initialDialog) events.dispatch('addDialog', initialDialog);
 	const state = store.getState();

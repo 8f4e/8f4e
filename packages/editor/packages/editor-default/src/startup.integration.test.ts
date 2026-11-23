@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { getProjectModules } from '@8f4e/language-spec';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
@@ -32,16 +32,12 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const disposers: Array<() => void> = [];
-	const onInitialProjectLoaded = vi.fn();
-	const onInitialProjectLoadError = vi.fn();
 	try {
 		const plugins = createDefaultEditorPlugins({
 			canvas,
 			storage: storage as Storage,
 			storageKey: 'session',
 			initialProjectUrl: 'https://example.com/project.8f4e',
-			onInitialProjectLoaded,
-			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 			renderFrame: () => {},
 			writeMemory: () => {},
@@ -63,17 +59,23 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			);
 		}
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		const initializing = Promise.all(emitter.listeners('init').map(listener => listener()));
+		const initializing = Promise.all(emitter.listeners('prepareInitialProject').map(listener => listener()));
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(getProjectModules(JSON.parse(saved))).toEqual([]);
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		expect(store.getState().loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe(
+			'loading'
+		);
 		finish(new Response(source));
 		await initializing;
+		expect(store.getState().loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('done');
 		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
+		expect(store.getState().gridSizeReady).toBe(false);
+		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		expect(
 			store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'remote')?.gaps.size
 		).toBe(0);
+		setGridSize(store.getState(), events, { vGrid: 8, hGrid: 16 });
 		events.dispatch('ready');
 		await vi.waitFor(() =>
 			expect(
@@ -83,8 +85,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 					?.gaps.get(2)?.size
 			).toBe(8)
 		);
-		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(store.getState().codeBlockRendering.currentProject.blocks.some(block => block.name === 'oldSession')).toBe(
 			false
 		);

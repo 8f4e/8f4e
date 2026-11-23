@@ -11,6 +11,7 @@ exports[`createMockCodeBlock > cursor calculation > should calculate cursor posi
     "row": 0,
     "y": 75,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -46,6 +47,7 @@ exports[`createMockCodeBlock > cursor calculation > should prefer explicit curso
     "row": 3,
     "y": 999,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -81,6 +83,7 @@ exports[`createMockCodeBlock > cursor calculation > should use cursorY convenien
     "row": 0,
     "y": 110,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -116,6 +119,7 @@ exports[`createMockCodeBlock > default values > should create a block with defau
     "row": 0,
     "y": 50,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -151,6 +155,7 @@ exports[`createMockCodeBlock > edge cases > should handle negative coordinates 1
     "row": 0,
     "y": 50,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -186,6 +191,7 @@ exports[`createMockCodeBlock > edge cases > should handle zero dimensions 1`] = 
     "row": 0,
     "y": 0,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -221,6 +227,7 @@ exports[`createMockCodeBlock > override behavior > should allow independent over
     "row": 0,
     "y": 50,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -260,6 +267,7 @@ exports[`createMockCodeBlock > override behavior > should allow override of code
     "row": 0,
     "y": 50,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [
@@ -313,6 +321,7 @@ exports[`createMockCodeBlock > override behavior > should override position and 
     "row": 0,
     "y": 75,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],
@@ -348,6 +357,7 @@ exports[`createMockCodeBlock > override behavior > should override the block nam
     "row": 0,
     "y": 50,
   },
+  "directiveDisplayState": {},
   "disabled": false,
   "displayModel": {
     "displayRowToSourceLineIndex": [],

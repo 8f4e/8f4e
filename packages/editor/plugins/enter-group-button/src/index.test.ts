@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
@@ -39,6 +40,7 @@ function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
 	const state = store.getState();
 	const root = state.codeBlockRendering.currentProject;

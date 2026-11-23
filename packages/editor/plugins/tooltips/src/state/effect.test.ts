@@ -1,11 +1,12 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits, serializeProjectLevel } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, serializeProjectLevel, setGridSize } from '@8f4e/editor-state';
 import {
 	createMockCodeBlock,
 	createMockEventDispatcher,
 	createMockMemoryDeclarationSource,
 	createMockState,
+	TEST_GRID_SIZE,
 } from '@8f4e/editor-state-testing';
 import { type CompiledStackAnalysisLine, createFunctionId, createProjectModuleId } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
@@ -50,6 +51,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
 		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
@@ -105,6 +107,7 @@ functionEnd float`);
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
 		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();
@@ -164,6 +167,7 @@ entryEnd`);
 		const compiled = await compileProject(project, { includeStackAnalysis: true });
 		const events = createEvents();
 		const store = initState(events, { callbacks: {} });
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		const tooltip = createTooltip(store, events);
 		cleanups.push(() => {
 			tooltip.dispose();

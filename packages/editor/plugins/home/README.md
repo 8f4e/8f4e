@@ -8,13 +8,18 @@ with a valid home directive, using settled block geometry. A remembered viewport
 directive exists, the default position is the origin. When a block contains multiple valid home directives, the
 last valid one supplies its alignment.
 
+Core requests first-visit placement only after the grid and block layout have settled. The Home plugin contributes
+the position synchronously. Core handles pending first visits, remembered views, and deliberate viewport navigation.
+Later grid changes do not recenter an already-positioned home.
+
 Each project level may declare one home. Every additional `@home` declaration in that level receives a
 source-located error in `state.codeErrors.home`, including repeated declarations within one block. Diagnostics
 follow block creation order so raising blocks does not move errors between declarations. These errors update with
 project changes and do not change which block or alignment is used for navigation.
 
 The Go @home main menu item appears in edit mode. Activating it selects the first home block and navigates to it,
-or navigates to the origin without changing the selection when no home block exists. It leaves project source and
-history unchanged. Disposal unregisters the menu contribution and navigation handlers and removes the plugin's errors.
+using the currently installed grid even while a replacement font loads, or navigates to the origin without
+changing the selection when no home block exists. It leaves project source and history unchanged.
+Disposal unregisters the menu contribution and navigation handlers and removes the plugin's errors.
 
 Verify with `npx nx run @8f4e/editor-plugin-home:build|test|typecheck`.

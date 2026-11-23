@@ -1,35 +1,25 @@
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
-import { getTabStopsByLine } from '../../text-geometry/tabLayout';
 import buildDisplayModel from '../buildDisplayModel';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
-import { parseBlockDirectives } from './parseBlockDirectives';
 
-export function createCodeBlockGraphicData(
-	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
-): CodeBlockGraphicData {
-	const { cursorY, ...overrides } = options;
-
+/** Create a block before its source facts and pixel layout have settled. */
+export function createCodeBlockGraphicData(overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
 	const x = overrides.x ?? 0;
 	const y = overrides.y ?? 0;
-	const width = overrides.width ?? 100;
-	const height = overrides.height ?? 100;
+	const width = overrides.width ?? 0;
+	const height = overrides.height ?? 0;
 	const code = overrides.code ?? [];
-	const parsedDirectives = overrides.parsedDirectives ?? parseBlockDirectives(code);
 	const name = (overrides.name ?? getCodeBlockNameFromSource(code)) || 'code-block';
 	const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
 
-	const defaultVGrid = 8;
-	const defaultHGrid = 16;
+	const gridX = overrides.gridX ?? 0;
+	const gridY = overrides.gridY ?? 0;
 
-	const gridX = overrides.gridX ?? Math.round(x / defaultVGrid);
-	const gridY = overrides.gridY ?? Math.round(y / defaultHGrid);
-
-	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {
 		col: 0,
 		row: 0,
-		y: cursorYValue,
+		y: 0,
 	};
 
 	const defaults: CodeBlockGraphicData = {
@@ -42,7 +32,8 @@ export function createCodeBlockGraphicData(
 		cursor,
 		name,
 		code,
-		tabStopsByLine: getTabStopsByLine(code.length, parsedDirectives),
+		tabStopsByLine: code.map(() => []),
+		directiveDisplayState: {},
 		displayModel: buildDisplayModel(code),
 		gaps: new Map(),
 		lineNumberColumnWidth: 1,
@@ -53,7 +44,7 @@ export function createCodeBlockGraphicData(
 		projectPath,
 		disabled: false,
 		alwaysOnTop: false,
-		parsedDirectives,
+		parsedDirectives: [],
 	};
 
 	return { ...defaults, ...overrides };

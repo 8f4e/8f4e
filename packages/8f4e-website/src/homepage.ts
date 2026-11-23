@@ -14,7 +14,7 @@ export function mountHomepageEditors(): () => void {
 	const revealAnimationFrameByCanvas = new Map<HTMLCanvasElement, number>();
 	let disposed = false;
 
-	function revealEditorAfterProjectLoad(canvas: HTMLCanvasElement): void {
+	function revealEditorAfterMount(canvas: HTMLCanvasElement): void {
 		if (disposed) return;
 		revealAnimationFrameByCanvas.set(
 			canvas,
@@ -27,11 +27,12 @@ export function mountHomepageEditors(): () => void {
 
 	function showProjectLoadError(canvas: HTMLCanvasElement, error: unknown): void {
 		if (disposed) return;
-		const status = document.createElement('div');
+		const frame = canvas.parentElement!;
+		const status = frame.querySelector('.editor-load-error') ?? document.createElement('div');
 		status.className = 'editor-load-error';
 		status.setAttribute('role', 'alert');
 		status.textContent = 'This project could not be loaded. Reload the page to try again.';
-		canvas.parentElement!.append(status);
+		frame.append(status);
 		console.error('Failed to load homepage project:', error);
 	}
 
@@ -67,8 +68,6 @@ export function mountHomepageEditors(): () => void {
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
 			initialProjectUrl: canvas.dataset.projectPath ? getHomepageProjectUrl(canvas.dataset.projectPath) : undefined,
-			onInitialProjectLoaded: () => revealEditorAfterProjectLoad(canvas),
-			onInitialProjectLoadError: error => showProjectLoadError(canvas, error),
 		})
 			.then(editor => {
 				if (disposed) {
@@ -78,6 +77,8 @@ export function mountHomepageEditors(): () => void {
 
 				editorByCanvas.set(canvas, editor);
 				renderingObserver.observe(canvas);
+				canvas.parentElement?.querySelector('.editor-load-error')?.remove();
+				revealEditorAfterMount(canvas);
 				return editor;
 			})
 			.catch(error => {
@@ -98,7 +99,7 @@ export function mountHomepageEditors(): () => void {
 			const canvas = entry.target as HTMLCanvasElement;
 			void mountEditor(canvas)
 				.then(() => mountingObserver.unobserve(canvas))
-				.catch(error => console.error('Failed to mount editor:', error));
+				.catch(error => showProjectLoadError(canvas, error));
 		}
 	});
 	for (const canvas of canvases) {

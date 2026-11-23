@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type DrawContext, type GlyphIds, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
@@ -44,6 +45,7 @@ entryEnd`);
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	Object.assign(state.compiler.result, compiled);
 	const drawers = createEditorDrawerRegistry();

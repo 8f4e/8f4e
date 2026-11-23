@@ -4,7 +4,9 @@ import initState, {
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
 	serializeToProject,
+	setGridSize,
 } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initEvents from './events';
@@ -24,6 +26,7 @@ function setup(
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });
@@ -219,6 +222,81 @@ describe('public editor editing handle', () => {
 		editing.redo({ expectedRevision: undo.revision });
 		expect(serializeToProject(state)).toEqual(changedProject);
 	});
+
+	it.each(['disabled', 'customDisabled'])(
+		'keeps @%s flags consistent through public edits and skips unchanged drafts',
+		directive => {
+			const { editing, state, store, events, compilationChanged } = setup();
+			const onCustomDirective = vi.fn();
+			cleanups.push(
+				store.directives.register({
+					name: 'customDisabled',
+					apply: (_, draft) => {
+						onCustomDirective();
+						draft.blockState.disabled = true;
+					},
+				})
+			);
+			compilationChanged.mockImplementation(() => serializeToProject(state));
+			const disabledCode = ['module flag', `; @${directive}`, 'moduleEnd'];
+			const enabledCode = ['module flag', 'moduleEnd'];
+			const inserted = editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [{ type: 'insert', code: disabledCode }],
+			});
+			const blockId = inserted.createdBlockIds[0];
+			const expectCompilerInput = (code: string[], disabled: boolean) => {
+				const block = state.codeBlockRendering.currentProject.blocks.find(
+					block => getEditorBlockId(block) === blockId
+				)!;
+				expect(block).toMatchObject({ code, disabled });
+				const project = serializeToProject(state);
+				const module = project.execution.find(entry => entry.id === block.creationIndex);
+				expect(module).toMatchObject({ code });
+				if (disabled) expect(module).toHaveProperty('disabled', true);
+				else expect(module).not.toHaveProperty('disabled');
+				expect(compilationChanged).toHaveBeenCalledOnce();
+				expect(compilationChanged.mock.results[0].value).toEqual(project);
+				compilationChanged.mockClear();
+			};
+			expectCompilerInput(disabledCode, true);
+
+			const before = serializeToProject(state);
+			const beforeEdit = vi.fn();
+			events.on('beforeProjectEdit', beforeEdit);
+			const projectRevision = state.projectChange.revision;
+			const compilerRevision = state.compilerInputRevision;
+			const historyLength = state.historyStack.length;
+			onCustomDirective.mockClear();
+			const unchanged = editing.applyEdits({
+				expectedRevision: inserted.revision,
+				edits: [{ type: 'update', blockId, code: [...disabledCode] }],
+			});
+			expect(unchanged.revision).toBe(inserted.revision);
+			expect(state.projectChange.revision).toBe(projectRevision);
+			expect(state.compilerInputRevision).toBe(compilerRevision);
+			expect(state.historyStack).toHaveLength(historyLength);
+			expect(serializeToProject(state)).toEqual(before);
+			expect(beforeEdit).not.toHaveBeenCalled();
+			expect(compilationChanged).not.toHaveBeenCalled();
+			expect(onCustomDirective).not.toHaveBeenCalled();
+
+			for (const [code, disabled] of [
+				[enabledCode, false],
+				[disabledCode, true],
+			] as const) {
+				editing.applyEdits({
+					expectedRevision: editing.getRevision(),
+					edits: [{ type: 'update', blockId, code }],
+				});
+				expectCompilerInput(code, disabled);
+			}
+			editing.undo({ expectedRevision: editing.getRevision() });
+			expectCompilerInput(enabledCode, false);
+			editing.redo({ expectedRevision: editing.getRevision() });
+			expectCompilerInput(disabledCode, true);
+		}
+	);
 
 	it('updates valid positions and retains the last position when @pos is removed, including undo and redo', () => {
 		const { editing, state } = setup();

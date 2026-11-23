@@ -1,5 +1,5 @@
-import initState from '@8f4e/editor-state';
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { createMockCodeBlock, TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, Options } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -30,6 +30,7 @@ const cleanups: Array<() => void> = [];
 
 function setupState(events: EventDispatcher, options: Options, installed = true) {
 	const store = initState(events, options);
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const disposePlugin = installed
 		? toggleSkipExecutionPlugin.setup({
 				store,

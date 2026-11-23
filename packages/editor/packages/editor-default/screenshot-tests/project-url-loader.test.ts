@@ -1,4 +1,5 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { mountDefaultEditor } from '@8f4e/editor-default';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
@@ -37,6 +38,31 @@ test('loads an initial project URL after generic editor startup', async () => {
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/loaded-project-url.viewport.snap');
 	} finally {
 		editor?.dispose();
+		canvas.remove();
+	}
+});
+
+test('mounts an editable empty default editor after its initial URL fails', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 640;
+	canvas.height = 320;
+	document.body.appendChild(canvas);
+	const storageNamespace = 'failed-project-url-test';
+	let editor: Editor | undefined;
+	try {
+		editor = await mountDefaultEditor(canvas, {
+			storage: sessionStorage,
+			storageNamespace,
+			initialProjectUrl: 'data:text/plain,invalid%20project',
+		});
+		editor.pauseRendering();
+		expect(editor.state.initialProjectState).toMatchObject({ entries: [], execution: [], notes: [] });
+		expect(editor.state.gridSizeReady).toBe(true);
+		expect(editor.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true);
+		expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('failed');
+	} finally {
+		editor?.dispose();
+		sessionStorage.removeItem(`project_${storageNamespace}`);
 		canvas.remove();
 	}
 });

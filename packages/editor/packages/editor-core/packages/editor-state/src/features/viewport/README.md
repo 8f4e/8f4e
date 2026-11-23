@@ -8,6 +8,16 @@ touch movement. Web-ui can present a transition without changing the logical vie
 `state.viewport` contains pixel coordinates `x` and `y`, canvas dimensions `width` and `height`, and grid sizes
 `vGrid` (column width) and `hGrid` (row height).
 
+Grid dimensions start at zero, without assuming a font's cell size. Source loading, configuration resolution, and
+compilation may proceed immediately; pixel layout waits for positive grid dimensions. The renderer supplies its grid
+dimensions through `setGridSize` when they are known.
+
+`markGridSizePending(state)` marks the requested grid unavailable (`state.gridSizeReady = false`) while keeping
+the previously installed dimensions usable for layout and drawing. `setGridSize(state, events, size)` installs the
+positive dimensions and dispatches `gridSizeChanged` when they differ, settling layout synchronously. It then marks
+`state.gridSizeReady` true and resolves any pending first-visit placement. A pending grid can resolve to the same
+dimensions. Ordinary font changes do not reposition an already placed viewport.
+
 Block positions use world coordinates. Canvas coordinates are relative to the canvas's top-left corner; convert
 between them with the viewport offset:
 
@@ -27,6 +37,7 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
 
 - `updateViewport(state, x, y, events, source?)` commits a rounded position and emits `viewportChanged` only when it
   changes. The optional source distinguishes manual panning (`pan`) from navigation to a block or home (`navigation`).
+  Either takes precedence over a pending first visit.
 - `resize(state, width, height)` updates the canvas dimensions.
 - The viewport effect handles `pointermove` and `resize`. Movement respects `viewportDragging`. Manual panning
   leaves the viewport at its final pixel position without aligning it to the grid.
@@ -34,10 +45,11 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.
 - Directional navigation and jumping to a block commit the destination immediately. Any visual
   transition belongs to web-ui, not editor-state.
-- Each project level remembers its viewport in browser memory. `getProjectViewportPosition` uses that remembered
-  position or dispatches `resolveInitialProjectViewport { project, position }` for a first visit.
-  Plugins may replace the default origin synchronously after block layout is settled. Project serializers omit
-  remembered views.
+- Each project level remembers its viewport in browser memory. Group navigation places the destination immediately;
+  project restoration requests placement once after synchronous project-change subscribers settle. Remembered positions
+  take precedence; first-visit placement waits while the selected grid is pending. Once layout has settled, core dispatches
+  `resolveInitialProjectViewport { project, position }`, allowing plugins to replace the default origin synchronously.
+  Leaving a level before this happens does not remember the temporary origin. Project serializers omit remembered views.
 
 ## Rendering ownership
 
@@ -52,4 +64,5 @@ Editor-state stores no border lines, cached center, or arrow presentation data.
 - Input effects: `effect.ts`
 - Centering: `centerViewportOnCodeBlock.ts` and `centerViewportOnCodeBlockCursor.ts`
 - Grid alignment for navigation targets: `roundToGrid.ts`
-- Remembered views and initial placement: `getProjectViewportPosition.ts`
+- Grid availability and updates: `gridSize.ts`
+- Remembered views and initial placement: `updateViewport.ts` and `getProjectViewportPosition.ts`

@@ -1,6 +1,5 @@
 import { createMockCodeBlock as createBaseMockCodeBlock } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, DirectiveDerivedState, DirectiveDeriveOptions } from '@8f4e/editor-state-types';
-import { deriveDirectiveState } from '~/features/code-blocks/features/directives/registry';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import getCodeBlockNameFromSource from '~/features/code-blocks/utils/getCodeBlockNameFromSource';
 import { parseBlockDirectives } from '~/features/code-blocks/utils/parseBlockDirectives';
 import { getTabStopsByLine } from '~/features/text-geometry/tabLayout';
@@ -24,22 +23,6 @@ export function setMockCodeBlockCode(codeBlock: CodeBlockGraphicData, code: stri
 	codeBlock.code = code;
 	codeBlock.parsedDirectives = parseBlockDirectives(code);
 	codeBlock.tabStopsByLine = getTabStopsByLine(code.length, codeBlock.parsedDirectives);
-}
-
-export function deriveDirectiveStateForMockCodeBlock(
-	codeBlock: CodeBlockGraphicData,
-	options?: DirectiveDeriveOptions
-): DirectiveDerivedState {
-	codeBlock.parsedDirectives = parseBlockDirectives(codeBlock.code);
-	return deriveDirectiveState(codeBlock.code, codeBlock.parsedDirectives, options);
-}
-
-export function deriveDirectiveStateForCode(
-	code: string[],
-	options?: DirectiveDeriveOptions,
-	overrides: Partial<CodeBlockGraphicData> = {}
-): DirectiveDerivedState {
-	return deriveDirectiveStateForMockCodeBlock(createMockCodeBlock({ code, ...overrides }), options);
 }
 
 export { createMockEventDispatcher, createMockState, createMockViewport } from '@8f4e/editor-state-testing';

@@ -69,12 +69,16 @@ describe('creationIndex', () => {
 			loadProjectCallback({ project: projectWithBlocks });
 
 			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
-			expect(codeBlocks.length).toBe(3);
+			expect(codeBlocks).toHaveLength(4);
 
-			// Verify each block has a creationIndex
-			const creationIndexes = codeBlocks.map(b => b.creationIndex).sort((a, b) => a - b);
-			expect(creationIndexes).toEqual([0, 1, 2]);
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(3);
+			// Authored identities survive loading, and the generated environment receives a new one.
+			expect(codeBlocks.map(block => [block.name, block.creationIndex])).toEqual([
+				['env', 3],
+				['a', 0],
+				['b', 1],
+				['c', 2],
+			]);
+			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(4);
 		});
 
 		it('should reset creationIndex counter when loading a new project', () => {
@@ -100,8 +104,8 @@ describe('creationIndex', () => {
 
 			loadProjectCallback({ project });
 
-			// Counter should be reset to the number of loaded blocks
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(1);
+			// Counter should account for the authored module and generated environment.
+			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(2);
 		});
 	});
 

@@ -10,7 +10,7 @@ export default function projectOperations(store: StateManager<State>, events: Ev
 		// Both models come from the canonical code-block serializer.
 		if (JSON.stringify(project) === JSON.stringify(serializeToProject(store.getState()))) return;
 		events.dispatch('beforeProjectEdit');
-		restoreProject(store, project, 'checkpoint');
+		restoreProject(store, events, project, 'checkpoint');
 	};
 	events.on('applyProjectEdit', applyProjectEdit);
 	return () => events.off('applyProjectEdit', applyProjectEdit);

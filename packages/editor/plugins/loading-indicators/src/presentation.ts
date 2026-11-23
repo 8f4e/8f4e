@@ -70,6 +70,13 @@ export function installPresentation(
 	};
 	const prepare = () => {
 		const { width, height, vGrid, hGrid } = state.viewport;
+		if (vGrid <= 0 || hGrid <= 0) {
+			rows = [];
+			canDrawOrbit = false;
+			clearInterval(elapsedTimer);
+			elapsedTimer = undefined;
+			return;
+		}
 		grid = vGrid;
 		rowHeight = hGrid;
 		const availableColumns = Math.floor(width / grid);

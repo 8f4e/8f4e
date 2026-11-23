@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
-import type { CodeBlockLayoutsChangedEvent, State } from '@8f4e/editor-state-types';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeBlockLayoutsChangedEvent, EditorDirectiveDefinition, State } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { afterEach, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks } from '../../../index';
+import { afterEach, expect, it, vi } from 'vitest';
+import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '../../../index';
 import updateViewport from '../../viewport/updateViewport';
 
 const cleanups: Array<() => void> = [];
@@ -16,6 +17,7 @@ function setup(onCompleted: (event: CodeBlockLayoutsChangedEvent) => void = () =
 	// Register before core: completed geometry must not depend on subscription order.
 	events.on('codeBlockLayoutsChanged', onCompleted);
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	cleanups.push(store.dispose);
 	events.dispatch('resize', { canvasWidth: 1024, canvasHeight: 768 });
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
@@ -68,6 +70,8 @@ note nested
 ; @pos 1 2
 nested content
 noteEnd
+note sibling
+noteEnd
 groupEnd
 entryEnd`);
 	const root = test.state.codeBlockRendering.currentProject;
@@ -97,6 +101,12 @@ entryEnd`);
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 49, verticalSpaceAfterSourceLine: [] });
 	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	completed.length = 0;
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		{ codeBlock: nested, code: ['note nested', '; @pos 1 2', '; @alwaysOnTop', 'nested content', 'noteEnd'] },
+	]);
+	expect(child.blocks.map(block => block.name)).toEqual(['sibling', 'nested']);
+	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	expect(test.state.viewport).toMatchObject({ x: 160, y: 320 });
 	expect(completed.at(-1)?.project).toBe(child);
@@ -105,6 +115,10 @@ entryEnd`);
 it('registers pasted nested blocks and drops ownership when their group is deleted', () => {
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
+	const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>((_, draft) => {
+		draft.blockState.alwaysOnTop = true;
+	});
+	cleanups.push(test.store.directives.register({ name: 'customTop', apply }));
 	test.load('8f4e/v1');
 	test.events.dispatch('enterEditMode');
 	insertCodeBlocks(test.store, {
@@ -116,14 +130,24 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 				gridCoordinates: { x: 0, y: 0 },
 				childProject: {
 					entries: [],
-					blocks: [{ code: ['note nested', 'content', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } }],
+					blocks: [
+						{ code: ['note nested', '; @customTop', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } },
+						{ code: ['note ordinary', 'noteEnd'], gridCoordinates: { x: 2, y: 0 } },
+					],
 				},
 			},
 		],
 	});
 	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
 	const child = group.childProject!;
-	const nested = child.blocks[0];
+	const nested = child.blocks.find(block => block.name === 'nested')!;
+	expect(child.blocks.map(block => block.name)).toEqual(['ordinary', 'nested']);
+	expect(nested.alwaysOnTop).toBe(true);
+	expect(apply).toHaveBeenCalledOnce();
+	apply.mockClear();
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	test.events.dispatch('goToRootProjectGroup');
+	expect(apply).not.toHaveBeenCalled();
 	const contribution = test.store.layout.createContribution();
 	cleanups.push(contribution.dispose);
 	completed.length = 0;
@@ -133,6 +157,54 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 	completed.length = 0;
 	contribution.remove(nested);
 	expect(completed).toEqual([]);
+	expect(apply).not.toHaveBeenCalled();
+});
+
+it('resolves source configuration for actual edits and membership changes, not group navigation', () => {
+	const test = setup();
+	const validate = vi.fn(() => undefined);
+	test.store.set('editorConfigValidators.test', {
+		knownPaths: ['test.root', 'test.child'],
+		matches: path => path.startsWith('test.'),
+		validate,
+	});
+	test.load(`8f4e/v1
+note configuration
+; @config test.root enabled
+noteEnd
+entry main
+group child
+groupEnd
+entryEnd`);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	test.events.dispatch('goToRootProjectGroup');
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	expect(validate).not.toHaveBeenCalled();
+
+	test.events.dispatch('enterEditMode');
+	const [block] = insertCodeBlocks(test.store, {
+		x: 0,
+		y: 0,
+		blocks: [
+			{ code: ['note configuration', '; @config test.child inserted', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } },
+		],
+	});
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'inserted' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	applyCodeBlockSourceEdits(test, [
+		{ codeBlock: block, code: ['note configuration', '; @config test.child edited', 'noteEnd'] },
+	]);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'edited' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	deleteCodeBlocks(test.store, [block]);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
+	expect(validate).toHaveBeenCalled();
 });
 
 it('announces an empty group when navigation replaces the visible project slice', () => {

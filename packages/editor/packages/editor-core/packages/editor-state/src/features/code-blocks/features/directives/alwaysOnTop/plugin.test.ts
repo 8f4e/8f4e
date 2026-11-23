@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-const { deriveDirectiveState } = await import('../registry');
+const { deriveDirectiveFacts } = await import('../registry');
 const { parseBlockDirectives } = await import('../../../utils/parseBlockDirectives');
 const alwaysOnTopPlugin = (await import('./plugin')).default;
 
 function runDerive(code: string[]) {
 	const parsedDirectives = parseBlockDirectives(code);
-	return deriveDirectiveState(code, parsedDirectives, {}, [alwaysOnTopPlugin]);
+	return deriveDirectiveFacts(code, parsedDirectives, [alwaysOnTopPlugin]);
 }
 
 describe('@alwaysOnTop directive plugin', () => {
@@ -15,9 +15,9 @@ describe('@alwaysOnTop directive plugin', () => {
 		expect(state.blockState.alwaysOnTop).toBe(true);
 	});
 
-	it('leaves alwaysOnTop undefined when directive is absent', () => {
+	it('leaves alwaysOnTop false when directive is absent', () => {
 		const state = runDerive(['module test', 'moduleEnd']);
-		expect(state.blockState.alwaysOnTop).toBeUndefined();
+		expect(state.blockState.alwaysOnTop).toBe(false);
 	});
 
 	it('ignores extra arguments', () => {

@@ -3,7 +3,8 @@
 ## Core Boundaries
 
 - Editor-core owns plugin installation, initialization and the frame loop. Pass the frame timestamp to web-ui.
-  Finish initial project and font loading before drawing and emit `ready` after the first render.
+  Await source-only `prepareInitialProject` before loading the selected font and settling layout and first-visit
+  placement. Draw the first frame, then emit `ready`.
   Dispose plugins in reverse installation order and continue cleanup if a disposer throws.
 - Editor-state owns the project tree, entry assignment and bounds, history, generic source operations, folding,
   text geometry and pointer routing. Keep editor `@group` behavior, authoring commands and browser input in plugins.
@@ -32,8 +33,9 @@
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
   Keep remembered viewport and selection in memory. Use canonical detached project snapshots from
   `pureHelpers/projectSerialization`. Project-save owns the text file format.
-- The layout coordinator tracks ownership per project level. Publish `codeBlockLayoutsChanged { project, codeBlocks }`
-  after the affected blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
+- Project membership tracks ownership per project level independently of source preparation and layout. The layout
+  coordinator uses that membership to publish `codeBlockLayoutsChanged { project, codeBlocks }` after the affected
+  blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.
 

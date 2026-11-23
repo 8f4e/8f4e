@@ -13,8 +13,8 @@ import { mountGalleryEditor } from '@8f4e/editor-gallery';
 const editor = await mountGalleryEditor(canvas, {
 	initialProjectUrl: '/examples/demo.8f4e',
 	captureWheel: false,
-	onInitialProjectLoaded: () => canvas.classList.add('editor-ready'),
 });
+canvas.classList.add('editor-ready');
 
 editor.dispose();
 ```
@@ -34,7 +34,7 @@ Compiler coordination, file-session tracking, URL loading, home navigation, bloc
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
 rendering. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the
-current project and do not block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
+current project and do not block the first render or mounting. Every optional feature is an individual entry in the
 same deferred list, including input plugins; their implementations load independently. This boundary also gates all
 directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
 lazy chunks.
@@ -76,15 +76,14 @@ The loader checks cached directives automatically after project changes and grou
 use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.
 Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
-Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
-the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and the first render. Project
-fetching/parsing and the selected default font download run in parallel.
+Imports and compilation finish independently of mounting. The mount promise resolves after URL fetching/parsing,
+then font-atlas loading using the prepared project's configuration or the default, layout, and the first render.
 
-Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
-initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas
-layout, visibility management, and any WebMCP bridge.
+Without `initialProjectUrl`, the editor starts with an empty project. A failed initial URL request or parse rejects the
+mount promise before the first render; the host can reveal the canvas on fulfillment and display errors on rejection.
+The host owns page URLs, loading/error UI, canvas layout, visibility management, and any WebMCP bridge.
 
-`GalleryEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
+`GalleryEditorMountOptions` supports `initialProjectUrl`, `sharedAudioContext`,
 `captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes

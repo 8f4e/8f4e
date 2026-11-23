@@ -1,7 +1,9 @@
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
-import initState from './index';
+import initState, { setGridSize } from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
 
@@ -13,19 +15,39 @@ describe('editor state lifecycle', () => {
 		});
 
 		expect(store.getState().editorMode).toBe('view');
+		expect(store.getState().gridSizeReady).toBe(false);
+		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+
+		store.dispose();
+	});
+
+	it('can install a known grid after initialization', () => {
+		const events = createMockEventDispatcherWithVitest();
+		const store = initState(events, {
+			callbacks: {},
+		});
+		setGridSize(store.getState(), events, { vGrid: 6, hGrid: 12 });
+
+		expect(store.getState().viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(store.getState().gridSizeReady).toBe(true);
 
 		store.dispose();
 	});
 
 	it('keeps configuration notes in their project and clears them when an empty project is loaded', () => {
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 		const store = initState(events, {
 			callbacks: {},
 		});
 		store.set('editorConfigSchemaContributions.test', { root: 'testSetting', schema: { type: 'string' } });
 		const code = ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'];
 
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] });
+		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] } });
 
 		expect(
 			store
@@ -35,7 +57,7 @@ describe('editor state lifecycle', () => {
 		).toEqual([code]);
 		expect(store.getState().editorConfig.testSetting).toBe('sample');
 
-		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
+		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 
 		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
 			[]
@@ -66,6 +88,7 @@ describe('editor state lifecycle', () => {
 		const store = initState(events, {
 			callbacks: {},
 		});
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		events.dispatch('enterEditMode');
 		const state = store.getState();
 		const codeBlock = createMockCodeBlock({

@@ -59,14 +59,16 @@ describe('web-ui configuration', () => {
 
 	it('resolves settings through project loading, editing, and replacement', () => {
 		const state = store.getState();
-		store.set('initialProjectState', {
-			...EMPTY_DEFAULT_PROJECT,
-			notes: [
-				{
-					id: 0,
-					code: ['note settings', '; @config font x11miscfixed6x10', '; @config color.primary #123456', 'noteEnd'],
-				},
-			],
+		events.dispatch('loadProject', {
+			project: {
+				...EMPTY_DEFAULT_PROJECT,
+				notes: [
+					{
+						id: 0,
+						code: ['note settings', '; @config font x11miscfixed6x10', '; @config color.primary #123456', 'noteEnd'],
+					},
+				],
+			},
 		});
 		expect(state.editorConfig).toEqual({ font: 'x11miscfixed6x10', color: { primary: '#123456' } });
 		expect(state.codeErrors['editor-directives']).toEqual([]);
@@ -76,7 +78,7 @@ describe('web-ui configuration', () => {
 		]);
 		expect(state.editorConfig).toEqual({});
 		expect(state.codeErrors['editor-directives'].map(error => error.lineNumber)).toEqual([1, 2]);
-		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
+		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		expect(state.editorConfig).toEqual({});
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});

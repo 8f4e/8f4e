@@ -3,6 +3,9 @@ import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
+import codeBlockRendering from '../../effect';
+import { createLayoutRegistry } from '../../layout/registry';
+import { directiveDefinitions } from '../directives/registry';
 import codeBlockActions from './effect';
 
 describe('codeBlockActions - insertion', () => {
@@ -84,6 +87,17 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 		mockState = createMockState();
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
+		mockEvents.dispatch = vi.fn((name, payload) => {
+			for (const [eventName, handler] of vi.mocked(mockEvents.on).mock.calls) {
+				if (eventName === name) handler(payload);
+			}
+		});
+		codeBlockRendering(
+			store,
+			mockEvents,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 	});
 
 	it('should toggle disabled state from false to true', () => {
@@ -103,7 +117,7 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 	});
 
 	it('should toggle disabled state from true to false', () => {
-		const codeBlock = createMockCodeBlock({ disabled: true });
+		const codeBlock = createMockCodeBlock({ code: ['module test', '; @disabled', 'moduleEnd'], disabled: true });
 		mockState.codeBlockRendering.currentProject.blocks = [codeBlock];
 
 		codeBlockActions(store, mockEvents);
@@ -207,12 +221,18 @@ describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 		mockState = createMockState();
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
+		codeBlockRendering(
+			store,
+			mockEvents,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 	});
 
 	it('inserts a normal block before existing always-on-top blocks', async () => {
-		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
-		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
+		const existingNormal = createMockCodeBlock({ code: ['module normal1', 'moduleEnd'] });
+		const existingTop = createMockCodeBlock({ code: ['module top1', '; @alwaysOnTop', 'moduleEnd'] });
+		store.set('codeBlockRendering.currentProject.blocks', [existingNormal, existingTop]);
 
 		codeBlockActions(store, mockEvents);
 
@@ -234,9 +254,9 @@ describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 	});
 
 	it('derives alwaysOnTop and inserts an @alwaysOnTop block directly into the top partition', async () => {
-		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
-		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
+		const existingNormal = createMockCodeBlock({ code: ['module normal1', 'moduleEnd'] });
+		const existingTop = createMockCodeBlock({ code: ['module top1', '; @alwaysOnTop', 'moduleEnd'] });
+		store.set('codeBlockRendering.currentProject.blocks', [existingNormal, existingTop]);
 
 		codeBlockActions(store, mockEvents);
 

@@ -28,7 +28,7 @@ describe('deferred plugin loader', () => {
 			expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 			await Promise.resolve();
 			expect(load).not.toHaveBeenCalled();
-			editor.events.dispatch('init');
+			editor.events.dispatch('prepareInitialProject');
 			expect(load).not.toHaveBeenCalled();
 			editor.state.viewport.x = 123;
 			editor.events.dispatch('ready');

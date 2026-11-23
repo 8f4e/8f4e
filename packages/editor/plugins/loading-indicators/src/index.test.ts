@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLoadingIndicatorsPlugin } from './index';
@@ -14,10 +15,11 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-function setup(width = 320, height = 160, plugin = pluginWithMotion) {
+function setup(width = 320, height = 160, plugin = pluginWithMotion, initializeGrid = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	if (initializeGrid) setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	Object.assign(store.getState().viewport, { width, height });
 	const drawers = createEditorDrawerRegistry();
 	const dispose = plugin.setup({
@@ -53,6 +55,21 @@ function setup(width = 320, height = 160, plugin = pluginWithMotion) {
 	};
 	return { store, events, draw, render, orbitCalls, renderOrbit, renderMessages, dispose };
 }
+
+it('waits for actual grid dimensions before preparing startup loading rows', () => {
+	vi.useFakeTimers();
+	const test = setup(352, 160, pluginWithMotion, false);
+	test.store.loading.add({ id: 'startup', message: 'Loading project...' });
+	test.render();
+	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+	expect(test.draw.startGroup).not.toHaveBeenCalled();
+	expect(vi.getTimerCount()).toBe(0);
+
+	setGridSize(test.store.getState(), test.events, TEST_GRID_SIZE);
+	expect(test.renderMessages()).toContainEqual(textToGlyphIds('Loading project...'));
+	expect(test.draw.startGroup).toHaveBeenCalledWith(0, 160);
+	expect(vi.getTimerCount()).toBe(1);
+});
 
 it('draws cached results, hides them by outcome, and retains every contribution', () => {
 	vi.useFakeTimers();

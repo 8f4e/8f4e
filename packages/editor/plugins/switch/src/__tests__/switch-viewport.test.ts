@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
@@ -38,6 +39,7 @@ entryEnd`);
 	const store = initState(events, {
 		callbacks: {},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	store.set('editorMode', 'edit');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createSwitchPlugin({ writeMemory: () => {} }).setup({

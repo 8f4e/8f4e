@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type RenderedCodeBlock } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
@@ -74,6 +75,7 @@ async function setup({
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	Object.assign(state.viewport, { x: 0, y: 0, width: 640, height: 480 });
 	const publishMetadata = ({

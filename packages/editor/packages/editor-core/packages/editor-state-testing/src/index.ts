@@ -1,4 +1,11 @@
-import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State, Viewport } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	EventDispatcher,
+	GridSize,
+	ProjectLevel,
+	State,
+	Viewport,
+} from '@8f4e/editor-state-types';
 import {
 	ArgumentType,
 	isArrayMemoryDeclarationInstructionName,
@@ -6,6 +13,9 @@ import {
 	type MemoryDeclarationLine,
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
+
+/** Representative character-cell dimensions for tests that need settled pixel geometry. */
+export const TEST_GRID_SIZE = { vGrid: 8, hGrid: 16 } as const satisfies GridSize;
 
 type DeepPartial<T> = T extends (...args: never[]) => unknown
 	? T
@@ -36,10 +46,8 @@ export function createMockCodeBlock(
 	const code = overrides.code ?? [];
 	const name = overrides.name ?? code[0]?.trim().split(/\s+/)[1] ?? 'test-block';
 	const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
-	const defaultVGrid = 8;
-	const defaultHGrid = 16;
-	const gridX = overrides.gridX ?? Math.round(x / defaultVGrid);
-	const gridY = overrides.gridY ?? Math.round(y / defaultHGrid);
+	const gridX = overrides.gridX ?? Math.round(x / TEST_GRID_SIZE.vGrid);
+	const gridY = overrides.gridY ?? Math.round(y / TEST_GRID_SIZE.hGrid);
 	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {
 		col: 0,
@@ -64,6 +72,7 @@ export function createMockCodeBlock(
 		name,
 		code,
 		tabStopsByLine: code.map(() => []),
+		directiveDisplayState: {},
 		displayModel,
 		gaps: new Map(),
 		lineNumberColumnWidth: 1,
@@ -86,8 +95,7 @@ export function createMockViewport(x = 0, y = 0, width = 800, height = 600): Vie
 		y,
 		width,
 		height,
-		vGrid: 8,
-		hGrid: 16,
+		...TEST_GRID_SIZE,
 	};
 }
 
@@ -200,13 +208,13 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		globalEditorDirectives: {},
 		dialog: { id: '', text: '', title: '', buttons: [] },
 		dialogStack: [],
+		gridSizeReady: true,
 		viewport: {
 			x: 0,
 			y: 0,
 			width: 1024,
 			height: 768,
-			vGrid: 8,
-			hGrid: 16,
+			...TEST_GRID_SIZE,
 		},
 	};
 

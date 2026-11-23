@@ -6,7 +6,7 @@ import {
 	documentBlockInstructionPairs,
 	projectInstructions,
 } from '@8f4e/language-spec';
-import { classifyProjectScopeLine, SyntaxErrorCode } from '@8f4e/tokenizer';
+import { classifyProjectScopeLine, parseDirectiveLineRecords, SyntaxErrorCode } from '@8f4e/tokenizer';
 import { FORMAT_HEADER } from './delimiters';
 import { getEntryName } from './projectLines';
 import { parseProjectMemoryExposureLine } from './projectMemoryExposure';
@@ -30,7 +30,7 @@ type ScopeContext =
 type ExpandedSourcePosition = { nextLineNumber: number };
 
 function hasDisabledDirective(code: readonly string[]): boolean {
-	return code.some(line => /^\s*;\s*@disabled(?:\s|$)/.test(line));
+	return code.some(line => parseDirectiveLineRecords(line).some(directive => directive.name === 'disabled'));
 }
 
 function addBlock(

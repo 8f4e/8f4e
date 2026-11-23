@@ -65,13 +65,14 @@ export default function createDefaultState() {
 		assertionResults: [],
 		dialog: { id: '', text: '', title: '', buttons: [] },
 		dialogStack: [],
+		gridSizeReady: false,
 		viewport: {
 			x: 0,
 			y: 0,
 			width: 0,
 			height: 0,
-			vGrid: 8,
-			hGrid: 16,
+			vGrid: 0,
+			hGrid: 0,
 		},
 	};
 }

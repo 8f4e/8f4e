@@ -1,5 +1,4 @@
 import type {
-	EditorDirectiveRegistry,
 	EditorLayoutRegistry,
 	EditorLoadingRegistry,
 	EditorMenuRegistry,
@@ -56,7 +55,7 @@ export default function init(
 	options: Options
 ): StateManager<State> & {
 	menus: EditorMenuRegistry;
-	directives: EditorDirectiveRegistry;
+	directives: ReturnType<typeof createDirectiveRegistry>;
 	layout: EditorLayoutRegistry;
 	loading: EditorLoadingRegistry;
 } {
@@ -174,6 +173,7 @@ export {
 } from './features/text-geometry/tabLayout';
 export type { CodeBlockBounds } from './features/viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './features/viewport/centerViewportOnCodeBlock';
+export { markGridSizePending, setGridSize } from './features/viewport/gridSize';
 export { default as updateViewport } from './features/viewport/updateViewport';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './pureHelpers/codeBlockSerialization';
 export { createCodeErrorBlockLookup, default as getCodeBlockErrors } from './pureHelpers/getCodeBlockErrors';

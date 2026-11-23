@@ -12,11 +12,15 @@ export interface ProjectViewport {
 	gridCoordinates: GridCoordinates;
 }
 
-export interface Viewport {
-	width: number;
-	height: number;
+/** Character-cell dimensions in pixels. Supplied grid sizes must be positive. */
+export interface GridSize {
 	vGrid: number;
 	hGrid: number;
+}
+
+export interface Viewport extends GridSize {
+	width: number;
+	height: number;
 	x: number;
 	y: number;
 }

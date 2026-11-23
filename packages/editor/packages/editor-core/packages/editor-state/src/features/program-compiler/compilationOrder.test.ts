@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, EditorConfigSchemaContributionRegistry } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import initState, { serializeProjectLevel } from '../../index';
+import initState, { serializeProjectLevel, setGridSize } from '../../index';
 import type { ResolveCodeBlockDragTargetsEvent } from '../code-blocks/features/codeBlockDragger/effect';
 
 const cleanups: Array<() => void> = [];
@@ -33,7 +34,11 @@ entryEnd`;
 function setup(source: string, editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, editorConfigSchemaContributions });
+	const store = initState(events, {
+		callbacks: {},
+		editorConfigSchemaContributions,
+	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	cleanups.push(store.dispose);
 	const withEnv = source.replace('8f4e/v1\n', '8f4e/v1\nconstants env\n; @pos -100 -100\nconstantsEnd\n');
 	events.dispatch('loadProject', { project: parseProjectSource(withEnv) });

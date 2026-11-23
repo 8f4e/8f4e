@@ -25,19 +25,15 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	canvas.style.height = '480px';
 	panel.append(canvas);
 	document.body.append(panel);
-	let loaded = false;
 	const pending = mountDefaultEditor(canvas, {
 		initialProjectUrl: `/webmcp-${id}.8f4e`,
 		storage: sessionStorage,
 		storageNamespace: `8f4e-webmcp-test-${id}`,
-		onInitialProjectLoaded: () => {
-			loaded = true;
-		},
 	});
 	const mounted = async (): Promise<DefaultEditorInstance> => {
 		const editor = await pending;
 		cleanups.push(() => editor.dispose());
-		await vi.waitFor(() => expect(loaded).toBe(true));
+		expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('done');
 		await vi.waitFor(() =>
 			expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'editor-plugins')?.status).toBe('done')
 		);

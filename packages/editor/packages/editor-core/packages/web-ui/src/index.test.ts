@@ -125,26 +125,36 @@ describe('web-ui init', () => {
 
 	it('loads the configured font and installs its grid before initializing render layers', async () => {
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-		const state = createMockState({ editorConfig: { font: 'x11miscfixed6x10' } });
+		const state = createMockState({
+			editorConfig: { font: 'x11miscfixed6x10' },
+			gridSizeReady: false,
+			viewport: { vGrid: 0, hGrid: 0 },
+		});
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
+		events.dispatch.mockImplementation((name: string) => {
+			if (name === 'gridSizeChanged') {
+				expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledOnce();
+				expect(mocks.background.setFont).toHaveBeenCalledOnce();
+				expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
+				expect(state.gridSizeReady).toBe(false);
+			}
+		});
 		const drawers = createEditorDrawerRegistry();
 		const factory = vi.fn(() => {
 			expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
+			expect(state.gridSizeReady).toBe(true);
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
 		drawers.registerRenderLayer(factory);
-		vi.mocked(loadFontAtlas)
-			.mockResolvedValueOnce(createFontAtlas(6, 12))
-			.mockResolvedValueOnce(createFontAtlas(6, 10));
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(6, 10));
 		const view = await init(createStateManager(state), events, createMemoryViews(), {
 			loading,
 			drawers,
 			defaultFont: 'pixelcode6x12',
 		});
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(1, 'pixelcode6x12');
-		expect(loadFontAtlas).toHaveBeenNthCalledWith(2, 'x11miscfixed6x10');
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('x11miscfixed6x10');
 		expect(factory).toHaveBeenCalledOnce();
-		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('gridSizeChanged');
+		expect(events.dispatch.mock.calls).toEqual([['gridSizeChanged']]);
 		view.destroy();
 	});
 
@@ -177,22 +187,27 @@ describe('web-ui init', () => {
 	it('destroys the supplied renderer without attaching effects when the initial font fails', async () => {
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
 		const error = new Error('Font unavailable');
+		const state = createMockState({ gridSizeReady: false, viewport: { vGrid: 0, hGrid: 0 } });
+		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
 		vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
-		await expect(
-			init(createStateManager(createMockState()), createMockEventDispatcher(), createMemoryViews(), { loading })
-		).rejects.toBe(error);
+		await expect(init(createStateManager(state), events, createMemoryViews(), { loading })).rejects.toBe(error);
+		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+		expect(state.gridSizeReady).toBe(false);
+		expect(events.dispatch).not.toHaveBeenCalled();
 		expect(mocks.BackgroundRenderer).not.toHaveBeenCalled();
 		expect(mocks.engine.setSpriteAtlas).not.toHaveBeenCalled();
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
-	it.each(['project', 'font'])('loads project and font in parallel and waits for both (%s first)', async first => {
+	it('waits for the font selected by the prepared project before installing the grid or rendering', async () => {
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-		let finishProject!: () => void;
-		const initialProjectReady = new Promise<void>(resolve => {
-			finishProject = resolve;
+		const state = createMockState({
+			editorConfig: { font: 'spleen5x8' },
+			gridSizeReady: false,
+			viewport: { vGrid: 0, hGrid: 0 },
 		});
-		const atlas = createFontAtlas();
+		const store = createStateManager(state);
+		const atlas = createFontAtlas(5, 8);
 		let finishFont!: (value: typeof atlas) => void;
 		vi.mocked(loadFontAtlas).mockImplementationOnce(
 			() =>
@@ -200,55 +215,23 @@ describe('web-ui init', () => {
 					finishFont = resolve;
 				})
 		);
-		const mounting = init(createStateManager(createMockState()), createMockEventDispatcher(), createMemoryViews(), {
-			loading,
-			initialProjectReady,
-		});
-		expect(loadFontAtlas).toHaveBeenCalledOnce();
-		expect(mocks.BackgroundRenderer).not.toHaveBeenCalled();
-		if (first === 'project') finishProject();
-		else finishFont(atlas);
-		await Promise.resolve();
-		expect(mocks.engine.setSpriteAtlas).not.toHaveBeenCalled();
-		if (first === 'project') finishFont(atlas);
-		else finishProject();
-		const view = await mounting;
-		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
-		view.renderFrame();
-		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
-		view.destroy();
-	});
-
-	it('waits for a different font selected by the loaded project before rendering', async () => {
-		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
-		const state = createMockState();
-		const store = createStateManager(state);
-		let finishProject!: () => void;
-		const initialProjectReady = new Promise<void>(resolve => {
-			finishProject = resolve;
-		});
-		const atlas = createFontAtlas(5, 8);
-		let finishFont!: (value: typeof atlas) => void;
-		vi.mocked(loadFontAtlas)
-			.mockResolvedValueOnce(createFontAtlas())
-			.mockImplementationOnce(
-				() =>
-					new Promise(resolve => {
-						finishFont = resolve;
-					})
-			);
 		const mounting = init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
-			initialProjectReady,
+			defaultFont: 'pixelcode6x12',
 		});
-		store.set('editorConfig.font', 'spleen5x8');
-		finishProject();
-		await vi.waitFor(() => expect(loadFontAtlas).toHaveBeenLastCalledWith('spleen5x8'));
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('spleen5x8');
 		expect(mocks.BackgroundRenderer).not.toHaveBeenCalled();
+		expect(mocks.engine.setSpriteAtlas).not.toHaveBeenCalled();
+		expect(state.gridSizeReady).toBe(false);
+		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		finishFont(atlas);
 		const view = await mounting;
 		expect(state.viewport).toMatchObject({ vGrid: 5, hGrid: 8 });
+		expect(state.gridSizeReady).toBe(true);
 		expect(mocks.background.setFont).toHaveBeenCalledExactlyOnceWith('spleen5x8', atlas.grid);
+		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
+		view.renderFrame();
+		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
 		view.destroy();
 		store.dispose();
 	});

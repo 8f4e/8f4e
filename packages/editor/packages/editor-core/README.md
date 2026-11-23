@@ -57,10 +57,11 @@ once supplied and passes ownership to web-ui at initialization. The canvas still
 
 A plugin declares an `id` and a synchronous `setup({ store, events, menus, directives, layout, loading, drawers })` function.
 Editor-core installs plugins in array order after core state effects, before rendering and initial project loading.
-Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches `init` and
-passes the returned promises to the renderer. Startup plugins fetch, parse, or restore their project while web-ui
-loads the per-editor default font atlas in parallel. The renderer waits for both and loads any different font selected by
-the project before drawing. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
+Core first sizes the viewport and loads `options.initialProject` (or an empty project), then dispatches and awaits
+`prepareInitialProject` for startup plugins to fetch, parse, or restore project source. This phase must not wait for
+rendering or pixel geometry: web-ui starts afterward and loads the font selected by the prepared project's configuration
+(or the per-editor default). It installs the atlas and grid; editor-state settles layout and the initial viewport before
+core draws the first frame. Core then emits `ready`, which starts optional plugin imports. The mount promise resolves
 after this sequence. Setup runs separately for each editor instance; allocate instance data inside setup.
 Plugins receive the existing state manager and event dispatcher directly. Store disposal belongs to the editor and
 is excluded from the plugin context type. This is a trusted extension interface.
@@ -70,9 +71,10 @@ their payloads for subscriptions and synchronous/asynchronous dispatch. Required
 block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
-Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level
-and before committing a viewport for its first visit. Plugins may synchronously replace the request's pixel
-`position`, which defaults to the origin. Remembered positions bypass this request.
+Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level's
+source and layout, before committing a viewport for its first visit. Plugins may synchronously replace the request's
+pixel `position`, which defaults to the origin. If the requested grid is not ready, core defers resolution until layout
+settles. Remembered positions bypass this request.
 
 Setup must return a disposer that releases every resource the plugin creates, including subscriptions, listeners,
 contribution registrations, and timers. The host calls these disposers in reverse installation order while the state
@@ -129,12 +131,15 @@ Coordinates are viewport pixels. Core applies entry assignment, grid positioning
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
 
 Directive handling and layout are independent services. `directives.register(definition)` contributes block or
-source-display behavior through `apply`; core owns generic syntax parsing. A plugin can read parsed directives with
-`matchEditorDirectives(codeBlock.parsedDirectives, definitions)` from `@8f4e/editor-state` without registering behavior
-in the directive registry. Core updates these records when source changes and retains unknown directives for plugins
-installed later. Matching normalizes aliases and preserves source context, including `isTrailing`; all directives
-support standalone and trailing comments. Use `parseBlockDirectives(code)` for incoming source or whole-project
-snapshot scans such as lazy loading. Live-block consumers reuse cached records.
+source-display behavior through `apply`; core owns generic syntax parsing. Register behavior before preparing the
+source it applies to. Core evaluates the registered definitions when preparing or changing block source and retains
+the resulting block flags and display transforms. Layout uses those facts and the current selection to build display
+rows without rerunning directive handlers. A plugin can read parsed directives with
+`matchEditorDirectives(codeBlock.parsedDirectives, definitions)` from `@8f4e/editor-state`
+without registering behavior in the directive registry. Core updates these records when source changes and retains
+unknown directives for plugins installed later. Matching normalizes aliases and preserves source context, including
+`isTrailing`; all directives support standalone and trailing comments. Use `parseBlockDirectives(code)` for incoming
+source or whole-project snapshot scans such as lazy loading. Live-block consumers reuse cached records.
 
 Use `layout.createContribution()` for a plugin-owned set of block layout requests:
 
@@ -155,8 +160,9 @@ after the same line add together; minimum widths combine by maximum, in editor c
 display rows and skips hidden lines. Each update replaces this contribution's complete request for that block.
 `contribution.remove(codeBlock)` clears one block, and `contribution.dispose()` removes the owner's requests.
 
-`layout.subscribe(listener)` immediately reports the visible blocks and reports them again when core calculates their
-layout, including source, compiler metadata, grid size, and contribution changes. It returns an unsubscribe function.
+`layout.subscribe(listener)` reports the visible blocks when positive grid dimensions are available and reports them
+again when core calculates their layout, including source, compiler metadata, grid size, and contribution changes.
+It returns an unsubscribe function.
 Each block retains `tabStopsByLine`, derived from its cached directive records when source changes. Caret movement,
 pointer placement, sizing and presentation reuse those tab stops. Block navigation also uses the settled display model.
 Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or
@@ -339,9 +345,11 @@ The binary-assets plugin owns `bin` configuration, browser fetching and caching,
 memory copies, download-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
-Plugins can contribute source to the generated `env` constants block with
-`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines and recompiles when generated source changes. Each plugin removes its own contribution key
-when disposed. The registry contains source lines only; feature metadata stays private to its owner.
+Plugins can contribute source to the generated root-project `env` constants block with
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines before
+restoring a project and recompiles when generated source changes. Contributions update the root block regardless of
+which project group is visible. Each plugin removes its own contribution key when disposed. The registry contains
+source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
@@ -375,9 +383,10 @@ Callers own edit-mode checks and source transformations; they do not separately 
 Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
 batches an immediate undo step; persistence saves each completed change.
 
-The project-operations effect applies validated API drafts independently of history. It emits `beforeProjectEdit`
-for a changed draft, allowing history to commit pending typing, then publishes the completed checkpoint. Unchanged
-drafts leave pending history and revisions untouched.
+API editing drafts refresh source-owned metadata through the same directive registry as live source edits before
+serialization. The project-operations effect applies validated drafts independently of history. It emits
+`beforeProjectEdit` for a changed draft, allowing history to commit pending typing, then publishes the completed
+checkpoint. Unchanged drafts leave pending history and revisions untouched.
 
 Core project-loading, API operations, and history helpers publish `checkpoint`, `restore`, or `replace` changes after
 snapshot restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
@@ -388,8 +397,9 @@ for compilation inputs.
 ## Project loading
 
 Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`, or dispatch `loadProject` with
-`{ project }` later. Core loads initial content after sizing the viewport. Project preparation through `init` runs
-alongside the default font download; both complete before rendering and the `ready` event.
+`{ project }` later. Core loads initial content after sizing the viewport. Project preparation through
+`prepareInitialProject` completes before the renderer loads the selected font, settles layout and first-visit placement,
+and draws the first frame. The `ready` event follows that frame.
 Open From Disk belongs to the project-open plugin. Core has no file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 

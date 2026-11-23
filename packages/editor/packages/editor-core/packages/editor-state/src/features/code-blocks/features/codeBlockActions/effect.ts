@@ -18,7 +18,6 @@ export default function codeBlockActions(store: StateManager<State>, events: Eve
 		// Toggle disabled state by upserting/removing @disabled directive
 		const newDisabledState = !codeBlock.disabled;
 		const code = upsertDisabled(codeBlock.code, newDisabledState);
-		codeBlock.disabled = newDisabledState;
 		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }]);
 	}
 

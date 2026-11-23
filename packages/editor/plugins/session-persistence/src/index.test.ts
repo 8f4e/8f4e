@@ -30,7 +30,7 @@ function setup(storage = createStorage(), restoreOnStartup = true, storageKey = 
 	const boot = () => {
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		test.events.dispatch('enterEditMode');
-		test.events.dispatch('init');
+		test.events.dispatch('prepareInitialProject');
 	};
 	return { ...test, storage, boot };
 }
@@ -49,7 +49,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('enterEditMode');
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(storage.setItem).not.toHaveBeenCalled();
-		test.events.dispatch('init');
+		test.events.dispatch('prepareInitialProject');
 		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'retained')).toBe(true);
 		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
 		expect(storage.setItem).toHaveBeenCalledOnce();
@@ -315,7 +315,7 @@ describe('session persistence plugin', () => {
 		storage.setItem.mockClear();
 		first.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		first.store.set('projectChange', { revision: first.state.projectChange.revision + 1, kind: 'edit' });
-		first.events.dispatch('init');
+		first.events.dispatch('prepareInitialProject');
 		expect(storage.setItem).not.toHaveBeenCalled();
 		second.events.dispatch('loadProject', { project });
 		expect(getProjectModules(JSON.parse(storage.getItem('second')!))).toHaveLength(1);

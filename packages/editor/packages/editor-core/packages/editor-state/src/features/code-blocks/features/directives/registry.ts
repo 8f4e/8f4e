@@ -1,18 +1,15 @@
 import type {
-	DirectiveDerivedState,
+	DirectiveBlockState,
 	DirectiveDerivedStateDraft,
-	DirectiveDeriveOptions,
+	DirectiveDisplayState,
 	EditorDirectiveDefinition,
 	EditorDirectiveRegistry,
 	ParsedDirectiveRecord,
 } from '@8f4e/editor-state-types';
-import buildDisplayModel from '../../buildDisplayModel';
 import alwaysOnTopDirective from './alwaysOnTop/plugin';
 import disabledDirective from './disabled/plugin';
 import hideDirective from './hide/plugin';
 import { matchEditorDirectives } from './utils';
-
-export type { DirectiveBlockState, DirectiveDerivedState } from '@8f4e/editor-state-types';
 
 export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	disabledDirective,
@@ -34,17 +31,18 @@ export function createDirectiveRegistry(): EditorDirectiveRegistry & { definitio
 	};
 }
 
-export function deriveDirectiveState(
+/** Resolve source-owned directive facts without building display rows. */
+export function deriveDirectiveFacts(
 	code: string[],
 	parsedDirectives: ParsedDirectiveRecord[],
-	options: DirectiveDeriveOptions = {},
 	definitions: EditorDirectiveDefinition[] = directiveDefinitions
-): DirectiveDerivedState {
+): { blockState: DirectiveBlockState; displayState: DirectiveDisplayState } {
 	const directives = matchEditorDirectives(parsedDirectives, definitions);
 	const draft: DirectiveDerivedStateDraft = {
 		sourceCode: code,
 		blockState: {
 			disabled: false,
+			alwaysOnTop: false,
 		},
 		displayState: {},
 	};
@@ -57,9 +55,5 @@ export function deriveDirectiveState(
 	return {
 		blockState: draft.blockState,
 		displayState: draft.displayState,
-		displayModel: buildDisplayModel(code, {
-			...draft.displayState,
-			isExpandedForEditing: options.isExpandedForEditing,
-		}),
 	};
 }

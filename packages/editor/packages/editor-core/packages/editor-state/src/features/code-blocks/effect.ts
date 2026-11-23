@@ -12,12 +12,12 @@ import { isRestoringProjectEdit } from '../project-changes';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
-import getProjectViewportPosition from '../viewport/getProjectViewportPosition';
-import updateViewport from '../viewport/updateViewport';
+import { normalizeEnvironmentBlockSources } from './features/auto-env-constants/source';
 import { createLayoutCoordinator } from './layout/coordinator';
 import type { LayoutRegistry } from './layout/registry';
+import { createProjectMembership } from './projectMembership';
 import { reconstructProject } from './reconstructProject';
-import { refreshBlockSources } from './sourceUpdates';
+import { prepareProjectSources, refreshBlockSources } from './sourceUpdates';
 import { updateCursorY } from './updateCursorY';
 
 export default function codeBlockRendering(
@@ -27,7 +27,8 @@ export default function codeBlockRendering(
 	layout: LayoutRegistry
 ) {
 	const state = store.getState();
-	const coordinator = createLayoutCoordinator(state, events, directives, layout);
+	const membership = createProjectMembership(state.codeBlockRendering.rootProject);
+	const coordinator = createLayoutCoordinator(state, events, layout, membership);
 	const refreshBlockLayouts = coordinator.refreshBlocks;
 
 	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
@@ -64,14 +65,19 @@ export default function codeBlockRendering(
 		coordinator.refreshProject(state.codeBlockRendering.currentProject);
 	};
 
-	const refreshCurrentProjectSources = () => {
-		coordinator.syncProject(state.codeBlockRendering.currentProject);
-		refreshBlockSources(store, events, state.codeBlockRendering.currentProject.blocks, refreshCurrentProjectLayout);
-	};
-
-	const updateEditedCodeBlock = (block: CodeBlockGraphicData | undefined) => {
-		if (!block) return;
-		refreshBlockLayouts([block]);
+	// Reconstruction prepares an entire tree before attaching it, so its membership is already known.
+	let reconstructedSources = false;
+	const onCurrentProjectBlocksChanged = () => {
+		const project = state.codeBlockRendering.currentProject;
+		const addedBlocks = membership.syncProject(project);
+		const needsConfigRefresh = reconstructedSources || addedBlocks !== undefined;
+		reconstructedSources = false;
+		if (addedBlocks !== undefined) {
+			normalizeEnvironmentBlockSources(state, addedBlocks);
+			prepareProjectSources(project, addedBlocks, directives);
+		}
+		if (needsConfigRefresh) resolveEditorConfig(store);
+		refreshCurrentProjectLayout();
 	};
 
 	const updateSelectedCodeBlock = () => {
@@ -79,13 +85,11 @@ export default function codeBlockRendering(
 		if (block) updateCursorY(block, state.viewport.hGrid);
 	};
 
-	const updateSelectedCodeBlockSource = () => {
-		const block = state.codeBlockRendering.selectedCodeBlock;
-		if (block) refreshBlockSources(store, events, [block], () => updateEditedCodeBlock(block));
-	};
-
 	const onSourcesChanged = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
-		refreshBlockSources(store, events, codeBlocks, () => refreshBlockLayouts(codeBlocks));
+		normalizeEnvironmentBlockSources(state, codeBlocks);
+		refreshBlockSources(codeBlocks, directives, membership);
+		resolveEditorConfig(store);
+		refreshBlockLayouts(codeBlocks);
 	};
 
 	const updateHideSelectionTransition = (
@@ -119,16 +123,20 @@ export default function codeBlockRendering(
 		);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
 		state.codeBlockRendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
-		coordinator.reset(rootProject);
+		membership.reset(rootProject);
+		coordinator.clearPending();
 		store.set('codeBlockRendering.rootProject', rootProject);
+		reconstructedSources = true;
 		store.set('codeBlockRendering.currentProject', currentProject);
 		store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
-		const { x, y } = getProjectViewportPosition(currentProject, events);
-		updateViewport(state, x, y, events);
 		incrementCompilerInputRevision(store);
 	};
 
-	refreshCurrentProjectSources();
+	const rootProject = state.codeBlockRendering.rootProject;
+	normalizeEnvironmentBlockSources(state, rootProject.blocks);
+	prepareProjectSources(rootProject, rootProject.blocks, directives);
+	resolveEditorConfig(store);
+	refreshCurrentProjectLayout();
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
@@ -141,12 +149,11 @@ export default function codeBlockRendering(
 	events.on('gridSizeChanged', refreshCurrentProjectLayout);
 	store.subscribe('compiler.isCompiling', refreshCurrentProjectLayout);
 	store.subscribe('initialProjectState', populateCodeBlocks);
-	store.subscribe('codeBlockRendering.currentProject.blocks', refreshCurrentProjectSources);
+	store.subscribe('codeBlockRendering.currentProject.blocks', onCurrentProjectBlocksChanged);
 	store.subscribe('editorConfigSchemaContributions', () => {
 		resolveEditorConfig(store);
 		refreshCurrentProjectLayout();
 	});
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.code', updateSelectedCodeBlockSource);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 }

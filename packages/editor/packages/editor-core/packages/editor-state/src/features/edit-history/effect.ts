@@ -64,7 +64,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		restoreProject(store, previousState, 'restore');
+		restoreProject(store, events, previousState, 'restore');
 	}
 
 	function redo() {
@@ -73,7 +73,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		restoreProject(store, nextState, 'restore');
+		restoreProject(store, events, nextState, 'restore');
 	}
 
 	store.subscribe('projectChange', onProjectChange);

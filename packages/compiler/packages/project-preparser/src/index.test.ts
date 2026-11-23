@@ -96,6 +96,28 @@ entryEnd`);
 });
 
 describe('parseProjectSource', () => {
+	it.each([
+		{ code: ['module sample', '; @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample ; @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', '; @pos 1 2 @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', 'int value 1 ; @watch @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', '; mention @disabled in prose', 'moduleEnd'], disabled: undefined },
+		{ code: ['module sample', 'int value 1 ; mention @disabled in prose', 'moduleEnd'], disabled: undefined },
+		{ code: ['module sample', '; @disabledElsewhere', 'moduleEnd'], disabled: undefined },
+	])('sets disabled metadata from directive comments: $code', ({ code, disabled }) => {
+		const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
+		const block = getProjectModules(project)[0];
+		expect(block.code).toEqual(code);
+		expect(block.disabled).toBe(disabled);
+	});
+
+	it('ignores disabled tags inside function documentation', () => {
+		const code = ['function sample', '; @doc For examples with @disabled', '; @returns @disabled', 'functionEnd int'];
+		const project = parseProjectSource(['8f4e/v1', ...code].join('\n'));
+		expect(project.functions[0].code).toEqual(code);
+		expect(project.functions[0].disabled).toBeUndefined();
+	});
+
 	it('parses multiple document blocks', () => {
 		const text = [
 			'8f4e/v1',

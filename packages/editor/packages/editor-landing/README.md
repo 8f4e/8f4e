@@ -28,10 +28,11 @@ a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12
 at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
 a project without one restores the mount's default. This preference is kept outside project source and saved files.
 
-`LandingEditorMountOptions` accepts `initialProjectUrl`, `onInitialProjectLoaded`, `onInitialProjectLoadError`,
+`LandingEditorMountOptions` accepts `initialProjectUrl`,
 `captureWheel`, `touchNavigation`, `defaultFont`, and `featureFlags`. Project creation defaults to disabled; context menus are always
 disabled. The source's `@mode` directive selects the initial mode (view by default). Keyboard navigation and editing
-remain available on non-coarse pointers; no keyboard mode toggle or hint is installed. Initial project callbacks,
+remain available on non-coarse pointers; no keyboard mode toggle or hint is installed. A failed initial URL rejects the mount
+promise. Mount completion, initial-project errors,
 rendering controls, compiler diagnostics, and disposal follow the
 [gallery editor's lifecycle](../editor-gallery/README.md).
 

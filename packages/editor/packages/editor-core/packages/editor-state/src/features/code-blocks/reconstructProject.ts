@@ -12,13 +12,11 @@ import {
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
+import getHighestProjectBlockId from '../../pureHelpers/projectSerialization/getHighestProjectBlockId';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
-import parsePos from './features/directives/pos/data';
-import { deriveDirectiveState } from './features/directives/registry';
-import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
+import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
-import { parseBlockDirectives } from './utils/parseBlockDirectives';
 
 type ClassifiedProjectBlock = ProjectBlock & {
 	blockType: CodeBlockGraphicData['blockType'];
@@ -33,30 +31,18 @@ const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedPro
 		...currentProject.unknown.map(block => ({ ...block, blockType: 'unknown' as const })),
 	];
 };
-const getHighestProjectBlockId = (currentProject: ProjectObjectModel): number =>
-	Math.max(
-		-1,
-		...collectProjectBlocks(currentProject).map(block => block.id),
-		...currentProject.execution.map(block =>
-			block.type === 'group' ? Math.max(block.id, getHighestProjectBlockId(block)) : block.id
-		)
-	);
-
 /** Rebuild the project tree and reconcile remembered views before the effect installs it. */
 export function reconstructProject(
 	project: ProjectObjectModel,
 	directives: EditorDirectiveDefinition[],
-	viewport: Pick<Viewport, 'x' | 'y' | 'vGrid' | 'hGrid'>,
-	previous?: Pick<CodeBlockRendering, 'rootProject' | 'currentProject' | 'selectedCodeBlock'>
+	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
+	previous?: Pick<CodeBlockRendering, 'rootProject' | 'currentProject'>
 ) {
 	const previousLevels = new Map<string, ProjectLevel>();
 	const previousBlocks = new Map<string, CodeBlockGraphicData>();
 	const previousGroups = new Map<string, CodeBlockGraphicData>();
 	const recreatedBlocks = new Map<CodeBlockGraphicData, CodeBlockGraphicData>();
 	if (previous) {
-		const previousCurrent = previous.currentProject;
-		previousCurrent.viewport = { x: viewport.x, y: viewport.y };
-		previousCurrent.selectedBlock = previous.selectedCodeBlock;
 		for (const level of walkProjectLevels(previous.rootProject)) {
 			previousLevels.set(level.path, level);
 			for (const block of level.blocks) {
@@ -81,29 +67,14 @@ export function reconstructProject(
 			overrides.childProject !== undefined
 				? previousGroups.get(createChildProjectGroupPath(projectPath, name))
 				: previousBlocks.get(overrides.isProjectScope ? 'project-scope' : JSON.stringify([projectPath, codeBlock.id]));
-		const blockParsedDirectives = parseBlockDirectives(codeBlock.code);
-		const posResult = parsePos(blockParsedDirectives);
-		const gridX = posResult ? posResult.x : previousBlock ? previousBlock.gridX : 0;
-		const gridY = posResult ? posResult.y : previousBlock ? previousBlock.gridY : 0;
-		const directiveState = deriveDirectiveState(codeBlock.code, blockParsedDirectives, {}, directives);
-
 		const graphicData = createCodeBlockGraphicData({
-			width: 0,
-			height: 0,
 			code: codeBlock.code,
-			cursor: { col: 0, row: 0, y: 0 },
 			name,
-			gridX,
-			gridY,
-			x: gridX * viewport.vGrid,
-			y: gridY * viewport.hGrid,
-			lineNumberColumnWidth: 1,
+			gridX: previousBlock?.gridX ?? 0,
+			gridY: previousBlock?.gridY ?? 0,
 			creationIndex: codeBlock.id,
 			blockType: codeBlock.blockType,
 			entry: codeBlock.entry,
-			disabled: codeBlock.disabled ?? directiveState.blockState.disabled,
-			alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
-			parsedDirectives: blockParsedDirectives,
 			...overrides,
 		});
 		if (previousBlock) recreatedBlocks.set(previousBlock, graphicData);
@@ -151,16 +122,22 @@ export function reconstructProject(
 		const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
 		const previousLevel = previousLevels.get(projectPath);
 
-		// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
 		return {
 			path: projectPath,
 			entries: [...currentProject.entries],
-			blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
+			blocks: projectCodeBlocks,
 			viewport: previousLevel?.viewport,
 			selectedBlock: previousLevel?.selectedBlock ? recreatedBlocks.get(previousLevel.selectedBlock) : undefined,
 		};
 	};
 	const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
+	prepareProjectSources(rootProject, rootProject.blocks, directives);
+	for (const level of walkProjectLevels(rootProject)) {
+		for (const block of level.blocks) {
+			block.x = block.gridX * viewport.vGrid;
+			block.y = block.gridY * viewport.hGrid;
+		}
+	}
 	const currentProject = (previous && findProjectLevel(rootProject, previous.currentProject.path)) || rootProject;
 	return { rootProject, currentProject, nextCodeBlockCreationIndex };
 }

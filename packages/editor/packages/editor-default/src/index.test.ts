@@ -141,8 +141,7 @@ describe('default editor plugins', () => {
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
-			onLoaded: undefined,
-			onError: undefined,
+			failureMode: 'empty-project',
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage: expect.anything(),
@@ -203,24 +202,17 @@ describe('default editor plugins', () => {
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const storage = {} as Storage;
 		const initialProjectUrl = 'https://example.com/project.8f4e';
-		const onInitialProjectLoaded = vi.fn();
-		const onInitialProjectLoadError = vi.fn();
 		const editor = await mountDefaultEditor(canvas, {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
-			onInitialProjectLoaded,
-			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 		});
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl,
-			onLoaded: onInitialProjectLoaded,
-			onError: onInitialProjectLoadError,
+			failureMode: 'empty-project',
 		});
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		await loadDeferredPlugins();
 		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
 			document: canvas.ownerDocument,
@@ -235,26 +227,28 @@ describe('default editor plugins', () => {
 		editor.dispose();
 	});
 
-	it('reports initialized content without a URL once editor initialization finishes', async () => {
+	it('waits for core initialization before resolving the mount without a URL', async () => {
 		let finish!: (editor: Editor) => void;
 		vi.mocked(initEditor).mockReturnValueOnce(
 			new Promise(resolve => {
 				finish = resolve;
 			})
 		);
-		const onInitialProjectLoaded = vi.fn();
-		const onInitialProjectLoadError = vi.fn();
+		const mounted = vi.fn();
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const mounting = mountDefaultEditor(canvas, {
 			storage: {} as Storage,
-			onInitialProjectLoaded,
-			onInitialProjectLoadError,
+		}).then(editor => {
+			mounted(editor);
+			return editor;
 		});
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
-		finish({ dispose: vi.fn() } as Editor);
+		await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
+		expect(mounted).not.toHaveBeenCalled();
+		const coreEditor = { dispose: vi.fn() } as Editor;
+		finish(coreEditor);
 		const editor = await mounting;
-		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
+		expect(editor).toBe(coreEditor);
+		expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
 		editor.dispose();
 	});
 

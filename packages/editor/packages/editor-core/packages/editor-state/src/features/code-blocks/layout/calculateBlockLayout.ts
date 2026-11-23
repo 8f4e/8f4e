@@ -1,31 +1,21 @@
-import type {
-	CodeBlockGraphicData,
-	CodeBlockLayoutContribution,
-	EditorDirectiveDefinition,
-	State,
-} from '@8f4e/editor-state-types';
-import { deriveDirectiveState } from '../features/directives/registry';
+import type { CodeBlockGraphicData, CodeBlockLayoutContribution, State } from '@8f4e/editor-state-types';
+import buildDisplayModel from '../buildDisplayModel';
 import gaps from '../gaps';
 import getCodeBlockGridWidth from '../getCodeBlockGridWidth';
 import { updateCursorY } from '../updateCursorY';
 import type { BlockLayoutDraft } from './types';
 
-/** Update block display geometry and report whether its stacking partition changed. */
+/** Update block display geometry from the current source facts and selection. */
 export function calculateBlockLayout(
 	block: CodeBlockGraphicData,
 	state: State,
-	directives: EditorDirectiveDefinition[],
 	contribution: CodeBlockLayoutContribution
-): boolean {
-	const directiveState = deriveDirectiveState(
-		block.code,
-		block.parsedDirectives,
-		{ isExpandedForEditing: block === state.codeBlockRendering.selectedCodeBlock },
-		directives
-	);
-	const displayModel = directiveState.displayModel;
+): void {
+	const displayModel = buildDisplayModel(block.code, {
+		...block.directiveDisplayState,
+		isExpandedForEditing: block === state.codeBlockRendering.selectedCodeBlock,
+	});
 	block.displayModel = displayModel;
-	block.disabled = directiveState.blockState.disabled;
 	block.lineNumberColumnWidth = block.code.length.toString().length;
 	block.isCollapsed = displayModel.isCollapsed;
 	const draft: BlockLayoutDraft = {
@@ -41,7 +31,4 @@ export function calculateBlockLayout(
 	block.x = block.gridX * vGrid;
 	block.y = block.gridY * hGrid;
 	updateCursorY(block, hGrid);
-	const previousAlwaysOnTop = Boolean(block.alwaysOnTop);
-	block.alwaysOnTop = directiveState.blockState.alwaysOnTop ?? false;
-	return block.alwaysOnTop !== previousAlwaysOnTop;
 }

@@ -13,6 +13,10 @@ block markers. Parsing classifies blocks once: modules and groups become typed n
 while hoisted declarations and non-executable blocks retain their own collections. Each scope preserves relative
 module/group declaration order and source block ids. The model is defined only by `@8f4e/language-spec`.
 
+Disabled block metadata comes from the same directive-comment scanner used by editor source handling.
+Valid standalone, chained, and trailing `@disabled` directives set the block's disabled flag,
+while ordinary comment prose and function documentation do not.
+
 Note blocks (`note` through `noteEnd`) preserve their content as text until the closing `noteEnd`.
 Lines that look like other block markers remain note content at the project root and inside groups.
 

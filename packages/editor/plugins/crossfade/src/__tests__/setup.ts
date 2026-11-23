@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
@@ -55,6 +56,7 @@ export async function setup(
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const dispose = installed

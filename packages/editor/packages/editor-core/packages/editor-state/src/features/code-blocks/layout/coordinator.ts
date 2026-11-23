@@ -1,63 +1,22 @@
-import type {
-	CodeBlockGraphicData,
-	EditorDirectiveDefinition,
-	EventDispatcher,
-	ProjectLevel,
-	State,
-} from '@8f4e/editor-state-types';
-import { partitionCodeBlocksByAlwaysOnTop } from '../partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from '../replaceCodeBlocksInPlace';
+import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
+import type { ProjectMembership } from '../projectMembership';
 import { calculateBlockLayout } from './calculateBlockLayout';
 import type { LayoutRegistry } from './registry';
 
-/** Own group membership, contribution settling, and final geometry before publishing completed layouts. */
+/** Settle contributions and final geometry before publishing completed layouts. */
 export function createLayoutCoordinator(
 	state: State,
 	events: EventDispatcher,
-	directives: EditorDirectiveDefinition[],
-	layout: LayoutRegistry
+	layout: LayoutRegistry,
+	membership: Pick<ProjectMembership, 'getOwner'>
 ) {
-	let owners = new WeakMap<CodeBlockGraphicData, ProjectLevel>();
-	// Ownership snapshots, refreshed only when a project's block collection changes.
-	let projects = new WeakMap<ProjectLevel, readonly CodeBlockGraphicData[]>();
 	const pending = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 	let calculating = false;
 
-	const unregisterProject = (project: ProjectLevel): void => {
-		for (const block of projects.get(project) ?? []) {
-			owners.delete(block);
-			if (block.childProject) unregisterProject(block.childProject);
-		}
-		projects.delete(project);
-	};
-
-	const syncProject = (project: ProjectLevel): void => {
-		const registered = projects.get(project);
-		if (
-			registered?.length === project.blocks.length &&
-			registered.every((block, index) => block === project.blocks[index])
-		)
-			return;
-		unregisterProject(project);
-		projects.set(project, [...project.blocks]);
-		for (const block of project.blocks) {
-			owners.set(block, project);
-			if (block.childProject) syncProject(block.childProject);
-		}
-	};
-
-	const reset = (root: ProjectLevel): void => {
-		owners = new WeakMap();
-		projects = new WeakMap();
-		pending.clear();
-		syncProject(root);
-	};
-
 	const flush = (): void => {
-		if (calculating) return;
+		if (calculating || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		calculating = true;
 		const completed = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
-		const reordered = new Set<ProjectLevel>();
 		try {
 			while (pending.size) {
 				const [project, blocks] = pending.entries().next().value!;
@@ -68,16 +27,13 @@ export function createLayoutCoordinator(
 					continue;
 				}
 				blocks.delete(block);
-				if (owners.get(block) !== project) continue;
-				if (calculateBlockLayout(block, state, directives, layout.getContribution(block))) reordered.add(project);
+				if (membership.getOwner(block) !== project) continue;
+				calculateBlockLayout(block, state, layout.getContribution(block));
 				layout.publish({ codeBlock: block, state });
 				completed.get(project)!.add(block);
 			}
 		} finally {
 			calculating = false;
-		}
-		for (const project of reordered) {
-			replaceCodeBlocksInPlace(project.blocks, partitionCodeBlocksByAlwaysOnTop(project.blocks));
 		}
 		for (const [project, blocks] of completed) {
 			events.dispatch('codeBlockLayoutsChanged', { project, codeBlocks: [...blocks] });
@@ -95,7 +51,7 @@ export function createLayoutCoordinator(
 
 	const refreshBlocks = (blocks: readonly CodeBlockGraphicData[]): void => {
 		for (const block of blocks) {
-			const project = owners.get(block);
+			const project = membership.getOwner(block);
 			if (project) getPendingBlocks(project).add(block);
 		}
 		flush();
@@ -107,11 +63,8 @@ export function createLayoutCoordinator(
 		flush();
 	};
 
-	reset(state.codeBlockRendering.rootProject);
-
 	return {
-		reset,
-		syncProject,
+		clearPending: () => pending.clear(),
 		refreshBlocks,
 		refreshProject,
 	};

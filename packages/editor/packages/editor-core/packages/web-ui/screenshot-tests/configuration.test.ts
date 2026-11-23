@@ -47,22 +47,24 @@ test('applies project appearance settings and restores defaults after project re
 		code: ['module sample', '; @pos 4 2', 'int value 1', 'moduleEnd'],
 	};
 	try {
-		store.set('initialProjectState', {
-			...EMPTY_DEFAULT_PROJECT,
-			execution: [module],
-			entries: ['main'],
-			notes: [
-				{
-					id: 1,
-					code: [
-						'note settings',
-						'; @pos 4 10',
-						'; @config font x11miscfixed6x10',
-						'; @config color.canvas #361845',
-						'noteEnd',
-					],
-				},
-			],
+		events.dispatch('loadProject', {
+			project: {
+				...EMPTY_DEFAULT_PROJECT,
+				execution: [module],
+				entries: ['main'],
+				notes: [
+					{
+						id: 1,
+						code: [
+							'note settings',
+							'; @pos 4 10',
+							'; @config font x11miscfixed6x10',
+							'; @config color.canvas #361845',
+							'noteEnd',
+						],
+					},
+				],
+			},
 		});
 		await expect.poll(() => state.viewport.vGrid).toBe(6);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'sample')!;
@@ -83,7 +85,7 @@ test('applies project appearance settings and restores defaults after project re
 		expect({ x: block.x, y: block.y }).toEqual({ x: 40, y: 36 });
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('edited-appearance');
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT, execution: [module], entries: ['main'] });
+		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT, execution: [module], entries: ['main'] } });
 		await expect.poll(() => state.viewport.vGrid).toBe(8);
 		expect(state.viewport.hGrid).toBe(16);
 		expect(state.editorConfig).toEqual({});

@@ -1,6 +1,12 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, serializeProjectLevel } from '@8f4e/editor-state';
+import initState, {
+	applyCodeBlockSourceEdits,
+	deleteCodeBlocks,
+	serializeProjectLevel,
+	setGridSize,
+} from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import type { RenderGeometry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -37,6 +43,7 @@ async function setup(text = source) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	Object.assign(state.compiler.result, {
 		memoryPlan: compiled.memoryPlan,

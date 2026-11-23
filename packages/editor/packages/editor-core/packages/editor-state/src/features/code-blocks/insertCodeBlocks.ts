@@ -5,9 +5,6 @@ import type { SerializedCodeBlock } from '../../pureHelpers/codeBlockSerializati
 import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
 import { publishProjectChange } from '../project-changes';
 import upsertPos from './features/directives/pos/upsert';
-import { hasDirective } from './features/directives/utils';
-import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
 import getBlockType from './utils/codeParsers/getBlockType';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -35,8 +32,6 @@ function createInsertedCodeBlock(
 		creationIndex,
 		blockType,
 		entry: sourceBlock.entry ?? (blockType === 'module' || sourceBlock.childProject ? 'main' : undefined),
-		disabled: hasDirective(code, 'disabled'),
-		alwaysOnTop: hasDirective(code, 'alwaysOnTop'),
 	});
 
 	if (sourceBlock.childProject !== undefined) {
@@ -96,11 +91,7 @@ export function insertCodeBlocks(
 		newBlocks.push(codeBlock);
 	}
 
-	// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
-	const sorted = partitionCodeBlocksByAlwaysOnTop(state.codeBlockRendering.currentProject.blocks);
-
-	// Trigger single store update with all new blocks
-	replaceCodeBlocksInPlace(state.codeBlockRendering.currentProject.blocks, sorted);
+	// Trigger source preparation and layout for the new blocks.
 	store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 	if (newBlocks.length > 0) {
 		incrementCompilerInputRevision(store);

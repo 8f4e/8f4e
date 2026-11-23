@@ -2,7 +2,8 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
@@ -36,6 +37,7 @@ function restoreSession(directive: string, nested = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const context = {
 		store,
 		events,
@@ -70,7 +72,7 @@ function restoreSession(directive: string, nested = false) {
 	});
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
-	events.dispatch('init');
+	events.dispatch('prepareInitialProject');
 	const state = store.getState();
 	const outer = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outer');
 	const inner = outer?.childProject?.blocks.find(block => block.name === 'inner');

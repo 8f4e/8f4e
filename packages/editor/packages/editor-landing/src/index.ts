@@ -19,9 +19,6 @@ export interface LandingEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Initial source is installed; compilation and plugin loading continue independently. */
-	onInitialProjectLoaded?: () => void;
-	onInitialProjectLoadError?: (error: unknown) => void;
 }
 
 export async function mountLandingEditor(
@@ -34,8 +31,6 @@ export async function mountLandingEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoaded,
-		onInitialProjectLoadError,
 	}: LandingEditorMountOptions = {}
 ): Promise<LandingEditorInstance> {
 	const compiler = createCompilerPlugin();
@@ -48,8 +43,6 @@ export async function mountLandingEditor(
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,
-				onLoaded: onInitialProjectLoaded,
-				onError: onInitialProjectLoadError,
 			}),
 			createDeferredPluginLoaderPlugin({
 				load: () =>
@@ -67,6 +60,5 @@ export async function mountLandingEditor(
 		featureFlags: { projectCreation: false, ...featureFlags, contextMenu: false },
 		renderer: new Engine(canvas),
 	});
-	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

@@ -214,6 +214,8 @@ export interface State {
 	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
+	/** Whether the requested grid dimensions are installed and layout is settled. The previous grid remains usable while pending. */
+	gridSizeReady: boolean;
 	viewport: Viewport;
 }
 

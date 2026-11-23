@@ -5,6 +5,7 @@ import deriveEntryBounds from './deriveEntryBounds';
 export default function entryBounds(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
 	const updateBounds = () => {
+		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		store.set(
 			'codeBlockRendering.entryBounds',
 			deriveEntryBounds(

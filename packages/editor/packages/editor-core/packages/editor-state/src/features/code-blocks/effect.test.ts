@@ -3,6 +3,7 @@ import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
+import { restoreProject } from '~/features/project-changes';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
@@ -10,6 +11,7 @@ import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
+import { applyCodeBlockSourceEdits } from './sourceEdits';
 
 describe('code block rendering cursor selection', () => {
 	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
@@ -333,8 +335,9 @@ entryEnd`);
 			if (name !== 'resolveInitialProjectViewport') return;
 			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
 			expect(request.project).toBe(state.codeBlockRendering.currentProject);
-			expect(request.project.blocks[0]).toMatchObject({ x: 80, y: 320, height: 48 });
-			expect(request.project.blocks[0].width).toBeGreaterThan(0);
+			const main = request.project.blocks.find(block => block.name === 'main')!;
+			expect(main).toMatchObject({ x: 80, y: 320, height: 48 });
+			expect(main.width).toBeGreaterThan(0);
 			request.position = { x: 80, y: 320 };
 		});
 		codeBlockRenderingEffect(
@@ -343,9 +346,9 @@ entryEnd`);
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		store.set('initialProjectState', state.initialProjectState);
+		restoreProject(store, events, state.initialProjectState!, 'replace');
 
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'main']);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(state.viewport).toMatchObject({ x: 80, y: 320 });
 		expect(events.dispatch).toHaveBeenCalledWith('resolveInitialProjectViewport', expect.any(Object));
@@ -378,7 +381,12 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			},
 		});
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 
 		codeBlockRenderingEffect(
 			store,
@@ -387,7 +395,9 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			createLayoutRegistry(() => {})
 		);
 
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: normalA, code: ['module normalA', '; @alwaysOnTop', 'moduleEnd'] },
+		]);
 
 		expect(normalA.alwaysOnTop).toBe(true);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);
@@ -428,7 +438,12 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			},
 		});
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 
 		codeBlockRenderingEffect(
 			store,
@@ -437,7 +452,7 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			createLayoutRegistry(() => {})
 		);
 
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: topB, code: ['module topB', 'moduleEnd'] }]);
 
 		expect(topB.alwaysOnTop).toBe(false);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);

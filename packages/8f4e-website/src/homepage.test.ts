@@ -1,4 +1,4 @@
-import { mountLandingEditor } from '@8f4e/editor-landing';
+import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
 import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
@@ -48,7 +48,7 @@ function setup(response?: () => Promise<Response>) {
 		await started();
 		return await vi.mocked(mountLandingEditor).mock.results[0].value;
 	};
-	return { canvas, frame, started, mounted };
+	return { canvas, frame, started, mounted, dispose };
 }
 
 test('reveals the homepage editor after its initial project load completes', async () => {
@@ -64,11 +64,59 @@ test('reveals the homepage editor after its initial project load completes', asy
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
 });
 
+test.each([false, true])('waits for the editor mount and respects disposal (disposed=%s)', async disposed => {
+	let finish!: (editor: LandingEditorInstance) => void;
+	const pending = new Promise<LandingEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const editor = {
+		dispose: vi.fn(),
+		pauseRendering: vi.fn(),
+		resumeRendering: vi.fn(),
+		releaseRenderingResources: vi.fn(),
+	} as unknown as LandingEditorInstance;
+	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
+	const view = setup(async () => new Response('8f4e/v1'));
+	await view.started();
+	await new Promise(requestAnimationFrame);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+
+	if (disposed) view.dispose();
+	finish(editor);
+	await view.mounted();
+	if (disposed) {
+		expect(editor.dispose).toHaveBeenCalledOnce();
+		await new Promise(requestAnimationFrame);
+		expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+	} else {
+		await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
+	}
+});
+
+test('reports a rejected renderer mount without revealing the editor', async () => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<LandingEditorInstance>((_, reject) => {
+		fail = reject;
+	});
+	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
+	const view = setup(async () => new Response('8f4e/v1'));
+	await view.started();
+	await new Promise(requestAnimationFrame);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+	const error = new Error('Font unavailable');
+	fail(error);
+	await expect(view.mounted()).rejects.toBe(error);
+	await vi.waitFor(() =>
+		expect(view.frame.querySelector('[role="alert"]')?.textContent).toContain('This project could not be loaded.')
+	);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+});
+
 test('reports URL loading failures on the homepage without revealing an empty editor', async () => {
 	const view = setup(async () => {
 		throw new Error('Offline');
 	});
-	await view.mounted();
+	await expect(view.mounted()).rejects.toThrow('Offline');
 	await vi.waitFor(() =>
 		expect(view.frame.querySelector('[role="alert"]')?.textContent).toContain('This project could not be loaded.')
 	);

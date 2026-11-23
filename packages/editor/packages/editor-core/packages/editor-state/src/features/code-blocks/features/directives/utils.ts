@@ -1,53 +1,11 @@
 import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
-import { parseFunctionDocumentationTagLine } from '@8f4e/tokenizer';
+import { parseDirectiveLineRecords, parseFunctionDocumentationTagLine } from '@8f4e/tokenizer';
+
+export { parseDirectiveLineRecords };
 
 export interface DirectiveComment {
 	name: string;
 	args: string[];
-}
-
-type ParsedDirectiveLineRecord = { prefix: '@'; name: string; args: string[]; isTrailing: boolean };
-
-function parseDirectiveCommentSegment(segment: string, isTrailing: boolean): ParsedDirectiveLineRecord[] {
-	const trimmed = segment.trim();
-	if (!trimmed) {
-		return [];
-	}
-
-	const tokens = trimmed.split(/\s+/);
-	const directives: ParsedDirectiveLineRecord[] = [];
-	let current: ParsedDirectiveLineRecord | undefined;
-
-	for (const token of tokens) {
-		const directiveMatch = token.match(/^@(\w+)$/);
-		if (directiveMatch) {
-			const [, name] = directiveMatch;
-
-			if (current) {
-				directives.push(current);
-			}
-
-			current = {
-				prefix: '@',
-				name,
-				args: [],
-				isTrailing,
-			};
-			continue;
-		}
-
-		if (!current) {
-			return [];
-		}
-
-		current.args.push(token);
-	}
-
-	if (current) {
-		directives.push(current);
-	}
-
-	return directives;
 }
 
 function parseDirectiveContinuationArgs(line: string): string[] | undefined {
@@ -58,21 +16,6 @@ function parseDirectiveContinuationArgs(line: string): string[] | undefined {
 
 	const argsSegment = continuationMatch[1]?.trim();
 	return argsSegment ? argsSegment.split(/\s+/) : [];
-}
-
-export function parseDirectiveLineRecords(line: string): ParsedDirectiveLineRecord[] {
-	if (/^\s*;/.test(line)) {
-		// Function documentation is not an editor directive; its prose may itself contain @-prefixed words.
-		if (parseFunctionDocumentationTagLine(line)) return [];
-		return parseDirectiveCommentSegment(line.replace(/^\s*;\s*/, ''), false);
-	}
-
-	const commentStart = line.indexOf(';');
-	if (commentStart === -1) {
-		return [];
-	}
-
-	return parseDirectiveCommentSegment(line.slice(commentStart + 1), true);
 }
 
 /** Ordinary comment text excludes documentation, directives and their continuation syntax. */

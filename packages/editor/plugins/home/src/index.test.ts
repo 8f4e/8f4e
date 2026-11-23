@@ -1,6 +1,13 @@
 import { EventEmitter } from 'node:events';
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import initState, { applyCodeBlockSourceEdits, centerViewportOnCodeBlock } from '@8f4e/editor-state';
+import initState, {
+	applyCodeBlockSourceEdits,
+	centerViewportOnCodeBlock,
+	markGridSizePending,
+	setGridSize,
+	updateViewport,
+} from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectLevel, ViewportBlockAlignment } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,10 +18,12 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup() {
+function setup(withGrid = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	const state = store.getState();
+	if (withGrid) setGridSize(state, events, TEST_GRID_SIZE);
 	const unregisterMenuItem = vi.fn();
 	const registerItem = vi.spyOn(store.menus, 'registerItem').mockReturnValue(unregisterMenuItem);
 	let cleanup: (() => void) | undefined = homePlugin.setup({
@@ -32,13 +41,14 @@ function setup() {
 	};
 	cleanups.push(store.dispose, disposePlugin);
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
-	const state = store.getState();
 	const load = (source: string) =>
 		events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\n${source}`) });
 	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const position = () => ({ x: state.viewport.x, y: state.viewport.y });
 	const expectedPosition = (name: string, alignment: ViewportBlockAlignment) =>
 		centerViewportOnCodeBlock(state.viewport, block(name), { alignment });
+	const gridPending = () => markGridSizePending(state);
+	const gridReady = (grid = { vGrid: 6, hGrid: 12 }) => setGridSize(state, events, grid);
 	const resolveInitial = (
 		project: ProjectLevel = state.codeBlockRendering.currentProject,
 		position = { x: 0, y: 0 }
@@ -58,6 +68,8 @@ function setup() {
 		block,
 		position,
 		expectedPosition,
+		gridPending,
+		gridReady,
 		resolveInitial,
 		menu,
 		unregisterMenuItem,
@@ -76,7 +88,7 @@ describe('home viewport navigation', () => {
 	] as const)('honors @home%s on initial placement without selecting the block', (args, alignment) => {
 		const test = setup();
 		test.load(`note target\n; @pos 100 200\n; @home${args}\nnoteEnd`);
-		expect(test.resolveInitial()).toEqual(test.expectedPosition('target', alignment));
+		expect(test.position()).toEqual(test.expectedPosition('target', alignment));
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 	});
 
@@ -185,7 +197,7 @@ entryEnd`);
 		const rootProject = test.state.codeBlockRendering.rootProject;
 		const expectedRootPosition = test.expectedPosition('rootHome', 'left');
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(test.resolveInitial(group.childProject!)).toEqual(test.expectedPosition('child', 'right'));
+		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
 		expect(test.resolveInitial(rootProject)).toEqual(expectedRootPosition);
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		test.events.dispatch('goHome');
@@ -212,6 +224,86 @@ entryEnd`);
 		expect(test.position()).toEqual({ x: 128, y: 256 });
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(test.unregisterMenuItem).toHaveBeenCalledOnce();
+	});
+});
+
+describe('home navigation while waiting for grid dimensions', () => {
+	it('positions the initial home using the actual grid after layout settles, only once', () => {
+		const test = setup(false);
+		const resolveInitial = vi.fn();
+		test.events.on('resolveInitialProjectViewport', resolveInitial);
+		test.load('note target\n; @pos 100 200\n; @home top\nnoteEnd');
+		expect(test.position()).toEqual({ x: 0, y: 0 });
+		expect(resolveInitial).not.toHaveBeenCalled();
+
+		test.gridReady();
+		expect(test.block('target')).toMatchObject({ x: 600, y: 2400 });
+		expect(test.position()).toEqual(test.expectedPosition('target', 'top'));
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(resolveInitial).toHaveBeenCalledOnce();
+
+		const homePosition = test.position();
+		test.gridPending();
+		test.gridReady(TEST_GRID_SIZE);
+		expect(test.position()).toEqual(homePosition);
+		expect(test.position()).not.toEqual(test.expectedPosition('target', 'top'));
+		expect(resolveInitial).toHaveBeenCalledOnce();
+	});
+
+	it('does not navigate to a home from a replaced project when its replacement has no home', () => {
+		const test = setup(false);
+		test.load('note first\n; @pos 100 200\n; @home left\nnoteEnd');
+		test.load('note latest\n; @pos 300 400\nnoteEnd');
+		test.gridReady();
+		expect(test.position()).toEqual({ x: 0, y: 0 });
+	});
+
+	it('uses the latest home declaration if source changes before the grid is ready', () => {
+		const test = setup(false);
+		test.load(`note first
+; @pos 100 200
+; @home
+noteEnd
+note second
+; @pos 300 400
+noteEnd`);
+		applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+			{ codeBlock: test.block('first'), code: ['note first', '; @pos 100 200', 'noteEnd'] },
+			{ codeBlock: test.block('second'), code: ['note second', '; @pos 300 400', '; @home bottom', 'noteEnd'] },
+		]);
+		test.gridReady();
+		expect(test.position()).toEqual(test.expectedPosition('second', 'bottom'));
+	});
+
+	it('uses the installed grid for an explicit Go @home action while a replacement font loads', () => {
+		const test = setup();
+		test.load(`note target
+; @pos 100 200
+; @home bottom
+; @hide
+First line
+Second line
+Third line
+noteEnd`);
+		updateViewport(test.state, 32, 48, test.events, 'pan');
+		test.gridPending();
+		test.events.dispatch('goHome');
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
+		expect(test.block('target').isCollapsed).toBe(false);
+		expect(test.position()).toEqual(test.expectedPosition('target', 'bottom'));
+		const homePosition = test.position();
+
+		test.gridReady();
+		expect(test.position()).toEqual(homePosition);
+		expect(test.position()).not.toEqual(test.expectedPosition('target', 'bottom'));
+	});
+
+	it('does not contribute initial placement when the plugin is disposed before the grid is installed', () => {
+		const test = setup(false);
+		test.load('note target\n; @pos 100 200\n; @home\nnoteEnd');
+		test.disposePlugin();
+		test.gridReady();
+		expect(test.position()).toEqual({ x: 0, y: 0 });
 	});
 });
 
