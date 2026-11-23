@@ -10,7 +10,7 @@ describe('assertion markers plugin', () => {
 	it('draws current results and layout, and unregisters its drawer on disposal', () => {
 		const drawers = createEditorDrawerRegistry();
 		const events = createMockEventDispatcher();
-		const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+		const store = initState(events, { callbacks: {} });
 		const dispose = assertionMarkersPlugin.setup({
 			store,
 			events,

@@ -20,6 +20,7 @@
     "@8f4e/editor-state": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
     "@8f4e/editor-state-types": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",

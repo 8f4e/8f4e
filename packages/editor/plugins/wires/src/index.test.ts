@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
@@ -48,10 +49,8 @@ async function setup(text = source, installed = true) {
 	};
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
-		callbacks: { getWordFromMemory: address => memoryViews.int32[address] },
-	});
+	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? wiresPlugin.setup({

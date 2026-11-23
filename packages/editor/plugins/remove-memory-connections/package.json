@@ -23,6 +23,7 @@
     "@8f4e/tokenizer": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
     "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",

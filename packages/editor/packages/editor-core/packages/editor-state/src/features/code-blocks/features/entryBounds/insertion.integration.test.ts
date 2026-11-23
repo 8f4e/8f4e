@@ -1,10 +1,12 @@
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { expect, it } from 'vitest';
-import initState, { EMPTY_DEFAULT_PROJECT, updateViewport } from '~/index';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize, updateViewport } from '~/index';
 import { createEvents } from './__tests__/events';
 
 it('assigns inserted source to the containing entry without a presentation plugin', () => {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	try {
 		events.dispatch('loadProject', {

@@ -24,7 +24,9 @@ const fetchMock = vi.fn<typeof fetch>();
 
 async function setup({ source = SOURCE, installed = true, withMemory = true, compile = true } = {}) {
 	const events = createEvents();
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, {
+		callbacks: {},
+	});
 	events.dispatch('enterEditMode');
 	const memory = new Uint8Array(65536);
 	const getMemoryBytes = vi.fn<() => Uint8Array | undefined>(() => (withMemory ? memory : undefined));

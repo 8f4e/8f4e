@@ -31,7 +31,6 @@ export function setup(defaultFont?: Font) {
 	};
 	// This fixture supplies a generic string setting. Font validation belongs to web-ui.
 	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		callbacks: {},
 		editorConfigSchemaContributions: { font: { root: 'font', schema: { type: 'string' } } },
 	});

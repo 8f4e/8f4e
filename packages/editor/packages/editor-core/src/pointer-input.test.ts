@@ -1,4 +1,5 @@
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -13,9 +14,9 @@ function setup(moduleDragging = true) {
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		featureFlags: { moduleDragging },
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,

@@ -1,4 +1,5 @@
 import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProgramArtifacts, WebUiRenderer } from './index';
 import type { EditorPluginContext } from './plugins';
@@ -79,7 +80,7 @@ vi.mock('@8f4e/editor-state', async importOriginal => ({
 vi.mock('@8f4e/web-ui', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/web-ui')>()),
 	default: vi.fn(async (stateStore: EditorPluginContext['store'], stateEvents: EditorPluginContext['events']) => {
-		setGridSize(stateStore.getState(), stateEvents, { vGrid: 8, hGrid: 16 });
+		setGridSize(stateStore.getState(), stateEvents, TEST_GRID_SIZE);
 		return view;
 	}),
 	registerWebUiConfig: vi.fn(),

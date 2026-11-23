@@ -81,7 +81,7 @@ describe('AudioWorklet context lifetime', () => {
 			off: vi.fn(emitter.off.bind(emitter)),
 			dispatch: vi.fn(emitter.emit.bind(emitter)),
 		};
-		const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+		const store = initState(events, { callbacks: {} });
 		const memory = new WebAssembly.Memory({ initial: 1 });
 		const dispose = createAudioRuntimePlugin({
 			getCodeBuffer: () => new Uint8Array(),

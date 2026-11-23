@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, serializeToProject } from '../../index';
+import initState, { applyCodeBlockSourceEdits, serializeToProject, setGridSize } from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -14,9 +15,9 @@ function setup(source: string) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, {
 		callbacks: {},
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		editorConfigSchemaContributions: { test: { root: 'testSetting', schema: { type: 'string', enum: ['sample'] } } },
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	cleanups.push(store.dispose);
 	const load = (project: string | ProjectObjectModel) =>
 		events.dispatch('loadProject', { project: typeof project === 'string' ? parseProjectSource(project) : project });

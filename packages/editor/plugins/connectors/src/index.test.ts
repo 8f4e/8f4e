@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import initWebUi, { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
@@ -42,10 +43,8 @@ async function setup(text = source) {
 		float64: new Float64Array(memory.buffer),
 	};
 	const events = createEvents();
-	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
-		callbacks: { getWordFromMemory: address => memoryViews.int32[address] },
-	});
+	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const drawers = createEditorDrawerRegistry();
 	const registerRenderLayer = vi.spyOn(drawers, 'registerRenderLayer');
 	const dispose = connectorsPlugin.setup({

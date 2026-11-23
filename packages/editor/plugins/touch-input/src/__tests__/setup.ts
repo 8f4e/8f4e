@@ -39,11 +39,7 @@ export function setup(viewportDragging = true, axis?: TouchInputOptions['axis'])
 			}
 		},
 	};
-	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
-		callbacks: {},
-		featureFlags: { viewportDragging },
-	});
+	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	const changed = vi.fn();
 	events.on('viewportChanged', changed);

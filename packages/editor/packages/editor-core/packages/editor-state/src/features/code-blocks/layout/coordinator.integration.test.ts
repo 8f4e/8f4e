@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockLayoutsChangedEvent, State } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks } from '../../../index';
+import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '../../../index';
 import updateViewport from '../../viewport/updateViewport';
 
 const cleanups: Array<() => void> = [];
@@ -15,7 +16,8 @@ function setup(onCompleted: (event: CodeBlockLayoutsChangedEvent) => void = () =
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	// Register before core: completed geometry must not depend on subscription order.
 	events.on('codeBlockLayoutsChanged', onCompleted);
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	cleanups.push(store.dispose);
 	events.dispatch('resize', { canvasWidth: 1024, canvasHeight: 768 });
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });

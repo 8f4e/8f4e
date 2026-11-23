@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { blockAuthoringPlugin } from './index';
@@ -13,7 +14,8 @@ afterEach(() => {
 function setup(installed = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const disposePlugin = installed
 		? blockAuthoringPlugin.setup({
 				store,

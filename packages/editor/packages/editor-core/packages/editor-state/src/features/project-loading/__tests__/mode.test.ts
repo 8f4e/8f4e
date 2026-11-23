@@ -14,7 +14,6 @@ function setup(codeLineSelection = false) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, {
 		callbacks: {},
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		featureFlags: { codeLineSelection },
 	});
 	cleanups.push(store.dispose);

@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { vi } from 'vitest';
@@ -31,7 +32,8 @@ entryEnd`;
 export function setup({ code = source, installed = true, mode = 'edit' as 'edit' | 'view' } = {}) {
 	const events = createEvents();
 	const writeClipboardText = vi.fn(async (_text: string) => {});
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed

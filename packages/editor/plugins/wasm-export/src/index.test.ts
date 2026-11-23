@@ -7,7 +7,7 @@ import { createWasmExportPlugin } from './index';
 const cleanups: Array<() => void> = [];
 function setup(installed = true, mode: 'view' | 'edit' = 'edit') {
 	const events = createEvents();
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const writable = {
 		write: vi.fn().mockResolvedValue(undefined),

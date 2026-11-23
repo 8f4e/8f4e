@@ -35,7 +35,9 @@ entryEnd`
 	const writeMemory = vi.fn((address: number, value: number) => {
 		memory[address] = value;
 	});
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, {
+		callbacks: {},
+	});
 	store.set('compiler.result.compiledModules', compiled.compiledModules);
 	store.set('compiler.result.memoryDefaultsByModuleId', compiled.memoryDefaultsByModuleId);
 	store.set('compiler.result.memoryPlan', compiled.memoryPlan);

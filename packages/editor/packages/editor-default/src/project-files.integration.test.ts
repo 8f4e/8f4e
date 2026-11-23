@@ -31,7 +31,7 @@ function createHandle() {
 }
 function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 	const events = createEvents();
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
 	const handle = createHandle();
 	const browserWindow = {

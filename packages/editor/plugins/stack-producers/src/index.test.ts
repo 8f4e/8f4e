@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { stackProducersPlugin } from './index';
@@ -20,7 +21,8 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const compiled = await compileProject(project, { includeStackAnalysis: true });
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	store.set('initialProjectState', project);
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;

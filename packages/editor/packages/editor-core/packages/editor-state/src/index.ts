@@ -76,7 +76,7 @@ export default function init(
 
 	// Create base state
 	const baseState = {
-		...createDefaultState(options.initialGridSize),
+		...createDefaultState(),
 		callbacks: options.callbacks,
 		featureFlags,
 		editorConfigSchemaContributions: options.editorConfigSchemaContributions ?? {},

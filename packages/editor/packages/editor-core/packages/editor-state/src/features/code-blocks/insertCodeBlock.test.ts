@@ -1,11 +1,13 @@
 import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { expect, it } from 'vitest';
-import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock } from '../../index';
+import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock, setGridSize } from '../../index';
 
 it('returns the created block after entry assignment, source preparation and layout settle', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	try {
 		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT } });
 		events.dispatch('enterEditMode');

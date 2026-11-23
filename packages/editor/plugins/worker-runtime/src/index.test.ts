@@ -33,7 +33,7 @@ function setup(config = ['enabled true'], ready = true) {
 		off: emitter.off.bind(emitter),
 		dispatch: vi.fn(emitter.emit.bind(emitter)),
 	};
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
 	let memory = ready ? new WebAssembly.Memory({ initial: 1 }) : null;
 	const getCodeBuffer = vi.fn(() => new Uint8Array([1, 2, 3]));
 	const dispose = createWorkerRuntimePlugin({ getMemory: () => memory, getCodeBuffer }).setup({

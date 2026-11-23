@@ -1,5 +1,5 @@
-import initState from '@8f4e/editor-state';
-import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { createMockCodeBlock, createMockEventDispatcher, TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { selectionAnimationPlugin } from './index';
@@ -12,7 +12,8 @@ afterEach(() => {
 
 function setup() {
 	const events = createMockEventDispatcher();
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const drawers = createEditorDrawerRegistry();
 	const dispose = selectionAnimationPlugin.setup({
 		store,

@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createCompilerResult } from '../__tests__/compilerResult';
@@ -17,7 +18,8 @@ async function setup(source: string) {
 	const project = parseProjectSource(source);
 	const compiled = await compileProject(project);
 	const events = createEvents();
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const tooltip = createTooltip(store, events);
 	cleanups.push(() => {
 		tooltip.dispose();

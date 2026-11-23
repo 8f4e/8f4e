@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { gapCalculator } from '@8f4e/editor-state';
+import initState, { gapCalculator, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -29,11 +30,11 @@ async function setup(code = source, installed = true, name = 'controls') {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed

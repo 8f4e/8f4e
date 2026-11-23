@@ -9,8 +9,8 @@ touch movement. Web-ui can present a transition without changing the logical vie
 `vGrid` (column width) and `hGrid` (row height).
 
 Grid dimensions start at zero, without assuming a font's cell size. Source loading, configuration resolution, and
-compilation may proceed immediately; pixel layout waits for positive grid dimensions. Hosts with a known grid may
-provide `initialGridSize` to initialize editor-state without a renderer.
+compilation may proceed immediately; pixel layout waits for positive grid dimensions. The renderer supplies its grid
+dimensions through `setGridSize` when they are known.
 
 `markGridSizePending(state)` marks the requested grid unavailable (`state.gridSizeReady = false`) while keeping
 the previously installed dimensions usable for layout and drawing. `setGridSize(state, events, size)` installs the

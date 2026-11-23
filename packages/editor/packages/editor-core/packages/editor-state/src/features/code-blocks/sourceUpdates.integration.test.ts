@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { expect, it, vi } from 'vitest';
@@ -78,7 +79,8 @@ entryEnd`),
 it('continues laying out source while a replacement grid is pending', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 6, hGrid: 12 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, { vGrid: 6, hGrid: 12 });
 	const state = store.getState();
 	const onLayout = vi.fn();
 	const unsubscribeLayout = store.layout.subscribe(onLayout);
@@ -105,7 +107,8 @@ it('continues laying out source while a replacement grid is pending', () => {
 it('announces completed layouts after nested source and contribution updates during project loading', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	const contribution = store.layout.createContribution();
 	const completedLayouts: boolean[] = [];
@@ -150,7 +153,8 @@ noteEnd`),
 it('notifies only affected blocks after dependent layout contributions settle', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: parseProjectSource(`8f4e/v1
 note first

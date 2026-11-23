@@ -4,7 +4,9 @@ import initState, {
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
 	serializeToProject,
+	setGridSize,
 } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initEvents from './events';
@@ -23,7 +25,8 @@ function setup(
 	const events = initEvents();
 	const compilationChanged = vi.fn();
 	events.on('compilationInputChanged', compilationChanged);
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
 	events.dispatch('loadProject', { project });

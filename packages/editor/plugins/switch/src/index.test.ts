@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -44,11 +45,11 @@ async function setup(code = source, installed = true) {
 		else memoryViews.float32[address] = value;
 	});
 	const store = initState(events, {
-		initialGridSize: { vGrid: 8, hGrid: 16 },
 		callbacks: {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = installed

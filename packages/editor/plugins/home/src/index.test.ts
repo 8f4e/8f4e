@@ -7,6 +7,7 @@ import initState, {
 	setGridSize,
 	updateViewport,
 } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectLevel, ViewportBlockAlignment } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -20,7 +21,9 @@ afterEach(() => {
 function setup(withGrid = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, ...(withGrid ? { initialGridSize: { vGrid: 8, hGrid: 16 } } : {}) });
+	const store = initState(events, { callbacks: {} });
+	const state = store.getState();
+	if (withGrid) setGridSize(state, events, TEST_GRID_SIZE);
 	const unregisterMenuItem = vi.fn();
 	const registerItem = vi.spyOn(store.menus, 'registerItem').mockReturnValue(unregisterMenuItem);
 	let cleanup: (() => void) | undefined = homePlugin.setup({
@@ -38,7 +41,6 @@ function setup(withGrid = true) {
 	};
 	cleanups.push(store.dispose, disposePlugin);
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
-	const state = store.getState();
 	const load = (source: string) =>
 		events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\n${source}`) });
 	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
@@ -240,7 +242,7 @@ describe('home navigation while waiting for grid dimensions', () => {
 
 		const homePosition = test.position();
 		test.gridPending();
-		test.gridReady({ vGrid: 8, hGrid: 16 });
+		test.gridReady(TEST_GRID_SIZE);
 		expect(test.position()).toEqual(homePosition);
 		expect(test.position()).not.toEqual(test.expectedPosition('target', 'top'));
 	});
@@ -288,17 +290,14 @@ noteEnd`);
 		expect(test.position()).toEqual({ x: 32, y: 48 });
 	});
 
-	it.each([
-		{ vGrid: 6, hGrid: 12 },
-		{ vGrid: 8, hGrid: 16 },
-	])(
+	it.each([{ vGrid: 6, hGrid: 12 }, TEST_GRID_SIZE])(
 		'waits for the runtime grid to become ready with dimensions $vGrid×$hGrid even if the old dimensions are still positive',
 		grid => {
 			const test = setup();
 			test.load('note previous\n; @pos 100 200\n; @home\nnoteEnd');
 			test.gridPending();
 			test.load('note replacement\n; @pos 300 400\n; @home right\nnoteEnd');
-			expect(test.state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+			expect(test.state.viewport).toMatchObject(TEST_GRID_SIZE);
 			expect(test.position()).toEqual({ x: 0, y: 0 });
 			test.gridReady(grid);
 			expect(test.position()).toEqual(test.expectedPosition('replacement', 'right'));

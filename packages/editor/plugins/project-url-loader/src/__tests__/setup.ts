@@ -6,7 +6,7 @@ import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 export function setupPlugin(plugin: EditorPlugin) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { initialGridSize: { vGrid: 8, hGrid: 16 }, callbacks: {} });
+	const store = initState(events, { callbacks: {} });
 	events.dispatch('enterEditMode');
 	const disposePlugin = plugin.setup({
 		store,

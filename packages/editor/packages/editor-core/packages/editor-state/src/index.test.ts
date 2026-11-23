@@ -1,7 +1,8 @@
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
-import initState from './index';
+import initState, { setGridSize } from './index';
 import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
 
@@ -19,12 +20,12 @@ describe('editor state lifecycle', () => {
 		store.dispose();
 	});
 
-	it('can initialize with an explicitly supplied grid', () => {
+	it('can install a known grid after initialization', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
 			callbacks: {},
-			initialGridSize: { vGrid: 6, hGrid: 12 },
 		});
+		setGridSize(store.getState(), events, { vGrid: 6, hGrid: 12 });
 
 		expect(store.getState().viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
 		expect(store.getState().gridSizeReady).toBe(true);
@@ -80,8 +81,8 @@ describe('editor state lifecycle', () => {
 		};
 		const store = initState(events, {
 			callbacks: {},
-			initialGridSize: { vGrid: 8, hGrid: 16 },
 		});
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		events.dispatch('enterEditMode');
 		const state = store.getState();
 		const codeBlock = createMockCodeBlock({

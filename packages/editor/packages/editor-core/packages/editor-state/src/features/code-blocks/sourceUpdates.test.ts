@@ -1,9 +1,15 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getProjectGroups } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits, matchEditorDirectives, serializeProjectLevel } from '../../index';
+import initState, {
+	applyCodeBlockSourceEdits,
+	matchEditorDirectives,
+	serializeProjectLevel,
+	setGridSize,
+} from '../../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -15,7 +21,8 @@ const source = '8f4e/v1\nentry main\nmodule audio\nint gate 0 ; @future first\nm
 function setup(projectSource = source) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, initialGridSize: { vGrid: 8, hGrid: 16 } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose);
 	const load = (text: string) => events.dispatch('loadProject', { project: parseProjectSource(text) });
