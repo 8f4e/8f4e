@@ -108,8 +108,10 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 					if (target.childProject && getCodeBlockNameFromSource(edit.code) !== target.name) {
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
-					target.code = [...edit.code];
-					updateBlockSource(target, store.directives.definitions);
+					if (target.code.length !== edit.code.length || target.code.some((line, index) => line !== edit.code[index])) {
+						target.code = [...edit.code];
+						updateBlockSource(target, store.directives.definitions);
+					}
 					if (edit.entry !== undefined && target.blockType !== 'module' && !target.childProject)
 						invalid('Only modules and project groups accept an entry');
 					if (target.blockType === 'module') target.entry = edit.entry ?? target.entry ?? 'main';

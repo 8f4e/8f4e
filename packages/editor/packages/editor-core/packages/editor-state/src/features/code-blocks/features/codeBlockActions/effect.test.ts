@@ -221,12 +221,18 @@ describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 		mockState = createMockState();
 		store = createStateManager(mockState);
 		mockEvents = createMockEventDispatcherWithVitest();
+		codeBlockRendering(
+			store,
+			mockEvents,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
 	});
 
 	it('inserts a normal block before existing always-on-top blocks', async () => {
-		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
-		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
+		const existingNormal = createMockCodeBlock({ code: ['module normal1', 'moduleEnd'] });
+		const existingTop = createMockCodeBlock({ code: ['module top1', '; @alwaysOnTop', 'moduleEnd'] });
+		store.set('codeBlockRendering.currentProject.blocks', [existingNormal, existingTop]);
 
 		codeBlockActions(store, mockEvents);
 
@@ -248,9 +254,9 @@ describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 	});
 
 	it('derives alwaysOnTop and inserts an @alwaysOnTop block directly into the top partition', async () => {
-		const existingNormal = createMockCodeBlock({ name: 'normal1', alwaysOnTop: false });
-		const existingTop = createMockCodeBlock({ name: 'top1', alwaysOnTop: true });
-		mockState.codeBlockRendering.currentProject.blocks = [existingNormal, existingTop];
+		const existingNormal = createMockCodeBlock({ code: ['module normal1', 'moduleEnd'] });
+		const existingTop = createMockCodeBlock({ code: ['module top1', '; @alwaysOnTop', 'moduleEnd'] });
+		store.set('codeBlockRendering.currentProject.blocks', [existingNormal, existingTop]);
 
 		codeBlockActions(store, mockEvents);
 

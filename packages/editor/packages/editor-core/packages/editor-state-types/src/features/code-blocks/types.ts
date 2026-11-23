@@ -11,6 +11,7 @@ import type {
 } from '@8f4e/language-spec';
 import type { Position } from '../../shared/types';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
+import type { DirectiveDisplayState } from './features/directives/types';
 
 /**
  * The type of a code block, determined by its content markers.
@@ -64,6 +65,8 @@ export interface CodeBlockGraphicData {
 	/** True for the root project's directly owned project-scope source. */
 	isProjectScope?: boolean;
 	lineNumberColumnWidth: number;
+	/** Display facts derived from source directives, independent of selection and pixel layout. */
+	directiveDisplayState: DirectiveDisplayState;
 	/** Logical rows currently presented by the editor, before render-only glyph resolution. */
 	displayModel: CodeBlockDisplayModel;
 	/** The gaps between lines */

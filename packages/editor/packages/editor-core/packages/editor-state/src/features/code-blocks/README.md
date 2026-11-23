@@ -61,11 +61,11 @@ This feature contains several subfeatures under `features/` that handle specific
 New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
 Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
-Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and derive compiler-relevant block
-flags such as `disabled`, update block type and valid grid coordinates, regenerate environment source, resolve global
-configuration, then refresh layouts. Compiler inputs settle without pixel geometry; layout derives presentation
-and stacking without writing compiler-relevant flags. An incomplete or invalid position directive retains the
-existing block position. Interactive and programmatic edits use this same
+Source changes use `sourceUpdates.ts` in an explicit sequence: parse directives and retain their block flags and
+display facts, update block type and valid grid coordinates, settle stacking, regenerate environment source, resolve
+global configuration, then refresh layouts. Source facts and compiler inputs settle without pixel geometry. Layout
+builds display rows from the retained facts and current selection without rerunning directive handlers. An incomplete
+or invalid position directive retains the existing block position. Interactive and programmatic edits use this same
 path; ordinary layout invalidations do not reparse source. `layout/coordinator.ts` tracks each block's owning
 `ProjectLevel`. Ownership is registered on project loading and block-collection changes, independently of source
 edits and layout notifications. Renaming a group retains its runtime identity while updating its source path.

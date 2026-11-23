@@ -1,25 +1,12 @@
-import type {
-	CodeBlockGraphicData,
-	EditorDirectiveDefinition,
-	EventDispatcher,
-	ProjectLevel,
-	State,
-} from '@8f4e/editor-state-types';
-import { partitionCodeBlocksByAlwaysOnTop } from '../partitionCodeBlocksByAlwaysOnTop';
-import replaceCodeBlocksInPlace from '../replaceCodeBlocksInPlace';
+import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
 import { calculateBlockLayout } from './calculateBlockLayout';
 import type { LayoutRegistry } from './registry';
 
 /** Own group membership, contribution settling, and final geometry before publishing completed layouts. */
-export function createLayoutCoordinator(
-	state: State,
-	events: EventDispatcher,
-	directives: EditorDirectiveDefinition[],
-	layout: LayoutRegistry
-) {
+export function createLayoutCoordinator(state: State, events: EventDispatcher, layout: LayoutRegistry) {
 	let owners = new WeakMap<CodeBlockGraphicData, ProjectLevel>();
 	// Ownership snapshots, refreshed only when a project's block collection changes.
-	let projects = new WeakMap<ProjectLevel, readonly CodeBlockGraphicData[]>();
+	let projects = new WeakMap<ProjectLevel, ReadonlySet<CodeBlockGraphicData>>();
 	const pending = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 	let calculating = false;
 
@@ -31,19 +18,17 @@ export function createLayoutCoordinator(
 		projects.delete(project);
 	};
 
-	const syncProject = (project: ProjectLevel): void => {
+	const syncProject = (project: ProjectLevel): CodeBlockGraphicData[] => {
 		const registered = projects.get(project);
-		if (
-			registered?.length === project.blocks.length &&
-			registered.every((block, index) => block === project.blocks[index])
-		)
-			return;
+		if (registered?.size === project.blocks.length && project.blocks.every(block => registered.has(block))) return [];
+		const added = project.blocks.filter(block => !registered?.has(block));
 		unregisterProject(project);
-		projects.set(project, [...project.blocks]);
+		projects.set(project, new Set(project.blocks));
 		for (const block of project.blocks) {
 			owners.set(block, project);
 			if (block.childProject) syncProject(block.childProject);
 		}
+		return added;
 	};
 
 	const reset = (root: ProjectLevel): void => {
@@ -57,7 +42,6 @@ export function createLayoutCoordinator(
 		if (calculating || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		calculating = true;
 		const completed = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
-		const reordered = new Set<ProjectLevel>();
 		try {
 			while (pending.size) {
 				const [project, blocks] = pending.entries().next().value!;
@@ -69,15 +53,12 @@ export function createLayoutCoordinator(
 				}
 				blocks.delete(block);
 				if (owners.get(block) !== project) continue;
-				if (calculateBlockLayout(block, state, directives, layout.getContribution(block))) reordered.add(project);
+				calculateBlockLayout(block, state, layout.getContribution(block));
 				layout.publish({ codeBlock: block, state });
 				completed.get(project)!.add(block);
 			}
 		} finally {
 			calculating = false;
-		}
-		for (const project of reordered) {
-			replaceCodeBlocksInPlace(project.blocks, partitionCodeBlocksByAlwaysOnTop(project.blocks));
 		}
 		for (const [project, blocks] of completed) {
 			events.dispatch('codeBlockLayoutsChanged', { project, codeBlocks: [...blocks] });

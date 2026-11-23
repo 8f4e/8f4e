@@ -13,12 +13,9 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
-import parsePos from './features/directives/pos/data';
-import { deriveDirectiveFacts } from './features/directives/registry';
-import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
+import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
-import { parseBlockDirectives } from './utils/parseBlockDirectives';
 
 type ClassifiedProjectBlock = ProjectBlock & {
 	blockType: CodeBlockGraphicData['blockType'];
@@ -78,29 +75,18 @@ export function reconstructProject(
 			overrides.childProject !== undefined
 				? previousGroups.get(createChildProjectGroupPath(projectPath, name))
 				: previousBlocks.get(overrides.isProjectScope ? 'project-scope' : JSON.stringify([projectPath, codeBlock.id]));
-		const blockParsedDirectives = parseBlockDirectives(codeBlock.code);
-		const posResult = parsePos(blockParsedDirectives);
-		const gridX = posResult ? posResult.x : previousBlock ? previousBlock.gridX : 0;
-		const gridY = posResult ? posResult.y : previousBlock ? previousBlock.gridY : 0;
-		const directiveState = deriveDirectiveFacts(codeBlock.code, blockParsedDirectives, directives);
-
 		const graphicData = createCodeBlockGraphicData({
 			width: 0,
 			height: 0,
 			code: codeBlock.code,
 			cursor: { col: 0, row: 0, y: 0 },
 			name,
-			gridX,
-			gridY,
-			x: gridX * viewport.vGrid,
-			y: gridY * viewport.hGrid,
+			gridX: previousBlock?.gridX ?? 0,
+			gridY: previousBlock?.gridY ?? 0,
 			lineNumberColumnWidth: 1,
 			creationIndex: codeBlock.id,
 			blockType: codeBlock.blockType,
 			entry: codeBlock.entry,
-			disabled: directiveState.blockState.disabled,
-			alwaysOnTop: directiveState.blockState.alwaysOnTop ?? false,
-			parsedDirectives: blockParsedDirectives,
 			...overrides,
 		});
 		if (previousBlock) recreatedBlocks.set(previousBlock, graphicData);
@@ -148,16 +134,22 @@ export function reconstructProject(
 		const projectCodeBlocks = [...projectScopeBlocks, ...codeBlocks, ...executionBlocks];
 		const previousLevel = previousLevels.get(projectPath);
 
-		// Stable-sort to maintain the partition: normal blocks first, always-on-top last.
 		return {
 			path: projectPath,
 			entries: [...currentProject.entries],
-			blocks: partitionCodeBlocksByAlwaysOnTop(projectCodeBlocks),
+			blocks: projectCodeBlocks,
 			viewport: previousLevel?.viewport,
 			selectedBlock: previousLevel?.selectedBlock ? recreatedBlocks.get(previousLevel.selectedBlock) : undefined,
 		};
 	};
 	const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
+	prepareProjectSources(rootProject, rootProject.blocks, directives);
+	for (const level of walkProjectLevels(rootProject)) {
+		for (const block of level.blocks) {
+			block.x = block.gridX * viewport.vGrid;
+			block.y = block.gridY * viewport.hGrid;
+		}
+	}
 	const currentProject = (previous && findProjectLevel(rootProject, previous.currentProject.path)) || rootProject;
 	return { rootProject, currentProject, nextCodeBlockCreationIndex };
 }

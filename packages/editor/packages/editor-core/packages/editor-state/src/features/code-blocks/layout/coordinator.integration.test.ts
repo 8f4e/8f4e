@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockLayoutsChangedEvent, State } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorDirectiveDefinition, State } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '../../../index';
 import updateViewport from '../../viewport/updateViewport';
 
@@ -107,6 +107,10 @@ entryEnd`);
 it('registers pasted nested blocks and drops ownership when their group is deleted', () => {
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
+	const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>((_, draft) => {
+		draft.blockState.alwaysOnTop = true;
+	});
+	cleanups.push(test.store.directives.register({ name: 'customTop', apply }));
 	test.load('8f4e/v1');
 	test.events.dispatch('enterEditMode');
 	insertCodeBlocks(test.store, {
@@ -118,14 +122,24 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 				gridCoordinates: { x: 0, y: 0 },
 				childProject: {
 					entries: [],
-					blocks: [{ code: ['note nested', 'content', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } }],
+					blocks: [
+						{ code: ['note nested', '; @customTop', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } },
+						{ code: ['note ordinary', 'noteEnd'], gridCoordinates: { x: 2, y: 0 } },
+					],
 				},
 			},
 		],
 	});
 	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
 	const child = group.childProject!;
-	const nested = child.blocks[0];
+	const nested = child.blocks.find(block => block.name === 'nested')!;
+	expect(child.blocks.map(block => block.name)).toEqual(['ordinary', 'nested']);
+	expect(nested.alwaysOnTop).toBe(true);
+	expect(apply).toHaveBeenCalledOnce();
+	apply.mockClear();
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	test.events.dispatch('goToRootProjectGroup');
+	expect(apply).not.toHaveBeenCalled();
 	const contribution = test.store.layout.createContribution();
 	cleanups.push(contribution.dispose);
 	completed.length = 0;
@@ -135,6 +149,7 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 	completed.length = 0;
 	contribution.remove(nested);
 	expect(completed).toEqual([]);
+	expect(apply).not.toHaveBeenCalled();
 });
 
 it('announces an empty group when navigation replaces the visible project slice', () => {

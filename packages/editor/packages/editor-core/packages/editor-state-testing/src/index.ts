@@ -72,6 +72,7 @@ export function createMockCodeBlock(
 		name,
 		code,
 		tabStopsByLine: code.map(() => []),
+		directiveDisplayState: {},
 		displayModel,
 		gaps: new Map(),
 		lineNumberColumnWidth: 1,

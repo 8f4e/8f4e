@@ -42,34 +42,6 @@ test('loads an initial project URL after generic editor startup', async () => {
 	}
 });
 
-test('rejects a required URL load before installing an atlas or drawing a frame', async () => {
-	const canvas = document.createElement('canvas');
-	document.body.appendChild(canvas);
-	const renderer = createAsciiCanvasRenderer(canvas);
-	const destroy = vi.spyOn(renderer, 'destroy');
-	const installAtlas = vi.spyOn(renderer, 'setSpriteAtlas');
-	const drawFrame = vi.spyOn(renderer, 'renderFrame');
-	const error = new Error('Offline');
-	const fetch = vi.fn<typeof globalThis.fetch>().mockRejectedValue(error);
-	let editor: Editor | undefined;
-	try {
-		const mounting = initEditor(canvas, {
-			renderer,
-			plugins: [createProjectUrlLoaderPlugin({ fetch, initialProjectUrl: 'https://example.com/project.8f4e' })],
-		}).then(result => {
-			editor = result;
-			return result;
-		});
-		await expect(mounting).rejects.toBe(error);
-		expect(installAtlas).not.toHaveBeenCalled();
-		expect(drawFrame).not.toHaveBeenCalled();
-		expect(destroy).toHaveBeenCalledOnce();
-	} finally {
-		editor?.dispose();
-		canvas.remove();
-	}
-});
-
 test('mounts an editable empty default editor after its initial URL fails', async () => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 640;

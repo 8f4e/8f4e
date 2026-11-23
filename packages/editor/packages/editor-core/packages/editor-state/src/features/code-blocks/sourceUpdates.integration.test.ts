@@ -1,6 +1,10 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockLayoutsChangedEvent,
+	EditorDirectiveDefinition,
+} from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { expect, it, vi } from 'vitest';
 import initState, { applyCodeBlockSourceEdits, markGridSizePending, serializeToProject, setGridSize } from '~/index';
@@ -159,6 +163,106 @@ it.each([
 		}
 	}
 );
+
+it('derives source directive facts once and reuses them for layout changes', () => {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {} });
+	const state = store.getState();
+	const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>((directive, draft) => {
+		if (directive.args.length > 0) return;
+		draft.blockState.disabled = true;
+		draft.blockState.alwaysOnTop = true;
+		draft.displayState.hideAfterSourceLineIndex = directive.sourceLineIndex;
+	});
+	const unregisterDirective = store.directives.register({ name: 'customFacts', apply });
+	const contribution = store.layout.createContribution();
+	try {
+		events.dispatch('loadProject', {
+			project: parseProjectSource(`8f4e/v1
+constants env
+constantsEnd
+entry main
+module sample
+; @customFacts off
+; hidden content
+moduleEnd
+module sibling
+moduleEnd
+entryEnd`),
+		});
+		const { blocks } = state.codeBlockRendering.currentProject;
+		const block = blocks.find(block => block.name === 'sample')!;
+		const sibling = blocks.find(block => block.name === 'sibling')!;
+		expect(apply).toHaveBeenCalledOnce();
+		expect(block).toMatchObject({ disabled: false, alwaysOnTop: false });
+		expect(block.directiveDisplayState).toEqual({});
+		expect(blocks.indexOf(block)).toBeLessThan(blocks.indexOf(sibling));
+		apply.mockClear();
+
+		const code = ['module sample', '; @customFacts', '; hidden content', 'moduleEnd'];
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
+		expect(apply).toHaveBeenCalledOnce();
+		expect(state.gridSizeReady).toBe(false);
+		expect(block).toMatchObject({
+			disabled: true,
+			alwaysOnTop: true,
+			directiveDisplayState: { hideAfterSourceLineIndex: 1 },
+			height: 0,
+		});
+		expect(blocks.at(-1)).toBe(block);
+		expect(
+			serializeToProject(state).execution.find(block => block.type === 'module' && block.code[0] === code[0])
+		).toMatchObject({
+			disabled: true,
+		});
+		apply.mockClear();
+
+		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
+		expect(block.displayModel.lines.map(line => line.text)).toEqual([code[0], code[1], '...']);
+		expect(block.height).toBe(3 * state.viewport.hGrid);
+		expect(block.isCollapsed).toBe(true);
+
+		events.dispatch('enterEditMode');
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		expect(block.displayModel.lines.map(line => line.text)).toEqual(code);
+		expect(block.height).toBe(code.length * state.viewport.hGrid);
+		expect(block.isCollapsed).toBe(false);
+
+		store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		expect(block.displayModel.lines.map(line => line.text)).toEqual([code[0], code[1], '...']);
+		expect(block.isCollapsed).toBe(true);
+
+		setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+		expect(block.displayModel.lines.map(line => line.text)).toEqual([code[0], code[1], '...']);
+		expect(block.isCollapsed).toBe(true);
+		expect(block.height).toBe(3 * state.viewport.hGrid);
+
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 2 }] });
+		expect(block.height).toBe(5 * state.viewport.hGrid);
+		expect(block.gaps.get(0)?.size).toBe(2);
+		expect(block).toMatchObject({ disabled: true, alwaysOnTop: true });
+		expect(blocks.at(-1)).toBe(block);
+		expect(apply).not.toHaveBeenCalled();
+
+		const updatedCode = [
+			'module sample',
+			'; visible content',
+			'; @customFacts',
+			'; edited hidden content',
+			'moduleEnd',
+		];
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: updatedCode }]);
+		expect(apply).toHaveBeenCalledOnce();
+		expect(block.directiveDisplayState).toEqual({ hideAfterSourceLineIndex: 2 });
+		expect(block.displayModel.lines.map(line => line.text)).toEqual([...updatedCode.slice(0, 3), '...']);
+		expect(block.height).toBe(6 * state.viewport.hGrid);
+	} finally {
+		contribution.dispose();
+		unregisterDirective();
+		store.dispose();
+	}
+});
 
 it('announces completed layouts after nested source and contribution updates during project loading', () => {
 	const emitter = new EventEmitter();

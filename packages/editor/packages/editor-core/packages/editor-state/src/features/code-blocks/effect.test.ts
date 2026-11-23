@@ -11,6 +11,7 @@ import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
+import { applyCodeBlockSourceEdits } from './sourceEdits';
 
 describe('code block rendering cursor selection', () => {
 	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
@@ -379,7 +380,12 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			},
 		});
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 
 		codeBlockRenderingEffect(
 			store,
@@ -388,7 +394,9 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			createLayoutRegistry(() => {})
 		);
 
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module normalA', '; @alwaysOnTop', 'moduleEnd']);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: normalA, code: ['module normalA', '; @alwaysOnTop', 'moduleEnd'] },
+		]);
 
 		expect(normalA.alwaysOnTop).toBe(true);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);
@@ -429,7 +437,12 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			},
 		});
 		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 
 		codeBlockRenderingEffect(
 			store,
@@ -438,7 +451,7 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			createLayoutRegistry(() => {})
 		);
 
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['module topB', 'moduleEnd']);
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: topB, code: ['module topB', 'moduleEnd'] }]);
 
 		expect(topB.alwaysOnTop).toBe(false);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);

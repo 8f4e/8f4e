@@ -82,8 +82,10 @@ Directive subscriptions are deferred; plugins can consume cached records from th
 
 ## Directive and Layout Flow
 
-1. Core parses source into cached records when source changes and derives block/display semantics from its directive definitions.
-2. Core calculates dimensions, display rows, source-line gaps, and cursor coordinates using independent layout requests.
+1. Core parses source into cached records when preparing or changing source and retains block flags and display
+   transforms derived from its directive definitions, including the stacking partition.
+2. Core calculates dimensions, display rows, source-line gaps, and cursor coordinates using the retained facts,
+   current selection, and independent layout requests. It does not evaluate directive handlers again.
 3. Layout subscribers receive the calculated block and current state. A plugin can read directives or other inputs,
    update its requests, and derive private widget geometry.
 4. Changed requests trigger recalculation; unchanged requests do nothing. Core completes these calculations
@@ -152,7 +154,8 @@ The main shared types are in:
 - `packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/features/directives/types.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/registry.ts`
 
-Derived directive state contains `blockState`, `displayState`, and `displayModel`. Layout types live separately in
+Derived directive facts contain `blockState` and `displayState`; the display model is built separately during layout.
+Layout types live separately in
 `editor-state-types/src/features/code-blocks/layout.ts`: `CodeBlockLayoutContribution`, `EditorLayoutContribution`,
 `CodeBlockLayoutContext`, and `EditorLayoutRegistry`. Keep feature-specific widget models private to their plugins.
 
@@ -260,7 +263,7 @@ Plugins own every subscription and contribution disposer. Layout changes do not 
 
 ## Testing
 
-Test semantic directives through `deriveDirectiveState`; keep generic syntax parsing tests in core and feature argument
+Test semantic directives through `deriveDirectiveFacts`; keep generic syntax parsing tests in core and feature argument
 interpretation tests in the owning package. Test layout through actual contribution updates and subscriptions, including
 source/metadata changes, cleanup, and geometry shared by drawing and hit testing. No compatibility directive-layout
 callbacks remain. Use plugin integration tests and browser screenshots to verify visible behavior.

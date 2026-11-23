@@ -227,10 +227,12 @@ describe('public editor editing handle', () => {
 		'keeps @%s flags consistent through public edits and skips unchanged drafts',
 		directive => {
 			const { editing, state, store, events, compilationChanged } = setup();
+			const onCustomDirective = vi.fn();
 			cleanups.push(
 				store.directives.register({
 					name: 'customDisabled',
 					apply: (_, draft) => {
+						onCustomDirective();
 						draft.blockState.disabled = true;
 					},
 				})
@@ -265,6 +267,7 @@ describe('public editor editing handle', () => {
 			const projectRevision = state.projectChange.revision;
 			const compilerRevision = state.compilerInputRevision;
 			const historyLength = state.historyStack.length;
+			onCustomDirective.mockClear();
 			const unchanged = editing.applyEdits({
 				expectedRevision: inserted.revision,
 				edits: [{ type: 'update', blockId, code: [...disabledCode] }],
@@ -276,6 +279,7 @@ describe('public editor editing handle', () => {
 			expect(serializeToProject(state)).toEqual(before);
 			expect(beforeEdit).not.toHaveBeenCalled();
 			expect(compilationChanged).not.toHaveBeenCalled();
+			expect(onCustomDirective).not.toHaveBeenCalled();
 
 			for (const [code, disabled] of [
 				[enabledCode, false],

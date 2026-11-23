@@ -131,12 +131,15 @@ Coordinates are viewport pixels. Core applies entry assignment, grid positioning
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.
 
 Directive handling and layout are independent services. `directives.register(definition)` contributes block or
-source-display behavior through `apply`; core owns generic syntax parsing. A plugin can read parsed directives with
-`matchEditorDirectives(codeBlock.parsedDirectives, definitions)` from `@8f4e/editor-state` without registering behavior
-in the directive registry. Core updates these records when source changes and retains unknown directives for plugins
-installed later. Matching normalizes aliases and preserves source context, including `isTrailing`; all directives
-support standalone and trailing comments. Use `parseBlockDirectives(code)` for incoming source or whole-project
-snapshot scans such as lazy loading. Live-block consumers reuse cached records.
+source-display behavior through `apply`; core owns generic syntax parsing. Register behavior before preparing the
+source it applies to. Core evaluates the registered definitions when preparing or changing block source and retains
+the resulting block flags and display transforms. Layout uses those facts and the current selection to build display
+rows without rerunning directive handlers. A plugin can read parsed directives with
+`matchEditorDirectives(codeBlock.parsedDirectives, definitions)` from `@8f4e/editor-state`
+without registering behavior in the directive registry. Core updates these records when source changes and retains
+unknown directives for plugins installed later. Matching normalizes aliases and preserves source context, including
+`isTrailing`; all directives support standalone and trailing comments. Use `parseBlockDirectives(code)` for incoming
+source or whole-project snapshot scans such as lazy loading. Live-block consumers reuse cached records.
 
 Use `layout.createContribution()` for a plugin-owned set of block layout requests:
 
