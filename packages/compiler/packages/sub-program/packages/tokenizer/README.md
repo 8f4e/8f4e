@@ -14,7 +14,12 @@ The tokenizer owns source-to-AST parsing and syntax-level validation that can be
 It preserves quoted strings and escape sequences and stops at an unquoted comment delimiter. It does not validate
 instruction names or argument shapes; use `parseLine` when a validated AST line is needed.
 
-Public syntax helpers return `{ ok: true, value }` or `{ ok: false, issue }`. The issue contains a syntax code,
+`parseDirectiveLineRecords(line)` recognizes standalone and trailing directive comments, including multiple
+`@name` directives in one comment. It excludes full-line function documentation from directive parsing.
+Project parsing and editor source handling share these lexical records; their callers own directive meaning
+and any multi-line argument handling.
+
+Public syntax validation helpers return `{ ok: true, value }` or `{ ok: false, issue }`. The issue contains a syntax code,
 message and a source-relative line when available. Source-owning callers construct diagnostics from that failure
 data. `compileToAST` requires the source owner and throws a located `CompilerError` on invalid source.
 Each AST line retains its `diagnosticSource`. The AST cache stores document-relative syntax, and each compilation

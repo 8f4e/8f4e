@@ -6,7 +6,7 @@ import { createEditorEditingHandle, getEditorBlockId } from '../../editing';
 import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
 import rendering from '../code-blocks/effect';
-import { directiveDefinitions } from '../code-blocks/features/directives/registry';
+import { createDirectiveRegistry } from '../code-blocks/features/directives/registry';
 import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import projectOperations from './effect';
 
@@ -26,13 +26,14 @@ function setup() {
 			currentProject: { entries: [], path: '', blocks: blocks },
 		},
 	});
-	const store = createStateManager(state);
+	const directives = createDirectiveRegistry();
+	const store = { ...createStateManager(state), directives };
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	rendering(
 		store,
 		events,
-		directiveDefinitions,
+		directives.definitions,
 		createLayoutRegistry(() => {})
 	);
 	const disposeOperations = projectOperations(store, events);

@@ -2,16 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
 	isOrdinaryCommentLine,
 	matchEditorDirectives,
-	parseDirectiveLineRecords,
 	parseDirectiveRecords,
 	serializeDirectiveComments,
 } from './utils';
 
-describe('parseDirectiveLineRecords', () => {
+describe('parseDirectiveRecords', () => {
 	it.each(['; @doc Use @pos for placement.', '; @param value A value marked @watch.', '; @returns @disabled'])(
 		'keeps documentation prose out of editor directives: %s',
 		line => {
-			expect(parseDirectiveLineRecords(line)).toEqual([]);
+			expect(parseDirectiveRecords([line])).toEqual([]);
 			expect(isOrdinaryCommentLine(line)).toBe(false);
 		}
 	);
@@ -22,97 +21,30 @@ describe('parseDirectiveLineRecords', () => {
 		]);
 	});
 
-	it('parses a full-line editor directive', () => {
-		expect(parseDirectiveLineRecords('; @pos 10 20')).toEqual([
-			{
-				prefix: '@',
-				name: 'pos',
-				args: ['10', '20'],
-				isTrailing: false,
-			},
-		]);
-	});
-
-	it('parses a full-line directive with no arguments', () => {
-		expect(parseDirectiveLineRecords('; @disabled')).toEqual([
+	it.each([
+		{ line: '; @disabled', isTrailing: false },
+		{ line: '; @pos 1 2 @disabled', isTrailing: false },
+		{ line: 'module sample ; @disabled', isTrailing: true },
+		{ line: 'int value 1 ; @watch @disabled', isTrailing: true },
+	])('retains source context for disabled directives: $line', ({ line, isTrailing }) => {
+		expect(parseDirectiveRecords(['module sample', line]).filter(record => record.name === 'disabled')).toEqual([
 			{
 				prefix: '@',
 				name: 'disabled',
 				args: [],
-				isTrailing: false,
+				isTrailing,
+				sourceLineIndex: 1,
+				sourceLine: line,
 			},
 		]);
 	});
 
-	it('parses a full-line directive with leading whitespace', () => {
-		expect(parseDirectiveLineRecords('   ; @group myGroup')).toEqual([
-			{
-				prefix: '@',
-				name: 'group',
-				args: ['myGroup'],
-				isTrailing: false,
-			},
-		]);
-	});
-
-	it('parses a trailing inline editor directive', () => {
-		expect(parseDirectiveLineRecords('int foo 1 ; @watch')).toEqual([
-			{
-				prefix: '@',
-				name: 'watch',
-				args: [],
-				isTrailing: true,
-			},
-		]);
-	});
-
-	it('parses a trailing inline directive with arguments', () => {
-		expect(parseDirectiveLineRecords('int foo 1 ; @watch value')).toEqual([
-			{
-				prefix: '@',
-				name: 'watch',
-				args: ['value'],
-				isTrailing: true,
-			},
-		]);
-	});
-
-	it('returns undefined for a plain comment', () => {
-		expect(parseDirectiveLineRecords('; this is a plain comment')).toEqual([]);
-	});
-
-	it('returns undefined for a non-comment line', () => {
-		expect(parseDirectiveLineRecords('push 1')).toEqual([]);
-	});
-
-	it('returns undefined for an empty line', () => {
-		expect(parseDirectiveLineRecords('')).toEqual([]);
-	});
-
-	it('treats a pure directive comment as non-trailing', () => {
-		expect(parseDirectiveLineRecords('; @watch')).toEqual([
-			{
-				prefix: '@',
-				name: 'watch',
-				args: [],
-				isTrailing: false,
-			},
-		]);
-	});
-
-	it('parses multiple full-line directives from one comment line', () => {
-		expect(parseDirectiveLineRecords('; @pos 1 2 @testDirective')).toEqual([
-			{ prefix: '@', name: 'pos', args: ['1', '2'], isTrailing: false },
-			{ prefix: '@', name: 'testDirective', args: [], isTrailing: false },
-		]);
-	});
-
-	it('parses multiple trailing directives from one inline comment', () => {
-		expect(parseDirectiveLineRecords('int foo 1 ; @watch value @testDirective')).toEqual([
-			{ prefix: '@', name: 'watch', args: ['value'], isTrailing: true },
-			{ prefix: '@', name: 'testDirective', args: [], isTrailing: true },
-		]);
-	});
+	it.each(['; mention @disabled in prose', 'int value 1 ; mention @disabled in prose'])(
+		'leaves prose containing a disabled tag untouched: %s',
+		line => {
+			expect(parseDirectiveRecords([line])).toEqual([]);
+		}
+	);
 });
 
 describe('serializeDirectiveComments', () => {

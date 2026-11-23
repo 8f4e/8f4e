@@ -1,12 +1,8 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import parsePos from '../features/code-blocks/features/directives/pos/data';
-import { hasDirective } from '../features/code-blocks/features/directives/utils';
-import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
+import { updateBlockSource } from '../features/code-blocks/sourceUpdates';
 import { createCodeBlockGraphicData } from '../features/code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
-import { parseBlockDirectives } from '../features/code-blocks/utils/parseBlockDirectives';
-import { updateProjectGroupMemoryExposureDeclarations } from '../pureHelpers/projectGroupMemoryExposures';
 import serializeProjectLevel from '../pureHelpers/projectSerialization/serializeProjectLevel';
 import { copyProjectLevel, findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
@@ -18,8 +14,10 @@ export const getEditorBlockId = (block: CodeBlockGraphicData): string =>
 	JSON.stringify([block.projectPath, block.creationIndex]);
 let nextEditorInstance = 0;
 
+type EditingStore = StateManager<State> & { directives: { definitions: EditorDirectiveDefinition[] } };
+
 /** Public commands reuse project restoration, without dispatching an unrelated loadProject. */
-export function createEditorEditingHandle(store: StateManager<State>, events: EventDispatcher) {
+export function createEditorEditingHandle(store: EditingStore, events: EventDispatcher) {
 	const state = store.getState();
 	const instance = `${++nextEditorInstance}-${Math.random().toString(36).slice(2)}`;
 	let disposed = false;
@@ -83,19 +81,14 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					const slice = findProjectLevel(draft, path);
 					if (!slice) invalid('Unknown projectPath');
 					const code = [...edit.code];
-					const pos = parsePos(parseBlockDirectives(code));
-					const type = getBlockType(code);
-					if (edit.entry !== undefined && type !== 'module') invalid('Only module inserts accept an entry');
 					const block = createCodeBlockGraphicData({
 						creationIndex: nextId++,
 						code,
 						projectPath: path,
-						blockType: type,
-						gridX: pos?.x ?? 0,
-						gridY: pos?.y ?? 0,
-						entry: type === 'module' ? (edit.entry ?? 'main') : undefined,
-						disabled: hasDirective(code, 'disabled'),
 					});
+					updateBlockSource(block, store.directives.definitions);
+					if (edit.entry !== undefined && block.blockType !== 'module') invalid('Only module inserts accept an entry');
+					if (block.blockType === 'module') block.entry = edit.entry ?? 'main';
 					slice!.blocks.push(block);
 					createdBlockIds.push(getEditorBlockId(block));
 					continue;
@@ -115,16 +108,8 @@ export function createEditorEditingHandle(store: StateManager<State>, events: Ev
 					if (target.childProject && getCodeBlockNameFromSource(edit.code) !== target.name) {
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
-					const pos = parsePos(parseBlockDirectives(edit.code));
 					target.code = [...edit.code];
-					updateProjectGroupMemoryExposureDeclarations(target);
-					if (pos) {
-						target.gridX = pos.x;
-						target.gridY = pos.y;
-					}
-					target.blockType = getBlockType(target.code);
-					if (target.blockType !== 'unknown') target.isProjectScope = false;
-					target.disabled = hasDirective(target.code, 'disabled');
+					updateBlockSource(target, store.directives.definitions);
 					if (edit.entry !== undefined && target.blockType !== 'module' && !target.childProject)
 						invalid('Only modules and project groups accept an entry');
 					if (target.blockType === 'module') target.entry = edit.entry ?? target.entry ?? 'main';

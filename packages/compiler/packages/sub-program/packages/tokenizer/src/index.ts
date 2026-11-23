@@ -2,6 +2,7 @@ import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type { ASTCache, ASTCacheEntry, CompilerASTLine, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
 
 export { createASTCache } from './cache';
+export { parseDirectiveLineRecords } from './parseDirectiveLineRecords';
 export { parseFunctionDocumentationTagLine } from './parseFunctionDocumentation';
 
 import { hashSource } from './cache';

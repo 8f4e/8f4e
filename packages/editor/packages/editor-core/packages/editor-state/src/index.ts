@@ -1,5 +1,4 @@
 import type {
-	EditorDirectiveRegistry,
 	EditorLayoutRegistry,
 	EditorLoadingRegistry,
 	EditorMenuRegistry,
@@ -56,7 +55,7 @@ export default function init(
 	options: Options
 ): StateManager<State> & {
 	menus: EditorMenuRegistry;
-	directives: EditorDirectiveRegistry;
+	directives: ReturnType<typeof createDirectiveRegistry>;
 	layout: EditorLayoutRegistry;
 	loading: EditorLoadingRegistry;
 } {

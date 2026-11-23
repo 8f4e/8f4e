@@ -35,7 +35,6 @@ function createInsertedCodeBlock(
 		creationIndex,
 		blockType,
 		entry: sourceBlock.entry ?? (blockType === 'module' || sourceBlock.childProject ? 'main' : undefined),
-		disabled: hasDirective(code, 'disabled'),
 		alwaysOnTop: hasDirective(code, 'alwaysOnTop'),
 	});
 

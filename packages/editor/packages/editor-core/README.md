@@ -378,9 +378,10 @@ Callers own edit-mode checks and source transformations; they do not separately 
 Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
 batches an immediate undo step; persistence saves each completed change.
 
-The project-operations effect applies validated API drafts independently of history. It emits `beforeProjectEdit`
-for a changed draft, allowing history to commit pending typing, then publishes the completed checkpoint. Unchanged
-drafts leave pending history and revisions untouched.
+API editing drafts refresh source-owned metadata through the same directive registry as live source edits before
+serialization. The project-operations effect applies validated drafts independently of history. It emits
+`beforeProjectEdit` for a changed draft, allowing history to commit pending typing, then publishes the completed
+checkpoint. Unchanged drafts leave pending history and revisions untouched.
 
 Core project-loading, API operations, and history helpers publish `checkpoint`, `restore`, or `replace` changes after
 snapshot restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
