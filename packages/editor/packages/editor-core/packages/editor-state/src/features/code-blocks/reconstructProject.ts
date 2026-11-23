@@ -12,6 +12,7 @@ import {
 	type ProjectObjectModel,
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
+import getHighestProjectBlockId from '../../pureHelpers/projectSerialization/getHighestProjectBlockId';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
 import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
@@ -30,15 +31,6 @@ const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedPro
 		...currentProject.unknown.map(block => ({ ...block, blockType: 'unknown' as const })),
 	];
 };
-const getHighestProjectBlockId = (currentProject: ProjectObjectModel): number =>
-	Math.max(
-		-1,
-		...collectProjectBlocks(currentProject).map(block => block.id),
-		...currentProject.execution.map(block =>
-			block.type === 'group' ? Math.max(block.id, getHighestProjectBlockId(block)) : block.id
-		)
-	);
-
 /** Rebuild the project tree and reconcile remembered views before the effect installs it. */
 export function reconstructProject(
 	project: ProjectObjectModel,
@@ -76,14 +68,10 @@ export function reconstructProject(
 				? previousGroups.get(createChildProjectGroupPath(projectPath, name))
 				: previousBlocks.get(overrides.isProjectScope ? 'project-scope' : JSON.stringify([projectPath, codeBlock.id]));
 		const graphicData = createCodeBlockGraphicData({
-			width: 0,
-			height: 0,
 			code: codeBlock.code,
-			cursor: { col: 0, row: 0, y: 0 },
 			name,
 			gridX: previousBlock?.gridX ?? 0,
 			gridY: previousBlock?.gridY ?? 0,
-			lineNumberColumnWidth: 1,
 			creationIndex: codeBlock.id,
 			blockType: codeBlock.blockType,
 			entry: codeBlock.entry,

@@ -1,9 +1,8 @@
-import { createMockState } from '@8f4e/editor-state-testing';
+import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createCodeBlockGraphicData } from '../../utils/createCodeBlockGraphicData';
 import codeBlockDragger from './effect';
 
 describe('codeBlockDragger', () => {
@@ -69,7 +68,7 @@ describe('codeBlockDragger', () => {
 		])('drags the clicked block and snaps it to the world grid at viewport ($x, $y)', ({ x, y }) => {
 			state.viewport.x = x;
 			state.viewport.y = y;
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -128,14 +127,14 @@ describe('codeBlockDragger', () => {
 	});
 
 	it('moves plugin-selected targets and persists their positions with one change', () => {
-		const first = createCodeBlockGraphicData({
+		const first = createMockCodeBlock({
 			code: ['module first', 'moduleEnd'],
 			gridX: 5,
 			gridY: 5,
 			x: 50,
 			y: 100,
 		});
-		const second = createCodeBlockGraphicData({
+		const second = createMockCodeBlock({
 			code: ['module second', 'moduleEnd'],
 			gridX: 20,
 			gridY: 10,
@@ -172,7 +171,7 @@ describe('codeBlockDragger', () => {
 
 	describe('stopPropagation behavior', () => {
 		it('should set stopPropagation to true while dragging', () => {
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -221,7 +220,7 @@ describe('codeBlockDragger', () => {
 		it('should not drag if moduleDragging feature is disabled', () => {
 			state.featureFlags.moduleDragging = false;
 
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -254,7 +253,7 @@ describe('codeBlockDragger', () => {
 		it('selects without dragging when editing is disabled', () => {
 			state.editorMode = 'view';
 
-			const blockBehind = createCodeBlockGraphicData({
+			const blockBehind = createMockCodeBlock({
 				code: ['module behind', 'moduleEnd'],
 				gridX: 20,
 				gridY: 20,
@@ -263,7 +262,7 @@ describe('codeBlockDragger', () => {
 				creationIndex: 1,
 				blockType: 'module',
 			});
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -312,7 +311,7 @@ describe('codeBlockDragger', () => {
 
 	describe('selected code block', () => {
 		it('should set selected code block on pointerdown', () => {
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -343,7 +342,7 @@ describe('codeBlockDragger', () => {
 		});
 
 		it('should not update block position metadata on click without drag', () => {
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -381,7 +380,7 @@ describe('codeBlockDragger', () => {
 		});
 
 		it('should clear selected code block when mousedown is on empty space', () => {
-			const block1 = createCodeBlockGraphicData({
+			const block1 = createMockCodeBlock({
 				code: ['module test1', 'moduleEnd'],
 				gridX: 5,
 				gridY: 5,
@@ -416,7 +415,7 @@ describe('codeBlockDragger', () => {
 
 	describe('alwaysOnTop z-order partitioning', () => {
 		it('brings a normal block forward without crossing into the always-on-top partition', () => {
-			const normal1 = createCodeBlockGraphicData({
+			const normal1 = createMockCodeBlock({
 				code: ['module normal1', 'moduleEnd'],
 				name: 'normal1',
 				gridX: 5,
@@ -429,7 +428,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 				alwaysOnTop: false,
 			});
-			const normal2 = createCodeBlockGraphicData({
+			const normal2 = createMockCodeBlock({
 				code: ['module normal2', 'moduleEnd'],
 				name: 'normal2',
 				gridX: 25,
@@ -442,7 +441,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 				alwaysOnTop: false,
 			});
-			const top1 = createCodeBlockGraphicData({
+			const top1 = createMockCodeBlock({
 				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
 				name: 'top1',
 				gridX: 45,
@@ -476,7 +475,7 @@ describe('codeBlockDragger', () => {
 		});
 
 		it('brings an always-on-top block forward within the always-on-top partition', () => {
-			const normal1 = createCodeBlockGraphicData({
+			const normal1 = createMockCodeBlock({
 				code: ['module normal1', 'moduleEnd'],
 				name: 'normal1',
 				gridX: 5,
@@ -489,7 +488,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 				alwaysOnTop: false,
 			});
-			const top1 = createCodeBlockGraphicData({
+			const top1 = createMockCodeBlock({
 				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
 				name: 'top1',
 				gridX: 25,
@@ -502,7 +501,7 @@ describe('codeBlockDragger', () => {
 				blockType: 'module',
 				alwaysOnTop: true,
 			});
-			const top2 = createCodeBlockGraphicData({
+			const top2 = createMockCodeBlock({
 				code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
 				name: 'top2',
 				gridX: 45,

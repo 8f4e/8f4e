@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
@@ -34,14 +35,19 @@ describe('editor state lifecycle', () => {
 	});
 
 	it('keeps configuration notes in their project and clears them when an empty project is loaded', () => {
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 		const store = initState(events, {
 			callbacks: {},
 		});
 		store.set('editorConfigSchemaContributions.test', { root: 'testSetting', schema: { type: 'string' } });
 		const code = ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'];
 
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] });
+		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] } });
 
 		expect(
 			store
@@ -51,7 +57,7 @@ describe('editor state lifecycle', () => {
 		).toEqual([code]);
 		expect(store.getState().editorConfig.testSetting).toBe('sample');
 
-		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
+		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 
 		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
 			[]

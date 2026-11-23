@@ -1,7 +1,7 @@
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import gaps from './gaps';
 import type { BlockLayoutDraft } from './layout/types';
-import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 
 describe('gaps', () => {
 	it('inserts contributed gaps using display rows', async () => {
@@ -19,7 +19,7 @@ describe('gaps', () => {
 			verticalSpaceAfterSourceLine: [],
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
-		const graphicData = createCodeBlockGraphicData({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
+		const graphicData = createMockCodeBlock({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
 
 		gaps(graphicData, blockLayout);
 
@@ -42,7 +42,7 @@ describe('gaps', () => {
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 3 });
-		const graphicData = createCodeBlockGraphicData({ code: ['module foo', 'int value', 'moduleEnd'] });
+		const graphicData = createMockCodeBlock({ code: ['module foo', 'int value', 'moduleEnd'] });
 
 		gaps(graphicData, blockLayout);
 
@@ -63,7 +63,7 @@ describe('gaps', () => {
 			verticalSpaceAfterSourceLine: [],
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
-		const graphicData = createCodeBlockGraphicData({
+		const graphicData = createMockCodeBlock({
 			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
 		});
 

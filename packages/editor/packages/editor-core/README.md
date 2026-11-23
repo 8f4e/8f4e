@@ -345,9 +345,11 @@ The binary-assets plugin owns `bin` configuration, browser fetching and caching,
 memory copies, download-indicator lifecycle, and generated asset-size constants. Its factory receives a getter for current
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
-Plugins can contribute source to the generated `env` constants block with
-`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines and recompiles when generated source changes. Each plugin removes its own contribution key
-when disposed. The registry contains source lines only; feature metadata stays private to its owner.
+Plugins can contribute source to the generated root-project `env` constants block with
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines before
+restoring a project and recompiles when generated source changes. Contributions update the root block regardless of
+which project group is visible. Each plugin removes its own contribution key when disposed. The registry contains
+source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry

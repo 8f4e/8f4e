@@ -1,6 +1,7 @@
 import type { EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
+import { prepareProjectEnvironmentSource } from '../code-blocks/features/auto-env-constants/source';
 import {
 	cancelPendingProjectViewport,
 	placeCurrentProjectViewport,
@@ -32,13 +33,20 @@ export function restoreProject(
 	const state = store.getState();
 	const previousKind = restoring.get(state);
 	if (!previousKind) {
-		// Capture the departing view once, before environment source can trigger nested reconstruction.
+		// Capture the departing view once before rebuilding the project.
 		if (kind !== 'replace') rememberCurrentProjectView(state);
 		cancelPendingProjectViewport(state);
 	}
 	restoring.set(state, kind);
 	try {
-		store.set('initialProjectState', project);
+		store.set(
+			'initialProjectState',
+			prepareProjectEnvironmentSource(
+				project,
+				state.envConstantContributions,
+				kind === 'replace' ? undefined : state.codeBlockRendering.rootProject
+			)
+		);
 		if (kind === 'replace') store.set('editorMode', state.globalEditorDirectives.mode ?? 'view');
 	} finally {
 		if (previousKind) restoring.set(state, previousKind);

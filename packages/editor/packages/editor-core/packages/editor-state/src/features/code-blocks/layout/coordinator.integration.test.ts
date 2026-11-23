@@ -70,6 +70,8 @@ note nested
 ; @pos 1 2
 nested content
 noteEnd
+note sibling
+noteEnd
 groupEnd
 entryEnd`);
 	const root = test.state.codeBlockRendering.currentProject;
@@ -98,6 +100,12 @@ entryEnd`);
 	expect(nested.projectPath).toBe('renamed');
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 49, verticalSpaceAfterSourceLine: [] });
+	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	completed.length = 0;
+	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		{ codeBlock: nested, code: ['note nested', '; @pos 1 2', '; @alwaysOnTop', 'nested content', 'noteEnd'] },
+	]);
+	expect(child.blocks.map(block => block.name)).toEqual(['sibling', 'nested']);
 	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	expect(test.state.viewport).toMatchObject({ x: 160, y: 320 });
@@ -150,6 +158,53 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 	contribution.remove(nested);
 	expect(completed).toEqual([]);
 	expect(apply).not.toHaveBeenCalled();
+});
+
+it('resolves source configuration for actual edits and membership changes, not group navigation', () => {
+	const test = setup();
+	const validate = vi.fn(() => undefined);
+	test.store.set('editorConfigValidators.test', {
+		knownPaths: ['test.root', 'test.child'],
+		matches: path => path.startsWith('test.'),
+		validate,
+	});
+	test.load(`8f4e/v1
+note configuration
+; @config test.root enabled
+noteEnd
+entry main
+group child
+groupEnd
+entryEnd`);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	test.events.dispatch('goToRootProjectGroup');
+	test.events.dispatch('openProjectGroup', { codeBlock: group });
+	expect(validate).not.toHaveBeenCalled();
+
+	test.events.dispatch('enterEditMode');
+	const [block] = insertCodeBlocks(test.store, {
+		x: 0,
+		y: 0,
+		blocks: [
+			{ code: ['note configuration', '; @config test.child inserted', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } },
+		],
+	});
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'inserted' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	applyCodeBlockSourceEdits(test, [
+		{ codeBlock: block, code: ['note configuration', '; @config test.child edited', 'noteEnd'] },
+	]);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'edited' });
+	expect(validate).toHaveBeenCalled();
+	validate.mockClear();
+	deleteCodeBlocks(test.store, [block]);
+	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
+	expect(validate).toHaveBeenCalled();
 });
 
 it('announces an empty group when navigation replaces the visible project slice', () => {

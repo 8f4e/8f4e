@@ -5,8 +5,7 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import { describe, expect, it, vi } from 'vitest';
-import { createMockState } from '../../../pureHelpers/testingUtils/testUtils';
-import { createCodeBlockGraphicData } from './createCodeBlockGraphicData';
+import { createMockCodeBlock, createMockState } from '../../../pureHelpers/testingUtils/testUtils';
 import { getCompiledFunctionForCodeBlock, getCompiledFunctionsByBlockId } from './getCompiledFunctionForCodeBlock';
 
 function createTestCompiledFunction(name: string, projectBlockId: number): CompiledFunction {
@@ -70,9 +69,9 @@ describe('getCompiledFunctionForCodeBlock', () => {
 		const state = createMockState({
 			compiler: { result: { compiledFunctions } },
 		});
-		const blockA = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 10 });
-		const blockB = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 20 });
-		const missingBlock = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 99 });
+		const blockA = createMockCodeBlock({ blockType: 'function', creationIndex: 10 });
+		const blockB = createMockCodeBlock({ blockType: 'function', creationIndex: 20 });
+		const missingBlock = createMockCodeBlock({ blockType: 'function', creationIndex: 99 });
 		const valuesSpy = vi.spyOn(Object, 'values');
 
 		try {
@@ -102,7 +101,7 @@ describe('getCompiledFunctionForCodeBlock', () => {
 				},
 			},
 		});
-		const block = createCodeBlockGraphicData({ blockType: 'function', creationIndex: 7 });
+		const block = createMockCodeBlock({ blockType: 'function', creationIndex: 7 });
 
 		expect(getCompiledFunctionForCodeBlock(block, state)).toBe(first);
 	});

@@ -3,15 +3,12 @@ import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 import buildDisplayModel from '../buildDisplayModel';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
 
-export function createCodeBlockGraphicData(
-	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
-): CodeBlockGraphicData {
-	const { cursorY, ...overrides } = options;
-
+/** Create a block before its source facts and pixel layout have settled. */
+export function createCodeBlockGraphicData(overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
 	const x = overrides.x ?? 0;
 	const y = overrides.y ?? 0;
-	const width = overrides.width ?? 100;
-	const height = overrides.height ?? 100;
+	const width = overrides.width ?? 0;
+	const height = overrides.height ?? 0;
 	const code = overrides.code ?? [];
 	const name = (overrides.name ?? getCodeBlockNameFromSource(code)) || 'code-block';
 	const projectPath = overrides.projectPath ?? ROOT_PROJECT_GROUP_PATH;
@@ -19,11 +16,10 @@ export function createCodeBlockGraphicData(
 	const gridX = overrides.gridX ?? 0;
 	const gridY = overrides.gridY ?? 0;
 
-	const cursorYValue = cursorY ?? height / 2;
 	const cursor = overrides.cursor ?? {
 		col: 0,
 		row: 0,
-		y: cursorYValue,
+		y: 0,
 	};
 
 	const defaults: CodeBlockGraphicData = {

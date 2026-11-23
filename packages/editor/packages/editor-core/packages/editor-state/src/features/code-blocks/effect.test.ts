@@ -335,8 +335,9 @@ entryEnd`);
 			if (name !== 'resolveInitialProjectViewport') return;
 			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
 			expect(request.project).toBe(state.codeBlockRendering.currentProject);
-			expect(request.project.blocks[0]).toMatchObject({ x: 80, y: 320, height: 48 });
-			expect(request.project.blocks[0].width).toBeGreaterThan(0);
+			const main = request.project.blocks.find(block => block.name === 'main')!;
+			expect(main).toMatchObject({ x: 80, y: 320, height: 48 });
+			expect(main.width).toBeGreaterThan(0);
 			request.position = { x: 80, y: 320 };
 		});
 		codeBlockRenderingEffect(
@@ -347,7 +348,7 @@ entryEnd`);
 		);
 		restoreProject(store, events, state.initialProjectState!, 'replace');
 
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'main']);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		expect(state.viewport).toMatchObject({ x: 80, y: 320 });
 		expect(events.dispatch).toHaveBeenCalledWith('resolveInitialProjectViewport', expect.any(Object));

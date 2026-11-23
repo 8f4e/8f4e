@@ -1,8 +1,9 @@
 # Project Loading
 
 Core owns generic project replacement and New Project. Hosts and plugins dispatch `loadProject` with `{ project }`,
-where project is the compiler-owned `ProjectObjectModel`. The action sets `state.initialProjectState`; block effects
-populate the project and compilation follows its normal subscriptions. Modules and groups occupy the same ordered
+where project is the compiler-owned `ProjectObjectModel`. Core prepares the generated root `constants env` source
+before setting `state.initialProjectState` once; block effects populate the project and compilation follows its
+normal subscriptions. Modules and groups occupy the same ordered
 `execution` sequence; group ids are retained as editor creation indices. Loading an unpositioned group preserves its
 source instead of adding a position directive that changes execution order. The `new` action dispatches `loadProject` with
 an empty project so plugins can observe the same replacement path.

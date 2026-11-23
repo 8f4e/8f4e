@@ -1,20 +1,12 @@
-import type {
-	CodeBlockGraphicData,
-	EditorDirectiveDefinition,
-	EventDispatcher,
-	ProjectLevel,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorDirectiveDefinition, ProjectLevel } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
-import type { StateManager } from '@8f4e/state-manager';
 import { updateProjectGroupMemoryExposureDeclarations } from '../../pureHelpers/projectGroupMemoryExposures';
-import { updateProjectLevelPath, walkProjectLevels } from '../../pureHelpers/projectTree';
-import resolveEditorConfig from '../global-editor-directives/resolve';
+import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
 import { getTabStopsByLine } from '../text-geometry/tabLayout';
-import { updateEnvConstantsBlock } from './features/auto-env-constants/effect';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveFacts } from './features/directives/registry';
 import { partitionCodeBlocksByAlwaysOnTop } from './partitionCodeBlocksByAlwaysOnTop';
+import type { ProjectMembership } from './projectMembership';
 import replaceCodeBlocksInPlace from './replaceCodeBlocksInPlace';
 import getBlockType from './utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -78,29 +70,17 @@ export function prepareProjectSources(
 	partitionProjectBlocks(project);
 }
 
-/** Settle dependent source and layout state after the source metadata and stacking are complete. */
-export function finishSourceUpdate(
-	store: StateManager<State>,
-	events: EventDispatcher,
-	refreshLayouts: () => void
-): void {
-	updateEnvConstantsBlock(store, events);
-	resolveEditorConfig(store);
-	refreshLayouts();
-}
-
 /** Refresh edited blocks without reapplying directives from unchanged child projects. */
 export function refreshBlockSources(
-	store: StateManager<State>,
-	events: EventDispatcher,
 	blocks: readonly CodeBlockGraphicData[],
 	directives: EditorDirectiveDefinition[],
-	refreshLayouts: () => void
+	membership: Pick<ProjectMembership, 'getOwner'>
 ): void {
-	for (const block of blocks) updateBlockSource(block, directives);
-	const changed = new Set(blocks);
-	for (const project of walkProjectLevels(store.getState().codeBlockRendering.rootProject)) {
-		if (project.blocks.some(block => changed.has(block))) partitionProjectBlocks(project);
+	const projects = new Set<ProjectLevel>();
+	for (const block of blocks) {
+		updateBlockSource(block, directives);
+		const owner = membership.getOwner(block);
+		if (owner) projects.add(owner);
 	}
-	finishSourceUpdate(store, events, refreshLayouts);
+	for (const project of projects) partitionProjectBlocks(project);
 }

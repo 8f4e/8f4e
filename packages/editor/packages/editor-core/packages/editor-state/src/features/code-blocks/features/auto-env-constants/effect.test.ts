@@ -1,201 +1,233 @@
 import { EventEmitter } from 'node:events';
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { getProjectModules } from '@8f4e/language-spec';
-import createStateManager from '@8f4e/state-manager';
-import { beforeEach, describe, expect, test } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
-import createDefaultState from '~/pureHelpers/state/createDefaultState';
-import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
-import codeBlockRendering from '../../effect';
-import { createLayoutRegistry } from '../../layout/registry';
-import { directiveDefinitions } from '../directives/registry';
-import autoEnvConstants from './effect';
+import { parseProjectSource } from '@8f4e/project-preparser';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import initState, { applyCodeBlockSourceEdits, serializeToProject, setGridSize } from '~/index';
 
-const AUTO_ENV_BLOCK_NAME = 'env';
-const PROJECT_WITH_CODE_BLOCK: ProjectObjectModel = {
-	...EMPTY_DEFAULT_PROJECT,
-	execution: [{ type: 'module', id: 0, code: ['module demo', 'moduleEnd'], entry: 'main' }],
-};
+const disposers: Array<() => void> = [];
+afterEach(() => {
+	while (disposers.length) disposers.pop()!();
+});
 
-function createGraphicEnvBlock(code: string[], overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
-	return createMockCodeBlock({
-		name: AUTO_ENV_BLOCK_NAME,
-		code,
-		creationIndex: 0,
-		blockType: 'constants',
-		width: 0,
-		height: 0,
-		gridX: 0,
-		gridY: 0,
-		lineNumberColumnWidth: 2,
-		...overrides,
-	});
+function setup() {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {} });
+	disposers.push(store.dispose);
+	const state = store.getState();
+	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
+	const env = () =>
+		state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env' && block.blockType === 'constants')!;
+	return { store, state, events, load, env };
 }
 
-describe('autoEnvConstants', () => {
-	let store: ReturnType<typeof createStateManager<State>>;
-	let state: State;
-	let events: EventDispatcher;
+describe('auto-managed root environment source', () => {
+	it('normalizes a project without env once before publishing source and compiler inputs', () => {
+		const { store, state, events, load, env } = setup();
+		store.set('envConstantContributions.provider', ['const PROVIDED 50']);
+		const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>();
+		disposers.push(store.directives.register({ name: 'sample', apply }));
+		const onInitialProject = vi.fn();
+		const onRootProject = vi.fn();
+		const onCompilerInput = vi.fn(() => serializeToProject(state));
+		store.subscribe('initialProjectState', onInitialProject);
+		store.subscribe('codeBlockRendering.rootProject', onRootProject);
+		events.on('compilationInputChanged', onCompilerInput);
 
-	beforeEach(() => {
-		const baseState = {
-			...createDefaultState(),
-			envConstantContributions: { provider: ['const PROVIDED 50'] },
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-			},
-		};
-		store = createStateManager<State>(baseState);
-		state = store.getState();
-		const emitter = new EventEmitter();
-		events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-		codeBlockRendering(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
+		load(`8f4e/v1
+entry main
+group child
+entry main
+module demo
+; @sample
+moduleEnd
+entryEnd
+groupEnd
+entryEnd`);
+
+		expect(apply).toHaveBeenCalledOnce();
+		expect(onInitialProject).toHaveBeenCalledOnce();
+		expect(onRootProject).toHaveBeenCalledOnce();
+		expect(onCompilerInput).toHaveBeenCalledOnce();
+		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
+		expect(state.compilerInputRevision).toBe(1);
+		expect(state.initialProjectState!.constants[0]).toMatchObject({ code: env().code, id: env().creationIndex });
+		expect(env().code).toContain('const PROVIDED 50');
+		expect(env().code).toContain('; Auto-generated environment constants');
+		expect(env().code).toContain('; @pos 0 0');
+		expect(onCompilerInput.mock.results[0].value.constants[0].code).toEqual(env().code);
+		const nested = state.codeBlockRendering.rootProject.blocks.find(block => block.childProject)!.childProject!
+			.blocks[0];
+		expect(env().creationIndex).toBeGreaterThan(nested.creationIndex);
 	});
 
-	test('should create env constants block when project is loaded', () => {
-		autoEnvConstants(store, events);
-
-		// Trigger project load
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		expect(envBlock).toBeDefined();
-		expect(envBlock?.code[0]).toBe('constants env');
-	});
-
-	test('should place env block at beginning of codeBlocks array', () => {
-		const projectWithBlocks: ProjectObjectModel = {
-			...EMPTY_DEFAULT_PROJECT,
-			execution: [{ type: 'module', id: 0, code: ['module test', 'moduleEnd'], entry: 'main' }],
-		};
-
-		store.set('initialProjectState', projectWithBlocks);
-		autoEnvConstants(store, events);
-
-		// Trigger another project load to add env block
-		store.set('initialProjectState', { ...projectWithBlocks });
-
-		expect(state.initialProjectState?.constants[0].code[0]).toBe('constants env');
-		expect(getProjectModules(state.initialProjectState)[0].code[0]).toBe('module test');
-	});
-
-	test('includes contributed constants when a project is loaded', () => {
-		autoEnvConstants(store, events);
+	it('preserves the ID and saved position of an existing env while discarding obsolete generated content', () => {
+		const { store, state, events, env } = setup();
 		store.set('envConstantContributions.provider', ['const PROVIDED 123']);
-		store.set('initialProjectState', { ...PROJECT_WITH_CODE_BLOCK });
-		const env = state.initialProjectState?.constants.find(block => block.code[0] === 'constants env');
-		expect(env?.code).toContain('const PROVIDED 123');
+		const project = parseProjectSource(`8f4e/v1
+constants env
+; @pos 12 -7
+; @disabled
+const OBSOLETE 1
+constantsEnd
+entry main
+module demo
+moduleEnd
+entryEnd`);
+		const previousCode = [...project.constants[0].code];
+		const onCompilerInput = vi.fn();
+		events.on('compilationInputChanged', onCompilerInput);
+
+		events.dispatch('loadProject', { project });
+
+		expect(project.constants[0].code).toEqual(previousCode);
+		expect(project.constants[0].disabled).toBe(true);
+		expect(state.initialProjectState!.constants).toHaveLength(1);
+		expect(state.initialProjectState!.constants[0]).toMatchObject({ id: project.constants[0].id, code: env().code });
+		expect(state.initialProjectState!.constants[0]).not.toHaveProperty('disabled');
+		expect(env()).toMatchObject({ creationIndex: project.constants[0].id, gridX: 12, gridY: -7 });
+		expect(env().disabled).toBe(false);
+		expect(env().code).toContain('const PROVIDED 123');
+		expect(env().code).not.toContain('const OBSOLETE 1');
+		expect(getProjectModules(state.initialProjectState!)[0].code[0]).toBe('module demo');
+		expect(onCompilerInput).toHaveBeenCalledOnce();
 	});
 
-	test('should include warning comment', () => {
-		autoEnvConstants(store, events);
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envBlock = state.initialProjectState?.constants.find(block => block.code[0]?.includes('constants env'));
-		const warningLine = envBlock?.code.find(line => line.includes('Auto-generated'));
-		expect(warningLine).toBeDefined();
-	});
-
-	test('should update when contributed constants change', () => {
-		autoEnvConstants(store, events);
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		// Simulate codeBlockRendering populating codeBlocks from initialProjectState.
-		const envSource = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
-		store.set('codeBlockRendering.currentProject.blocks', [createGraphicEnvBlock(envSource.code)]);
-		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
-		expect(state.codeBlockRendering.currentProject.blocks[0].code.filter(line => line.startsWith('const '))).toEqual([
-			'const PROVIDED 77',
+	it('does not mistake other constants or module names for the environment block', () => {
+		const { store, state, load, env } = setup();
+		store.set('envConstantContributions.provider', ['const PROVIDED 42']);
+		load(`8f4e/v1
+constants environment
+const KEEP 3
+constantsEnd
+entry main
+module env
+int keep 1
+moduleEnd
+entryEnd`);
+		const source = serializeToProject(state);
+		expect(source.constants).toHaveLength(2);
+		expect(source.constants.find(block => block.code[0] === 'constants environment')?.code).toEqual([
+			'constants environment',
+			'const KEEP 3',
+			'constantsEnd',
 		]);
+		expect(getProjectModules(source)[0].code).toEqual(['module env', 'int keep 1', 'moduleEnd']);
+		expect(env().code).toContain('const PROVIDED 42');
 	});
 
-	test('includes contributed source from multiple providers when creating env', () => {
-		autoEnvConstants(store, events);
+	it('keeps contributions in configured order and refreshes or removes them without changing position', () => {
+		const { store, state, load, env } = setup();
 		store.set('envConstantContributions', {
 			first: ['const FIRST 1'],
-			provider: state.envConstantContributions.provider,
+			provider: ['const PROVIDED 50'],
 			empty: [],
 			second: ['; second provider', 'const SECOND 2'],
 		});
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-		const env = state.initialProjectState?.constants.find(block => block.code[0] === 'constants env');
-		expect(env?.code).toEqual(
-			expect.arrayContaining(['const PROVIDED 50', 'const FIRST 1', '; second provider', 'const SECOND 2'])
-		);
-		expect(env?.code.filter(line => line.startsWith('const '))).toEqual([
+		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
+		expect(env().code.filter(line => line.startsWith('const '))).toEqual([
 			'const FIRST 1',
 			'const PROVIDED 50',
 			'const SECOND 2',
 		]);
-	});
-
-	test('refreshes contributed constants and removes contributions without changing the env position', () => {
-		autoEnvConstants(store, events);
-		store.set('codeBlockRendering.currentProject.blocks', [
-			createGraphicEnvBlock(['constants env', '; @pos 7 9', 'constantsEnd']),
-		]);
-		store.set('envConstantContributions.example', ['const PROVIDED 42']);
-		const env = state.codeBlockRendering.currentProject.blocks[0];
-		expect(env.code).toContain('const PROVIDED 42');
-		expect(env.code).toContain('; @pos 7 9');
-		store.set('envConstantContributions', { provider: state.envConstantContributions.provider });
-		expect(env.code).not.toContain('const PROVIDED 42');
-		expect(env.code).toContain('; @pos 7 9');
-	});
-
-	test('should preserve existing @pos when regenerating env block', () => {
-		autoEnvConstants(store, events);
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
-
-		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
-		const codeWithCustomPos = [...envCodeBlock.code];
-		codeWithCustomPos[1] = '; @pos 12 -7';
-		store.set('codeBlockRendering.currentProject.blocks', [
-			createGraphicEnvBlock(codeWithCustomPos, { gridX: 12, gridY: -7 }),
-		]);
+		expect(env().code).toContain('; second provider');
+		const original = env();
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
-
-		const envBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
-		expect(envBlock?.code).toContain('; @pos 12 -7');
+		expect(env()).toBe(original);
+		expect(env().code).toContain('const PROVIDED 77');
+		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
+		expect(env().code).not.toContain('const FIRST 1');
+		expect(env().code).not.toContain('const SECOND 2');
+		expect(env().code).toContain('; @pos 7 9');
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
+		expect(state.projectChange.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
 	});
 
-	test('should default @pos to 0,0 when existing env block has no @pos', () => {
-		autoEnvConstants(store, events);
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT });
+	it('leaves authored nested env blocks alone on navigation and refreshes the hidden root environment', () => {
+		const { store, state, events, load, env } = setup();
+		setGridSize(state, events, TEST_GRID_SIZE);
+		load(`8f4e/v1
+constants env
+; @pos 7 9
+constantsEnd
+entry main
+group child
+constants env
+const KEEP 3
+constantsEnd
+entry main
+module env
+int keep 1
+moduleEnd
+entryEnd
+groupEnd
+entryEnd`);
+		const rootEnvironment = env();
+		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.childProject)!;
+		const authored = group.childProject!.blocks;
+		const previousCode = authored.map(block => [...block.code]);
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		const onLayoutChanged = vi.fn();
+		events.on('codeBlockLayoutsChanged', onLayoutChanged);
 
-		const envCodeBlock = state.initialProjectState!.constants.find(block => block.code[0] === 'constants env')!;
-		const codeWithoutPos = envCodeBlock.code.filter(line => !line.includes('@pos'));
-		store.set('codeBlockRendering.currentProject.blocks', [createGraphicEnvBlock(codeWithoutPos)]);
+		events.dispatch('openProjectGroup', { codeBlock: group });
+		expect(state.codeBlockRendering.currentProject).toBe(group.childProject);
+		expect(authored.map(block => block.code)).toEqual(previousCode);
+		expect(state.projectChange.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
+		onLayoutChanged.mockClear();
+
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
+		expect(authored.map(block => block.code)).toEqual(previousCode);
+		expect(rootEnvironment.code).toContain('const PROVIDED 77');
+		expect(rootEnvironment.code).toContain('; @pos 7 9');
+		expect(onLayoutChanged).toHaveBeenCalledWith({
+			project: state.codeBlockRendering.rootProject,
+			codeBlocks: [rootEnvironment],
+		});
+		expect(state.projectChange.revision).toBe(revision + 1);
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 
-		const envBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === AUTO_ENV_BLOCK_NAME);
-		expect(envBlock?.code).toContain('; @pos 0 0');
+		events.dispatch('goToRootProjectGroup');
+		expect(authored.map(block => block.code)).toEqual(previousCode);
+		expect(state.projectChange.revision).toBe(revision + 1);
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
-	test('should not duplicate env block if already exists', () => {
-		const projectWithEnv: ProjectObjectModel = {
-			...EMPTY_DEFAULT_PROJECT,
-			constants: [
-				{
-					id: 0,
-					code: ['constants env', 'const PROVIDED 123', 'constantsEnd'],
-				},
-			],
-		};
+	it('overwrites manual generated-source edits in the original source batch and accepts position changes', () => {
+		const { store, state, events, load, env } = setup();
+		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
+		const onChanged = vi.fn();
+		events.on('codeBlockSourcesChanged', onChanged);
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
 
-		store.set('initialProjectState', projectWithEnv);
-		autoEnvConstants(store, events);
+		applyCodeBlockSourceEdits({ store, events }, [
+			{ codeBlock: env(), code: ['constants env', '; @pos 12 15', 'const USER 5', 'constantsEnd'] },
+		]);
 
-		// Trigger another load
-		store.set('initialProjectState', { ...projectWithEnv });
+		expect(env().code).not.toContain('const USER 5');
+		expect(env().code).toContain('; @pos 12 15');
+		expect(env()).toMatchObject({ gridX: 12, gridY: 15 });
+		expect(onChanged).toHaveBeenCalledOnce();
+		expect(state.projectChange.revision).toBe(revision + 1);
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+	});
 
-		const envBlocks = state.initialProjectState?.constants.filter(block => block.code[0]?.includes('constants env'));
-		expect(envBlocks?.length).toBe(1);
+	it('keeps the previous valid env position during same-project restoration with invalid source', () => {
+		const { state, events, load, env } = setup();
+		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
+		const project = serializeToProject(state);
+		project.constants[0].code = ['constants env', '; @pos incomplete', 'constantsEnd'];
+		const id = env().creationIndex;
+		events.dispatch('applyProjectEdit', { project });
+		expect(env()).toMatchObject({ creationIndex: id, gridX: 7, gridY: 9 });
+		expect(env().code).toContain('; @pos 7 9');
 	});
 });

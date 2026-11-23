@@ -31,11 +31,17 @@ describe('history tracking effect', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const dispose = historyTracking(store, events);
 		vi.mocked(events.on).mock.calls.find(([name]) => name === 'undo')![1](undefined);
-		expect(state.initialProjectState).toBe(EMPTY_DEFAULT_PROJECT);
+		expect(state.initialProjectState).toMatchObject({
+			...EMPTY_DEFAULT_PROJECT,
+			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
+		});
 		expect(state.redoStack).toHaveLength(1);
 		const redoSnapshot = state.redoStack[0];
 		vi.mocked(events.on).mock.calls.find(([name]) => name === 'redo')![1](undefined);
-		expect(state.initialProjectState).toBe(redoSnapshot);
+		expect(state.initialProjectState).toMatchObject({
+			...redoSnapshot,
+			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
+		});
 		expect(state.historyStack).toHaveLength(1);
 		dispose?.();
 	});
@@ -75,8 +81,12 @@ describe('history tracking with real project mutations', () => {
 		]);
 	}
 
+	function currentModule() {
+		return state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'module')!;
+	}
+
 	function selectedBlockCode(): string[] {
-		return state.codeBlockRendering.currentProject.blocks[0].code;
+		return currentModule().code;
 	}
 
 	beforeEach(() => {
@@ -136,8 +146,8 @@ describe('history tracking with real project mutations', () => {
 
 		// Re-selecting the same block was the original bug trigger: it used to
 		// schedule a history snapshot that wiped the redo stack after 1s.
-		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.currentProject.blocks[0]);
-		store.set('codeBlockRendering.selectedCodeBlock.code', state.codeBlockRendering.currentProject.blocks[0].code);
+		store.set('codeBlockRendering.selectedCodeBlock', currentModule());
+		store.set('codeBlockRendering.selectedCodeBlock.code', currentModule().code);
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
 		await vi.advanceTimersByTimeAsync(2000);
 
@@ -154,7 +164,7 @@ describe('history tracking with real project mutations', () => {
 		dispatch('undo');
 		expect(state.redoStack).toHaveLength(1);
 
-		const restored = state.codeBlockRendering.currentProject.blocks[0];
+		const restored = currentModule();
 		state.codeBlockRendering.selectedCodeBlock = restored;
 		restored.cursor = { row: 1, col: 6, y: 16 };
 		replaceLine(1, 'push 13');
@@ -203,7 +213,7 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()).toEqual(['module other', 'moduleEnd']);
 
 		// The next edit is measured against the loaded project as its baseline.
-		const loaded = state.codeBlockRendering.currentProject.blocks[0];
+		const loaded = currentModule();
 		state.codeBlockRendering.selectedCodeBlock = loaded;
 		loaded.cursor = { row: 0, col: 11, y: 0 };
 		replaceLine(0, 'module other;');
@@ -238,7 +248,7 @@ describe('history tracking with real project mutations', () => {
 				],
 			},
 		});
-		const loaded = state.codeBlockRendering.currentProject.blocks[0];
+		const loaded = currentModule();
 		store.set('editorMode', 'edit');
 		codeBlockDragger(store, events);
 		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);

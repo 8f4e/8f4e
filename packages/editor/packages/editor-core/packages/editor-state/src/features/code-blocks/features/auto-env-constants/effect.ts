@@ -1,99 +1,18 @@
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { ProjectBlock } from '@8f4e/language-spec';
+import type { EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { applyCodeBlockSourceEdits } from '../../sourceEdits';
+import { findEnvironmentBlock, generateEnvironmentSource } from './source';
 
-const AUTO_ENV_CONSTANTS_BLOCK_NAME = 'env';
-
-const isEnvBlock = (block: CodeBlockGraphicData): boolean => block.name === AUTO_ENV_CONSTANTS_BLOCK_NAME;
-
-/**
- * Generates the content for the auto-managed environment constants block.
- * This block provides runtime environment values as constants that can be used throughout the program.
- *
- * @param state - The current editor state
- * @param position - Grid position to write into the generated source.
- * @returns Array of code lines for the constants block
- */
-function generateEnvConstantsBlock(state: State, position: { x: number; y: number }): string[] {
-	const lines: string[] = [];
-
-	// Header with warning
-	lines.push(`constants ${AUTO_ENV_CONSTANTS_BLOCK_NAME}`);
-	lines.push(`; @pos ${position.x} ${position.y}`);
-	lines.push('; Auto-generated environment constants');
-	lines.push('; Changes will be overwritten');
-	lines.push('');
-
-	const contributions = Object.values(state.envConstantContributions).filter(lines => lines.length > 0);
-	for (const [index, contribution] of contributions.entries()) {
-		if (index > 0) lines.push('');
-		lines.push(...contribution);
-	}
-
-	lines.push('');
-	lines.push('constantsEnd');
-
-	return lines;
-}
-
-/** Regenerate environment source using the block position established by source metadata refresh. */
-export function updateEnvConstantsBlock(store: StateManager<State>, events: EventDispatcher): void {
-	const state = store.getState();
-	const targetBlock = state.codeBlockRendering.currentProject.blocks.find(block => isEnvBlock(block));
-
-	if (!targetBlock) {
-		return;
-	}
-	const newCode = generateEnvConstantsBlock(state, { x: targetBlock.gridX, y: targetBlock.gridY });
-
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: targetBlock, code: newCode }]);
-}
-
-/** Ensure environment source exists on load and refresh it when its contributions change. */
+/** Refresh the root environment source when its runtime contributions change, regardless of the visible level. */
 export default function autoEnvConstants(store: StateManager<State>, events: EventDispatcher): void {
-	/**
-	 * Ensures env block exists in project when loaded.
-	 * This only runs once when the project is loaded.
-	 */
-	function ensureEnvBlockInProject(): void {
+	store.subscribe('envConstantContributions', () => {
 		const state = store.getState();
-
-		if (!state.initialProjectState) {
-			return;
-		}
-
-		// Check if env block already exists
-		const hasEnvBlock = state.initialProjectState.constants.some(
-			block => block.code.length > 0 && block.code[0].includes(`constants ${AUTO_ENV_CONSTANTS_BLOCK_NAME}`)
-		);
-
-		if (!hasEnvBlock) {
-			// Add the generated block at the beginning of the hoisted constants collection.
-			const allIds = [
-				...state.initialProjectState.execution,
-				...state.initialProjectState.functions,
-				...state.initialProjectState.constants,
-				...state.initialProjectState.includes,
-				...state.initialProjectState.notes,
-				...state.initialProjectState.unknown,
-			].map(block => block.id);
-			const envBlock: ProjectBlock = {
-				id: Math.max(-1, ...allIds) + 1,
-				code: generateEnvConstantsBlock(state, { x: 0, y: 0 }),
-			};
-
-			store.set('initialProjectState', {
-				...state.initialProjectState,
-				constants: [envBlock, ...state.initialProjectState.constants],
-			});
-		}
-	}
-
-	// Ensure env block exists when project is loaded
-	store.subscribe('initialProjectState', ensureEnvBlockInProject);
-
-	// Update env block code in codeBlockRendering.currentProject.blocks when contributed environment constants change.
-	// This avoids the infinite loop caused by modifying initialProjectState.
-	store.subscribe('envConstantContributions', () => updateEnvConstantsBlock(store, events));
+		const environment = findEnvironmentBlock(state.codeBlockRendering.rootProject);
+		if (!environment) return;
+		const code = generateEnvironmentSource(state.envConstantContributions, {
+			x: environment.gridX,
+			y: environment.gridY,
+		});
+		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: environment, code }]);
+	});
 }

@@ -264,7 +264,7 @@ entryEnd`),
 	}
 });
 
-it('announces completed layouts after nested source and contribution updates during project loading', () => {
+it('announces completed layouts after environment source preparation and contribution updates during project loading', () => {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });

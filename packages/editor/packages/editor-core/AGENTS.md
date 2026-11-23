@@ -33,8 +33,9 @@
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
   Keep remembered viewport and selection in memory. Use canonical detached project snapshots from
   `pureHelpers/projectSerialization`. Project-save owns the text file format.
-- The layout coordinator tracks ownership per project level. Publish `codeBlockLayoutsChanged { project, codeBlocks }`
-  after the affected blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
+- Project membership tracks ownership per project level independently of source preparation and layout. The layout
+  coordinator uses that membership to publish `codeBlockLayoutsChanged { project, codeBlocks }` after the affected
+  blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.
 
