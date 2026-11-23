@@ -62,6 +62,7 @@ describe('code-block copy and paste', () => {
 						{ code: ['module same', '; @pos 4 5', 'moduleEnd'], entry: 'audio', gridCoordinates: { x: 4, y: 5 } },
 						{
 							code: ['group inner', '; @pos 8 9', 'groupEnd'],
+							entry: 'audio',
 							gridCoordinates: { x: 8, y: 9 },
 							childProject: { entries: ['quiet'], blocks: [] },
 						},
@@ -89,6 +90,7 @@ describe('code-block copy and paste', () => {
 			entries: ['quiet'],
 			blocks: [],
 		});
+		expect(again.childProject?.blocks[1].entry).toBe('audio');
 		expect(again.code).toEqual(['group voices', '; @pos 20 8', 'groupEnd']);
 	});
 	it('handles a structured single ordinary block as a block payload', async () => {

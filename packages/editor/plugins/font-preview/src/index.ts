@@ -1,5 +1,4 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { resolveEditorConfig } from '@8f4e/editor-state';
 import { DEFAULT_FONT, FONT_NAMES, type Font } from '@8f4e/sprite-generator';
 import { installFontNotice } from './notice';
 
@@ -45,7 +44,7 @@ export function createFontPreviewPlugin({
 				inputTarget.removeEventListener('keydown', onKeydown);
 				events.off('loadProject', resetPreview);
 				store.unsubscribe('editorConfig.font', retainPreview);
-				if (previewFont !== undefined) resolveEditorConfig(store);
+				if (previewFont !== undefined) store.projectEdits.refreshConfig();
 			};
 		},
 	};

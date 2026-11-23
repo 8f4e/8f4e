@@ -115,19 +115,19 @@ noteEnd`);
 		const { state, store, events } = setup(twoNotes);
 		const left = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: left, code: left.code.map(line => line.replace('@pos 0 0', '@pos 100 0')) },
 		]);
 		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 0', '@pos 100 -')) },
 		]);
 		expect({ x: left.gridX, y: left.gridY }).toEqual({ x: 100, y: 0 });
 		expect({ x: left.x, y: left.y }).toEqual({ x: 100 * state.viewport.vGrid, y: 0 });
 		expect(state.editorConfig.export?.fileName).toBe('left');
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) },
 		]);
 		events.dispatch('undo');
@@ -194,14 +194,14 @@ groupEnd
 entryEnd`);
 		expect(state.editorConfig.export?.fileName).toBe('rootRight');
 		const outer = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'outer')!;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: outer, code: outer.code.map(line => line.replace('@pos 10 0', '@pos 30 0')) },
 		]);
 		expect(state.editorConfig.export?.fileName).toBe('childRight');
 		events.dispatch('openProjectGroup', { codeBlock: outer });
 		expect(state.editorConfig.export?.fileName).toBe('childRight');
 		const childRight = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'childRight')!;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: childRight, code: childRight.code.map(line => line.replace('@pos 1000 0', '@pos -10 0')) },
 		]);
 		expect(state.editorConfig.export?.fileName).toBe('leaf');

@@ -119,7 +119,7 @@ noteEnd`;
 			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note patch'))).toBe(true)
 		);
 		editor.pauseRendering();
-		const original = state.initialProjectState;
+		const original = state.codeBlockRendering.rootProject;
 		canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: 16, clientY: 16, bubbles: true }));
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.action === 'importProject')).toBe(true));
 		const openIndex = state.contextMenu.items.findIndex(item => item.action === 'importProject');
@@ -127,7 +127,7 @@ noteEnd`;
 		const openY = 24 + openIndex * state.viewport.hGrid;
 		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: openX, clientY: openY, bubbles: true }));
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: openX, clientY: openY, bubbles: true }));
-		await vi.waitFor(() => expect(state.initialProjectState).not.toBe(original));
+		await vi.waitFor(() => expect(state.codeBlockRendering.rootProject).not.toBe(original));
 		expect(state.editorMode).toBe('view');
 		editor.state.editorMode = 'edit';
 		canvas.focus();

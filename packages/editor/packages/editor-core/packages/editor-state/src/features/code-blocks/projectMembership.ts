@@ -39,6 +39,7 @@ export function createProjectMembership(root: ProjectLevel) {
 		reset,
 		syncProject,
 		getOwner: (block: CodeBlockGraphicData) => owners.get(block),
+		hasProject: (project: ProjectLevel) => projects.has(project),
 	};
 }
 

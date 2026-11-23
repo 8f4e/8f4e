@@ -1,28 +1,33 @@
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
-import createStateManager from '@8f4e/state-manager';
-import { beforeEach, describe, expect, it, type MockInstance } from 'vitest';
-import projectLoading from '~/features/project-loading/effect';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import serializeProjectLevel from '~/pureHelpers/projectSerialization/serializeProjectLevel';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
+import { createMockCodeBlock } from '~/pureHelpers/testingUtils/testUtils';
+import initState, { setGridSize } from '../../index';
 import { deleteCodeBlocks } from './deleteCodeBlocks';
-import codeBlockRendering from './effect';
-import { directiveDefinitions } from './features/directives/registry';
 import { insertCodeBlocks } from './insertCodeBlocks';
-import { createLayoutRegistry } from './layout/registry';
 
 describe('creationIndex', () => {
 	let mockState: State;
-	let store: ReturnType<typeof createStateManager<State>>;
-	let mockEvents: ReturnType<typeof createMockEventDispatcherWithVitest>;
+	let store: ReturnType<typeof initState>;
+	let emitter: EventEmitter;
 
 	beforeEach(() => {
-		mockState = createMockState();
-		store = createStateManager(mockState);
-		mockEvents = createMockEventDispatcherWithVitest();
+		emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		store = initState(events, { callbacks: {} });
+		mockState = store.getState();
+		setGridSize(mockState, events, TEST_GRID_SIZE);
+		events.dispatch('enterEditMode');
 	});
+	afterEach(() => store.dispose());
 
 	describe('source insertion', () => {
 		it('assigns increasing identities and does not reuse deleted identities', () => {
@@ -45,18 +50,6 @@ describe('creationIndex', () => {
 
 	describe('projectLoading', () => {
 		it('should assign creationIndex to code blocks when loading a project', () => {
-			projectLoading(store, mockEvents);
-			codeBlockRendering(
-				store,
-				mockEvents,
-				directiveDefinitions,
-				createLayoutRegistry(() => {})
-			);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');
-			const loadProjectCallback = loadProjectCall![1];
-
 			const projectWithBlocks: ProjectObjectModel = {
 				...EMPTY_DEFAULT_PROJECT,
 				execution: [
@@ -66,7 +59,7 @@ describe('creationIndex', () => {
 				],
 			};
 
-			loadProjectCallback({ project: projectWithBlocks });
+			emitter.emit('loadProject', { project: projectWithBlocks });
 
 			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
 			expect(codeBlocks).toHaveLength(4);
@@ -82,18 +75,6 @@ describe('creationIndex', () => {
 		});
 
 		it('should reset creationIndex counter when loading a new project', () => {
-			projectLoading(store, mockEvents);
-			codeBlockRendering(
-				store,
-				mockEvents,
-				directiveDefinitions,
-				createLayoutRegistry(() => {})
-			);
-
-			const onCalls = (mockEvents.on as unknown as MockInstance).mock.calls;
-			const loadProjectCall = onCalls.find(call => call[0] === 'loadProject');
-			const loadProjectCallback = loadProjectCall![1];
-
 			// Set a high nextCodeBlockCreationIndex
 			mockState.codeBlockRendering.nextCodeBlockCreationIndex = 100;
 
@@ -102,7 +83,7 @@ describe('creationIndex', () => {
 				execution: [{ type: 'module', id: 0, code: ['module a', 'moduleEnd'], entry: 'main' }],
 			};
 
-			loadProjectCallback({ project });
+			emitter.emit('loadProject', { project });
 
 			// Counter should account for the authored module and generated environment.
 			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(2);

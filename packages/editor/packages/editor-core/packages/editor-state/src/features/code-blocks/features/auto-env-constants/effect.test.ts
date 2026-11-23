@@ -29,10 +29,8 @@ describe('auto-managed root environment source', () => {
 		store.set('envConstantContributions.provider', ['const PROVIDED 50']);
 		const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>();
 		disposers.push(store.directives.register({ name: 'sample', apply }));
-		const onInitialProject = vi.fn();
 		const onRootProject = vi.fn();
 		const onCompilerInput = vi.fn(() => serializeToProject(state));
-		store.subscribe('initialProjectState', onInitialProject);
 		store.subscribe('codeBlockRendering.rootProject', onRootProject);
 		events.on('compilationInputChanged', onCompilerInput);
 
@@ -48,12 +46,11 @@ groupEnd
 entryEnd`);
 
 		expect(apply).toHaveBeenCalledOnce();
-		expect(onInitialProject).toHaveBeenCalledOnce();
 		expect(onRootProject).toHaveBeenCalledOnce();
 		expect(onCompilerInput).toHaveBeenCalledOnce();
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expect(state.compilerInputRevision).toBe(1);
-		expect(state.initialProjectState!.constants[0]).toMatchObject({ code: env().code, id: env().creationIndex });
+		expect(serializeToProject(state).constants[0]).toMatchObject({ code: env().code, id: env().creationIndex });
 		expect(env().code).toContain('const PROVIDED 50');
 		expect(env().code).toContain('; Auto-generated environment constants');
 		expect(env().code).toContain('; @pos 0 0');
@@ -84,14 +81,15 @@ entryEnd`);
 
 		expect(project.constants[0].code).toEqual(previousCode);
 		expect(project.constants[0].disabled).toBe(true);
-		expect(state.initialProjectState!.constants).toHaveLength(1);
-		expect(state.initialProjectState!.constants[0]).toMatchObject({ id: project.constants[0].id, code: env().code });
-		expect(state.initialProjectState!.constants[0]).not.toHaveProperty('disabled');
+		const source = serializeToProject(state);
+		expect(source.constants).toHaveLength(1);
+		expect(source.constants[0]).toMatchObject({ id: project.constants[0].id, code: env().code });
+		expect(source.constants[0]).not.toHaveProperty('disabled');
 		expect(env()).toMatchObject({ creationIndex: project.constants[0].id, gridX: 12, gridY: -7 });
 		expect(env().disabled).toBe(false);
 		expect(env().code).toContain('const PROVIDED 123');
 		expect(env().code).not.toContain('const OBSOLETE 1');
-		expect(getProjectModules(state.initialProjectState!)[0].code[0]).toBe('module demo');
+		expect(getProjectModules(source)[0].code[0]).toBe('module demo');
 		expect(onCompilerInput).toHaveBeenCalledOnce();
 	});
 
@@ -208,7 +206,7 @@ entryEnd`);
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: env(), code: ['constants env', '; @pos 12 15', 'const USER 5', 'constantsEnd'] },
 		]);
 
@@ -221,12 +219,12 @@ entryEnd`);
 	});
 
 	it('keeps the previous valid env position during same-project restoration with invalid source', () => {
-		const { state, events, load, env } = setup();
+		const { state, store, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
 		const project = serializeToProject(state);
 		project.constants[0].code = ['constants env', '; @pos incomplete', 'constantsEnd'];
 		const id = env().creationIndex;
-		events.dispatch('applyProjectEdit', { project });
+		store.projectEdits.restore(project, 'restore');
 		expect(env()).toMatchObject({ creationIndex: id, gridX: 7, gridY: 9 });
 		expect(env().code).toContain('; @pos 7 9');
 	});

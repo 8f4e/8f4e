@@ -3,12 +3,16 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 
 import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
-import { restoreProject } from '../project-changes';
+import type { ProjectEditService } from '../project-edits/service';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
 
-export default function historyTracking(store: StateManager<State>, events: EventDispatcher): () => void {
+export default function historyTracking(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	projectEdits: Pick<ProjectEditService, 'restore'>
+): () => void {
 	const state = store.getState();
 	// Serialization returns detached snapshots that history can retain directly.
 	let present = serializeToProject(state);
@@ -64,7 +68,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		restoreProject(store, events, previousState, 'restore');
+		projectEdits.restore(previousState, 'restore');
 	}
 
 	function redo() {
@@ -73,7 +77,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		restoreProject(store, events, nextState, 'restore');
+		projectEdits.restore(nextState, 'restore');
 	}
 
 	store.subscribe('projectChange', onProjectChange);

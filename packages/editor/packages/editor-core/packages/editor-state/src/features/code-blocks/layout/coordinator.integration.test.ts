@@ -50,7 +50,7 @@ it('finishes world-space layout before notifying observers, including late contr
 	});
 	cleanups.push(contribution.dispose, unsubscribe);
 	expect(block.width).toBe(48 * state.viewport.vGrid);
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: block, code: [...block.code.slice(0, -1), 'another line', 'noteEnd'] },
 	]);
 	expect(notifications).toBeGreaterThanOrEqual(3);
@@ -93,16 +93,14 @@ entryEnd`);
 	expect(nested).toMatchObject({ x: vGrid, y: 2 * hGrid, width: 48 * vGrid });
 	expect(rootBlock).toMatchObject(rootPosition);
 	expect(test.state.codeBlockRendering.entryBounds).toBe(entryBounds);
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
-		{ codeBlock: group, code: ['group renamed', 'groupEnd'] },
-	]);
+	applyCodeBlockSourceEdits(test.store, [{ codeBlock: group, code: ['group renamed', 'groupEnd'] }]);
 	expect(child.path).toBe('renamed');
 	expect(nested.projectPath).toBe('renamed');
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 49, verticalSpaceAfterSourceLine: [] });
 	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
 	completed.length = 0;
-	applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: nested, code: ['note nested', '; @pos 1 2', '; @alwaysOnTop', 'nested content', 'noteEnd'] },
 	]);
 	expect(child.blocks.map(block => block.name)).toEqual(['sibling', 'nested']);
@@ -196,7 +194,7 @@ entryEnd`);
 	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'inserted' });
 	expect(validate).toHaveBeenCalled();
 	validate.mockClear();
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: block, code: ['note configuration', '; @config test.child edited', 'noteEnd'] },
 	]);
 	expect(test.state.editorConfig.test).toEqual({ root: 'enabled', child: 'edited' });

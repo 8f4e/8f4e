@@ -58,7 +58,8 @@ entryEnd`);
 	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	store.set('editorMode', 'edit');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
 	const colors = {
@@ -87,7 +88,7 @@ entryEnd`);
 	try {
 		renderer.renderFrame();
 		await expect(`${ascii.toText()}\n`).toMatchFileSnapshot('./__snapshots__/switch-values.viewport.snap');
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock,
 				code: [

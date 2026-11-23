@@ -11,7 +11,7 @@ export const removeMemoryConnectionsPlugin: EditorPlugin = {
 			const code = removeIntermodularMemoryConnectionsFromCode(codeBlock.code);
 			if (!code) return;
 
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }]);
+			applyCodeBlockSourceEdits(store, [{ codeBlock, code }]);
 		};
 
 		events.on('removeConnections', onRemove);

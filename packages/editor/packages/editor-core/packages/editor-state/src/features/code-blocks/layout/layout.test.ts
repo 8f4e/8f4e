@@ -29,7 +29,7 @@ describe('independent layout contributions', () => {
 	it('navigates an expanded hidden block using its settled rows and contributed gaps', () => {
 		const { store, state, block, layout, events } = setup();
 		store.set('codeBlockRendering.selectedCodeBlock', block);
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: block,
 				code: ['module audio', '; @hide', '; content', 'moduleEnd'],
@@ -133,7 +133,7 @@ describe('independent layout contributions', () => {
 	});
 
 	it('lets subscribers recalculate requests from source changes and receive the resulting layout', () => {
-		const { store, state, block, layout, events } = setup();
+		const { store, state, block, layout } = setup();
 		const contribution = layout.createContribution();
 		const calculated = vi.fn();
 		const unsubscribe = layout.subscribe(({ codeBlock }) => {
@@ -148,7 +148,7 @@ describe('independent layout contributions', () => {
 		const calls = calculated.mock.calls.length;
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 		expect(calculated).toHaveBeenCalledTimes(calls);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module audio', 'moduleEnd'] }]);
 		expect(block.gaps.size).toBe(0);
 		expect(calculated).toHaveBeenLastCalledWith(block.height, 0);
 		const revision = state.projectChange.revision;

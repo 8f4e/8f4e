@@ -113,7 +113,9 @@ test('keeps the loading canvas while mounting waits for the project and reveals 
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
+	expect(
+		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code
+	).toContain('module galleryExample ; @mode edit');
 });
 
 test('keeps the loading status visible until the editor has mounted', async () => {
@@ -797,5 +799,7 @@ test('loads an example without a generated preview and omits its image', async (
 	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
 	expect(view.gallery.querySelector('.example-preview')).toBeNull();
 	expect(view.gallery.querySelector('.example-title')?.textContent).toBe('unpreviewed');
-	expect(editor.state.initialProjectState?.execution[0].code.join('\n')).toContain('module galleryExample');
+	expect(
+		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code.join('\n')
+	).toContain('module galleryExample');
 });

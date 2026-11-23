@@ -38,13 +38,11 @@ function matched(block: CodeBlockGraphicData) {
 }
 
 it('keeps the template header when renaming an expanded group and updating child paths', () => {
-	const { store, events, state } = setup(
+	const { store, state } = setup(
 		'8f4e/v1\ntemplate voice\nentry main\nmodule audio\nint gate 0\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup left use voice\ngroupEnd\nentryEnd'
 	);
 	const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'left')!;
-	applyCodeBlockSourceEdits({ store, events }, [
-		{ codeBlock: group, code: ['group renamed use voice', ...group.code.slice(1)] },
-	]);
+	applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group renamed use voice', ...group.code.slice(1)] }]);
 	expect(group.name).toBe('renamed');
 	expect(group.code[0]).toBe('group renamed use voice');
 	expect(group.childProject?.blocks.find(block => block.name === 'audio')?.projectPath).toBe('renamed');
@@ -65,7 +63,7 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 		['group voice', '; keep this row', 'group ghost', 'groupEnd'],
 		['', 'group voice use authored; comment', 'groupEnd', ''],
 	]) {
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: voice, code }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: voice, code }]);
 		const [serializedParent] = getProjectGroups(serializeProjectLevel(state.codeBlockRendering.rootProject));
 		expect(getProjectGroups(serializedParent)[0]).toMatchObject({
 			name: 'voice',
@@ -95,7 +93,7 @@ describe('cached directive records', () => {
 				if (codeBlock === block) received.push(codeBlock.tabStopsByLine);
 			})
 		);
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: block,
 				code: ['module audio', '; inserted', '; @tab 40', '\tvalue', 'moduleEnd'],
@@ -106,7 +104,7 @@ describe('cached directive records', () => {
 	});
 
 	it('updates metadata and configuration before publishing layouts, including diagnostic row changes', () => {
-		const { store, events, state, audio } = setup(
+		const { store, state, audio } = setup(
 			'8f4e/v1\nnote audio\n; @config export.fileName initial\n; @config unknown value\nnoteEnd'
 		);
 		const block = audio();
@@ -123,7 +121,7 @@ describe('cached directive records', () => {
 			})
 		);
 		seen.length = 0;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: block,
 				code: ['note audio', '; @pos 20 30', '; @config export.fileName updated', '; @config unknown value', 'noteEnd'],
@@ -131,9 +129,7 @@ describe('cached directive records', () => {
 		]);
 		expect(seen.length).toBeGreaterThan(0);
 		for (const value of seen) expect(value).toEqual([20, 30, 'updated', 3]);
-		applyCodeBlockSourceEdits({ store, events }, [
-			{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] },
-		]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note audio', '; @pos 20 30', 'noteEnd'] }]);
 		expect(state.editorConfig.export?.fileName).toBeUndefined();
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 	});
@@ -167,7 +163,7 @@ describe('cached directive records', () => {
 		const block = audio();
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) },
 		]);
 		expect(seen.at(-1)).toEqual(['first', 'changed']);
@@ -194,9 +190,7 @@ describe('cached directive records', () => {
 				if (codeBlock === block) seen.push(matched(codeBlock).flatMap(directive => directive.args));
 			})
 		);
-		applyCodeBlockSourceEdits({ store, events }, [
-			{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] },
-		]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module audio', '; @future edited', 'moduleEnd'] }]);
 		expect(seen.at(-1)).toEqual(['edited']);
 		events.dispatch('goToParentProjectGroup');
 		events.dispatch('openProjectGroup', { codeBlock: group });

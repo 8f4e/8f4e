@@ -198,7 +198,6 @@ export interface State {
 	editorConfigValidators: EditorConfigValidatorRegistry;
 	editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry;
 	historyStack: ProjectObjectModel[];
-	initialProjectState?: ProjectObjectModel;
 	redoStack: ProjectObjectModel[];
 	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
 	envConstantContributions: Record<string, string[]>;
@@ -223,6 +222,7 @@ export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/layout';
 export type * from './features/code-blocks/navigation';
+export type * from './features/code-blocks/projectEdits';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
 export type * from './features/editor-config/types';

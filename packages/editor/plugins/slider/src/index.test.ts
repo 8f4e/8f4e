@@ -35,7 +35,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? createSliderPlugin({ writeMemory: write }).setup({
@@ -58,7 +57,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
 	const draw = createDrawContextMock();
@@ -263,8 +263,9 @@ describe('slider plugin', () => {
 		expect(vi.mocked(test.draw.startGroup).mock.calls.map(call => call[1])).toEqual([48, 112]);
 		test.press(1, 4);
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 2, false);
-		test.block.code = test.block.code.filter(line => !line.includes('@slider'));
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: test.block, code: test.block.code.filter(line => !line.includes('@slider')) }],
+		});
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.block.gaps.size).toBe(0);
@@ -433,7 +434,9 @@ describe('slider plugin', () => {
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.block] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: test.block, code: [...test.block.code, '; edited after disposal'] }],
+		});
 		expect(test.block.gaps.size).toBe(0);
 	});
 });

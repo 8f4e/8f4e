@@ -85,7 +85,7 @@ interface PreviewState {
 	featureFlags: {
 		canvasOverlays: boolean;
 	};
-	initialProjectState?: unknown;
+	projectChange: { revision: number };
 	viewport: {
 		height: number;
 		width: number;
@@ -254,7 +254,9 @@ export async function generateProjectPreview({
 			await page.waitForFunction(
 				() => {
 					const state = (globalThis as unknown as PreviewWindow).state;
-					return Boolean(state?.initialProjectState && state.codeBlockRendering.rootProject.blocks.length > 0);
+					return Boolean(
+						state && state.projectChange.revision > 0 && state.codeBlockRendering.rootProject.blocks.length > 0
+					);
 				},
 				undefined,
 				{ timeout: timeoutMs }

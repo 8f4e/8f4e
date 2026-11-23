@@ -15,8 +15,8 @@ persistence. It contains a monotonic `revision` and a `kind` describing the oper
 | `restore` | Undo or redo snapshot | Rebase the current snapshot and retain the remaining stacks |
 | `replace` | Opening or creating a project | Cancel pending edits and clear both stacks |
 
-Source and metadata mutation handlers call the public `publishProjectChange(store)` helper after completing an
-operation and publishing its derived state. Multi-block actions announce once; no-op actions do not announce.
+The project editing service owns mutation publication after source, generated source and derived state settle.
+Mixed and multi-block transactions announce once; no-op transactions do not announce.
 Selection, caret movement, and navigation leave the record unchanged.
 
 The editing handle creates its opaque revision token from its instance identity and this shared revision. It keeps
@@ -33,17 +33,15 @@ is compared by content with that snapshot. Changed content adds one undo step; r
 adds none. Serialization returns detached canonical models, so history retains them directly and compares their
 JSON without additional cloning or object-key sorting.
 
-Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The project-operations
-effect owns `applyProjectEdit`: it compares the canonical API draft with current serialized content, emits
-`beforeProjectEdit` for changed drafts, then restores the batch as a checkpoint. History listens to the before-event
-to commit pending typing and the completed change record to retain the checkpoint. Identical-content batches emit
-neither notification, preserving pending edits, revisions, history, and persistence. Project operations apply API
-edits independently of whether the history effect is installed or `featureFlags.historyTracking` is enabled.
+Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The public API uses
+the project editing service for a live mutation batch with checkpoint history policy. The service emits
+`beforeProjectEdit` only for actual changes before applying the batch. History listens to the before-event to commit
+pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification.
+API edits preserve live block identity and work independently of whether the history effect is installed.
 
-Project loading, API operations, and history use the shared `restoreProject` helper to install `initialProjectState`.
-It captures the current view before same-project reconstruction, prepares the generated root environment source before
-installing the snapshot, and publishes a single change after source metadata settles, suppressing intermediate edit
-notifications during restoration.
+Project loading and history restore snapshots through the project editing service. It captures the current view
+before same-project reconstruction, prepares the generated root environment source before installing the snapshot,
+and publishes a single completed change after source and synchronous generated changes have settled.
 Viewport placement follows synchronous project-change subscribers and their layout contributions. Undo, redo, and
 API batches preserve the file association within the current project. Unrelated replacements dispatch `loadProject`
 and publish a `replace` change.

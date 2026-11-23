@@ -1,6 +1,6 @@
 import type { ProjectLevel } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import { copyProjectLevel, findParentProjectLevel, findProjectLevel, updateProjectLevelPath } from './projectTree';
+import { findParentProjectLevel, findProjectLevel, updateProjectLevelPath } from './projectTree';
 import { createMockCodeBlock } from './testingUtils/testUtils';
 
 function fixture() {
@@ -28,21 +28,6 @@ describe('project tree', () => {
 		expect(findParentProjectLevel(root, child)).toBe(audio);
 		expect(findParentProjectLevel(root, audio)).toBe(root);
 		expect(findParentProjectLevel(root, root)).toBeUndefined();
-	});
-
-	it('copies source-edit drafts without sharing source or remembering runtime views', () => {
-		const { root, child } = fixture();
-		child.viewport = { x: 64, y: 96 };
-		child.selectedBlock = child.blocks[0];
-		child.entries = ['foo', 'bar'];
-		const copy = copyProjectLevel(root);
-		const copiedChild = findProjectLevel(copy, child.path)!;
-		copiedChild.blocks[0].code.push('changed');
-		copiedChild.entries.push('copyOnly');
-		expect(child.entries).toEqual(['foo', 'bar']);
-		expect(child.blocks[0].code).toEqual([]);
-		expect(copiedChild.viewport).toBeUndefined();
-		expect(copiedChild.selectedBlock).toBeUndefined();
 	});
 
 	it('updates nested paths after a group rename while retaining its remembered view', () => {

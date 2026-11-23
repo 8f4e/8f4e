@@ -57,8 +57,8 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
 		events.dispatch('enterEditMode');
-		store.set('initialProjectState', project);
 		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
@@ -73,7 +73,7 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		const selectedRow = block.cursor.row;
 		const changed = [...block.code];
 		changed[selectedRow] = 'mul';
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: changed }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: changed }]);
 		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');
 		expect(tooltip.getState().text.some(line => line.startsWith('before'))).toBe(false);
 	});
@@ -113,8 +113,8 @@ functionEnd float`);
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
 		events.dispatch('enterEditMode');
-		store.set('initialProjectState', project);
 		const state = store.getState();
 		store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 		const blocks = state.codeBlockRendering.currentProject.blocks;
@@ -139,7 +139,7 @@ functionEnd float`);
 		select(floatFunction, 7);
 		expect(tooltip.getState().text).toContain('returns: The float result.');
 		select(caller, 3);
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: floatFunction,
 				code: floatFunction.code.map(line => line.replace('Float transformation.', 'Updated float docs.')),
@@ -173,8 +173,8 @@ entryEnd`);
 			tooltip.dispose();
 			store.dispose();
 		});
+		events.dispatch('loadProject', { project });
 		events.dispatch('enterEditMode');
-		store.set('initialProjectState', project);
 		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 		store.set('codeBlockRendering.selectedCodeBlock', block);
@@ -183,7 +183,7 @@ entryEnd`);
 		const editLine = (line: string) => {
 			const code = [...block.code];
 			code[2] = line;
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 		};
 		editLine('mul');
 		expect(tooltip.getState().text[0]).toBe('mul (T T -- T)');

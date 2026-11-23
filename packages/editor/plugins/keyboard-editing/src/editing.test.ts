@@ -51,7 +51,7 @@ describe('keyboard editing', () => {
 	});
 	it('skips compilation for ordinary comment text but invalidates it when Enter adds a line', () => {
 		const test = setup(plugin);
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: ['module main', '; explanation', 'push 1', 'drop', 'moduleEnd'] },
 		]);
 		test.block.cursor.row = 1;
@@ -73,7 +73,7 @@ describe('keyboard editing', () => {
 	});
 	it('moves the caret using visual tab columns without publishing a source change', () => {
 		const test = setup(plugin);
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] },
 		]);
 		test.block.cursor.row = 2;

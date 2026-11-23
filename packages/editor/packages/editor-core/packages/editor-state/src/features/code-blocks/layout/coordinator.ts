@@ -12,9 +12,10 @@ export function createLayoutCoordinator(
 ) {
 	const pending = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 	let calculating = false;
+	let batching = 0;
 
 	const flush = (): void => {
-		if (calculating || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
+		if (calculating || batching || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		calculating = true;
 		const completed = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
 		try {
@@ -63,7 +64,21 @@ export function createLayoutCoordinator(
 		flush();
 	};
 
+	/** Queue geometry invalidations until the source mutation and its synchronous derivation finish. */
+	const batch = <T>(work: () => T): T => {
+		batching++;
+		let result: T;
+		try {
+			result = work();
+		} finally {
+			batching--;
+		}
+		flush();
+		return result;
+	};
+
 	return {
+		batch,
 		clearPending: () => pending.clear(),
 		refreshBlocks,
 		refreshProject,

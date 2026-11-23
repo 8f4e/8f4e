@@ -38,7 +38,7 @@ describe('font preview', () => {
 		test.key('F9');
 		const previewFont = test.state.editorConfig.font;
 		const codeBlock = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock, code: ['note settings', '; @config font terminus10x18', 'noteEnd'] },
 		]);
 		expect(test.state.editorConfig.font).toBe(previewFont);

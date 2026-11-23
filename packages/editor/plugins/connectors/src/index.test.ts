@@ -117,10 +117,12 @@ entryEnd`);
 		const rows = () => test.connectorPositions(group).map(position => position.y);
 		expect(rows()).toEqual([hGrid]);
 
-		applyCodeBlockSourceEdits(test, [{ codeBlock: group, code: [group.code[0], '', '', ...group.code.slice(1)] }]);
+		applyCodeBlockSourceEdits(test.store, [
+			{ codeBlock: group, code: [group.code[0], '', '', ...group.code.slice(1)] },
+		]);
 		expect(rows()).toEqual([3 * hGrid]);
 
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: group, code: group.code.filter(line => !line.startsWith('expose ')) },
 		]);
 		expect(rows()).toEqual([]);

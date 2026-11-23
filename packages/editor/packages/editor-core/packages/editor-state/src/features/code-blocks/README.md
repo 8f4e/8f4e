@@ -62,8 +62,9 @@ New block templates, random names, Delete, and their menu contributions belong t
 Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
 Source changes use `sourceUpdates.ts` to parse directives and retain their block flags and display facts, update
-block type and valid grid coordinates, and settle stacking. The block effect coordinates environment source
-normalization, global configuration resolution and layout refresh. Source facts and compiler inputs settle without
+block type and valid grid coordinates, and settle stacking. The project editing service owns synchronous mutation
+transactions and coordinates source normalization, global configuration, generated environment source and layout.
+Source facts and compiler inputs settle without
 pixel geometry. Layout builds display rows from the retained facts and current selection without rerunning directive
 handlers. An incomplete or invalid position directive retains the existing block position. Interactive and programmatic
 edits use this same path; ordinary layout invalidations do not reparse source. Project membership tracks each block's owning
@@ -83,8 +84,8 @@ completion notification.
 
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `codeBlockSourcesChanged({ codeBlocks })`: refresh source metadata, configuration, and layouts for an edited batch
-  before publishing compiler/project revisions, independently of user selection
+- `codeBlockSourcesChanged({ codeBlocks })`: report completed source changes after metadata, configuration, generated
+  source and available layout settle, before publishing compiler/project revisions
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
   group, or the current group when no block is supplied
 - `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,

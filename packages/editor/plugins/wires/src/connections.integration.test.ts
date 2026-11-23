@@ -248,7 +248,7 @@ entryEnd`);
 		const { state, store, memoryViews, readConnections } = test;
 		const previousAddress = state.compiler.result.memoryPlan.modules.source.memory.output.byteAddress;
 		const block = state.codeBlockRendering.currentProject.blocks.find(item => item.name === 'source')!;
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: block, code: [...block.code.slice(0, 2), 'float _padding 0', ...block.code.slice(2)] },
 		]);
 		store.set('compiler.isCompiling', true);
@@ -337,10 +337,12 @@ entryEnd`);
 		const { hGrid } = state.viewport;
 		expect(outputY()).toEqual([Math.round(1.5 * hGrid)]);
 
-		applyCodeBlockSourceEdits(test, [{ codeBlock: group, code: [group.code[0], '', '', ...group.code.slice(1)] }]);
+		applyCodeBlockSourceEdits(test.store, [
+			{ codeBlock: group, code: [group.code[0], '', '', ...group.code.slice(1)] },
+		]);
 		expect(outputY()).toEqual([Math.round(3.5 * hGrid)]);
 
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: group, code: group.code.filter(line => !line.startsWith('expose ')) },
 		]);
 		expect(outputY()).toEqual([]);

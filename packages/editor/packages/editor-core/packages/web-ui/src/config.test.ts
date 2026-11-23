@@ -73,7 +73,7 @@ describe('web-ui configuration', () => {
 		expect(state.editorConfig).toEqual({ font: 'x11miscfixed6x10', color: { primary: '#123456' } });
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock, code: ['note settings', '; @config font tiny', '; @config color.primary ???', 'noteEnd'] },
 		]);
 		expect(state.editorConfig).toEqual({});

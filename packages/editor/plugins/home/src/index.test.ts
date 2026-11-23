@@ -157,7 +157,7 @@ note second
 noteEnd`);
 		const first = test.block('first');
 		const second = test.block('second');
-		applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: first, code: ['note first', '; @pos 100 200', 'noteEnd'] },
 			{ codeBlock: second, code: ['note second', '; @pos 200 300', '; @home top', 'noteEnd'] },
 		]);
@@ -267,7 +267,7 @@ noteEnd
 note second
 ; @pos 300 400
 noteEnd`);
-		applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block('first'), code: ['note first', '; @pos 100 200', 'noteEnd'] },
 			{ codeBlock: test.block('second'), code: ['note second', '; @pos 300 400', '; @home bottom', 'noteEnd'] },
 		]);
@@ -395,7 +395,7 @@ noteEnd`);
 		expect(blocks.indexOf(first)).toBeGreaterThan(blocks.indexOf(second));
 		expect(test.resolveInitial()).toEqual(test.expectedPosition('second', 'right'));
 
-		applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block('other'), code: ['note other', '; @pos 20 30', '; Updated comment', 'noteEnd'] },
 		]);
 		expect(test.state.codeErrors.home).toBe(errors);
@@ -411,8 +411,7 @@ noteEnd
 note second
 noteEnd`);
 		const second = test.block('second');
-		const editSecond = (code: string[]) =>
-			applyCodeBlockSourceEdits({ store: test.store, events: test.events }, [{ codeBlock: second, code }]);
+		const editSecond = (code: string[]) => applyCodeBlockSourceEdits(test.store, [{ codeBlock: second, code }]);
 		expect(test.state.codeErrors.home ?? []).toEqual([]);
 		editSecond(['note second', '; @home', 'noteEnd']);
 		expect(test.state.codeErrors.home).toEqual([

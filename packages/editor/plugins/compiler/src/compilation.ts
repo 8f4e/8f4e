@@ -24,7 +24,13 @@ export interface CompilerDiagnostics {
 }
 
 export default function installCompilation(
-	{ store, events, loading }: Pick<EditorPluginContext, 'store' | 'events' | 'loading'>,
+	{
+		store,
+		events,
+		loading,
+	}: Pick<EditorPluginContext, 'events' | 'loading'> & {
+		store: Pick<EditorPluginContext['store'], 'getState' | 'set'>;
+	},
 	compileCode: CompilerService['compileCode']
 ) {
 	const state = store.getState();

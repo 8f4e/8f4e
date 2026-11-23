@@ -81,8 +81,9 @@ describe('grouping plugin', () => {
 		expect(second.x).toBe(originalSecondX);
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
-		first.code = upsertDirective(first.code, 'group', ['audio']);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [first] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: first, code: upsertDirective(first.code, 'group', ['audio']) }],
+		});
 		test.drag(first);
 		expect(second.x).toBe(originalSecondX + test.state.viewport.vGrid);
 	});

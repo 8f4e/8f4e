@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { applyCodeBlockSourceEdits } from '../../../index';
+import initState, { applyCodeBlockSourceEdits, serializeToProject } from '../../../index';
 import { EMPTY_DEFAULT_PROJECT } from '../emptyDefaultProject';
 
 const cleanups: Array<() => void> = [];
@@ -45,7 +45,7 @@ describe('project initial mode', () => {
 			expect(state.codeErrors['editor-directives']).toHaveLength(declaration ? 1 : 0);
 			events.dispatch('enterEditMode');
 			events.dispatch('new');
-			expect(state.initialProjectState).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });
+			expect(serializeToProject(state)).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });
 			expect(state.editorMode).toBe('view');
 		}
 	);
@@ -77,9 +77,7 @@ describe('project initial mode', () => {
 		expect(state.editorMode).toBe('view');
 		expect(state.projectChange.revision).toBe(revision);
 		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits({ store, events }, [
-			{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] },
-		]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }]);
 		store.set('editorConfigSchemaContributions', {});
 		expect(state.globalEditorDirectives.mode).toBe('view');
 		expect(state.editorMode).toBe('view');

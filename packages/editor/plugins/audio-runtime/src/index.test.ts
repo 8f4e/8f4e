@@ -120,8 +120,7 @@ describe('AudioWorklet context lifetime', () => {
 			state,
 			events,
 			project,
-			configure: (config: string[]) =>
-				applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(config) }]),
+			configure: (config: string[]) => applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(config) }]),
 			allow: () => emitter.listeners('grantAudioPermission')[0]() as Promise<void>,
 		};
 	}

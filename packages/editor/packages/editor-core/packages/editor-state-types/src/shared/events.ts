@@ -13,7 +13,7 @@ export interface EditorLifecycleEvents {
 	beforeProjectEdit: void;
 	compilationInputChanged: void;
 	compilationSucceeded: ProgramArtifacts;
-	/** Source arrays have changed; core synchronously refreshes their derived metadata and any available layout. */
+	/** Completed source changes: metadata, configuration, generated source and available layout have settled. */
 	codeBlockSourcesChanged: { codeBlocks: readonly CodeBlockGraphicData[] };
 	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;

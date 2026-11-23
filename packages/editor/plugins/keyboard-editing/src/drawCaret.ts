@@ -6,7 +6,12 @@ import { textToGlyphIds } from '@8f4e/web-ui';
 
 const CARET = textToGlyphIds('_');
 
-export default function createCaretPresentation({ store, events }: Pick<EditorPluginContext, 'store' | 'events'>) {
+export default function createCaretPresentation({
+	store,
+	events,
+}: Pick<EditorPluginContext, 'events'> & {
+	store: Pick<EditorPluginContext['store'], 'getState' | 'subscribe' | 'unsubscribe'>;
+}) {
 	const state = store.getState();
 	let x = 0;
 	const prepare = () => {

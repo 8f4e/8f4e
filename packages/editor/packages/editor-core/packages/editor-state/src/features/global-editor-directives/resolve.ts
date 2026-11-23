@@ -20,9 +20,14 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
  *
  * Conflicting directive values are written to `state.codeErrors['editor-directives']`.
  */
-export default function resolveEditorConfig(store: Pick<StateManager<State>, 'getState' | 'set'>): void {
+export default function resolveEditorConfig(
+	store: Pick<StateManager<State>, 'getState' | 'set'>,
+	environment: CodeBlockGraphicData | undefined
+): void {
 	const state = store.getState();
-	const projectCodeBlocks = collectProjectCodeBlocks(state.codeBlockRendering.rootProject.blocks);
+	const root = state.codeBlockRendering.rootProject;
+	// The generated environment depends on resolved configuration, never the reverse.
+	const projectCodeBlocks = collectProjectCodeBlocks(root.blocks.filter(block => block !== environment));
 	const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks);
 	const { configEntries, ...globalEditorDirectives } = resolved;
 	const nextEditorConfig = resolveEditorConfigEntries(configEntries ?? [], state.editorConfigValidators);

@@ -224,7 +224,7 @@ describe('public editor editing handle', () => {
 	});
 
 	it.each(['disabled', 'customDisabled'])(
-		'keeps @%s flags consistent through public edits and skips unchanged drafts',
+		'keeps @%s flags consistent through public edits and skips unchanged batches',
 		directive => {
 			const { editing, state, store, events, compilationChanged } = setup();
 			const onCustomDirective = vi.fn();
@@ -369,14 +369,18 @@ describe('public editor editing handle', () => {
 	);
 
 	it('rejects an invalid batch without applying earlier operations or changing history', () => {
-		const { editing, state, compilationChanged } = setup();
+		const { editing, state, compilationChanged, events } = setup();
 		const before = serializeToProject(state);
 		const revision = editing.getRevision();
+		const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
 		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const beforeEdit = vi.fn();
+		events.on('beforeProjectEdit', beforeEdit);
 		expect(() =>
 			editing.applyEdits({
 				expectedRevision: revision,
 				edits: [
+					{ type: 'insert', code: ['note new', 'noteEnd'] },
 					{ type: 'delete', blockId: getEditorBlockId(target) },
 					{ type: 'delete', blockId: 'missing' },
 				],
@@ -384,6 +388,133 @@ describe('public editor editing handle', () => {
 		).toThrow('current blockId');
 		expect(serializeToProject(state)).toEqual(before);
 		expect(editing.getRevision()).toBe(revision);
+		expect(state.historyStack).toHaveLength(0);
+		expect(compilationChanged).not.toHaveBeenCalled();
+		expect(beforeEdit).not.toHaveBeenCalled();
+		expect(state.codeBlockRendering.nextCodeBlockCreationIndex).toBe(nextId);
+		expect(state.codeBlockRendering.currentProject.blocks).toContain(target);
+	});
+
+	it('applies a mixed edit plan as one checkpoint without replacing existing block handles', () => {
+		const { editing, state, compilationChanged, events } = setup({
+			...structuredClone(EMPTY_DEFAULT_PROJECT),
+			execution: [
+				{ type: 'module', id: 0, entry: 'main', code: ['module original', 'moduleEnd'] },
+				{ type: 'module', id: 1, entry: 'main', code: ['module removed', 'moduleEnd'] },
+			],
+		});
+		const project = state.codeBlockRendering.currentProject;
+		const target = project.blocks.find(block => block.name === 'original')!;
+		const removed = project.blocks.find(block => block.name === 'removed')!;
+		const prior = serializeToProject(state);
+		const changes: ProjectObjectModel[] = [];
+		events.on('compilationInputChanged', () => changes.push(serializeToProject(state)));
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		const result = editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(target),
+					code: ['module updated', 'unknown instruction', 'moduleEnd'],
+				},
+				{ type: 'delete', blockId: getEditorBlockId(removed) },
+				{ type: 'insert', code: ['note new', 'noteEnd'] },
+			],
+		});
+		expect(state.codeBlockRendering.currentProject).toBe(project);
+		expect(project.blocks.find(block => block.name === 'updated')).toBe(target);
+		expect(project.blocks).not.toContain(removed);
+		expect(project.blocks.find(block => block.name === 'new')).toBeDefined();
+		expect(result.createdBlockIds).toEqual([getEditorBlockId(project.blocks.find(block => block.name === 'new')!)]);
+		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'checkpoint' });
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(compilationChanged).toHaveBeenCalledOnce();
+		expect(changes).toEqual([serializeToProject(state)]);
+		expect(state.historyStack).toEqual([prior]);
+	});
+
+	it('folds repeated updates and normalizes generated environment edits before deciding whether to publish', () => {
+		const { editing, state, events, compilationChanged } = setup();
+		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const env = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+		const originalCode = [...target.code];
+		const originalEnvCode = [...env.code];
+		const originalLastUpdated = target.lastUpdated;
+		const before = serializeToProject(state);
+		const beforeEdit = vi.fn();
+		events.on('beforeProjectEdit', beforeEdit);
+		const revision = editing.getRevision();
+		const compilerRevision = state.compilerInputRevision;
+		const result = editing.applyEdits({
+			expectedRevision: revision,
+			edits: [
+				{ type: 'update', blockId: getEditorBlockId(target), code: ['module intermediate', 'moduleEnd'] },
+				{ type: 'update', blockId: getEditorBlockId(target), code: originalCode },
+				{
+					type: 'update',
+					blockId: getEditorBlockId(env),
+					code: [...originalEnvCode.slice(0, -1), 'const USER 4', originalEnvCode.at(-1)!],
+				},
+			],
+		});
+		expect(result.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
+		expect(target.lastUpdated).toBe(originalLastUpdated);
+		expect(env.code).toEqual(originalEnvCode);
+		expect(serializeToProject(state)).toEqual(before);
+		expect(state.historyStack).toHaveLength(0);
+		expect(compilationChanged).not.toHaveBeenCalled();
+		expect(beforeEdit).not.toHaveBeenCalled();
+	});
+
+	it('does not reject incomplete or malformed program source as an invalid editing command', () => {
+		const { editing, state } = setup();
+		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const malformed = ['module original', 'group invalidNestedInstruction'];
+		const result = editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId: getEditorBlockId(target), code: malformed }],
+		});
+		expect(target.code).toEqual(malformed);
+		expect(state.codeBlockRendering.currentProject.blocks).toContain(target);
+		expect(result.revision).toBe(editing.getRevision());
+	});
+
+	it('accepts malformed source but rejects explicit entry membership for non-execution blocks', () => {
+		const { editing, state, compilationChanged } = setup();
+		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const revision = editing.getRevision();
+		const before = serializeToProject(state);
+		for (const edit of [
+			{ type: 'insert' as const, code: ['note details', 'noteEnd'], entry: 'main' },
+			{ type: 'update' as const, blockId: getEditorBlockId(target), code: ['module original'], entry: 'main' },
+		]) {
+			expect(() => editing.applyEdits({ expectedRevision: revision, edits: [edit] })).toThrow('accept an entry');
+		}
+		expect(editing.getRevision()).toBe(revision);
+		expect(serializeToProject(state)).toEqual(before);
+		expect(state.historyStack).toHaveLength(0);
+		expect(compilationChanged).not.toHaveBeenCalled();
+	});
+
+	it('rejects a batch which both updates and deletes an existing block before committing either operation', () => {
+		const { editing, state, compilationChanged } = setup();
+		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
+		const revision = editing.getRevision();
+		const before = serializeToProject(state);
+		expect(() =>
+			editing.applyEdits({
+				expectedRevision: revision,
+				edits: [
+					{ type: 'update', blockId: getEditorBlockId(target), code: ['module changed', 'moduleEnd'] },
+					{ type: 'delete', blockId: getEditorBlockId(target) },
+				],
+			})
+		).toThrow('Cannot update a block being deleted');
+		expect(editing.getRevision()).toBe(revision);
+		expect(serializeToProject(state)).toEqual(before);
 		expect(state.historyStack).toHaveLength(0);
 		expect(compilationChanged).not.toHaveBeenCalled();
 	});
@@ -395,7 +526,7 @@ describe('public editor editing handle', () => {
 		store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 1;
 		block.cursor.col = block.code[1].length;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}9` : line)) },
 		]);
 		expect(() =>
@@ -460,7 +591,7 @@ describe('public editor editing handle', () => {
 		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'added')).toBe(true);
 		expect(state.codeBlockRendering.currentProject.path).toBe('voice');
 		expect(state.codeBlockRendering.selectedCodeBlock?.name).toBe('updatedInner');
-		expect(state.codeBlockRendering.selectedCodeBlock).not.toBe(inner);
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(inner);
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		editing.undo({ expectedRevision: editing.getRevision() });
 		expect(state.codeBlockRendering.currentProject.path).toBe('voice');
@@ -552,12 +683,12 @@ describe('public editor editing handle', () => {
 	it('keeps pending source edits and an API batch as separate undo steps without delayed duplicates', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store, events } = setup();
+			const { editing, state, store } = setup();
 			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
 			store.set('codeBlockRendering.selectedCodeBlock', block);
 			block.cursor.row = 1;
 			block.cursor.col = block.code[1].length;
-			applyCodeBlockSourceEdits({ store, events }, [
+			applyCodeBlockSourceEdits(store, [
 				{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line}2` : line)) },
 			]);
 			editing.applyEdits({

@@ -66,7 +66,8 @@ entryEnd`
 	const state = store.getState();
 	state.viewport.width = width;
 	state.viewport.height = height;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	store.set('editorMode', 'edit');
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);

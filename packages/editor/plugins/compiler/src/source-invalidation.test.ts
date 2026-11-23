@@ -80,7 +80,7 @@ describe('source edit compilation invalidation', () => {
 		const revision = state.compilerInputRevision;
 		const onInputChanged = vi.fn();
 		events.on('compilationInputChanged', onInputChanged);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module test', ...after, 'moduleEnd'] }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module test', ...after, 'moduleEnd'] }]);
 		expect(state.compilerInputRevision).toBe(revision + 1);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		await vi.advanceTimersByTimeAsync(499);
@@ -97,7 +97,7 @@ describe('source edit compilation invalidation', () => {
 		const onSourcesChanged = vi.fn();
 		events.on('compilationInputChanged', onInputChanged);
 		events.on('codeBlockSourcesChanged', onSourcesChanged);
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: ['module test', '; updated explanation', 'push 1', '; updated comment', 'moduleEnd'] },
 		]);
 		expect(state.projectChange.revision).toBe(projectRevision + 1);
@@ -109,10 +109,10 @@ describe('source edit compilation invalidation', () => {
 	});
 
 	it('leaves an identical source replacement unchanged', async () => {
-		const { store, events, worker, state, block } = await setup(['; explanation', 'push 1']);
+		const { store, worker, state, block } = await setup(['; explanation', 'push 1']);
 		const revision = state.compilerInputRevision;
 		const projectRevision = state.projectChange.revision;
-		expect(applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...block.code] }])).toBe(false);
+		expect(applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...block.code] }])).toBe(false);
 		expect(state.compilerInputRevision).toBe(revision);
 		expect(state.projectChange.revision).toBe(projectRevision);
 		await vi.advanceTimersByTimeAsync(1000);

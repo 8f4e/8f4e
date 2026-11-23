@@ -50,7 +50,6 @@ async function setup(code = source, installed = true) {
 		},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = installed
 		? createSwitchPlugin({ writeMemory: write }).setup({
@@ -73,7 +72,8 @@ async function setup(code = source, installed = true) {
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 	const draw = {
@@ -166,12 +166,21 @@ describe('switch plugin', () => {
 
 	it('replaces widgets after source edits and removes them when the directive is deleted', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @switch &gate 0 7';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @switch &gate 0 7' : line)),
+				},
+			],
+		});
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 7, true);
-		test.codeBlock.code[2] = '; no widget';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
+			],
+		});
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		test.write.mockClear();

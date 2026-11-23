@@ -5,6 +5,7 @@ import {
 	deleteCodeBlocks,
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
+	serializeToProject,
 } from '@8f4e/editor-state';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -58,7 +59,7 @@ describe('session persistence plugin', () => {
 	it('keeps an empty project when no session exists', () => {
 		const test = setup();
 		test.boot();
-		expect(test.state.initialProjectState).toMatchObject({
+		expect(serializeToProject(test.state)).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],
@@ -88,7 +89,7 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) },
 		]);
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
@@ -140,7 +141,7 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', block);
 		block.cursor.row = 2;
 		block.cursor.col = block.code[2].length;
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 2 ? `${line}2` : line)) },
 		]);
 		test.events.dispatch('undo');
@@ -149,7 +150,7 @@ describe('session persistence plugin', () => {
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock', restored);
 		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
-		applyCodeBlockSourceEdits(test, [{ codeBlock: restored, code: [...restored.code] }]);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: restored, code: [...restored.code] }]);
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
 		expect(test.state.redoStack).toHaveLength(1);
@@ -327,7 +328,7 @@ describe('session persistence plugin', () => {
 		const test = setup(storage);
 		test.boot();
 		expect(test.state.console.logs.some(log => log.message.includes('Failed to restore editor session'))).toBe(true);
-		expect(test.state.initialProjectState).toMatchObject({
+		expect(serializeToProject(test.state)).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],

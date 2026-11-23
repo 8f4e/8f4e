@@ -8,7 +8,6 @@ import type {
 } from '@8f4e/editor-state-types';
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import codeBlockRendering from './features/code-blocks/effect';
-import autoEnvConstants from './features/code-blocks/features/auto-env-constants/effect';
 import codeBlockActions from './features/code-blocks/features/codeBlockActions/effect';
 import codeBlockDragger from './features/code-blocks/features/codeBlockDragger/effect';
 import codeBlockNavigation from './features/code-blocks/features/codeBlockNavigation/effect';
@@ -26,8 +25,8 @@ import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import pointerInput from './features/pointer-input/effect';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
+import type { ProjectEditService } from './features/project-edits/service';
 import projectLoading from './features/project-loading/effect';
-import projectOperations from './features/project-operations/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
 import { validateFeatureFlags } from './pureHelpers/state/featureFlags';
@@ -49,16 +48,16 @@ export {
 	validateSchemaConfigValue,
 } from './features/editor-config/schemaValidator';
 
-// Function to create default state
-export default function init(
-	events: EventDispatcher,
-	options: Options
-): StateManager<State> & {
+export type EditorStateStore = StateManager<State> & {
 	menus: EditorMenuRegistry;
 	directives: ReturnType<typeof createDirectiveRegistry>;
 	layout: EditorLayoutRegistry;
 	loading: EditorLoadingRegistry;
-} {
+	projectEdits: ProjectEditService;
+};
+
+// Function to create default state
+export default function init(events: EventDispatcher, options: Options): EditorStateStore {
 	const menus = createMenuRegistry();
 	const directives = createDirectiveRegistry();
 	const layout = createLayoutRegistry(codeBlock =>
@@ -91,19 +90,18 @@ export default function init(
 	registerEffect(contextMenu(store, events, menus));
 
 	registerEffect(editorMode(store, events));
-	registerEffect(projectLoading(store, events));
-	registerEffect(codeBlockDragger(store, events));
+	registerEffect(publishCompilationInputChanges(store, events));
+	const projectEdits = codeBlockRendering(store, events, directives.definitions, layout);
+	const editingStore = { ...store, projectEdits };
+	registerEffect(projectLoading(projectEdits, events));
+	registerEffect(codeBlockDragger(editingStore, events));
 	registerEffect(pointerInput(store, events));
 	registerEffect(codeBlockNavigation(store, events));
 	registerEffect(viewport(store, events));
-	registerEffect(codeBlockActions(store, events));
+	registerEffect(codeBlockActions(editingStore, events));
 	registerEffect(projectGroupNavigation(store, events));
-	registerEffect(autoEnvConstants(store, events));
-	registerEffect(publishCompilationInputChanges(store, events));
-	codeBlockRendering(store, events, directives.definitions, layout);
 	registerEffect(entryBounds(store, events));
-	registerEffect(projectOperations(store, events));
-	registerEffect(historyTracking(store, events));
+	registerEffect(historyTracking(store, events, projectEdits));
 
 	const onConsoleLog = (event: unknown) => {
 		console.log(event);
@@ -117,7 +115,7 @@ export default function init(
 		}
 	};
 	return {
-		...store,
+		...editingStore,
 		menus,
 		directives,
 		layout,
@@ -156,10 +154,7 @@ export { getStackOperandProducerRows } from './features/code-blocks/utils/getSta
 export { parseBlockDirectives } from './features/code-blocks/utils/parseBlockDirectives';
 export { default as setSkipExecution } from './features/code-blocks/utils/setSkipExecution';
 export { default as wrapText } from './features/code-blocks/utils/wrapText';
-export { default as resolveEditorConfig } from './features/global-editor-directives/resolve';
 export { error as logError, log as logMessage } from './features/logger/logger';
-export { default as incrementCompilerInputRevision } from './features/program-compiler/incrementCompilerInputRevision';
-export { publishProjectChange } from './features/project-changes';
 // Export EMPTY_DEFAULT_PROJECT as a value
 export { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
 export { clampSourcePosition } from './features/text-geometry/clampSourcePosition';

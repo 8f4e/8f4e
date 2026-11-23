@@ -3,7 +3,6 @@ import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type Mock, vi } from 'vitest';
-import { restoreProject } from '~/features/project-changes';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
@@ -11,7 +10,6 @@ import codeBlockRenderingEffect from './effect';
 import { directiveDefinitions } from './features/directives/registry';
 import projectGroupNavigation from './features/projectGroupNavigation/effect';
 import { createLayoutRegistry } from './layout/registry';
-import { applyCodeBlockSourceEdits } from './sourceEdits';
 
 describe('code block rendering cursor selection', () => {
 	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
@@ -92,25 +90,20 @@ describe('code block rendering cursor selection', () => {
 
 describe('code block rendering project loading', () => {
 	it('renders root project-scope source as an editable code block', () => {
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				code: ['pass env'],
-			},
-		});
+		const project = { ...EMPTY_DEFAULT_PROJECT, code: ['pass env'] };
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		store.set('initialProjectState', state.initialProjectState);
+		projectEdits.restore(project, 'replace');
 
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
-		expect(state.codeBlockRendering.currentProject.blocks[0]).toMatchObject({
+		expect(state.codeBlockRendering.currentProject.blocks.find(block => block.isProjectScope)).toMatchObject({
 			code: ['pass env'],
 			isProjectScope: true,
 			projectPath: '',
@@ -119,25 +112,24 @@ describe('code block rendering project loading', () => {
 
 	it('renders project-level includes blocks from imported project state', () => {
 		const includesBlock = ['includes', 'include std/events/risingEdge', 'includesEnd'];
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				includes: [{ id: 0, code: includesBlock }],
-				execution: [{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' }],
-			},
-		});
+		const project = {
+			...EMPTY_DEFAULT_PROJECT,
+			includes: [{ id: 0, code: includesBlock }],
+			execution: [{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' }],
+		} satisfies import('@8f4e/language-spec').ProjectObjectModel;
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		store.set('initialProjectState', state.initialProjectState);
+		projectEdits.restore(project, 'replace');
 
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(2);
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(3);
 		const renderedIncludes = state.codeBlockRendering.currentProject.blocks.find(
 			block => block.blockType === 'includes'
 		);
@@ -145,50 +137,49 @@ describe('code block rendering project loading', () => {
 	});
 
 	it('renders root blocks and project-group blocks while retaining nested slices', () => {
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				execution: [
-					{ type: 'module', id: 0, entry: 'main', code: ['module root', 'moduleEnd'] },
-					{
-						entry: 'main',
+		const project = {
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [
+				{ type: 'module', id: 0, entry: 'main', code: ['module root', 'moduleEnd'] },
+				{
+					entry: 'main',
 
-						id: 0,
-						type: 'group',
-						...EMPTY_DEFAULT_PROJECT,
-						name: 'Audio',
+					id: 0,
+					type: 'group',
+					...EMPTY_DEFAULT_PROJECT,
+					name: 'Audio',
 
-						code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
-						exposures: [
-							{
-								name: 'level',
-								lineNumber: 2,
-								targetModuleName: 'voice',
-								targetMemoryName: 'level',
-							},
-						],
-						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+					code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
+					exposures: [
+						{
+							name: 'level',
+							lineNumber: 2,
+							targetModuleName: 'voice',
+							targetMemoryName: 'level',
+						},
+					],
+					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 
-						entries: ['main'],
-					},
-				],
-			},
-		});
+					entries: ['main'],
+				},
+			],
+		} satisfies import('@8f4e/language-spec').ProjectObjectModel;
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		store.set('initialProjectState', state.initialProjectState);
+		projectEdits.restore(project, 'replace');
 
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(2);
-		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['root', 'Audio']);
-		const groupBlock = state.codeBlockRendering.currentProject.blocks[1];
+		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(3);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'root', 'Audio']);
+		const groupBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'Audio')!;
 		expect(groupBlock.projectPath).toBe('');
 		expect(groupBlock.code).toEqual(['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd']);
 		expect(groupBlock.childProject?.blocks).toHaveLength(1);
@@ -226,17 +217,17 @@ entry main
 entryEnd
 groupEnd
 entryEnd`);
-		const state = createMockState({ initialProjectState: project });
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
 		projectGroupNavigation(store, events);
-		store.set('initialProjectState', project);
+		projectEdits.restore(project, 'replace');
 
 		const root = state.codeBlockRendering.rootProject.blocks;
 		const audio = root.find(block => block.name === 'audio')!;
@@ -265,60 +256,63 @@ entryEnd`);
 	});
 
 	it('resets the rendered slice pointer to the new root when a project reloads', () => {
-		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				execution: [
-					{
-						entry: 'main',
+		const project = {
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [
+				{
+					entry: 'main',
 
-						id: 0,
-						type: 'group',
-						...EMPTY_DEFAULT_PROJECT,
-						name: 'Audio',
+					id: 0,
+					type: 'group',
+					...EMPTY_DEFAULT_PROJECT,
+					name: 'Audio',
 
-						code: ['group Audio', 'groupEnd'],
-						exposures: [],
-						execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+					code: ['group Audio', 'groupEnd'],
+					exposures: [],
+					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
 
-						entries: ['main'],
-					},
-				],
-			},
-		});
+					entries: ['main'],
+				},
+			],
+		} satisfies import('@8f4e/language-spec').ProjectObjectModel;
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		store.set('initialProjectState', state.initialProjectState);
+		projectEdits.restore(project, 'replace');
 		expect(state.compilerInputRevision).toBe(1);
 		const firstRoot = state.codeBlockRendering.rootProject.blocks;
-		const nestedSlice = firstRoot[0].childProject?.blocks;
+		const nested = firstRoot.find(block => block.name === 'Audio')!.childProject;
+		const nestedSlice = nested?.blocks;
 		expect(nestedSlice).toBeDefined();
-		store.set('codeBlockRendering.currentProject.blocks', nestedSlice!);
+		store.set('codeBlockRendering.currentProject', nested!);
 
-		store.set('initialProjectState', {
-			...EMPTY_DEFAULT_PROJECT,
-			execution: [{ type: 'module', id: 2, entry: 'main', code: ['module replacement', 'moduleEnd'] }],
-		});
+		projectEdits.restore(
+			{
+				...EMPTY_DEFAULT_PROJECT,
+				execution: [{ type: 'module', id: 2, entry: 'main', code: ['module replacement', 'moduleEnd'] }],
+			},
+			'replace'
+		);
 
 		expect(state.codeBlockRendering.rootProject.blocks).not.toBe(firstRoot);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);
 		expect(state.compilerInputRevision).toBe(2);
-		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['replacement']);
+		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'replacement']);
 	});
 
 	it('resolves initial placement with settled project layout without selecting a block', () => {
+		const project = {
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, code: ['module main', '; @pos 10 20', 'moduleEnd'], entry: 'main' }],
+		} satisfies import('@8f4e/language-spec').ProjectObjectModel;
 		const state = createMockState({
-			initialProjectState: {
-				...EMPTY_DEFAULT_PROJECT,
-				execution: [{ type: 'module', id: 0, code: ['module main', '; @pos 10 20', 'moduleEnd'], entry: 'main' }],
-			},
 			viewport: {
 				x: 0,
 				y: 0,
@@ -340,13 +334,13 @@ entryEnd`);
 			expect(main.width).toBeGreaterThan(0);
 			request.position = { x: 80, y: 320 };
 		});
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
-		restoreProject(store, events, state.initialProjectState!, 'replace');
+		projectEdits.restore(project, 'replace');
 
 		expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'main']);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
@@ -388,16 +382,14 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			dispatch: emitter.emit.bind(emitter),
 		};
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
 
-		applyCodeBlockSourceEdits({ store, events }, [
-			{ codeBlock: normalA, code: ['module normalA', '; @alwaysOnTop', 'moduleEnd'] },
-		]);
+		projectEdits.apply({ updates: [{ codeBlock: normalA, code: ['module normalA', '; @alwaysOnTop', 'moduleEnd'] }] });
 
 		expect(normalA.alwaysOnTop).toBe(true);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);
@@ -445,14 +437,14 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 			dispatch: emitter.emit.bind(emitter),
 		};
 
-		codeBlockRenderingEffect(
+		const projectEdits = codeBlockRenderingEffect(
 			store,
 			events,
 			directiveDefinitions,
 			createLayoutRegistry(() => {})
 		);
 
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: topB, code: ['module topB', 'moduleEnd'] }]);
+		projectEdits.apply({ updates: [{ codeBlock: topB, code: ['module topB', 'moduleEnd'] }] });
 
 		expect(topB.alwaysOnTop).toBe(false);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(codeBlocks);

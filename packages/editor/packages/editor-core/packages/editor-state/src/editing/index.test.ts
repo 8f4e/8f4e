@@ -2,13 +2,12 @@ import { EventEmitter } from 'node:events';
 import { getProjectModules } from '@8f4e/language-spec';
 import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createEditorEditingHandle, getEditorBlockId } from '../../editing';
-import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
-import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
-import rendering from '../code-blocks/effect';
-import { createDirectiveRegistry } from '../code-blocks/features/directives/registry';
-import { createLayoutRegistry } from '../code-blocks/layout/registry';
-import projectOperations from './effect';
+import rendering from '../features/code-blocks/effect';
+import { createDirectiveRegistry } from '../features/code-blocks/features/directives/registry';
+import { createLayoutRegistry } from '../features/code-blocks/layout/registry';
+import serializeToProject from '../pureHelpers/projectSerialization/serializeToProject';
+import { createMockCodeBlock, createMockState } from '../pureHelpers/testingUtils/testUtils';
+import { createEditorEditingHandle, getEditorBlockId } from './index';
 
 const cleanups: Array<() => void> = [];
 function setup() {
@@ -27,30 +26,28 @@ function setup() {
 		},
 	});
 	const directives = createDirectiveRegistry();
-	const store = { ...createStateManager(state), directives };
+	const store = createStateManager(state);
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	rendering(
+	const projectEdits = rendering(
 		store,
 		events,
 		directives.definitions,
 		createLayoutRegistry(() => {})
 	);
-	const disposeOperations = projectOperations(store, events);
-	const editing = createEditorEditingHandle(store, events);
+	const editing = createEditorEditingHandle({ ...store, projectEdits }, events);
 	cleanups.push(() => {
 		editing.dispose();
-		disposeOperations();
 		store.dispose();
 	});
-	return { state, block, events, editing: editing.handle, disposeOperations };
+	return { state, block, events, editing: editing.handle };
 }
 
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-describe('project operations', () => {
+describe('public editor operations without history', () => {
 	it('applies a validated API batch with no history effect installed', () => {
 		const test = setup();
 		const beforeEdit = vi.fn(() => serializeToProject(test.state));
@@ -74,7 +71,7 @@ describe('project operations', () => {
 		expect(test.state.historyStack).toHaveLength(0);
 	});
 
-	it('skips unchanged API drafts before notifying history or publishing a change', () => {
+	it('skips unchanged API edits before notifying history or publishing a change', () => {
 		const test = setup();
 		const beforeEdit = vi.fn();
 		test.events.on('beforeProjectEdit', beforeEdit);
@@ -86,11 +83,5 @@ describe('project operations', () => {
 		expect(beforeEdit).not.toHaveBeenCalled();
 		expect(test.state.projectChange.revision).toBe(0);
 		expect(result.revision).toBe(revision);
-	});
-
-	it('unregisters its operation handler when disposed', () => {
-		const test = setup();
-		test.disposeOperations();
-		expect(test.events.dispatch('applyProjectEdit', { project: serializeToProject(test.state) })).toBe(false);
 	});
 });

@@ -1,4 +1,4 @@
-import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT, serializeToProject } from '@8f4e/editor-state';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setupPlugin } from './__tests__/setup';
 import { createProjectUrlLoaderPlugin } from './index';
@@ -54,7 +54,7 @@ describe('project URL loader plugin', () => {
 			const test = setup(fetch, url);
 			test.events.dispatch('loadProject', { project: previousProject });
 			await expect(test.dispatchAsync('prepareInitialProject')).rejects.toThrow();
-			expect(test.state.initialProjectState).toMatchObject({ notes: previousProject.notes });
+			expect(serializeToProject(test.state)).toMatchObject({ notes: previousProject.notes });
 			expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true);
 			expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'failed' }]);
 		}
@@ -66,7 +66,7 @@ describe('project URL loader plugin', () => {
 		test.events.dispatch('loadProject', { project: previousProject });
 		await test.dispatchAsync('prepareInitialProject');
 		expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true);
-		expect(test.state.initialProjectState).toMatchObject({
+		expect(serializeToProject(test.state)).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],
@@ -92,7 +92,7 @@ describe('project URL loader plugin', () => {
 		test.events.dispatch('loadProject', { project: previousProject });
 		await test.dispatchAsync('prepareInitialProject');
 		expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'done' }]);
-		expect(test.state.initialProjectState).toMatchObject({
+		expect(serializeToProject(test.state)).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],
@@ -129,7 +129,7 @@ describe('project URL loader plugin', () => {
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(false);
 		expect(test.fetch).toHaveBeenCalledOnce();
-		expect(test.state.initialProjectState).toMatchObject({
+		expect(serializeToProject(test.state)).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],

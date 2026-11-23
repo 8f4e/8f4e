@@ -34,6 +34,7 @@ const collectProjectBlocks = (currentProject: ProjectObjectModel): ClassifiedPro
 /** Rebuild the project tree and reconcile remembered views before the effect installs it. */
 export function reconstructProject(
 	project: ProjectObjectModel,
+	environmentId: number,
 	directives: EditorDirectiveDefinition[],
 	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
 	previous?: Pick<CodeBlockRendering, 'rootProject' | 'currentProject'>
@@ -131,7 +132,13 @@ export function reconstructProject(
 		};
 	};
 	const rootProject = createProjectLevel(project, ROOT_PROJECT_GROUP_PATH);
-	prepareProjectSources(rootProject, rootProject.blocks, directives);
+	// The root environment is generated from configuration of the authored
+	// project. Its source metadata is prepared after that configuration settles.
+	prepareProjectSources(
+		rootProject,
+		rootProject.blocks.filter(block => block.creationIndex !== environmentId),
+		directives
+	);
 	for (const level of walkProjectLevels(rootProject)) {
 		for (const block of level.blocks) {
 			block.x = block.gridX * viewport.vGrid;

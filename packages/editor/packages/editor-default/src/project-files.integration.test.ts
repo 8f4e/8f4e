@@ -187,13 +187,13 @@ entryEnd`),
 		test.browserWindow.showOpenFilePicker.mockReturnValueOnce(opened.promise);
 		const save = test.events.dispatchAsync('saveProject');
 		const open = test.events.dispatchAsync('importProject');
-		const original = test.state.initialProjectState;
+		const original = test.state.codeBlockRendering.rootProject;
 		test.disposePlugin();
 		picked.resolve(test.handle);
 		opened.resolve([test.handle]);
 		await Promise.all([save, open]);
 		expect(test.handle.writable.close).toHaveBeenCalledOnce();
-		expect(test.state.initialProjectState).toBe(original);
+		expect(test.state.codeBlockRendering.rootProject).toBe(original);
 	});
 	it('keeps file destinations and shortcuts isolated between editors', async () => {
 		const first = setup();

@@ -3,6 +3,10 @@ import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { markGridSizePending } from '../../../viewport/gridSize';
+import codeBlockRendering from '../../effect';
+import { createLayoutRegistry } from '../../layout/registry';
+import { directiveDefinitions } from '../directives/registry';
 import codeBlockDragger from './effect';
 
 describe('codeBlockDragger', () => {
@@ -12,6 +16,17 @@ describe('codeBlockDragger', () => {
 	let pointerdownHandlers: Array<(event: InternalPointerEvent) => void>;
 	let pointermoveHandlers: Array<(event: InternalPointerEvent) => void>;
 	let pointerupHandlers: Array<() => void>;
+
+	function installDragger() {
+		const projectEdits = codeBlockRendering(
+			store,
+			events,
+			directiveDefinitions,
+			createLayoutRegistry(() => {})
+		);
+		codeBlockDragger(Object.assign(store, { projectEdits }), events);
+		return projectEdits;
+	}
 
 	beforeEach(() => {
 		// Initialize state
@@ -80,7 +95,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			// Mousedown without Alt key
 			pointerdownHandlers[0]({
@@ -126,6 +141,37 @@ describe('codeBlockDragger', () => {
 		});
 	});
 
+	it('discards the drag preview without publishing if the block snaps to its saved position', () => {
+		const block = createMockCodeBlock({
+			code: ['module test', '; @pos 5 5', 'moduleEnd'],
+			gridX: 5,
+			gridY: 5,
+			x: 50,
+			y: 100,
+			lastUpdated: 1234,
+		});
+		state.codeBlockRendering.currentProject.blocks = [block];
+		installDragger();
+		const pointer = {
+			x: 50,
+			y: 100,
+			altKey: false,
+			buttons: 1,
+			movementX: 0,
+			movementY: 0,
+			stopPropagation: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+		};
+		pointerdownHandlers[0](pointer);
+		pointermoveHandlers[0]({ ...pointer, movementX: 2, movementY: 2 });
+		expect(block).toMatchObject({ x: 52, y: 102, gridX: 5, gridY: 5 });
+		pointerupHandlers[0]();
+		expect(block).toMatchObject({ x: 50, y: 100, gridX: 5, gridY: 5, lastUpdated: 1234 });
+		expect(state.projectChange.revision).toBe(0);
+		expect(state.compilerInputRevision).toBe(0);
+	});
+
 	it('moves plugin-selected targets and persists their positions with one change', () => {
 		const first = createMockCodeBlock({
 			code: ['module first', 'moduleEnd'],
@@ -148,7 +194,7 @@ describe('codeBlockDragger', () => {
 			expect(request).toEqual({ codeBlock: first, altKey: true, targets: [first] });
 			request.targets = [first, second];
 		});
-		codeBlockDragger(store, events);
+		installDragger();
 		const pointer = {
 			x: 50,
 			y: 100,
@@ -169,6 +215,89 @@ describe('codeBlockDragger', () => {
 		expect(state.compilerInputRevision).toBe(1);
 	});
 
+	it('commits only surviving targets when a secondary block is deleted during a drag', () => {
+		const first = createMockCodeBlock({
+			code: ['module first', '; @pos 5 5', 'moduleEnd'],
+			gridX: 5,
+			gridY: 5,
+			x: 50,
+			y: 100,
+			creationIndex: 0,
+		});
+		const second = createMockCodeBlock({
+			code: ['module second', '; @pos 20 10', 'moduleEnd'],
+			gridX: 20,
+			gridY: 10,
+			x: 200,
+			y: 200,
+			creationIndex: 1,
+		});
+		state.codeBlockRendering.currentProject.blocks = [first, second];
+		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
+			if (name === 'resolveCodeBlockDragTargets') {
+				const request = payload as import('./effect').ResolveCodeBlockDragTargetsEvent;
+				request.targets = [first, second];
+			}
+		});
+		const projectEdits = installDragger();
+		const pointer = {
+			x: 50,
+			y: 100,
+			altKey: true,
+			buttons: 1,
+			movementX: 0,
+			movementY: 0,
+			stopPropagation: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+		};
+		pointerdownHandlers[0](pointer);
+		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		projectEdits.apply({ deletes: [second] });
+		// Collection settlement recomputes layout, so continue dragging the surviving target.
+		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		pointerupHandlers[0]();
+		expect(state.codeBlockRendering.currentProject.blocks).toEqual([first]);
+		expect(first.code).toContain('; @pos 6 6');
+		expect(second.code).toContain('; @pos 20 10');
+		expect(state.projectChange.revision).toBe(2);
+		expect(state.compilerInputRevision).toBe(2);
+	});
+
+	it('cancels and discards the drag preview when a replacement grid is pending', () => {
+		const block = createMockCodeBlock({
+			code: ['module test', '; @pos 5 5', 'moduleEnd'],
+			gridX: 5,
+			gridY: 5,
+			x: 50,
+			y: 100,
+			lastUpdated: 1234,
+		});
+		state.codeBlockRendering.currentProject.blocks = [block];
+		installDragger();
+		const pointer = {
+			x: 50,
+			y: 100,
+			altKey: false,
+			buttons: 1,
+			movementX: 0,
+			movementY: 0,
+			stopPropagation: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+		};
+		pointerdownHandlers[0](pointer);
+		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
+		expect(block).toMatchObject({ x: 60, y: 120 });
+		markGridSizePending(state);
+		pointerupHandlers[0]();
+		expect(block).toMatchObject({ x: 50, y: 100, gridX: 5, gridY: 5, lastUpdated: 1234 });
+		expect(block.code).toContain('; @pos 5 5');
+		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(state.projectChange.revision).toBe(0);
+		expect(state.compilerInputRevision).toBe(0);
+	});
+
 	describe('stopPropagation behavior', () => {
 		it('should set stopPropagation to true while dragging', () => {
 			const block1 = createMockCodeBlock({
@@ -183,7 +312,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			// Mousedown
 			pointerdownHandlers[0]({
@@ -232,7 +361,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			// Mousedown
 			pointerdownHandlers[0]({
@@ -274,7 +403,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1, blockBehind];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			pointerdownHandlers[0]({
 				x: 50,
@@ -323,7 +452,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			// Mousedown
 			pointerdownHandlers[0]({
@@ -356,7 +485,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [block1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			pointerdownHandlers[0]({
 				x: 50,
@@ -393,7 +522,7 @@ describe('codeBlockDragger', () => {
 			state.codeBlockRendering.currentProject.blocks = [block1];
 			state.codeBlockRendering.selectedCodeBlock = block1;
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			// Mousedown outside any block
 			pointerdownHandlers[0]({
@@ -457,7 +586,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [normal1, normal2, top1];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			pointerdownHandlers[0]({
 				x: 50,
@@ -517,7 +646,7 @@ describe('codeBlockDragger', () => {
 
 			state.codeBlockRendering.currentProject.blocks = [normal1, top1, top2];
 
-			codeBlockDragger(store, events);
+			installDragger();
 
 			pointerdownHandlers[0]({
 				x: 250,

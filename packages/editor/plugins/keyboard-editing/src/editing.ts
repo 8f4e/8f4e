@@ -45,10 +45,10 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	} else return;
 	event.preventDefault();
 	store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: edit.row, col: edit.col });
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }]);
+	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }]);
 }
 
-export function handlePaste(event: ClipboardEvent, { store, events }: EditorPluginContext): void {
+export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContext): void {
 	const state = store.getState();
 	if (event.defaultPrevented || state.editorMode !== 'edit') return;
 	const block = state.codeBlockRendering.selectedCodeBlock;
@@ -58,5 +58,5 @@ export function handlePaste(event: ClipboardEvent, { store, events }: EditorPlug
 	event.preventDefault();
 	const edit = insertText(block.code, block.cursor.row, block.cursor.col, text);
 	store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: edit.row, col: edit.col });
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }]);
+	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }]);
 }

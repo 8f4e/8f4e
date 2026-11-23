@@ -33,7 +33,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		callbacks: {},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? createButtonPlugin({ writeMemory: write }).setup({
@@ -56,7 +55,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
@@ -154,14 +154,23 @@ describe('button plugin', () => {
 
 	it('replaces button data after source edits and removes deleted directives', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @button &gate -5 100';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @button &gate -5 100' : line)),
+				},
+			],
+		});
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), -5, true);
-		test.codeBlock.code[2] = '; no widget';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
+			],
+		});
 		test.write.mockClear();
 		test.press();
 		test.render();

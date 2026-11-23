@@ -4,6 +4,7 @@ import type {
 	EditorLoadingRegistry,
 	EditorMenuRegistry,
 	EventDispatcher,
+	ProjectEdits,
 	State,
 } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
@@ -11,7 +12,7 @@ import type { EditorDrawerRegistry } from '@8f4e/web-ui';
 import { disposeAll } from './disposeAll';
 
 export interface EditorPluginContext {
-	store: Omit<StateManager<State>, 'dispose'>;
+	store: Omit<StateManager<State>, 'dispose'> & { projectEdits: ProjectEdits };
 	events: EventDispatcher;
 	menus: EditorMenuRegistry;
 	directives: EditorDirectiveRegistry;

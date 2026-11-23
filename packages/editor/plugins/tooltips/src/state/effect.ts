@@ -13,7 +13,10 @@ import { createEmptyTooltipState, getTooltipState } from './layout';
 /**
  * Keeps plugin-owned tooltip state synchronized with the selected code line.
  */
-export default function createTooltip(store: EditorPluginContext['store'], events: EditorPluginContext['events']) {
+export default function createTooltip(
+	store: Pick<EditorPluginContext['store'], 'getState' | 'subscribe' | 'unsubscribe'>,
+	events: EditorPluginContext['events']
+) {
 	let tooltip = createEmptyTooltipState();
 	const state = store.getState();
 

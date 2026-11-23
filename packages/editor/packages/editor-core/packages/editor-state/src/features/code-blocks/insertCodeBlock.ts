@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ProjectEdits, State } from '@8f4e/editor-state-types';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import findEntryNameAtPosition from './features/entryBounds/findEntryNameAtPosition';
@@ -21,7 +21,7 @@ function getUniqueEntryName(state: State): string {
 
 /** Insert one block with automatic entry assignment; returns its settled handle, or undefined in view mode. */
 export function insertCodeBlock(
-	store: Pick<StateManager<State>, 'getState' | 'set'>,
+	store: Pick<StateManager<State>, 'getState'> & { projectEdits: ProjectEdits },
 	{ x, y, code }: { x: number; y: number; code: string[] }
 ): CodeBlockGraphicData | undefined {
 	const state = store.getState();

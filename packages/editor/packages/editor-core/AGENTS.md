@@ -22,11 +22,13 @@
 
 ## Editing and Layout
 
-- Use the shared source update path in `features/code-blocks/sourceUpdates.ts` to settle derived state. Route
-  removals through `deleteCodeBlocks`. Source-edit batches emit `codeBlockSourcesChanged` before revisions advance.
-- Keep edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate edits before applying a batch
-  as one undo step. Use existing state and block handles for reads and targeting. Keep adapter projections outside
-  core and derive positions from source directives.
+- Route project mutations through the synchronous project editing service. It uses the shared source update path
+  to settle facts, configuration, generated environment source and any available layout, then notifies consumers.
+  `codeBlockSourcesChanged` is a completed source notification, not a command to refresh manually mutated source.
+- Keep public edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate command preconditions
+  before applying a public batch as one undo step; the compiler validates source syntax and semantics. Internal
+  callers obey the typed mutation contract. Use existing block handles for reads and targeting. Keep adapter
+  projections outside core and derive positions from source directives.
 - Publish `state.projectChange` once after a completed edit, history action or project replacement, after derived
   state settles. Navigation and no-ops leave the revision alone. Share this revision across history, editing and
   persistence, with a separate compiler-input revision. Editing works without the history effect installed.

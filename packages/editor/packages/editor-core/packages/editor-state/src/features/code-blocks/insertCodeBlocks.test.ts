@@ -1,16 +1,33 @@
-import createStateManager from '@8f4e/state-manager';
-import { describe, expect, it } from 'vitest';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { parseProjectSource } from '@8f4e/project-preparser';
+import { afterEach, describe, expect, it } from 'vitest';
+import initState, { setGridSize } from '../../index';
 import { insertCodeBlocks } from './insertCodeBlocks';
+
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+
+function setup(source: string, withGrid = true) {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {} });
+	cleanups.push(store.dispose);
+	const state = store.getState();
+	if (withGrid) setGridSize(state, events, TEST_GRID_SIZE);
+	events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\nentry main\n${source}\nentryEnd`) });
+	events.dispatch('enterEditMode');
+	return { store, state };
+}
 
 describe('insertCodeBlocks', () => {
 	it('preserves declaration names and references while positioning a batch with distinct identities', () => {
-		const state = createMockState();
-		state.codeBlockRendering.currentProject.blocks.push(
-			createMockCodeBlock({ name: 'same', code: ['module same', 'moduleEnd'] })
-		);
-		state.codeBlockRendering.nextCodeBlockCreationIndex = 5;
-		const inserted = insertCodeBlocks(createStateManager(state), {
+		const { store, state } = setup('module same\nmoduleEnd');
+		const existing = [...state.codeBlockRendering.currentProject.blocks];
+		const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
+		const inserted = insertCodeBlocks(store, {
 			x: 80,
 			y: 64,
 			blocks: [
@@ -18,11 +35,11 @@ describe('insertCodeBlocks', () => {
 				{ code: ['module same', 'push &same:value', 'moduleEnd'], gridCoordinates: { x: 4, y: -1 }, entry: 'audio' },
 			],
 		});
-		const blocks = state.codeBlockRendering.currentProject.blocks.slice(1);
+		const blocks = state.codeBlockRendering.currentProject.blocks.filter(block => !existing.includes(block));
 		expect(inserted[0]).toBe(blocks[0]);
 		expect(inserted[1]).toBe(blocks[1]);
 		expect(blocks.map(block => block.name)).toEqual(['same', 'same']);
-		expect(blocks.map(block => block.creationIndex)).toEqual([5, 6]);
+		expect(blocks.map(block => block.creationIndex)).toEqual([nextId, nextId + 1]);
 		expect(blocks.map(block => [block.gridX, block.gridY])).toEqual([
 			[10, 4],
 			[14, 3],
@@ -30,15 +47,8 @@ describe('insertCodeBlocks', () => {
 		for (const block of blocks) expect(block.code).toContain('push &same:value');
 	});
 	it('preserves nested entry tables and source names without renaming project groups', () => {
-		const state = createMockState();
-		state.codeBlockRendering.currentProject.blocks.push(
-			createMockCodeBlock({
-				name: 'layer',
-				code: ['group layer', 'groupEnd'],
-				childProject: { path: 'layer', entries: [], blocks: [] },
-			})
-		);
-		insertCodeBlocks(createStateManager(state), {
+		const { store } = setup('group layer\ngroupEnd');
+		const [owner] = insertCodeBlocks(store, {
 			x: 0,
 			y: 0,
 			blocks: [
@@ -59,10 +69,9 @@ describe('insertCodeBlocks', () => {
 				},
 			],
 		});
-		const owner = state.codeBlockRendering.currentProject.blocks[1];
 		expect(owner.name).toBe('layer');
 		expect(owner.childProject?.path).toBe('layer');
-		expect(owner.childProject?.entries).toEqual(['empty', 'audio']);
+		expect(owner.childProject?.entries).toEqual(['empty', 'audio', 'main']);
 		expect(owner.childProject?.blocks[0]).toMatchObject({
 			name: 'same',
 			entry: 'audio',
@@ -75,5 +84,17 @@ describe('insertCodeBlocks', () => {
 			entries: ['silent'],
 			blocks: [],
 		});
+	});
+	it('does not convert pixel coordinates before a grid is installed', () => {
+		const { store, state } = setup('module same\nmoduleEnd', false);
+		const before = state.projectChange.revision;
+		expect(
+			insertCodeBlocks(store, {
+				x: 10,
+				y: 10,
+				blocks: [{ code: ['module new', 'moduleEnd'], gridCoordinates: { x: 0, y: 0 } }],
+			})
+		).toEqual([]);
+		expect(state.projectChange.revision).toBe(before);
 	});
 });

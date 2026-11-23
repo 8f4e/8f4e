@@ -2,6 +2,7 @@ import initEditor, { type Editor } from '@8f4e/editor-core';
 import { mountDefaultEditor } from '@8f4e/editor-default';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
+import { serializeToProject } from '@8f4e/editor-state';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
@@ -56,7 +57,7 @@ test('mounts an editable empty default editor after its initial URL fails', asyn
 			initialProjectUrl: 'data:text/plain,invalid%20project',
 		});
 		editor.pauseRendering();
-		expect(editor.state.initialProjectState).toMatchObject({ entries: [], execution: [], notes: [] });
+		expect(serializeToProject(editor.state)).toMatchObject({ entries: [], execution: [], notes: [] });
 		expect(editor.state.gridSizeReady).toBe(true);
 		expect(editor.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true);
 		expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('failed');
