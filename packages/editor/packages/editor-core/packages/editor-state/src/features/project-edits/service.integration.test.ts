@@ -150,6 +150,43 @@ noteEnd`);
 		expect(compilerChanged).toHaveBeenCalledOnce();
 	});
 
+	it('retains ownership of unchanged descendants when editing multiple project levels', () => {
+		const test = setup(
+			'8f4e/v1\nnote remove\nnoteEnd\nentry main\ngroup child\nnote keep\nnoteEnd\ngroupEnd\nentryEnd'
+		);
+		const { store, state, block } = test;
+		test.load();
+		const root = state.codeBlockRendering.rootProject;
+		const group = block('child');
+		const child = group.childProject!;
+		const existing = child.blocks[0];
+		const {
+			insertedBlocks: [rootInsert, childInsert],
+		} = store.projectEdits.apply({
+			deletes: [block('remove')],
+			inserts: [
+				{ project: root, source: { code: ['note rootAdded', 'noteEnd'] } },
+				{ project: child, source: { code: ['note childAdded', 'noteEnd'] } },
+			],
+		});
+		expect(root.blocks).toContain(rootInsert);
+		expect(child.blocks).toEqual([existing, childInsert]);
+		expect(
+			store.projectEdits.apply({
+				updates: [
+					{ codeBlock: existing, code: ['note existing', 'noteEnd'] },
+					{ codeBlock: childInsert, code: ['note childUpdated', 'noteEnd'] },
+				],
+			}).changed
+		).toBe(true);
+		expect(existing.name).toBe('existing');
+		expect(childInsert.name).toBe('childUpdated');
+		store.projectEdits.apply({ deletes: [group] });
+		expect(() =>
+			store.projectEdits.apply({ updates: [{ codeBlock: existing, code: ['note detached', 'noteEnd'] }] })
+		).toThrow();
+	});
+
 	it('ignores entry assignments for non-execution blocks and retains the previous entry during incomplete edits', () => {
 		const test = setup('8f4e/v1\nnote sample\nnoteEnd\nentry alternate\nmodule target\nmoduleEnd\nentryEnd');
 		const { store, state, events, block, projectChanged, compilerChanged, sourcesChanged } = test;

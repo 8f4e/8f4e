@@ -28,6 +28,13 @@ export function supportsExecutionEntry(block: Pick<CodeBlockGraphicData, 'blockT
 	return block.blockType === 'module' || block.childProject !== undefined;
 }
 
+/** Keep the editor's entry table authoritative, including empty previously declared entries. */
+export function rememberEntry(project: ProjectLevel, block: CodeBlockGraphicData): void {
+	if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
+		project.entries.push(block.entry);
+	}
+}
+
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
 	block.parsedDirectives = parseBlockDirectives(block.code);
@@ -77,6 +84,7 @@ export function prepareProjectSources(
 ): void {
 	for (const block of blocks) {
 		updateBlockSource(block, directives);
+		rememberEntry(project, block);
 		if (block.childProject) prepareProjectSources(block.childProject, block.childProject.blocks, directives);
 	}
 	partitionProjectBlocks(project);

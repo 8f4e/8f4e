@@ -162,7 +162,6 @@ describe('projectGroupNavigation', () => {
 				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
 				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
 				selectedCodeBlock: groupBlock,
-				draggedCodeBlock: groupBlock,
 			},
 			viewport: { x: 64, y: 96 },
 		});
@@ -178,7 +177,6 @@ describe('projectGroupNavigation', () => {
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(rootCodeBlocks);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(nestedProjectCodeBlocks);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		expect(state.viewport.x).toBe(0);
 		expect(state.viewport.y).toBe(0);
 	});

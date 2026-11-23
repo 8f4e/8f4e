@@ -84,3 +84,5 @@ export function createLayoutCoordinator(
 		refreshProject,
 	};
 }
+
+export type LayoutCoordinator = ReturnType<typeof createLayoutCoordinator>;

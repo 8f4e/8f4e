@@ -19,6 +19,7 @@ export interface ProjectEditPlan {
 		entry?: string;
 	}[];
 	inserts?: readonly { project: ProjectLevel; source: ProjectSourceBlock }[];
+	/** Repeated deletes and deletes covered by an ancestor deletion are idempotent. */
 	deletes?: readonly CodeBlockGraphicData[];
 }
 

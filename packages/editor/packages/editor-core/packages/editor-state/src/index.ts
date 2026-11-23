@@ -14,7 +14,9 @@ import codeBlockNavigation from './features/code-blocks/features/codeBlockNaviga
 import { createDirectiveRegistry } from './features/code-blocks/features/directives/registry';
 import entryBounds from './features/code-blocks/features/entryBounds/effect';
 import projectGroupNavigation from './features/code-blocks/features/projectGroupNavigation/effect';
+import { createLayoutCoordinator } from './features/code-blocks/layout/coordinator';
 import { createLayoutRegistry } from './features/code-blocks/layout/registry';
+import { createProjectMembership } from './features/code-blocks/projectMembership';
 import dialog from './features/dialog/effect';
 import historyTracking from './features/edit-history/effect';
 import { registerExportFileNameEditorConfigValidator } from './features/editor-config/exportFileName';
@@ -25,7 +27,7 @@ import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import pointerInput from './features/pointer-input/effect';
 import publishCompilationInputChanges from './features/program-compiler/inputChanges';
-import type { ProjectEditService } from './features/project-edits/service';
+import { createProjectEditService, type ProjectEditService } from './features/project-edits/service';
 import projectLoading from './features/project-loading/effect';
 import viewport from './features/viewport/effect';
 import createDefaultState from './pureHelpers/state/createDefaultState';
@@ -91,7 +93,11 @@ export default function init(events: EventDispatcher, options: Options): EditorS
 
 	registerEffect(editorMode(store, events));
 	registerEffect(publishCompilationInputChanges(store, events));
-	const projectEdits = codeBlockRendering(store, events, directives.definitions, layout);
+	const state = store.getState();
+	const membership = createProjectMembership(state.codeBlockRendering.rootProject);
+	const coordinator = createLayoutCoordinator(state, events, layout, membership);
+	const projectEdits = createProjectEditService(store, events, directives.definitions, membership, coordinator);
+	registerEffect(codeBlockRendering(store, events, coordinator));
 	const editingStore = { ...store, projectEdits };
 	registerEffect(projectLoading(projectEdits, events));
 	registerEffect(codeBlockDragger(editingStore, events));

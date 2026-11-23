@@ -57,7 +57,12 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		await Promise.resolve();
 		return state.contextMenu.items;
 	};
-	const drag = (target: CodeBlockGraphicData, altKey = false, dx = state.viewport.vGrid, dy = state.viewport.hGrid) => {
+	const startDrag = (
+		target: CodeBlockGraphicData,
+		altKey = false,
+		dx = state.viewport.vGrid,
+		dy = state.viewport.hGrid
+	) => {
 		const pointer = {
 			x: target.x - state.viewport.x + 8,
 			y: target.y - state.viewport.y + 8,
@@ -71,6 +76,9 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		};
 		events.dispatch('pointerdown', pointer);
 		events.dispatch('pointermove', { ...pointer, movementX: dx, movementY: dy });
+	};
+	const drag = (target: CodeBlockGraphicData, altKey = false, dx = state.viewport.vGrid, dy = state.viewport.hGrid) => {
+		startDrag(target, altKey, dx, dy);
 		events.dispatch('pointerup');
 	};
 	return {
@@ -79,6 +87,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		events,
 		block,
 		openMenu,
+		startDrag,
 		drag,
 		writeClipboardText,
 		disposePlugin,

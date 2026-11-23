@@ -3,9 +3,10 @@
  * Shared feature types are re-exported here for editor consumers.
  */
 
-import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
+import type { MemoryAction as CompilerMemoryAction } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
+import type { EditorProjectSnapshot } from './features/code-blocks/projectSnapshot';
 import type {
 	CodeBlockGraphicData,
 	CodeBlockRendering,
@@ -199,8 +200,8 @@ export interface State {
 	appearance: { fontOverride?: string };
 	editorConfigValidators: EditorConfigValidatorRegistry;
 	editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry;
-	historyStack: ProjectObjectModel[];
-	redoStack: ProjectObjectModel[];
+	historyStack: EditorProjectSnapshot[];
+	redoStack: EditorProjectSnapshot[];
 	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
@@ -225,6 +226,7 @@ export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/layout';
 export type * from './features/code-blocks/navigation';
 export type * from './features/code-blocks/projectEdits';
+export type * from './features/code-blocks/projectSnapshot';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
 export type * from './features/editor-config/types';

@@ -148,7 +148,7 @@ export interface EntryBounds {
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
-	/** Entry definitions local to this level, including empty entries. */
+	/** Settled entry definitions local to this level, including empty entries and each execution block's assigned entry. */
 	entries: ProjectEntryName[];
 	path: ProjectGroupPath;
 	blocks: CodeBlockGraphicData[];

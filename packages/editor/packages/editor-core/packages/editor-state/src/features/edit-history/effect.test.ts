@@ -1,30 +1,24 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import { getProjectModules } from '@8f4e/language-spec';
-import createStateManager from '@8f4e/state-manager';
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import initState, { setGridSize } from '~/index';
 import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
-import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
 import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
-import rendering from '../code-blocks/effect';
-import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
-import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
-import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
-import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
-import historyTracking from './effect';
 
-function createHistoryStore(state: State, events: EventDispatcher) {
-	const store = createStateManager(state);
-	const projectEdits = rendering(
-		store,
-		events,
-		directiveDefinitions,
-		createLayoutRegistry(() => {})
-	);
-	return { ...store, projectEdits };
+function createHistoryEditor(project: ProjectObjectModel = EMPTY_DEFAULT_PROJECT) {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: true } });
+	const state = store.getState();
+	setGridSize(state, events, TEST_GRID_SIZE);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
+	return { store, events, state };
 }
 
 describe('history tracking effect', () => {
@@ -37,57 +31,46 @@ describe('history tracking effect', () => {
 	});
 
 	it('restores undo and redo snapshots within the current project', () => {
-		const state = createMockState({ featureFlags: { historyTracking: true } });
-		state.historyStack.push(EMPTY_DEFAULT_PROJECT);
-		const events = createMockEventDispatcherWithVitest();
-		const store = createHistoryStore(state, events);
-		const dispose = historyTracking(store, events, store.projectEdits);
-		vi.mocked(events.on).mock.calls.find(([name]) => name === 'undo')![1](undefined);
-		expect(serializeToProject(state)).toMatchObject({
-			...EMPTY_DEFAULT_PROJECT,
-			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
-		});
+		const { state, store, events } = createHistoryEditor();
+		const original = serializeToProject(state);
+		store.projectEdits.apply(
+			{ inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }] },
+			'checkpoint'
+		);
+		const edited = serializeToProject(state);
+		events.dispatch('undo');
+		expect(serializeToProject(state)).toEqual(original);
 		expect(state.redoStack).toHaveLength(1);
-		const redoSnapshot = state.redoStack[0];
-		vi.mocked(events.on).mock.calls.find(([name]) => name === 'redo')![1](undefined);
-		expect(serializeToProject(state)).toMatchObject({
-			...redoSnapshot,
-			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
-		});
+		events.dispatch('redo');
+		expect(serializeToProject(state)).toEqual(edited);
 		expect(state.historyStack).toHaveLength(1);
-		dispose();
 		store.dispose();
 	});
 
 	it('cancels a pending history snapshot when disposed', async () => {
-		const state = createMockState({
-			featureFlags: { historyTracking: true },
+		const { state, store } = createHistoryEditor({
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', 'moduleEnd'] }],
 		});
-		const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'] });
-		state.codeBlockRendering.rootProject.blocks.push(block);
-		const events = createMockEventDispatcherWithVitest();
-		const store = createHistoryStore(state, events);
-		const dispose = historyTracking(store, events, store.projectEdits);
+		const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'test')!;
 
 		store.projectEdits.apply({ updates: [{ codeBlock: block, code: ['module test', 'push 1', 'moduleEnd'] }] });
-		dispose();
+		store.dispose();
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(state.historyStack).toEqual([]);
-		store.dispose();
 	});
 });
 
 describe('history tracking with real project mutations', () => {
 	let state: State;
-	let store: ReturnType<typeof createHistoryStore>;
-	let events: EventDispatcher;
-	let block: ReturnType<typeof createMockCodeBlock>;
+	let store: ReturnType<typeof createHistoryEditor>['store'];
+	let events: ReturnType<typeof createHistoryEditor>['events'];
+	let block: CodeBlockGraphicData;
+	let baselineRevision: number;
 
 	function dispatch(name: string, payload: unknown = {}): void {
-		for (const [eventName, handler] of vi.mocked(events.on).mock.calls) {
-			if (eventName === name) handler(payload);
-		}
+		events.dispatch(name, payload);
 	}
 
 	function replaceLine(row: number, line: string) {
@@ -107,22 +90,14 @@ describe('history tracking with real project mutations', () => {
 
 	beforeEach(() => {
 		vi.useFakeTimers();
-		state = createMockState({ featureFlags: { historyTracking: true } });
-		events = createMockEventDispatcherWithVitest();
-		events.dispatch = vi.fn(dispatch);
-		block = createMockCodeBlock({
-			name: 'main',
-			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
-			blockType: 'module',
-			entry: 'main',
-			cursor: { row: 1, col: 6, y: 16 },
-		});
-		state.codeBlockRendering.rootProject.blocks.push(block);
-		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
-		state.codeBlockRendering.selectedCodeBlock = block;
-		store = createHistoryStore(state, events);
-		projectImport(store.projectEdits, events);
-		historyTracking(store, events, store.projectEdits);
+		({ state, store, events } = createHistoryEditor({
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module main', 'push 1', 'drop', 'moduleEnd'] }],
+		}));
+		block = currentModule();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		block.cursor = { row: 1, col: 6, y: 16 };
+		baselineRevision = state.projectChange.revision;
 	});
 
 	afterEach(() => {
@@ -194,10 +169,13 @@ describe('history tracking with real project mutations', () => {
 
 		expect(block.code[1]).toBe('push 12');
 		expect(state.historyStack).toHaveLength(1);
-		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
+		expect(
+			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === block.creationIndex)!.code
+		).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
 	});
 
 	it('creates no history entry when an edit returns to the committed content (case e)', async () => {
+		expect(state.codeBlockRendering.rootProject.entries).toEqual(['main']);
 		replaceLine(1, 'push 12');
 		replaceLine(1, 'push 1');
 		await vi.advanceTimersByTimeAsync(2000);
@@ -208,7 +186,7 @@ describe('history tracking with real project mutations', () => {
 
 	it('cancels pending work and resets the baseline when another project loads (case f)', async () => {
 		replaceLine(1, 'push 12');
-		expect(state.projectChange.revision).toBe(1);
+		expect(state.projectChange.revision).toBe(baselineRevision + 1);
 
 		const otherProject = {
 			...EMPTY_DEFAULT_PROJECT,
@@ -229,7 +207,9 @@ describe('history tracking with real project mutations', () => {
 		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
-		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module other', 'moduleEnd']);
+		expect(
+			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === loaded.creationIndex)!.code
+		).toEqual(['module other', 'moduleEnd']);
 	});
 
 	it('records exactly one entry for inserting a block batch, and none for an empty batch', async () => {
@@ -249,6 +229,15 @@ describe('history tracking with real project mutations', () => {
 		expect(state.historyStack).toHaveLength(1);
 	});
 
+	it('does not create a snapshot for allocation without a net content change', async () => {
+		const { insertedBlocks } = store.projectEdits.apply({
+			inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }],
+		});
+		store.projectEdits.apply({ deletes: insertedBlocks });
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(state.historyStack).toHaveLength(0);
+	});
+
 	it('records one entry for a programmatic position commit from dragging', async () => {
 		dispatch('loadProject', {
 			project: {
@@ -260,8 +249,6 @@ describe('history tracking with real project mutations', () => {
 		});
 		const loaded = currentModule();
 		store.set('editorMode', 'edit');
-		codeBlockDragger(store, events);
-		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 		const compilerRevisionAfterLoad = state.compilerInputRevision;
 
 		dispatch('pointerdown', { x: 32, y: 8 });
@@ -284,7 +271,7 @@ describe('history tracking with real project mutations', () => {
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 		await vi.advanceTimersByTimeAsync(3000);
 
-		expect(state.projectChange.revision).toBe(0);
+		expect(state.projectChange.revision).toBe(baselineRevision);
 		expect(state.historyStack).toEqual([]);
 		expect(state.redoStack).toEqual([]);
 	});
@@ -293,7 +280,7 @@ describe('history tracking with real project mutations', () => {
 		deleteCodeBlocks(store, []);
 		await vi.advanceTimersByTimeAsync(2000);
 
-		expect(state.projectChange.revision).toBe(0);
+		expect(state.projectChange.revision).toBe(baselineRevision);
 		expect(state.historyStack).toEqual([]);
 	});
 });

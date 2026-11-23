@@ -387,6 +387,8 @@ synchronous generated source, refreshes available layout, and publishes the fina
 the settled source, entries or membership advance revisions. Changes confined to existing ordinary comment text at
 the same line positions leave compiler inputs unchanged. Source mutations and derived environment changes belonging
 to one transaction publish once. `codeBlockSourcesChanged { codeBlocks }` reports settled source changes.
+Repeated updates are folded to their final intent and duplicate or ancestor-covered deletions are normalized once;
+updates or insertions targeting deleted levels are rejected before modifying any live source.
 
 Callers own edit-mode checks and source transformations; they must not mutate published source or project membership
 directly, or separately publish the operation. Asynchronous work completes before a transaction starts; transactions
@@ -398,9 +400,10 @@ history policy. It does not validate the program; invalid and incomplete source 
 checkpoints emit `beforeProjectEdit` before changing live source, allowing history to commit pending typing. Unchanged
 batches leave pending history, compiler inputs and revisions untouched. Selection and view navigation do not publish.
 
-Project loading and undo/redo use the same settlement and publication boundary for snapshot restoration, with
-`replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation inputs. History and
-session persistence consume completed `projectChange` records, not intermediate source mutations.
+Project loading translates compiler/file data into editor source; undo/redo restore detached editor snapshots that
+retain block identities, boundaries and draft entry/position metadata. Both use the same reconstruction, settlement and
+publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
+inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
 
 ## Project loading
 

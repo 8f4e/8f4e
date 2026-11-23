@@ -1,29 +1,17 @@
-import type {
-	CodeBlockGraphicData,
-	CodeBlockPointerDownEvent,
-	EditorDirectiveDefinition,
-	EventDispatcher,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, CodeBlockPointerDownEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import { createProjectEditService } from '../project-edits/service';
 import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import reverseGapCalculator from '../text-geometry/reverseGapCalculator';
 import { getRawIndexForVisualColumn } from '../text-geometry/tabLayout';
-import { createLayoutCoordinator } from './layout/coordinator';
-import type { LayoutRegistry } from './layout/registry';
-import { createProjectMembership } from './projectMembership';
+import type { LayoutCoordinator } from './layout/coordinator';
 import { updateCursorY } from './updateCursorY';
 
 export default function codeBlockRendering(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	directives: EditorDirectiveDefinition[],
-	layout: LayoutRegistry
-) {
+	coordinator: LayoutCoordinator
+): () => void {
 	const state = store.getState();
-	const membership = createProjectMembership(state.codeBlockRendering.rootProject);
-	const coordinator = createLayoutCoordinator(state, events, layout, membership);
 	const refreshBlockLayouts = coordinator.refreshBlocks;
 
 	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
@@ -63,7 +51,7 @@ export default function codeBlockRendering(
 	// Membership and source preparation belong exclusively to the project-edit service.
 	// Selecting an already-owned level simply refreshes its visible geometry.
 	let previousProject = state.codeBlockRendering.currentProject;
-	const onCurrentProjectBlocksChanged = () => {
+	const onCurrentProjectChanged = () => {
 		const project = state.codeBlockRendering.currentProject;
 		if (project !== previousProject) {
 			previousProject = project;
@@ -92,19 +80,28 @@ export default function codeBlockRendering(
 		previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
 	};
 
-	const projectEdits = createProjectEditService(store, events, directives, membership, coordinator);
-
-	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
-	events.on('codeBlockLayoutContributionsChanged', ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
+	const onLayoutContributionsChanged = ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
 		if (codeBlock) {
 			refreshBlockLayouts([codeBlock]);
 		} else refreshCurrentProjectLayout();
-	});
+	};
+
+	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
+	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
+	events.on('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 	events.on('gridSizeChanged', refreshCurrentProjectLayout);
 	store.subscribe('compiler.isCompiling', refreshCurrentProjectLayout);
-	store.subscribe('codeBlockRendering.currentProject.blocks', onCurrentProjectBlocksChanged);
+	store.subscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
-	return projectEdits;
+	return () => {
+		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
+		events.off('memoryValuesChanged', refreshCurrentProjectLayout);
+		events.off('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
+		events.off('gridSizeChanged', refreshCurrentProjectLayout);
+		store.unsubscribe('compiler.isCompiling', refreshCurrentProjectLayout);
+		store.unsubscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
+		store.unsubscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
+		store.unsubscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
+	};
 }

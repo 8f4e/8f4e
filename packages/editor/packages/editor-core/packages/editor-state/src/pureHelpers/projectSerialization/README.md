@@ -7,32 +7,31 @@ Shared conversion from live editor blocks to the canonical project model.
 ## Key Behaviors
 
 - **Project Object Serialization**: `serializeToProject` converts editor code blocks to `ProjectObjectModel`
-- **Consumers**: Compilation, undo/redo, session persistence, and optional file-export plugins
+- **Consumers**: Compilation, session persistence, and optional file-export plugins
 - **Pure Helpers**: No event handlers, subscriptions, or plugin installation
 
 ## Export
 
 ### Project Object Serialization (`serializeToProject`)
 
-`serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving, history, and live
-compilation. It is not a separate editor schema and it is not the exported `.8f4e` file format.
+`serializeToProject` creates the compiler-owned `ProjectObjectModel` used for session saving and live compilation.
+It is not the editor's history snapshot or the exported `.8f4e` file format.
 
 Each known editor block is placed directly into the model's `execution`, `functions`, `constants`,
 `includes`, or `notes` collection. Incomplete blocks go to `unknown`; modules carry their required `entry`. Asset
-directives remain embedded in block source. All notes belong to the project and are included in session saves,
-history snapshots, and project files, regardless of their names.
+directives remain embedded in block source. All notes belong to the project and are included in session saves and
+project files, regardless of their names.
 
 ### Ownership and Ordering
 
 `serializeToProject(state)` and `serializeProjectLevel(level)` return detached project data. The latter requires a
-complete `ProjectLevel`, keeping its blocks and entry definitions together, including empty entries. Every source
+settled `ProjectLevel`, keeping its blocks and authoritative entry definitions together, including empty entries. Every source
 array is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the
 returned model without changing live editor state, and later live edits leave previously returned models unchanged.
 
 Object fields are emitted in a fixed order. Blocks are ordered by grid X, grid Y, and creation index within each
 project slice, recursively through nested groups. Equivalent live data therefore produces identical JSON regardless
-of live-object property order or code-block array order. History and API-draft comparisons use this canonical output
-directly with `JSON.stringify`.
+of live-object property order or code-block array order.
 
 ### `.8f4e` Project Export
 
@@ -56,8 +55,8 @@ Serializes from:
 
 ## Integration Points
 
-- **Edit History**: Retains detached serialized models directly as undo/redo snapshots
-- **Project Loading**: Serialized projects are restored through the shared project operation helpers
+- **Edit History**: Retains separate editor-owned source snapshots preserving draft metadata and block boundaries
+- **Project Loading**: Loaded serialized projects are translated into the editor's source tree by the project editing service
 
 ## Project Object Model
 
@@ -73,15 +72,15 @@ Collection membership defines block type. The adapter uses the editor's already-
 compiler rediscover it from source text. Project groups are rendered as ordinary `CodeBlockGraphicData` values whose
 optional `childProject` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` and preserves
 its `entries` from `rootProject`, regardless of which level `currentProject` references. Level paths and browser-memory viewport positions
-are runtime data and are excluded from project exports, history snapshots, and session storage. A group's `code` retains all source lines
+are runtime data and are excluded from project exports and session storage. A group's `code` retains all source lines
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.
 
 The editor's source pass records each group exposure's name, target, and zero-based row in the group's wrapper
 `code`. Serialization copies those records without reparsing, and layout uses the same rows when following pending
 edits. The rows match source parsing after child blocks are extracted; they are independent of the declaration's
-original position in a whole `.8f4e` document. When rebuilding the tree from a project snapshot, the editor copies
-the exposure records into every group, regardless of which view is open. Root serialization does not depend on a
+original position in a whole `.8f4e` document. When rebuilding the source tree, the editor prepares exposure records
+for every group, regardless of which view is open. Root serialization does not depend on a
 group's source or layout being refreshed in the active view.
 
 ## References

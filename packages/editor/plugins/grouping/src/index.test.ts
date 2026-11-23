@@ -175,8 +175,10 @@ describe('grouping plugin', () => {
 		const test = setup();
 		const blocks = test.state.codeBlockRendering.currentProject.blocks;
 		const first = test.block('first');
-		test.state.codeBlockRendering.selectedCodeBlock = first;
-		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
+		const second = test.block('second');
+		test.startDrag(second);
+		test.store.set('codeBlockRendering.selectedCodeBlock', first);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });

@@ -101,7 +101,7 @@ Supported batch edit shapes use `operation` for the action and `type` for the so
 { operation: 'delete', type: 'note', name: 'colors' }
 ```
 
-Batch selectors resolve against the source before the batch is applied. Command preconditions are checked before changing the editor, and all actual changes form one undo step. The compiler validates source. Writes return simple confirmation strings; inserted names are already present in the submitted source.
+Batch selectors resolve against the source before the batch is applied. Command preconditions are checked before changing the editor, and all actual changes form one undo step. Repeated updates are combined using the final source, redundant deletions are idempotent, and an update or insertion targeting a deleted block or level rejects the whole batch. The compiler validates source. Writes return simple confirmation strings; inserted names are already present in the submitted source.
 
 Each `code` value is a source string. The bridge joins source lines for reads and splits incoming source on line endings for edits, preserving blank lines, indentation, and trailing newlines. Position comes from `; @pos x y` in the source. Inserts and updates preserve the supplied source, except for the core-managed root `constants env` block, for which only position is editable. Newly inserted ordinary blocks use `(0, 0)` when the directive is missing or invalid, while live updates retain the last valid position. Move a block by updating its `@pos` line; there are no separate coordinate inputs or move operations. Inserts always use the current group or root, and default to entry `main` for modules. Batch module updates may also supply `entry`.
 

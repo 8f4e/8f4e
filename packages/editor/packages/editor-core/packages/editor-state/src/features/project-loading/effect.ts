@@ -4,11 +4,17 @@ import type { ProjectEditService } from '../project-edits/service';
 import { EMPTY_DEFAULT_PROJECT } from './emptyDefaultProject';
 
 export default function projectLoading(
-	projectEdits: Pick<ProjectEditService, 'restore'>,
+	projectEdits: Pick<ProjectEditService, 'load'>,
 	events: EventDispatcher
-): void {
-	events.on('loadProject', ({ project }: { project: ProjectObjectModel }) => {
-		projectEdits.restore(project, 'replace');
-	});
-	events.on('new', () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT }));
+): () => void {
+	const onLoad = ({ project }: { project: ProjectObjectModel }) => {
+		projectEdits.load(project);
+	};
+	const onNew = () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+	events.on('loadProject', onLoad);
+	events.on('new', onNew);
+	return () => {
+		events.off('loadProject', onLoad);
+		events.off('new', onNew);
+	};
 }

@@ -1,9 +1,8 @@
-import type { EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { EditorProjectSnapshot, EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 
-import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 import type { ProjectEditService } from '../project-edits/service';
+import { sameProjectSnapshot } from '../project-edits/snapshot';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
@@ -11,11 +10,10 @@ const HISTORY_LIMIT = 10;
 export default function historyTracking(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	projectEdits: Pick<ProjectEditService, 'restore'>
+	projectEdits: Pick<ProjectEditService, 'capture' | 'restore'>
 ): () => void {
 	const state = store.getState();
-	// Serialization returns detached snapshots that history can retain directly.
-	let present = serializeToProject(state);
+	let present = projectEdits.capture();
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
 
@@ -25,7 +23,7 @@ export default function historyTracking(
 		editPending = false;
 	}
 
-	function pushHistory(project: ProjectObjectModel) {
+	function pushHistory(project: EditorProjectSnapshot) {
 		if (state.historyStack.length >= HISTORY_LIMIT) state.historyStack.shift();
 		state.historyStack.push(project);
 	}
@@ -35,8 +33,8 @@ export default function historyTracking(
 		cancelPendingEdit();
 		if (!pending) return;
 
-		const current = serializeToProject(state);
-		if (JSON.stringify(current) === JSON.stringify(present)) return;
+		const current = projectEdits.capture();
+		if (sameProjectSnapshot(current, present)) return;
 		pushHistory(present);
 		present = current;
 	}
@@ -58,7 +56,7 @@ export default function historyTracking(
 			pushHistory(present);
 			state.redoStack = [];
 		}
-		present = serializeToProject(state);
+		present = projectEdits.capture();
 	}
 
 	function undo() {
@@ -68,7 +66,7 @@ export default function historyTracking(
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		projectEdits.restore(previousState, 'restore');
+		projectEdits.restore(previousState);
 	}
 
 	function redo() {
@@ -77,7 +75,7 @@ export default function historyTracking(
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		projectEdits.restore(nextState, 'restore');
+		projectEdits.restore(nextState);
 	}
 
 	store.subscribe('projectChange', onProjectChange);

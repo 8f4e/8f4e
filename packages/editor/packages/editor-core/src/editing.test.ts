@@ -50,6 +50,86 @@ function setup(
 }
 
 describe('public editor editing handle', () => {
+	it("restores a draft module's historical execution entry across undo and redo", () => {
+		const { editing, state } = setup({
+			...EMPTY_DEFAULT_PROJECT,
+			entries: ['main', 'alternate'],
+			execution: [{ type: 'module', id: 0, entry: 'alternate', code: ['module test', 'moduleEnd'] }],
+		});
+		const current = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!;
+		const update = (code: string[], entry?: string) =>
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [{ type: 'update', blockId: getEditorBlockId(current()), code, entry }],
+			});
+		update(['module test']);
+		expect(current()).toMatchObject({ blockType: 'unknown', entry: 'alternate' });
+		expect(serializeToProject(state).unknown[0]).not.toHaveProperty('entry');
+		update(['module test', 'moduleEnd'], 'main');
+		expect(current().entry).toBe('main');
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(current()).toMatchObject({ blockType: 'unknown', entry: 'alternate' });
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(current().entry).toBe('main');
+		editing.undo({ expectedRevision: editing.getRevision() });
+		update(['module test', 'moduleEnd']);
+		expect(current()).toMatchObject({ blockType: 'module', entry: 'alternate' });
+		expect(serializeToProject(state).execution[0].entry).toBe('alternate');
+	});
+
+	it('restores the historical retained grid position of incomplete position directives', () => {
+		const { editing, state } = setup({
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', '; @pos 10 20', 'moduleEnd'] }],
+		});
+		const current = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!;
+		const update = (position: string) =>
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [{ type: 'update', blockId: getEditorBlockId(current()), code: ['module test', position, 'moduleEnd'] }],
+			});
+		update('; @pos incomplete');
+		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
+		update('; @pos 30 40');
+		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(current()).toMatchObject({ code: ['module test', '; @pos incomplete', 'moduleEnd'], gridX: 10, gridY: 20 });
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
+	});
+
+	it('preserves separately editable root project-scope blocks and their identities across history', () => {
+		const { editing, state } = setup();
+		const scope = () => state.codeBlockRendering.rootProject.blocks.filter(block => block.isProjectScope);
+		const result = editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [
+				{ type: 'insert', code: ['pass env'] },
+				{ type: 'insert', code: ['pass other'] },
+			],
+		});
+		const firstId = result.createdBlockIds[0];
+		const secondId = result.createdBlockIds[1];
+		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId: firstId, code: ['pass changed'] }],
+		});
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(scope().map(block => [getEditorBlockId(block), block.code])).toEqual([
+			[firstId, ['pass env']],
+			[secondId, ['pass other']],
+		]);
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(scope()).toHaveLength(0);
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(scope().map(block => block.code)).toEqual([['pass changed'], ['pass other']]);
+	});
+
 	it('assigns generated environment blocks an identity distinct from root groups', () => {
 		const { state } = setup({
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
@@ -432,7 +512,9 @@ describe('public editor editing handle', () => {
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(compilationChanged).toHaveBeenCalledOnce();
 		expect(changes).toEqual([serializeToProject(state)]);
-		expect(state.historyStack).toEqual([prior]);
+		expect(state.historyStack).toHaveLength(1);
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(serializeToProject(state)).toEqual(prior);
 	});
 
 	it('folds repeated updates and normalizes generated environment edits before deciding whether to publish', () => {

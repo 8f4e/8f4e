@@ -1,6 +1,7 @@
 import type {
 	CodeBlockGraphicData,
 	EditorDirectiveDefinition,
+	EditorProjectSnapshot,
 	EventDispatcher,
 	ProjectEditPlan,
 	ProjectEditResult,
@@ -14,16 +15,20 @@ import type { StateManager } from '@8f4e/state-manager';
 import { walkProjectBlocks, walkProjectLevels } from '../../pureHelpers/projectTree';
 import {
 	clearEnvironmentOwnership,
-	findEnvironmentBlock,
 	generateEnvironmentSource,
 	normalizeEnvironmentSource,
 	prepareProjectEnvironmentSource,
 } from '../code-blocks/features/auto-env-constants/source';
 import { isOrdinaryCommentLine } from '../code-blocks/features/directives/utils';
-import type { createLayoutCoordinator } from '../code-blocks/layout/coordinator';
+import type { LayoutCoordinator } from '../code-blocks/layout/coordinator';
 import type { ProjectMembership } from '../code-blocks/projectMembership';
 import { reconstructProject } from '../code-blocks/reconstructProject';
-import { prepareProjectSources, refreshBlockSources, supportsExecutionEntry } from '../code-blocks/sourceUpdates';
+import {
+	prepareProjectSources,
+	refreshBlockSources,
+	rememberEntry,
+	supportsExecutionEntry,
+} from '../code-blocks/sourceUpdates';
 import { createCodeBlockGraphicData } from '../code-blocks/utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from '../code-blocks/utils/getCodeBlockNameFromSource';
 import resolveEditorConfig from '../global-editor-directives/resolve';
@@ -32,13 +37,27 @@ import {
 	placeCurrentProjectViewport,
 	rememberCurrentProjectView,
 } from '../viewport/updateViewport';
+import { captureProjectSnapshot, snapshotFromProjectModel } from './snapshot';
 
 type RestoreKind = 'replace' | 'restore';
 type EditKind = 'edit' | 'checkpoint';
 
+/** A structural plan conflict detected before beginning a mutation. */
+export class ProjectEditPlanError extends Error {
+	constructor(
+		public readonly code: 'detached_block' | 'detached_project' | 'deleted_block' | 'deleted_project',
+		message: string
+	) {
+		super(message);
+		this.name = 'ProjectEditPlanError';
+	}
+}
+
 /** Internal mutation service; the plugin-facing contract exposes only live edits. */
 export interface ProjectEditService extends ProjectEdits {
-	restore(project: ProjectObjectModel, kind: RestoreKind): void;
+	load(project: ProjectObjectModel): void;
+	capture(): EditorProjectSnapshot;
+	restore(snapshot: EditorProjectSnapshot): void;
 }
 
 interface SourceBefore {
@@ -99,11 +118,11 @@ export function createProjectEditService(
 	events: EventDispatcher,
 	directives: EditorDirectiveDefinition[],
 	membership: ProjectMembership,
-	coordinator: ReturnType<typeof createLayoutCoordinator>
+	coordinator: LayoutCoordinator
 ): ProjectEditService {
 	const state = store.getState();
 	const rendering = state.codeBlockRendering;
-	let environment = findEnvironmentBlock(rendering.rootProject);
+	let environment: CodeBlockGraphicData | undefined;
 	let active = false;
 	let configPending = false;
 	let environmentPending = false;
@@ -227,12 +246,6 @@ export function createProjectEditService(
 		return block;
 	};
 
-	const rememberEntry = (project: ProjectLevel, block: CodeBlockGraphicData) => {
-		if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
-			project.entries.push(block.entry);
-		}
-	};
-
 	const apply = (plan: ProjectEditPlan, kind: EditKind = 'edit'): ProjectEditResult => {
 		if (active) throw new Error('Cannot start a project edit during source settlement');
 		const inserts = plan.inserts ?? [];
@@ -251,13 +264,17 @@ export function createProjectEditService(
 		// source. Source contents (including incomplete declarations) remain editable.
 		for (const { codeBlock } of plan.updates ?? []) {
 			const owner = membership.getOwner(codeBlock);
-			if (!owner || deletes.has(codeBlock) || removedLevels.has(owner)) {
-				throw new Error('Cannot update a block that is not part of the resulting project');
+			if (!owner) throw new ProjectEditPlanError('detached_block', 'Cannot update a detached block');
+			if (deletes.has(codeBlock) || removedLevels.has(owner)) {
+				throw new ProjectEditPlanError('deleted_block', 'Cannot update a block being deleted');
 			}
 		}
 		for (const { project } of inserts) {
-			if (!membership.hasProject(project) || removedLevels.has(project)) {
-				throw new Error('Cannot insert into a level that is not part of the resulting project');
+			if (!membership.hasProject(project)) {
+				throw new ProjectEditPlanError('detached_project', 'Cannot insert into a detached project level');
+			}
+			if (removedLevels.has(project)) {
+				throw new ProjectEditPlanError('deleted_project', 'Cannot insert into a project group being deleted');
 			}
 		}
 		// Combine repeated updates before comparing actual candidate source, rather than
@@ -339,16 +356,12 @@ export function createProjectEditService(
 					block,
 					...(block.childProject ? [...walkProjectBlocks(block.childProject)] : []),
 				])) {
-					rememberEntry(membership.getOwner(block)!, block);
 					block.x = block.gridX * state.viewport.vGrid;
 					block.y = block.gridY * state.viewport.hGrid;
 				}
 			}
 			if (viewChanged || (rendering.selectedCodeBlock && deletes.has(rendering.selectedCodeBlock))) {
 				store.set('codeBlockRendering.selectedCodeBlock', undefined);
-			}
-			if (viewChanged || (rendering.draggedCodeBlock && deletes.has(rendering.draggedCodeBlock))) {
-				rendering.draggedCodeBlock = undefined;
 			}
 			if (viewChanged) {
 				store.set('codeBlockRendering.currentProject', nextProject);
@@ -364,37 +377,31 @@ export function createProjectEditService(
 		return { changed: publish(mutation, kind), insertedBlocks: mutation.insertedBlocks };
 	};
 
-	const restore = (project: ProjectObjectModel, kind: RestoreKind): void => {
+	const install = (kind: RestoreKind, getSnapshot: () => EditorProjectSnapshot): void => {
 		if (active) throw new Error('Cannot restore a project during source settlement');
 		const mutation = settle(mutation => {
 			const sameProject = kind !== 'replace';
 			if (sameProject) rememberCurrentProjectView(state);
 			cancelPendingProjectViewport(state);
-			const { project: prepared, environmentId } = prepareProjectEnvironmentSource(
-				project,
-				state.envConstantContributions,
-				sameProject ? environment : undefined
-			);
+			const snapshot = getSnapshot();
 			const reconstructed = reconstructProject(
-				prepared,
-				environmentId,
+				snapshot,
 				directives,
 				state.viewport,
 				sameProject ? rendering : undefined
 			);
 			const { rootProject, currentProject, nextCodeBlockCreationIndex } = reconstructed;
 			store.set('codeBlockRendering.selectedCodeBlock', undefined);
-			rendering.draggedCodeBlock = undefined;
 			rendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
 			membership.reset(rootProject);
-			environment = rootProject.blocks.find(block => block.creationIndex === environmentId)!;
+			environment = rootProject.blocks.find(block => block.creationIndex === snapshot.environmentId);
 			coordinator.clearPending();
 			store.set('codeBlockRendering.rootProject', rootProject);
 			store.set('codeBlockRendering.currentProject', currentProject);
 			store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
 			configPending = true;
-			environmentPending = true;
-			mutation.prepareEnvironment = true;
+			environmentPending = environment !== undefined;
+			mutation.prepareEnvironment = environment !== undefined;
 			settlePending(mutation);
 			if (kind === 'replace') store.set('editorMode', state.globalEditorDirectives.mode ?? 'view');
 			coordinator.refreshProject(currentProject);
@@ -402,6 +409,16 @@ export function createProjectEditService(
 		});
 		publish(mutation, kind, true);
 	};
+	const load = (project: ProjectObjectModel): void =>
+		install('replace', () => {
+			const { project: prepared, environmentId } = prepareProjectEnvironmentSource(
+				project,
+				state.envConstantContributions
+			);
+			return snapshotFromProjectModel(prepared, environmentId);
+		});
+	const capture = () => captureProjectSnapshot(rendering, environment?.creationIndex);
+	const restore = (snapshot: EditorProjectSnapshot): void => install('restore', () => snapshot);
 
 	const refreshConfig = () => {
 		if (active) {
@@ -430,19 +447,5 @@ export function createProjectEditService(
 			'edit'
 		);
 	});
-	// Initialize the already attached tree without publishing a project change.
-	// In a fresh editor the tree is empty; installed projects use explicit restore.
-	settle(mutation => {
-		const root = rendering.rootProject;
-		prepareProjectSources(
-			root,
-			root.blocks.filter(block => block !== environment),
-			directives
-		);
-		configPending = true;
-		environmentPending = environment !== undefined;
-		mutation.prepareEnvironment = environment !== undefined;
-		coordinator.refreshProject(rendering.currentProject);
-	});
-	return { apply, restore };
+	return { apply, load, capture, restore };
 }

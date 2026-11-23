@@ -170,7 +170,11 @@ entryEnd`),
 	it('keeps the opened destination across undo and redo', async () => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
-		test.state.historyStack.push(parseProjectSource(source.replace('value 1', 'value 2')));
+		test.events.dispatch('enterEditMode');
+		const block = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!;
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: block, code: ['module test', 'int value 2', 'moduleEnd'] }],
+		});
 		test.events.dispatch('undo');
 		test.events.dispatch('redo');
 		await test.events.dispatchAsync('saveProject');

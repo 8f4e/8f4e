@@ -57,7 +57,7 @@ describe('serializeProjectLevel', () => {
 	it('places editor blocks in their canonical collections', () => {
 		const result = serializeProjectLevel({
 			path: '',
-			entries: [],
+			entries: ['main'],
 			blocks: [
 				createMockCodeBlock({
 					code: ['module second', 'moduleEnd'],
@@ -158,7 +158,7 @@ describe('serializeProjectLevel', () => {
 			}),
 		];
 
-		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+		const result = serializeProjectLevel({ path: '', entries: ['main', 'entry1'], blocks: blocks });
 
 		expect(getProjectModules(result)).toEqual([
 			{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' },
@@ -169,14 +169,14 @@ describe('serializeProjectLevel', () => {
 	it('reconstructs recursively owned projects from nested project code-block slices', () => {
 		const result = serializeProjectLevel({
 			path: '',
-			entries: [],
+			entries: ['main'],
 			blocks: [
 				createMockCodeBlock({
 					name: 'Audio',
 					entry: 'main',
 					code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
 					childProject: {
-						entries: [],
+						entries: ['main'],
 						path: '',
 						blocks: [
 							createMockCodeBlock({
@@ -184,7 +184,7 @@ describe('serializeProjectLevel', () => {
 								entry: 'main',
 								code: ['group Oscillator', '; child comment', '', 'expose childLevel &voice:level', 'groupEnd'],
 								childProject: {
-									entries: [],
+									entries: ['main'],
 									path: '',
 									blocks: [
 										createMockCodeBlock({
@@ -234,7 +234,7 @@ describe('serializeProjectLevel', () => {
 	it('preserves empty nested projects represented by project-group blocks', () => {
 		const result = serializeProjectLevel({
 			path: '',
-			entries: [],
+			entries: ['main'],
 			blocks: [
 				createMockCodeBlock({
 					name: 'Empty',
@@ -280,11 +280,11 @@ describe('serializeProjectLevel', () => {
 			name: 'voice',
 			entry: 'main',
 			code: ['group voice', 'groupEnd'],
-			childProject: { entries: [], path: '', blocks: [child] },
+			childProject: { entries: ['main'], path: '', blocks: [child] },
 		});
 		const blocks = [scope, module, group];
-		const saved = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
-		const other = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+		const saved = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
+		const other = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
 
 		scope.code[0] = 'pass changed';
 		module.code[1] = 'int value 3';
@@ -334,7 +334,7 @@ describe('serializeProjectLevel', () => {
 			gridX: 4,
 			gridY: 8,
 			code: ['group voice', 'expose value &first:value', 'groupEnd'],
-			childProject: { entries: [], path: '', blocks: [second, first] },
+			childProject: { entries: ['main'], path: '', blocks: [second, first] },
 		});
 		const blocks = [second, group, first];
 		const reorder = (block: CodeBlockGraphicData): CodeBlockGraphicData =>
@@ -342,10 +342,20 @@ describe('serializeProjectLevel', () => {
 				...Object.fromEntries(Object.entries(block).reverse()),
 				...(block.childProject === undefined
 					? {}
-					: { childProject: { entries: [], path: '', blocks: [...block.childProject.blocks].reverse().map(reorder) } }),
+					: {
+							childProject: {
+								entries: ['main'],
+								path: '',
+								blocks: [...block.childProject.blocks].reverse().map(reorder),
+							},
+						}),
 			}) as CodeBlockGraphicData;
-		const original = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
-		const reordered = serializeProjectLevel({ path: '', entries: [], blocks: [...blocks].reverse().map(reorder) });
+		const original = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
+		const reordered = serializeProjectLevel({
+			path: '',
+			entries: ['main'],
+			blocks: [...blocks].reverse().map(reorder),
+		});
 
 		expect(JSON.stringify(reordered)).toBe(JSON.stringify(original));
 		expect(getProjectModules(original).map(block => block.id)).toEqual([1, 2]);

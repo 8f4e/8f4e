@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initState, { setGridSize } from '../../index';
@@ -14,7 +14,11 @@ function setup(nested = false) {
 	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
 	setGridSize(state, events, TEST_GRID_SIZE);
-	const modules = ['module first', 'moduleEnd', 'module second', 'moduleEnd', 'module untouched', 'moduleEnd'];
+	const modules = ['first', 'second', 'untouched'].flatMap((name, index) => [
+		`module ${name}`,
+		`; @pos ${10 + index * 40} 10`,
+		'moduleEnd',
+	]);
 	const project = parseProjectSource(
 		[
 			'8f4e/v1',
@@ -36,8 +40,20 @@ function setup(nested = false) {
 		name => blocks.find(block => block.name === name)!
 	);
 	for (const block of [first, second, untouched]) block.lastUpdated = 1;
+	const press = (block: CodeBlockGraphicData) =>
+		events.dispatch('pointerdown', {
+			x: block.x - state.viewport.x + 1,
+			y: block.y - state.viewport.y + 1,
+			movementX: 0,
+			movementY: 0,
+			buttons: 1,
+			altKey: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+			stopPropagation: false,
+		});
 	cleanups.push(store.dispose);
-	return { store, events, state, first, second, untouched };
+	return { store, events, state, first, second, untouched, press };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -104,13 +120,14 @@ describe('block source edits', () => {
 
 describe('block deletion', () => {
 	it('removes a batch from the visible nested slice in place and clears deleted references before publishing', () => {
-		const { store, state, first, second, untouched } = setup(true);
+		const { store, state, first, second, untouched, press } = setup(true);
 		const nested = state.codeBlockRendering.currentProject.blocks;
 		const root = state.codeBlockRendering.rootProject.blocks;
 		const owner = root.find(block => block.name === 'owner')!;
 		const compilerRevision = state.compilerInputRevision;
-		state.codeBlockRendering.selectedCodeBlock = first;
-		state.codeBlockRendering.draggedCodeBlock = second;
+		press(second);
+		store.set('codeBlockRendering.selectedCodeBlock', first);
+		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		const onProjectChange = vi.fn(() => {
 			expect(nested).toEqual([untouched]);
 			expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
@@ -127,11 +144,11 @@ describe('block deletion', () => {
 	});
 
 	it('keeps references to surviving blocks and ignores repeated deletion', () => {
-		const { store, state, first, second } = setup();
+		const { store, state, first, second, press } = setup();
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
-		state.codeBlockRendering.selectedCodeBlock = second;
-		state.codeBlockRendering.draggedCodeBlock = second;
+		press(second);
+		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		expect(deleteCodeBlocks(store, [first])).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(second);
 		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);

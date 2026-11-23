@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, ProjectLevel, State } from '@8f4e/editor-state-types';
+import type { State } from '@8f4e/editor-state-types';
 import type { ProjectBlock, ProjectObjectModel } from '@8f4e/language-spec';
 import { getProjectBlockType } from '@8f4e/project-preparser';
 import getHighestProjectBlockId from '../../../../pureHelpers/projectSerialization/getHighestProjectBlockId';
@@ -18,7 +18,7 @@ function isGeneratedHeaderAt(code: string[], index: number): boolean {
 }
 
 /** The generated header persists ownership through text serialization, independently of block order and IDs. */
-function selectEnvironmentBlock<T extends { code: string[] }>(blocks: readonly T[]): T | undefined {
+function selectEnvironmentBlock(blocks: readonly ProjectBlock[]): ProjectBlock | undefined {
 	const candidates = blocks.filter(block => isEnvironmentSource(block.code));
 	const generated = candidates.filter(block => block.code.some((_, index) => isGeneratedHeaderAt(block.code, index)));
 	if (generated.length === 1) return generated[0];
@@ -31,10 +31,6 @@ function selectEnvironmentBlock<T extends { code: string[] }>(blocks: readonly T
 export function clearEnvironmentOwnership(code: string[]): string[] {
 	if (!code.some((_, index) => isGeneratedHeaderAt(code, index)) || !isEnvironmentSource(code)) return code;
 	return code.filter((_, index) => !isGeneratedHeaderAt(code, index) && !isGeneratedHeaderAt(code, index - 1));
-}
-
-export function findEnvironmentBlock(root: ProjectLevel): CodeBlockGraphicData | undefined {
-	return selectEnvironmentBlock(root.blocks);
 }
 
 /** Build the auto-managed root constants block from currently contributed source. */
@@ -55,8 +51,7 @@ export function generateEnvironmentSource(
 /** Normalize the root env block before installing a project, preserving its identity and valid position. */
 export function prepareProjectEnvironmentSource(
 	project: ProjectObjectModel,
-	contributions: State['envConstantContributions'],
-	previousEnvironment?: CodeBlockGraphicData
+	contributions: State['envConstantContributions']
 ): { project: ProjectObjectModel; environmentId: number } {
 	const envBlock = selectEnvironmentBlock(project.constants);
 	const constants = project.constants.map(block => {
@@ -71,11 +66,7 @@ export function prepareProjectEnvironmentSource(
 		};
 		return { project: { ...project, constants: [generated, ...constants] }, environmentId: generated.id };
 	}
-	const fallback =
-		previousEnvironment?.creationIndex === envBlock.id
-			? { x: previousEnvironment.gridX, y: previousEnvironment.gridY }
-			: { x: 0, y: 0 };
-	const position = parsePos(parseBlockDirectives(envBlock.code)) ?? fallback;
+	const position = parsePos(parseBlockDirectives(envBlock.code)) ?? { x: 0, y: 0 };
 	const code = generateEnvironmentSource(contributions, position);
 	// This is new generated source, not the old block's source-derived metadata.
 	constants[constants.indexOf(envBlock)] = { id: envBlock.id, code };

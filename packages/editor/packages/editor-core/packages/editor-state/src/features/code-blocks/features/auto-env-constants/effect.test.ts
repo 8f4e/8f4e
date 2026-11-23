@@ -218,14 +218,19 @@ entryEnd`);
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
-	it('keeps the previous valid env position during same-project restoration with invalid source', () => {
-		const { state, store, load, env } = setup();
+	it('restores the historical environment position and regenerates its contributed body', () => {
+		const { store, events, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
-		const project = serializeToProject(state);
-		project.constants[0].code = ['constants env', '; @pos incomplete', 'constantsEnd'];
 		const id = env().creationIndex;
-		store.projectEdits.restore(project, 'restore');
+		store.projectEdits.apply(
+			{ updates: [{ codeBlock: env(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
+			'checkpoint'
+		);
+		store.set('envConstantContributions.provider', ['const PROVIDED 7']);
+		events.dispatch('undo');
+		events.dispatch('undo');
 		expect(env()).toMatchObject({ creationIndex: id, gridX: 7, gridY: 9 });
 		expect(env().code).toContain('; @pos 7 9');
+		expect(env().code).toContain('const PROVIDED 7');
 	});
 });

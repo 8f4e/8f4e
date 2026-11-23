@@ -3,7 +3,6 @@ import type {
 	EventDispatcher,
 	ProjectEditPlan,
 	ProjectEdits,
-	ProjectLevel,
 	State,
 } from '@8f4e/editor-state-types';
 import { projectInstructions } from '@8f4e/language-spec';
@@ -11,7 +10,8 @@ import type { StateManager } from '@8f4e/state-manager';
 import { instructionParser, isProjectGapLine } from '@8f4e/tokenizer';
 import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
-import { findProjectLevel, walkProjectBlocks, walkProjectLevels } from '../pureHelpers/projectTree';
+import { ProjectEditPlanError } from '../features/project-edits/service';
+import { findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
@@ -83,11 +83,8 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 			const root = state.codeBlockRendering.rootProject;
 			const targets = new Map([...walkProjectBlocks(root)].map(block => [getEditorBlockId(block), block]));
 			const inserts: NonNullable<ProjectEditPlan['inserts']>[number][] = [];
-			const updates = new Map<
-				CodeBlockGraphicData,
-				{ codeBlock: CodeBlockGraphicData; code: string[]; entry?: string }
-			>();
-			const deletes = new Set<CodeBlockGraphicData>();
+			const updates: NonNullable<ProjectEditPlan['updates']>[number][] = [];
+			const deletes: CodeBlockGraphicData[] = [];
 			for (const edit of edits as readonly EditorEdit[]) {
 				if (!edit || typeof edit !== 'object') invalid('Invalid edit');
 				if (edit.type === 'insert') {
@@ -106,8 +103,7 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 				if (!target)
 					throw new EditorEditingError('block_not_found', 'Read the project for a current blockId', revision());
 				if (edit.type === 'delete') {
-					if (deletes.has(target)) invalid('A block cannot be deleted twice in one edit');
-					deletes.add(target);
+					deletes.push(target);
 				} else if (edit.type === 'update') {
 					validateCode(edit.code);
 					if (!target.childProject && isGroupSource(edit.code))
@@ -118,38 +114,20 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 					}
 					if (edit.entry !== undefined && !target.childProject && !acceptsEntry(edit.code))
 						invalid('Only modules and project groups accept an entry');
-					updates.set(target, {
+					updates.push({
 						codeBlock: target,
 						code: edit.code,
-						entry: edit.entry ?? updates.get(target)?.entry,
+						entry: edit.entry,
 					});
 				}
 			}
-			const removedLevels = new Set<ProjectLevel>();
-			const removedBlocks = new Set(deletes);
-			for (const block of deletes) {
-				if (!block.childProject) continue;
-				for (const level of walkProjectLevels(block.childProject)) {
-					removedLevels.add(level);
-					for (const child of level.blocks) {
-						if (deletes.has(child)) invalid('Cannot delete a project group and its child separately');
-						removedBlocks.add(child);
-					}
-				}
+			try {
+				const { insertedBlocks } = store.projectEdits.apply({ updates, inserts, deletes }, 'checkpoint');
+				return { revision: revision(), createdBlockIds: insertedBlocks.map(getEditorBlockId) };
+			} catch (error) {
+				if (error instanceof ProjectEditPlanError) invalid(error.message);
+				throw error;
 			}
-			for (const [block, update] of updates) {
-				if (removedBlocks.has(block)) invalid('Cannot update a block being deleted');
-				// The final source, rather than an intermediate update, determines whether entry metadata is serialized.
-				if (update.entry !== undefined && !block.childProject && !acceptsEntry(update.code)) delete update.entry;
-			}
-			for (const { project } of inserts) {
-				if (removedLevels.has(project)) invalid('Cannot insert into a project group being deleted');
-			}
-			const { insertedBlocks } = store.projectEdits.apply(
-				{ updates: [...updates.values()], inserts, deletes: [...deletes] },
-				'checkpoint'
-			);
-			return { revision: revision(), createdBlockIds: insertedBlocks.map(getEditorBlockId) };
 		},
 		undo({ expectedRevision }) {
 			checkWrite(expectedRevision);

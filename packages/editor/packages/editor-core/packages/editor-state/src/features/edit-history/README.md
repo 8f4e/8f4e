@@ -1,7 +1,8 @@
 # Edit History Feature
 
-Undo and redo retain independent serialized project snapshots, including persisted editor metadata. Each stack holds
-up to ten entries. History stays in memory for the current project.
+Undo and redo retain detached editor source snapshots, including block boundaries, identities, entries, and last
+valid grid positions even during incomplete edits. These are not compiler/file projections; rendering and view state
+are not captured. Each stack holds up to ten entries. History stays in memory for the current project.
 
 ## Shared Project Changes
 
@@ -30,8 +31,8 @@ revision change does not create a project revision, autosave, or history entry.
 
 While an ordinary edit is pending, the committed snapshot remains the before-state. At commit, the current project
 is compared by content with that snapshot. Changed content adds one undo step; returning to the committed content
-adds none. Serialization returns detached canonical models, so history retains them directly and compares their
-JSON without additional cloning or object-key sorting.
+adds none. Snapshots copy source lines and use canonical spatial/creation order so transient z-order does not add
+history. Allocation without a net source change adds no step; the creation counter is never rewound within the project.
 
 Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The public API uses
 the project editing service for a live mutation batch with checkpoint history policy. The service emits
@@ -39,8 +40,9 @@ the project editing service for a live mutation batch with checkpoint history po
 pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification.
 API edits preserve live block identity and work independently of whether the history effect is installed.
 
-Project loading and history restore snapshots through the project editing service. It captures the current view
-before same-project reconstruction, prepares the generated root environment source before installing the snapshot,
+Project loading translates the compiler/file projection into an editor source tree. History restores its own editor
+snapshot directly through the same project editing service. It captures the current view before same-project
+reconstruction, regenerates the managed root environment from current configuration and the historical position,
 and publishes a single completed change after source and synchronous generated changes have settled.
 Viewport placement follows synchronous project-change subscribers and their layout contributions. Undo, redo, and
 API batches preserve the file association within the current project. Unrelated replacements dispatch `loadProject`

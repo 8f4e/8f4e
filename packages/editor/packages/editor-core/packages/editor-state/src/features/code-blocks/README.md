@@ -73,6 +73,9 @@ edits use this same path; ordinary layout invalidations do not reparse source. P
 `ProjectLevel`, independently of source preparation and layout calculations. Ownership is registered on project
 loading and block-collection changes. Navigating between existing levels refreshes layout without changing source
 or global configuration. Renaming a group retains its runtime identity while updating its source path.
+Editor-state initialization constructs membership, the layout coordinator and the project editing service separately;
+the rendering effect consumes the coordinator for layout and selection without owning source mutation. The dragger owns
+its transient gesture state and cancels or prunes prepared targets when the active project collection changes.
 
 The coordinator queues changed blocks by owning group, settles nested plugin contributions, and projects grid
 positions to world pixels before publishing completion for each affected group. Pixel layout waits for the first
