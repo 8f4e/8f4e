@@ -3,6 +3,8 @@ import initState, {
 	createEditorEditingHandle,
 	EMPTY_DEFAULT_PROJECT,
 	getEditorBlockId,
+	insertCodeBlocks,
+	serializeCodeBlocks,
 	serializeToProject,
 	setGridSize,
 } from '@8f4e/editor-state';
@@ -47,6 +49,25 @@ function setup(
 		dispose: editing.dispose,
 		compilationChanged,
 	};
+}
+
+function setupGroup(name: string) {
+	const test = setup({
+		...structuredClone(EMPTY_DEFAULT_PROJECT),
+		execution: [
+			{
+				...structuredClone(EMPTY_DEFAULT_PROJECT),
+				type: 'group',
+				entry: 'main',
+				id: 0,
+				name,
+				exposures: [],
+				code: [`group ${name}`, 'groupEnd'],
+				execution: [{ type: 'module', id: 0, entry: 'main', code: ['module sample', 'moduleEnd'] }],
+			},
+		],
+	});
+	return { ...test, group: test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === name)! };
 }
 
 describe('public editor editing handle', () => {
@@ -800,6 +821,88 @@ describe('public editor editing handle', () => {
 		expect(replacementGroup.childProject!.viewport).toBeUndefined();
 		navigation.openGroup(getEditorBlockId(replacementGroup));
 		expect(state.viewport).not.toMatchObject({ x: -320, y: 160 });
+	});
+
+	it('keeps independent views for duplicate sibling groups copied through the editor', () => {
+		const { editing, navigation, state, store, group: original } = setupGroup('voice');
+		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
+		const owner = (id: number) =>
+			state.codeBlockRendering.rootProject.blocks.find(block => block.creationIndex === id)!;
+		expect(original.childProject!.path).toBe(copy.childProject!.path);
+		navigation.openGroup(getEditorBlockId(original));
+		Object.assign(state.viewport, { x: 64, y: 96 });
+		store.set('codeBlockRendering.selectedCodeBlock', original.childProject!.blocks[0]);
+		navigation.goToRoot();
+		store.set('codeBlockRendering.selectedCodeBlock', copy);
+		navigation.openGroup(getEditorBlockId(copy));
+		Object.assign(state.viewport, { x: -320, y: 160 });
+		const edited = copy.childProject!.blocks[0];
+		store.set('codeBlockRendering.selectedCodeBlock', edited);
+		const editedSource = ['module changed', 'moduleEnd'];
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [{ type: 'update', blockId: getEditorBlockId(edited), code: editedSource }],
+		});
+		const expectRestoredCopy = (name: string) => {
+			const restored = owner(copy.creationIndex).childProject!;
+			expect(state.codeBlockRendering.currentProject).toBe(restored);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(restored.blocks[0]);
+			expect(restored.blocks[0].name).toBe(name);
+			expect(state.viewport).toMatchObject({ x: -320, y: 160 });
+			const originalLevel = owner(original.creationIndex).childProject!;
+			expect(originalLevel.selectedBlock).toBe(originalLevel.blocks[0]);
+			expect(originalLevel.blocks[0].name).toBe('sample');
+			expect(originalLevel.viewport).toMatchObject({ x: 64, y: 96 });
+		};
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expectRestoredCopy('sample');
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expectRestoredCopy('changed');
+		navigation.goToRoot();
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(owner(copy.creationIndex));
+		navigation.openGroup(getEditorBlockId(owner(original.creationIndex)));
+		expect(state.viewport).toMatchObject({ x: 64, y: 96 });
+		expect(state.codeBlockRendering.selectedCodeBlock).toBe(owner(original.creationIndex).childProject!.blocks[0]);
+		navigation.goToRoot();
+		navigation.openGroup(getEditorBlockId(owner(copy.creationIndex)));
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expectRestoredCopy('sample');
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(state.codeBlockRendering.currentProject).toBe(state.codeBlockRendering.rootProject);
+		expect(state.codeBlockRendering.rootProject.blocks.some(block => block.creationIndex === copy.creationIndex)).toBe(
+			false
+		);
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(state.codeBlockRendering.currentProject).toBe(state.codeBlockRendering.rootProject);
+		const recreatedCopy = owner(copy.creationIndex).childProject!;
+		expect(recreatedCopy.viewport).toBeUndefined();
+		expect(recreatedCopy.selectedBlock).toBeUndefined();
+	});
+
+	it('keeps the same owning group view when a rename is undone and redone', () => {
+		const { editing, navigation, state, store, group } = setupGroup('voices');
+		store.set('codeBlockRendering.selectedCodeBlock', group);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group ensemble', 'groupEnd'] }], {
+			history: 'checkpoint',
+		});
+		navigation.openGroup(getEditorBlockId(group));
+		Object.assign(state.viewport, { x: 123, y: 456 });
+		store.set('codeBlockRendering.selectedCodeBlock', group.childProject!.blocks[0]);
+		const expectRenamedView = (name: string) => {
+			const owner = state.codeBlockRendering.rootProject.blocks.find(
+				block => block.creationIndex === group.creationIndex
+			)!;
+			expect(owner.name).toBe(name);
+			expect(state.codeBlockRendering.currentProject).toBe(owner.childProject);
+			expect(owner.childProject!.path).toBe(name);
+			expect(owner.childProject!.blocks[0].projectPath).toBe(name);
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(owner.childProject!.blocks[0]);
+			expect(state.viewport).toMatchObject({ x: 123, y: 456 });
+		};
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expectRenamedView('voices');
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expectRenamedView('ensemble');
 	});
 
 	it('navigates the shared editor view without changing source revisions', () => {

@@ -412,6 +412,9 @@ retain block identities, boundaries and draft entry/position metadata. The manag
 restoration reuses the read-only block and regenerates its body from current contributions. Both use the same reconstruction,
 settlement and publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
+Navigation follows attached project levels, and history restoration reconciles remembered views by the owning blocks' identities
+within each parent level. Renaming a group or temporarily using duplicate names therefore does not transfer its view to another
+group. Name-based project paths remain unchanged for compilation, file data and source addressing.
 
 ## Project loading
 

@@ -54,7 +54,10 @@ API edits preserve live block identity and work independently of whether the his
 
 Project loading translates the compiler/file projection into an editor source tree. History restores its own editor
 snapshot directly through the same project editing service. It captures the current view before same-project
-reconstruction, regenerates the managed root environment at the origin from current configuration,
+reconstruction and pairs previous and restored levels through their owning blocks' creation identities within each parent.
+This preserves the current level, viewport and selection even when names change or temporarily collide; if the active
+owner no longer exists, it returns to the root. Compiler-facing paths remain name-based. The service regenerates the
+managed root environment at the origin from current configuration,
 and publishes a single completed change after source and synchronous generated changes have settled.
 Viewport placement follows synchronous project-change subscribers and their layout contributions. Undo, redo, and
 API batches preserve the file association within the current project. Unrelated replacements dispatch `loadProject`

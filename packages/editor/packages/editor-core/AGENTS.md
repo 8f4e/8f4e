@@ -34,7 +34,8 @@
   persistence, with a separate compiler-input revision. Editing works without the history effect installed.
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
   Keep remembered viewport and selection in memory. The editor source snapshot owns history, including retained
-  draft facts; `pureHelpers/projectSerialization` projects settled source into compiler/file data. Project-save
+  draft facts. Reconcile remembered views by owning block identity within each parent, not compiler-facing paths;
+  `pureHelpers/projectSerialization` projects settled source into compiler/file data. Project-save
   owns the text file format.
 - Project membership tracks ownership per project level independently of source preparation and layout. The layout
   coordinator uses that membership to publish `codeBlockLayoutsChanged { project, codeBlocks }` after the affected

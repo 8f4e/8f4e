@@ -30,6 +30,16 @@ describe('project tree', () => {
 		expect(findParentProjectLevel(root, root)).toBeUndefined();
 	});
 
+	it('finds the parent by actual ownership even when sibling group paths are identical', () => {
+		const { root, audio, child } = fixture();
+		const second = fixture();
+		root.blocks.push(second.root.blocks[0]);
+		expect(findProjectLevel(root, second.child.path)).toBe(child);
+		expect(findParentProjectLevel(root, child)).toBe(audio);
+		expect(findParentProjectLevel(root, second.child)).toBe(second.audio);
+		expect(findParentProjectLevel(root, { ...second.child })).toBeUndefined();
+	});
+
 	it('updates nested paths after a group rename while retaining its remembered view', () => {
 		const { audio, child } = fixture();
 		child.viewport = { x: 64, y: 96 };

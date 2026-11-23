@@ -7,7 +7,7 @@ import type {
 	ProjectLevel,
 	Viewport,
 } from '@8f4e/editor-state-types';
-import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
+import { walkProjectLevels } from '../../pureHelpers/projectTree';
 import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
@@ -19,21 +19,14 @@ export function reconstructProject(
 	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
 	previous?: CodeBlockRendering
 ) {
-	const previousLevels = new Map<string, ProjectLevel>();
-	const previousBlocks = new Map<string, CodeBlockGraphicData>();
-	const previousGroups = new Map<string, CodeBlockGraphicData>();
-	const recreatedBlocks = new Map<CodeBlockGraphicData, CodeBlockGraphicData>();
-	if (previous) {
-		for (const level of walkProjectLevels(previous.rootProject)) {
-			previousLevels.set(level.path, level);
-			for (const block of level.blocks) {
-				if (block.childProject) previousGroups.set(block.childProject.path, block);
-				else previousBlocks.set(JSON.stringify([block.projectPath, block.creationIndex]), block);
-			}
-		}
-	}
-	const createProjectLevel = (level: EditorLevelSnapshot): ProjectLevel => {
+	let currentProject: ProjectLevel | undefined;
+	const createProjectLevel = (level: EditorLevelSnapshot, previousLevel?: ProjectLevel): ProjectLevel => {
+		// IDs are stable within a project's own block collection. Follow owning
+		// blocks rather than names, which may change or be duplicated while editing.
+		const previousBlocks = new Map(previousLevel?.blocks.map(block => [block.creationIndex, block]));
+		let selectedBlock: CodeBlockGraphicData | undefined;
 		const blocks = level.blocks.map(block => {
+			const previousBlock = previousBlocks.get(block.creationIndex);
 			const code = [...block.code];
 			const graphicData = createCodeBlockGraphicData({
 				code,
@@ -44,25 +37,24 @@ export function reconstructProject(
 				gridX: block.gridX,
 				gridY: block.gridY,
 				isProjectScope: block.isProjectScope,
-				childProject: block.childProject ? createProjectLevel(block.childProject) : undefined,
+				childProject: block.childProject
+					? createProjectLevel(block.childProject, previousBlock?.childProject)
+					: undefined,
 			});
-			const previousBlock = block.childProject
-				? previousGroups.get(block.childProject.path)
-				: previousBlocks.get(JSON.stringify([level.path, block.creationIndex]));
-			if (previousBlock) recreatedBlocks.set(previousBlock, graphicData);
+			if (previousBlock && previousBlock === previousLevel?.selectedBlock) selectedBlock = graphicData;
 			return graphicData;
 		});
-		const previousLevel = previousLevels.get(level.path);
-
-		return {
+		const project: ProjectLevel = {
 			path: level.path,
 			entries: [...level.entries],
 			blocks,
 			viewport: previousLevel?.viewport,
-			selectedBlock: previousLevel?.selectedBlock ? recreatedBlocks.get(previousLevel.selectedBlock) : undefined,
+			selectedBlock,
 		};
+		if (previousLevel && previousLevel === previous?.currentProject) currentProject = project;
+		return project;
 	};
-	const rootProject = createProjectLevel(snapshot.rootProject);
+	const rootProject = createProjectLevel(snapshot.rootProject, previous?.rootProject);
 	prepareProjectSources(rootProject, rootProject.blocks, directives);
 	for (const level of walkProjectLevels(rootProject)) {
 		for (const block of level.blocks) {
@@ -70,10 +62,9 @@ export function reconstructProject(
 			block.y = block.gridY * viewport.hGrid;
 		}
 	}
-	const currentProject = (previous && findProjectLevel(rootProject, previous.currentProject.path)) || rootProject;
 	const nextCodeBlockCreationIndex = Math.max(
 		snapshot.nextCodeBlockCreationIndex,
 		previous?.nextCodeBlockCreationIndex ?? 0
 	);
-	return { rootProject, currentProject, nextCodeBlockCreationIndex };
+	return { rootProject, currentProject: currentProject ?? rootProject, nextCodeBlockCreationIndex };
 }

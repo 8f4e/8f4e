@@ -14,9 +14,12 @@ export function findProjectLevel(root: ProjectLevel, path: ProjectGroupPath): Pr
 	}
 }
 
+/** Find the level containing the block that owns this project, independent of source paths. */
 export function findParentProjectLevel(root: ProjectLevel, project: ProjectLevel): ProjectLevel | undefined {
 	if (project === root) return;
-	return findProjectLevel(root, project.path.slice(0, Math.max(0, project.path.lastIndexOf('/'))));
+	for (const level of walkProjectLevels(root)) {
+		if (level.blocks.some(block => block.childProject === project)) return level;
+	}
 }
 
 export function* walkProjectBlocks(project: ProjectLevel): Generator<CodeBlockGraphicData> {
