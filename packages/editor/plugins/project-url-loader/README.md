@@ -4,7 +4,7 @@
 core's generic `loadProject` action. The host supplies `fetch` and optionally an initial URL.
 
 ```ts
-createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onLoaded, onError })
+createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onError })
 ```
 
 The initial URL is fetched on `prepareInitialProject`. Fetching, parsing, and project installation complete before
@@ -13,10 +13,10 @@ Without an initial URL, initialization performs no request.
 Fetching uses `cache: 'no-store'` and preserves the supplied URL. HTTP, network, and parser errors are logged in the
 editor console and load an empty project.
 
-The optional `onLoaded()` callback runs after the parsed source has been installed through `loadProject`, including
-when that source is an empty project. `onError(error)` receives the original fetch or parser failure after the empty
-fallback is installed; a failure does not call `onLoaded`. With no URL, neither callback runs. Disposal suppresses both
-notifications for pending requests. Callback errors are not treated as fetch or parser failures.
+Successful source installation, including valid empty source, completes the source preparation hook.
+The optional `onError(error)` receives the original fetch or parser failure after the empty fallback is installed.
+With no URL, no error callback runs. Disposal suppresses late errors and results for pending requests.
+Callback errors are not treated as fetch or parser failures.
 
 The plugin contributes ID `project-url` and message `Loading project...` while fetching, parsing, and installing
 source. Success/failure settle its status; disposal cancels pending work. Results remain in state independently of presentation.

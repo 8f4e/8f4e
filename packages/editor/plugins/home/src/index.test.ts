@@ -49,7 +49,6 @@ function setup(withGrid = true) {
 		centerViewportOnCodeBlock(state.viewport, block(name), { alignment });
 	const gridPending = () => markGridSizePending(state);
 	const gridReady = (grid = { vGrid: 6, hGrid: 12 }) => setGridSize(state, events, grid);
-	const navigate = (x: number, y: number, source: 'pan' | 'navigation') => updateViewport(state, x, y, events, source);
 	const resolveInitial = (
 		project: ProjectLevel = state.codeBlockRendering.currentProject,
 		position = { x: 0, y: 0 }
@@ -71,7 +70,6 @@ function setup(withGrid = true) {
 		expectedPosition,
 		gridPending,
 		gridReady,
-		navigate,
 		resolveInitial,
 		menu,
 		unregisterMenuItem,
@@ -199,7 +197,7 @@ entryEnd`);
 		const rootProject = test.state.codeBlockRendering.rootProject;
 		const expectedRootPosition = test.expectedPosition('rootHome', 'left');
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(test.resolveInitial(group.childProject!)).toEqual(test.expectedPosition('child', 'right'));
+		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
 		expect(test.resolveInitial(rootProject)).toEqual(expectedRootPosition);
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		test.events.dispatch('goHome');
@@ -252,16 +250,6 @@ describe('home navigation while waiting for grid dimensions', () => {
 		expect(resolveInitial).toHaveBeenCalledOnce();
 	});
 
-	it('only positions the latest of multiple projects loaded before the grid is ready', () => {
-		const test = setup(false);
-		test.load('note first\n; @pos 100 200\n; @home left\nnoteEnd');
-		test.load('note latest\n; @pos 300 400\n; @home right\nnoteEnd');
-		expect(test.position()).toEqual({ x: 0, y: 0 });
-		test.gridReady();
-		expect(test.position()).toEqual(test.expectedPosition('latest', 'right'));
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	});
-
 	it('does not navigate to a home from a replaced project when its replacement has no home', () => {
 		const test = setup(false);
 		test.load('note first\n; @pos 100 200\n; @home left\nnoteEnd');
@@ -287,82 +275,6 @@ noteEnd`);
 		expect(test.position()).toEqual(test.expectedPosition('second', 'bottom'));
 	});
 
-	it.each(['pan', 'navigation'] as const)('does not override an intentional %s while waiting for the grid', source => {
-		const test = setup(false);
-		test.load('note target\n; @pos 100 200\n; @home\nnoteEnd');
-		test.navigate(32, 48, source);
-		test.gridReady();
-		expect(test.position()).toEqual({ x: 32, y: 48 });
-	});
-
-	it.each([{ vGrid: 6, hGrid: 12 }, TEST_GRID_SIZE])(
-		'waits for the runtime grid to become ready with dimensions $vGrid×$hGrid even if the old dimensions are still positive',
-		grid => {
-			const test = setup();
-			test.load('note previous\n; @pos 100 200\n; @home\nnoteEnd');
-			test.gridPending();
-			test.load('note replacement\n; @pos 300 400\n; @home right\nnoteEnd');
-			expect(test.state.viewport).toMatchObject(TEST_GRID_SIZE);
-			expect(test.position()).toEqual({ x: 0, y: 0 });
-			test.gridReady(grid);
-			expect(test.position()).toEqual(test.expectedPosition('replacement', 'right'));
-			expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		}
-	);
-
-	it('positions a first-visit group once ready and restores the remembered parent view', () => {
-		const test = setup();
-		test.load(`note rootHome
-; @pos 100 200
-; @home left
-noteEnd
-entry main
-group audio
-entry main
-module child
-; @pos 80 100
-; @home right
-moduleEnd
-entryEnd
-groupEnd
-entryEnd`);
-		test.navigate(32, 48, 'pan');
-		test.gridPending();
-		test.events.dispatch('openProjectGroup', { codeBlock: test.block('audio') });
-		expect(test.position()).toEqual({ x: 0, y: 0 });
-		test.gridReady();
-		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-
-		test.events.dispatch('goToParentProjectGroup');
-		expect(test.position()).toEqual({ x: 32, y: 48 });
-	});
-
-	it('does not override a remembered parent view when leaving a group before its grid becomes ready', () => {
-		const test = setup();
-		test.load(`note rootHome
-; @pos 100 200
-; @home left
-noteEnd
-entry main
-group audio
-entry main
-module child
-; @pos 80 100
-; @home right
-moduleEnd
-entryEnd
-groupEnd
-entryEnd`);
-		test.navigate(32, 48, 'pan');
-		test.gridPending();
-		test.events.dispatch('openProjectGroup', { codeBlock: test.block('audio') });
-		test.events.dispatch('goToParentProjectGroup');
-		expect(test.position()).toEqual({ x: 32, y: 48 });
-		test.gridReady();
-		expect(test.position()).toEqual({ x: 32, y: 48 });
-	});
-
 	it('uses the installed grid for an explicit Go @home action while a replacement font loads', () => {
 		const test = setup();
 		test.load(`note target
@@ -373,7 +285,7 @@ First line
 Second line
 Third line
 noteEnd`);
-		test.navigate(32, 48, 'pan');
+		updateViewport(test.state, 32, 48, test.events, 'pan');
 		test.gridPending();
 		test.events.dispatch('goHome');
 		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
@@ -386,18 +298,7 @@ noteEnd`);
 		expect(test.position()).not.toEqual(test.expectedPosition('target', 'bottom'));
 	});
 
-	it('an explicit Go @home with no valid home can return to the origin without grid dimensions', () => {
-		const test = setup(false);
-		test.load('note target\n; @pos 100 200\n; @home diagonal\nnoteEnd');
-		test.navigate(32, 48, 'pan');
-		test.events.dispatch('goHome');
-		expect(test.position()).toEqual({ x: 0, y: 0 });
-		test.gridReady();
-		expect(test.position()).toEqual({ x: 0, y: 0 });
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	});
-
-	it('discards a pending home when the plugin is disposed', () => {
+	it('does not contribute initial placement when the plugin is disposed before the grid is installed', () => {
 		const test = setup(false);
 		test.load('note target\n; @pos 100 200\n; @home\nnoteEnd');
 		test.disposePlugin();

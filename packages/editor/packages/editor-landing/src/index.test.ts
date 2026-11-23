@@ -19,7 +19,7 @@ async function loadDeferredPlugins() {
 }
 afterEach(() => vi.clearAllMocks());
 
-it('starts without storage and reports empty-project readiness after initialization', async () => {
+it('starts without storage and waits for core initialization before resolving the mount', async () => {
 	let finish!: (editor: Editor) => void;
 	vi.mocked(initEditor).mockReturnValueOnce(
 		new Promise(resolve => {
@@ -28,11 +28,13 @@ it('starts without storage and reports empty-project readiness after initializat
 	);
 	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: fine)' }) };
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
-	const onInitialProjectLoaded = vi.fn();
+	const mounted = vi.fn();
 	const mounting = mountLandingEditor(canvas, {
 		captureWheel: false,
 		featureFlags: { moduleDragging: false },
-		onInitialProjectLoaded,
+	}).then(editor => {
+		mounted(editor);
+		return editor;
 	});
 	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
@@ -82,13 +84,13 @@ it('starts without storage and reports empty-project readiness after initializat
 		'keyboard-navigation',
 		'keyboard-editing',
 	]);
-	expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+	expect(mounted).not.toHaveBeenCalled();
 	const coreEditor = { dispose: vi.fn() } as unknown as Editor;
 	finish(coreEditor);
 	const editor = await mounting;
 	expect(editor).toBe(coreEditor);
 	expect(editor.getCompilerDiagnostics).toBe(compiler.getDiagnostics);
-	expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
+	expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
 	editor.dispose();
 });
 

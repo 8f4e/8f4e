@@ -32,7 +32,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const disposers: Array<() => void> = [];
-	const onInitialProjectLoaded = vi.fn();
 	const onInitialProjectLoadError = vi.fn();
 	try {
 		const plugins = createDefaultEditorPlugins({
@@ -40,7 +39,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			storage: storage as Storage,
 			storageKey: 'session',
 			initialProjectUrl: 'https://example.com/project.8f4e',
-			onInitialProjectLoaded,
 			onInitialProjectLoadError,
 			showOpenMenuItem: false,
 			renderFrame: () => {},
@@ -67,9 +65,12 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		expect(fetch).toHaveBeenCalledWith('https://example.com/project.8f4e', { cache: 'no-store' });
 		expect(storage.getItem).not.toHaveBeenCalled();
 		expect(getProjectModules(JSON.parse(saved))).toEqual([]);
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+		expect(store.getState().loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe(
+			'loading'
+		);
 		finish(new Response(source));
 		await initializing;
+		expect(store.getState().loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('done');
 		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
 		expect(store.getState().gridSizeReady).toBe(false);
 		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
@@ -86,7 +87,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 					?.gaps.get(2)?.size
 			).toBe(8)
 		);
-		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
 		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
 		expect(store.getState().codeBlockRendering.currentProject.blocks.some(block => block.name === 'oldSession')).toBe(
 			false

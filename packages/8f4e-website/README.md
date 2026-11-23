@@ -64,8 +64,8 @@ and mobile. Collapsing a mobile example removes the selection from the URL. Unkn
 selection or the collapsed mobile list.
 
 Selecting a different example creates a fresh editor and disposes the previous selection. Each selection owns its
-editor, WebMCP bridge, canvas, loading timeout, and reveal callback through `src/gallery-editor-session.ts`. Pending
-mounts finish independently; a disposed selection releases any editor that arrives later and ignores late callbacks.
+editor, WebMCP bridge, canvas, loading timeout, and reveal frame through `src/gallery-editor-session.ts`. Pending
+mounts finish independently; a disposed selection releases any editor that arrives later and ignores late load errors.
 Returning to an example reloads its source; edits remain only for that editor's lifetime.
 The gallery editor captures wheel gestures for panning; scrolling over the example list scrolls the document.
 A link opens the example in the full editor.
@@ -75,7 +75,7 @@ rendered frame. Successful empty projects are revealed too. A load-error callbac
 without waiting for its fetch. The gallery does not inspect project contents or poll editor state to infer completion.
 
 Browser integration tests cover both website views with delayed responses, empty projects, failure/retry, early
-callbacks, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
+load errors, and switching examples while a fetch is pending. The gallery project-menu canvas baseline lives under
 `src/__screenshots__/gallery.test.ts/` and is shared across platforms because editor glyphs use bitmap masks.
 
 The galleries dynamically import their WebMCP bridge after the selected editor has mounted and its project source

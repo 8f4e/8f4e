@@ -64,15 +64,11 @@ export function mountHomepageEditors(): () => void {
 			return pendingMount;
 		}
 
-		let sourceLoaded = false;
 		let sourceLoadFailed = false;
 		const mountPromise = mountLandingEditor(canvas, {
 			captureWheel: false,
 			touchNavigation: { axis: 'horizontal' },
 			initialProjectUrl: canvas.dataset.projectPath ? getHomepageProjectUrl(canvas.dataset.projectPath) : undefined,
-			onInitialProjectLoaded: () => {
-				sourceLoaded = true;
-			},
 			onInitialProjectLoadError: error => {
 				sourceLoadFailed = true;
 				showProjectLoadError(canvas, error);
@@ -86,7 +82,7 @@ export function mountHomepageEditors(): () => void {
 
 				editorByCanvas.set(canvas, editor);
 				renderingObserver.observe(canvas);
-				if (sourceLoaded) {
+				if (!sourceLoadFailed) {
 					canvas.parentElement?.querySelector('.editor-load-error')?.remove();
 					revealEditorAfterMount(canvas);
 				}

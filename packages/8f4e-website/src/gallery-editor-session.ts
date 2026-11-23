@@ -29,8 +29,6 @@ export function mountGalleryEditorSession({
 
 	let editor: GalleryEditorInstance | undefined;
 	let bridge: EditorWebMcpBridge | undefined;
-	let sourceLoaded = false;
-	let bridgeStarted = false;
 	let disposed = false;
 	let revealFrame = 0;
 
@@ -48,10 +46,7 @@ export function mountGalleryEditorSession({
 		canvas.remove();
 	}
 
-	async function connectBridge(): Promise<void> {
-		if (disposed || !sourceLoaded || !editor || bridgeStarted) return;
-		bridgeStarted = true;
-		const mountedEditor = editor;
+	async function connectBridge(mountedEditor: GalleryEditorInstance): Promise<void> {
 		try {
 			const { createEditorWebMcp } = await import('@8f4e/editor-webmcp');
 			if (disposed) return;
@@ -96,9 +91,6 @@ export function mountGalleryEditorSession({
 				touchNavigation: { axis: 'horizontal' },
 				includeKeyboardModeSwitching,
 				initialProjectUrl: projectUrl,
-				onInitialProjectLoaded: () => {
-					if (!disposed) sourceLoaded = true;
-				},
 				onInitialProjectLoadError: showError,
 			});
 			if (disposed) {
@@ -106,8 +98,8 @@ export function mountGalleryEditorSession({
 				return;
 			}
 			editor = mountedEditor;
-			if (sourceLoaded) reveal();
-			void connectBridge();
+			reveal();
+			void connectBridge(mountedEditor);
 		} catch (error) {
 			showError(error);
 		}

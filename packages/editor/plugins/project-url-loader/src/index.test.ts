@@ -10,43 +10,36 @@ function setup(
 	fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(source)),
 	initialProjectUrl?: string
 ) {
-	const onLoaded = vi.fn();
 	const onError = vi.fn();
-	const test = setupPlugin(createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onLoaded, onError }));
+	const test = setupPlugin(createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onError }));
 	cleanups.push(test.dispose);
 	test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-	return { ...test, fetch, onLoaded, onError };
+	return { ...test, fetch, onError };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
 describe('project URL loader plugin', () => {
-	it('loads an explicit initial URL through the generic initialization hook', async () => {
+	it('finishes loading an explicit initial URL during source preparation', async () => {
 		const test = setup(undefined, url);
-		test.onLoaded.mockImplementation(() => {
-			expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true);
-		});
 		expect(test.fetch).not.toHaveBeenCalled();
-		test.events.dispatch('prepareInitialProject');
+		const preparing = test.dispatchAsync('prepareInitialProject');
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
 			{ id: 'project-url', message: 'Loading project...', status: 'loading' },
 		]);
-		await vi.waitFor(() =>
-			expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true)
-		);
+		await preparing;
+		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true);
 		expect(test.fetch).toHaveBeenCalledWith(url, { cache: 'no-store' });
-		expect(test.onLoaded).toHaveBeenCalledOnce();
-		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
+		expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'done' }]);
 		expect(test.onError).not.toHaveBeenCalled();
 	});
 
-	it('does no startup fetch or notification when there is no initial URL', async () => {
+	it('does not fetch or report an error when there is no initial URL', async () => {
 		const test = setup();
 		await test.dispatchAsync('prepareInitialProject');
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		expect(test.fetch).not.toHaveBeenCalled();
-		expect(test.onLoaded).not.toHaveBeenCalled();
 		expect(test.onError).not.toHaveBeenCalled();
 	});
 
@@ -57,24 +50,24 @@ describe('project URL loader plugin', () => {
 	])('reports %s and loads an empty project', async (_name, response) => {
 		const fetch = vi.fn<typeof globalThis.fetch>(response);
 		const test = setup(fetch, url);
-		test.events.dispatch('prepareInitialProject');
-		await vi.waitFor(() =>
-			expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true)
-		);
+		await test.dispatchAsync('prepareInitialProject');
+		expect(test.state.console.logs.some(log => log.message.includes('Failed to load project'))).toBe(true);
 		expect(test.state.initialProjectState).toMatchObject({
 			entries: [],
 			execution: [],
 			notes: [],
 		});
 		expect(test.onError).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
-		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-		expect(test.onLoaded).not.toHaveBeenCalled();
+		expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'failed' }]);
 	});
 
-	it('reports an empty project as successfully loaded', async () => {
+	it('successfully installs a valid empty project', async () => {
 		const test = setup(vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response('8f4e/v1')), url);
+		test.events.dispatch('loadProject', {
+			project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note previous', 'noteEnd'] }] },
+		});
 		await test.dispatchAsync('prepareInitialProject');
-		expect(test.onLoaded).toHaveBeenCalledOnce();
+		expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'done' }]);
 		expect(test.onError).not.toHaveBeenCalled();
 		expect(test.state.initialProjectState).toMatchObject({
 			entries: [],
@@ -111,7 +104,6 @@ describe('project URL loader plugin', () => {
 		else fail(new Error('Offline'));
 		await loading;
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-		expect(test.onLoaded).not.toHaveBeenCalled();
 		expect(test.onError).not.toHaveBeenCalled();
 		expect(test.fetch).toHaveBeenCalledOnce();
 		expect(test.state.initialProjectState).toMatchObject({

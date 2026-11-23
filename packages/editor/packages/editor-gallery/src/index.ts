@@ -28,8 +28,7 @@ export interface GalleryEditorMountOptions {
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
 	initialProjectUrl?: string;
-	/** Initial source is installed; compilation and plugin loading continue independently. */
-	onInitialProjectLoaded?: () => void;
+	/** The initial URL request or source parsing failed. */
 	onInitialProjectLoadError?: (error: unknown) => void;
 }
 
@@ -46,7 +45,6 @@ export async function mountGalleryEditor(
 		featureFlags,
 		includeKeyboardModeSwitching,
 		initialProjectUrl,
-		onInitialProjectLoaded,
 		onInitialProjectLoadError,
 	}: GalleryEditorMountOptions = {}
 ): Promise<GalleryEditorInstance> {
@@ -65,7 +63,6 @@ export async function mountGalleryEditor(
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,
-				onLoaded: onInitialProjectLoaded,
 				onError: onInitialProjectLoadError,
 			}),
 			createDeferredPluginLoaderPlugin({
@@ -89,6 +86,5 @@ export async function mountGalleryEditor(
 		featureFlags: { projectCreation: false, ...featureFlags },
 		renderer: renderer ?? new Engine(canvas),
 	});
-	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

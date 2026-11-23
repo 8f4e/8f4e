@@ -22,7 +22,6 @@ export function createDefaultEditorPlugins(options: {
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
-	onInitialProjectLoaded?: () => void;
 	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
 	showOpenMenuItem: boolean;
@@ -45,7 +44,6 @@ export function createDefaultEditorPlugins(options: {
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
 			initialProjectUrl: options.initialProjectUrl,
-			onLoaded: options.onInitialProjectLoaded,
 			onError: options.onInitialProjectLoadError,
 		}),
 		createSessionPersistencePlugin({
@@ -80,8 +78,6 @@ export interface DefaultEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Initial source is installed; compilation and asset loading continue independently. */
-	onInitialProjectLoaded?: () => void;
 	/** The initial URL request or source parsing failed. */
 	onInitialProjectLoadError?: (error: unknown) => void;
 	/** Show Open From Disk in the project-open plugin menu. */
@@ -105,7 +101,6 @@ export async function mountDefaultEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoaded,
 		onInitialProjectLoadError,
 		showOpenMenuItem = true,
 		includeKeyboardModeSwitching,
@@ -125,7 +120,6 @@ export async function mountDefaultEditor(
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
-					onInitialProjectLoaded,
 					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
 					showOpenMenuItem,
@@ -144,7 +138,6 @@ export async function mountDefaultEditor(
 		featureFlags,
 		renderer: new Engine(canvas),
 	});
-	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

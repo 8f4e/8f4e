@@ -91,15 +91,11 @@ PWA hosts can pass `pwaUpdates: navigator.serviceWorker` to load the independent
 the first render. It shows a dialog when a new version starts downloading and offers **Reload** when it is ready.
 First installation is silent. The host retains service-worker registration, caching, and controller-change reloads.
 
-Use `onInitialProjectLoaded()` to identify successful initial source loading and `onInitialProjectLoadError(error)` to report
-a failed initial URL request or parse. With no URL, the success callback runs after editor initialization and synchronous
-session restoration. With a URL, the standard URL-loader plugin supplies the notification. A valid empty project counts
-as success; compilation and asset loading continue independently.
-
-Callbacks can run before the mount promise resolves; reveal the canvas after successful loading and mount completion.
-Mounting waits for project source preparation, then font-atlas
-loading using the prepared project's configuration or the default, layout and the first render. Custom plugin
-compositions provide their own asynchronous loading notifications.
+The mount promise resolves after project source preparation, then font-atlas loading using the prepared project's
+configuration or the default, layout, and the first render. Compilation and asset loading continue independently.
+If an initial URL request or parse fails, the standard URL loader installs an empty project and reports the error through
+`onInitialProjectLoadError(error)`. The mount can still resolve, so a host can handle this error separately and reveal the
+canvas after successful mount completion. Custom plugin compositions provide their own project loading and error handling.
 
 The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
@@ -144,8 +140,7 @@ event after initial project loading/parsing, font-atlas loading, and rendering. 
 optional modules, including directive-based lazy plugins, with no extra frame callback or timer. Font payloads
 remain separate lazy chunks. Every optional feature is an individual entry in the same deferred list, including input
 plugins; their implementations load independently. Deferred features initialize from the current
-project, including edits or compilation results received while loading. Mounting and initial-project callbacks do
-not wait for these features.
+project, including edits or compilation results received while loading. Mounting does not wait for these features.
 The render callback runs from plugin actions after initialization. The shared plugin setup context contains no
 browser resources. This composition supplies resources tied to the host, while browser plugins can own their
 browser API use.

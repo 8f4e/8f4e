@@ -64,40 +64,36 @@ test('reveals the homepage editor after its initial project load completes', asy
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
 });
 
-test.each([false, true])(
-	'waits for the editor mount after source success and respects disposal (disposed=%s)',
-	async disposed => {
-		let finish!: (editor: LandingEditorInstance) => void;
-		const pending = new Promise<LandingEditorInstance>(resolve => {
-			finish = resolve;
-		});
-		const editor = {
-			dispose: vi.fn(),
-			pauseRendering: vi.fn(),
-			resumeRendering: vi.fn(),
-			releaseRenderingResources: vi.fn(),
-		} as unknown as LandingEditorInstance;
-		vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
-		const view = setup(async () => new Response('8f4e/v1'));
-		await view.started();
-		vi.mocked(mountLandingEditor).mock.calls[0][1]!.onInitialProjectLoaded?.();
+test.each([false, true])('waits for the editor mount and respects disposal (disposed=%s)', async disposed => {
+	let finish!: (editor: LandingEditorInstance) => void;
+	const pending = new Promise<LandingEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const editor = {
+		dispose: vi.fn(),
+		pauseRendering: vi.fn(),
+		resumeRendering: vi.fn(),
+		releaseRenderingResources: vi.fn(),
+	} as unknown as LandingEditorInstance;
+	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
+	const view = setup(async () => new Response('8f4e/v1'));
+	await view.started();
+	await new Promise(requestAnimationFrame);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+
+	if (disposed) view.dispose();
+	finish(editor);
+	await view.mounted();
+	if (disposed) {
+		expect(editor.dispose).toHaveBeenCalledOnce();
 		await new Promise(requestAnimationFrame);
 		expect(view.canvas.classList.contains('editor-ready')).toBe(false);
-
-		if (disposed) view.dispose();
-		finish(editor);
-		await view.mounted();
-		if (disposed) {
-			expect(editor.dispose).toHaveBeenCalledOnce();
-			await new Promise(requestAnimationFrame);
-			expect(view.canvas.classList.contains('editor-ready')).toBe(false);
-		} else {
-			await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
-		}
+	} else {
+		await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
 	}
-);
+});
 
-test('reports a rejected renderer mount without revealing the loaded project', async () => {
+test('reports a rejected renderer mount without revealing the editor', async () => {
 	let fail!: (error: Error) => void;
 	const pending = new Promise<LandingEditorInstance>((_, reject) => {
 		fail = reject;
@@ -105,7 +101,6 @@ test('reports a rejected renderer mount without revealing the loaded project', a
 	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
 	const view = setup(async () => new Response('8f4e/v1'));
 	await view.started();
-	vi.mocked(mountLandingEditor).mock.calls[0][1]!.onInitialProjectLoaded?.();
 	await new Promise(requestAnimationFrame);
 	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
 	const error = new Error('Font unavailable');

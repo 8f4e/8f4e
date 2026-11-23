@@ -6,12 +6,10 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 export function createProjectUrlLoaderPlugin({
 	fetch,
 	initialProjectUrl,
-	onLoaded,
 	onError,
 }: {
 	fetch: typeof globalThis.fetch;
 	initialProjectUrl?: string;
-	onLoaded?: () => void;
 	onError?: (error: unknown) => void;
 }): EditorPlugin {
 	return {
@@ -40,7 +38,6 @@ export function createProjectUrlLoaderPlugin({
 						return;
 					}
 					events.dispatch('loadProject', { project });
-					onLoaded?.();
 					indicator.done();
 				} catch (error) {
 					indicator.fail();
