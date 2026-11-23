@@ -3,6 +3,7 @@ import type {
 	EditorDirectiveDefinition,
 	EditorProjectSnapshot,
 	EventDispatcher,
+	ProjectChangeDetails,
 	ProjectEditOptions,
 	ProjectEditPlan,
 	ProjectEditResult,
@@ -14,7 +15,7 @@ import type {
 import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { walkProjectBlocks, walkProjectLevels } from '../../pureHelpers/projectTree';
-import { generateEnvironmentSource } from '../code-blocks/features/auto-env-constants/source';
+import { generateEnvironmentSource, isEnvironmentSource } from '../code-blocks/features/auto-env-constants/source';
 import { isOrdinaryCommentLine } from '../code-blocks/features/directives/utils';
 import type { LayoutCoordinator } from '../code-blocks/layout/coordinator';
 import type { ProjectMembership } from '../code-blocks/projectMembership';
@@ -36,7 +37,7 @@ import {
 import { captureProjectSnapshot, snapshotFromProjectModel } from './snapshot';
 
 type RestoreKind = 'replace' | 'restore';
-type Change = { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']> } | { kind: RestoreKind };
+const generatedChange = { kind: 'edit', history: 'skip', generatedOnly: true } as const satisfies ProjectChangeDetails;
 
 /** A structural plan conflict detected before beginning a mutation. */
 export class ProjectEditPlanError extends Error {
@@ -169,7 +170,7 @@ export function createProjectEditService(
 		}
 	};
 
-	const publish = (mutation: Mutation, change: Change): boolean => {
+	const publish = (mutation: Mutation, change: ProjectChangeDetails): boolean => {
 		const { changed, compilation } = collectChanges(mutation);
 		const force = change.kind !== 'edit';
 		if (!changed && !force) return false;
@@ -194,7 +195,7 @@ export function createProjectEditService(
 		return mutation;
 	};
 
-	const finishMutation = (work: (mutation: Mutation) => void, change: Change) => {
+	const finishMutation = (work: (mutation: Mutation) => void, change: ProjectChangeDetails) => {
 		if (active) throw new Error('Cannot start a project edit during another project edit');
 		active = true;
 		try {
@@ -206,7 +207,7 @@ export function createProjectEditService(
 				const followUp = settle(() => {
 					if (configPending) coordinator.refreshProject(rendering.currentProject);
 				});
-				publish(followUp, { kind: 'edit', history: 'skip' });
+				publish(followUp, generatedChange);
 			}
 			return { changed, insertedBlocks: mutation.insertedBlocks };
 		} catch (error) {
@@ -243,7 +244,7 @@ export function createProjectEditService(
 
 	const apply = (plan: ProjectEditPlan, { history = 'debounced' }: ProjectEditOptions = {}): ProjectEditResult => {
 		if (active) throw new Error('Cannot start a project edit during another project edit');
-		const inserts = plan.inserts ?? [];
+		const requestedInserts = plan.inserts ?? [];
 		const updates = (plan.updates ?? []).filter(({ codeBlock }) => !codeBlock.readOnly);
 		const deletes = new Set(
 			(plan.deletes ?? []).filter(block => !block.readOnly && membership.getOwner(block) !== undefined)
@@ -265,7 +266,7 @@ export function createProjectEditService(
 				throw new ProjectEditPlanError('deleted_block', 'Cannot update a block being deleted');
 			}
 		}
-		for (const { project } of inserts) {
+		for (const { project } of requestedInserts) {
 			if (!membership.hasProject(project)) {
 				throw new ProjectEditPlanError('detached_project', 'Cannot insert into a detached project level');
 			}
@@ -273,6 +274,11 @@ export function createProjectEditService(
 				throw new ProjectEditPlanError('deleted_project', 'Cannot insert into a project group being deleted');
 			}
 		}
+		// The generated block exclusively owns the root constants env namespace.
+		// Authored attempts to create one are no-ops, like edits to the read-only owner.
+		const inserts = requestedInserts.filter(
+			({ project, source }) => project !== rendering.rootProject || !isEnvironmentSource([...source.code])
+		);
 		// Combine repeated updates before comparing actual candidate source, rather than
 		// publishing transient changes or invalidating unchanged block identities.
 		const candidates = new Map<CodeBlockGraphicData, { code?: string[]; entry?: string }>();
@@ -283,6 +289,10 @@ export function createProjectEditService(
 			candidates.set(codeBlock, update);
 		}
 		for (const [block, update] of candidates) {
+			if (update.code && membership.getOwner(block) === rendering.rootProject && isEnvironmentSource(update.code)) {
+				candidates.delete(block);
+				continue;
+			}
 			if (update.code && sameSource(update.code, block.code)) delete update.code;
 			if (update.code === undefined && !supportsExecutionEntry(block)) delete update.entry;
 			if (update.entry === block.entry) delete update.entry;
@@ -414,13 +424,10 @@ export function createProjectEditService(
 			configPending = true;
 			return;
 		}
-		finishMutation(
-			() => {
-				configPending = true;
-				coordinator.refreshProject(rendering.currentProject);
-			},
-			{ kind: 'edit', history: 'skip' }
-		);
+		finishMutation(() => {
+			configPending = true;
+			coordinator.refreshProject(rendering.currentProject);
+		}, generatedChange);
 	};
 
 	store.subscribe('editorConfigSchemaContributions', refreshConfig);
@@ -429,12 +436,9 @@ export function createProjectEditService(
 			environmentPending = true;
 			return;
 		}
-		finishMutation(
-			() => {
-				environmentPending = true;
-			},
-			{ kind: 'edit', history: 'skip' }
-		);
+		finishMutation(() => {
+			environmentPending = true;
+		}, generatedChange);
 	});
 	return { apply, load, capture, restore };
 }

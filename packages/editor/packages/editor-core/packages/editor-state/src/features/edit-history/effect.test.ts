@@ -201,15 +201,49 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()[1]).toBe('push 12');
 	});
 
-	it('uses idle skipped source as the baseline of the next authored edit', async () => {
+	it('only captures idle skipped authored changes, retaining the baseline across generated changes', async () => {
+		const capture = vi.spyOn(store.projectEdits, 'capture');
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		expect(state.projectChange).toEqual({
+			revision: baselineRevision + 1,
+			kind: 'edit',
+			history: 'skip',
+			generatedOnly: true,
+		});
+		expect(environment().code).toContain('const GENERATED 42');
+		expect(capture).not.toHaveBeenCalled();
+
 		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 2', 'drop', 'moduleEnd'] }], {
 			history: 'skip',
 		});
+		expect(capture).toHaveBeenCalledOnce();
+		store.set('envConstantContributions.test', ['const GENERATED 43']);
+		expect(capture).toHaveBeenCalledOnce();
+
 		replaceLine(1, 'push 3');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 		dispatch('undo');
 		expect(selectedBlockCode()[1]).toBe('push 2');
+		expect(environment().code).toContain('const GENERATED 43');
+	});
+
+	it('does not capture authored history when a newly available schema generates environment source', () => {
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: block, code: ['module main', 'push 1', 'drop', '; @config test 42', 'moduleEnd'] }],
+			{ history: 'checkpoint' }
+		);
+		const capture = vi.spyOn(store.projectEdits, 'capture');
+		const revision = state.projectChange.revision;
+		store.subscribe('editorConfig.test', value => {
+			store.set('envConstantContributions.test', [`const GENERATED ${value}`]);
+		});
+		store.set('editorConfigSchemaContributions.test', { root: 'test', schema: { type: 'integer' } });
+		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'edit', history: 'skip', generatedOnly: true });
+		expect(environment().code).toContain('const GENERATED 42');
+		expect(capture).not.toHaveBeenCalled();
+		expect(state.historyStack).toHaveLength(1);
 	});
 
 	it('does not postpone or discard a pending authored edit when ordinary source is skipped', async () => {
@@ -229,7 +263,7 @@ describe('history tracking with real project mutations', () => {
 		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(600);
 		store.set('envConstantContributions.test', ['const GENERATED 42']);
-		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip' });
+		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip', generatedOnly: true });
 		const beforeProjectEdit = vi.fn();
 		events.on('beforeProjectEdit', beforeProjectEdit);
 		const generatedChange = state.projectChange;
@@ -299,6 +333,7 @@ describe('history tracking with real project mutations', () => {
 	] as const)(
 		'publishes an authored %s before generated changes requested by a %s observer',
 		(history, notification) => {
+			const capture = vi.spyOn(store.projectEdits, 'capture');
 			const contribute = () => {
 				if (notification === 'compilationInputChanged') events.off(notification, contribute);
 				else store.unsubscribe(notification, contribute);
@@ -315,8 +350,9 @@ describe('history tracking with real project mutations', () => {
 
 			expect(changes).toEqual([
 				{ revision: baselineRevision + 1, kind: 'edit', history },
-				{ revision: baselineRevision + 2, kind: 'edit', history: 'skip' },
+				{ revision: baselineRevision + 2, kind: 'edit', history: 'skip', generatedOnly: true },
 			]);
+			expect(capture).toHaveBeenCalledTimes(history === 'checkpoint' ? 1 : 0);
 			dispatch('undo');
 			expect(selectedBlockCode()[1]).toBe('push 1');
 			expect(environment().code).toContain('const GENERATED 42');

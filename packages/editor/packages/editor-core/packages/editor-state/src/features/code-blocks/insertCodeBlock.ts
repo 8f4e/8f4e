@@ -19,7 +19,7 @@ function getUniqueEntryName(state: State): string {
 	return entryName;
 }
 
-/** Insert one block with automatic entry assignment; returns its settled handle, or undefined in view mode. */
+/** Insert one block with automatic entry assignment; returns its settled handle, or undefined if no block is inserted. */
 export function insertCodeBlock(
 	store: Pick<StateManager<State>, 'getState'> & { projectEdits: ProjectEdits },
 	{ x, y, code }: { x: number; y: number; code: string[] }

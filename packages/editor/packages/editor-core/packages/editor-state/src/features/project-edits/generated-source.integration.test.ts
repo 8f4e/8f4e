@@ -55,48 +55,68 @@ it('ignores deletion, source edits and position changes to the read-only environ
 	expect(beforeCheckpoint).not.toHaveBeenCalled();
 });
 
-it('keeps an authored duplicate name editable instead of transferring generated source ownership', () => {
-	const { state, store, load } = setup();
-	load('constants env\n; @pos 7 9\nconstantsEnd');
-	const root = state.codeBlockRendering.rootProject;
-	const environment = root.blocks[0];
-	const authoredCode = ['constants env', '; @pos -1 -1', 'const KEEP 1', 'constantsEnd'];
-	const {
-		insertedBlocks: [authored],
-	} = store.projectEdits.apply({ inserts: [{ project: root, source: { code: authoredCode } }] });
-	expect(authored.readOnly).not.toBe(true);
-	store.set('envConstantContributions.test', ['const TEST 2']);
-	expect(authored.code).toEqual(authoredCode);
-	expect(environment.code).toContain('const TEST 2');
-	expect(store.projectEdits.apply({ deletes: [authored] }).changed).toBe(true);
-	expect(root.blocks).toContain(environment);
-});
-
-it('keeps a copied environment source editable until reopening normalizes duplicate root env blocks', () => {
+it('ignores authored attempts to insert or rename a root constants env without invalidating history', () => {
 	const { state, store, events, load } = setup();
 	store.set('envConstantContributions.test', ['const GENERATED 1']);
-	load('constants env\n; @pos 7 9\nconstantsEnd');
+	load('constants keep\nconst KEEP 2\nconstantsEnd');
 	const root = state.codeBlockRendering.rootProject;
 	const environment = root.blocks[0];
+	const authored = root.blocks.find(block => block.name === 'keep')!;
 	const copy = environment.code.map(line => (line.startsWith('; @pos') ? '; @pos -10 -10' : line));
-	const {
-		insertedBlocks: [authored],
-	} = store.projectEdits.apply({ inserts: [{ project: root, source: { code: copy } }] });
-	expect(authored.code).toEqual(copy);
-	const edited = copy.map(line => (line === 'const GENERATED 1' ? 'const KEEP 2' : line));
-	store.projectEdits.apply({ updates: [{ codeBlock: authored, code: edited }] });
-	expect(authored.code).toEqual(edited);
-	expect(environment.code).toContain('const GENERATED 1');
-	events.dispatch('loadProject', { project: serializeToProject(state) });
+	const revision = state.projectChange.revision;
+	const compilerRevision = state.compilerInputRevision;
+	const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
+	const beforeCheckpoint = vi.fn();
+	events.on('beforeProjectEdit', beforeCheckpoint);
+	expect(
+		store.projectEdits.apply(
+			{ inserts: [{ project: root, source: { code: copy } }], updates: [{ codeBlock: authored, code: copy }] },
+			{ history: 'checkpoint' }
+		)
+	).toEqual({ changed: false, insertedBlocks: [] });
+	expect(authored.code).toEqual(['constants keep', 'const KEEP 2', 'constantsEnd']);
+	expect(root.blocks).toHaveLength(2);
+	expect(state.projectChange.revision).toBe(revision);
+	expect(state.compilerInputRevision).toBe(compilerRevision);
+	expect(state.codeBlockRendering.nextCodeBlockCreationIndex).toBe(nextId);
+	expect(beforeCheckpoint).not.toHaveBeenCalled();
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
-	const restored = state.codeBlockRendering.rootProject.blocks;
-	expect(restored).toHaveLength(1);
-	expect(restored[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0, readOnly: true });
-	expect(restored[0].code).toContain('const GENERATED 3');
-	expect(restored[0].code).not.toContain('const KEEP 2');
-	const generatedId = restored[0].creationIndex;
+	expect(environment.code).toContain('const GENERATED 3');
+	expect(serializeToProject(state).constants.filter(block => block.code[0] === 'constants env')).toHaveLength(1);
+	const generatedId = environment.creationIndex;
 	events.dispatch('loadProject', { project: serializeToProject(state) });
 	expect(state.codeBlockRendering.rootProject.blocks[0].creationIndex).toBe(generatedId);
+});
+
+it('continues to allow constants env in child projects and ordinary authored names at the root', () => {
+	const { state, store, load } = setup();
+	load('entry main\ngroup child\ngroupEnd\nentryEnd');
+	const root = state.codeBlockRendering.rootProject;
+	const child = root.blocks.find(block => block.name === 'child')!.childProject!;
+	const {
+		insertedBlocks: [nested, note, constants],
+	} = store.projectEdits.apply({
+		inserts: [
+			{ project: child, source: { code: ['constants env', 'const NESTED 1', 'constantsEnd'] } },
+			{ project: root, source: { code: ['note env', 'noteEnd'] } },
+			{ project: root, source: { code: ['constants environment', 'const ROOT 1', 'constantsEnd'] } },
+		],
+	});
+	expect(nested.readOnly).not.toBe(true);
+	expect(note).toMatchObject({ blockType: 'note', name: 'env' });
+	expect(constants).toMatchObject({ blockType: 'constants', name: 'environment' });
+	expect(
+		store.projectEdits.apply({
+			updates: [
+				{ codeBlock: nested, code: ['constants env', 'const NESTED 2', 'constantsEnd'] },
+				{ codeBlock: note, code: ['note env', '; authored', 'noteEnd'] },
+				{ codeBlock: constants, code: ['constants environment', 'const ROOT 2', 'constantsEnd'] },
+			],
+		}).changed
+	).toBe(true);
+	expect(nested.code).toContain('const NESTED 2');
+	expect(note.code).toContain('; authored');
+	expect(constants.code).toContain('const ROOT 2');
 });
 
 const generatedHeader = '; Auto-generated environment constants\n; Changes will be overwritten\n';

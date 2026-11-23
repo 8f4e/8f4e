@@ -51,7 +51,8 @@ export function createExampleModulesPlugin({
 				const source = await loadSource(slug);
 				if (disposed || state.editorMode !== 'edit') return;
 				const code = extractPublicBlockFromModuleSource(source);
-				const block = insertCodeBlock(store, { code, x, y })!;
+				const block = insertCodeBlock(store, { code, x, y });
+				if (!block) return;
 				const gap = 4;
 				let gridX = block.gridX + block.width / state.viewport.vGrid + gap;
 				for (const dependency of catalog.getDependenciesFromSource(slug, source)) {
@@ -77,7 +78,8 @@ export function createExampleModulesPlugin({
 						code: dependencyCode,
 						x: gridX * state.viewport.vGrid - state.viewport.x,
 						y,
-					})!;
+					});
+					if (!insertedDependency) continue;
 					gridX = insertedDependency.gridX + insertedDependency.width / state.viewport.vGrid + gap;
 				}
 			};

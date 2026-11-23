@@ -299,10 +299,11 @@ Plugins may synchronously replace `targets`; core then moves and snaps those blo
 Block copy/paste belongs to `@8f4e/editor-plugin-code-block-copy-paste`. Its factory receives browser read/write functions; core has no clipboard callbacks or copy/paste actions. Grouping receives its own writer for Copy Group. Keyboard-editing separately handles native text pastes at the caret.
 
 `insertCodeBlock(store, { x, y, code })` inserts one source block with automatic entry assignment and returns its
-handle after source preparation and layout settle. In view mode it returns `undefined`.
+handle after source preparation and layout settle, or `undefined` if no block is inserted.
 `insertCodeBlocks(store, { x, y, blocks })` inserts a source batch at a viewport position, preserving relative positions,
-source names, references, group membership, and nested entry tables. It returns the created blocks in input order,
-or an empty array in view mode. Only `@pos` is rewritten for placement. Callers can use the returned blocks' settled
+source names, references, group membership, and nested entry tables. It returns only the created blocks in input order.
+Both insertion helpers ignore writes in view mode or attempts to create the reserved root `constants env` block.
+Only `@pos` is rewritten for placement. Callers can use the returned blocks' settled
 geometry to position subsequent insertions. `serializeCodeBlocks(blocks, anchor)` returns detached `SerializedCodeBlock`
 sources with relative coordinates and recursively owned project slices. These helpers contain no browser or clipboard
 format handling.
@@ -350,8 +351,8 @@ Plugins can contribute source to the generated root-project `env` constants bloc
 resolving authored project configuration and recompiles when generated source changes. Contributions update the root
 block regardless of which project group is visible. Every project open discards all root `constants env` blocks and
 creates one read-only generated block at `(0, 0)`. It can be selected but cannot be edited, dragged or deleted.
-Only that block receives contributions; ordinary blocks inserted while the project is open remain authored source,
-even if named `env`. Nested environment blocks also remain authored source. Each plugin removes its own contribution key
+Only that block receives contributions. Authored attempts to insert or rename a root block to `constants env` are ignored.
+Other types named `env` and nested environment blocks remain ordinary authored source. Each plugin removes its own contribution key
 when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
@@ -394,7 +395,7 @@ to one transaction publish once through `projectChange`. New contributions made 
 in a follow-up transaction; callers cannot start new source edits inside another transaction.
 Repeated updates are folded to their final intent and duplicate or ancestor-covered deletions are normalized once;
 updates or insertions targeting deleted levels are rejected before modifying any live source. Updates and deletions
-targeting read-only blocks are ignored.
+targeting read-only blocks are ignored, as are insertions and final source updates attempting to create another root `constants env`.
 
 Callers own edit-mode checks and source transformations; they must not mutate published source or project membership
 directly, or separately publish the operation. Asynchronous work completes before a transaction starts; transactions

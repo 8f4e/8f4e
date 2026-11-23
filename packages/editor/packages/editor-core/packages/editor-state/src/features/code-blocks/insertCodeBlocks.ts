@@ -22,7 +22,7 @@ function placeSourceBlock(
 	};
 }
 
-/** Insert a source batch at a viewport pixel position, requiring an installed grid. */
+/** Insert a source batch at a viewport pixel position, requiring an installed grid. Returns only the created blocks. */
 export function insertCodeBlocks(
 	store: Pick<StateManager<State>, 'getState'> & { projectEdits: ProjectEdits },
 	{

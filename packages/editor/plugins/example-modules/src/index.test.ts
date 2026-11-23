@@ -160,6 +160,22 @@ describe('example modules plugin', () => {
 		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'simple']);
 	});
 
+	it('does not treat an ignored reserved root env insertion as a created example block', async () => {
+		const test = setup({
+			sources: new Map([
+				[
+					'constants/env',
+					async () => publicSource('constants env\n; @public\nconst VALUE 1\nconstantsEnd', 'constants'),
+				],
+			]),
+		});
+		const root = test.state.codeBlockRendering.rootProject;
+		const environment = root.blocks[0];
+		await test.addModule('env');
+		expect(root.blocks).toEqual([environment]);
+		expect(environment.code).not.toContain('const VALUE 1');
+	});
+
 	it('inserts a public configuration note without creating executable modules', async () => {
 		const test = setup({
 			sources: new Map([

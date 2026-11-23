@@ -1,8 +1,10 @@
-import { parseProjectSource } from '@8f4e/compiler';
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createCodeBlockCopyPastePlugin } from '@8f4e/editor-plugin-code-block-copy-paste';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
-import initState from '@8f4e/editor-state';
+import initState, { serializeToProject, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/file-events';
@@ -42,10 +44,17 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 	const document = { defaultView: browserWindow };
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
 	const fileSession = createProjectFileSession();
+	let clipboard = '';
 	const plugins = [
 		fileSession.plugin,
 		createProjectOpenPlugin({ document: inputTarget.ownerDocument, fileSession }),
 		createProjectSavePlugin({ inputTarget, fileSession }),
+		createCodeBlockCopyPastePlugin({
+			readClipboardText: async () => clipboard,
+			writeClipboardText: async text => {
+				clipboard = text;
+			},
+		}),
 	];
 	const pluginCleanups = plugins.map(plugin =>
 		plugin.setup({
@@ -137,18 +146,36 @@ entryEnd`),
 		await test.events.dispatchAsync('importProject');
 		expect(test.state.editorConfig.export?.fileName).toBe('right');
 	});
-	it('replaces duplicate root environment blocks when reopening a saved project', async () => {
+	it('keeps generated runtime values consistent across copy, paste, save and open', async () => {
 		const test = setup();
-		const authoredCode = ['constants env', '; @pos -5 -5', 'const KEEP 1', 'constantsEnd'];
-		test.store.set('envConstantContributions.provider', ['const GENERATED 2']);
-		test.store.projectEdits.apply({
-			inserts: [{ project: test.state.codeBlockRendering.rootProject, source: { code: authoredCode } }],
+		setGridSize(test.state, test.events, TEST_GRID_SIZE);
+		test.store.set('envConstantContributions.provider', ['const GENERATED 42']);
+		test.events.dispatch('loadProject', {
+			project: parseProjectSource(
+				'8f4e/v1\nentry main\nmodule test\nuse env\nint value GENERATED\nmoduleEnd\nentryEnd'
+			),
 		});
+		test.events.dispatch('enterEditMode');
+		const readValue = async () => {
+			const compiled = await compileProject(serializeToProject(test.state));
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(compiled.codeBuffer, { host: { memory } });
+			(instance.exports.initDefaults as CallableFunction)();
+			return new DataView(memory.buffer).getInt32(compiled.memoryPlan.modules.test.memory.value.byteAddress, true);
+		};
+		expect(await readValue()).toBe(42);
+		const environment = test.state.codeBlockRendering.rootProject.blocks.find(
+			block => block.readOnly && block.name === 'env'
+		)!;
+		await test.events.dispatchAsync('copyCodeBlock', { codeBlock: environment });
+		// Pasting after the generated block in source order used to shadow later contributions.
+		await test.events.dispatchAsync('pasteCodeBlocks', { x: 400, y: 300 });
+		test.store.set('envConstantContributions.provider', ['const GENERATED 99']);
+		expect(await readValue()).toBe(99);
 		await test.events.dispatchAsync('saveProject');
 		const savedSource = await test.handle.writable.write.mock.calls[0][0].text();
-		expect(savedSource).toContain('const KEEP 1');
-		expect(savedSource).toContain('const GENERATED 2');
-		expect(savedSource.indexOf('const KEEP 1')).toBeLessThan(savedSource.indexOf('const GENERATED 2'));
+		expect(parseProjectSource(savedSource).constants).toHaveLength(1);
+		expect(savedSource).toContain('const GENERATED 99');
 		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'duplicate-env.8f4e'));
 		await test.events.dispatchAsync('importProject');
 		const blocks = test.state.codeBlockRendering.rootProject.blocks;
@@ -156,10 +183,9 @@ entryEnd`),
 		expect(environments).toHaveLength(1);
 		const [generated] = environments;
 		expect(generated).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
-		expect(generated.code).toContain('const GENERATED 2');
-		expect(generated.code).not.toContain('const KEEP 1');
-		test.store.set('envConstantContributions.provider', ['const GENERATED 3']);
-		expect(generated.code).toContain('const GENERATED 3');
+		expect(await readValue()).toBe(99);
+		test.store.set('envConstantContributions.provider', ['const GENERATED 100']);
+		expect(await readValue()).toBe(100);
 	});
 	it.each(['loadProject', 'new'])('clears the association on %s', async action => {
 		const test = setup();

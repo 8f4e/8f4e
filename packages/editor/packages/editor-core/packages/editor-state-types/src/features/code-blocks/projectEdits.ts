@@ -10,7 +10,7 @@ export interface ProjectSourceBlock {
 	};
 }
 
-/** Final intended changes to the attached project tree. Callers supply attached targets; read-only writes are ignored. */
+/** Final intended changes to the attached project tree. Callers supply attached targets; read-only writes and attempts to create the reserved root environment are ignored. */
 export interface ProjectEditPlan {
 	updates?: readonly {
 		codeBlock: CodeBlockGraphicData;

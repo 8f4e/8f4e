@@ -13,9 +13,11 @@ Core installs no plugins by default. The `codeLineSelection` feature flag
 controls whether selected-line tooltips are visible.
 
 Each installation keeps its tooltip state private and registers a block drawer. Registration order determines its
-layering. It subscribes to selection, completed project changes, compiler, grid, and sprite changes.
+layering. Selection, completed project changes, compiler, grid, and selected-line geometry changes invalidate the
+prepared tooltip. Synchronous notifications coalesce into a microtask that prepares it once from settled inputs
+before the next animation frame. An explicit synchronous frame settles pending preparation immediately.
 Live values are read from the current runtime memory during drawing.
-Disposal removes its subscriptions, sprite-reload listener, and drawer contribution.
+Disposal removes its subscriptions, event listeners, and drawer contribution.
 
 Module-specific stack analysis, execution order, and live-memory details belong only to the active source definition.
 Overridden blocks retain instruction documentation without displaying another definition's compiler metadata.

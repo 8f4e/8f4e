@@ -154,6 +154,42 @@ describe('public editor editing handle', () => {
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
+	it('ignores final root env declarations while applying ordinary edits in the same API batch', () => {
+		const { editing, state } = setup();
+		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'original')!;
+		const blockId = getEditorBlockId(block);
+		const envCode = ['constants env', 'const GENERATED 42', 'constantsEnd'];
+		const originalRevision = editing.getRevision();
+		const result = editing.applyEdits({
+			expectedRevision: originalRevision,
+			edits: [
+				{ type: 'update', blockId, code: ['module transient', 'moduleEnd'] },
+				{ type: 'update', blockId, code: envCode },
+				{ type: 'insert', code: envCode },
+			],
+		});
+		expect(result).toEqual({ revision: originalRevision, createdBlockIds: [] });
+		expect(block.code).toEqual(['module original', 'int value 1', 'moduleEnd']);
+		const ordinary = editing.applyEdits({
+			expectedRevision: originalRevision,
+			edits: [
+				{ type: 'update', blockId, code: envCode },
+				{ type: 'update', blockId, code: ['module changed', 'moduleEnd'] },
+				{ type: 'insert', code: envCode },
+				{ type: 'insert', code: ['note env', 'noteEnd'] },
+			],
+		});
+		expect(ordinary.createdBlockIds).toHaveLength(1);
+		expect(block.code).toEqual(['module changed', 'moduleEnd']);
+		expect(serializeToProject(state).constants).toHaveLength(1);
+		expect(state.historyStack).toHaveLength(1);
+		editing.undo({ expectedRevision: ordinary.revision });
+		expect(serializeToProject(state).notes).toHaveLength(0);
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(serializeToProject(state).notes).toHaveLength(1);
+		expect(serializeToProject(state).constants).toHaveLength(1);
+	});
+
 	it('preserves mixed module and group order through loading, edits, history, and reloading', () => {
 		const module = (id: number, name: string) => ({
 			type: 'module' as const,

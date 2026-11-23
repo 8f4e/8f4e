@@ -153,11 +153,14 @@ export interface Options {
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
 
+/** The operation published after project changes settle, without its assigned revision. */
+export type ProjectChangeDetails =
+	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']>; generatedOnly?: never }
+	| { kind: 'edit'; history: 'skip'; generatedOnly: true }
+	| { kind: 'restore' | 'replace' };
+
 /** One completed persisted-content operation, shared by API concurrency, history, and persistence. */
-export type ProjectChange = { revision: number } & (
-	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']> }
-	| { kind: 'restore' | 'replace' }
-);
+export type ProjectChange = { revision: number } & ProjectChangeDetails;
 
 /** One contributed operation, retained after completion independently of presentation. */
 export interface LoadingIndicator {

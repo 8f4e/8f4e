@@ -13,6 +13,7 @@ import createStateManager from '@8f4e/state-manager';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createCompilerResult } from '../__tests__/compilerResult';
 import { createEvents } from '../__tests__/events';
+import * as sourceLine from '../helpers/sourceLine';
 import createTooltip from './effect';
 
 const cleanups: Array<() => void> = [];
@@ -596,8 +597,97 @@ entryEnd`);
 });
 
 describe('tooltip lifecycle', () => {
-	it('refreshes after grid size changes and stops responding after disposal', () => {
-		const block = createMockCodeBlock({ code: ['add'] });
+	it.each(['microtask', 'synchronous read'] as const)(
+		'prepares once from the settled source and caret after a typing edit via %s',
+		async prepare => {
+			const now = vi.spyOn(performance, 'now').mockReturnValue(100);
+			const describeLine = vi.spyOn(sourceLine, 'describeSourceLine');
+			const events = createEvents();
+			const store = initState(events, { callbacks: {} });
+			const state = store.getState();
+			setGridSize(state, events, TEST_GRID_SIZE);
+			const tooltip = createTooltip(store, events);
+			cleanups.push(() => {
+				tooltip.dispose();
+				store.dispose();
+			});
+			events.dispatch('loadProject', {
+				project: parseProjectSource('8f4e/v1\nentry main\nmodule sample\npush 1\ndrop\nmoduleEnd\nentryEnd'),
+			});
+			events.dispatch('enterEditMode');
+			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+			store.set('codeBlockRendering.selectedCodeBlock', block);
+			store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: 2, col: 0 });
+			await Promise.resolve();
+			expect(tooltip.getState().text[0]).toBe('drop (T -- )');
+			describeLine.mockClear();
+			const projectRevision = state.projectChange.revision;
+			const compilerRevision = state.compilerInputRevision;
+
+			// Keyboard editing splits the line at Enter through the source service, then moves the caret.
+			now.mockReturnValue(200);
+			applyCodeBlockSourceEdits(store, [
+				{ codeBlock: block, code: ['module sample', 'push 1', '', 'drop', 'moduleEnd'] },
+			]);
+			store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: 3, col: 0 });
+			expect(state.projectChange.revision).toBe(projectRevision + 1);
+			expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+			expect(describeLine).not.toHaveBeenCalled();
+
+			now.mockReturnValue(300);
+			if (prepare === 'microtask') {
+				await Promise.resolve();
+				expect(describeLine).toHaveBeenCalledExactlyOnceWith('drop');
+			}
+			const current = tooltip.getState();
+			expect(current.text[0]).toBe('drop (T -- )');
+			expect(current.target?.lineNumber).toBe(3);
+			expect(current.layout.y).toBe(block.cursor.y);
+			expect(current.animation.startedAt).toBe(200);
+			await Promise.resolve();
+			expect(tooltip.getState()).toBe(current);
+			expect(describeLine).toHaveBeenCalledExactlyOnceWith('drop');
+		}
+	);
+
+	it('refreshes after independent layout changes without rebuilding on unchanged geometry', () => {
+		const events = createEvents();
+		const store = initState(events, { callbacks: {} });
+		const state = store.getState();
+		setGridSize(state, events, TEST_GRID_SIZE);
+		const tooltip = createTooltip(store, events);
+		const contribution = store.layout.createContribution();
+		cleanups.push(() => {
+			tooltip.dispose();
+			contribution.dispose();
+			store.dispose();
+		});
+		events.dispatch('loadProject', {
+			project: parseProjectSource('8f4e/v1\nentry main\nmodule sample\npush 1\ndrop\nmoduleEnd\nentryEnd'),
+		});
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		const initial = tooltip.getState();
+		const projectRevision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+
+		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
+		const updated = tooltip.getState();
+		expect(updated.layout.y).toBe(initial.layout.y + 2 * state.viewport.hGrid);
+		expect(updated.layout.y).toBe(block.cursor.y);
+		expect(updated.animation.startedAt).toBe(initial.animation.startedAt);
+		expect(state.projectChange.revision).toBe(projectRevision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
+
+		events.dispatch('memoryValuesChanged');
+		expect(tooltip.getState()).toBe(updated);
+		contribution.remove(block);
+		expect(tooltip.getState().layout.y).toBe(initial.layout.y);
+	});
+
+	it('refreshes after grid size changes and stops responding after disposal', async () => {
+		const block = createMockCodeBlock({ code: ['add', 'drop'] });
 		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
 		const events = createEvents();
@@ -612,10 +702,14 @@ describe('tooltip lifecycle', () => {
 		expect(tooltip.getState().layout.width).toBe((tooltip.getState().widthChars + 2) * 10);
 		expect(tooltip.getState().layout.width).not.toBe(initial.layout.width);
 		expect(tooltip.getState().animation.startedAt).toBe(initial.animation.startedAt);
-		tooltip.dispose();
 		const disposed = tooltip.getState();
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		tooltip.dispose();
+		await Promise.resolve();
+		expect(tooltip.getState()).toBe(disposed);
+		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
 		events.dispatch('gridSizeChanged');
+		await Promise.resolve();
 		expect(tooltip.getState()).toBe(disposed);
 	});
 
