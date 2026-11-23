@@ -2,4 +2,4 @@
 
 - Own the block menu action and source transformation for removing intermodular defaults. Require an
   explicit target and edit mode.
-- Batch changes through `applyCodeBlockSourceEdits` with compilation enabled. Skip no-op edits.
+- Batch changes through `applyCodeBlockSourceEdits`; the transaction handles compilation invalidation and no-op edits.

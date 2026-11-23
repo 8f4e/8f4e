@@ -1,8 +1,10 @@
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
++0 constants env                           +                                                        
+ 1 ; @pos 0 0                                                                                       
+ 2 ; Auto-generated environment constants                                                           
+ 3 ; Changes will be overwritten                                                                    
+ 4                                                                                                  
+ 5                                                                                                  
++6 constantsEnd                            +                                                        
                                                                                                     
                                                                                                     
                     ....... New Project                                                             
@@ -11,8 +13,6 @@
                     ........ New Module                                                             
                     ...... New Function                                                             
                     .......... New Note                                                             
-                                                                                                    
-                                                                                                    
                                                                                                     
                                                                                                     
                                                                                                     

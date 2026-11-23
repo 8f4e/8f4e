@@ -3,18 +3,18 @@ import type {
 	CodeBlockRendering,
 	EditorDirectiveDefinition,
 	EditorLevelSnapshot,
+	EditorProjectSnapshot,
 	ProjectLevel,
 	Viewport,
 } from '@8f4e/editor-state-types';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
-import type { ProjectInstallation } from '../project-edits/snapshot';
 import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 
 /** Rebuild editor source and reconcile remembered views without taking source facts from the outgoing view. */
 export function reconstructProject(
-	snapshot: ProjectInstallation,
+	snapshot: EditorProjectSnapshot,
 	directives: EditorDirectiveDefinition[],
 	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
 	previous?: CodeBlockRendering
@@ -63,13 +63,7 @@ export function reconstructProject(
 		};
 	};
 	const rootProject = createProjectLevel(snapshot.rootProject);
-	// The root environment is generated from configuration of the authored
-	// project. Its source metadata is prepared after that configuration settles.
-	prepareProjectSources(
-		rootProject,
-		rootProject.blocks.filter(block => block.creationIndex !== snapshot.environmentId),
-		directives
-	);
+	prepareProjectSources(rootProject, rootProject.blocks, directives);
 	for (const level of walkProjectLevels(rootProject)) {
 		for (const block of level.blocks) {
 			block.x = block.gridX * viewport.vGrid;

@@ -508,7 +508,7 @@ describe('public editor editing handle', () => {
 		expect(project.blocks).not.toContain(removed);
 		expect(project.blocks.find(block => block.name === 'new')).toBeDefined();
 		expect(result.createdBlockIds).toEqual([getEditorBlockId(project.blocks.find(block => block.name === 'new')!)]);
-		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'checkpoint' });
+		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'edit', history: 'checkpoint' });
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(compilationChanged).toHaveBeenCalledOnce();
 		expect(changes).toEqual([serializeToProject(state)]);
@@ -517,7 +517,7 @@ describe('public editor editing handle', () => {
 		expect(serializeToProject(state)).toEqual(prior);
 	});
 
-	it('folds repeated updates and normalizes generated environment edits before deciding whether to publish', () => {
+	it('folds repeated updates and ignores writes to read-only blocks before deciding whether to publish', () => {
 		const { editing, state, events, compilationChanged } = setup();
 		const target = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'original')!;
 		const env = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
@@ -539,6 +539,7 @@ describe('public editor editing handle', () => {
 					blockId: getEditorBlockId(env),
 					code: [...originalEnvCode.slice(0, -1), 'const USER 4', originalEnvCode.at(-1)!],
 				},
+				{ type: 'delete', blockId: getEditorBlockId(env) },
 			],
 		});
 		expect(result.revision).toBe(revision);
@@ -866,7 +867,7 @@ describe('public editor editing handle', () => {
 		}
 	});
 
-	it('keeps pending typing separate from a public env-only edit and preserves the managed position and source on restore', async () => {
+	it('keeps pending typing separate from ignored env edits and preserves current generated source on restore', async () => {
 		vi.useFakeTimers();
 		try {
 			const { editing, state, store, events } = setup();
@@ -891,18 +892,18 @@ describe('public editor editing handle', () => {
 			store.set('envConstantContributions.test', ['const GENERATED 1']);
 			expect(beforeProjectEdit).not.toHaveBeenCalled();
 			expect(state.historyStack).toHaveLength(0);
-			// The original typing timer was not canceled or postponed by either generated edit.
+			// The original typing timer was not canceled or postponed by generated updates or ignored edits.
 			await vi.advanceTimersByTimeAsync(500);
 			expect(state.historyStack).toHaveLength(1);
 			editing.undo({ expectedRevision: editing.getRevision() });
 			expect(authored().code).toContain('int value 1');
-			expect(environment().code).toContain('; @pos 12 15');
+			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 1');
 			store.set('envConstantContributions.test', ['const GENERATED 2']);
 			expect(state.redoStack).toHaveLength(1);
 			editing.redo({ expectedRevision: editing.getRevision() });
 			expect(authored().code).toContain('int value 12');
-			expect(environment().code).toContain('; @pos 12 15');
+			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 2');
 		} finally {
 			vi.useRealTimers();

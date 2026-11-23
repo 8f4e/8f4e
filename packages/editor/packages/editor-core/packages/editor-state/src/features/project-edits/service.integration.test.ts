@@ -1,5 +1,4 @@
 import { EventEmitter } from 'node:events';
-import type { EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initState, { serializeToProject, setGridSize } from '~/index';
@@ -24,11 +23,9 @@ function setup(source: string, { grid = false } = {}) {
 		state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === name)!;
 	const projectChanged = vi.fn(() => serializeToProject(state));
 	const compilerChanged = vi.fn(() => serializeToProject(state));
-	const sourcesChanged = vi.fn<(event: EditorLifecycleEvents['codeBlockSourcesChanged']) => void>();
 	store.subscribe('projectChange', projectChanged);
 	events.on('compilationInputChanged', compilerChanged);
-	events.on('codeBlockSourcesChanged', sourcesChanged);
-	return { store, state, events, load, block, projectChanged, compilerChanged, sourcesChanged };
+	return { store, state, events, load, block, projectChanged, compilerChanged };
 }
 
 describe('project source transactions', () => {
@@ -37,7 +34,7 @@ describe('project source transactions', () => {
 note settings
 ; @config test 10
 noteEnd`);
-		const { store, state, events, block, projectChanged, compilerChanged, sourcesChanged } = test;
+		const { store, state, events, block, projectChanged, compilerChanged } = test;
 		// A runtime config subscriber contributes source synchronously, just like the audio/worker plugins.
 		store.subscribe('editorConfig.test', () => {
 			store.set('envConstantContributions.test', [`const TEST ${state.editorConfig.test}`]);
@@ -48,7 +45,6 @@ noteEnd`);
 		expect(block('env').code).toContain('const TEST 10');
 		compilerChanged.mockClear();
 		projectChanged.mockClear();
-		sourcesChanged.mockClear();
 		const settings = block('settings');
 		const environment = block('env');
 		const previousProjectRevision = state.projectChange.revision;
@@ -69,17 +65,15 @@ noteEnd`);
 		expect(projectChanged).toHaveBeenCalledOnce();
 		expect(compilerChanged.mock.results[0].value).toEqual(serializeToProject(state));
 		expect(projectChanged.mock.results[0].value).toEqual(serializeToProject(state));
-		expect(sourcesChanged).toHaveBeenCalledOnce();
-		expect(sourcesChanged.mock.calls[0][0].codeBlocks).toEqual(expect.arrayContaining([settings, environment]));
 		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
 		expect(settings.width).toBeGreaterThan(0);
 		expect(compilerChanged).toHaveBeenCalledOnce();
 		expect(projectChanged).toHaveBeenCalledOnce();
 	});
 
-	it('does not publish a generated-source edit normalized to identical contents or an update with an identical final intent', () => {
+	it('does not publish an attempted read-only edit or an update with an identical final intent', () => {
 		const test = setup('8f4e/v1\nnote sample\n; @custom\nnoteEnd', { grid: true });
-		const { store, state, block, projectChanged, compilerChanged, sourcesChanged } = test;
+		const { store, state, block, projectChanged, compilerChanged } = test;
 		const apply = vi.fn();
 		disposers.push(store.directives.register({ name: 'custom', apply }));
 		test.load();
@@ -94,7 +88,6 @@ noteEnd`);
 		apply.mockClear();
 		compilerChanged.mockClear();
 		projectChanged.mockClear();
-		sourcesChanged.mockClear();
 		expect(
 			store.projectEdits.apply({
 				updates: [{ codeBlock: env, code: ['constants env', 'const USER 123', 'constantsEnd'] }],
@@ -115,7 +108,6 @@ noteEnd`);
 		expect(apply).not.toHaveBeenCalled();
 		expect(compilerChanged).not.toHaveBeenCalled();
 		expect(projectChanged).not.toHaveBeenCalled();
-		expect(sourcesChanged).not.toHaveBeenCalled();
 		expect(state.projectChange.revision).toBe(initialRevision);
 		expect(state.compilerInputRevision).toBe(initialCompilerRevision);
 	});
@@ -189,7 +181,7 @@ noteEnd`);
 
 	it('ignores entry assignments for non-execution blocks and retains the previous entry during incomplete edits', () => {
 		const test = setup('8f4e/v1\nnote sample\nnoteEnd\nentry alternate\nmodule target\nmoduleEnd\nentryEnd');
-		const { store, state, events, block, projectChanged, compilerChanged, sourcesChanged } = test;
+		const { store, state, events, block, projectChanged, compilerChanged } = test;
 		test.load();
 		const sample = block('sample');
 		const target = block('target');
@@ -198,7 +190,6 @@ noteEnd`);
 		events.on('beforeProjectEdit', beforeCheckpoint);
 		projectChanged.mockClear();
 		compilerChanged.mockClear();
-		sourcesChanged.mockClear();
 
 		expect(
 			store.projectEdits.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, { history: 'checkpoint' }).changed
@@ -208,7 +199,6 @@ noteEnd`);
 		expect(beforeCheckpoint).not.toHaveBeenCalled();
 		expect(projectChanged).not.toHaveBeenCalled();
 		expect(compilerChanged).not.toHaveBeenCalled();
-		expect(sourcesChanged).not.toHaveBeenCalled();
 
 		store.projectEdits.apply({ updates: [{ codeBlock: target, code: ['module target'], entry: 'unused' }] });
 		expect(target.blockType).toBe('unknown');

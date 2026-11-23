@@ -8,6 +8,7 @@ export function moveCaret(
 	col: number,
 	direction: Direction
 ): [number, number] {
+	if (code.length === 0) return [0, 0];
 	if (direction === 'left') return [row, Math.max(col - 1, 0)];
 	if (direction === 'right') return [row, Math.min(col + 1, code[row].length)];
 	const visualCol = getVisualColumnForRawIndex(code[row], col, tabStops[row]);

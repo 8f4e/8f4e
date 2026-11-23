@@ -8,8 +8,9 @@ export default function insertText(
 	const lines = text.replace(/\r\n?/g, '\n').split('\n');
 	const last = lines.length - 1;
 	const endCol = last === 0 ? col + lines[0].length : lines[last].length;
-	lines[0] = code[row].slice(0, col) + lines[0];
-	lines[last] += code[row].slice(col);
+	const line = code[row] ?? '';
+	lines[0] = line.slice(0, col) + lines[0];
+	lines[last] += line.slice(col);
 	return {
 		code: [...code.slice(0, row), ...lines, ...code.slice(row + 1)],
 		row: row + last,

@@ -60,7 +60,7 @@ entryEnd`);
 		expect(env().creationIndex).toBeGreaterThan(nested.creationIndex);
 	});
 
-	it('preserves the ID and saved position of an existing env while discarding obsolete generated content', () => {
+	it('replaces the saved env with a read-only block at the origin and fresh generated content', () => {
 		const { store, state, events, env } = setup();
 		store.set('envConstantContributions.provider', ['const PROVIDED 123']);
 		const project = parseProjectSource(`8f4e/v1
@@ -83,9 +83,10 @@ entryEnd`);
 		expect(project.constants[0].disabled).toBe(true);
 		const source = serializeToProject(state);
 		expect(source.constants).toHaveLength(1);
-		expect(source.constants[0]).toMatchObject({ id: project.constants[0].id, code: env().code });
+		expect(source.constants[0]).toMatchObject({ id: env().creationIndex, code: env().code });
 		expect(source.constants[0]).not.toHaveProperty('disabled');
-		expect(env()).toMatchObject({ creationIndex: project.constants[0].id, gridX: 12, gridY: -7 });
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().creationIndex).toBeGreaterThan(getProjectModules(source)[0].id);
 		expect(env().disabled).toBe(false);
 		expect(env().code).toContain('const PROVIDED 123');
 		expect(env().code).not.toContain('const OBSOLETE 1');
@@ -138,7 +139,7 @@ entryEnd`);
 		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
 		expect(env().code).not.toContain('const FIRST 1');
 		expect(env().code).not.toContain('const SECOND 2');
-		expect(env().code).toContain('; @pos 7 9');
+		expect(env().code).toContain('; @pos 0 0');
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
@@ -184,7 +185,7 @@ entryEnd`);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 		expect(authored.map(block => block.code)).toEqual(previousCode);
 		expect(rootEnvironment.code).toContain('const PROVIDED 77');
-		expect(rootEnvironment.code).toContain('; @pos 7 9');
+		expect(rootEnvironment.code).toContain('; @pos 0 0');
 		expect(onLayoutChanged).toHaveBeenCalledWith({
 			project: state.codeBlockRendering.rootProject,
 			codeBlocks: [rootEnvironment],
@@ -198,11 +199,11 @@ entryEnd`);
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
-	it('overwrites manual generated-source edits in the original source batch and accepts position changes', () => {
-		const { store, state, events, load, env } = setup();
+	it('ignores attempted generated-source edits without publishing a project change', () => {
+		const { store, state, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
 		const onChanged = vi.fn();
-		events.on('codeBlockSourcesChanged', onChanged);
+		store.subscribe('projectChange', onChanged);
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 
@@ -211,37 +212,35 @@ entryEnd`);
 		]);
 
 		expect(env().code).not.toContain('const USER 5');
-		expect(env().code).toContain('; @pos 12 15');
-		expect(env()).toMatchObject({ gridX: 12, gridY: 15 });
-		expect(onChanged).toHaveBeenCalledOnce();
-		expect(state.projectChange.revision).toBe(revision + 1);
-		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(env().code).toContain('; @pos 0 0');
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(onChanged).not.toHaveBeenCalled();
+		expect(state.projectChange.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
 	});
 
-	it('retains the current environment position and regenerates its contributed body during undo and redo', () => {
+	it('retains the read-only environment and its current contributions during undo and redo', () => {
 		const { store, state, events, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd\nentry main\nmodule authored\nmoduleEnd\nentryEnd');
-		const id = env().creationIndex;
+		const environment = env();
 		const authored = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'authored')!;
 		store.projectEdits.apply(
 			{ updates: [{ codeBlock: authored(), code: ['module authored', 'push 1', 'moduleEnd'] }] },
-			{ history: 'checkpoint' }
-		);
-		store.projectEdits.apply(
-			{ updates: [{ codeBlock: env(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
 			{ history: 'checkpoint' }
 		);
 		store.set('envConstantContributions.provider', ['const PROVIDED 7']);
 		expect(state.historyStack).toHaveLength(1);
 		events.dispatch('undo');
 		expect(authored().code).toEqual(['module authored', 'moduleEnd']);
-		expect(env()).toMatchObject({ creationIndex: id, gridX: 3, gridY: 4 });
-		expect(env().code).toContain('; @pos 3 4');
+		expect(env()).toBe(environment);
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().code).toContain('; @pos 0 0');
 		expect(env().code).toContain('const PROVIDED 7');
 		events.dispatch('redo');
 		expect(authored().code).toContain('push 1');
-		expect(env()).toMatchObject({ creationIndex: id, gridX: 3, gridY: 4 });
-		expect(env().code).toContain('; @pos 3 4');
+		expect(env()).toBe(environment);
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().code).toContain('; @pos 0 0');
 		expect(env().code).toContain('const PROVIDED 7');
 	});
 });

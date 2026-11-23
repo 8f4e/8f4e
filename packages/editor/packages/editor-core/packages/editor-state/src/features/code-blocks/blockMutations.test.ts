@@ -77,12 +77,12 @@ describe('block source edits', () => {
 			expect(refreshed).toEqual([first, second]);
 			expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		});
-		const onSourcesChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockSourcesChanged']) => {
+		const onLayoutsChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockLayoutsChanged']) => {
 			refreshed.push(...codeBlocks);
 			expect(first.code).toEqual(firstCode);
 			expect(second.code).toEqual(secondCode);
 		});
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
+		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 		store.subscribe('compilerInputRevision', onCompilerChange);
 		store.subscribe('projectChange', onProjectChange);
 		expect(
@@ -96,7 +96,10 @@ describe('block source edits', () => {
 		expect(second.lastUpdated).toBeGreaterThan(1);
 		expect(untouched.lastUpdated).toBe(1);
 		expect(untouched.code).toBe(untouchedCode);
-		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [first, second] });
+		expect(onLayoutsChanged).toHaveBeenCalledExactlyOnceWith({
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [first, second],
+		});
 		expect(onCompilerChange).toHaveBeenCalledTimes(1);
 		expect(onProjectChange).toHaveBeenCalledTimes(1);
 		expect(state.projectChange.revision).toBe(revision + 1);
@@ -108,7 +111,7 @@ describe('block source edits', () => {
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 		const onRefresh = vi.fn();
-		events.on('codeBlockSourcesChanged', onRefresh);
+		events.on('codeBlockLayoutsChanged', onRefresh);
 		expect(applyCodeBlockSourceEdits(store, [])).toBe(false);
 		expect(applyCodeBlockSourceEdits(store, [{ codeBlock: first, code: [...first.code] }])).toBe(false);
 		expect(first.lastUpdated).toBe(1);

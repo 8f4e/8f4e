@@ -348,12 +348,10 @@ runtime memory bytes; the shared plugin context carries no browser resources or 
 Plugins can contribute source to the generated root-project `env` constants block with
 `store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines after
 resolving authored project configuration and recompiles when generated source changes. Contributions update the root
-block regardless of which project group is visible. Its position is editable, but its generated content and identity
-are managed by core; deleting or renaming that block does not remove the environment. When opening a project, core
-retains the position of a sole root `constants env` block and regenerates its body. If no such block exists, or multiple
-root `constants env` blocks exist, core replaces all of them with one fresh generated block at the default position.
-Only the live managed block receives contributions; duplicates edited while the project is open are not adopted as
-managed blocks. Nested environment blocks remain authored source. Each plugin removes its own contribution key
+block regardless of which project group is visible. Every project open discards all root `constants env` blocks and
+creates one read-only generated block at `(0, 0)`. It can be selected but cannot be edited, dragged or deleted.
+Only that block receives contributions; ordinary blocks inserted while the project is open remain authored source,
+even if named `env`. Nested environment blocks also remain authored source. Each plugin removes its own contribution key
 when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
@@ -372,8 +370,9 @@ throughout nested groups. Their fixed field order and grid/creation ordering sup
 ## Project changes
 
 API revisions, history, and session persistence share `state.projectChange`, a record containing a monotonic
-`revision` and an operation `kind`. The public `editor.editing.getRevision()` token combines that revision with its
-editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
+`revision` and an operation `kind` (`edit`, `replace` or `restore`). Edit changes also carry a history policy.
+The public `editor.editing.getRevision()` token combines that revision with its editor-handle identity.
+Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
 Source-mutating plugin actions use `store.projectEdits.apply({ updates, inserts, deletes })`. An update supplies
@@ -387,13 +386,15 @@ Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, e
 discarding redo, or flushing pending typing. Generated managed-environment-only changes automatically skip history;
 authored changes in the same transaction still follow the requested policy.
 
-The service normalizes source (including managed environment source), prepares metadata, settles configuration and
+The service prepares source metadata, settles configuration and
 synchronous generated source, refreshes available layout, and publishes the final change. Only actual changes to
 the settled source, entries or membership advance revisions. Changes confined to existing ordinary comment text at
 the same line positions leave compiler inputs unchanged. Source mutations and derived environment changes belonging
-to one transaction publish once. `codeBlockSourcesChanged { codeBlocks }` reports settled source changes.
+to one transaction publish once through `projectChange`. New contributions made during completion notifications settle
+in a follow-up transaction; callers cannot start new source edits inside another transaction.
 Repeated updates are folded to their final intent and duplicate or ancestor-covered deletions are normalized once;
-updates or insertions targeting deleted levels are rejected before modifying any live source.
+updates or insertions targeting deleted levels are rejected before modifying any live source. Updates and deletions
+targeting read-only blocks are ignored.
 
 Callers own edit-mode checks and source transformations; they must not mutate published source or project membership
 directly, or separately publish the operation. Asynchronous work completes before a transaction starts; transactions
@@ -407,8 +408,8 @@ batches leave pending history, compiler inputs and revisions untouched. Selectio
 
 Project loading translates compiler/file data into editor source; undo/redo restore detached authored editor snapshots that
 retain block identities, boundaries and draft entry/position metadata. The managed root environment is excluded from history;
-restoration preserves its current position and rebuilds its body from current contributions. Both use the same reconstruction, settlement and
-publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
+restoration reuses the read-only block and regenerates its body from current contributions. Both use the same reconstruction,
+settlement and publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
 
 ## Project loading

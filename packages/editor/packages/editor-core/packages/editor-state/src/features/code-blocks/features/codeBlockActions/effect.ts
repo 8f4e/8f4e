@@ -14,7 +14,7 @@ export default function codeBlockActions(
 	}
 
 	function onToggleCodeBlockDisabled({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
-		if (state.editorMode !== 'edit') {
+		if (state.editorMode !== 'edit' || codeBlock.readOnly) {
 			return;
 		}
 

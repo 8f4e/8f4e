@@ -94,14 +94,18 @@ describe('source edit compilation invalidation', () => {
 		const revision = state.compilerInputRevision;
 		const projectRevision = state.projectChange.revision;
 		const onInputChanged = vi.fn();
-		const onSourcesChanged = vi.fn();
+		const onProjectChange = vi.fn();
 		events.on('compilationInputChanged', onInputChanged);
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
+		store.subscribe('projectChange', onProjectChange);
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: ['module test', '; updated explanation', 'push 1', '; updated comment', 'moduleEnd'] },
 		]);
 		expect(state.projectChange.revision).toBe(projectRevision + 1);
-		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [block] });
+		expect(onProjectChange).toHaveBeenCalledExactlyOnceWith({
+			revision: projectRevision + 1,
+			kind: 'edit',
+			history: 'debounced',
+		});
 		expect(state.compilerInputRevision).toBe(revision);
 		expect(onInputChanged).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1000);

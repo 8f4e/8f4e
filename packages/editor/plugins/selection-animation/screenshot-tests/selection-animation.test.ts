@@ -1,4 +1,4 @@
-import initEditor from '@8f4e/editor-core';
+import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
@@ -15,13 +15,23 @@ test('renders two phases of the selection animation', async () => {
 		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
 			execution: [
 				{
-					type: 'module',
-					id: 1,
+					...EMPTY_DEFAULT_PROJECT,
+					type: 'group',
+					id: 0,
 					entry: 'main',
-					code: ['module selected', '; @pos 6 3', 'int value 1', '', 'push value', 'drop', 'moduleEnd'],
+					name: 'fixture',
+					code: ['group fixture', 'groupEnd'],
+					exposures: [],
+					execution: [
+						{
+							type: 'module',
+							id: 1,
+							entry: 'main',
+							code: ['module selected', '; @pos 6 3', 'int value 1', '', 'push value', 'drop', 'moduleEnd'],
+						},
+					],
 				},
 			],
 		},
@@ -57,6 +67,8 @@ test('renders two phases of the selection animation', async () => {
 	});
 	editor.pauseRendering();
 	const state = editor.state;
+	const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+	editor.navigation.openGroup(getEditorBlockId(group));
 	state.viewport.x = 0;
 	state.viewport.y = 0;
 	state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.currentProject.blocks.find(

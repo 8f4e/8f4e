@@ -73,16 +73,17 @@ describe('codeBlockActions - toggleCodeBlockDisabled', () => {
 		const {
 			blocks: [codeBlock],
 			events,
+			store,
 		} = setup([{ code: ['module test', ...(disabled ? ['; @disabled'] : []), 'moduleEnd'] }]);
 		expect(codeBlock.disabled).toBe(disabled);
-		const onSourcesChanged = vi.fn();
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
+		const onProjectChange = vi.fn();
+		store.subscribe('projectChange', onProjectChange);
 		codeBlock.lastUpdated = 1000;
 		events.dispatch('toggleCodeBlockDisabled', { codeBlock });
 		expect(codeBlock.disabled).toBe(!disabled);
 		expect(codeBlock.code.includes('; @disabled')).toBe(!disabled);
 		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
-		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [codeBlock] });
+		expect(onProjectChange).toHaveBeenCalledOnce();
 	});
 
 	it('does not toggle when editing is disabled', () => {

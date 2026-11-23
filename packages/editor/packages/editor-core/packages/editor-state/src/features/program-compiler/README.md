@@ -16,9 +16,8 @@ project loads and is not stored in project files.
 Selection, caret movement, navigation, and layout changes without source edits leave the revision unchanged.
 The project editing service is the sole owner of revision publication; do not increment it from individual actions.
 
-The project editing service settles source-derived state and synchronous generated source, emits
-`codeBlockSourcesChanged { codeBlocks }` for the completed source changes, and advances the revision once for the
-final compiler-input diff. All directive edits (including favorites and
+The project editing service settles source-derived state and synchronous generated source, advances the revision once
+for the final compiler-input diff, and publishes `state.projectChange` for completed project mutations. All directive edits (including favorites and
 configuration), line insertions/deletions (including comments and blank lines), and changes to instruction positions
 invalidate compilation. The only exemption is an in-place change to the text of existing ordinary comment-only lines,
 with their positions unchanged. Directive continuation lines are directive source. Identical replacements are no-ops.

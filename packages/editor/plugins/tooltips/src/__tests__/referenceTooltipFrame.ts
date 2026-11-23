@@ -22,9 +22,6 @@ export async function withReferenceTooltipFrame(
 	assertFrame: () => Promise<void>
 ): Promise<void> {
 	const project = parseProjectSource(`8f4e/v1
-constants env
-; @pos 150 100
-constantsEnd
 entry main
 module source
 ; @pos 50 15

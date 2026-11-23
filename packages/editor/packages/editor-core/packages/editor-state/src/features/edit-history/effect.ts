@@ -39,14 +39,14 @@ export default function historyTracking(
 		present = current;
 	}
 
-	function onProjectChange({ kind, history }: ProjectChange) {
-		if (history === 'skip') {
+	function onProjectChange(change: ProjectChange) {
+		if (change.kind === 'edit' && change.history === 'skip') {
 			// Do not turn a skipped operation into a separate checkpoint, discard redo, or
 			// replace the before-state of an authored edit that is still pending.
 			if (!editPending) present = projectEdits.capture();
 			return;
 		}
-		if (kind === 'edit' && state.featureFlags.historyTracking) {
+		if (change.kind === 'edit' && change.history === 'debounced' && state.featureFlags.historyTracking) {
 			state.redoStack = [];
 			editPending = true;
 			if (saveTimeout) clearTimeout(saveTimeout);
@@ -55,10 +55,10 @@ export default function historyTracking(
 		}
 
 		cancelPendingEdit();
-		if (kind === 'replace') {
+		if (change.kind === 'replace') {
 			state.historyStack = [];
 			state.redoStack = [];
-		} else if (kind === 'checkpoint' && state.featureFlags.historyTracking) {
+		} else if (change.kind === 'edit' && change.history === 'checkpoint' && state.featureFlags.historyTracking) {
 			pushHistory(present);
 			state.redoStack = [];
 		}

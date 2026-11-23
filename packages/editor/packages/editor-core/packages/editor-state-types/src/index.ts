@@ -6,6 +6,7 @@
 import type { MemoryAction as CompilerMemoryAction } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
+import type { ProjectEditOptions } from './features/code-blocks/projectEdits';
 import type { EditorProjectSnapshot } from './features/code-blocks/projectSnapshot';
 import type {
 	CodeBlockGraphicData,
@@ -153,12 +154,10 @@ export interface Options {
 }
 
 /** One completed persisted-content operation, shared by API concurrency, history, and persistence. */
-export interface ProjectChange {
-	revision: number;
-	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
-	/** A completed edit that does not create a history step or invalidate redo. */
-	history?: 'skip';
-}
+export type ProjectChange = { revision: number } & (
+	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']> }
+	| { kind: 'restore' | 'replace' }
+);
 
 /** One contributed operation, retained after completion independently of presentation. */
 export interface LoadingIndicator {

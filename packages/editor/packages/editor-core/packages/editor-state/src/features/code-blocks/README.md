@@ -89,8 +89,8 @@ completion notification.
 
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `codeBlockSourcesChanged({ codeBlocks })`: report completed source changes after metadata, configuration, generated
-  source and available layout settle, before publishing compiler/project revisions
+- `state.projectChange`: reports completed project mutations after metadata, configuration, generated source and
+  available layout settle
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
   group, or the current group when no block is supplied
 - `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,

@@ -15,12 +15,8 @@ import {
 } from '@8f4e/language-spec';
 import compareCodeBlocksByPosition from '../../pureHelpers/compareCodeBlocksByPosition';
 import getHighestProjectBlockId from '../../pureHelpers/projectSerialization/getHighestProjectBlockId';
+import { isEnvironmentSource } from '../code-blocks/features/auto-env-constants/source';
 import getCodeBlockNameFromSource from '../code-blocks/utils/getCodeBlockNameFromSource';
-
-/** An installation has the managed block attached; history retains authored source alone. */
-export interface ProjectInstallation extends EditorProjectSnapshot {
-	readonly environmentId?: number;
-}
 
 function captureBlock(block: CodeBlockGraphicData): EditorBlockSnapshot {
 	return {
@@ -56,30 +52,18 @@ export function captureProjectSnapshot(
 	};
 }
 
-/** History restores the current managed root environment, including its position, rather than a historical generated block. */
-export function snapshotForRestoration(
-	snapshot: EditorProjectSnapshot,
-	environment?: CodeBlockGraphicData
-): ProjectInstallation {
-	if (!environment) return snapshot;
-	return {
-		...snapshot,
-		environmentId: environment.creationIndex,
-		rootProject: {
-			...snapshot.rootProject,
-			blocks: [...snapshot.rootProject.blocks, captureBlock(environment)].sort(compareCodeBlocksByPosition),
-		},
-	};
-}
-
 /** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
 export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
 	return JSON.stringify(a.rootProject) === JSON.stringify(b.rootProject);
 }
 
-/** Translate a loaded compiler project into the editor's source tree with no retained draft facts. */
-export function snapshotFromProjectModel(project: ProjectObjectModel, environmentId: number): ProjectInstallation {
-	let nextCodeBlockCreationIndex = getHighestProjectBlockId(project) + 1;
+/** Translate a loaded compiler project into authored editor source, discarding the root env. */
+export function snapshotFromProjectModel(project: ProjectObjectModel): EditorProjectSnapshot {
+	const authoredProject = {
+		...project,
+		constants: project.constants.filter(block => !isEnvironmentSource(block.code)),
+	};
+	let nextCodeBlockCreationIndex = getHighestProjectBlockId(authoredProject) + 1;
 	const createBlock = (block: ProjectBlock): EditorBlockSnapshot => ({
 		creationIndex: block.id,
 		code: [...block.code],
@@ -114,6 +98,6 @@ export function snapshotFromProjectModel(project: ProjectObjectModel, environmen
 			],
 		};
 	};
-	const rootProject = createLevel(project, ROOT_PROJECT_GROUP_PATH, true);
-	return { rootProject, environmentId, nextCodeBlockCreationIndex };
+	const rootProject = createLevel(authoredProject, ROOT_PROJECT_GROUP_PATH, true);
+	return { rootProject, nextCodeBlockCreationIndex };
 }

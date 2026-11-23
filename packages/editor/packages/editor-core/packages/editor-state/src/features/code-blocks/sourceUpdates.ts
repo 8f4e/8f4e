@@ -2,6 +2,7 @@ import type { CodeBlockGraphicData, EditorDirectiveDefinition, ProjectLevel } fr
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import { updateProjectGroupMemoryExposureDeclarations } from '../../pureHelpers/projectGroupMemoryExposures';
 import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
+import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import { getTabStopsByLine } from '../text-geometry/tabLayout';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveFacts } from './features/directives/registry';
@@ -37,6 +38,9 @@ export function rememberEntry(project: ProjectLevel, block: CodeBlockGraphicData
 
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
+	const [row, col] = clampSourcePosition(block.code, block.cursor.row, block.cursor.col);
+	block.cursor.row = row;
+	block.cursor.col = col;
 	block.parsedDirectives = parseBlockDirectives(block.code);
 	const { blockState, displayState } = deriveDirectiveFacts(block.code, block.parsedDirectives, directives);
 	block.disabled = blockState.disabled;

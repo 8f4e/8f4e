@@ -1,5 +1,4 @@
-import { parseProjectSource } from '@8f4e/compiler';
-import initState, { setGridSize } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -51,9 +50,7 @@ function setup({
 		disposePlugin();
 		store.dispose();
 	});
-	events.dispatch('loadProject', {
-		project: parseProjectSource('8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd'),
-	});
+	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const addModule = (slug = 'target', x = 100, y = 112) =>
@@ -88,13 +85,14 @@ describe('example modules plugin', () => {
 
 	it('opens categories through contributed menu items, supports Back, and inserts the selected module and dependency', async () => {
 		const test = setup();
-		test.events.dispatch('contextmenu', { x: 100, y: 112 });
+		const position = { x: 100, y: 240 };
+		test.events.dispatch('contextmenu', position);
 		await vi.waitFor(() =>
 			expect(test.state.contextMenu.items.some(item => item.title?.includes('Add Built-in Block'))).toBe(true)
 		);
 		const click = (title: string) => {
 			const menuItemIndex = test.state.contextMenu.items.findIndex(item => item.title?.includes(title));
-			test.events.dispatch('activateContextMenuItem', { x: 100, y: 112, index: menuItemIndex });
+			test.events.dispatch('activateContextMenuItem', { ...position, index: menuItemIndex });
 		};
 		click('Add Built-in Block');
 		await vi.waitFor(() => expect(test.state.contextMenu.items.some(item => item.title?.includes('Audio'))).toBe(true));
@@ -125,7 +123,8 @@ describe('example modules plugin', () => {
 		expect(test.state.contextMenu.open).toBe(false);
 		const [target, dep] = test.state.codeBlockRendering.currentProject.blocks.slice(1);
 		expect(target.code).not.toContain('; @public');
-		expect(target.gridX).toBe(Math.round((test.state.viewport.x + 100) / test.state.viewport.vGrid));
+		expect(target.gridX).toBe(Math.round((test.state.viewport.x + position.x) / test.state.viewport.vGrid));
+		expect(target.gridY).toBe(Math.round((test.state.viewport.y + position.y) / test.state.viewport.hGrid));
 		expect(dep.gridX).toBe(target.gridX + target.width / test.state.viewport.vGrid + 4);
 		expect(dep.gridY).toBe(target.gridY);
 	});

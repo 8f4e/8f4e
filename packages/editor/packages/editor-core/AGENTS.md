@@ -24,7 +24,7 @@
 
 - Route project mutations through the synchronous project editing service. It uses the shared source update path
   to settle facts, configuration, generated environment source and any available layout, then notifies consumers.
-  `codeBlockSourcesChanged` is a completed source notification, not a command to refresh manually mutated source.
+  Authored updates and deletions of read-only blocks have no effect; only their owner materializes generated source.
 - Keep public edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate command preconditions
   before applying a public batch as one undo step; the compiler validates source syntax and semantics. Internal
   callers obey the typed mutation contract. Use existing block handles for reads and targeting. Keep adapter

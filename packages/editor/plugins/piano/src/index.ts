@@ -25,7 +25,7 @@ export function createPianoPlugin({
 			});
 			const unregisterInteraction = registerPianoInteraction(state, events, keyboardsByBlock, writeMemory);
 			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-				if (state.editorMode !== 'edit' || !keyboardsByBlock.get(codeBlock)?.length) return;
+				if (state.editorMode !== 'edit' || codeBlock.readOnly || !keyboardsByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save piano values to code',
 					action: saveAction,

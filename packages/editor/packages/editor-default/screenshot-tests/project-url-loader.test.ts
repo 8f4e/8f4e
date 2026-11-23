@@ -14,7 +14,7 @@ test('loads an initial project URL after generic editor startup', async () => {
 	canvas.style.height = '320px';
 	document.body.appendChild(canvas);
 	const source =
-		'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote remote\n; @pos 3 3\nLoaded from an explicit project URL.\nnoteEnd';
+		'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote remote\n; @pos 3 10\nLoaded from an explicit project URL.\nnoteEnd';
 	const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(source));
 	let editor: Editor | undefined;
 	try {

@@ -23,7 +23,7 @@ function setup() {
 	return { state, store, events, load };
 }
 
-it('retains managed environment identity on attempted deletion or rename, and accepts only its position', () => {
+it('ignores deletion, source edits and position changes to the read-only environment', () => {
 	const { state, store, events, load } = setup();
 	load('constants env\n; @pos 7 9\nconstantsEnd');
 	const root = state.codeBlockRendering.rootProject;
@@ -42,21 +42,17 @@ it('retains managed environment identity on attempted deletion or rename, and ac
 			{ history: 'checkpoint' }
 		).changed
 	).toBe(false);
+	expect(
+		store.projectEdits.apply({ updates: [{ codeBlock: environment, code: ['incomplete', '; @pos 3 4'] }] }).changed
+	).toBe(false);
 	expect(root.blocks).toContain(environment);
+	expect(environment).toMatchObject({ readOnly: true, name: 'env', gridX: 0, gridY: 0, x: 0, y: 0 });
+	expect(environment.code).toContain('; @pos 0 0');
 	expect(environment.code).toBe(source);
 	expect(environment.lastUpdated).toBe(timestamp);
 	expect(state.projectChange.revision).toBe(projectRevision);
 	expect(state.compilerInputRevision).toBe(compilerRevision);
 	expect(beforeCheckpoint).not.toHaveBeenCalled();
-
-	expect(
-		store.projectEdits.apply({ updates: [{ codeBlock: environment, code: ['incomplete', '; @pos 3 4'] }] }).changed
-	).toBe(true);
-	expect(root.blocks).toContain(environment);
-	expect(environment.name).toBe('env');
-	expect(environment.code).toContain('constants env');
-	expect(environment.code).toContain('; @pos 3 4');
-	expect(environment).toMatchObject({ gridX: 3, gridY: 4, x: 18, y: 48 });
 });
 
 it('keeps an authored duplicate name editable instead of transferring generated source ownership', () => {
@@ -68,6 +64,7 @@ it('keeps an authored duplicate name editable instead of transferring generated 
 	const {
 		insertedBlocks: [authored],
 	} = store.projectEdits.apply({ inserts: [{ project: root, source: { code: authoredCode } }] });
+	expect(authored.readOnly).not.toBe(true);
 	store.set('envConstantContributions.test', ['const TEST 2']);
 	expect(authored.code).toEqual(authoredCode);
 	expect(environment.code).toContain('const TEST 2');
@@ -94,22 +91,24 @@ it('keeps a copied environment source editable until reopening normalizes duplic
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	const restored = state.codeBlockRendering.rootProject.blocks;
 	expect(restored).toHaveLength(1);
-	expect(restored[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0 });
-	expect(restored[0].creationIndex).toBeGreaterThan(Math.max(environment.creationIndex, authored.creationIndex));
+	expect(restored[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0, readOnly: true });
 	expect(restored[0].code).toContain('const GENERATED 3');
 	expect(restored[0].code).not.toContain('const KEEP 2');
+	const generatedId = restored[0].creationIndex;
+	events.dispatch('loadProject', { project: serializeToProject(state) });
+	expect(state.codeBlockRendering.rootProject.blocks[0].creationIndex).toBe(generatedId);
 });
 
 const generatedHeader = '; Auto-generated environment constants\n; Changes will be overwritten\n';
 
-it.each(['', generatedHeader])('keeps only the position of a sole root env when opening (%j)', header => {
+it.each(['', generatedHeader])('replaces a sole root env when opening (%j)', header => {
 	const { state, store, events } = setup();
 	const project = parseProjectSource(`8f4e/v1\nconstants env\n; @pos -5 9\n${header}const OLD 1\nconstantsEnd`);
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	events.dispatch('loadProject', { project });
 	const blocks = state.codeBlockRendering.rootProject.blocks;
 	expect(blocks).toHaveLength(1);
-	expect(blocks[0]).toMatchObject({ name: 'env', creationIndex: project.constants[0].id, gridX: -5, gridY: 9 });
+	expect(blocks[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0, readOnly: true });
 	expect(blocks[0].code).toContain('const GENERATED 3');
 	expect(blocks[0].code).not.toContain('const OLD 1');
 });
@@ -147,19 +146,22 @@ entryEnd`);
 	const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
 	expect(environments).toHaveLength(1);
 	const [generated] = environments;
-	expect(generated).toMatchObject({ gridX: 0, gridY: 0 });
-	expect(generated.creationIndex).toBeGreaterThan(Math.max(...originalConstants.map(block => block.id)));
+	expect(generated).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
 	expect(generated.code).toContain('const GENERATED 3');
 	expect(generated.code).not.toContain('const LEFT 1');
 	expect(generated.code).not.toContain('const RIGHT 2');
 	expect(blocks.find(block => block.name === 'keep')?.code).toContain('const OUTSIDE 4');
 	const nested = blocks.find(block => block.name === 'child')?.childProject?.blocks;
 	expect(nested).toHaveLength(1);
+	expect(nested?.[0].readOnly).not.toBe(true);
 	expect(nested?.[0].code).toEqual(['constants env', 'const NESTED 5', 'constantsEnd']);
+	expect(generated.creationIndex).toBeGreaterThan(
+		Math.max(...blocks.filter(block => block !== generated).map(block => block.creationIndex), nested![0].creationIndex)
+	);
 	expect(project.constants.map(block => ({ id: block.id, code: block.code }))).toEqual(originalConstants);
 });
 
-it('derives the final generated source only once when authored config and its position change together', () => {
+it('derives the final generated source only once when authored config changes', () => {
 	const { state, store, load } = setup();
 	const derive = vi.fn();
 	cleanups.push(store.directives.register({ name: 'custom', apply: derive }));
@@ -174,14 +176,11 @@ it('derives the final generated source only once when authored config and its po
 	const settings = root.blocks.find(block => block.name === 'settings')!;
 	derive.mockClear();
 	const result = store.projectEdits.apply({
-		updates: [
-			{ codeBlock: settings, code: ['note settings', '; @config test 20', 'noteEnd'] },
-			{ codeBlock: environment, code: ['constants env', '; @pos 4 5', 'constantsEnd'] },
-		],
+		updates: [{ codeBlock: settings, code: ['note settings', '; @config test 20', 'noteEnd'] }],
 	});
 	expect(result.changed).toBe(true);
 	expect(environment.code).toContain('const TEST 20');
-	expect(environment.code).toContain('; @pos 4 5');
+	expect(environment.code).toContain('; @pos 0 0');
 	expect(derive).toHaveBeenCalledOnce();
 });
 

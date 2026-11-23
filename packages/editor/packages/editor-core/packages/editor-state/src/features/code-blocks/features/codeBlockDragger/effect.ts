@@ -74,40 +74,29 @@ export default function codeBlockDragger(
 			return;
 		}
 
-		state.codeBlockRendering.draggedCodeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
-		const draggedCodeBlock = state.codeBlockRendering.draggedCodeBlock;
-
-		if (!draggedCodeBlock) {
-			store.set('codeBlockRendering.selectedCodeBlock', undefined);
-			dragSet = [];
-			didDrag = false;
-			return;
+		const clickedBlock = findCodeBlockAtViewportCoordinates(state, x, y);
+		store.set('codeBlockRendering.selectedCodeBlock', clickedBlock);
+		if (!clickedBlock || clickedBlock.readOnly) return;
+		if (state.editorMode === 'edit') {
+			state.codeBlockRendering.draggedCodeBlock = clickedBlock;
+			const dragTargets: ResolveCodeBlockDragTargetsEvent = {
+				codeBlock: clickedBlock,
+				altKey,
+				targets: [clickedBlock],
+			};
+			events.dispatch('resolveCodeBlockDragTargets', dragTargets);
+			dragSet = dragTargets.targets.filter(block => !block.readOnly);
+			if (dragSet.length === 0) finishDrag();
+			else refreshDragTargets();
 		}
-		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.draggedCodeBlock);
-		didDrag = false;
-
-		const dragTargets: ResolveCodeBlockDragTargetsEvent = {
-			codeBlock: draggedCodeBlock,
-			altKey,
-			targets: [draggedCodeBlock],
-		};
-		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
-		dragSet = dragTargets.targets;
-		refreshDragTargets();
 
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
 		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
 		replaceCodeBlocksInPlace(
 			state.codeBlockRendering.currentProject.blocks,
-			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock)
+			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, clickedBlock)
 		);
-
-		if (state.editorMode !== 'edit') {
-			state.codeBlockRendering.draggedCodeBlock = undefined;
-			dragSet = [];
-			didDrag = false;
-		}
 	}
 
 	function onPointerMove(event: InternalPointerEvent) {

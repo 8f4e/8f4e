@@ -16,10 +16,7 @@ test('creates and deletes a block through authoring contributions and menu prese
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
 		renderer: createAsciiCanvasRenderer(canvas),
-		initialProject: {
-			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 100 60', 'constantsEnd'] }],
-		},
+		initialProject: EMPTY_DEFAULT_PROJECT,
 		plugins: [
 			homePlugin,
 			codeBlockBackgroundPlugin,
@@ -39,7 +36,8 @@ test('creates and deletes a block through authoring contributions and menu prese
 	const random = vi.spyOn(Math, 'random').mockReturnValue(0);
 	try {
 		context.events.dispatch('enterEditMode');
-		context.events.dispatch('contextmenu', { x: 160, y: 112 });
+		const position = { x: 160, y: 144 };
+		context.events.dispatch('contextmenu', position);
 		await expect.poll(() => editor.state.contextMenu.items.some(item => item.title === 'New Module')).toBe(true);
 		editor.renderFrame();
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
@@ -47,11 +45,10 @@ test('creates and deletes a block through authoring contributions and menu prese
 		);
 		context.events.dispatch('activateContextMenuItem', {
 			index: editor.state.contextMenu.items.findIndex(item => item.title === 'New Module'),
-			x: 160,
-			y: 112,
+			...position,
 		});
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'quark')!;
-		expect(block.code).toEqual(['module quark', '; @pos 20 7', '', '', 'moduleEnd']);
+		expect(block.code).toEqual(['module quark', '; @pos 20 9', '', '', 'moduleEnd']);
 		const x = block.x + block.width - editor.state.viewport.vGrid;
 		const y = block.y + block.height - editor.state.viewport.hGrid;
 		context.events.dispatch('contextmenu', { x, y });

@@ -24,7 +24,7 @@ test('restores a retained project in a new editor instance', async () => {
 		editor = await initEditor(canvas, {
 			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: parseProjectSource(
-				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 3\nRetained across editor instances.\nnoteEnd'
+				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 10\nRetained across editor instances.\nnoteEnd'
 			),
 			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
 		});

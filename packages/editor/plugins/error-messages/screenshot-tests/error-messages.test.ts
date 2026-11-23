@@ -1,4 +1,4 @@
-import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
+import initEditor, { type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
@@ -16,13 +16,23 @@ test('draws wrapped contributor messages between source rows and clears their re
 		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
 			execution: [
 				{
-					type: 'module',
-					id: 7,
+					...EMPTY_DEFAULT_PROJECT,
+					type: 'group',
+					id: 0,
 					entry: 'main',
-					code: ['module checks', '; @pos 4 3', 'push 10', 'assertEqual 9', 'drop', 'moduleEnd'],
+					name: 'fixture',
+					code: ['group fixture', 'groupEnd'],
+					exposures: [],
+					execution: [
+						{
+							type: 'module',
+							id: 7,
+							entry: 'main',
+							code: ['module checks', '; @pos 4 3', 'push 10', 'assertEqual 9', 'drop', 'moduleEnd'],
+						},
+					],
 				},
 			],
 		},
@@ -60,6 +70,8 @@ test('draws wrapped contributor messages between source rows and clears their re
 	editor.pauseRendering();
 	try {
 		const state = editor.state;
+		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		editor.navigation.openGroup(getEditorBlockId(group));
 		state.viewport.x = 0;
 		state.viewport.y = 0;
 		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;

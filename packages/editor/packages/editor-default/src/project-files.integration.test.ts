@@ -155,7 +155,7 @@ entryEnd`),
 		const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
 		expect(environments).toHaveLength(1);
 		const [generated] = environments;
-		expect(generated).toMatchObject({ gridX: 0, gridY: 0 });
+		expect(generated).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
 		expect(generated.code).toContain('const GENERATED 2');
 		expect(generated.code).not.toContain('const KEEP 1');
 		test.store.set('envConstantContributions.provider', ['const GENERATED 3']);

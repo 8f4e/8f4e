@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { CodeBlockGraphicData, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import initState, { setGridSize } from '~/index';
@@ -175,8 +175,8 @@ describe('history tracking with real project mutations', () => {
 		const previousRevision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 		const redo = state.redoStack[0];
-		const sourcesChanged = vi.fn();
-		events.on('codeBlockSourcesChanged', sourcesChanged);
+		const projectChanged = vi.fn();
+		store.subscribe('projectChange', projectChanged);
 
 		expect(
 			applyCodeBlockSourceEdits(
@@ -193,7 +193,7 @@ describe('history tracking with real project mutations', () => {
 		expect(restored).toMatchObject({ gridX: 4, gridY: 5, x: 4 * TEST_GRID_SIZE.vGrid, y: 5 * TEST_GRID_SIZE.hGrid });
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(state.projectChange).toEqual({ revision: previousRevision + 1, kind: 'edit', history: 'skip' });
-		expect(sourcesChanged).toHaveBeenCalledOnce();
+		expect(projectChanged).toHaveBeenCalledOnce();
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(state.historyStack).toHaveLength(0);
 		expect(state.redoStack).toEqual([redo]);
@@ -225,18 +225,21 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()[1]).toBe('push 1');
 	});
 
-	it('keeps a pending typing step open across contribution refresh and an env-only checkpoint request', async () => {
+	it('keeps a pending typing step open across contribution refresh and a read-only checkpoint request', async () => {
 		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(600);
 		store.set('envConstantContributions.test', ['const GENERATED 42']);
 		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip' });
 		const beforeProjectEdit = vi.fn();
 		events.on('beforeProjectEdit', beforeProjectEdit);
-		store.projectEdits.apply(
-			{ updates: [{ codeBlock: environment(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
-			{ history: 'checkpoint' }
-		);
-		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip' });
+		const generatedChange = state.projectChange;
+		expect(
+			store.projectEdits.apply(
+				{ updates: [{ codeBlock: environment(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
+				{ history: 'checkpoint' }
+			).changed
+		).toBe(false);
+		expect(state.projectChange).toBe(generatedChange);
 		expect(beforeProjectEdit).not.toHaveBeenCalled();
 		expect(state.historyStack).toHaveLength(0);
 		await vi.advanceTimersByTimeAsync(400);
@@ -244,11 +247,11 @@ describe('history tracking with real project mutations', () => {
 		expect(state.historyStack[0].rootProject.blocks.map(block => block.code[0])).not.toContain('constants env');
 		dispatch('undo');
 		expect(selectedBlockCode()[1]).toBe('push 1');
-		expect(environment().code).toContain('; @pos 3 4');
+		expect(environment().code).toContain('; @pos 0 0');
 		expect(environment().code).toContain('const GENERATED 42');
 		dispatch('redo');
 		expect(selectedBlockCode()[1]).toBe('push 12');
-		expect(environment().code).toContain('; @pos 3 4');
+		expect(environment().code).toContain('; @pos 0 0');
 		expect(environment().code).toContain('const GENERATED 42');
 	});
 
@@ -262,24 +265,66 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records a single authored checkpoint for a mixed authored and managed-environment batch', () => {
+		store.set('editorConfigSchemaContributions.test', { root: 'test', schema: { type: 'integer' } });
+		store.subscribe('editorConfig.test', value => {
+			store.set('envConstantContributions.test', value === undefined ? [] : [`const GENERATED ${value}`]);
+		});
 		store.projectEdits.apply(
 			{
 				updates: [
-					{ codeBlock: block, code: ['module main', 'push 12', 'drop', 'moduleEnd'] },
+					{ codeBlock: block, code: ['module main', 'push 12', 'drop', '; @config test 42', 'moduleEnd'] },
 					{ codeBlock: environment(), code: ['constants env', '; @pos 6 7', 'constantsEnd'] },
 				],
 			},
 			{ history: 'checkpoint' }
 		);
-		expect(state.projectChange).toEqual({ revision: baselineRevision + 1, kind: 'checkpoint' });
+		expect(state.projectChange).toEqual({ revision: baselineRevision + 1, kind: 'edit', history: 'checkpoint' });
 		expect(state.historyStack).toHaveLength(1);
+		expect(environment().code).toContain('const GENERATED 42');
 		dispatch('undo');
 		expect(selectedBlockCode()[1]).toBe('push 1');
-		expect(environment().code).toContain('; @pos 6 7');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).not.toContain('const GENERATED 42');
 		dispatch('redo');
 		expect(selectedBlockCode()[1]).toBe('push 12');
-		expect(environment().code).toContain('; @pos 6 7');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).toContain('const GENERATED 42');
 	});
+
+	it.each([
+		['debounced', 'compilationInputChanged'],
+		['checkpoint', 'compilationInputChanged'],
+		['debounced', 'projectChange'],
+		['checkpoint', 'projectChange'],
+	] as const)(
+		'publishes an authored %s before generated changes requested by a %s observer',
+		(history, notification) => {
+			const contribute = () => {
+				if (notification === 'compilationInputChanged') events.off(notification, contribute);
+				else store.unsubscribe(notification, contribute);
+				store.set('envConstantContributions.test', ['const GENERATED 42']);
+			};
+			if (notification === 'compilationInputChanged') events.on(notification, contribute);
+			else store.subscribe(notification, contribute);
+			const changes: ProjectChange[] = [];
+			store.subscribe('projectChange', change => changes.push(change));
+
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 12', 'drop', 'moduleEnd'] }], {
+				history,
+			});
+
+			expect(changes).toEqual([
+				{ revision: baselineRevision + 1, kind: 'edit', history },
+				{ revision: baselineRevision + 2, kind: 'edit', history: 'skip' },
+			]);
+			dispatch('undo');
+			expect(selectedBlockCode()[1]).toBe('push 1');
+			expect(environment().code).toContain('const GENERATED 42');
+			dispatch('redo');
+			expect(selectedBlockCode()[1]).toBe('push 12');
+			expect(environment().code).toContain('const GENERATED 42');
+		}
+	);
 
 	it('creates exactly one undo step for a burst of source edits (case d)', async () => {
 		replaceLine(1, 'push 12');

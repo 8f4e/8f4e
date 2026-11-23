@@ -15,10 +15,7 @@ function moduleSource(name: string, x: number, y: number, ...directives: string[
 }
 
 function projectSource(...blocks: string[]): string {
-	// Keep the generated environment block out of the interaction area.
-	return ['8f4e/v1', 'constants env', '; @pos -100 -100', 'constantsEnd', 'entry main', ...blocks, 'entryEnd'].join(
-		'\n'
-	);
+	return ['8f4e/v1', 'entry main', ...blocks, 'entryEnd'].join('\n');
 }
 
 const firstSource = moduleSource('first', 5, 5);
@@ -120,6 +117,35 @@ describe('codeBlockDragger', () => {
 		expect(first.code).toContain('; @pos 6 6');
 		expect(second.code).toContain('; @pos 21 11');
 		expect(test.revision()).toEqual(before.map(value => value + 1));
+	});
+
+	it('selects read-only blocks without starting a drag', () => {
+		const test = setup();
+		const environment = test.block('env');
+		const before = test.revision();
+		test.press(environment);
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(environment);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.visibleNames()).toEqual(['env', 'first']);
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
+		expect(environment).toMatchObject({ readOnly: true, gridX: 0, gridY: 0, x: 0, y: 0 });
+		expect(environment.code).toContain('; @pos 0 0');
+		expect(test.revision()).toEqual(before);
+	});
+
+	it('excludes read-only blocks from plugin-selected drag targets', () => {
+		const test = setup();
+		const first = test.block('first');
+		const environment = test.block('env');
+		test.selectTargets(first, environment);
+		test.press(first);
+		test.move(10, 20);
+		expect(environment).toMatchObject({ x: 0, y: 0 });
+		test.release();
+		expect(first.code).toContain('; @pos 6 6');
+		expect(environment).toMatchObject({ gridX: 0, gridY: 0, x: 0, y: 0 });
+		expect(environment.code).toContain('; @pos 0 0');
 	});
 
 	it('commits only surviving targets when a secondary block is deleted during a drag', () => {

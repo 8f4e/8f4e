@@ -50,7 +50,7 @@ describe('public editor operations without history', () => {
 		expect(serializeToProject(test.state).notes).toHaveLength(1);
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);
-		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'checkpoint' });
+		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'checkpoint' });
 		expect(test.state.historyStack).toHaveLength(0);
 	});
 

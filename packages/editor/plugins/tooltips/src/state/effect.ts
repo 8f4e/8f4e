@@ -5,7 +5,6 @@ import {
 	getCurrentCompiledLineForCodeBlock,
 } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryTarget } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { getSelectedLineTooltipContent } from '../helpers/content';
 import { describeSourceLine } from '../helpers/sourceLine';
 import { createEmptyTooltipState, getTooltipState } from './layout';
@@ -57,7 +56,7 @@ export default function createTooltip(
 
 	const selectors = [
 		'codeBlockRendering.selectedCodeBlock',
-		'codeBlockRendering.currentProject.blocks',
+		'projectChange',
 		'featureFlags.codeLineSelection',
 		'compiler.result',
 		'compilerInputRevision',
@@ -65,17 +64,11 @@ export default function createTooltip(
 		'viewport.hGrid',
 	] as const;
 	for (const selector of selectors) store.subscribe(selector, syncSelectedLineTooltip);
-	const onSourcesChanged = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
-		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
-			syncSelectedLineTooltip();
-	};
-	events.on('codeBlockSourcesChanged', onSourcesChanged);
 	events.on('gridSizeChanged', syncSelectedLineTooltip);
 	syncSelectedLineTooltip();
 	return {
 		getState: () => tooltip,
 		dispose: () => {
-			events.off('codeBlockSourcesChanged', onSourcesChanged);
 			events.off('gridSizeChanged', syncSelectedLineTooltip);
 			for (const selector of selectors) store.unsubscribe(selector, syncSelectedLineTooltip);
 		},

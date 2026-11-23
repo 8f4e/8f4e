@@ -37,7 +37,7 @@ export const moduleMenu = (
 					},
 				]
 			: []),
-		...(state.editorMode === 'edit'
+		...(state.editorMode === 'edit' && !codeBlock.readOnly
 			? [
 					{
 						title: isDisabled ? `Enable ${blockLabel}` : `Disable ${blockLabel}`,

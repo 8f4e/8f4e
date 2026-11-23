@@ -155,17 +155,14 @@ test.each([
 		slack === undefined ? '' : `\nnote wireConfig\n; @pos 180 60\n; @config looseWires.slack ${slack}\nnoteEnd`;
 	const view = setup({
 		wires: async () =>
-			new Response(`8f4e/v1
-constants env
-; @pos 180 60
-constantsEnd${config}
+			new Response(`8f4e/v1${config}
 entry main
 module osc
-; @pos 4 5
+; @pos 4 9
 float out 0.5
 moduleEnd
 module amp
-; @pos 48 5
+; @pos 48 9
 float* in &osc:out
 moduleEnd
 entryEnd`),

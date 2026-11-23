@@ -34,7 +34,6 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: {
 				...EMPTY_DEFAULT_PROJECT,
-				constants: [{ id: 0, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
 				notes: [
 					{
 						id: 1,
@@ -75,7 +74,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 				return state.codeBlockRendering.selectedCodeBlock?.name;
 			})
 			.toBe('target');
-		await tap(20, 20);
+		await tap(400, 20);
 		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 		const { x: blockX, y: blockY } = targetBlock();
 		const { x, y } = state.viewport;

@@ -7,7 +7,6 @@ it('requires lifecycle payloads and infers them from their event names', () => {
 	const check = (events: EventDispatcher, project: ProjectLevel) => {
 		events.dispatch('ready');
 		events.dispatch('codeBlockLayoutsChanged', { project, codeBlocks: [] });
-		events.dispatch('codeBlockSourcesChanged', { codeBlocks: [] });
 		events.on('codeBlockLayoutsChanged', event => {
 			expectTypeOf(event).toEqualTypeOf<CodeBlockLayoutsChangedEvent>();
 		});
@@ -16,8 +15,6 @@ it('requires lifecycle payloads and infers them from their event names', () => {
 		events.dispatch('codeBlockLayoutsChanged');
 		// @ts-expect-error A completed layout must identify its owning project.
 		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [] });
-		// @ts-expect-error A source update must identify its blocks.
-		events.dispatch('codeBlockSourcesChanged', {});
 		// @ts-expect-error Compiler completion supplies accepted memory.
 		events.dispatch('compilationSucceeded', { memoryRef: 'memory' });
 		// @ts-expect-error A lifecycle handler cannot replace its declared payload.

@@ -7,13 +7,13 @@ rendering and view state are not captured. Each stack holds up to ten entries. H
 ## Shared Project Changes
 
 `state.projectChange` is the single completed-change record used by API concurrency checks, history, and session
-persistence. It contains a monotonic `revision`, a `kind` describing the operation and, for skipped edits, `history: 'skip'`:
+persistence. It contains a monotonic `revision`, a `kind` describing the operation and, for edits, a `history` policy:
 
 | Kind | Operation | History behavior |
 | --- | --- | --- |
-| `edit` | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second |
+| `edit`, `history: 'debounced'` | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second |
 | `edit`, `history: 'skip'` | Skipped source mutation, including managed environment changes | Preserve redo and any pending history timer and before-state |
-| `checkpoint` | Validated API edit batch | Record one immediate undo step after committing pending human edits |
+| `edit`, `history: 'checkpoint'` | Validated API edit batch | Record one immediate undo step after committing pending human edits |
 | `restore` | Undo or redo snapshot | Rebase the current snapshot and retain the remaining stacks |
 | `replace` | Opening or creating a project | Cancel pending edits and clear both stacks |
 
@@ -24,10 +24,10 @@ Selection, caret movement, and navigation leave the record unchanged.
 Source edit callers can choose `{ history: 'skip' }` to avoid an independent undo step. While no authored edit is
 pending, the completed skipped state becomes the next edit's baseline. While an authored edit is pending, its original
 before-state and timer remain intact; generic skipped source can be captured together with the pending edit. Skipping does
-not promise that an arbitrary source change survives restoring an older snapshot. Managed environment changes (including
-position updates) are automatically skipped when they are the only change, and are excluded from authored snapshots even
-when they settle in the same batch as a recorded edit. Skipped edits still publish revisions, settle layout and compile as
-needed, and participate in persistence.
+not promise that an arbitrary source change survives restoring an older snapshot. Managed environment changes are
+automatically skipped when they are the only change, and are excluded from authored snapshots even when they settle in
+the same batch as a recorded edit. Skipped edits still publish revisions, settle layout and compile as needed, and
+participate in persistence.
 
 The editing handle creates its opaque revision token from its instance identity and this shared revision. It keeps
 no separate content fingerprint or revision subscriptions. A load invalidates old tokens even when the newly opened
@@ -46,18 +46,18 @@ history. Allocation without a net source change adds no step; the creation count
 Undo and redo commit pending edits first, so an edit undone immediately can still be redone. The public API uses
 the project editing service for a live mutation batch with checkpoint history policy. The service emits
 `beforeProjectEdit` only for actual authored changes before applying the checkpoint batch. History listens to the before-event
-to commit pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification;
-env-only edits never commit pending typing, even through the API.
+to commit pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification.
+The generated environment is read-only at a fixed origin, so attempted source edits do not commit pending typing.
 API edits preserve live block identity and work independently of whether the history effect is installed.
 
 Project loading translates the compiler/file projection into an editor source tree. History restores its own editor
 snapshot directly through the same project editing service. It captures the current view before same-project
-reconstruction, regenerates the managed root environment from current configuration and the current position,
+reconstruction, regenerates the managed root environment at the origin from current configuration,
 and publishes a single completed change after source and synchronous generated changes have settled.
 Viewport placement follows synchronous project-change subscribers and their layout contributions. Undo, redo, and
 API batches preserve the file association within the current project. Unrelated replacements dispatch `loadProject`
 and publish a `replace` change.
 
 The session-persistence plugin subscribes only to `projectChange`. It saves once after startup restoration, then
-saves once per completed project change. History also subscribes only to this record. Disposal cancels pending
+saves once per completed project change. History also observes this record for completed changes. Disposal cancels pending
 history work and removes owned listeners and subscriptions.

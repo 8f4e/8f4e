@@ -10,7 +10,7 @@ export interface ProjectSourceBlock {
 	};
 }
 
-/** Final intended changes to the attached project tree. Internal callers supply coherent, attached targets. */
+/** Final intended changes to the attached project tree. Callers supply attached targets; read-only writes are ignored. */
 export interface ProjectEditPlan {
 	updates?: readonly {
 		codeBlock: CodeBlockGraphicData;

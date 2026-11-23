@@ -131,7 +131,7 @@ describe('session persistence plugin', () => {
 		expect(result.revision).toBe(revision);
 	});
 
-	it('autosaves generated environment changes without invalidating redo and retains their current position', async () => {
+	it('autosaves generated environment changes without invalidating redo and ignores writes to read-only source', async () => {
 		vi.useFakeTimers();
 		const test = setup();
 		test.boot();
@@ -167,19 +167,19 @@ describe('session persistence plugin', () => {
 				},
 			],
 		});
-		expect(test.storage.setItem).toHaveBeenCalledTimes(2);
+		expect(test.storage.setItem).toHaveBeenCalledTimes(1);
 		expect(editing.getRevision()).not.toBe(before);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision + 2);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(test.state.historyStack).toHaveLength(0);
 		expect(test.state.redoStack).toHaveLength(1);
 		const saved = () => JSON.parse(test.storage.getItem('session')!);
 		expect(saved().constants[0].code).toContain('const GENERATED 42');
-		expect(saved().constants[0].code).toContain('; @pos 30 40');
+		expect(saved().constants[0].code).toContain('; @pos 0 0');
 		editing.redo({ expectedRevision: editing.getRevision() });
 		expect(getProjectModules(saved())[0].code).toContain('int value 2');
 		expect(saved().constants[0].code).toContain('const GENERATED 42');
-		expect(saved().constants[0].code).toContain('; @pos 30 40');
+		expect(saved().constants[0].code).toContain('; @pos 0 0');
 	});
 
 	it('does not autosave selection, caret movement, or empty edits after undo', async () => {
@@ -229,7 +229,7 @@ describe('session persistence plugin', () => {
 				{ type: 'insert', code: ['note added', 'API batch', 'noteEnd'] },
 			],
 		});
-		expect(changes).toEqual([{ revision: startRevision + 1, kind: 'checkpoint' }]);
+		expect(changes).toEqual([{ revision: startRevision + 1, kind: 'edit', history: 'checkpoint' }]);
 		expect(applied.revision).toBe(editing.handle.getRevision());
 		expect(test.state.historyStack).toHaveLength(1);
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
@@ -245,7 +245,7 @@ describe('session persistence plugin', () => {
 		expect(test.state.redoStack).toHaveLength(0);
 		expect(JSON.parse(test.storage.getItem('session')!).notes).toHaveLength(1);
 		expect(test.storage.setItem).toHaveBeenCalledTimes(3);
-		expect(changes.map(change => change.kind)).toEqual(['checkpoint', 'restore', 'restore']);
+		expect(changes.map(change => change.kind)).toEqual(['edit', 'restore', 'restore']);
 
 		// Reopening identical content is a different project lifetime and invalidates old API tokens.
 		test.events.dispatch('loadProject', { project: JSON.parse(test.storage.getItem('session')!) });
@@ -308,7 +308,7 @@ describe('session persistence plugin', () => {
 			movementY: test.state.viewport.hGrid * 2,
 		});
 		test.events.dispatch('pointerup');
-		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit' });
+		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'debounced' });
 		expect(editing.handle.getRevision()).not.toBe(token);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
@@ -348,7 +348,11 @@ describe('session persistence plugin', () => {
 		expect(test.state.codeBlockRendering.rootProject.viewport).toEqual({ x: 256, y: -128 });
 		expect(test.state.codeBlockRendering.rootProject.selectedBlock).toBe(group);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
-		test.store.set('projectChange', { revision: test.state.projectChange.revision + 1, kind: 'edit' });
+		test.store.set('projectChange', {
+			revision: test.state.projectChange.revision + 1,
+			kind: 'edit',
+			history: 'debounced',
+		});
 		expect(test.storage.getItem('session')).not.toContain('viewport');
 		expect(test.storage.getItem('session')).not.toContain('selectedBlock');
 		expect(getProjectGroups(JSON.parse(test.storage.getItem('session')!))[0].name).toBe('voice');
@@ -366,7 +370,11 @@ describe('session persistence plugin', () => {
 		first.disposePlugin();
 		storage.setItem.mockClear();
 		first.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-		first.store.set('projectChange', { revision: first.state.projectChange.revision + 1, kind: 'edit' });
+		first.store.set('projectChange', {
+			revision: first.state.projectChange.revision + 1,
+			kind: 'edit',
+			history: 'debounced',
+		});
 		first.events.dispatch('prepareInitialProject');
 		expect(storage.setItem).not.toHaveBeenCalled();
 		second.events.dispatch('loadProject', { project });

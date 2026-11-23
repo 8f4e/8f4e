@@ -60,6 +60,8 @@ export interface CodeBlockGraphicData {
 	width: number;
 	height: number;
 	code: string[];
+	/** Editor-owned source that can be inspected but not edited, moved, or deleted. */
+	readonly readOnly?: boolean;
 	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
 	tabStopsByLine: number[][];
 	/** True for the root project's directly owned project-scope source. */
