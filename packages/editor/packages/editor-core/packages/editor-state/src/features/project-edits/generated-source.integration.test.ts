@@ -35,11 +35,11 @@ it('retains managed environment identity on attempted deletion or rename, and ac
 	const beforeCheckpoint = vi.fn();
 	events.on('beforeProjectEdit', beforeCheckpoint);
 
-	expect(store.projectEdits.apply({ deletes: [environment] }, 'checkpoint').changed).toBe(false);
+	expect(store.projectEdits.apply({ deletes: [environment] }, { history: 'checkpoint' }).changed).toBe(false);
 	expect(
 		store.projectEdits.apply(
 			{ updates: [{ codeBlock: environment, code: ['constants renamed', 'constantsEnd'] }] },
-			'checkpoint'
+			{ history: 'checkpoint' }
 		).changed
 	).toBe(false);
 	expect(root.blocks).toContain(environment);
@@ -75,7 +75,7 @@ it('keeps an authored duplicate name editable instead of transferring generated 
 	expect(root.blocks).toContain(environment);
 });
 
-it('keeps the generated ownership header exclusive when root environment source is copied or edited', () => {
+it('keeps a copied environment source editable until reopening normalizes duplicate root env blocks', () => {
 	const { state, store, events, load } = setup();
 	store.set('envConstantContributions.test', ['const GENERATED 1']);
 	load('constants env\n; @pos 7 9\nconstantsEnd');
@@ -85,41 +85,79 @@ it('keeps the generated ownership header exclusive when root environment source 
 	const {
 		insertedBlocks: [authored],
 	} = store.projectEdits.apply({ inserts: [{ project: root, source: { code: copy } }] });
-	expect(authored.code).toContain('const GENERATED 1');
-	expect(authored.code).not.toContain('; Auto-generated environment constants');
-	expect(authored.code).not.toContain('; Changes will be overwritten');
+	expect(authored.code).toEqual(copy);
 	const edited = copy.map(line => (line === 'const GENERATED 1' ? 'const KEEP 2' : line));
 	store.projectEdits.apply({ updates: [{ codeBlock: authored, code: edited }] });
-	const authoredCode = authored.code;
-	expect(authoredCode).toContain('const KEEP 2');
-	expect(authoredCode).not.toContain('; Auto-generated environment constants');
+	expect(authored.code).toEqual(edited);
+	expect(environment.code).toContain('const GENERATED 1');
 	events.dispatch('loadProject', { project: serializeToProject(state) });
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	const restored = state.codeBlockRendering.rootProject.blocks;
-	expect(restored.find(block => block.code.includes('const KEEP 2'))?.code).toEqual(authoredCode);
-	expect(restored.find(block => block.code.includes('const GENERATED 3'))).toMatchObject({ gridX: 7, gridY: 9 });
+	expect(restored).toHaveLength(1);
+	expect(restored[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0 });
+	expect(restored[0].creationIndex).toBeGreaterThan(Math.max(environment.creationIndex, authored.creationIndex));
+	expect(restored[0].code).toContain('const GENERATED 3');
+	expect(restored[0].code).not.toContain('const KEEP 2');
 });
 
-it.each(['', '; Auto-generated environment constants\n; Changes will be overwritten\n'])(
-	'preserves authored environment blocks when the loaded source has ambiguous ownership (%j)',
-	header => {
-		const { state, store, load } = setup();
-		load(
-			`constants env\n; @pos -10 0\n${header}const LEFT 1\nconstantsEnd\nconstants env\n; @pos 10 0\n${header}const RIGHT 2\nconstantsEnd`
-		);
-		const blocks = state.codeBlockRendering.rootProject.blocks;
-		expect(blocks).toHaveLength(3);
-		const left = blocks.find(block => block.code.includes('const LEFT 1'))!;
-		const right = blocks.find(block => block.code.includes('const RIGHT 2'))!;
-		const generated = blocks.find(block => block.code.includes('; Auto-generated environment constants'))!;
-		store.set('envConstantContributions.test', ['const GENERATED 3']);
-		expect(left.code).toContain('const LEFT 1');
-		expect(right.code).toContain('const RIGHT 2');
-		expect(left.code).not.toContain('; Auto-generated environment constants');
-		expect(right.code).not.toContain('; Auto-generated environment constants');
-		expect(generated.code).toContain('const GENERATED 3');
-	}
-);
+const generatedHeader = '; Auto-generated environment constants\n; Changes will be overwritten\n';
+
+it.each(['', generatedHeader])('keeps only the position of a sole root env when opening (%j)', header => {
+	const { state, store, events } = setup();
+	const project = parseProjectSource(`8f4e/v1\nconstants env\n; @pos -5 9\n${header}const OLD 1\nconstantsEnd`);
+	store.set('envConstantContributions.test', ['const GENERATED 3']);
+	events.dispatch('loadProject', { project });
+	const blocks = state.codeBlockRendering.rootProject.blocks;
+	expect(blocks).toHaveLength(1);
+	expect(blocks[0]).toMatchObject({ name: 'env', creationIndex: project.constants[0].id, gridX: -5, gridY: 9 });
+	expect(blocks[0].code).toContain('const GENERATED 3');
+	expect(blocks[0].code).not.toContain('const OLD 1');
+});
+
+it.each([
+	['', ''],
+	[generatedHeader, ''],
+	['', generatedHeader],
+	[generatedHeader, generatedHeader],
+] as const)('replaces duplicate root env blocks regardless of their headers (%j, %j)', (leftHeader, rightHeader) => {
+	const { state, store, events } = setup();
+	const project = parseProjectSource(`8f4e/v1
+constants env
+; @pos -10 0
+${leftHeader}const LEFT 1
+constantsEnd
+constants env
+; @pos 10 0
+${rightHeader}const RIGHT 2
+constantsEnd
+constants keep
+const OUTSIDE 4
+constantsEnd
+entry main
+group child
+constants env
+const NESTED 5
+constantsEnd
+groupEnd
+entryEnd`);
+	const originalConstants = project.constants.map(block => ({ id: block.id, code: [...block.code] }));
+	store.set('envConstantContributions.test', ['const GENERATED 3']);
+	events.dispatch('loadProject', { project });
+	const blocks = state.codeBlockRendering.rootProject.blocks;
+	const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
+	expect(environments).toHaveLength(1);
+	const [generated] = environments;
+	expect(generated).toMatchObject({ gridX: 0, gridY: 0 });
+	expect(generated.creationIndex).toBeGreaterThan(Math.max(...originalConstants.map(block => block.id)));
+	expect(generated.code).toContain('const GENERATED 3');
+	expect(generated.code).not.toContain('const LEFT 1');
+	expect(generated.code).not.toContain('const RIGHT 2');
+	expect(blocks.find(block => block.name === 'keep')?.code).toContain('const OUTSIDE 4');
+	const nested = blocks.find(block => block.name === 'child')?.childProject?.blocks;
+	expect(nested).toHaveLength(1);
+	expect(nested?.[0].code).toEqual(['constants env', 'const NESTED 5', 'constantsEnd']);
+	expect(project.constants.map(block => ({ id: block.id, code: block.code }))).toEqual(originalConstants);
+});
 
 it('derives the final generated source only once when authored config and its position change together', () => {
 	const { state, store, load } = setup();

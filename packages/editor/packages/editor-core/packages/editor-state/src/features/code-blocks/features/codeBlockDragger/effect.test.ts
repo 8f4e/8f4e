@@ -208,7 +208,7 @@ describe('codeBlockDragger', () => {
 			const test = setup();
 			const first = test.block('first');
 			const code = ['module first', '; @pos 8 8', 'moduleEnd'];
-			test.store.projectEdits.apply({ updates: [{ codeBlock: first, code }] }, 'checkpoint');
+			test.store.projectEdits.apply({ updates: [{ codeBlock: first, code }] }, { history: 'checkpoint' });
 			const before = test.revision();
 			test.press(first);
 			test.move(10, 20);

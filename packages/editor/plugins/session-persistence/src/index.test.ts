@@ -131,6 +131,57 @@ describe('session persistence plugin', () => {
 		expect(result.revision).toBe(revision);
 	});
 
+	it('autosaves generated environment changes without invalidating redo and retains their current position', async () => {
+		vi.useFakeTimers();
+		const test = setup();
+		test.boot();
+		test.events.dispatch('loadProject', { project });
+		test.events.dispatch('enterEditMode');
+		const { handle: editing, dispose } = createEditorEditingHandle(test.store, test.events);
+		cleanups.push(dispose);
+		const block = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'retained')!;
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(block),
+					code: block.code.map(line => (line === 'int value 1' ? 'int value 2' : line)),
+				},
+			],
+		});
+		editing.undo({ expectedRevision: editing.getRevision() });
+		expect(test.state.redoStack).toHaveLength(1);
+		const before = editing.getRevision();
+		const compilerRevision = test.state.compilerInputRevision;
+		test.storage.setItem.mockClear();
+		test.store.set('envConstantContributions.provider', ['const GENERATED 42']);
+		const environment = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
+		editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(environment),
+					code: ['constants env', '; @pos 30 40', 'constantsEnd'],
+				},
+			],
+		});
+		expect(test.storage.setItem).toHaveBeenCalledTimes(2);
+		expect(editing.getRevision()).not.toBe(before);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 2);
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(test.state.historyStack).toHaveLength(0);
+		expect(test.state.redoStack).toHaveLength(1);
+		const saved = () => JSON.parse(test.storage.getItem('session')!);
+		expect(saved().constants[0].code).toContain('const GENERATED 42');
+		expect(saved().constants[0].code).toContain('; @pos 30 40');
+		editing.redo({ expectedRevision: editing.getRevision() });
+		expect(getProjectModules(saved())[0].code).toContain('int value 2');
+		expect(saved().constants[0].code).toContain('const GENERATED 42');
+		expect(saved().constants[0].code).toContain('; @pos 30 40');
+	});
+
 	it('does not autosave selection, caret movement, or empty edits after undo', async () => {
 		vi.useFakeTimers();
 		const test = setup();

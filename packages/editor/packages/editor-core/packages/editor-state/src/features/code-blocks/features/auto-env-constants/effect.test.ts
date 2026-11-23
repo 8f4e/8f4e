@@ -218,19 +218,30 @@ entryEnd`);
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
-	it('restores the historical environment position and regenerates its contributed body', () => {
-		const { store, events, load, env } = setup();
-		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
+	it('retains the current environment position and regenerates its contributed body during undo and redo', () => {
+		const { store, state, events, load, env } = setup();
+		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd\nentry main\nmodule authored\nmoduleEnd\nentryEnd');
 		const id = env().creationIndex;
+		const authored = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'authored')!;
+		store.projectEdits.apply(
+			{ updates: [{ codeBlock: authored(), code: ['module authored', 'push 1', 'moduleEnd'] }] },
+			{ history: 'checkpoint' }
+		);
 		store.projectEdits.apply(
 			{ updates: [{ codeBlock: env(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
-			'checkpoint'
+			{ history: 'checkpoint' }
 		);
 		store.set('envConstantContributions.provider', ['const PROVIDED 7']);
+		expect(state.historyStack).toHaveLength(1);
 		events.dispatch('undo');
-		events.dispatch('undo');
-		expect(env()).toMatchObject({ creationIndex: id, gridX: 7, gridY: 9 });
-		expect(env().code).toContain('; @pos 7 9');
+		expect(authored().code).toEqual(['module authored', 'moduleEnd']);
+		expect(env()).toMatchObject({ creationIndex: id, gridX: 3, gridY: 4 });
+		expect(env().code).toContain('; @pos 3 4');
+		expect(env().code).toContain('const PROVIDED 7');
+		events.dispatch('redo');
+		expect(authored().code).toContain('push 1');
+		expect(env()).toMatchObject({ creationIndex: id, gridX: 3, gridY: 4 });
+		expect(env().code).toContain('; @pos 3 4');
 		expect(env().code).toContain('const PROVIDED 7');
 	});
 });

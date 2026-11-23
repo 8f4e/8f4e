@@ -29,7 +29,12 @@ export interface ProjectEditResult {
 	insertedBlocks: CodeBlockGraphicData[];
 }
 
+export interface ProjectEditOptions {
+	/** Skipped edits create no independent history step, preserve pending edits, and do not clear redo. */
+	history?: 'debounced' | 'checkpoint' | 'skip';
+}
+
 /** Synchronous project mutation and settlement. Callers own edit-mode policy; the compiler validates the source. */
 export interface ProjectEdits {
-	apply(plan: ProjectEditPlan, kind?: 'edit' | 'checkpoint'): ProjectEditResult;
+	apply(plan: ProjectEditPlan, options?: ProjectEditOptions): ProjectEditResult;
 }

@@ -74,12 +74,12 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 		);
 	} else {
 		expect(() =>
-			store.projectEdits.apply({ updates: [{ codeBlock: member, code }], deletes: [group] }, 'checkpoint')
+			store.projectEdits.apply({ updates: [{ codeBlock: member, code }], deletes: [group] }, { history: 'checkpoint' })
 		).toThrow(expect.objectContaining({ code: 'deleted_block', message: 'Cannot update a block being deleted' }));
 		expect(() =>
 			store.projectEdits.apply(
 				{ inserts: [{ project: group.childProject!, source: { code: insertedCode } }], deletes: [group] },
-				'checkpoint'
+				{ history: 'checkpoint' }
 			)
 		).toThrow(
 			expect.objectContaining({ code: 'deleted_project', message: 'Cannot insert into a project group being deleted' })
@@ -102,7 +102,7 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 			],
 		});
 	} else {
-		expect(store.projectEdits.apply({ deletes: [member, group, group] }, 'checkpoint').changed).toBe(true);
+		expect(store.projectEdits.apply({ deletes: [member, group, group] }, { history: 'checkpoint' }).changed).toBe(true);
 	}
 	expect(state.codeBlockRendering.rootProject.blocks).not.toContain(group);
 	expect(state.projectChange.revision).toBe(revision + 1);

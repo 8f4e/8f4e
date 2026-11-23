@@ -39,7 +39,13 @@ export default function historyTracking(
 		present = current;
 	}
 
-	function onProjectChange({ kind }: ProjectChange) {
+	function onProjectChange({ kind, history }: ProjectChange) {
+		if (history === 'skip') {
+			// Do not turn a skipped operation into a separate checkpoint, discard redo, or
+			// replace the before-state of an authored edit that is still pending.
+			if (!editPending) present = projectEdits.capture();
+			return;
+		}
 		if (kind === 'edit' && state.featureFlags.historyTracking) {
 			state.redoStack = [];
 			editPending = true;

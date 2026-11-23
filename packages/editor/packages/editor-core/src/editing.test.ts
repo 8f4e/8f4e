@@ -866,6 +866,49 @@ describe('public editor editing handle', () => {
 		}
 	});
 
+	it('keeps pending typing separate from a public env-only edit and preserves the managed position and source on restore', async () => {
+		vi.useFakeTimers();
+		try {
+			const { editing, state, store, events } = setup();
+			const authored = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'original')!;
+			const environment = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
+			const beforeProjectEdit = vi.fn();
+			events.on('beforeProjectEdit', beforeProjectEdit);
+			applyCodeBlockSourceEdits(store, [
+				{ codeBlock: authored(), code: ['module original', 'int value 12', 'moduleEnd'] },
+			]);
+			await vi.advanceTimersByTimeAsync(500);
+			editing.applyEdits({
+				expectedRevision: editing.getRevision(),
+				edits: [
+					{
+						type: 'update',
+						blockId: getEditorBlockId(environment()),
+						code: ['constants env', '; @pos 12 15', 'constantsEnd'],
+					},
+				],
+			});
+			store.set('envConstantContributions.test', ['const GENERATED 1']);
+			expect(beforeProjectEdit).not.toHaveBeenCalled();
+			expect(state.historyStack).toHaveLength(0);
+			// The original typing timer was not canceled or postponed by either generated edit.
+			await vi.advanceTimersByTimeAsync(500);
+			expect(state.historyStack).toHaveLength(1);
+			editing.undo({ expectedRevision: editing.getRevision() });
+			expect(authored().code).toContain('int value 1');
+			expect(environment().code).toContain('; @pos 12 15');
+			expect(environment().code).toContain('const GENERATED 1');
+			store.set('envConstantContributions.test', ['const GENERATED 2']);
+			expect(state.redoStack).toHaveLength(1);
+			editing.redo({ expectedRevision: editing.getRevision() });
+			expect(authored().code).toContain('int value 12');
+			expect(environment().code).toContain('; @pos 12 15');
+			expect(environment().code).toContain('const GENERATED 2');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('applies API edits without recording history when tracking is disabled', () => {
 		const { editing, state, store } = setup();
 		store.set('featureFlags.historyTracking', false);

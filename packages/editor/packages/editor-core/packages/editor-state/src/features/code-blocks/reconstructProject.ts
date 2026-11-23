@@ -3,18 +3,18 @@ import type {
 	CodeBlockRendering,
 	EditorDirectiveDefinition,
 	EditorLevelSnapshot,
-	EditorProjectSnapshot,
 	ProjectLevel,
 	Viewport,
 } from '@8f4e/editor-state-types';
 import { findProjectLevel, walkProjectLevels } from '../../pureHelpers/projectTree';
+import type { ProjectInstallation } from '../project-edits/snapshot';
 import { prepareProjectSources } from './sourceUpdates';
 import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
 import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 
 /** Rebuild editor source and reconcile remembered views without taking source facts from the outgoing view. */
 export function reconstructProject(
-	snapshot: EditorProjectSnapshot,
+	snapshot: ProjectInstallation,
 	directives: EditorDirectiveDefinition[],
 	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>,
 	previous?: CodeBlockRendering

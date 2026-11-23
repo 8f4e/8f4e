@@ -349,11 +349,12 @@ Plugins can contribute source to the generated root-project `env` constants bloc
 `store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines after
 resolving authored project configuration and recompiles when generated source changes. Contributions update the root
 block regardless of which project group is visible. Its position is editable, but its generated content and identity
-are managed by core; deleting or renaming that block does not remove the environment. The generated source header
-identifies that block when reopening a saved project. Copies and edits of other root environment blocks cannot claim
-the header, and loading an ambiguous set of environment blocks preserves their authored content rather than overwriting
-an arbitrary block. An unmarked sole root `constants env` can supply the initial generated position. Each plugin removes its own
-contribution key when disposed. The registry contains source lines only; feature metadata stays private to its owner.
+are managed by core; deleting or renaming that block does not remove the environment. When opening a project, core
+retains the position of a sole root `constants env` block and regenerates its body. If no such block exists, or multiple
+root `constants env` blocks exist, core replaces all of them with one fresh generated block at the default position.
+Only the live managed block receives contributions; duplicates edited while the project is open are not adopted as
+managed blocks. Nested environment blocks remain authored source. Each plugin removes its own contribution key
+when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
@@ -381,6 +382,10 @@ entry/child-project data, and deletion supplies existing block handles. All thre
 one synchronous transaction. Existing blocks and project levels retain their identities. For simple source-only
 changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
 adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.
+Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
+`debounced` (default), `checkpoint`, or `skip`. Skipped edits publish revisions without making a separate undo step,
+discarding redo, or flushing pending typing. Generated managed-environment-only changes automatically skip history;
+authored changes in the same transaction still follow the requested policy.
 
 The service normalizes source (including managed environment source), prepares metadata, settles configuration and
 synchronous generated source, refreshes available layout, and publishes the final change. Only actual changes to
@@ -397,11 +402,12 @@ root `env` block, so environment contributions cannot feed back into their own c
 
 The public editing API checks revision and command preconditions before using the same service with checkpoint
 history policy. It does not validate the program; invalid and incomplete source is legitimate editor content. Real
-checkpoints emit `beforeProjectEdit` before changing live source, allowing history to commit pending typing. Unchanged
+checkpoints emit `beforeProjectEdit` before changing authored source, allowing history to commit pending typing. Unchanged
 batches leave pending history, compiler inputs and revisions untouched. Selection and view navigation do not publish.
 
-Project loading translates compiler/file data into editor source; undo/redo restore detached editor snapshots that
-retain block identities, boundaries and draft entry/position metadata. Both use the same reconstruction, settlement and
+Project loading translates compiler/file data into editor source; undo/redo restore detached authored editor snapshots that
+retain block identities, boundaries and draft entry/position metadata. The managed root environment is excluded from history;
+restoration preserves its current position and rebuilds its body from current contributions. Both use the same reconstruction, settlement and
 publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
 

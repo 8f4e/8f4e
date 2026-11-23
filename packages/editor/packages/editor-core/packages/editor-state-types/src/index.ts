@@ -156,6 +156,8 @@ export interface Options {
 export interface ProjectChange {
 	revision: number;
 	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
+	/** A completed edit that does not create a history step or invalidate redo. */
+	history?: 'skip';
 }
 
 /** One contributed operation, retained after completion independently of presentation. */

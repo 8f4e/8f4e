@@ -200,9 +200,9 @@ noteEnd`);
 		compilerChanged.mockClear();
 		sourcesChanged.mockClear();
 
-		expect(store.projectEdits.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, 'checkpoint').changed).toBe(
-			false
-		);
+		expect(
+			store.projectEdits.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, { history: 'checkpoint' }).changed
+		).toBe(false);
 		expect(sample.entry).toBeUndefined();
 		expect(serializeToProject(state)).toEqual(before);
 		expect(beforeCheckpoint).not.toHaveBeenCalled();

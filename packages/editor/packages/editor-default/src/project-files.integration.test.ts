@@ -137,7 +137,7 @@ entryEnd`),
 		await test.events.dispatchAsync('importProject');
 		expect(test.state.editorConfig.export?.fileName).toBe('right');
 	});
-	it('preserves authored environment source before the generated block when saving and reopening', async () => {
+	it('replaces duplicate root environment blocks when reopening a saved project', async () => {
 		const test = setup();
 		const authoredCode = ['constants env', '; @pos -5 -5', 'const KEEP 1', 'constantsEnd'];
 		test.store.set('envConstantContributions.provider', ['const GENERATED 2']);
@@ -152,12 +152,13 @@ entryEnd`),
 		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'duplicate-env.8f4e'));
 		await test.events.dispatchAsync('importProject');
 		const blocks = test.state.codeBlockRendering.rootProject.blocks;
-		const authored = blocks.find(block => block.code.includes('const KEEP 1'))!;
-		const generated = blocks.find(block => block.code.includes('const GENERATED 2'))!;
-		expect(authored).toMatchObject({ code: authoredCode });
+		const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
+		expect(environments).toHaveLength(1);
+		const [generated] = environments;
 		expect(generated).toMatchObject({ gridX: 0, gridY: 0 });
+		expect(generated.code).toContain('const GENERATED 2');
+		expect(generated.code).not.toContain('const KEEP 1');
 		test.store.set('envConstantContributions.provider', ['const GENERATED 3']);
-		expect(authored.code).toEqual(authoredCode);
 		expect(generated.code).toContain('const GENERATED 3');
 	});
 	it.each(['loadProject', 'new'])('clears the association on %s', async action => {

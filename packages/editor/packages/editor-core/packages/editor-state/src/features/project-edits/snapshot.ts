@@ -1,4 +1,5 @@
 import type {
+	CodeBlockGraphicData,
 	CodeBlockRendering,
 	EditorBlockSnapshot,
 	EditorLevelSnapshot,
@@ -16,38 +17,68 @@ import compareCodeBlocksByPosition from '../../pureHelpers/compareCodeBlocksByPo
 import getHighestProjectBlockId from '../../pureHelpers/projectSerialization/getHighestProjectBlockId';
 import getCodeBlockNameFromSource from '../code-blocks/utils/getCodeBlockNameFromSource';
 
-function captureLevel(level: ProjectLevel): EditorLevelSnapshot {
+/** An installation has the managed block attached; history retains authored source alone. */
+export interface ProjectInstallation extends EditorProjectSnapshot {
+	readonly environmentId?: number;
+}
+
+function captureBlock(block: CodeBlockGraphicData): EditorBlockSnapshot {
 	return {
-		path: level.path,
-		entries: [...level.entries],
-		blocks: [...level.blocks].sort(compareCodeBlocksByPosition).map(block => ({
-			creationIndex: block.creationIndex,
-			code: [...block.code],
-			entry: block.entry,
-			gridX: block.gridX,
-			gridY: block.gridY,
-			isProjectScope: block.isProjectScope === true,
-			childProject: block.childProject ? captureLevel(block.childProject) : undefined,
-		})),
+		creationIndex: block.creationIndex,
+		code: [...block.code],
+		entry: block.entry,
+		gridX: block.gridX,
+		gridY: block.gridY,
+		isProjectScope: block.isProjectScope === true,
+		childProject: block.childProject ? captureLevel(block.childProject) : undefined,
 	};
 }
 
-/** Capture source and retained draft facts independently of view and render state. */
-export function captureProjectSnapshot(rendering: CodeBlockRendering, environmentId?: number): EditorProjectSnapshot {
+function captureLevel(level: ProjectLevel, environment?: CodeBlockGraphicData): EditorLevelSnapshot {
 	return {
-		rootProject: captureLevel(rendering.rootProject),
-		environmentId,
+		path: level.path,
+		entries: [...level.entries],
+		blocks: level.blocks
+			.filter(block => block !== environment)
+			.sort(compareCodeBlocksByPosition)
+			.map(captureBlock),
+	};
+}
+
+/** Capture authored source and retained draft facts independently of generated source and view state. */
+export function captureProjectSnapshot(
+	rendering: CodeBlockRendering,
+	environment?: CodeBlockGraphicData
+): EditorProjectSnapshot {
+	return {
+		rootProject: captureLevel(rendering.rootProject, environment),
 		nextCodeBlockCreationIndex: rendering.nextCodeBlockCreationIndex,
+	};
+}
+
+/** History restores the current managed root environment, including its position, rather than a historical generated block. */
+export function snapshotForRestoration(
+	snapshot: EditorProjectSnapshot,
+	environment?: CodeBlockGraphicData
+): ProjectInstallation {
+	if (!environment) return snapshot;
+	return {
+		...snapshot,
+		environmentId: environment.creationIndex,
+		rootProject: {
+			...snapshot.rootProject,
+			blocks: [...snapshot.rootProject.blocks, captureBlock(environment)].sort(compareCodeBlocksByPosition),
+		},
 	};
 }
 
 /** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
 export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
-	return a.environmentId === b.environmentId && JSON.stringify(a.rootProject) === JSON.stringify(b.rootProject);
+	return JSON.stringify(a.rootProject) === JSON.stringify(b.rootProject);
 }
 
 /** Translate a loaded compiler project into the editor's source tree with no retained draft facts. */
-export function snapshotFromProjectModel(project: ProjectObjectModel, environmentId: number): EditorProjectSnapshot {
+export function snapshotFromProjectModel(project: ProjectObjectModel, environmentId: number): ProjectInstallation {
 	let nextCodeBlockCreationIndex = getHighestProjectBlockId(project) + 1;
 	const createBlock = (block: ProjectBlock): EditorBlockSnapshot => ({
 		creationIndex: block.id,

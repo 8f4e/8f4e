@@ -17,9 +17,8 @@ export interface EditorLevelSnapshot {
 	readonly blocks: readonly EditorBlockSnapshot[];
 }
 
-/** Editor source with editable block boundaries and metadata, not the compiler projection or derived layout. */
+/** Authored editor source with editable block boundaries and metadata, excluding the managed environment and derived layout. */
 export interface EditorProjectSnapshot {
 	readonly rootProject: EditorLevelSnapshot;
-	readonly environmentId?: number;
 	readonly nextCodeBlockCreationIndex: number;
 }

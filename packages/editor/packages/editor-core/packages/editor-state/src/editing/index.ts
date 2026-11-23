@@ -122,7 +122,7 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 				}
 			}
 			try {
-				const { insertedBlocks } = store.projectEdits.apply({ updates, inserts, deletes }, 'checkpoint');
+				const { insertedBlocks } = store.projectEdits.apply({ updates, inserts, deletes }, { history: 'checkpoint' });
 				return { revision: revision(), createdBlockIds: insertedBlocks.map(getEditorBlockId) };
 			} catch (error) {
 				if (error instanceof ProjectEditPlanError) invalid(error.message);

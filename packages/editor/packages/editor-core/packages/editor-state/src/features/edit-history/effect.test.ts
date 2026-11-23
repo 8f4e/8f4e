@@ -35,7 +35,7 @@ describe('history tracking effect', () => {
 		const original = serializeToProject(state);
 		store.projectEdits.apply(
 			{ inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }] },
-			'checkpoint'
+			{ history: 'checkpoint' }
 		);
 		const edited = serializeToProject(state);
 		events.dispatch('undo');
@@ -86,6 +86,12 @@ describe('history tracking with real project mutations', () => {
 
 	function selectedBlockCode(): string[] {
 		return currentModule().code;
+	}
+
+	function environment() {
+		return state.codeBlockRendering.rootProject.blocks.find(
+			block => block.name === 'env' && block.blockType === 'constants'
+		)!;
 	}
 
 	beforeEach(() => {
@@ -159,6 +165,120 @@ describe('history tracking with real project mutations', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 		expect(selectedBlockCode()[1]).toBe('push 13');
+	});
+
+	it('skips a source edit without clearing redo or suppressing source and layout settlement', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(1000);
+		dispatch('undo');
+		const restored = currentModule();
+		const previousRevision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		const redo = state.redoStack[0];
+		const sourcesChanged = vi.fn();
+		events.on('codeBlockSourcesChanged', sourcesChanged);
+
+		expect(
+			applyCodeBlockSourceEdits(
+				store,
+				[
+					{
+						codeBlock: restored,
+						code: ['module main', '; @pos 4 5', 'push 2', 'drop', 'moduleEnd'],
+					},
+				],
+				{ history: 'skip' }
+			)
+		).toBe(true);
+		expect(restored).toMatchObject({ gridX: 4, gridY: 5, x: 4 * TEST_GRID_SIZE.vGrid, y: 5 * TEST_GRID_SIZE.hGrid });
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(state.projectChange).toEqual({ revision: previousRevision + 1, kind: 'edit', history: 'skip' });
+		expect(sourcesChanged).toHaveBeenCalledOnce();
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(state.historyStack).toHaveLength(0);
+		expect(state.redoStack).toEqual([redo]);
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+	});
+
+	it('uses idle skipped source as the baseline of the next authored edit', async () => {
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 2', 'drop', 'moduleEnd'] }], {
+			history: 'skip',
+		});
+		replaceLine(1, 'push 3');
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(state.historyStack).toHaveLength(1);
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 2');
+	});
+
+	it('does not postpone or discard a pending authored edit when ordinary source is skipped', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(600);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 123', 'drop', 'moduleEnd'] }], {
+			history: 'skip',
+		});
+		expect(state.historyStack).toHaveLength(0);
+		await vi.advanceTimersByTimeAsync(400);
+		expect(state.historyStack).toHaveLength(1);
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+	});
+
+	it('keeps a pending typing step open across contribution refresh and an env-only checkpoint request', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(600);
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip' });
+		const beforeProjectEdit = vi.fn();
+		events.on('beforeProjectEdit', beforeProjectEdit);
+		store.projectEdits.apply(
+			{ updates: [{ codeBlock: environment(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
+			{ history: 'checkpoint' }
+		);
+		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip' });
+		expect(beforeProjectEdit).not.toHaveBeenCalled();
+		expect(state.historyStack).toHaveLength(0);
+		await vi.advanceTimersByTimeAsync(400);
+		expect(state.historyStack).toHaveLength(1);
+		expect(state.historyStack[0].rootProject.blocks.map(block => block.code[0])).not.toContain('constants env');
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+		expect(environment().code).toContain('; @pos 3 4');
+		expect(environment().code).toContain('const GENERATED 42');
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+		expect(environment().code).toContain('; @pos 3 4');
+		expect(environment().code).toContain('const GENERATED 42');
+	});
+
+	it('does not create history when an authored typing burst is reverted even if env was regenerated', async () => {
+		replaceLine(1, 'push 12');
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		replaceLine(1, 'push 1');
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(state.historyStack).toHaveLength(0);
+		expect(environment().code).toContain('const GENERATED 42');
+	});
+
+	it('records a single authored checkpoint for a mixed authored and managed-environment batch', () => {
+		store.projectEdits.apply(
+			{
+				updates: [
+					{ codeBlock: block, code: ['module main', 'push 12', 'drop', 'moduleEnd'] },
+					{ codeBlock: environment(), code: ['constants env', '; @pos 6 7', 'constantsEnd'] },
+				],
+			},
+			{ history: 'checkpoint' }
+		);
+		expect(state.projectChange).toEqual({ revision: baselineRevision + 1, kind: 'checkpoint' });
+		expect(state.historyStack).toHaveLength(1);
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+		expect(environment().code).toContain('; @pos 6 7');
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+		expect(environment().code).toContain('; @pos 6 7');
 	});
 
 	it('creates exactly one undo step for a burst of source edits (case d)', async () => {
