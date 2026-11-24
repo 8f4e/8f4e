@@ -2,13 +2,12 @@ import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createRenderGeometry } from './render-geometry';
-import { createRenderLayerRegistry, type RenderLayerContext, type RenderLayerFont } from './render-layers';
+import { createRenderLayerRegistry, type RenderLayerContext } from './render-layers';
 import type { MemoryViews } from './types';
 
 const context: RenderLayerContext = {
 	gl: {} as WebGL2RenderingContext,
 	palette: resolvePalette({}),
-	font: { name: 'ibmvga8x16', grid: { cellWidth: 8, cellHeight: 16, columns: 16, cellCount: 257 } },
 };
 const state = createMockState();
 const frame = {
@@ -20,7 +19,6 @@ const frame = {
 const createLayer = () => ({
 	draw: vi.fn(),
 	loadPalette: vi.fn(),
-	loadFont: vi.fn(),
 	releaseMemory: vi.fn(),
 	destroy: vi.fn(),
 });
@@ -79,26 +77,20 @@ describe('render layer lifecycle', () => {
 		binding.destroy();
 	});
 
-	it('delivers the current font, palette and suspended memory state to late registrations', () => {
+	it('delivers the current palette and suspended memory state to late registrations', () => {
 		const registry = createRenderLayerRegistry();
 		const first = createLayer();
 		registry.registerRenderLayer('beforeSprites', () => first);
 		const binding = registry.attachRenderLayers(context);
 		const palette = resolvePalette({ primary: '#ff0000' });
-		const font: RenderLayerFont = {
-			name: 'spleen5x8',
-			grid: { cellWidth: 5, cellHeight: 8, columns: 16, cellCount: 257 },
-		};
 		binding.loadPalette(palette);
-		binding.loadFont(font);
 		binding.releaseMemory();
 		binding.releaseMemory();
 		const second = createLayer();
 		const factory = vi.fn(() => second);
 		registry.registerRenderLayer('afterSprites', factory);
 		expect(first.loadPalette).toHaveBeenCalledWith(palette);
-		expect(first.loadFont).toHaveBeenCalledWith(font);
-		expect(factory).toHaveBeenCalledWith({ gl: context.gl, palette, font });
+		expect(factory).toHaveBeenCalledWith({ gl: context.gl, palette });
 		expect(first.releaseMemory).toHaveBeenCalledOnce();
 		expect(second.releaseMemory).toHaveBeenCalledOnce();
 		binding.draw('beforeSprites', frame);

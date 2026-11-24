@@ -15,7 +15,7 @@ export function subscribeToAppearance(
 	store: StateManager<State>,
 	events: EventDispatcher,
 	loading: EditorLoadingRegistry,
-	applyFont: (atlas: FontAtlas, font: Font) => void,
+	applyFont: (atlas: FontAtlas) => void,
 	applyPalette: (palette: ResolvedPalette) => void,
 	defaultFont?: Font
 ): () => void {
@@ -48,7 +48,7 @@ export function subscribeToAppearance(
 		try {
 			const atlas = await loadFontAtlas(font);
 			if (disposed || currentGeneration !== generation) return;
-			applyFont(atlas, font);
+			applyFont(atlas);
 			appliedFont = font;
 			updateGridSize(state, events, atlas);
 			events.dispatch('fontChanged', { font } satisfies FontChangedEvent);

@@ -38,8 +38,8 @@ rendering controls, compiler diagnostics, and disposal follow the
 
 The compiler, URL loader, home navigation, the dotted canvas background, block backgrounds, and code rendering load eagerly.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` even without a context menu.
-`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites, using the active font,
-palette, and presented camera.
+`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
+viewport's origin and cell dimensions, plus the active palette.
 Core's `ready` event
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and the worker runtime throughout the project. Font payloads remain lazy.

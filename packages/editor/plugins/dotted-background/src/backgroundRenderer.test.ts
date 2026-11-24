@@ -52,6 +52,7 @@ function createGl() {
 		blendFunc: vi.fn(),
 		colorMask: vi.fn(),
 		uniform2f: vi.fn(),
+		uniform4f: vi.fn(),
 		uniform4fv: vi.fn(),
 		drawArrays: vi.fn(),
 	};
@@ -66,30 +67,50 @@ function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 	return bytes;
 }
 
-const grid = { cellWidth: 8, cellHeight: 16 };
+const grid = { vGrid: 8, hGrid: 16 };
 
 describe('procedural background', () => {
-	it('draws one triangle and follows font and drawing-buffer size changes', () => {
+	it('draws one triangle and follows grid and drawing-buffer size changes', () => {
 		const { context, gl } = createGl();
 		const background = new BackgroundRenderer(context);
-		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
-		background.draw({ x: 0, y: 0 });
+		background.draw({ x: 0, y: 0, ...grid });
 		expect(gl.drawArrays).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3);
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 0, 0);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 321 / 16, 197 / 16);
-		expect(gl.uniform4fv).toHaveBeenCalledWith(
-			{ name: 'u_dotBounds' },
-			new Float32Array([3 / 8, 7 / 16, 5 / 8, 9 / 16])
-		);
+		expect(gl.uniform4f).toHaveBeenCalledWith({ name: 'u_dotBounds' }, 3 / 8, 7 / 16, 5 / 8, 9 / 16);
 		expect(gl.bindFramebuffer).toHaveBeenCalledWith(gl.FRAMEBUFFER, null);
 		expect(gl.blendFunc).toHaveBeenCalledWith(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
 		gl.drawingBufferWidth = 800;
 		gl.drawingBufferHeight = 601;
-		background.draw({ x: 0, y: 0 });
+		background.draw({ x: 0, y: 0, vGrid: 5, hGrid: 8 });
 		expect(gl.viewport).toHaveBeenLastCalledWith(0, 0, 800, 601);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 80, 601 / 8);
+		expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
+		background.destroy();
+	});
+
+	it.each([
+		[8, 16, 3, 7, 2],
+		[7, 9, 2, 3, 2],
+		[5, 8, 2, 3, 1],
+		[1, 1, 0, 0, 1],
+		[2, 7, 0, 3, 1],
+		[21, 6, 9, 2, 2],
+		[10, 18, 3, 7, 3],
+		[33, 61, 12, 26, 8],
+	])('centers a square in a %i×%i pixel grid cell', (vGrid, hGrid, x, y, size) => {
+		const { context, gl } = createGl();
+		const background = new BackgroundRenderer(context);
+		background.setPalette(palette([20, 30, 40, 255], [99, 99, 99, 255], [58, 58, 58, 255]));
+		background.draw({ x: 0, y: 0, vGrid, hGrid });
+		expect(gl.uniform4f).toHaveBeenCalledExactlyOnceWith(
+			{ name: 'u_dotBounds' },
+			x / vGrid,
+			y / hGrid,
+			(x + size) / vGrid,
+			(y + size) / hGrid
+		);
 		background.destroy();
 	});
 
@@ -97,19 +118,17 @@ describe('procedural background', () => {
 		const { context, gl } = createGl();
 		let origin = { x: 9, y: 3 };
 		const background = new BackgroundRenderer(context);
-		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([20, 30, 40, 255], [99, 99, 99, 255], [58, 58, 58, 255]));
-		background.draw(origin);
+		background.draw({ ...origin, ...grid });
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
 
 		origin = { x: -1_000_000_000_009, y: 1_000_000_000_019 };
 		gl.uniform2f.mockClear();
-		background.draw(origin);
+		background.draw({ ...origin, ...grid });
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 16, 3 / 16);
 
-		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
 		gl.uniform2f.mockClear();
-		background.draw(origin);
+		background.draw({ ...origin, vGrid: 5, hGrid: 8 });
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 10, 3 / 8);
 		background.destroy();
 	});
@@ -117,9 +136,8 @@ describe('procedural background', () => {
 	it('composites translucent dots over the base before drawing and skips an invisible background', () => {
 		const { context, gl } = createGl();
 		const background = new BackgroundRenderer(context);
-		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([0, 0, 255, 128], [255, 0, 0, 128], [0, 0, 0, 0]));
-		background.draw({ x: 0, y: 0 });
+		background.draw({ x: 0, y: 0, ...grid });
 		const uploaded = (name: string) => [...gl.uniform4fv.mock.calls.find(([location]) => location.name === name)![1]];
 		expect(uploaded('u_baseColor')).toEqual([0, 0, expect.closeTo(128 / 255), expect.closeTo(128 / 255)]);
 		expect(uploaded('u_evenColor')).toEqual([
@@ -131,7 +149,7 @@ describe('procedural background', () => {
 		expect(uploaded('u_oddColor')).toEqual(uploaded('u_baseColor'));
 		background.setPalette(new Uint8Array(256 * 4));
 		gl.drawArrays.mockClear();
-		background.draw({ x: 0, y: 0 });
+		background.draw({ x: 0, y: 0, ...grid });
 		expect(gl.drawArrays).not.toHaveBeenCalled();
 		background.destroy();
 	});
@@ -158,7 +176,7 @@ describe('procedural background', () => {
 	});
 });
 
-it('registers an optional before-sprites layer that tracks the presented viewport and installed font and palette', () => {
+it('registers an optional before-sprites layer that tracks the presented viewport grid and palette', () => {
 	const { context, gl } = createGl();
 	const events = createMockEventDispatcher();
 	const store = initState(events, { callbacks: {} });
@@ -186,7 +204,6 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	const layers = drawers.attachRenderLayers({
 		gl: context,
 		palette: resolvePalette({ canvas: '#1a334c' }),
-		font: { name: 'ibmvga8x16', grid: { ...grid, columns: 16, cellCount: 257 } },
 	});
 
 	layers.draw('afterSprites', frame);
@@ -194,12 +211,12 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	layers.draw('beforeSprites', frame);
 	expect(gl.drawArrays).toHaveBeenCalledOnce();
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
+	expect(gl.uniform4f).toHaveBeenCalledWith({ name: 'u_dotBounds' }, 3 / 8, 7 / 16, 5 / 8, 9 / 16);
 	expect(gl.uniform4fv).toHaveBeenCalledWith(
 		{ name: 'u_baseColor' },
 		new Float32Array([26 / 255, 51 / 255, 76 / 255, 1])
 	);
 
-	layers.loadFont({ name: 'spleen5x8', grid: { cellWidth: 5, cellHeight: 8, columns: 16, cellCount: 257 } });
 	layers.loadPalette(resolvePalette({ canvas: '#182030' }));
 	frame.viewport.x = 23;
 	frame.viewport.y = 9;
@@ -209,6 +226,7 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	gl.uniform4fv.mockClear();
 	layers.draw('beforeSprites', frame);
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
+	expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
 	expect(gl.uniform4fv).toHaveBeenCalledWith(
 		{ name: 'u_baseColor' },
 		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
@@ -227,6 +245,7 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	layers.draw('beforeSprites', frame);
 	expect(gl.drawArrays).toHaveBeenCalledOnce();
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
+	expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
 	expect(gl.uniform4fv).toHaveBeenCalledWith(
 		{ name: 'u_baseColor' },
 		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])

@@ -31,8 +31,8 @@ producer to the highlighted instruction.
 Compiler coordination, file-session tracking, URL loading, home navigation, the dotted canvas background, block backgrounds,
 code rendering, and loading indicators are eager.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
-`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites, using the active font,
-palette, and presented camera.
+`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
+viewport's origin and cell dimensions, plus the active palette.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and

@@ -14,7 +14,7 @@ depth testing must use a framebuffer with their own depth attachment.
 ## Rendering plugins
 
 Canvas-wide render layers run in their registered stages, before or after sprites, in registration order within a stage.
-Web-ui supplies shader helpers and forwards font and palette changes, memory release, and disposal.
+Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal.
 `@8f4e/editor-plugin-dotted-background` supplies the procedural background before sprites; compositions choose which
 background layers to install. Glugglugglug owns sprite rendering.
 `@8f4e/editor-plugin-wires` owns the WebGL wire pass; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer
@@ -47,14 +47,15 @@ web-ui contains no dialog-specific rendering.
 
 ### `registerRenderLayer(stage, factory)`
 
-Registers a GPU pass in `'beforeSprites'` or `'afterSprites'`. The factory receives the renderer's WebGL context,
-resolved palette, and installed font `{ name, grid }` when rendering resources become available. Its returned layer
-may implement `loadPalette(palette)`, `loadFont(font)` and `releaseMemory()` alongside the required `draw(context)` and
+Registers a GPU pass in `'beforeSprites'` or `'afterSprites'`. The factory receives the renderer's WebGL context and
+resolved palette when rendering resources become available. Its returned layer
+may implement `loadPalette(palette)` and `releaseMemory()` alongside the required `draw(context)` and
 `destroy()` methods. The latter runs on unregistration or renderer disposal.
 
-Each layer draws with `{ state, viewport, memoryViews, renderGeometry }`. The `viewport` is the current presented camera,
-and the geometry is prepared once before either GPU stage or sprite submission. Registrations made after initialization
-receive the current installed font and palette, not a pending font selection.
+Each layer draws with `{ state, viewport, memoryViews, renderGeometry }`. The `viewport` supplies the current presented camera
+and installed grid dimensions, and geometry is prepared once before either GPU stage or sprite submission. Registrations made
+after initialization receive the current palette. The dotted-background plugin derives dot geometry from the frame's grid;
+layers do not need font-specific notifications.
 
 ### `registerWebUiConfig(store)`
 
@@ -175,8 +176,8 @@ also settle readiness, without invalidating unchanged grid geometry. Pending fon
 or update a destroyed renderer. A failed current replacement reports the error and retains the applied atlas and grid.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
 Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
-Font changes replace the masks and update drawing metrics. Registered render layers receive the installed font name and
-grid on attachment and after each replacement.
+Font changes replace the masks and update drawing metrics. Registered render layers use the installed grid from each frame's
+presented viewport; a pending font selection leaves those dimensions unchanged until replacement completes.
 
 Input/output connector sprites belong to `@8f4e/editor-plugin-connectors`. The optional WebGL wire pass belongs to
 `@8f4e/editor-plugin-wires`.

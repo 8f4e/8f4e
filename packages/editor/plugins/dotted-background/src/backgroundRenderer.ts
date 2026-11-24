@@ -1,10 +1,8 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { Font, FontAtlas } from '@8f4e/sprite-generator';
 import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
-import { BACKGROUND_DOTS } from './dot-settings';
 import { fragmentShaderSource, vertexShaderSource } from './shaders';
 
-type ViewportOrigin = Readonly<{ x: number; y: number }>;
+type ViewportGrid = Readonly<{ x: number; y: number; vGrid: number; hGrid: number }>;
 
 /** Draws the editor's base and world-anchored dots without atlas masks or per-dot instance data. */
 export default class BackgroundRenderer {
@@ -15,9 +13,6 @@ export default class BackgroundRenderer {
 	private readonly dotBoundsLocation: WebGLUniformLocation;
 	private readonly colorLocations: WebGLUniformLocation[];
 	private readonly colors = [new Float32Array(4), new Float32Array(4), new Float32Array(4)];
-	private readonly dotBounds = new Float32Array(4);
-	private patternWidth = 1;
-	private patternHeight = 1;
 	private visible = false;
 	private destroyed = false;
 
@@ -39,21 +34,6 @@ export default class BackgroundRenderer {
 		this.vertexArray = vertexArray;
 	}
 
-	setFont(
-		font: Font,
-		{ cellWidth: characterWidth, cellHeight: characterHeight }: Pick<FontAtlas['grid'], 'cellWidth' | 'cellHeight'>
-	): void {
-		const backgroundDot = BACKGROUND_DOTS[font];
-		this.patternWidth = characterWidth * 2;
-		this.patternHeight = characterHeight;
-		this.dotBounds.set([
-			backgroundDot.x / characterWidth,
-			backgroundDot.y / characterHeight,
-			(backgroundDot.x + backgroundDot.size) / characterWidth,
-			(backgroundDot.y + backgroundDot.size) / characterHeight,
-		]);
-	}
-
 	/** Prepare premultiplied colors, compositing each dot color over the base once per palette change. */
 	setPalette(bytes: Uint8Array): void {
 		for (const [index, token] of (['canvasBase', 'canvasDetail2', 'canvasDetail1'] as const).entries()) {
@@ -73,23 +53,19 @@ export default class BackgroundRenderer {
 	}
 
 	/** Programs and the empty VAO have no reloadable storage and survive rendering-memory release. */
-	draw(origin: ViewportOrigin): void {
+	draw({ x, y, vGrid, hGrid }: ViewportGrid): void {
 		if (!this.visible) return;
 		const gl = this.gl;
+		const patternWidth = vGrid * 2;
+		const size = Math.max(1, Math.round(Math.min(vGrid, hGrid) / 4));
+		const dotX = Math.floor((vGrid - size) / 2);
+		const dotY = Math.floor((hGrid - size) / 2);
 		// Establish the WebGL state this pass needs independently of other layers.
 		prepareRenderPass(gl, this.program, this.vertexArray);
 		// Wrap before uploading so large world coordinates retain pixel precision and column parity.
-		gl.uniform2f(
-			this.patternOffsetLocation,
-			(origin.x % this.patternWidth) / this.patternWidth,
-			(origin.y % this.patternHeight) / this.patternHeight
-		);
-		gl.uniform2f(
-			this.patternScaleLocation,
-			gl.drawingBufferWidth / this.patternWidth,
-			gl.drawingBufferHeight / this.patternHeight
-		);
-		gl.uniform4fv(this.dotBoundsLocation, this.dotBounds);
+		gl.uniform2f(this.patternOffsetLocation, (x % patternWidth) / patternWidth, (y % hGrid) / hGrid);
+		gl.uniform2f(this.patternScaleLocation, gl.drawingBufferWidth / patternWidth, gl.drawingBufferHeight / hGrid);
+		gl.uniform4f(this.dotBoundsLocation, dotX / vGrid, dotY / hGrid, (dotX + size) / vGrid, (dotY + size) / hGrid);
 		for (let index = 0; index < this.colors.length; index++)
 			gl.uniform4fv(this.colorLocations[index], this.colors[index]);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);

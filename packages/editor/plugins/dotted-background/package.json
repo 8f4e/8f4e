@@ -18,7 +18,6 @@
   "dependencies": {
     "@8f4e/editor-core": "*",
     "@8f4e/editor-palette": "*",
-    "@8f4e/sprite-generator": "*",
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
@@ -26,6 +25,7 @@
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/editor-state-types": "*",
+    "@8f4e/sprite-generator": "*",
     "@types/node": "24.13.2",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",

@@ -44,9 +44,8 @@ without loading font bitmap payloads. Register each font in this catalog alongsi
 Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then register its dimensions and payload
 import in the catalog. The importer maps Unicode BDF encodings to CP437 and accepts BDFs explicitly marked
 `CHARSET_REGISTRY "ibm"` and `CHARSET_ENCODING "437"` in slot order. Missing characters and the NUL slot stay blank.
-The optional `@8f4e/editor-plugin-dotted-background` owns font-specific background dot settings;
-configure those in the plugin's `src/dot-settings.ts`. Backgrounds use a procedural pass, and connectors use ordinary
-glyphs and fill.
+The optional `@8f4e/editor-plugin-dotted-background` derives its procedural dot pattern from the installed grid dimensions;
+no additional font-specific background settings are required. Connectors use ordinary glyphs and fill.
 
 Pixel-outline TTF/OTF fonts can first be converted to BDF with `tools/import-pixel-outline.py`. This optional
 import tool requires Python's `fontTools` package; production builds use only the committed ASCII sources.

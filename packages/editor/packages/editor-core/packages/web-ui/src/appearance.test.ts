@@ -61,7 +61,7 @@ describe('appearance subscriptions', () => {
 		const previewAtlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
 		preview.resolve(previewAtlas);
 		await preview.promise;
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(previewAtlas, 'x11miscfixed6x10');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(previewAtlas);
 		expect(test.state.editorConfig.font).toBe('terminus10x18');
 
 		test.store.set('appearance.fontOverride', undefined);
@@ -69,7 +69,7 @@ describe('appearance subscriptions', () => {
 		const restoredAtlas = { grid: { cellWidth: 10, cellHeight: 18 } } as FontAtlas;
 		restored.resolve(restoredAtlas);
 		await restored.promise;
-		expect(test.applyFont).toHaveBeenLastCalledWith(restoredAtlas, 'terminus10x18');
+		expect(test.applyFont).toHaveBeenLastCalledWith(restoredAtlas);
 		expect(test.state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
 	});
 
@@ -84,7 +84,7 @@ describe('appearance subscriptions', () => {
 		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
 		preview.resolve(atlas);
 		await preview.promise;
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas);
 	});
 
 	it('installs only the newest font without changing the independently updated palette', async () => {
@@ -104,7 +104,7 @@ describe('appearance subscriptions', () => {
 		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
 		test.events.dispatch.mockImplementation((name: string) => {
 			if (name === 'gridSizeChanged' || name === 'fontChanged') {
-				expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+				expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas);
 				expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
 				expect(test.state.gridSizeReady).toBe(name === 'fontChanged');
 			}
@@ -113,7 +113,7 @@ describe('appearance subscriptions', () => {
 		await newer.promise;
 		older.resolve({} as FontAtlas);
 		await older.promise;
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas);
 		expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
 		expect(test.state.gridSizeReady).toBe(true);
 		expect(test.applyPalette).toHaveBeenCalledExactlyOnceWith(resolvePalette({ primary: '#00ff00' }));
@@ -147,7 +147,7 @@ describe('appearance subscriptions', () => {
 		test.store.set('editorConfig.font', 'terminus8x16');
 		expect(test.state.gridSizeReady).toBe(false);
 		await Promise.resolve();
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'terminus8x16');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas);
 		expect(test.state.gridSizeReady).toBe(true);
 		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('fontChanged', { font: 'terminus8x16' });
 	});
@@ -242,7 +242,7 @@ describe('appearance subscriptions', () => {
 		await newer.promise;
 		expect(test.state.gridSizeReady).toBe(true);
 		expect(test.state.viewport).toMatchObject({ hGrid: 10, vGrid: 6 });
-		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas);
 		expect(test.loading.add.mock.results[1].value.done).toHaveBeenCalledOnce();
 	});
 

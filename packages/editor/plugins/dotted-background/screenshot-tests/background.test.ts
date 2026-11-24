@@ -1,9 +1,17 @@
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import loadFontAtlas, { FONT_NAMES, type Font, type FontAtlas } from '@8f4e/sprite-generator';
+import loadFontAtlas, { type FontAtlas } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import BackgroundRenderer from '../src/backgroundRenderer';
-import { BACKGROUND_DOTS } from '../src/dot-settings';
+
+interface ExpectedGrid {
+	vGrid: number;
+	hGrid: number;
+	dot: { x: number; y: number; size: number };
+}
+
+const defaultGrid: ExpectedGrid = { vGrid: 8, hGrid: 16, dot: { x: 3, y: 7, size: 2 } };
+const smallGrid: ExpectedGrid = { vGrid: 5, hGrid: 8, dot: { x: 2, y: 3, size: 1 } };
 
 function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 	const bytes = new Uint8Array(256 * 4);
@@ -28,7 +36,7 @@ function expectedColors(bytes: Uint8Array, underlay: number[]) {
 
 function createScene() {
 	const engine = new Engine(document.createElement('canvas'));
-	let viewportOrigin = { x: 0, y: 0 };
+	let viewport = { x: 0, y: 0, vGrid: 8, hGrid: 16 };
 	let underlay = [0, 0, 0, 0];
 	engine.hooks.preDraw.push(gl => {
 		gl.disable(gl.RASTERIZER_DISCARD);
@@ -42,25 +50,19 @@ function createScene() {
 		gl.blendFunc(gl.ZERO, gl.ZERO);
 	});
 	const background = new BackgroundRenderer(engine.gl);
-	engine.hooks.preDraw.push(() => background.draw(viewportOrigin));
-	let font: Font;
-	let grid: FontAtlas['grid'];
+	engine.hooks.preDraw.push(() => background.draw(viewport));
 	let bytes: Uint8Array;
 	return {
-		install(data: FontAtlas, colors = toPaletteBytes(resolvePalette()), name: Font = 'ibmvga8x16') {
-			font = name;
-			grid = data.grid;
+		install(data: FontAtlas, colors = toPaletteBytes(resolvePalette())) {
 			bytes = colors;
 			engine.setSpriteAtlas(data.image, data.grid);
 			engine.setPalette(bytes);
-			background.setFont(font, grid);
 			background.setPalette(bytes);
 		},
-		check(width: number, height: number, origin = { x: 0, y: 0 }) {
-			viewportOrigin = origin;
+		check(width: number, height: number, grid = defaultGrid, origin = { x: 0, y: 0 }) {
+			const { vGrid: cellWidth, hGrid: cellHeight, dot } = grid;
+			viewport = { ...origin, vGrid: cellWidth, hGrid: cellHeight };
 			engine.resize(width, height);
-			const { cellWidth, cellHeight } = grid;
-			const dot = BACKGROUND_DOTS[font];
 			const columns = Array.from({ length: width }, (_, x) => {
 				const worldX = x + origin.x;
 				const column = Math.floor(worldX / cellWidth);
@@ -106,11 +108,30 @@ function createScene() {
 	};
 }
 
-test.each(FONT_NAMES)('draws correctly positioned alternating dots for %s', async font => {
+// Explicit expected pixel bounds for representative cells, independent of the renderer's calculation.
+test.each([
+	[6, 10, 2, 4, 2],
+	[8, 9, 3, 3, 2],
+	[7, 10, 2, 4, 2],
+	[7, 14, 2, 6, 2],
+	[6, 12, 2, 5, 2],
+	[8, 8, 3, 3, 2],
+	[8, 16, 3, 7, 2],
+	[5, 11, 2, 5, 1],
+	[5, 8, 2, 3, 1],
+	[10, 18, 3, 7, 3],
+	[12, 13, 4, 5, 3],
+	[12, 24, 4, 10, 3],
+	[16, 32, 6, 14, 4],
+	[1, 1, 0, 0, 1],
+	[2, 7, 0, 3, 1],
+	[21, 6, 9, 2, 2],
+	[33, 61, 12, 26, 8],
+])('draws centered alternating dots in a %i×%i pixel grid cell', async (vGrid, hGrid, x, y, size) => {
 	const scene = createScene();
 	try {
-		scene.install(await loadFontAtlas(font), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]), font);
-		scene.check(129, 97);
+		scene.install(await loadFontAtlas(), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]));
+		scene.check(129, 97, { vGrid, hGrid, dot: { x, y, size } });
 	} finally {
 		scene.destroy();
 	}
@@ -121,10 +142,10 @@ test('pans dots with the viewport origin without losing color parity or pixel pr
 	try {
 		const font = await loadFontAtlas();
 		scene.install(font, palette([17, 31, 47, 255], [211, 41, 3, 255], [7, 137, 239, 255]));
-		scene.check(33, 35, { x: 3, y: 5 });
-		scene.check(33, 35, { x: font.grid.cellWidth, y: 0 });
-		scene.check(33, 35, { x: -3, y: -5 });
-		scene.check(33, 35, { x: 2 ** 30 + 5, y: -(2 ** 30) - 7 });
+		scene.check(33, 35, defaultGrid, { x: 3, y: 5 });
+		scene.check(33, 35, defaultGrid, { x: font.grid.cellWidth, y: 0 });
+		scene.check(33, 35, defaultGrid, { x: -3, y: -5 });
+		scene.check(33, 35, defaultGrid, { x: 2 ** 30 + 5, y: -(2 ** 30) - 7 });
 		scene.check(33, 35);
 	} finally {
 		scene.destroy();
@@ -174,15 +195,18 @@ test.each(transparencyCases)('handles a background with %s', async (_name, base,
 	}
 });
 
-test('updates font, palette, and viewport and survives rendering-memory restoration', async () => {
+test('updates grid, palette, and viewport and survives rendering-memory restoration', async () => {
 	const scene = createScene();
 	try {
 		scene.install(await loadFontAtlas());
 		scene.check(129, 97);
-		scene.install(await loadFontAtlas('spleen5x8'), toPaletteBytes(resolvePalette({ canvas: '#182030' })), 'spleen5x8');
-		scene.check(321, 197);
+		scene.install(await loadFontAtlas('spleen5x8'), toPaletteBytes(resolvePalette({ canvas: '#182030' })));
+		scene.check(321, 197, smallGrid);
+		scene.check(33, 35, smallGrid, { x: -3, y: 9 });
 		scene.restore();
-		scene.check(211, 143);
+		scene.check(211, 143, smallGrid);
+		// A new grid needs neither an atlas change nor explicit font notification.
+		scene.check(211, 143, { vGrid: 21, hGrid: 6, dot: { x: 9, y: 2, size: 2 } });
 	} finally {
 		scene.destroy();
 	}

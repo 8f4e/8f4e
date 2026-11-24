@@ -42,7 +42,6 @@ export type {
 	EditorRenderLayer,
 	RenderLayerContext,
 	RenderLayerFactory,
-	RenderLayerFont,
 	RenderLayerFrameContext,
 	RenderLayerStage,
 } from './render-layers';
@@ -136,11 +135,7 @@ async function mount(
 	installFontAtlas(fontAtlas);
 	updateGridSize(state, events, fontAtlas);
 	Object.assign(presentedViewport, state.viewport);
-	const renderLayers = drawers.attachRenderLayers({
-		gl: engine.gl,
-		palette,
-		font: { name: font, grid: fontAtlas.grid },
-	});
+	const renderLayers = drawers.attachRenderLayers({ gl: engine.gl, palette });
 	const viewportTransition = createViewportTransition(state.viewport);
 	const { onViewportChanged, reset: resetViewportTransition } = viewportTransition;
 	const guardPointerPress = (event: InternalPointerEvent) => {
@@ -156,10 +151,7 @@ async function mount(
 		store,
 		events,
 		options.loading,
-		(atlas, font) => {
-			installFontAtlas(atlas);
-			renderLayers.loadFont({ name: font, grid: atlas.grid });
-		},
+		installFontAtlas,
 		palette => {
 			engine.setPalette(toPaletteBytes(palette));
 			renderLayers.loadPalette(palette);

@@ -148,7 +148,6 @@ describe('web-ui init', () => {
 		expect(factory).toHaveBeenCalledExactlyOnceWith({
 			gl: mocks.engine.gl,
 			palette: resolvePalette(),
-			font: { name: 'x11miscfixed6x10', grid: atlas.grid },
 		});
 		expect(events.dispatch.mock.calls).toEqual([['gridSizeChanged']]);
 		view.destroy();
@@ -159,13 +158,9 @@ describe('web-ui init', () => {
 		const state = createMockState();
 		const store = createStateManager(state);
 		const atlas = createFontAtlas(6, 12);
-		const drawers = createEditorDrawerRegistry();
-		const loadFont = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadFont }));
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
 		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
-			drawers,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('pixelcode6x12');
@@ -179,7 +174,6 @@ describe('web-ui init', () => {
 		await Promise.resolve();
 		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
 		expect(state.editorConfig).toEqual({});
-		expect(loadFont).toHaveBeenLastCalledWith({ name: 'pixelcode6x12', grid: atlas.grid });
 		view.destroy();
 		store.dispose();
 	});
@@ -240,7 +234,6 @@ describe('web-ui init', () => {
 		expect(factory).toHaveBeenCalledExactlyOnceWith({
 			gl: mocks.engine.gl,
 			palette: resolvePalette(),
-			font: { name: 'spleen5x8', grid: atlas.grid },
 		});
 		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
 		view.renderFrame();
@@ -489,8 +482,7 @@ describe('web-ui init', () => {
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const loadPalette = vi.fn();
-		const loadFont = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette, loadFont }));
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
 		const view = await init(store, createMockEventDispatcher(), memoryViews, {
 			loading,
 			drawers,
@@ -501,28 +493,28 @@ describe('web-ui init', () => {
 		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(atlasUploads + 1));
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
 		expect(loadPalette).not.toHaveBeenCalled();
-		expect(loadFont).toHaveBeenCalledOnce();
 
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
 		store.set('editorConfig.color', { primary: '#00ff00' });
 		expect(mocks.engine.setPalette).toHaveBeenLastCalledWith(toPaletteBytes(palette));
 		expect(loadPalette).toHaveBeenCalledExactlyOnceWith(palette);
-		expect(loadFont).toHaveBeenCalledOnce();
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
 		view.destroy();
 		store.dispose();
 	});
 
-	it('supplies installed font metrics to render layers only when an atlas is actually installed', async () => {
+	it('supplies the installed grid through the presented viewport while a replacement atlas is pending', async () => {
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
 		const state = createMockState();
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
-		const loadFont = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadFont }));
+		const drawBefore = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn() }));
 		const view = await init(store, createMockEventDispatcher(), memoryViews, { loading, drawers });
+		view.renderFrame();
+		expect(drawBefore.mock.lastCall![0].viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
 
 		const atlas = createFontAtlas(10, 18);
 		let finishFont!: (value: typeof atlas) => void;
@@ -533,23 +525,24 @@ describe('web-ui init', () => {
 				})
 		);
 		store.set('editorConfig.font', 'terminus10x18');
-		const pendingFactory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn(), loadFont: vi.fn() }));
+		const drawAfter = vi.fn();
+		const pendingFactory = vi.fn(() => ({ draw: drawAfter, destroy: vi.fn() }));
 		drawers.registerRenderLayer('afterSprites', pendingFactory);
-		expect(loadFont).not.toHaveBeenCalled();
 		expect(pendingFactory).toHaveBeenCalledExactlyOnceWith({
 			gl: mocks.engine.gl,
 			palette: resolvePalette(),
-			font: { name: 'ibmvga8x16', grid: createFontAtlas().grid },
 		});
+		expect(state.gridSizeReady).toBe(false);
+		view.renderFrame();
+		expect(drawBefore.mock.lastCall![0]).toBe(drawAfter.mock.lastCall![0]);
+		expect(drawAfter.mock.lastCall![0].viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
 		finishFont(atlas);
 		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(atlas.image, atlas.grid));
-		const font = { name: 'terminus10x18', grid: atlas.grid };
-		expect(loadFont).toHaveBeenCalledExactlyOnceWith(font);
-		expect(pendingFactory.mock.results[0].value.loadFont).toHaveBeenCalledExactlyOnceWith(font);
 		expect(state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
-		const lateFactory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn() }));
-		drawers.registerRenderLayer('beforeSprites', lateFactory);
-		expect(lateFactory).toHaveBeenCalledExactlyOnceWith({ gl: mocks.engine.gl, palette: resolvePalette(), font });
+		expect(state.gridSizeReady).toBe(true);
+		view.renderFrame();
+		expect(drawBefore.mock.lastCall![0]).toBe(drawAfter.mock.lastCall![0]);
+		expect(drawAfter.mock.lastCall![0].viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
 		view.destroy();
 		store.dispose();
 	});

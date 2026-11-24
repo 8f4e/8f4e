@@ -2,7 +2,7 @@
 
 - Generate a color-independent R8 atlas with a fixed grid of CP437 glyphs and one fill cell. Share Unicode
   mapping across fonts and leave missing glyphs blank. Web-ui owns palette application; the dotted-background plugin
-  owns its procedural background and font-specific dot settings.
+  derives its procedural background from the installed grid dimensions, without font-specific settings.
 - Keep cached atlas pixels immutable. Keep font payloads lazy and register dimensions and imports in
   `src/fonts/catalog.ts`. Generate payloads from the font sources with `generate-fonts`.
 - Use local palette fixtures for visual tests. Run `npx nx run @8f4e/sprite-generator:test:screenshot` for

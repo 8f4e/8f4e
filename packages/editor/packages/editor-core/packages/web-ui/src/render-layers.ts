@@ -1,26 +1,18 @@
 import type { ResolvedPalette } from '@8f4e/editor-palette';
 import type { State } from '@8f4e/editor-state-types';
-import type { Font, FontAtlas } from '@8f4e/sprite-generator';
 import type { RenderGeometry } from './render-geometry';
 import type { MemoryViews } from './types';
 
 export type RenderLayerStage = 'beforeSprites' | 'afterSprites';
 
-/** The font actually installed in the renderer, not a pending font selection. */
-export interface RenderLayerFont {
-	name: Font;
-	grid: FontAtlas['grid'];
-}
-
 export interface RenderLayerContext {
 	gl: WebGL2RenderingContext;
 	palette: ResolvedPalette;
-	font: RenderLayerFont;
 }
 
 export interface RenderLayerFrameContext {
 	state: State;
-	/** The presented camera and metrics for this frame. Do not retain across frames. */
+	/** The presented camera and installed grid dimensions for this frame. Do not retain across frames. */
 	viewport: Readonly<State['viewport']>;
 	memoryViews: MemoryViews;
 	renderGeometry: RenderGeometry;
@@ -30,7 +22,6 @@ export interface RenderLayerFrameContext {
 export interface EditorRenderLayer {
 	draw: (context: RenderLayerFrameContext) => void;
 	loadPalette?: (palette: ResolvedPalette) => void;
-	loadFont?: (font: RenderLayerFont) => void;
 	releaseMemory?: () => void;
 	destroy: () => void;
 }
@@ -117,11 +108,6 @@ export function createRenderLayerRegistry() {
 					if (destroyed) return;
 					if (context) context = { ...context, palette };
 					for (const { layer } of registrations) layer?.loadPalette?.(palette);
-				},
-				loadFont: (font: RenderLayerFont) => {
-					if (destroyed) return;
-					if (context) context = { ...context, font };
-					for (const { layer } of registrations) layer?.loadFont?.(font);
 				},
 				releaseMemory: () => {
 					if (destroyed || memoryReleased) return;

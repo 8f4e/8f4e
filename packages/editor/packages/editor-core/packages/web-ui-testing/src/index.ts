@@ -155,6 +155,7 @@ function createNoOpGpu(drawingBufferWidth: number, drawingBufferHeight: number) 
 		blendEquation: noop,
 		blendFunc: noop,
 		uniform2f: noop,
+		uniform4f: noop,
 		uniform4fv: noop,
 		drawArrays: noop,
 		createBuffer: resource,
