@@ -39,12 +39,11 @@ describe('project creation', () => {
 		const test = setup();
 		test.events.dispatch('enterEditMode');
 		expect(await test.openMenu()).toEqual([]);
-		const before = serializeToProject(test.state);
-		test.events.dispatch('new');
-		expect(serializeToProject(test.state)).toEqual(before);
 		const dispose = test.install();
 		cleanups.push(dispose);
-		expect(await test.openMenu()).toEqual([{ title: 'New Project', action: 'new', close: true }]);
+		expect(await test.openMenu()).toEqual([
+			{ title: 'New Project', action: 'loadProject', payload: { project: EMPTY_DEFAULT_PROJECT }, close: true },
+		]);
 		test.events.dispatch('exitToViewMode');
 		expect(await test.openMenu()).toEqual([]);
 	});
@@ -57,11 +56,11 @@ describe('project creation', () => {
 		test.events.dispatch('enterEditMode');
 		const menu = await test.openMenu();
 		test.events.dispatch('activateContextMenuItem', {
-			index: menu.findIndex(item => item.action === 'new'),
+			index: menu.findIndex(item => item.title === 'New Project'),
 			x: 100,
 			y: 112,
 		});
-		expect(loaded).toHaveBeenCalledExactlyOnceWith({ project: EMPTY_DEFAULT_PROJECT });
+		expect(loaded).toHaveBeenCalledExactlyOnceWith({ project: EMPTY_DEFAULT_PROJECT, x: 100, y: 112 });
 		expect(serializeToProject(test.state)).toMatchObject({
 			...EMPTY_DEFAULT_PROJECT,
 			constants: expect.any(Array),
@@ -70,14 +69,11 @@ describe('project creation', () => {
 		expect(test.state.editorMode).toBe('view');
 	});
 
-	it('removes both the contribution and action on disposal', async () => {
+	it('removes the menu contribution on disposal', async () => {
 		const test = setup();
 		const dispose = test.install();
 		test.events.dispatch('enterEditMode');
 		dispose();
 		expect(await test.openMenu()).toEqual([]);
-		const before = serializeToProject(test.state);
-		test.events.dispatch('new');
-		expect(serializeToProject(test.state)).toEqual(before);
 	});
 });

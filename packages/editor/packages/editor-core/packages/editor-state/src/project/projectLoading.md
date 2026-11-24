@@ -6,7 +6,7 @@ root `constants env`, installs the prepared tree and settles source and layout b
 Modules and groups occupy the same ordered
 `execution` sequence; group ids are retained as editor creation indices. Loading an unpositioned group preserves its
 source instead of adding a position directive that changes execution order. The optional project-new plugin owns the
-New Project menu item and `new` action, which dispatches `loadProject` with an empty project so plugins can observe the
+New Project menu item, which directly dispatches `loadProject` with an empty project so plugins can observe the
 same replacement path.
 
 Undo and redo restore snapshots within the current project. They do not dispatch the action for

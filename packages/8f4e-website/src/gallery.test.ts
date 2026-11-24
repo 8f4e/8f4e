@@ -349,7 +349,8 @@ test('keeps live editing and project export available in the gallery editor', as
 		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 	);
 	const menu = editor.state.contextMenu.items;
-	for (const action of ['new', 'importProject', 'exportWasm', 'exportCanvasScreenshot', 'loadPluginsUsedByProject']) {
+	expect(menu.some(item => item.title === 'New Project')).toBe(false);
+	for (const action of ['importProject', 'exportWasm', 'exportCanvasScreenshot', 'loadPluginsUsedByProject']) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
 	expect(menu.some(item => item.action === 'exportProject')).toBe(true);
