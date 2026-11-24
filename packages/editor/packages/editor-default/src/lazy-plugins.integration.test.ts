@@ -75,8 +75,8 @@ function restoreSession(directive: string, nested = false) {
 	events.dispatch('prepareInitialProject');
 	const state = store.getState();
 	const outer = state.project.activeLevel.blocks.find(block => block.name === 'outer');
-	const inner = outer?.childProject?.blocks.find(block => block.name === 'inner');
-	const blocks = inner?.childProject?.blocks ?? state.project.activeLevel.blocks;
+	const inner = outer?.childLevel?.blocks.find(block => block.name === 'inner');
+	const blocks = inner?.childLevel?.blocks ?? state.project.activeLevel.blocks;
 	const block = blocks.find(block => block.name === 'audio')!;
 	return { block, entries, state, events, outer, inner };
 }

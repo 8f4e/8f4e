@@ -25,8 +25,8 @@ function isProjectScopeSourceLine(line: string): boolean {
 }
 
 /** Modules and structural project-group blocks can own execution entries. */
-export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType' | 'childProject'>): boolean {
-	return block.blockType === 'module' || block.childProject !== undefined;
+export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType' | 'childLevel'>): boolean {
+	return block.blockType === 'module' || block.childLevel !== undefined;
 }
 
 /** Keep the editor's entry table authoritative, including empty previously declared entries. */
@@ -50,8 +50,8 @@ export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: E
 	block.tabStopsByLine = getTabStopsByLine(block.code.length, block.parsedDirectives);
 	const previousName = block.name;
 	block.name = getCodeBlockNameFromSource(block.code);
-	if (block.childProject !== undefined && block.name !== previousName) {
-		updateProjectLevelPath(block.childProject, createChildProjectGroupPath(block.projectPath, block.name));
+	if (block.childLevel !== undefined && block.name !== previousName) {
+		updateProjectLevelPath(block.childLevel, createChildProjectGroupPath(block.projectPath, block.name));
 	}
 	const position = parsePositionDirective(block.parsedDirectives);
 	if (position) {
@@ -62,7 +62,7 @@ export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: E
 	const hasProjectScopeInstruction = block.code.some(line => /^\s*pass(?:\s|$)/.test(line));
 	block.isProjectScope =
 		block.projectPath === '' &&
-		block.childProject === undefined &&
+		block.childLevel === undefined &&
 		block.blockType === 'unknown' &&
 		block.code.every(isProjectScopeSourceLine) &&
 		(hasProjectScopeInstruction || block.isProjectScope === true);
@@ -89,7 +89,7 @@ export function prepareProjectSourceMetadata(
 	for (const block of blocks) {
 		refreshBlockSourceMetadata(block, directives);
 		rememberEntry(project, block);
-		if (block.childProject) prepareProjectSourceMetadata(block.childProject, block.childProject.blocks, directives);
+		if (block.childLevel) prepareProjectSourceMetadata(block.childLevel, block.childLevel.blocks, directives);
 	}
 	partitionProjectBlocks(project);
 }

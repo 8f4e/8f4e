@@ -5,7 +5,7 @@ import getCodeBlockMemoryScope from './getCodeBlockMemoryScope';
 
 /** Collect complete exposure declarations during source preparation for layout and serialization. */
 export function updateProjectGroupMemoryExposureDeclarations(block: EditorCodeBlock): void {
-	if (block.childProject === undefined) return;
+	if (block.childLevel === undefined) return;
 	block.projectMemoryExposures = block.code.flatMap((line, lineNumber): ProjectMemoryExposure[] => {
 		const exposure = tryParseProjectMemoryExposureLine(line);
 		return exposure ? [{ ...exposure, lineNumber }] : [];

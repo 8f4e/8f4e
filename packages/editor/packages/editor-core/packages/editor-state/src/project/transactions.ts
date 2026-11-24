@@ -97,8 +97,8 @@ function survivingProject(
 ): ProjectLevel | undefined {
 	if (project === current) return project;
 	for (const block of project.blocks) {
-		if (!block.childProject) continue;
-		const found = survivingProject(block.childProject, current, deletes);
+		if (!block.childLevel) continue;
+		const found = survivingProject(block.childLevel, current, deletes);
 		if (found) return deletes.has(block) ? project : found;
 	}
 }
@@ -230,14 +230,14 @@ export function createProjectTransactionService(
 			creationIndex: projectState.nextCodeBlockCreationIndex++,
 			entry: source.entry,
 		});
-		if (source.childProject) {
+		if (source.childLevel) {
 			const child: ProjectLevel = {
 				path: createChildProjectGroupPath(project.path, name),
-				entries: [...source.childProject.entries],
+				entries: [...source.childLevel.entries],
 				blocks: [],
 			};
-			child.blocks = source.childProject.blocks.map(sourceBlock => createBlock(sourceBlock, child));
-			block.childProject = child;
+			child.blocks = source.childLevel.blocks.map(sourceBlock => createBlock(sourceBlock, child));
+			block.childLevel = child;
 		}
 		return block;
 	};
@@ -251,7 +251,7 @@ export function createProjectTransactionService(
 		);
 		const removedLevels = new Set<ProjectLevel>();
 		for (const block of deletes) {
-			if (block.childProject) for (const level of walkProjectLevels(block.childProject)) removedLevels.add(level);
+			if (block.childLevel) for (const level of walkProjectLevels(block.childLevel)) removedLevels.add(level);
 		}
 		// Deleting a group already removes its descendants from the attached project.
 		for (const block of deletes) {
@@ -266,18 +266,18 @@ export function createProjectTransactionService(
 				throw new ProjectEditPlanError('deleted_block', 'Cannot update a block being deleted');
 			}
 		}
-		for (const { project } of requestedInserts) {
-			if (!membership.hasProject(project)) {
+		for (const { targetLevel } of requestedInserts) {
+			if (!membership.hasProject(targetLevel)) {
 				throw new ProjectEditPlanError('detached_project', 'Cannot insert into a detached project level');
 			}
-			if (removedLevels.has(project)) {
+			if (removedLevels.has(targetLevel)) {
 				throw new ProjectEditPlanError('deleted_project', 'Cannot insert into a project group being deleted');
 			}
 		}
 		// The generated block exclusively owns the root constants env namespace.
 		// Authored attempts to create one are no-ops, like edits to the read-only owner.
 		const inserts = requestedInserts.filter(
-			({ project, source }) => project !== projectState.rootLevel || !isEnvironmentSource([...source.code])
+			({ targetLevel, source }) => targetLevel !== projectState.rootLevel || !isEnvironmentSource([...source.code])
 		);
 		// Combine repeated updates before comparing actual candidate source, rather than
 		// publishing transient changes or invalidating unchanged block identities.
@@ -331,23 +331,23 @@ export function createProjectTransactionService(
 					owner.blocks.splice(owner.blocks.indexOf(block), 1);
 					if (owner.selectedBlock === block) owner.selectedBlock = undefined;
 				}
-				const insertedByProject = new Map<ProjectLevel, EditorCodeBlock[]>();
-				for (const { project, source } of inserts) {
-					const block = createBlock(source, project);
-					project.blocks.push(block);
+				const insertedByLevel = new Map<ProjectLevel, EditorCodeBlock[]>();
+				for (const { targetLevel, source } of inserts) {
+					const block = createBlock(source, targetLevel);
+					targetLevel.blocks.push(block);
 					mutation.insertedBlocks.push(block);
-					mutation.collections.add(project);
-					const added = insertedByProject.get(project) ?? [];
+					mutation.collections.add(targetLevel);
+					const added = insertedByLevel.get(targetLevel) ?? [];
 					added.push(block);
-					insertedByProject.set(project, added);
+					insertedByLevel.set(targetLevel, added);
 				}
 				if (mutation.collections.size > 0) membership.reset(projectState.rootLevel);
-				for (const [project, blocks] of insertedByProject) {
-					prepareProjectSourceMetadata(project, blocks, directives);
+				for (const [level, blocks] of insertedByLevel) {
+					prepareProjectSourceMetadata(level, blocks, directives);
 					// A hidden project's usable positions are still derived from authored grid coordinates.
 					for (const block of blocks.flatMap(block => [
 						block,
-						...(block.childProject ? [...walkProjectBlocks(block.childProject)] : []),
+						...(block.childLevel ? [...walkProjectBlocks(block.childLevel)] : []),
 					])) {
 						block.x = block.gridX * state.viewport.vGrid;
 						block.y = block.gridY * state.viewport.hGrid;

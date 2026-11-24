@@ -41,7 +41,7 @@ const editsInput = objectInput({ edits: { type: 'array', minItems: 1, items: { o
 const helpHint = ' If you are unfamiliar with 8f4e, start with get_help.';
 const normalizeNewlines = (text: string) => text.replace(/\r\n|\r/g, '\n');
 const blockType = (block: EditorCodeBlock) =>
-	block.childProject !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
+	block.childLevel !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
 export function createEditorTools(
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>,
 	getCompilerDiagnostics?: () => unknown

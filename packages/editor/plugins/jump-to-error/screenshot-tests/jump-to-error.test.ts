@@ -136,7 +136,7 @@ entryEnd`);
 	try {
 		const { state, context, editor } = fixture;
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'audio')!;
-		const block = group.childProject!.blocks.find(block => block.name === 'folded')!;
+		const block = group.childLevel!.blocks.find(block => block.name === 'folded')!;
 		context.events.dispatch('openProjectGroup', { codeBlock: group });
 		context.events.dispatch('goToRootProjectGroup');
 		const error = { codeBlockId: block.creationIndex, lineNumber: 3, message: 'Folded fixture error' };

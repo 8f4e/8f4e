@@ -9,7 +9,7 @@ export interface SerializedCodeBlock {
 	code: string[];
 	gridCoordinates: { x: number; y: number };
 	entry?: string;
-	childProject?: { entries: string[]; blocks: SerializedCodeBlock[] };
+	childLevel?: { entries: string[]; blocks: SerializedCodeBlock[] };
 }
 
 function createSerializedCodeBlock(block: EditorCodeBlock, origin: { x: number; y: number }): SerializedCodeBlock {
@@ -20,10 +20,10 @@ function createSerializedCodeBlock(block: EditorCodeBlock, origin: { x: number; 
 			y: block.gridY - origin.y,
 		},
 		entry: block.entry,
-		childProject: block.childProject
+		childLevel: block.childLevel
 			? {
-					entries: [...block.childProject.entries],
-					blocks: block.childProject.blocks.map(child => createSerializedCodeBlock(child, { x: 0, y: 0 })),
+					entries: [...block.childLevel.entries],
+					blocks: block.childLevel.blocks.map(child => createSerializedCodeBlock(child, { x: 0, y: 0 })),
 				}
 			: undefined,
 	};

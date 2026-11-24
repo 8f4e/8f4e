@@ -97,7 +97,7 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 					if (isGroupSource(edit.code))
 						invalid('Create project groups through project loading; inserts add ordinary code blocks');
 					validateEntry(edit.entry);
-					let project = root;
+					let targetLevel = root;
 					if (edit.groupBlockId !== undefined) {
 						const group = targets.get(edit.groupBlockId);
 						if (!group)
@@ -106,11 +106,11 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 								'Read the project for a current groupBlockId',
 								revision()
 							);
-						if (!group.childProject) invalid('The insertion target is not a project group');
-						project = group.childProject;
+						if (!group.childLevel) invalid('The insertion target is not a project group');
+						targetLevel = group.childLevel;
 					}
 					if (edit.entry !== undefined && !acceptsEntry(edit.code)) invalid('Only module inserts accept an entry');
-					inserts.push({ project, source: { code: edit.code, entry: edit.entry } });
+					inserts.push({ targetLevel, source: { code: edit.code, entry: edit.entry } });
 					continue;
 				}
 				if (!['update', 'delete'].includes(edit.type)) invalid('Unknown edit type');
@@ -121,13 +121,13 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 					deletes.push(target);
 				} else if (edit.type === 'update') {
 					validateCode(edit.code);
-					if (!target.childProject && isGroupSource(edit.code))
+					if (!target.childLevel && isGroupSource(edit.code))
 						invalid('Converting a code block into a project group is not supported');
 					validateEntry(edit.entry);
-					if (target.childProject && getCodeBlockNameFromSource(edit.code) !== target.name) {
+					if (target.childLevel && getCodeBlockNameFromSource(edit.code) !== target.name) {
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
-					if (edit.entry !== undefined && !target.childProject && !acceptsEntry(edit.code))
+					if (edit.entry !== undefined && !target.childLevel && !acceptsEntry(edit.code))
 						invalid('Only modules and project groups accept an entry');
 					updates.push({
 						codeBlock: target,
@@ -163,7 +163,7 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 			assertAlive();
 			const block = [...walkProjectBlocks(state.project.rootLevel)].find(block => getEditorBlockId(block) === id);
 			if (!block) throw new EditorEditingError('block_not_found', 'Read state for a current group blockId', revision());
-			if (block.childProject === undefined)
+			if (block.childLevel === undefined)
 				throw new EditorEditingError('invalid_edit', 'The selected block is not a project group', revision());
 			events.dispatch('openProjectGroup', { codeBlock: block });
 		},

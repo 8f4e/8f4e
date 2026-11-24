@@ -21,7 +21,7 @@ function fixture() {
 		projectPath: '',
 		name: 'audio',
 		code: ['group audio', 'pass missing', 'groupEnd'],
-		childProject: { path: 'audio', entries: [], blocks: [voice] },
+		childLevel: { path: 'audio', entries: [], blocks: [voice] },
 	});
 	const project: ProjectLevel = { path: '', entries: [], blocks: [scope, group] };
 	const findBlock = createCodeErrorBlockLookup(project);

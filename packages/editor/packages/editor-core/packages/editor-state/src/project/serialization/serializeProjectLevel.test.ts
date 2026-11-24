@@ -17,7 +17,7 @@ describe('serializeProjectLevel', () => {
 			entries: ['main', 'rootEmpty'],
 			viewport: { x: 128, y: 256 },
 			blocks: [
-				createMockCodeBlock({ name: 'worker', entry: 'main', code: ['group worker', 'groupEnd'], childProject: child }),
+				createMockCodeBlock({ name: 'worker', entry: 'main', code: ['group worker', 'groupEnd'], childLevel: child }),
 			],
 		};
 		const saved = serializeProjectLevel(level);
@@ -175,7 +175,7 @@ describe('serializeProjectLevel', () => {
 					name: 'Audio',
 					entry: 'main',
 					code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
-					childProject: {
+					childLevel: {
 						entries: ['main'],
 						path: '',
 						blocks: [
@@ -183,7 +183,7 @@ describe('serializeProjectLevel', () => {
 								name: 'Oscillator',
 								entry: 'main',
 								code: ['group Oscillator', '; child comment', '', 'expose childLevel &voice:level', 'groupEnd'],
-								childProject: {
+								childLevel: {
 									entries: ['main'],
 									path: '',
 									blocks: [
@@ -240,7 +240,7 @@ describe('serializeProjectLevel', () => {
 					name: 'Empty',
 					entry: 'main',
 					code: ['group Empty', 'groupEnd'],
-					childProject: { entries: [], path: '', blocks: [] },
+					childLevel: { entries: [], path: '', blocks: [] },
 				}),
 			],
 		});
@@ -280,7 +280,7 @@ describe('serializeProjectLevel', () => {
 			name: 'voice',
 			entry: 'main',
 			code: ['group voice', 'groupEnd'],
-			childProject: { entries: ['main'], path: '', blocks: [child] },
+			childLevel: { entries: ['main'], path: '', blocks: [child] },
 		});
 		const blocks = [scope, module, group];
 		const saved = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
@@ -334,19 +334,19 @@ describe('serializeProjectLevel', () => {
 			gridX: 4,
 			gridY: 8,
 			code: ['group voice', 'expose value &first:value', 'groupEnd'],
-			childProject: { entries: ['main'], path: '', blocks: [second, first] },
+			childLevel: { entries: ['main'], path: '', blocks: [second, first] },
 		});
 		const blocks = [second, group, first];
 		const reorder = (block: EditorCodeBlock): EditorCodeBlock =>
 			({
 				...Object.fromEntries(Object.entries(block).reverse()),
-				...(block.childProject === undefined
+				...(block.childLevel === undefined
 					? {}
 					: {
-							childProject: {
+							childLevel: {
 								entries: ['main'],
 								path: '',
-								blocks: [...block.childProject.blocks].reverse().map(reorder),
+								blocks: [...block.childLevel.blocks].reverse().map(reorder),
 							},
 						}),
 			}) as EditorCodeBlock;

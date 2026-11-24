@@ -48,7 +48,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 		const contribution = layout.createContribution();
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[0];
-			if (!codeBlock.childProject || row === undefined) {
+			if (!codeBlock.childLevel || row === undefined) {
 				buttons.delete(codeBlock);
 				contribution.remove(codeBlock);
 				return;

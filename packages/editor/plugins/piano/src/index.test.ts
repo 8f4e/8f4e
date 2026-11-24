@@ -366,12 +366,10 @@ describe('piano plugin', () => {
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
-		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'notesData')!.code).toContain(
+		expect(test.codeBlock.childLevel!.blocks.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'
 		);
-		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'countData')!.code).toContain(
-			'int count 2'
-		);
+		expect(test.codeBlock.childLevel!.blocks.find(block => block.name === 'countData')!.code).toContain('int count 2');
 		expect(test.codeBlock.code).toContain('expose keys &notesData:notes');
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
 	});

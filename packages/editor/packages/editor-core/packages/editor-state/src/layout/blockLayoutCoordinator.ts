@@ -20,47 +20,47 @@ export function createLayoutCoordinator(
 		const completed = new Map<ProjectLevel, Set<EditorCodeBlock>>();
 		try {
 			while (pending.size) {
-				const [project, blocks] = pending.entries().next().value!;
-				if (!completed.has(project)) completed.set(project, new Set());
+				const [level, blocks] = pending.entries().next().value!;
+				if (!completed.has(level)) completed.set(level, new Set());
 				const block = blocks.values().next().value;
 				if (!block) {
-					pending.delete(project);
+					pending.delete(level);
 					continue;
 				}
 				blocks.delete(block);
-				if (membership.getOwner(block) !== project) continue;
+				if (membership.getOwner(block) !== level) continue;
 				calculateBlockLayout(block, state, layout.getContribution(block));
 				layout.publish({ codeBlock: block, state });
-				completed.get(project)!.add(block);
+				completed.get(level)!.add(block);
 			}
 		} finally {
 			calculating = false;
 		}
-		for (const [project, blocks] of completed) {
-			events.dispatch('codeBlockLayoutsChanged', { project, codeBlocks: [...blocks] });
+		for (const [level, blocks] of completed) {
+			events.dispatch('codeBlockLayoutsChanged', { level, codeBlocks: [...blocks] });
 		}
 	};
 
-	const getPendingBlocks = (project: ProjectLevel): Set<EditorCodeBlock> => {
-		let queued = pending.get(project);
+	const getPendingBlocks = (level: ProjectLevel): Set<EditorCodeBlock> => {
+		let queued = pending.get(level);
 		if (!queued) {
 			queued = new Set();
-			pending.set(project, queued);
+			pending.set(level, queued);
 		}
 		return queued;
 	};
 
 	const refreshBlocks = (blocks: readonly EditorCodeBlock[]): void => {
 		for (const block of blocks) {
-			const project = membership.getOwner(block);
-			if (project) getPendingBlocks(project).add(block);
+			const level = membership.getOwner(block);
+			if (level) getPendingBlocks(level).add(block);
 		}
 		flush();
 	};
 
-	const refreshProject = (project: ProjectLevel): void => {
-		const queued = getPendingBlocks(project);
-		for (const block of project.blocks) queued.add(block);
+	const refreshProject = (level: ProjectLevel): void => {
+		const queued = getPendingBlocks(level);
+		for (const block of level.blocks) queued.add(block);
 		flush();
 	};
 

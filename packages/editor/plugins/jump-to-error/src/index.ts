@@ -70,9 +70,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 				const { codeBlock, error } = target;
 				const { rootLevel, activeLevel } = state.project;
 				if (!activeLevel.blocks.includes(codeBlock)) {
-					const parent = [...walkProjectBlocks(rootLevel)].find(block =>
-						block.childProject?.blocks.includes(codeBlock)
-					);
+					const parent = [...walkProjectBlocks(rootLevel)].find(block => block.childLevel?.blocks.includes(codeBlock));
 					if (parent) events.dispatch('openProjectGroup', { codeBlock: parent });
 					else events.dispatch('goToRootProjectGroup');
 				}

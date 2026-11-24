@@ -164,7 +164,7 @@ entryEnd`),
 		const root = test.state.project.activeLevel.blocks;
 		const scope = root.find(block => block.isProjectScope)!;
 		const group = root.find(block => block.name === 'audio')!;
-		const child = group.childProject!.blocks.find(block => block.name === 'child')!;
+		const child = group.childLevel!.blocks.find(block => block.name === 'child')!;
 		test.store.set('codeErrors.custom', [
 			{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
 			{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 1, message: 'Group error' },

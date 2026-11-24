@@ -357,11 +357,11 @@ describe('editor init', () => {
 							events.dispatch('loadProject', { project });
 							projectInstalled();
 						});
-						events.on('resolveInitialProjectViewport', ({ project, position }) => {
+						events.on('resolveInitialProjectViewport', ({ level, position }) => {
 							const state = store.getState();
 							expect(state.gridSizeReady).toBe(true);
-							expect(project).toBe(state.project.activeLevel);
-							const block = project.blocks.find(block => block.name === 'loaded')!;
+							expect(level).toBe(state.project.activeLevel);
+							const block = level.blocks.find(block => block.name === 'loaded')!;
 							expect(block).toMatchObject({ x: 40, y: 72 });
 							expect(block.width).toBeGreaterThan(0);
 							Object.assign(position, { x: block.x, y: block.y });

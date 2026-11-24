@@ -15,9 +15,9 @@ function placeSourceBlock(
 			anchorGridY + sourceBlock.gridCoordinates.y
 		),
 		entry: sourceBlock.entry,
-		childProject: sourceBlock.childProject && {
-			entries: sourceBlock.childProject.entries,
-			blocks: sourceBlock.childProject.blocks.map(child => placeSourceBlock(child, 0, 0)),
+		childLevel: sourceBlock.childLevel && {
+			entries: sourceBlock.childLevel.entries,
+			blocks: sourceBlock.childLevel.blocks.map(child => placeSourceBlock(child, 0, 0)),
 		},
 	};
 }
@@ -41,13 +41,16 @@ export function insertCodeBlocks(
 	if (state.editorMode !== 'edit' || vGrid <= 0 || hGrid <= 0) {
 		return [];
 	}
-	const project = state.project.activeLevel;
+	const targetLevel = state.project.activeLevel;
 
 	// Place the source batch relative to the requested viewport position.
 	const anchorGridX = Math.round((state.viewport.x + x) / vGrid);
 	const anchorGridY = Math.round((state.viewport.y + y) / hGrid);
 
 	return store.projectTransactions.apply({
-		inserts: blocks.map(sourceBlock => ({ project, source: placeSourceBlock(sourceBlock, anchorGridX, anchorGridY) })),
+		inserts: blocks.map(sourceBlock => ({
+			targetLevel,
+			source: placeSourceBlock(sourceBlock, anchorGridX, anchorGridY),
+		})),
 	}).insertedBlocks;
 }

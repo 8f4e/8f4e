@@ -35,8 +35,8 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 				}
 				sampler.sync(active);
 			};
-			const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
-				if (project === state.project.activeLevel) syncSampling();
+			const onLayoutsChanged = ({ level }: CodeBlockLayoutsChangedEvent) => {
+				if (level === state.project.activeLevel) syncSampling();
 			};
 			const onCompilerResult = () => {
 				preparation.refresh(state);

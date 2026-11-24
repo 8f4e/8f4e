@@ -30,7 +30,7 @@ describe('projectGroupNavigation', () => {
 
 	it('restores the latest selection at each level, including an explicitly cleared selection', () => {
 		const child = createMockCodeBlock({ name: 'oscillator' });
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [child] } });
+		const group = createMockCodeBlock({ name: 'Audio', childLevel: { entries: [], path: 'Audio', blocks: [child] } });
 		const { state, dispatch } = setupNavigation([group]);
 		state.project.selectedCodeBlock = group;
 		const revision = state.projectChange.revision;
@@ -54,7 +54,7 @@ describe('projectGroupNavigation', () => {
 	});
 
 	it('does not restore a remembered block that was deleted while viewing another level', () => {
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [] } });
+		const group = createMockCodeBlock({ name: 'Audio', childLevel: { entries: [], path: 'Audio', blocks: [] } });
 		const removed = createMockCodeBlock({ name: 'removed' });
 		const { state, dispatch } = setupNavigation([group, removed]);
 		state.project.selectedCodeBlock = removed;
@@ -71,7 +71,7 @@ describe('projectGroupNavigation', () => {
 		const group = createMockCodeBlock({
 			name: 'Audio',
 			x: 2000,
-			childProject: { entries: [], path: '', blocks: [createMockCodeBlock({ x: 1000 })] },
+			childLevel: { entries: [], path: '', blocks: [createMockCodeBlock({ x: 1000 })] },
 		});
 		const { state, events, dispatch } = setupNavigation([group]);
 		const revision = state.projectChange.revision;
@@ -100,10 +100,10 @@ describe('projectGroupNavigation', () => {
 	});
 
 	it('keeps independent positions at each depth when jumping directly to the root', () => {
-		const nestedGroup = createMockCodeBlock({ name: 'Voices', childProject: { entries: [], path: '', blocks: [] } });
+		const nestedGroup = createMockCodeBlock({ name: 'Voices', childLevel: { entries: [], path: '', blocks: [] } });
 		const group = createMockCodeBlock({
 			name: 'Audio',
-			childProject: { entries: [], path: '', blocks: [nestedGroup] },
+			childLevel: { entries: [], path: '', blocks: [nestedGroup] },
 		});
 		const { state, dispatch } = setupNavigation([group]);
 
@@ -160,11 +160,11 @@ entryEnd`),
 				y: 128,
 				blocks: serializeCodeBlocks([original], original),
 			});
-			const originalChild = original.childProject!.blocks.find(block => block.name === 'voices')!;
-			const copiedChild = copy.childProject!.blocks.find(block => block.name === 'voices')!;
-			const copiedInner = copiedChild.childProject!.blocks.find(block => block.name === 'oscillator')!;
-			expect(original.childProject!.path).toBe(copy.childProject!.path);
-			expect(originalChild.childProject!.path).toBe(copiedChild.childProject!.path);
+			const originalChild = original.childLevel!.blocks.find(block => block.name === 'voices')!;
+			const copiedChild = copy.childLevel!.blocks.find(block => block.name === 'voices')!;
+			const copiedInner = copiedChild.childLevel!.blocks.find(block => block.name === 'oscillator')!;
+			expect(original.childLevel!.path).toBe(copy.childLevel!.path);
+			expect(originalChild.childLevel!.path).toBe(copiedChild.childLevel!.path);
 			const revision = state.projectChange.revision;
 			const compilerRevision = state.compilerInputRevision;
 
@@ -183,7 +183,7 @@ entryEnd`),
 			store.set('project.selectedCodeBlock', copiedInner);
 
 			events.dispatch('goToParentProjectGroup');
-			expect(state.project.activeLevel).toBe(copy.childProject);
+			expect(state.project.activeLevel).toBe(copy.childLevel);
 			expect(state.viewport).toMatchObject({ x: 160, y: 192 });
 			expect(state.project.selectedCodeBlock).toBe(copiedChild);
 
@@ -194,7 +194,7 @@ entryEnd`),
 			expect(state.project.selectedCodeBlock).toBe(copy);
 
 			events.dispatch('openProjectGroup', { codeBlock: original });
-			expect(state.project.activeLevel).toBe(original.childProject);
+			expect(state.project.activeLevel).toBe(original.childLevel);
 			expect(state.viewport).toMatchObject({ x: 64, y: 80 });
 			expect(state.project.selectedCodeBlock).toBe(originalChild);
 			expect(state.projectChange.revision).toBe(revision);
@@ -205,12 +205,12 @@ entryEnd`),
 	});
 
 	it('uses contributed placement on the first visit to a group', () => {
-		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [] } });
+		const group = createMockCodeBlock({ name: 'Audio', childLevel: { entries: [], path: '', blocks: [] } });
 		const { state, events, dispatch } = setupNavigation([group]);
 		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
 			if (name !== 'resolveInitialProjectViewport') return;
 			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
-			expect(request.project).toBe(group.childProject);
+			expect(request.level).toBe(group.childLevel);
 			request.position = { x: 840, y: 736 };
 		});
 
@@ -235,7 +235,7 @@ entryEnd`),
 	it('opens a project group by pointing the rendered slice at its nested blocks', () => {
 		const nestedProjectCodeBlocks = [createMockCodeBlock({ name: 'nested' })];
 		const groupBlock = createMockCodeBlock({
-			childProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			childLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 		});
 		const rootCodeBlocks = [groupBlock];
 		const state = createMockState({
@@ -265,7 +265,7 @@ entryEnd`),
 	it('opens empty project groups', () => {
 		const nestedProjectCodeBlocks: [] = [];
 		const groupBlock = createMockCodeBlock({
-			childProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			childLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 		});
 		const state = createMockState();
 		const store = createStateManager(state);
@@ -282,9 +282,9 @@ entryEnd`),
 
 	it('returns to the immediate parent slice one level at a time', () => {
 		const deepestSlice = [createMockCodeBlock({ name: 'deepest' })];
-		const nestedGroup = createMockCodeBlock({ childProject: { entries: [], path: '', blocks: deepestSlice } });
+		const nestedGroup = createMockCodeBlock({ childLevel: { entries: [], path: '', blocks: deepestSlice } });
 		const firstLevelSlice = [nestedGroup];
-		const rootGroup = createMockCodeBlock({ childProject: { entries: [], path: '', blocks: firstLevelSlice } });
+		const rootGroup = createMockCodeBlock({ childLevel: { entries: [], path: '', blocks: firstLevelSlice } });
 		const rootCodeBlocks = [rootGroup];
 		const state = createMockState({
 			project: {

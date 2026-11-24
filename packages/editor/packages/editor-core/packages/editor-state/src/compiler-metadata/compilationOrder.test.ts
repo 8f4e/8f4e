@@ -81,7 +81,7 @@ describe('compilation after spatial order changes', () => {
 		const test = setup(source);
 		if (nested) {
 			test.events.dispatch('openProjectGroup', {
-				codeBlock: test.state.project.rootLevel.blocks.find(block => block.childProject),
+				codeBlock: test.state.project.rootLevel.blocks.find(block => block.childLevel),
 			});
 		}
 		const first = test.state.project.activeLevel.blocks.find(block => block.name === 'preset')!;

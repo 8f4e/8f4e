@@ -23,7 +23,7 @@ export function createCodeBlockCopyPastePlugin({
 		setup: ({ store, events, menus }) => {
 			const state = store.getState();
 			const onCopy = async ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
-				const text = codeBlock.childProject
+				const text = codeBlock.childLevel
 					? JSON.stringify(serializeCodeBlocks([codeBlock], codeBlock))
 					: codeBlock.code.join('\n');
 				await writeClipboardText(text);
@@ -39,7 +39,7 @@ export function createCodeBlockCopyPastePlugin({
 				return { title: 'Paste Code Block', action: 'pasteCodeBlocks', close: true };
 			});
 			const removeCopyMenu = menus.registerItem('moduleMenu', ({ codeBlock }) => ({
-				title: `Copy ${codeBlock.childProject ? 'group' : codeBlock.blockType}`,
+				title: `Copy ${codeBlock.childLevel ? 'group' : codeBlock.blockType}`,
 				action: 'copyCodeBlock',
 				payload: { codeBlock },
 				close: true,

@@ -4,7 +4,7 @@ import type { EditorCodeBlock, ProjectLevel } from './types';
 export interface ProjectSourceBlock {
 	code: readonly string[];
 	entry?: string;
-	childProject?: {
+	childLevel?: {
 		entries: readonly string[];
 		blocks: readonly ProjectSourceBlock[];
 	};
@@ -18,7 +18,7 @@ export interface ProjectEditPlan {
 		/** Requested execution entry, applicable to modules and project groups in the settled source. */
 		entry?: string;
 	}[];
-	inserts?: readonly { project: ProjectLevel; source: ProjectSourceBlock }[];
+	inserts?: readonly { targetLevel: ProjectLevel; source: ProjectSourceBlock }[];
 	/** Repeated deletes and deletes covered by an ancestor deletion are idempotent. */
 	deletes?: readonly EditorCodeBlock[];
 }

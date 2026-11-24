@@ -289,7 +289,7 @@ describe('scope plugin', () => {
 			'groupEnd',
 			'entryEnd',
 		]);
-		const voice = test.block.childProject!.blocks.find(block => block.name === 'voice')!;
+		const voice = test.block.childLevel!.blocks.find(block => block.name === 'voice')!;
 		expect(test.state.codeErrors.scope).toEqual([
 			{
 				codeBlockId: voice.creationIndex,
@@ -345,7 +345,7 @@ describe('scope plugin', () => {
 			'groupEnd',
 			'entryEnd',
 		]);
-		const voice = test.block.childProject!.blocks.find(block => block.name === 'voice')!;
+		const voice = test.block.childLevel!.blocks.find(block => block.name === 'voice')!;
 		vi.advanceTimersByTime(100);
 		expect(test.getMemory).not.toHaveBeenCalled();
 		test.events.dispatch('openProjectGroup', { codeBlock: test.block });
@@ -386,7 +386,7 @@ describe('scope plugin', () => {
 				'entryEnd',
 			]);
 			const group = test.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
-			const voice = group.childProject!.blocks.find(block => block.name === 'voice')!;
+			const voice = group.childLevel!.blocks.find(block => block.name === 'voice')!;
 			const sync = vi.mocked(sampler.mock.results[0].value.sync);
 			const contribution = test.store.layout.createContribution();
 			const space = { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 1 }] };

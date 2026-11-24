@@ -30,7 +30,7 @@ describe('module menu', () => {
 	it('adds an open action for project-group blocks', async () => {
 		const codeBlock = createMockCodeBlock({
 			name: 'Audio',
-			childProject: { entries: [], path: '', blocks: [] },
+			childLevel: { entries: [], path: '', blocks: [] },
 		});
 		const state = createMockState({
 			project: {

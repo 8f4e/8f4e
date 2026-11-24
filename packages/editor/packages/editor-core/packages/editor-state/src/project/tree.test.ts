@@ -8,12 +8,12 @@ function fixture() {
 	const audio: ProjectLevel = {
 		entries: [],
 		path: 'Audio',
-		blocks: [createMockCodeBlock({ name: 'Voices', childProject: child })],
+		blocks: [createMockCodeBlock({ name: 'Voices', childLevel: child })],
 	};
 	const root: ProjectLevel = {
 		entries: [],
 		path: '',
-		blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })],
+		blocks: [createMockCodeBlock({ name: 'Audio', childLevel: audio })],
 	};
 	return { root, audio, child };
 }

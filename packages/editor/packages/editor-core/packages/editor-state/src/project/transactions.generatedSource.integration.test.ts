@@ -71,7 +71,7 @@ it('ignores authored attempts to insert or rename a root constants env without i
 	events.on('beforeProjectEdit', beforeCheckpoint);
 	expect(
 		store.projectTransactions.apply(
-			{ inserts: [{ project: root, source: { code: copy } }], updates: [{ codeBlock: authored, code: copy }] },
+			{ inserts: [{ targetLevel: root, source: { code: copy } }], updates: [{ codeBlock: authored, code: copy }] },
 			{ history: 'checkpoint' }
 		)
 	).toEqual({ changed: false, insertedBlocks: [] });
@@ -93,14 +93,14 @@ it('continues to allow constants env in child projects and ordinary authored nam
 	const { state, store, load } = setup();
 	load('entry main\ngroup child\ngroupEnd\nentryEnd');
 	const root = state.project.rootLevel;
-	const child = root.blocks.find(block => block.name === 'child')!.childProject!;
+	const child = root.blocks.find(block => block.name === 'child')!.childLevel!;
 	const {
 		insertedBlocks: [nested, note, constants],
 	} = store.projectTransactions.apply({
 		inserts: [
-			{ project: child, source: { code: ['constants env', 'const NESTED 1', 'constantsEnd'] } },
-			{ project: root, source: { code: ['note env', 'noteEnd'] } },
-			{ project: root, source: { code: ['constants environment', 'const ROOT 1', 'constantsEnd'] } },
+			{ targetLevel: child, source: { code: ['constants env', 'const NESTED 1', 'constantsEnd'] } },
+			{ targetLevel: root, source: { code: ['note env', 'noteEnd'] } },
+			{ targetLevel: root, source: { code: ['constants environment', 'const ROOT 1', 'constantsEnd'] } },
 		],
 	});
 	expect(nested.readOnly).not.toBe(true);
@@ -172,7 +172,7 @@ entryEnd`);
 	expect(generated.code).not.toContain('const LEFT 1');
 	expect(generated.code).not.toContain('const RIGHT 2');
 	expect(blocks.find(block => block.name === 'keep')?.code).toContain('const OUTSIDE 4');
-	const nested = blocks.find(block => block.name === 'child')?.childProject?.blocks;
+	const nested = blocks.find(block => block.name === 'child')?.childLevel?.blocks;
 	expect(nested).toHaveLength(1);
 	expect(nested?.[0].readOnly).not.toBe(true);
 	expect(nested?.[0].code).toEqual(['constants env', 'const NESTED 5', 'constantsEnd']);
@@ -213,7 +213,7 @@ it('preserves authored entry tables when inserting, changing and removing execut
 	const {
 		insertedBlocks: [inserted],
 	} = store.projectTransactions.apply({
-		inserts: [{ project: root, source: { code: ['module inserted', 'moduleEnd'], entry: 'new' } }],
+		inserts: [{ targetLevel: root, source: { code: ['module inserted', 'moduleEnd'], entry: 'new' } }],
 	});
 	expect(root.entries).toEqual(['empty', 'main', 'new']);
 	store.projectTransactions.apply({ updates: [{ codeBlock: existing, entry: 'other' }], deletes: [inserted] });
@@ -241,13 +241,13 @@ it('checks attached project targets before any live source change or identity al
 		store.projectTransactions.apply({ updates: [update, { codeBlock: staleBlock, code: ['note stale'] }] })
 	).toThrow();
 	expect(() =>
-		store.projectTransactions.apply({ updates: [update], inserts: [{ project: staleProject, source: newSource }] })
+		store.projectTransactions.apply({ updates: [update], inserts: [{ targetLevel: staleProject, source: newSource }] })
 	).toThrow();
 	expect(() =>
 		store.projectTransactions.apply({
 			updates: [update],
 			deletes: [group],
-			inserts: [{ project: group.childProject!, source: newSource }],
+			inserts: [{ targetLevel: group.childLevel!, source: newSource }],
 		})
 	).toThrow();
 	expect(keep.code).toBe(originalSource);

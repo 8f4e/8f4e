@@ -49,7 +49,7 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   name-based compiler paths and places the destination immediately;
   project restoration requests placement once after synchronous project-change subscribers settle. Remembered positions
   take precedence; first-visit placement waits while the selected grid is pending. Once layout has settled, core dispatches
-  `resolveInitialProjectViewport { project, position }`, allowing plugins to replace the default origin synchronously.
+  `resolveInitialProjectViewport { level, position }`, allowing plugins to replace the default origin synchronously.
   Leaving a level before this happens does not remember the temporary origin. Project serializers omit remembered views.
 
 ## Rendering ownership

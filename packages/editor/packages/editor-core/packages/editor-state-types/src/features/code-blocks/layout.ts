@@ -21,9 +21,9 @@ export interface CodeBlockLayoutContext {
 	state: State;
 }
 
-/** These blocks in one owning group have settled source/display rows, contributions, and positions. */
+/** These blocks in one owning level have settled source/display rows, contributions, and positions. */
 export interface CodeBlockLayoutsChangedEvent {
-	project: ProjectLevel;
+	level: ProjectLevel;
 	codeBlocks: readonly EditorCodeBlock[];
 }
 

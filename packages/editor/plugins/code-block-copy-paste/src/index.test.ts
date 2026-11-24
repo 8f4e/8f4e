@@ -54,7 +54,7 @@ describe('code-block copy and paste', () => {
 			{
 				code: ['group voices', '; @pos 1 2', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
-				childProject: {
+				childLevel: {
 					entries: ['unused', 'audio'],
 					blocks: [
 						{ code: ['module same', '; @pos 4 5', 'moduleEnd'], entry: 'audio', gridCoordinates: { x: 4, y: 5 } },
@@ -62,33 +62,33 @@ describe('code-block copy and paste', () => {
 							code: ['group inner', '; @pos 8 9', 'groupEnd'],
 							entry: 'audio',
 							gridCoordinates: { x: 8, y: 9 },
-							childProject: { entries: ['quiet'], blocks: [] },
+							childLevel: { entries: ['quiet'], blocks: [] },
 						},
 					],
 				},
 			},
 		];
 		await test.paste(JSON.stringify(sources));
-		const owner = test.state.project.activeLevel.blocks.filter(block => block.childProject)[0];
+		const owner = test.state.project.activeLevel.blocks.filter(block => block.childLevel)[0];
 		await test.events.dispatchAsync('copyCodeBlock', { codeBlock: owner });
 		const copied = test.writeClipboardText.mock.calls[0][0];
 		await test.paste(copied, 160, 128);
-		const again = test.state.project.activeLevel.blocks.filter(block => block.childProject)[1];
+		const again = test.state.project.activeLevel.blocks.filter(block => block.childLevel)[1];
 		expect(again.name).toBe('voices');
-		expect(again.childProject?.entries).toEqual(['unused', 'audio']);
-		expect(again.childProject?.blocks[0]).toMatchObject({
+		expect(again.childLevel?.entries).toEqual(['unused', 'audio']);
+		expect(again.childLevel?.blocks[0]).toMatchObject({
 			name: 'same',
 			entry: 'audio',
 			projectPath: 'voices',
 			gridX: 4,
 			gridY: 5,
 		});
-		expect(again.childProject?.blocks[1].childProject).toMatchObject({
+		expect(again.childLevel?.blocks[1].childLevel).toMatchObject({
 			path: 'voices/inner',
 			entries: ['quiet'],
 			blocks: [],
 		});
-		expect(again.childProject?.blocks[1].entry).toBe('audio');
+		expect(again.childLevel?.blocks[1].entry).toBe('audio');
 		expect(again.code).toEqual(['group voices', '; @pos 20 8', 'groupEnd']);
 	});
 	it('handles a structured single ordinary block as a block payload', async () => {

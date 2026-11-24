@@ -93,8 +93,8 @@ completion notification.
   available layout settle
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
   group, or the current group when no block is supplied
-- `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,
-  contributions, and positions. Rendering prepares only the listed blocks; active-view consumers compare `project`
+- `codeBlockLayoutsChanged({ level, codeBlocks })`: identifies one owning level and its completed source/display rows,
+  contributions, and positions. Rendering prepares only the listed blocks; active-view consumers compare `level`
   with `activeLevel`. Empty groups still publish a completion when navigation replaces the visible slice.
 - Block deletion and selection events
 - Drag start/update/end events
@@ -108,10 +108,12 @@ completion notification.
 - Block-specific properties: position, size, blockType, code, cursor, display rows, and gaps
 
 Project-group blocks use the same `EditorCodeBlock` representation as other blocks. Their optional
-`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered
+`childLevel` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered
 `viewport`, and `selectedBlock`.
-`rootLevel` owns the recursive tree; `activeLevel` refers directly to the level being rendered. Shared tree helpers
-resolve levels and parents by path, without recovering identity from block arrays.
+`rootLevel` owns the recursive tree; `activeLevel` refers directly to the level being rendered. Group navigation
+finds a parent level by the block that owns the child level, comparing the child level by object identity.
+Groups with identical name paths therefore remain distinct navigation targets; the paths are used for compiler-facing
+source data, not navigation identity.
 
 `reconstruction.ts` builds graphical project trees and transfers remembered views, selections, and existing
 positions for same-project edits. The project transaction service installs the result and owns selection reset, layout/source

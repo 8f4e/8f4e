@@ -12,8 +12,8 @@ export default function trackEntryBounds(store: StateManager<State>, events: Eve
 		);
 	};
 	const selectors = ['project.activeLevel.blocks', 'projectChange'] as const;
-	const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
-		if (project === state.project.activeLevel) updateBounds();
+	const onLayoutsChanged = ({ level }: CodeBlockLayoutsChangedEvent) => {
+		if (level === state.project.activeLevel) updateBounds();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	for (const selector of selectors) store.subscribe(selector, updateBounds);

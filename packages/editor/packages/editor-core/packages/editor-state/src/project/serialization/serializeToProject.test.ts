@@ -87,7 +87,7 @@ describe('serializeToProject', () => {
 				name: 'Audio',
 				entry: 'main',
 				code: ['group Audio', 'groupEnd'],
-				childProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+				childLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 			}),
 		];
 		const state = createMockState({

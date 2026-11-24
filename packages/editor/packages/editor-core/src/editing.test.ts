@@ -294,7 +294,7 @@ describe('public editor editing handle', () => {
 		};
 		const { state, events, editing } = setup(project);
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'worker')!;
-		const work = group.childProject!.blocks[0];
+		const work = group.childLevel!.blocks[0];
 		const check = () => {
 			const saved = serializeToProject(state);
 			expect(saved.entries).toEqual(['main', 'rootEmpty']);
@@ -827,7 +827,7 @@ describe('public editor editing handle', () => {
 		expect(state.viewport).toMatchObject({ x: 0, y: 0 });
 		expect(state.project.selectedCodeBlock).toBeUndefined();
 		const replacementGroup = state.project.rootLevel.blocks.find(block => block.name === 'voice')!;
-		expect(replacementGroup.childProject!.viewport).toBeUndefined();
+		expect(replacementGroup.childLevel!.viewport).toBeUndefined();
 		navigation.openGroup(getEditorBlockId(replacementGroup));
 		expect(state.viewport).not.toMatchObject({ x: -320, y: 160 });
 	});
@@ -836,15 +836,15 @@ describe('public editor editing handle', () => {
 		const { editing, navigation, state, store, group: original } = setupGroup('voice');
 		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
 		const owner = (id: number) => state.project.rootLevel.blocks.find(block => block.creationIndex === id)!;
-		expect(original.childProject!.path).toBe(copy.childProject!.path);
+		expect(original.childLevel!.path).toBe(copy.childLevel!.path);
 		navigation.openGroup(getEditorBlockId(original));
 		Object.assign(state.viewport, { x: 64, y: 96 });
-		store.set('project.selectedCodeBlock', original.childProject!.blocks[0]);
+		store.set('project.selectedCodeBlock', original.childLevel!.blocks[0]);
 		navigation.goToRoot();
 		store.set('project.selectedCodeBlock', copy);
 		navigation.openGroup(getEditorBlockId(copy));
 		Object.assign(state.viewport, { x: -320, y: 160 });
-		const edited = copy.childProject!.blocks[0];
+		const edited = copy.childLevel!.blocks[0];
 		store.set('project.selectedCodeBlock', edited);
 		const editedSource = ['module changed', 'moduleEnd'];
 		editing.applyEdits({
@@ -852,12 +852,12 @@ describe('public editor editing handle', () => {
 			edits: [{ type: 'update', blockId: getEditorBlockId(edited), code: editedSource }],
 		});
 		const expectRestoredCopy = (name: string) => {
-			const restored = owner(copy.creationIndex).childProject!;
+			const restored = owner(copy.creationIndex).childLevel!;
 			expect(state.project.activeLevel).toBe(restored);
 			expect(state.project.selectedCodeBlock).toBe(restored.blocks[0]);
 			expect(restored.blocks[0].name).toBe(name);
 			expect(state.viewport).toMatchObject({ x: -320, y: 160 });
-			const originalLevel = owner(original.creationIndex).childProject!;
+			const originalLevel = owner(original.creationIndex).childLevel!;
 			expect(originalLevel.selectedBlock).toBe(originalLevel.blocks[0]);
 			expect(originalLevel.blocks[0].name).toBe('sample');
 			expect(originalLevel.viewport).toMatchObject({ x: 64, y: 96 });
@@ -870,7 +870,7 @@ describe('public editor editing handle', () => {
 		expect(state.project.selectedCodeBlock).toBe(owner(copy.creationIndex));
 		navigation.openGroup(getEditorBlockId(owner(original.creationIndex)));
 		expect(state.viewport).toMatchObject({ x: 64, y: 96 });
-		expect(state.project.selectedCodeBlock).toBe(owner(original.creationIndex).childProject!.blocks[0]);
+		expect(state.project.selectedCodeBlock).toBe(owner(original.creationIndex).childLevel!.blocks[0]);
 		navigation.goToRoot();
 		navigation.openGroup(getEditorBlockId(owner(copy.creationIndex)));
 		editing.undo({ expectedRevision: editing.getRevision() });
@@ -880,7 +880,7 @@ describe('public editor editing handle', () => {
 		expect(state.project.rootLevel.blocks.some(block => block.creationIndex === copy.creationIndex)).toBe(false);
 		editing.redo({ expectedRevision: editing.getRevision() });
 		expect(state.project.activeLevel).toBe(state.project.rootLevel);
-		const recreatedCopy = owner(copy.creationIndex).childProject!;
+		const recreatedCopy = owner(copy.creationIndex).childLevel!;
 		expect(recreatedCopy.viewport).toBeUndefined();
 		expect(recreatedCopy.selectedBlock).toBeUndefined();
 	});
@@ -888,7 +888,7 @@ describe('public editor editing handle', () => {
 	it('inserts into a copied group by owning block handle while omitted ownership targets the root', () => {
 		const { editing, navigation, state, store, group: original } = setupGroup('voice');
 		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
-		expect(original.childProject!.path).toBe(copy.childProject!.path);
+		expect(original.childLevel!.path).toBe(copy.childLevel!.path);
 		navigation.openGroup(getEditorBlockId(copy));
 		const result = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
@@ -897,12 +897,12 @@ describe('public editor editing handle', () => {
 				{ type: 'insert', code: ['note root', 'noteEnd'] },
 			],
 		});
-		expect(state.project.activeLevel).toBe(copy.childProject);
-		expect(original.childProject!.blocks.map(block => block.name)).toEqual(['sample']);
-		expect(copy.childProject!.blocks.map(block => block.name)).toEqual(['sample', 'nested']);
-		const nestedNote = copy.childProject!.blocks.find(block => block.name === 'nested')!;
+		expect(state.project.activeLevel).toBe(copy.childLevel);
+		expect(original.childLevel!.blocks.map(block => block.name)).toEqual(['sample']);
+		expect(copy.childLevel!.blocks.map(block => block.name)).toEqual(['sample', 'nested']);
+		const nestedNote = copy.childLevel!.blocks.find(block => block.name === 'nested')!;
 		const rootNote = state.project.rootLevel.blocks.find(block => block.name === 'root')!;
-		expect(nestedNote.projectPath).toBe(original.childProject!.path);
+		expect(nestedNote.projectPath).toBe(original.childLevel!.path);
 		expect(rootNote.projectPath).toBe('');
 		expect(result.createdBlockIds).toEqual([getEditorBlockId(nestedNote), getEditorBlockId(rootNote)]);
 	});
@@ -915,14 +915,14 @@ describe('public editor editing handle', () => {
 		});
 		navigation.openGroup(getEditorBlockId(group));
 		Object.assign(state.viewport, { x: 123, y: 456 });
-		store.set('project.selectedCodeBlock', group.childProject!.blocks[0]);
+		store.set('project.selectedCodeBlock', group.childLevel!.blocks[0]);
 		const expectRenamedView = (name: string) => {
 			const owner = state.project.rootLevel.blocks.find(block => block.creationIndex === group.creationIndex)!;
 			expect(owner.name).toBe(name);
-			expect(state.project.activeLevel).toBe(owner.childProject);
-			expect(owner.childProject!.path).toBe(name);
-			expect(owner.childProject!.blocks[0].projectPath).toBe(name);
-			expect(state.project.selectedCodeBlock).toBe(owner.childProject!.blocks[0]);
+			expect(state.project.activeLevel).toBe(owner.childLevel);
+			expect(owner.childLevel!.path).toBe(name);
+			expect(owner.childLevel!.blocks[0].projectPath).toBe(name);
+			expect(state.project.selectedCodeBlock).toBe(owner.childLevel!.blocks[0]);
 			expect(state.viewport).toMatchObject({ x: 123, y: 456 });
 		};
 		editing.undo({ expectedRevision: editing.getRevision() });
@@ -965,19 +965,19 @@ describe('public editor editing handle', () => {
 		const revision = editing.getRevision();
 		const root = state.project.rootLevel.blocks;
 		const parent = root.find(block => block.name === 'parent')!;
-		const nested = parent.childProject!.blocks.find(block => block.name === 'child')!;
+		const nested = parent.childLevel!.blocks.find(block => block.name === 'child')!;
 		expect(state.project.activeLevel.blocks).toBe(root);
 		expect(() => navigation.openGroup('missing')).toThrow('current group blockId');
 		navigation.openGroup(getEditorBlockId(nested));
-		expect(state.project.activeLevel.blocks).toBe(nested.childProject?.blocks);
+		expect(state.project.activeLevel.blocks).toBe(nested.childLevel?.blocks);
 		navigation.goToRoot();
 		navigation.openGroup(getEditorBlockId(parent));
-		expect(state.project.activeLevel.blocks).toBe(parent.childProject?.blocks);
+		expect(state.project.activeLevel.blocks).toBe(parent.childLevel?.blocks);
 		expect(state.project.activeLevel.blocks[0].name).toBe('child');
 		navigation.openGroup(getEditorBlockId(nested));
-		expect(state.project.activeLevel.blocks).toBe(nested.childProject?.blocks);
+		expect(state.project.activeLevel.blocks).toBe(nested.childLevel?.blocks);
 		navigation.goToParentGroup();
-		expect(state.project.activeLevel.blocks).toBe(parent.childProject?.blocks);
+		expect(state.project.activeLevel.blocks).toBe(parent.childLevel?.blocks);
 		navigation.openGroup(getEditorBlockId(nested));
 		navigation.goToRoot();
 		navigation.goToParentGroup();

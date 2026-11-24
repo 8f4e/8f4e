@@ -22,7 +22,7 @@ function setup() {
 	});
 	events.dispatch('enterEditMode');
 	const group = state.project.rootLevel.blocks.find(block => block.name === 'child')!;
-	const member = group.childProject!.blocks[0];
+	const member = group.childLevel!.blocks[0];
 	const beforeEdit = vi.fn();
 	const compilationChanged = vi.fn();
 	events.on('beforeProjectEdit', beforeEdit);
@@ -81,7 +81,7 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 		).toThrow(expect.objectContaining({ code: 'deleted_block', message: 'Cannot update a block being deleted' }));
 		expect(() =>
 			store.projectTransactions.apply(
-				{ inserts: [{ project: group.childProject!, source: { code: insertedCode } }], deletes: [group] },
+				{ inserts: [{ targetLevel: group.childLevel!, source: { code: insertedCode } }], deletes: [group] },
 				{ history: 'checkpoint' }
 			)
 		).toThrow(
@@ -128,7 +128,7 @@ it('settles explicit entry metadata against the final repeated source update', (
 		],
 	});
 	expect(member.entry).toBeUndefined();
-	expect(group.childProject!.entries).toEqual(['main']);
+	expect(group.childLevel!.entries).toEqual(['main']);
 	editing.applyEdits({
 		expectedRevision: editing.getRevision(),
 		edits: [
@@ -138,5 +138,5 @@ it('settles explicit entry metadata against the final repeated source update', (
 		],
 	});
 	expect(member.entry).toBe('alternate');
-	expect(group.childProject!.entries).toEqual(['main', 'alternate']);
+	expect(group.childLevel!.entries).toEqual(['main', 'alternate']);
 });

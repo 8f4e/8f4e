@@ -178,7 +178,7 @@ describe('codeBlockDragger', () => {
 		test.move(10, 20);
 		expect(first).toMatchObject({ x: 60, y: 120 });
 		test.store.projectTransactions.apply({
-			inserts: [{ project: test.state.project.activeLevel, source: { code: secondSource.split('\n') } }],
+			inserts: [{ targetLevel: test.state.project.activeLevel, source: { code: secondSource.split('\n') } }],
 		});
 		expect(first).toMatchObject({ x: 50, y: 100 });
 		expect(test.state.project.draggedCodeBlock).toBeUndefined();
@@ -226,7 +226,7 @@ describe('codeBlockDragger', () => {
 		test.move(10, 20);
 		expect(first).toMatchObject({ x: 60, y: 120 });
 		test.events.dispatch('openProjectGroup', { codeBlock: owner });
-		expect(test.state.project.activeLevel).toBe(owner.childProject);
+		expect(test.state.project.activeLevel).toBe(owner.childLevel);
 		expect(test.state.project.draggedCodeBlock).toBeUndefined();
 		expect(first).toMatchObject({ x: 50, y: 100 });
 		expect(test.move(10, 20).stopPropagation).toBe(false);

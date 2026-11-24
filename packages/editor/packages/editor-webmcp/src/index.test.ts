@@ -407,7 +407,7 @@ describe('single-editor WebMCP bridge', () => {
 			projectPath: '',
 			name: 'audio',
 			code: ['group audio', 'groupEnd'],
-			childProject: { entries: [], path: 'audio', blocks: [child, note] },
+			childLevel: { entries: [], path: 'audio', blocks: [child, note] },
 		});
 		view.state.project.rootLevel.blocks.push(
 			group,
@@ -420,7 +420,7 @@ describe('single-editor WebMCP bridge', () => {
 			})
 		);
 		view.navigation.openGroup.mockImplementation(() => {
-			view.state.project.activeLevel = group.childProject!;
+			view.state.project.activeLevel = group.childLevel!;
 		});
 		view.navigation.goToParentGroup.mockImplementation(() => {
 			view.state.project.activeLevel = view.state.project.rootLevel;
@@ -471,7 +471,7 @@ describe('single-editor WebMCP bridge', () => {
 			})
 		).toMatchObject({ error: { code: 'block_not_found' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		group.childProject!.blocks.push(createMockCodeBlock({ ...child, creationIndex: 5 }));
+		group.childLevel!.blocks.push(createMockCodeBlock({ ...child, creationIndex: 5 }));
 		for (const tool of ['get_block', 'get_block_metadata', 'update_block', 'patch_block'])
 			expect(await call(tool, argsFor(tool, 'counter'))).toMatchObject({ error: { code: 'ambiguous_block' } });
 		expect(

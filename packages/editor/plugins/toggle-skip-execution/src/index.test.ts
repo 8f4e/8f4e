@@ -71,8 +71,8 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 }
 
 function insertSource(store: ReturnType<typeof initState>, code: string[]) {
-	const project = store.getState().project.activeLevel;
-	return store.projectTransactions.apply({ inserts: [{ project, source: { code } }] }).insertedBlocks[0];
+	const targetLevel = store.getState().project.activeLevel;
+	return store.projectTransactions.apply({ inserts: [{ targetLevel, source: { code } }] }).insertedBlocks[0];
 }
 
 describe('toggle skip execution plugin', () => {

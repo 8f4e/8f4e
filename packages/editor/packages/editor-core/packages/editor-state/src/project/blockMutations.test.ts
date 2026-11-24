@@ -97,7 +97,7 @@ describe('block source edits', () => {
 		expect(untouched.lastUpdated).toBe(1);
 		expect(untouched.code).toBe(untouchedCode);
 		expect(onLayoutsChanged).toHaveBeenCalledExactlyOnceWith({
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [first, second],
 		});
 		expect(onCompilerChange).toHaveBeenCalledTimes(1);
@@ -139,7 +139,7 @@ describe('block deletion', () => {
 		});
 		store.subscribe('projectChange', onProjectChange);
 		expect(deleteCodeBlocks(store, [first, second])).toBe(true);
-		expect(owner.childProject?.blocks).toBe(nested);
+		expect(owner.childLevel?.blocks).toBe(nested);
 		expect(state.project.activeLevel.blocks).toBe(nested);
 		expect(state.project.rootLevel.blocks).toBe(root);
 		expect(root).toContain(owner);

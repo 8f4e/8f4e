@@ -45,7 +45,7 @@ it('keeps the template header when renaming an expanded group and updating child
 	applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group renamed use voice', ...group.code.slice(1)] }]);
 	expect(group.name).toBe('renamed');
 	expect(group.code[0]).toBe('group renamed use voice');
-	expect(group.childProject?.blocks.find(block => block.name === 'audio')?.projectPath).toBe('renamed');
+	expect(group.childLevel?.blocks.find(block => block.name === 'audio')?.projectPath).toBe('renamed');
 	expect(getProjectGroups(serializeProjectLevel(state.project.rootLevel))[0]).toMatchObject({
 		name: 'renamed',
 		code: ['group renamed use voice', 'groupEnd'],
@@ -72,7 +72,7 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 			execution: [{ type: 'module', code: ['module oscillator', 'int value 1', 'moduleEnd'] }],
 		});
 		expect(voice.projectPath).toBe('parent');
-		expect(voice.childProject?.blocks.find(block => block.name === 'oscillator')?.projectPath).toBe('parent/voice');
+		expect(voice.childLevel?.blocks.find(block => block.name === 'oscillator')?.projectPath).toBe('parent/voice');
 	}
 });
 

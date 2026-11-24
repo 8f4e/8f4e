@@ -144,11 +144,11 @@ entryEnd`),
 	});
 	const root = test.state.project.rootLevel;
 	const audio = root.blocks.find(block => block.name === 'audio')!;
-	const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
-	const child = nested.childProject!.blocks[0];
+	const nested = audio.childLevel!.blocks.find(block => block.name === 'nested')!;
+	const child = nested.childLevel!.blocks[0];
 	test.store.set('codeErrors.custom', [{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' }]);
 	test.press();
-	expect(test.state.project.activeLevel).toBe(nested.childProject);
+	expect(test.state.project.activeLevel).toBe(nested.childLevel);
 	expect(test.state.project.selectedCodeBlock).toBe(child);
 	test.store.set('codeErrors.custom', [
 		{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },

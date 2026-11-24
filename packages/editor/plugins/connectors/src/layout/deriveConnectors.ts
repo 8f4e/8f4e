@@ -12,7 +12,7 @@ export default function deriveConnectors(codeBlock: EditorCodeBlock, state: Stat
 
 	const width = state.viewport.vGrid * 3;
 	const height = state.viewport.hGrid;
-	const isProjectGroup = codeBlock.childProject !== undefined;
+	const isProjectGroup = codeBlock.childLevel !== undefined;
 	const addConnector = (memory: PlannedMemoryDeclaration, row: number) => {
 		if (memory.pointerDepth > 0 && memory.numberOfElements === 0) return;
 		const y = row * height;

@@ -169,7 +169,7 @@ moduleEnd`;
 			const { state, events, readConnections } = await setup(text);
 			if (scope === 'group') {
 				events.dispatch('openProjectGroup', {
-					codeBlock: state.project.rootLevel.blocks.find(block => block.childProject),
+					codeBlock: state.project.rootLevel.blocks.find(block => block.childLevel),
 				});
 			}
 			events.dispatch('enterEditMode');
@@ -295,7 +295,7 @@ entryEnd`);
 			const root = state.project.activeLevel.blocks;
 			const group = root.find(block => block.name === 'patch')!;
 			const outerSink = root.find(block => block.name === 'outerSink')!;
-			const nested = group.childProject!.blocks;
+			const nested = group.childLevel!.blocks;
 			const innerSink = nested.find(block => block.name === 'innerSink')!;
 			const innerSource = nested.find(block => block.name === 'source')!;
 			const expectConnection = (input: EditorCodeBlock, output: EditorCodeBlock) => {

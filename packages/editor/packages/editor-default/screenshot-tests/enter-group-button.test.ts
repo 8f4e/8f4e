@@ -149,7 +149,7 @@ test.each([
 					});
 				}
 			}
-			await expect.poll(() => state.project.activeLevel).toBe(block.childProject);
+			await expect.poll(() => state.project.activeLevel).toBe(block.childLevel);
 		};
 		await clickButton('audio');
 		await clickButton('voices');

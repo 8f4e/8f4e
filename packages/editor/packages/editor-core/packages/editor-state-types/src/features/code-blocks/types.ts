@@ -118,7 +118,7 @@ export interface EditorCodeBlock {
 	/** Canonical path of the project group that owns this block. */
 	projectPath: ProjectGroupPath;
 	/** Child project level owned by a language-level project-group block. */
-	childProject?: ProjectLevel;
+	childLevel?: ProjectLevel;
 	/** Current source declarations prepared for a project group, separate from accepted compiler targets. */
 	projectMemoryExposures?: readonly ProjectMemoryExposure[];
 	/**

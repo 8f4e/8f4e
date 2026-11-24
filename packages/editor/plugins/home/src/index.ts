@@ -22,8 +22,8 @@ function parseAlignment(args: string[]): ViewportBlockAlignment | undefined {
 		return alignment;
 }
 
-function findHome(project: ProjectLevel) {
-	for (const codeBlock of project.blocks) {
+function findHome(level: ProjectLevel) {
+	for (const codeBlock of level.blocks) {
 		let alignment: ViewportBlockAlignment | undefined;
 		for (const directive of matchEditorDirectives(codeBlock.parsedDirectives, directiveDefinitions)) {
 			alignment = parseAlignment(directive.args) ?? alignment;
@@ -34,10 +34,10 @@ function findHome(project: ProjectLevel) {
 
 function findDuplicateHomeErrors(rootLevel: ProjectLevel): CodeError[] {
 	const errors: CodeError[] = [];
-	for (const project of walkProjectLevels(rootLevel)) {
+	for (const level of walkProjectLevels(rootLevel)) {
 		let seenHome = false;
 		// Diagnostic ownership must not follow the mutable draw order used by navigation.
-		for (const block of [...project.blocks].sort((a, b) => a.creationIndex - b.creationIndex)) {
+		for (const block of [...level.blocks].sort((a, b) => a.creationIndex - b.creationIndex)) {
 			for (const directive of matchEditorDirectives(block.parsedDirectives, directiveDefinitions)) {
 				if (seenHome) {
 					errors.push({
@@ -73,7 +73,7 @@ export const homePlugin: EditorPlugin = {
 			}
 		};
 		const onResolveInitialProjectViewport = (event: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
-			const home = findHome(event.project);
+			const home = findHome(event.level);
 			if (home) {
 				Object.assign(
 					event.position,

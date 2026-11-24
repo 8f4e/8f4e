@@ -32,8 +32,8 @@ export default function createCaretPresentation({
 		);
 	};
 
-	const onLayoutsChanged = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.project.activeLevel) return;
+	const onLayoutsChanged = ({ level, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (level !== state.project.activeLevel) return;
 		if (state.project.selectedCodeBlock && codeBlocks.includes(state.project.selectedCodeBlock)) prepare();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);

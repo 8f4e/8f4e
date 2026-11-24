@@ -27,11 +27,11 @@ function setup(onCompleted: (event: CodeBlockLayoutsChangedEvent) => void = () =
 it('finishes world-space layout before notifying observers, including late contribution and source updates', () => {
 	let state: State;
 	let notifications = 0;
-	const test = setup(({ project, codeBlocks }) => {
+	const test = setup(({ level, codeBlocks }) => {
 		for (const block of codeBlocks) {
 			if (block.name !== 'world') continue;
 			notifications++;
-			expect(project).toBe(state.project.activeLevel);
+			expect(level).toBe(state.project.activeLevel);
 			expect(block.x).toBe(2 * state.viewport.vGrid);
 			expect(block.y).toBe(3 * state.viewport.hGrid);
 		}
@@ -76,8 +76,8 @@ groupEnd
 entryEnd`);
 	const root = test.state.project.activeLevel;
 	const rootBlock = root.blocks.find(block => block.name === 'root')!;
-	const group = root.blocks.find(block => block.childProject)!;
-	const child = group.childProject!;
+	const group = root.blocks.find(block => block.childLevel)!;
+	const child = group.childLevel!;
 	const nested = child.blocks[0];
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	updateViewport(test.state, 160, 320, test.events);
@@ -88,7 +88,7 @@ entryEnd`);
 	cleanups.push(contribution.dispose);
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 48, verticalSpaceAfterSourceLine: [] });
-	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	expect(completed).toEqual([{ level: child, codeBlocks: [nested] }]);
 	const { vGrid, hGrid } = test.state.viewport;
 	expect(nested).toMatchObject({ x: vGrid, y: 2 * hGrid, width: 48 * vGrid });
 	expect(rootBlock).toMatchObject(rootPosition);
@@ -98,16 +98,16 @@ entryEnd`);
 	expect(nested.projectPath).toBe('renamed');
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 49, verticalSpaceAfterSourceLine: [] });
-	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	expect(completed).toEqual([{ level: child, codeBlocks: [nested] }]);
 	completed.length = 0;
 	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: nested, code: ['note nested', '; @pos 1 2', '; @alwaysOnTop', 'nested content', 'noteEnd'] },
 	]);
 	expect(child.blocks.map(block => block.name)).toEqual(['sibling', 'nested']);
-	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	expect(completed).toEqual([{ level: child, codeBlocks: [nested] }]);
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	expect(test.state.viewport).toMatchObject({ x: 160, y: 320 });
-	expect(completed.at(-1)?.project).toBe(child);
+	expect(completed.at(-1)?.level).toBe(child);
 });
 
 it('registers pasted nested blocks and drops ownership when their group is deleted', () => {
@@ -126,7 +126,7 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 			{
 				code: ['group pasted', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
-				childProject: {
+				childLevel: {
 					entries: [],
 					blocks: [
 						{ code: ['note nested', '; @customTop', 'noteEnd'], gridCoordinates: { x: 0, y: 0 } },
@@ -136,8 +136,8 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 			},
 		],
 	});
-	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
-	const child = group.childProject!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childLevel)!;
+	const child = group.childLevel!;
 	const nested = child.blocks.find(block => block.name === 'nested')!;
 	expect(child.blocks.map(block => block.name)).toEqual(['ordinary', 'nested']);
 	expect(nested.alwaysOnTop).toBe(true);
@@ -150,7 +150,7 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 	cleanups.push(contribution.dispose);
 	completed.length = 0;
 	contribution.update(nested, { minGridWidth: 48, verticalSpaceAfterSourceLine: [] });
-	expect(completed).toEqual([{ project: child, codeBlocks: [nested] }]);
+	expect(completed).toEqual([{ level: child, codeBlocks: [nested] }]);
 	deleteCodeBlocks(test.store, [group]);
 	completed.length = 0;
 	contribution.remove(nested);
@@ -177,7 +177,7 @@ entryEnd`);
 	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
 	expect(validate).toHaveBeenCalled();
 	validate.mockClear();
-	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childLevel)!;
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	test.events.dispatch('goToRootProjectGroup');
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
@@ -209,10 +209,10 @@ it('announces an empty group when navigation replaces the visible project slice'
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
 	test.load('8f4e/v1\nentry main\ngroup empty\ngroupEnd\nentryEnd');
-	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childLevel)!;
 	completed.length = 0;
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
-	expect(completed).toContainEqual({ project: group.childProject, codeBlocks: [] });
+	expect(completed).toContainEqual({ level: group.childLevel, codeBlocks: [] });
 });
 
 it('settles dependent contributions across groups before publishing separate completion batches', () => {
@@ -223,7 +223,7 @@ it('settles dependent contributions across groups before publishing separate com
 	);
 	const root = test.state.project.activeLevel;
 	const first = root.blocks.find(block => block.name === 'first')!;
-	const child = root.blocks.find(block => block.childProject)!.childProject!;
+	const child = root.blocks.find(block => block.childLevel)!.childLevel!;
 	const second = child.blocks[0];
 	const contribution = test.store.layout.createContribution();
 	const dependent = test.store.layout.createContribution();
@@ -238,8 +238,8 @@ it('settles dependent contributions across groups before publishing separate com
 	updateDependent = true;
 	contribution.update(first, { minGridWidth: 40, verticalSpaceAfterSourceLine: [] });
 	expect(completed).toEqual([
-		{ project: root, codeBlocks: [first] },
-		{ project: child, codeBlocks: [second] },
+		{ level: root, codeBlocks: [first] },
+		{ level: child, codeBlocks: [second] },
 	]);
 	expect(second.width).toBe(48 * test.state.viewport.vGrid);
 });

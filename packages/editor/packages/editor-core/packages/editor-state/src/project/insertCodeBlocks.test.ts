@@ -55,14 +55,14 @@ describe('insertCodeBlocks', () => {
 				{
 					code: ['group layer', 'groupEnd'],
 					gridCoordinates: { x: 0, y: 0 },
-					childProject: {
+					childLevel: {
 						entries: ['empty', 'audio'],
 						blocks: [
 							{ code: ['module same', 'moduleEnd'], entry: 'audio', gridCoordinates: { x: 2, y: 3 } },
 							{
 								code: ['group inner', 'groupEnd'],
 								gridCoordinates: { x: 4, y: 5 },
-								childProject: { entries: ['silent'], blocks: [] },
+								childLevel: { entries: ['silent'], blocks: [] },
 							},
 						],
 					},
@@ -70,25 +70,25 @@ describe('insertCodeBlocks', () => {
 			],
 		});
 		expect(owner.name).toBe('layer');
-		expect(owner.childProject?.path).toBe('layer');
-		expect(owner.childProject?.entries).toEqual(['empty', 'audio', 'main']);
-		expect(owner.childProject?.blocks[0]).toMatchObject({
+		expect(owner.childLevel?.path).toBe('layer');
+		expect(owner.childLevel?.entries).toEqual(['empty', 'audio', 'main']);
+		expect(owner.childLevel?.blocks[0]).toMatchObject({
 			name: 'same',
 			entry: 'audio',
 			projectPath: 'layer',
 			gridX: 2,
 			gridY: 3,
 		});
-		expect(owner.childProject?.blocks[1].childProject).toMatchObject({
+		expect(owner.childLevel?.blocks[1].childLevel).toMatchObject({
 			path: 'layer/inner',
 			entries: ['silent'],
 			blocks: [],
 		});
-		const nested = owner.childProject!.blocks[1].childProject!;
-		const descendant = owner.childProject!.blocks[0];
+		const nested = owner.childLevel!.blocks[1].childLevel!;
+		const descendant = owner.childLevel!.blocks[0];
 		const { changed, insertedBlocks } = store.projectTransactions.apply({
 			updates: [{ codeBlock: descendant, code: ['module changed', 'moduleEnd'] }],
-			inserts: [{ project: nested, source: { code: ['note added', 'noteEnd'] } }],
+			inserts: [{ targetLevel: nested, source: { code: ['note added', 'noteEnd'] } }],
 		});
 		expect(changed).toBe(true);
 		expect(descendant.name).toBe('changed');
@@ -96,7 +96,7 @@ describe('insertCodeBlocks', () => {
 		store.projectTransactions.apply({ deletes: [owner] });
 		expect(() =>
 			store.projectTransactions.apply({
-				inserts: [{ project: nested, source: { code: ['note detached', 'noteEnd'] } }],
+				inserts: [{ targetLevel: nested, source: { code: ['note detached', 'noteEnd'] } }],
 			})
 		).toThrow(expect.objectContaining({ code: 'detached_project' }));
 		expect(() =>

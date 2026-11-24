@@ -151,7 +151,7 @@ test('navigates the editor and returns only the currently expanded source string
 	expect(root).not.toContain('int value 2');
 	expect(await call('expand_group', { name: 'audio' })).toMatchObject({ projectPath: 'audio' });
 	expect(editor.state.project.activeLevel.blocks).toBe(
-		editor.state.project.rootLevel.blocks.find(block => block.name === 'audio')!.childProject?.blocks
+		editor.state.project.rootLevel.blocks.find(block => block.name === 'audio')!.childLevel?.blocks
 	);
 	const expanded = await call('get_project');
 	expect(expanded).toContain('int value 2');
@@ -214,14 +214,14 @@ test('inserts into the active pasted group even when its source path matches the
 	});
 	await expect.poll(() => groups().length).toBe(2);
 	const copy = groups().find(block => block !== original)!;
-	expect(original.childProject!.path).toBe(copy.childProject!.path);
+	expect(original.childLevel!.path).toBe(copy.childLevel!.path);
 	editor.navigation.openGroup(getEditorBlockId(copy));
 	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
 	expect(await call('get_project')).toContain('int value 2');
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
 	const noteCode = 'note copiedNote\nInserted in the copy\nnoteEnd';
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: noteCode }] })).toBe('Edits applied.');
-	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childProject!;
+	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childLevel!;
 	const assertInsertion = (inserted: boolean) => {
 		expect(state.project.activeLevel).toBe(child(copy.creationIndex));
 		expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(inserted);

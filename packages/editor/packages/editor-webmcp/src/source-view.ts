@@ -5,7 +5,7 @@ export function getCurrentGroupBlock(state: Editor['state']): EditorCodeBlock | 
 	const { rootLevel, activeLevel } = state.project;
 	if (rootLevel === activeLevel) return undefined;
 	const parent = findParentProjectLevel(rootLevel, activeLevel);
-	const group = parent?.blocks.find(block => block.childProject === activeLevel);
+	const group = parent?.blocks.find(block => block.childLevel === activeLevel);
 	if (!group) throw new Error('The currently expanded group is unavailable');
 	return group;
 }
@@ -30,12 +30,12 @@ export function createSourceView(state: Editor['state']): string {
 	const lines: string[] = [];
 	const append = (block: EditorCodeBlock) => {
 		if (lines.length && lines.at(-1) !== '') lines.push('');
-		if (block.childProject === undefined) {
+		if (block.childLevel === undefined) {
 			lines.push(...(block.code.length ? block.code : ['']));
 		} else {
 			const closer = groupCloserIndex(block.code);
 			lines.push(...block.code.slice(0, closer));
-			for (const entry of block.childProject.entries) lines.push(`entry ${entry}`, 'entryEnd');
+			for (const entry of block.childLevel.entries) lines.push(`entry ${entry}`, 'entryEnd');
 			lines.push(...block.code.slice(closer));
 		}
 	};
@@ -45,7 +45,7 @@ export function createSourceView(state: Editor['state']): string {
 		lines.push(...group.code.slice(0, closer));
 	} else lines.push('8f4e/v1');
 
-	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.childProject !== undefined;
+	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.childLevel !== undefined;
 	for (const block of ordered.filter(block => !executable(block))) append(block);
 	let current: string | undefined;
 	const emitted = new Set<string>();

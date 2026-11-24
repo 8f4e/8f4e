@@ -10,7 +10,7 @@ export const moduleMenu = (
 	items: readonly ContextMenuItem[]
 ): ContextMenuItem[] => {
 	const blockType = codeBlock.blockType;
-	const isProjectGroup = codeBlock.childProject !== undefined;
+	const isProjectGroup = codeBlock.childLevel !== undefined;
 	let blockLabel = 'module';
 
 	if (isProjectGroup) {

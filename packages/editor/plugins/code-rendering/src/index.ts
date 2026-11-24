@@ -21,8 +21,8 @@ export const codeRenderingPlugin: EditorPlugin = {
 			}
 		};
 		events.on('codeBlockLayoutsChanged', refresh);
-		const project = store.getState().project.activeLevel;
-		refresh({ project, codeBlocks: project.blocks });
+		const level = store.getState().project.activeLevel;
+		refresh({ level, codeBlocks: level.blocks });
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(context => {
 			const { draw, state, codeBlock } = context;
 			const rendering = renderingByBlock.get(codeBlock)!;

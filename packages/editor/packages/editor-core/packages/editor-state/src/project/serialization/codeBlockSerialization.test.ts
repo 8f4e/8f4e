@@ -74,17 +74,17 @@ describe('serializeCodeBlocks', () => {
 			gridX: -3,
 			gridY: 8,
 			entry: 'main',
-			childProject: { entries: ['main'], path: '', blocks: [nestedModule] },
+			childLevel: { entries: ['main'], path: '', blocks: [nestedModule] },
 		});
 		const group = createMockCodeBlock({
 			code: ['group audio', '; keep me', 'groupEnd'],
 			gridX: 10,
 			gridY: 20,
 			entry: 'main',
-			childProject: { entries: ['main', 'foo', 'bar'], path: '', blocks: [nestedGroup] },
+			childLevel: { entries: ['main', 'foo', 'bar'], path: '', blocks: [nestedGroup] },
 		});
 
-		group.childProject!.viewport = { x: 256, y: -128 };
+		group.childLevel!.viewport = { x: 256, y: -128 };
 		const result = serializeCodeBlocks([group], group);
 
 		expect(result).toEqual([
@@ -92,14 +92,14 @@ describe('serializeCodeBlocks', () => {
 				code: ['group audio', '; keep me', 'groupEnd'],
 				gridCoordinates: { x: 0, y: 0 },
 				entry: 'main',
-				childProject: {
+				childLevel: {
 					entries: ['main', 'foo', 'bar'],
 					blocks: [
 						{
 							code: ['group modulation', 'groupEnd'],
 							gridCoordinates: { x: -3, y: 8 },
 							entry: 'main',
-							childProject: {
+							childLevel: {
 								entries: ['main'],
 								blocks: [
 									{

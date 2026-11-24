@@ -215,12 +215,12 @@ describe('project Save plugin', () => {
 				name: 'Audio',
 				code: ['group Audio', 'groupEnd'],
 				entry: 'main',
-				childProject: { entries: [], path: '', blocks: [nested] },
+				childLevel: { entries: [], path: '', blocks: [nested] },
 				creationIndex: 1,
 			})
 		);
 		test.state.project.activeLevel = test.state.project.rootLevel.blocks.find(block => block.name === 'Audio')!
-			.childProject!;
+			.childLevel!;
 		await test.events.dispatchAsync('saveProject');
 		const project = parseProjectSource(await test.handle.writable.write.mock.calls[0][0].text());
 		expect(getProjectModules(project)[0].code).toContain('int value 1');

@@ -94,9 +94,9 @@ test('positions home using the installed mobile grid on the first frame and the 
 					id: 'first-frame',
 					setup: context => {
 						events = context.events;
-						const onResolvePosition = ({ project }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
+						const onResolvePosition = ({ level }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
 							const { vGrid, hGrid } = context.store.getState().viewport;
-							placements.push({ name: project.blocks.find(block => block.blockType === 'note')?.name, vGrid, hGrid });
+							placements.push({ name: level.blocks.find(block => block.blockType === 'note')?.name, vGrid, hGrid });
 						};
 						events.on('resolveInitialProjectViewport', onResolvePosition);
 						const unregister = context.drawers.registerCanvasDrawer(({ state, viewport }) => {

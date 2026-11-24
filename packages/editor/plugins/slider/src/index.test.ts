@@ -381,7 +381,7 @@ describe('slider plugin', () => {
 			test.memoryViews.float32[test.compiled.memoryPlan.modules['audio/voice'].memory.level.allocationUnitAddress]
 		).toBeCloseTo(0.8);
 		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
-		expect(test.block.childProject!.blocks.find(block => block.name === 'voice')!.code).toContain('float level 0.8');
+		expect(test.block.childLevel!.blocks.find(block => block.name === 'voice')!.code).toContain('float level 0.8');
 		expect(test.block.code).toEqual(original);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
 	});

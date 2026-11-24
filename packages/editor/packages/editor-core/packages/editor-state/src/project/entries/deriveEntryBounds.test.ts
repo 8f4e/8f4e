@@ -12,7 +12,7 @@ it('groups modules and project-group blocks by entry without including hidden ch
 			y: -16,
 			width: 96,
 			height: 48,
-			childProject: {
+			childLevel: {
 				entries: ['child'],
 				path: 'nested',
 				blocks: [createMockCodeBlock({ blockType: 'module', entry: 'child', x: 1000, y: 1000 })],

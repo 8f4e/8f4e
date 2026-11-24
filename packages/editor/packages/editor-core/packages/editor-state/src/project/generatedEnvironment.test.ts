@@ -55,7 +55,7 @@ entryEnd`);
 		expect(env().code).toContain('; Auto-generated environment constants');
 		expect(env().code).toContain('; @pos 0 0');
 		expect(onCompilerInput.mock.results[0].value.constants[0].code).toEqual(env().code);
-		const nested = state.project.rootLevel.blocks.find(block => block.childProject)!.childProject!.blocks[0];
+		const nested = state.project.rootLevel.blocks.find(block => block.childLevel)!.childLevel!.blocks[0];
 		expect(env().creationIndex).toBeGreaterThan(nested.creationIndex);
 	});
 
@@ -166,8 +166,8 @@ entryEnd
 groupEnd
 entryEnd`);
 		const rootEnvironment = env();
-		const group = state.project.rootLevel.blocks.find(block => block.childProject)!;
-		const authored = group.childProject!.blocks;
+		const group = state.project.rootLevel.blocks.find(block => block.childLevel)!;
+		const authored = group.childLevel!.blocks;
 		const previousCode = authored.map(block => [...block.code]);
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
@@ -175,7 +175,7 @@ entryEnd`);
 		events.on('codeBlockLayoutsChanged', onLayoutChanged);
 
 		events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(state.project.activeLevel).toBe(group.childProject);
+		expect(state.project.activeLevel).toBe(group.childLevel);
 		expect(authored.map(block => block.code)).toEqual(previousCode);
 		expect(state.projectChange.revision).toBe(revision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
@@ -186,7 +186,7 @@ entryEnd`);
 		expect(rootEnvironment.code).toContain('const PROVIDED 77');
 		expect(rootEnvironment.code).toContain('; @pos 0 0');
 		expect(onLayoutChanged).toHaveBeenCalledWith({
-			project: state.project.rootLevel,
+			level: state.project.rootLevel,
 			codeBlocks: [rootEnvironment],
 		});
 		expect(state.projectChange.revision).toBe(revision + 1);

@@ -26,7 +26,7 @@ function captureBlock(block: EditorCodeBlock): EditorBlockSnapshot {
 		gridX: block.gridX,
 		gridY: block.gridY,
 		isProjectScope: block.isProjectScope === true,
-		childProject: block.childProject ? captureLevel(block.childProject) : undefined,
+		childLevel: block.childLevel ? captureLevel(block.childLevel) : undefined,
 	};
 }
 
@@ -79,7 +79,7 @@ export function snapshotFromProjectModel(project: ProjectObjectModel): EditorPro
 		const execution: EditorBlockSnapshot[] = level.execution.map(block => ({
 			...createBlock(block),
 			entry: block.entry,
-			childProject:
+			childLevel:
 				block.type === 'group'
 					? createLevel(block, createChildProjectGroupPath(path, getCodeBlockNameFromSource(block.code)))
 					: undefined,

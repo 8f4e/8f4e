@@ -34,7 +34,7 @@ describe('history tracking effect', () => {
 		const { state, store, events } = createHistoryEditor();
 		const original = serializeToProject(state);
 		store.projectTransactions.apply(
-			{ inserts: [{ project: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }] },
+			{ inserts: [{ targetLevel: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }] },
 			{ history: 'checkpoint' }
 		);
 		const edited = serializeToProject(state);
@@ -381,7 +381,7 @@ describe('history tracking with real project mutations', () => {
 
 	it('does not create a snapshot for allocation without a net content change', async () => {
 		const { insertedBlocks } = store.projectTransactions.apply({
-			inserts: [{ project: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }],
+			inserts: [{ targetLevel: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }],
 		});
 		store.projectTransactions.apply({ deletes: insertedBlocks });
 		await vi.advanceTimersByTimeAsync(1000);

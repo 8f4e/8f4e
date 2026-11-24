@@ -5,7 +5,7 @@ import { walkProjectBlocks } from '../project/tree';
 function getProjectScopePath(codeBlock: EditorCodeBlock) {
 	return codeBlock.isProjectScope
 		? codeBlock.projectPath
-		: codeBlock.childProject
+		: codeBlock.childLevel
 			? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name)
 			: undefined;
 }

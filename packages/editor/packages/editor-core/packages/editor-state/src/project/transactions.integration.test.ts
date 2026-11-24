@@ -125,7 +125,7 @@ noteEnd`);
 		const incompleteSource = ['module invalid', 'unrecognizedInstruction 1'];
 		const result = store.projectTransactions.apply({
 			updates: [{ codeBlock: keep, code: incompleteSource }],
-			inserts: [{ project: root, source: { code: ['note inserted', '; @pos 8 9', 'noteEnd'] } }],
+			inserts: [{ targetLevel: root, source: { code: ['note inserted', '; @pos 8 9', 'noteEnd'] } }],
 			deletes: [remove],
 		});
 		expect(result.changed).toBe(true);
@@ -149,15 +149,15 @@ noteEnd`);
 		test.load();
 		const root = state.project.rootLevel;
 		const group = block('child');
-		const child = group.childProject!;
+		const child = group.childLevel!;
 		const existing = child.blocks[0];
 		const {
 			insertedBlocks: [rootInsert, childInsert],
 		} = store.projectTransactions.apply({
 			deletes: [block('remove')],
 			inserts: [
-				{ project: root, source: { code: ['note rootAdded', 'noteEnd'] } },
-				{ project: child, source: { code: ['note childAdded', 'noteEnd'] } },
+				{ targetLevel: root, source: { code: ['note rootAdded', 'noteEnd'] } },
+				{ targetLevel: child, source: { code: ['note childAdded', 'noteEnd'] } },
 			],
 		});
 		expect(root.blocks).toContain(rootInsert);

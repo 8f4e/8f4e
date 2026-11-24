@@ -216,7 +216,7 @@ it('does not inspect a block whose source replacement has not completed', () => 
 	try {
 		expect(() =>
 			test.events.dispatch('codeBlockLayoutsChanged', {
-				project: test.state.project.activeLevel,
+				level: test.state.project.activeLevel,
 				codeBlocks: [test.block],
 			})
 		).not.toThrow();

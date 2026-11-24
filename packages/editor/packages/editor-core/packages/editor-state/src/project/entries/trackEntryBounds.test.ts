@@ -19,7 +19,7 @@ it('refreshes entry bounds after layout, grid, and completed project changes', (
 		expect(test.state.project.entryBounds).toEqual([{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 }]);
 		test.block.width = 200;
 		test.events.dispatch('codeBlockLayoutsChanged', {
-			project: test.state.project.activeLevel,
+			level: test.state.project.activeLevel,
 			codeBlocks: [test.block],
 		});
 		expect(test.state.project.entryBounds[0].width).toBe(328);
@@ -79,7 +79,7 @@ it('stops reacting to store and geometry notifications after disposal', () => {
 		test.store.set('projectChange', { revision: 1, kind: 'edit', history: 'debounced' });
 		test.store.set('project.activeLevel.blocks', []);
 		test.events.dispatch('codeBlockLayoutsChanged', {
-			project: test.state.project.activeLevel,
+			level: test.state.project.activeLevel,
 			codeBlocks: [test.block],
 		});
 		test.events.dispatch('gridSizeChanged');

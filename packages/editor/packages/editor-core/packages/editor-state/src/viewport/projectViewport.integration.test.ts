@@ -28,10 +28,10 @@ function setup() {
 	const state = store.getState();
 	const load = (source: string) =>
 		events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\n${source}`) });
-	const resolver = vi.fn(({ project, position }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
+	const resolver = vi.fn(({ level, position }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
 		expect(state.gridSizeReady).toBe(true);
-		expect(project).toBe(state.project.activeLevel);
-		const block = project.blocks.find(block => block.blockType === 'module' || block.blockType === 'note');
+		expect(level).toBe(state.project.activeLevel);
+		const block = level.blocks.find(block => block.blockType === 'module' || block.blockType === 'note');
 		if (block) {
 			expect(block.width).toBeGreaterThan(0);
 			expect(block.height).toBeGreaterThan(0);
@@ -201,7 +201,7 @@ it('restores a remembered parent and resolves a group upon reentry if its first 
 	events.dispatch('openProjectGroup', { codeBlock: group });
 	expect(test.position()).toEqual({ x: 0, y: 0 });
 	events.dispatch('goToParentProjectGroup');
-	expect(group.childProject?.viewport).toBeUndefined();
+	expect(group.childLevel?.viewport).toBeUndefined();
 	expect(test.position()).toEqual({ x: 32, y: -16 });
 	setGridSize(state, events, { vGrid: 6, hGrid: 12 });
 	expect(test.resolver).toHaveBeenCalledOnce();

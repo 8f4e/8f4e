@@ -49,7 +49,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 	}));
 	const blendsByBlock = new WeakMap<EditorCodeBlock, SpringBlend>();
 	const entry = createEntryMotion(entryOptions, springOptions);
-	let previousProject: ProjectLevel | undefined;
+	let previousLevel: ProjectLevel | undefined;
 	let previousTime: number | undefined;
 	let viewportX = 0;
 	let viewportY = 0;
@@ -126,7 +126,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 		const interactionSuppressed = prefersReducedMotion() || draggedCodeBlock !== undefined;
 		const reset =
 			previousTime === undefined ||
-			activeLevel !== previousProject ||
+			activeLevel !== previousLevel ||
 			viewport.vGrid !== vGrid ||
 			viewport.hGrid !== hGrid ||
 			elapsedMs < 0 ||
@@ -136,7 +136,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 			interactionSuppressed ||
 			wasInteractionSuppressed;
 
-		previousProject = activeLevel;
+		previousLevel = activeLevel;
 		previousTime = frameTime;
 		viewportX = viewport.x;
 		viewportY = viewport.y;

@@ -16,7 +16,7 @@ export interface EditorLifecycleEvents {
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
 	/** Resolve first-visit placement after the destination project source and layout have settled. */
-	resolveInitialProjectViewport: { project: ProjectLevel; position: Position };
+	resolveInitialProjectViewport: { level: ProjectLevel; position: Position };
 	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
 	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };
 }

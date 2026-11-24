@@ -14,7 +14,7 @@ export interface LazyEditorPlugin {
 function collectProjectDirectives(blocks: readonly EditorCodeBlock[]): ParsedDirectiveRecord[] {
 	return blocks.flatMap(block => [
 		...block.parsedDirectives,
-		...collectProjectDirectives(block.childProject?.blocks ?? []),
+		...collectProjectDirectives(block.childLevel?.blocks ?? []),
 	]);
 }
 

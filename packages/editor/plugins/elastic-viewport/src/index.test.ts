@@ -40,7 +40,7 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 	const manualPan = (dx: number, dy = 0) =>
 		updateViewport(state, state.viewport.x + dx, state.viewport.y + dy, events, 'pan');
 	const settle = (...codeBlocks: EditorCodeBlock[]) =>
-		events.dispatch('codeBlockLayoutsChanged', { project: state.project.activeLevel, codeBlocks });
+		events.dispatch('codeBlockLayoutsChanged', { level: state.project.activeLevel, codeBlocks });
 	return { state, events, emitter, small, large, dispose, frame, pan, manualPan, settle };
 }
 

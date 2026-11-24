@@ -227,7 +227,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		return [
 			level,
 			...level.blocks.flatMap(block =>
-				block.childProject ? initialize(block.childProject, path ? `${path}/${block.name}` : block.name) : []
+				block.childLevel ? initialize(block.childLevel, path ? `${path}/${block.name}` : block.name) : []
 			),
 		];
 	};

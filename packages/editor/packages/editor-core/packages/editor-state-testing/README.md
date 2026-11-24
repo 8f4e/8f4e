@@ -29,15 +29,16 @@ project, provide a root level and select its child level:
 ```typescript
 const nested = [createMockCodeBlock({ name: 'voice', projectPath: 'Audio' })];
 const audio = { path: 'Audio', blocks: nested, entries: [] };
-const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })], entries: [] };
+const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childLevel: audio })], entries: [] };
 const state = createMockState({
 	project: { rootLevel: root, activeLevel: audio },
 });
 ```
 
 The generic code-block builder leaves `parsedDirectives` empty. Tests inside editor-state that need parsed source or
-directive derivation should use its local `pureHelpers/testingUtils/testUtils` helpers. Those helpers retain the
-editor-specific parsing behavior through a small wrapper around the shared block builder. All generic block defaults
-and geometry live here, together with their tests. The local helpers also re-export the shared state, viewport, and
-event-dispatcher builders. Explicit names and already parsed directives remain caller-owned overrides.
+directive derivation should use its local [mock editor-state helpers](../editor-state/src/__tests__/helpers/mockEditorState.ts).
+Those helpers retain the editor-specific parsing behavior through a small wrapper around the shared block builder.
+All generic block defaults and geometry live here, together with their tests. The local helpers also re-export the
+shared state, viewport, and event-dispatcher builders. Explicit names and already parsed directives remain caller-owned
+overrides.
 For a genuinely narrow API, prefer a fixture typed to that API's narrow contract rather than asserting it is a full state.

@@ -25,7 +25,7 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): EditorCode
 				name: group.name,
 				code: group.code,
 				projectPath,
-				childProject: {
+				childLevel: {
 					entries: [],
 					path: '',
 					blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
@@ -78,7 +78,7 @@ describe('shared exposed memory resolution', () => {
 
 	it('resolves nested and sibling namespaces without searching unrelated scopes', () => {
 		const { state, audio } = test;
-		const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
+		const nested = audio.childLevel!.blocks.find(block => block.name === 'nested')!;
 		expect(resolveMemoryTarget(state, getCodeBlockMemoryScope(audio), 'nested:gain')?.moduleId).toBe(
 			'audio/nested/voice'
 		);

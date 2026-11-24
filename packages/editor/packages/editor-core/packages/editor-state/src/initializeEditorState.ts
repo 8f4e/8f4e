@@ -15,6 +15,7 @@ import { validateFeatureFlags } from './featureFlags';
 import registerBlockDragging from './input/blockDragging';
 import registerBlockNavigation from './input/blockNavigation';
 import registerEditorModeHandlers from './input/editorMode';
+import registerPointerCaretSelection from './input/pointerCaretSelection';
 import registerPointerRouting from './input/pointerRouting';
 import { createLayoutCoordinator } from './layout/blockLayoutCoordinator';
 import { createLayoutRegistry } from './layout/layoutContributionRegistry';
@@ -83,6 +84,7 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 		membership,
 		coordinator
 	);
+	registerEffect(registerPointerCaretSelection(store, events));
 	registerEffect(trackBlockLayout(store, events, coordinator));
 	const editingStore = { ...store, projectTransactions };
 	registerEffect(registerProjectLoadCommands(projectTransactions, events));

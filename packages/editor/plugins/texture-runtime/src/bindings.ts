@@ -39,7 +39,7 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 				if (data && !bindings.has(data.address)) bindings.set(data.address, prepare(data.address));
 			}
 			bindingsByBlock.set(block, bindings);
-			collect(block.childProject?.blocks ?? []);
+			collect(block.childLevel?.blocks ?? []);
 		}
 	}
 

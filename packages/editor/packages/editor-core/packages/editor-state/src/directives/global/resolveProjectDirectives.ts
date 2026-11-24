@@ -8,7 +8,7 @@ import { resolveGlobalEditorDirectives } from './resolveGlobalEditorDirectives';
 function collectProjectCodeBlocks(codeBlocks: EditorCodeBlock[]): EditorCodeBlock[] {
 	return [...codeBlocks]
 		.sort(compareCodeBlocksByPosition)
-		.flatMap(block => [block, ...(block.childProject ? collectProjectCodeBlocks(block.childProject?.blocks) : [])]);
+		.flatMap(block => [block, ...(block.childLevel ? collectProjectCodeBlocks(block.childLevel?.blocks) : [])]);
 }
 
 /**

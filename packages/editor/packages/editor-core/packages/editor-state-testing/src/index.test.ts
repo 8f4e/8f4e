@@ -112,7 +112,7 @@ describe('editor-state testing utilities', () => {
 
 	it('preserves an explicitly selected nested slice and its project ownership', () => {
 		const nested = [createMockCodeBlock({ projectPath: 'group' })];
-		const root = [createMockCodeBlock({ name: 'group', childProject: { entries: [], path: '', blocks: nested } })];
+		const root = [createMockCodeBlock({ name: 'group', childLevel: { entries: [], path: '', blocks: nested } })];
 		const state = createMockState({
 			project: {
 				rootLevel: { entries: [], path: '', blocks: root },
@@ -120,7 +120,7 @@ describe('editor-state testing utilities', () => {
 			},
 		});
 		expect(state.project.rootLevel.blocks).toBe(root);
-		expect(state.project.activeLevel.blocks).toBe(root[0].childProject?.blocks);
+		expect(state.project.activeLevel.blocks).toBe(root[0].childLevel?.blocks);
 	});
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {

@@ -23,7 +23,7 @@ export default function registerGroupNavigation(store: StateManager<State>, even
 	}
 
 	function onOpenProjectGroup({ codeBlock }: OpenProjectGroupEvent): void {
-		if (codeBlock.childProject) showProject(codeBlock.childProject);
+		if (codeBlock.childLevel) showProject(codeBlock.childLevel);
 	}
 
 	function onGoToParentProjectGroup(): void {

@@ -8,7 +8,7 @@ export interface EditorBlockSnapshot {
 	readonly gridX: number;
 	readonly gridY: number;
 	readonly isProjectScope: boolean;
-	readonly childProject?: EditorLevelSnapshot;
+	readonly childLevel?: EditorLevelSnapshot;
 }
 
 export interface EditorLevelSnapshot {

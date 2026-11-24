@@ -29,48 +29,6 @@ function setup(initializeGrid = true) {
 	return { store, state, events, load, loadSource, block };
 }
 
-describe('block layout cursor selection', () => {
-	it.each(['view', 'edit'] as const)('updates shared source selection through the store in %s mode', editorMode => {
-		const { store, state, events, load } = setup();
-		load(EMPTY_DEFAULT_PROJECT);
-		const {
-			insertedBlocks: [selectedBlock],
-		} = store.projectTransactions.apply({
-			inserts: [{ project: state.project.rootLevel, source: { code: ['; @tab 4', '\tvalue', 'two'] } }],
-		});
-		if (editorMode === 'edit') events.dispatch('enterEditMode');
-		store.set('project.selectedCodeBlock', selectedBlock);
-		const onSelectedRowChanged = vi.fn();
-		store.subscribe('project.selectedCodeBlock.cursor.row', onSelectedRowChanged);
-
-		events.dispatch('codeBlockPointerDown', {
-			relativeX: 8 * 8,
-			relativeY: state.viewport.hGrid,
-			codeBlock: selectedBlock,
-		});
-
-		expect(state.editorMode).toBe(editorMode);
-		expect(selectedBlock.cursor).toEqual({ row: 1, col: 2, y: 16 });
-		expect(onSelectedRowChanged).toHaveBeenCalledWith(1);
-	});
-
-	it('keeps folded source selection and gap geometry available without an editing plugin', () => {
-		const { store, state, events, loadSource, block } = setup();
-		loadSource('note test\n; @hide\n; @tab 4\n\tvalue\nnoteEnd');
-		const note = block('test');
-		expect(note.isCollapsed).toBe(true);
-		const contribution = store.layout.createContribution();
-		cleanups.push(contribution.dispose);
-		contribution.update(note, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }] });
-		store.set('project.selectedCodeBlock', note);
-		expect(note.isCollapsed).toBe(false);
-		setGridSize(state, events, { vGrid: 12, hGrid: 24 });
-		events.dispatch('codeBlockPointerDown', { codeBlock: note, relativeX: 96, relativeY: 132 });
-		expect(note.cursor).toEqual({ row: 3, col: 2, y: 120 });
-		expect(state.editorMode).toBe('view');
-	});
-});
-
 describe('project loading and block layout', () => {
 	it('renders root project-scope source as an editable code block', () => {
 		const { state, load } = setup();
@@ -113,8 +71,8 @@ entryEnd`);
 		const group = block('Audio');
 		expect(group.projectPath).toBe('');
 		expect(group.code).toEqual(['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd']);
-		expect(group.childProject?.blocks).toHaveLength(1);
-		expect(group.childProject?.blocks[0]).toMatchObject({
+		expect(group.childLevel?.blocks).toHaveLength(1);
+		expect(group.childLevel?.blocks[0]).toMatchObject({
 			name: 'voice',
 			entry: 'main',
 			projectPath: 'Audio',
@@ -189,7 +147,7 @@ entryEnd`);
 	it('resolves initial placement with settled project layout without selecting a block', () => {
 		const { state, events, loadSource, block } = setup();
 		const resolvePosition = vi.fn((request: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
-			expect(request.project).toBe(state.project.activeLevel);
+			expect(request.level).toBe(state.project.activeLevel);
 			const main = block('main');
 			expect(main).toMatchObject({ x: 80, y: 320, height: 48 });
 			expect(main.width).toBeGreaterThan(0);

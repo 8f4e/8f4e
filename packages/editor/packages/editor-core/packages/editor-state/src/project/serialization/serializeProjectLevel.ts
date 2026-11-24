@@ -14,9 +14,9 @@ export default function serializeProjectLevel(level: ProjectLevel): ProjectObjec
 			project.code.push(...codeBlock.code);
 			continue;
 		}
-		if (codeBlock.childProject !== undefined) {
+		if (codeBlock.childLevel !== undefined) {
 			project.execution.push({
-				...serializeProjectLevel(codeBlock.childProject),
+				...serializeProjectLevel(codeBlock.childLevel),
 				type: 'group',
 				id: codeBlock.creationIndex,
 				name: codeBlock.name,

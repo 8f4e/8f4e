@@ -37,9 +37,7 @@ export function reconstructProject(
 				gridX: block.gridX,
 				gridY: block.gridY,
 				isProjectScope: block.isProjectScope,
-				childProject: block.childProject
-					? createProjectLevel(block.childProject, previousBlock?.childProject)
-					: undefined,
+				childLevel: block.childLevel ? createProjectLevel(block.childLevel, previousBlock?.childLevel) : undefined,
 			});
 			if (previousBlock && previousBlock === previousLevel?.selectedBlock) selectedBlock = editorBlock;
 			return editorBlock;

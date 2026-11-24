@@ -7,7 +7,7 @@ export default function deriveEntryBounds(
 ): EntryBounds[] {
 	const boundsByEntry = new Map<string, EntryBounds>();
 	for (const block of blocks) {
-		if (block.blockType !== 'module' && !block.childProject) continue;
+		if (block.blockType !== 'module' && !block.childLevel) continue;
 		const entryName = block.entry!;
 		const x = block.x - paddingX;
 		const y = block.y - paddingY;

@@ -49,8 +49,8 @@ function setup(withGrid = true) {
 		centerViewportOnCodeBlock(state.viewport, block(name), { alignment });
 	const gridPending = () => markGridSizePending(state);
 	const gridReady = (grid = { vGrid: 6, hGrid: 12 }) => setGridSize(state, events, grid);
-	const resolveInitial = (project: ProjectLevel = state.project.activeLevel, position = { x: 0, y: 0 }) => {
-		events.dispatch('resolveInitialProjectViewport', { project, position });
+	const resolveInitial = (level: ProjectLevel = state.project.activeLevel, position = { x: 0, y: 0 }) => {
+		events.dispatch('resolveInitialProjectViewport', { level, position });
 		return position;
 	};
 	const menu = () => {
@@ -348,7 +348,7 @@ moduleEnd
 entryEnd
 groupEnd
 entryEnd`);
-		const duplicate = test.block('audio').childProject!.blocks.find(block => block.name === 'duplicate')!;
+		const duplicate = test.block('audio').childLevel!.blocks.find(block => block.name === 'duplicate')!;
 		expect(test.state.codeErrors.home).toEqual([
 			{ codeBlockId: duplicate.creationIndex, lineNumber: 1, message: duplicateMessage },
 		]);

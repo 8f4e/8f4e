@@ -48,7 +48,11 @@ import { Engine } from 'glugglugglug';
 const editor = await initEditor(canvas, {
 	...options,
 	renderer: new Engine(canvas),
-	plugins: [createMouseInputPlugin({ inputTarget: canvas }), toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
+	plugins: [
+		createMouseInputPlugin({ inputTarget: canvas }),
+		toggleSkipExecutionPlugin,
+		createSwitchPlugin({ writeMemory }),
+	],
 });
 ```
 
@@ -71,7 +75,7 @@ their payloads for subscriptions and synchronous/asynchronous dispatch. Required
 block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
-Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level's
+Core dispatches `resolveInitialProjectViewport { level, position }` after settling the destination project level's
 source and layout, before committing a viewport for its first visit. Plugins may synchronously replace the request's
 pixel `position`, which defaults to the origin. If the requested grid is not ready, core defers resolution until layout
 settles. Remembered positions bypass this request.
@@ -382,8 +386,8 @@ Reading a revision does not serialize the project. Loads invalidate existing tok
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
 Source-mutating plugin actions use `store.projectTransactions.apply({ updates, inserts, deletes })`. An update supplies
-`{ codeBlock, code }` with replacement source, an insertion supplies `{ project, source }` with source and optional
-entry/child-project data, and deletion supplies existing block handles. All three collections are optional and form
+`{ codeBlock, code }` with replacement source, an insertion supplies `{ targetLevel, source }` with source and optional
+entry/child-level data, and deletion supplies existing block handles. All three collections are optional and form
 one synchronous transaction. Existing blocks and project levels retain their identities. For simple source-only
 changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
 adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.

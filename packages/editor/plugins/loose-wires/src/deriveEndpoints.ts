@@ -32,7 +32,7 @@ export function deriveEndpoints(codeBlock: EditorCodeBlock, state: State): WireE
 	const outputX = Math.round(codeBlock.width - width + width / 2);
 	const lineY = (lineNumber: number) =>
 		Math.round(displayRowToGridRow(lineNumber, codeBlock.gaps) * height + height / 2);
-	const isProjectGroup = codeBlock.childProject !== undefined;
+	const isProjectGroup = codeBlock.childLevel !== undefined;
 	const addMemory = (memory: PlannedMemoryDeclaration, lineNumber: number) => {
 		const isPointer = memory.pointerDepth > 0;
 		if (isPointer && memory.numberOfElements === 0) return;

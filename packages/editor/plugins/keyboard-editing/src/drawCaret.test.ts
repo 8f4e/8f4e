@@ -53,7 +53,7 @@ describe('editing caret presentation', () => {
 		state.viewport.vGrid = 12;
 		block.cursor.y = 144;
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [block],
 		});
 		presentation.drawCaret(context);
@@ -61,7 +61,7 @@ describe('editing caret presentation', () => {
 		block.code = ['; @tab 8', '\tvalue'];
 		block.tabStopsByLine = [[8], [8]];
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [block],
 		});
 		presentation.drawCaret(context);
@@ -71,7 +71,7 @@ describe('editing caret presentation', () => {
 		block.cursor.col = 1;
 		block.lineNumberColumnWidth = 3;
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [block],
 		});
 		presentation.drawCaret(context);
@@ -93,7 +93,7 @@ describe('editing caret presentation', () => {
 		expect(readSource).not.toHaveBeenCalled();
 		block.cursor.col = 3;
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [block],
 		});
 		expect(readSource).toHaveBeenCalled();
@@ -104,7 +104,7 @@ describe('editing caret presentation', () => {
 		presentation.dispose();
 		expect(emitter.listenerCount('codeBlockLayoutsChanged')).toBe(0);
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [block],
 		});
 		expect(readSource).not.toHaveBeenCalled();
@@ -147,7 +147,7 @@ describe('editing caret presentation', () => {
 		first.presentation.dispose();
 		secondBlock.cursor.col = 2;
 		second.events.dispatch('codeBlockLayoutsChanged', {
-			project: second.state.project.activeLevel,
+			level: second.state.project.activeLevel,
 			codeBlocks: [secondBlock],
 		});
 		second.presentation.drawCaret(second.context);
@@ -162,7 +162,7 @@ describe('editing caret presentation', () => {
 		const { events } = setup(state, block);
 		readSource.mockClear();
 		events.dispatch('codeBlockLayoutsChanged', {
-			project: state.project.activeLevel,
+			level: state.project.activeLevel,
 			codeBlocks: [createMockCodeBlock()],
 		});
 		expect(readSource).not.toHaveBeenCalled();

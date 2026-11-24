@@ -118,7 +118,7 @@ describe('compilation scheduling and publication', () => {
 					code: ['group nested', 'groupEnd'],
 					entry: parentEntry,
 
-					childProject: {
+					childLevel: {
 						path: '',
 						entries: [localEntry],
 						blocks: [

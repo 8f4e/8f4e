@@ -75,7 +75,7 @@ export function getMemoryDefaultEdits(state: State, groups: MemoryDefaultValue[]
 	const owners = new Map<string, EditorCodeBlock>();
 	const collectOwners = (blocks: EditorCodeBlock[]) => {
 		for (const block of blocks) {
-			if (block.childProject !== undefined) collectOwners(block.childProject?.blocks);
+			if (block.childLevel !== undefined) collectOwners(block.childLevel?.blocks);
 			else if (block.blockType === 'module') owners.set(getCodeBlockModuleId(block), block);
 		}
 	};

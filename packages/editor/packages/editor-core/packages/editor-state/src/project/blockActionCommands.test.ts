@@ -18,7 +18,7 @@ function setup(sources: readonly ProjectSourceBlock[] = []) {
 	setGridSize(state, events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const { insertedBlocks } = store.projectTransactions.apply({
-		inserts: sources.map(source => ({ project: state.project.activeLevel, source })),
+		inserts: sources.map(source => ({ targetLevel: state.project.activeLevel, source })),
 	});
 	const insert = (code: string[]) => events.dispatch('insertCodeBlock', { x: 100, y: 100, code });
 	return { state, events, store, blocks: insertedBlocks, insert };

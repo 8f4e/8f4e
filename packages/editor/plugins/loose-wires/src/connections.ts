@@ -23,31 +23,31 @@ export function createWireConnections(store: EditorPluginContext['store'], event
 	const endpointsByBlock = new WeakMap<EditorCodeBlock, WireEndpoints>();
 	const outputsByByteAddress = new Map<number, WireOutput>();
 	const geometry = { endpointsByBlock, outputsByByteAddress };
-	const refresh = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.project.activeLevel) return;
+	const refresh = ({ level, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (level !== state.project.activeLevel) return;
 		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		for (const block of codeBlocks) endpointsByBlock.set(block, deriveEndpoints(block, state));
 		outputsByByteAddress.clear();
-		for (const block of project.blocks) {
+		for (const block of level.blocks) {
 			for (const output of endpointsByBlock.get(block)?.outputs ?? []) {
 				outputsByByteAddress.set(output.byteAddress, output);
 			}
 		}
 	};
-	const refreshCurrentProject = () => {
-		const project = state.project.activeLevel;
-		refresh({ project, codeBlocks: project.blocks });
+	const refreshActiveLevel = () => {
+		const level = state.project.activeLevel;
+		refresh({ level, codeBlocks: level.blocks });
 	};
-	refreshCurrentProject();
+	refreshActiveLevel();
 	events.on('codeBlockLayoutsChanged', refresh);
-	store.subscribe('compiler.result', refreshCurrentProject);
+	store.subscribe('compiler.result', refreshActiveLevel);
 	return {
 		/** Visit active connections, including offscreen endpoints, using current pointer values. */
 		visit: (renderGeometry: RenderGeometry, memory: Int32Array, visitor: WireConnectionVisitor) =>
 			visitConnections(state, renderGeometry, memory, geometry, visitor),
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', refresh);
-			store.unsubscribe('compiler.result', refreshCurrentProject);
+			store.unsubscribe('compiler.result', refreshActiveLevel);
 			outputsByByteAddress.clear();
 		},
 	};

@@ -70,7 +70,7 @@ complete contract.
 
 Collection membership defines block type. The adapter uses the editor's already-known block type and does not make the
 compiler rediscover it from source text. Project groups are rendered as ordinary `EditorCodeBlock` values whose
-optional `childProject` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` and preserves
+optional `childLevel` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` and preserves
 its `entries` from `rootLevel`, regardless of which level `activeLevel` references. Level paths and browser-memory viewport positions
 are runtime data and are excluded from project exports and session storage. A group's `code` retains all source lines
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive

@@ -18,7 +18,7 @@ describe('project viewport placement', () => {
 		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
 			expect(name).toBe('resolveInitialProjectViewport');
 			const request = payload as EditorLifecycleEvents['resolveInitialProjectViewport'];
-			expect(request.project).toBe(project);
+			expect(request.level).toBe(project);
 			expect(request.position).toEqual({ x: 0, y: 0 });
 			request.position = { x: 840, y: 736 };
 		});
