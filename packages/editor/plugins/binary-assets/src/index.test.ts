@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createBinaryAssetsPlugin } from './index';
@@ -38,7 +38,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {

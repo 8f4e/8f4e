@@ -1,9 +1,9 @@
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
-import { createRenderGeometry } from './render-geometry';
-import { createRenderLayerRegistry, type RenderLayerContext } from './render-layers';
-import type { MemoryViews } from './types';
+import { createFrameBlockPositions } from '../frame/blockPositions';
+import type { MemoryViews } from '../memoryViews';
+import { createRenderLayerRegistry, type RenderLayerContext } from './renderLayerRegistry';
 
 const context: RenderLayerContext = {
 	gl: {} as WebGL2RenderingContext,
@@ -14,7 +14,7 @@ const frame = {
 	state,
 	viewport: state.viewport,
 	memoryViews: {} as MemoryViews,
-	renderGeometry: createRenderGeometry().prepare(state),
+	blockPositions: createFrameBlockPositions().prepare(state),
 };
 const createLayer = () => ({
 	draw: vi.fn(),

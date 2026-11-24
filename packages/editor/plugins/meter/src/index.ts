@@ -6,10 +6,10 @@ import type { Meter } from './types';
 
 export const meterPlugin: EditorPlugin = {
 	id: 'meter',
-	setup: ({ store, layout, drawers }) => {
+	setup: ({ store, layout, renderRegistry }) => {
 		const metersByBlock = new WeakMap<EditorCodeBlock, Meter[]>();
 		const unregisterPreparation = registerMeterPreparation(store, layout, metersByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawMeter(draw, metersByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

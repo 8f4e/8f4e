@@ -1,5 +1,4 @@
 import initEditor from '@8f4e/editor-core';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -28,7 +27,7 @@ test.each(['origin', 'panned'])('draws offscreen arrows at raw viewport edges: %
 				code: [`module block${id}`, `; @pos ${x} ${y}`, 'moduleEnd'],
 			})),
 		},
-		plugins: [dottedBackgroundPlugin, offscreenBlockArrowsPlugin],
+		plugins: [offscreenBlockArrowsPlugin],
 	});
 	editor.pauseRendering();
 	try {

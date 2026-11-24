@@ -1,6 +1,5 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -37,10 +36,9 @@ test('renders two phases of the selection animation', async () => {
 			],
 		},
 		plugins: [
-			dottedBackgroundPlugin,
 			{
 				id: 'fixture-text',
-				setup: ({ drawers, layout }) => {
+				setup: ({ renderRegistry, layout }) => {
 					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 					const removePreparation = layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(
@@ -48,7 +46,7 @@ test('renders two phases of the selection animation', async () => {
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.code.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid,

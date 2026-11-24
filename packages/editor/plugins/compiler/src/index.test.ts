@@ -22,7 +22,7 @@ function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: {} as EditorPluginContext['drawers'],
+		renderRegistry: {} as EditorPluginContext['renderRegistry'],
 	});
 	disposers.push(() => {
 		dispose();

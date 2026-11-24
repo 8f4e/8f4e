@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { removeMemoryConnectionsPlugin } from './index';
@@ -28,7 +28,7 @@ function setup(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {

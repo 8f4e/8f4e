@@ -22,7 +22,7 @@ async function setup(lines: string[]) {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers: {} as EditorPluginContext['drawers'],
+			renderRegistry: {} as EditorPluginContext['renderRegistry'],
 		})
 	);
 	events.dispatch('loadProject', {

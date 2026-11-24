@@ -36,7 +36,7 @@ function buttonBounds(state: State) {
 export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlugin {
 	return {
 		id: 'jump-to-error',
-		setup: ({ store, events, drawers }) => {
+		setup: ({ store, events, renderRegistry }) => {
 			const state = store.getState();
 			let target = findTarget(state);
 			const refreshTarget = () => {
@@ -97,7 +97,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 			const reset = () => {
 				pressed = false;
 			};
-			const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+			const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 				if (!target) return;
 				const button = buttonBounds(state);
 				draw.startGroup(0, 0);

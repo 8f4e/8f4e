@@ -3,11 +3,11 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import initView, {
-	createEditorDrawerRegistry,
+	createEditorRenderRegistry,
 	type GlyphIds,
 	type MemoryViews,
+	type SpriteEngine,
 	textToGlyphIds,
-	type WebUiRenderer,
 } from '@8f4e/web-ui';
 import { vi } from 'vitest';
 import { tooltipsPlugin } from '../index';
@@ -18,7 +18,7 @@ export const referenceTooltipViewport = { width: 800, height: 400 };
 
 export async function withReferenceTooltipFrame(
 	declaration: 'float&' | 'float*',
-	createRenderer: () => WebUiRenderer,
+	createRenderer: () => SpriteEngine,
 	assertFrame: () => Promise<void>
 ): Promise<void> {
 	const project = parseProjectSource(`8f4e/v1
@@ -38,7 +38,7 @@ entryEnd`);
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 	const removePreparation = store.layout.subscribe(({ codeBlock }) => {
 		glyphsByBlock.set(
@@ -46,7 +46,7 @@ entryEnd`);
 			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 		);
 	});
-	const disposeFixture = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	const disposeFixture = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.code.forEach((line, row) => {
 			const selected = state.project.selectedCodeBlock === codeBlock && row === codeBlock.cursor.row;
 			if (selected) {
@@ -69,7 +69,7 @@ entryEnd`);
 	const disposePlugin = tooltipsPlugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -104,7 +104,10 @@ entryEnd`);
 	memoryViews.float32[target.allocationUnitAddress + 1] = 2.5;
 	memoryViews.int32[compiled.memoryPlan.modules.inspect.memory.pointer.allocationUnitAddress] = target.byteAddress;
 	try {
-		const view = await initView(store, events, createRenderer(), memoryViews, { loading: store.loading, drawers });
+		const view = await initView(store, events, createRenderer(), memoryViews, {
+			loading: store.loading,
+			renderRegistry,
+		});
 		try {
 			now.mockReturnValue(1000);
 			view.renderFrame();

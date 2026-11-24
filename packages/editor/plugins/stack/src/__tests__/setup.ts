@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
 import { createDrawContextMock } from './rendering';
@@ -20,12 +20,12 @@ export async function setup(
 		installed = true,
 		mode = 'edit',
 		name = 'audio',
-		drawers = createEditorDrawerRegistry(),
+		renderRegistry = createEditorRenderRegistry(),
 	}: {
 		installed?: boolean;
 		mode?: 'edit' | 'view';
 		name?: string;
-		drawers?: ReturnType<typeof createEditorDrawerRegistry>;
+		renderRegistry?: ReturnType<typeof createEditorRenderRegistry>;
 	} = {}
 ) {
 	const text =
@@ -62,7 +62,7 @@ export async function setup(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -80,7 +80,7 @@ export async function setup(
 		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.drawSprite).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
 		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);

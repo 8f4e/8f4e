@@ -1,6 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { createLazyPluginLoaderPlugin, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
@@ -50,7 +49,6 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						? parseProjectSource(source.replace('; @plot &points count(points) -1 1\n', ''))
 						: project,
 				plugins: [
-					dottedBackgroundPlugin,
 					{
 						id: 'test-artifacts',
 						setup: services => {

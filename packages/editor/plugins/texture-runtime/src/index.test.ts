@@ -3,7 +3,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type RenderedCodeBlock } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type FrameBlockPosition } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { createTextureRuntimePlugin } from './index';
@@ -98,14 +98,14 @@ async function setup({
 		store.set('compiler.isCompiling', false);
 	};
 	if (!deferMetadata) publishMetadata(current.compiled);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = createTextureRuntimePlugin({
 		getMemory: () => (hasCompilerMemory ? current.memory : null),
 		getCodeBuffer: () => current.compiled.codeBuffer,
 	}).setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -114,10 +114,10 @@ async function setup({
 	events.dispatch('loadProject', { project: current.project });
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
-	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
+	const layers = renderRegistry.attachRenderLayers({ gl, palette: resolvePalette() });
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
 	const frame = (
-		blocks: readonly RenderedCodeBlock[] = state.project.activeLevel.blocks.map(codeBlock => ({
+		blocks: readonly FrameBlockPosition[] = state.project.activeLevel.blocks.map(codeBlock => ({
 			codeBlock,
 			x: codeBlock.x - state.viewport.x,
 			y: codeBlock.y - state.viewport.y,
@@ -127,7 +127,7 @@ async function setup({
 		layers.draw('afterSprites', {
 			state,
 			viewport: state.viewport,
-			renderGeometry: { blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) },
+			blockPositions: { ordered: blocks, byCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) },
 			memoryViews: {
 				int8: new Int8Array(buffer),
 				uint8: new Uint8Array(buffer),

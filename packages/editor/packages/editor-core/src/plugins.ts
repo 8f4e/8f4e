@@ -8,7 +8,7 @@ import type {
 	State,
 } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import type { EditorDrawerRegistry } from '@8f4e/web-ui';
+import type { EditorRenderRegistry } from '@8f4e/web-ui';
 import { disposeAll } from './disposeAll';
 
 export interface EditorPluginContext {
@@ -18,7 +18,7 @@ export interface EditorPluginContext {
 	directives: EditorDirectiveRegistry;
 	layout: EditorLayoutRegistry;
 	loading: EditorLoadingRegistry;
-	drawers: EditorDrawerRegistry;
+	renderRegistry: EditorRenderRegistry;
 }
 
 /** A trusted, synchronous extension installed once per editor instance. */

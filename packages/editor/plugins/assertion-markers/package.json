@@ -22,7 +22,6 @@
     "@8f4e/editor-palette": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-dotted-background": "*",
     "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",

@@ -5,8 +5,8 @@ import BackgroundRenderer from './backgroundRenderer';
 /** Draws a world-anchored dotted backdrop behind all sprites. */
 export const dottedBackgroundPlugin: EditorPlugin = {
 	id: 'dotted-background',
-	setup: ({ drawers }) =>
-		drawers.registerRenderLayer('beforeSprites', ({ gl, palette }) => {
+	setup: ({ renderRegistry }) =>
+		renderRegistry.registerRenderLayer('beforeSprites', ({ gl, palette }) => {
 			const background = new BackgroundRenderer(gl);
 			background.setPalette(toPaletteBytes(palette));
 			return {

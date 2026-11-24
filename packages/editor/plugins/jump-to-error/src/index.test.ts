@@ -4,7 +4,7 @@ import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createJumpToErrorPlugin } from './index';
 
@@ -29,7 +29,7 @@ function setup() {
 	});
 	const state = store.getState();
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 
 	const dispose = createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay }).setup({
 		store,
@@ -38,18 +38,18 @@ function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
 	const render = () =>
-		drawers.drawCanvasOverlays({
+		renderRegistry.drawCanvasOverlays({
 			draw,
 			state,
 			viewport: state.viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {

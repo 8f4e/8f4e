@@ -4,7 +4,6 @@ import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { errorMessagesPlugin } from '@8f4e/editor-plugin-error-messages';
-import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
@@ -106,7 +105,6 @@ noteEnd`;
 			initialProject: parseProjectSource(source),
 			plugins: [
 				contextMenuPlugin,
-				homePlugin,
 				createMouseInputPlugin({ inputTarget: canvas }),
 				fileSession.plugin,
 				createProjectOpenPlugin({ document, fileSession }),

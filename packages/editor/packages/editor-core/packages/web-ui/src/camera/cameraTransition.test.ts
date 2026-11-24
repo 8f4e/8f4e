@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
-import { createViewportTransition } from './viewport-transition';
+import { createCameraTransition } from './cameraTransition';
 
 const ORIGIN = { x: 0, y: 0 };
 
 it('glides the visual camera without stepping or mutating the committed viewport', () => {
 	const logical = { ...ORIGIN };
-	const camera = createViewportTransition(logical);
+	const camera = createCameraTransition(logical);
 	Object.assign(logical, { x: 81, y: -35 });
 	camera.onViewportChanged({ ...logical, source: 'navigation' });
 	expect(camera.isTransitioning()).toBe(true);
@@ -22,7 +22,7 @@ it('glides the visual camera without stepping or mutating the committed viewport
 });
 
 it('retargets rapid keyboard navigation from the last rendered position', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	const first = { x: 100, y: 200 };
 	camera.onViewportChanged({ ...first, source: 'navigation' });
 	camera.sample(first, 0, false);
@@ -36,7 +36,7 @@ it('retargets rapid keyboard navigation from the last rendered position', () => 
 });
 
 it('ignores a navigation commit that already matches the presented origin', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	const target = { x: 100, y: 200 };
 	camera.onViewportChanged({ ...target, source: 'navigation' });
 	camera.sample(target, 0, false);
@@ -48,7 +48,7 @@ it('ignores a navigation commit that already matches the presented origin', () =
 });
 
 it('cancels a sampled glide on a manual pan and allows the springs to respond to that pan', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	const target = { x: 100, y: 0 };
 	camera.onViewportChanged({ ...target, source: 'navigation' });
 	camera.sample(target, 0, false);
@@ -59,7 +59,7 @@ it('cancels a sampled glide on a manual pan and allows the springs to respond to
 });
 
 it('suppresses the springs if a pending pan includes any unsampled non-pan displacement', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	camera.onViewportChanged({ x: 100, y: 0, source: 'navigation' });
 	camera.onViewportChanged({ x: 150, y: 0 });
 	const last = { x: 151, y: 1 };
@@ -71,7 +71,7 @@ it('suppresses the springs if a pending pan includes any unsampled non-pan displ
 });
 
 it('snaps to the destination when reduced motion becomes active or a host reset cancels the transition', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	const first = { x: 100, y: 200 };
 	camera.onViewportChanged({ ...first, source: 'navigation' });
 	camera.sample(first, 0, false);
@@ -85,7 +85,7 @@ it('snaps to the destination when reduced motion becomes active or a host reset 
 });
 
 it('follows direct logical viewport changes without inventing a glide or moving backwards in time', () => {
-	const camera = createViewportTransition(ORIGIN);
+	const camera = createCameraTransition(ORIGIN);
 	const first = { x: 13, y: 7 };
 	expect(camera.sample(first, 0, false)).toEqual({ ...first, suppressBlockOffsets: false });
 	expect(camera.isTransitioning()).toBe(false);

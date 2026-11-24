@@ -24,7 +24,6 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-dotted-background": "*",
     "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",

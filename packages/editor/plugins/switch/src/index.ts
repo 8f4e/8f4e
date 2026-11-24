@@ -16,11 +16,11 @@ export function createSwitchPlugin({
 }): EditorPlugin {
 	return {
 		id: 'switch',
-		setup: ({ store, events, layout, drawers }) => {
+		setup: ({ store, events, layout, renderRegistry }) => {
 			const state = store.getState();
 			const widgets = new WeakMap<EditorCodeBlock, SwitchWidget[]>();
 			const unregisterPreparation = registerSwitchPreparation(store, layout, widgets);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				for (const control of widgets.get(codeBlock) ?? []) {
 					const value = memoryViews.int32[control.allocationUnitAddress] || 0;
 					if (value === control.onValue || value === control.offValue) {

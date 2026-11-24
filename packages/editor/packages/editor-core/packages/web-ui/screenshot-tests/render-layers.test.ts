@@ -1,7 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import init, { createEditorDrawerRegistry, type RenderLayerFactory } from '@8f4e/web-ui';
+import initializeWebUi, { createEditorRenderRegistry, type RenderLayerFactory } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import createMockMemoryViews from './utils/createMockMemoryViews';
@@ -12,8 +12,8 @@ test('renders no implicit background and allows layers before and after sprites 
 	const engine = new Engine(canvas);
 	const state = createMockState({ viewport: { width: 16, height: 16 } });
 	const store = createStateManager(state);
-	const drawers = createEditorDrawerRegistry();
-	drawers.registerCanvasBackgroundDrawer(({ draw }) => draw.drawFill(0, 0, PALETTE_INDICES.white, 8, 8));
+	const renderRegistry = createEditorRenderRegistry();
+	renderRegistry.registerCanvasBackgroundDrawer(({ draw }) => draw.drawFill(0, 0, PALETTE_INDICES.white, 8, 8));
 	const clearLayer =
 		(color: [number, number, number, number]): RenderLayerFactory =>
 		({ gl }) => ({
@@ -28,28 +28,28 @@ test('renders no implicit background and allows layers before and after sprites 
 		engine.gl.readPixels(x, 15 - y, 1, 1, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, rgba);
 		return [...rgba];
 	};
-	const renderer = await init(store, createMockEventDispatcher(), engine, createMockMemoryViews(), {
+	const renderer = await initializeWebUi(store, createMockEventDispatcher(), engine, createMockMemoryViews(), {
 		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
-		drawers,
+		renderRegistry,
 	});
 	try {
 		renderer.renderFrame();
 		expect(pixel(2, 2)).toEqual([255, 255, 255, 255]);
 		expect(pixel(12, 12)).toEqual([0, 0, 0, 0]);
 
-		const removeBlue = drawers.registerRenderLayer('beforeSprites', clearLayer([0, 0, 1, 1]));
+		const removeBlue = renderRegistry.registerRenderLayer('beforeSprites', clearLayer([0, 0, 1, 1]));
 		renderer.renderFrame();
 		expect(pixel(2, 2)).toEqual([255, 255, 255, 255]);
 		expect(pixel(12, 12)).toEqual([0, 0, 255, 255]);
 
-		const removeGreen = drawers.registerRenderLayer('beforeSprites', clearLayer([0, 1, 0, 1]));
+		const removeGreen = renderRegistry.registerRenderLayer('beforeSprites', clearLayer([0, 1, 0, 1]));
 		renderer.renderFrame();
 		expect(pixel(2, 2)).toEqual([255, 255, 255, 255]);
 		expect(pixel(12, 12)).toEqual([0, 255, 0, 255]);
 		removeGreen();
 		removeBlue();
 
-		const removeRed = drawers.registerRenderLayer('afterSprites', clearLayer([1, 0, 0, 1]));
+		const removeRed = renderRegistry.registerRenderLayer('afterSprites', clearLayer([1, 0, 0, 1]));
 		renderer.renderFrame();
 		expect(pixel(2, 2)).toEqual([255, 0, 0, 255]);
 		removeRed();

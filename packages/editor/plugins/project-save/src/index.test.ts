@@ -3,7 +3,7 @@ import { createProjectFileSession, type ProjectFileHandle } from '@8f4e/editor-f
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createProjectSavePlugin } from './index';
@@ -54,7 +54,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	const disposePlugin = () => {
 		pluginCleanup?.();

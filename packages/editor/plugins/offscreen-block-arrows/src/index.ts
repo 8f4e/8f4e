@@ -6,8 +6,8 @@ const [RIGHT, LEFT, DOWN, UP] = ['►', '◄', '▼', '▲'].map(textToGlyphIds)
 
 export const offscreenBlockArrowsPlugin: EditorPlugin = {
 	id: 'offscreen-block-arrows',
-	setup: ({ drawers }) =>
-		drawers.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => {
+	setup: ({ renderRegistry }) =>
+		renderRegistry.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => {
 			const { width, height, vGrid, hGrid } = state.viewport;
 			const centerX = Math.round(width / 2);
 			const centerY = Math.round(height / 2);

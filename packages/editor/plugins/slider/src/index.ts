@@ -16,11 +16,11 @@ export function createSliderPlugin({
 }): EditorPlugin {
 	return {
 		id: 'slider',
-		setup: ({ store, events, menus, layout, drawers }) => {
+		setup: ({ store, events, menus, layout, renderRegistry }) => {
 			const state = store.getState();
 			const slidersByBlock = new WeakMap<EditorCodeBlock, Slider[]>();
 			const unregisterPreparation = registerSliderPreparation(store, layout, slidersByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);

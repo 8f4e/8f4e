@@ -6,10 +6,10 @@ import type { Plot } from './types';
 
 export const plotPlugin: EditorPlugin = {
 	id: 'plot',
-	setup: ({ store, layout, drawers }) => {
+	setup: ({ store, layout, renderRegistry }) => {
 		const plotsByBlock = new WeakMap<EditorCodeBlock, Plot[]>();
 		const unregisterPreparation = registerPlotPreparation(store, layout, plotsByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawPlot(draw, plotsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

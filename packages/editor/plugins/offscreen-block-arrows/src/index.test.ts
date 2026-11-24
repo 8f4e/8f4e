@@ -1,18 +1,18 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { offscreenBlockArrowsPlugin } from './index';
 
 function setup() {
 	const state = createMockState({ viewport: { x: 0, y: 0, width: 1024, height: 768, vGrid: 8, hGrid: 16 } });
-	const drawers = createEditorDrawerRegistry();
-	const dispose = offscreenBlockArrowsPlugin.setup({ drawers } as unknown as EditorPluginContext);
+	const renderRegistry = createEditorRenderRegistry();
+	const dispose = offscreenBlockArrowsPlugin.setup({ renderRegistry } as unknown as EditorPluginContext);
 	const drawGlyphs = vi.fn();
 	const render = (x: number, y: number, codeBlock = createMockCodeBlock({ x, y })) => {
 		drawGlyphs.mockClear();
-		drawers.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, { codeBlock, x, y }, state);
+		renderRegistry.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, { codeBlock, x, y }, state);
 	};
 	return { state, drawGlyphs, render, dispose };
 }

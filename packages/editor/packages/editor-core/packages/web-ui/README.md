@@ -11,6 +11,16 @@ GPU passes before or after the sprite pass. Web-ui does not install a background
 The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
 depth testing must use a framebuffer with their own depth attachment.
 
+## Source layout
+
+- `src/index.ts` — Public exports; `initializeWebUi.ts` sets up fonts, frame drawing, and resource lifecycles.
+- `src/frame/` — Frame drawing and block traversal (`drawFrame.ts`, `drawCodeBlocks.ts`), shared frame inputs
+  (`frameContext.ts`, `blockPositions.ts`), plugin registrations (`renderRegistry.ts`), and statistics (`frameStats.ts`).
+- `src/camera/` — Visual viewport transitions.
+- `src/sprites/` — Sprite drawing coordinates and prepared glyph cells.
+- `src/font-and-palette/` — Font and palette configuration, loading, and grid updates.
+- `src/webgl/` — GPU render-layer lifecycles and shared shader helpers.
+
 ## Rendering plugins
 
 Canvas-wide render layers run in their registered stages, before or after sprites, in registration order within a stage.
@@ -22,26 +32,32 @@ views in the overlay, their optional WASM execution, and shared GPU resources.
 
 ## API
 
-`createEditorDrawerRegistry()` creates one ordered code-block drawer registry, background/ordinary canvas drawers, and canvas/modal overlay
-hooks and GPU render-layer registration. Pass that registry through `options.drawers` when initializing the renderer.
+`createEditorRenderRegistry()` creates an `EditorRenderRegistry` with ordered code-block drawers, canvas background
+and overlay hooks, and GPU render-layer registration. Pass that registry through `options.renderRegistry` when initializing
+the renderer.
 
 ### `registerCanvasBackgroundDrawer(drawer)`
 
 Registers viewport-coordinate sprite drawing below code blocks and above before-sprites GPU layers, independently of
-`canvasOverlays`. Callbacks receive `{ draw, state, viewport, memoryViews, renderGeometry }` and run in registration order. Registration returns an
+`canvasOverlays`. Callbacks receive `{ draw, state, viewport, memoryViews, blockPositions }` and run in registration order. Registration returns an
 unregister function. The entry-outlines plugin draws borders and labels from core entry bounds through this hook. It uses the shared
 `CanvasDrawer` and `CanvasDrawerContext` types.
 
-### `registerCanvasDrawer(drawer)`
+### `registerCanvasOverlay(drawer)`
 
-Registers viewport-coordinate drawing after code blocks and before canvas/modal overlays, independently of
-`canvasOverlays`. Registrations draw in order and return unregister functions. The context-menu plugin uses this
-hook; web-ui contains no menu-specific drawing. The shared types are `CanvasDrawer` and `CanvasDrawerContext`.
+Registers viewport-coordinate drawing above code blocks and below context-menu and modal overlays. This stage runs
+only when `featureFlags.canvasOverlays` is true. Registrations draw in order and return unregister functions.
+The shared types are `CanvasDrawer` and `CanvasDrawerContext`.
+
+### `registerContextMenuOverlay(drawer)`
+
+Registers viewport-coordinate drawing above ordinary canvas overlays and below modal overlays, independently of
+`canvasOverlays`. The context-menu plugin uses this hook; web-ui contains no menu-specific drawing.
 
 ### `registerModalOverlay(drawer)`
 
 Registers a viewport-coordinate sprite drawer after menus and ordinary canvas overlays. This stage runs even
-when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, viewport, memoryViews, renderGeometry }` and registration
+when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, viewport, memoryViews, blockPositions }` and registration
 returns an unregister function. `@8f4e/editor-plugin-dialogs` owns dialog layout and drawing through this hook;
 web-ui contains no dialog-specific rendering.
 
@@ -52,8 +68,8 @@ resolved palette when rendering resources become available. Its returned layer
 may implement `loadPalette(palette)` and `releaseMemory()` alongside the required `draw(context)` and
 `destroy()` methods. The latter runs on unregistration or renderer disposal.
 
-Each layer draws with `{ state, viewport, memoryViews, renderGeometry }`. The `viewport` supplies the current presented camera
-and installed grid dimensions, and geometry is prepared once before either GPU stage or sprite submission. Registrations made
+Each layer draws with `{ state, viewport, memoryViews, blockPositions }`. The `viewport` supplies the current presented camera
+and installed grid dimensions, and block positions are prepared once before either GPU stage or sprite submission. Registrations made
 after initialization receive the current palette. The dotted-background plugin derives dot geometry from the frame's grid;
 layers do not need font-specific notifications.
 
@@ -67,18 +83,19 @@ Editor-state parses and resolves configuration generically; web-ui owns supporte
 `state.editorConfig.font`, or the default font, in that order. Plugins can set or clear the override without changing
 project configuration. Web-ui subscribes to both font settings and loads an atlas for the selected font.
 
-### `init(store, events, renderer, memoryViews, options)`
+### `initializeWebUi(store, events, engine, memoryViews, options)`
 
-Initializes the web UI after project source and configuration have settled, without drawing or scheduling frames.
-Editor-core owns the browser frame loop. Web-ui takes ownership of the supplied renderer and destroys it on disposal
+The package's default export initializes the web UI after project source and configuration have settled, without drawing
+or scheduling frames. Editor-core owns the browser frame loop. Web-ui takes ownership of the supplied sprite engine and destroys it on disposal
 or startup failure.
 
 **Parameters:**
 
 - `store: StateManager<State>` - Editor state and configuration subscriptions
 - `events: EventDispatcher` - Announces layout grid size changes
-- `renderer: WebUiRenderer` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
+- `engine: SpriteEngine` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
+- `options.renderRegistry` - Optional render registry supplied by the host
 - `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. Only the selected font is loaded at startup; the default still applies to later configuration changes.
 - `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
 - `options.onRenderStats` - Optional callback for sampled render statistics
@@ -122,19 +139,19 @@ interface FontAtlas {
 ## State Usage
 
 The web-ui package reads editor state for drawing and installs font-derived grid dimensions.
-It prepares its renderer-owned `RenderGeometry` before each frame, containing a `RenderedCodeBlock` for every block in the active project,
+It prepares its renderer-owned `FrameBlockPositions` before each frame, containing a `FrameBlockPosition` for every block in the active project,
 including offscreen blocks. Each object references its original editor-state `codeBlock` and has a separate
 viewport-relative pixel origin (`x`, `y`). This is the block's presented position, distinct from its logical position in state.
-The ordered `blocks` array and `blocksByCodeBlock` map reference the same objects. Canvas drawers and GPU render layers
-receive this shared geometry so cross-block drawing can use the presented position of each endpoint. Consume it as read-only
-during drawing, without retaining the geometry or individual records across frames: web-ui reuses this storage and updates the
+The `ordered` array and `byCodeBlock` map reference the same objects. Canvas drawers and GPU render layers
+receive these shared block positions so cross-block drawing can use the presented position of each endpoint. Consume them as read-only
+during drawing, without retaining the positions or individual records across frames: web-ui reuses this storage and updates the
 positions before the next frame. Editor-state remains the owner of logical block positions and hit testing.
-The drawer registry can prepare one optional position effect per frame. Its per-block viewport-pixel translations
-are added when building shared geometry, before visibility checks or any drawing stage consumes the positions.
+The render registry can prepare one optional position effect per frame. Its per-block viewport-pixel translations
+are added when preparing shared block positions, before visibility checks or any drawing stage consumes them.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
 The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
 the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
-`registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, renderedBlock, state)` and handles offscreen blocks
+`registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, blockPosition, state)` and handles offscreen blocks
 in the same traversal using viewport coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
 `canvasOverlays` controls these decorations. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow geometry and drawing.
 `@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
@@ -145,7 +162,8 @@ Plugins can use `registerCodeBlockTextBackgroundDrawer(drawer)` for backgrounds 
 after code rendering. These callbacks use the ordinary block context and run in registration order; disposal removes
 only the registered callback.
 Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
-there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
+there are no separate block drawing phases. Canvas background drawers, canvas overlays, context-menu overlays, modal overlays,
+and GPU render layers retain their own hooks.
 Without the code-block-background plugin, web-ui draws no block surface.
 
 Editor-state commits navigation immediately and emits a single navigation-tagged `viewportChanged`. Web-ui samples a
@@ -187,7 +205,7 @@ indicators after source text. The renderer has no assertion-specific drawer or m
 
 ## Scene snapshot tests
 
-The test-only `AsciiRenderer` from `@8f4e/web-ui-testing` plugs into `init()` and renders the normal sprite sequence to a
+The test-only `AsciiRenderer` from `@8f4e/web-ui-testing` plugs into `initializeWebUi()` and renders the normal sprite sequence to a
 fixed-width text grid. Cells sample sprite rectangles at their centers: later visible sprites overwrite earlier ones,
 visible fills write spaces, and non-ASCII glyphs appear as `?`. This covers scene composition and clipping without a
 browser; font masks, partial alpha blending, the dotted backdrop, and GPU wires are not represented in the text output.

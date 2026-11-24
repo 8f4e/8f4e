@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
-import initWebUi, { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import initWebUi, { createEditorRenderRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
@@ -46,8 +46,8 @@ async function setup(text = source) {
 	const events = createEvents();
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
-	const registerRenderLayer = vi.spyOn(drawers, 'registerRenderLayer');
+	const renderRegistry = createEditorRenderRegistry();
+	const registerRenderLayer = vi.spyOn(renderRegistry, 'registerRenderLayer');
 	const dispose = connectorsPlugin.setup({
 		store,
 		events,
@@ -55,7 +55,7 @@ async function setup(text = source) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	const state = store.getState();
 	events.dispatch('loadProject', { project });
@@ -63,7 +63,7 @@ async function setup(text = source) {
 
 	const connectorPositions = (codeBlock: EditorCodeBlock) => {
 		const drawFill = vi.fn();
-		drawers.drawCodeBlock({
+		renderRegistry.drawCodeBlock({
 			draw: { drawFill, drawSprite: vi.fn() } as unknown as DrawContext,
 			state,
 			codeBlock,
@@ -72,18 +72,18 @@ async function setup(text = source) {
 		return drawFill.mock.calls.map(([x, y]) => ({ x, y }));
 	};
 	cleanups.push(store.dispose, dispose);
-	return { store, state, events, drawers, memoryViews, registerRenderLayer, connectorPositions };
+	return { store, state, events, renderRegistry, memoryViews, registerRenderLayer, connectorPositions };
 }
 
 describe('connectors plugin', () => {
 	it('renders connector sprites without registering a GPU wire pass', async () => {
-		const { store, events, drawers, memoryViews, registerRenderLayer } = await setup();
+		const { store, events, renderRegistry, memoryViews, registerRenderLayer } = await setup();
 		const width = 800;
 		const height = 320;
 		store.set('viewport.width', width);
 		store.set('viewport.height', height);
 		const ascii = new AsciiRenderer(width, height);
-		const view = await initWebUi(store, events, ascii, memoryViews, { drawers, loading: store.loading });
+		const view = await initWebUi(store, events, ascii, memoryViews, { renderRegistry, loading: store.loading });
 		cleanups.push(view.destroy);
 		view.renderFrame();
 		const frame = ascii.toText();
@@ -102,7 +102,7 @@ describe('connectors plugin', () => {
 	});
 
 	it('reads the relocated memory declaration after accepting compiler metadata', async () => {
-		const { store, state, drawers, memoryViews } = await setup();
+		const { store, state, renderRegistry, memoryViews } = await setup();
 		const block = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
 		const original = state.compiler.result.memoryPlan.modules.source.memory.output;
 		const compiled = await compileProject(parseProjectSource(source), { startingMemoryAllocationUnitAddress: 16 });
@@ -113,7 +113,7 @@ describe('connectors plugin', () => {
 
 		const markerColor = () => {
 			const drawSprite = vi.fn();
-			drawers.drawCodeBlock({
+			renderRegistry.drawCodeBlock({
 				draw: { drawFill: vi.fn(), drawSprite } as unknown as DrawContext,
 				state,
 				codeBlock: block,

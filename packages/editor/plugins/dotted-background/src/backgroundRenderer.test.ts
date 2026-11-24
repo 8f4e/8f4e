@@ -1,7 +1,7 @@
 import { PALETTE_INDICES, resolvePalette } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import BackgroundRenderer from './backgroundRenderer';
 import { dottedBackgroundPlugin } from './index';
@@ -187,9 +187,9 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 		state,
 		viewport: { ...state.viewport, x: 9, y: 3 },
 		memoryViews: {} as MemoryViews,
-		renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+		blockPositions: { ordered: [], byCodeBlock: new Map() },
 	};
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const services = {
 		store,
 		events,
@@ -197,11 +197,11 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	};
 	const dispose = dottedBackgroundPlugin.setup(services);
 	expect(gl.createProgram).not.toHaveBeenCalled();
-	const layers = drawers.attachRenderLayers({
+	const layers = renderRegistry.attachRenderLayers({
 		gl: context,
 		palette: resolvePalette({ canvas: '#1a334c' }),
 	});

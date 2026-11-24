@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { blockAuthoringPlugin } from './index';
 
@@ -24,7 +24,7 @@ function setup(installed = true) {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });

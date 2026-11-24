@@ -12,11 +12,11 @@ export function createCrossfadePlugin({
 }): EditorPlugin {
 	return {
 		id: 'crossfade',
-		setup: ({ store, events, layout, drawers }) => {
+		setup: ({ store, events, layout, renderRegistry }) => {
 			const state = store.getState();
 			const crossfadesByBlock = new WeakMap<EditorCodeBlock, Crossfade[]>();
 			const unregisterPreparation = registerCrossfadePreparation(store, layout, crossfadesByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawCrossfade(draw, crossfadesByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerCrossfadeInteraction(state, events, crossfadesByBlock, writeMemory);

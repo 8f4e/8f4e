@@ -4,9 +4,9 @@ import createTooltip from './state/effect';
 
 export const tooltipsPlugin: EditorPlugin = {
 	id: 'tooltips',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const tooltip = createTooltip(store, events);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 			drawTooltip(draw, state, codeBlock, memoryViews, tooltip.getState());
 		});
 		return () => {

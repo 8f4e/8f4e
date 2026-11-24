@@ -3,7 +3,6 @@ import { blockAuthoringPlugin } from '@8f4e/editor-plugin-block-authoring';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
-import { homePlugin } from '@8f4e/editor-plugin-home';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
@@ -18,7 +17,6 @@ test('creates and deletes a block through authoring contributions and menu prese
 		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: EMPTY_DEFAULT_PROJECT,
 		plugins: [
-			homePlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			blockAuthoringPlugin,

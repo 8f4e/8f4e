@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { FONT_NAMES, type Font } from '@8f4e/sprite-generator';
-import { createEditorDrawerRegistry, getAppearanceFont, registerWebUiConfig } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, getAppearanceFont, registerWebUiConfig } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 import { createFontPreviewPlugin } from '../index';
 
@@ -32,11 +32,11 @@ export function setup(defaultFont?: Font) {
 	const store = initState(events, { callbacks: {} });
 	registerWebUiConfig(store);
 	events.dispatch('loadProject', { project: project() });
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = createFontPreviewPlugin({ inputTarget, defaultFont }).setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -54,7 +54,7 @@ export function setup(defaultFont?: Font) {
 		store,
 		events,
 		font: () => getAppearanceFont(store.getState(), defaultFont),
-		drawCanvasOverlays: drawers.drawCanvasOverlays,
+		drawCanvasOverlays: renderRegistry.drawCanvasOverlays,
 		key,
 		disposePlugin,
 	};

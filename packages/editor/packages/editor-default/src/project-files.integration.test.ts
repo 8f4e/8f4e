@@ -5,7 +5,7 @@ import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
 import initState, { serializeToProject, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/file-events';
 
@@ -64,7 +64,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers: createEditorDrawerRegistry(),
+			renderRegistry: createEditorRenderRegistry(),
 		})
 	);
 	const disposePlugin = () => {

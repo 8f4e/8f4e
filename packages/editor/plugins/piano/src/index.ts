@@ -16,11 +16,11 @@ export function createPianoPlugin({
 }): EditorPlugin {
 	return {
 		id: 'piano',
-		setup: ({ store, events, menus, layout, drawers }) => {
+		setup: ({ store, events, menus, layout, renderRegistry }) => {
 			const state = store.getState();
 			const keyboardsByBlock = new WeakMap<EditorCodeBlock, PianoKeyboard[]>();
 			const unregisterPreparation = registerPianoPreparation(store, layout, keyboardsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerPianoInteraction(state, events, keyboardsByBlock, writeMemory);

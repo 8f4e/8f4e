@@ -1,4 +1,4 @@
-import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { createWatchPlugin } from '../index';
@@ -8,7 +8,7 @@ test('watch plugin renders its directive', async () => {
 	const width = 768;
 	const height = 512;
 	const ascii = new AsciiRenderer(width, height);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const test = await setup(
 		createWatchPlugin({ prefersReducedMotion: () => true }),
 		[
@@ -23,14 +23,14 @@ test('watch plugin renders its directive', async () => {
 			'; @watch end(buffer)',
 			'moduleEnd',
 		],
-		{ drawers }
+		{ renderRegistry }
 	);
 	test.state.viewport.width = width;
 	test.state.viewport.height = height;
 
 	const renderer = await initView(test.store, test.events, ascii, test.memoryViews, {
 		loading: test.store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {
@@ -45,7 +45,7 @@ test('dereferenced watch follows runtime pointer changes without selection', asy
 	const width = 512;
 	const height = 256;
 	const ascii = new AsciiRenderer(width, height);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const test = await setup(
 		createWatchPlugin({ prefersReducedMotion: () => true }),
 		[
@@ -60,13 +60,13 @@ test('dereferenced watch follows runtime pointer changes without selection', asy
 			'store',
 			'moduleEnd',
 		],
-		{ drawers, mode: 'view' }
+		{ renderRegistry, mode: 'view' }
 	);
 	test.state.viewport.width = width;
 	test.state.viewport.height = height;
 	const renderer = await initView(test.store, test.events, ascii, test.memoryViews, {
 		loading: test.store.loading,
-		drawers,
+		renderRegistry,
 	});
 	try {
 		renderer.renderFrame();

@@ -2,7 +2,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { DialogContent } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { dialogsPlugin } from './index';
@@ -25,11 +25,11 @@ function setup(initialDialog?: DialogContent) {
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 768 });
 	if (initialDialog) events.dispatch('addDialog', initialDialog);
 	const state = store.getState();
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = dialogsPlugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -42,11 +42,11 @@ function setup(initialDialog?: DialogContent) {
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawModalOverlays({
+		renderRegistry.drawModalOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
 			viewport: state.viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

@@ -2,7 +2,6 @@ import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { errorMessagesPlugin } from '@8f4e/editor-plugin-error-messages';
 import { createScopePlugin } from '@8f4e/editor-plugin-scope';
 import { Engine } from 'glugglugglug';
@@ -27,7 +26,6 @@ float signal 0
 moduleEnd
 entryEnd`),
 		plugins: [
-			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			errorMessagesPlugin,

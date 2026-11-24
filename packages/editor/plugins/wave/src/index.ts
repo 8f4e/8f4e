@@ -6,11 +6,11 @@ import type { Wave } from './types';
 
 export const wavePlugin: EditorPlugin = {
 	id: 'wave',
-	setup: ({ store, layout, drawers }) => {
+	setup: ({ store, layout, renderRegistry }) => {
 		const state = store.getState();
 		const wavesByBlock = new WeakMap<EditorCodeBlock, Wave[]>();
 		const unregisterPreparation = registerWavePreparation(store, layout, wavesByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawWaves(draw, state, wavesByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

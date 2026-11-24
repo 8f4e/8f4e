@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 import { createKeyboardModeSwitchingPlugin } from '../index';
 
@@ -17,11 +17,11 @@ export function setup(mode: 'view' | 'edit' = 'view') {
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	store.set('editorMode', mode);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = createKeyboardModeSwitchingPlugin({ inputTarget }).setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -33,5 +33,5 @@ export function setup(mode: 'view' | 'edit' = 'view') {
 		inputTarget.dispatchEvent(event);
 		return event;
 	};
-	return { state: store.getState(), drawCanvasOverlays: drawers.drawCanvasOverlays, key, disposePlugin };
+	return { state: store.getState(), drawCanvasOverlays: renderRegistry.drawCanvasOverlays, key, disposePlugin };
 }

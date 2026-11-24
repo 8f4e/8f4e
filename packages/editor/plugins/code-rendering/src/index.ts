@@ -6,7 +6,7 @@ import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
 
 export const codeRenderingPlugin: EditorPlugin = {
 	id: 'code-rendering',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		let renderingByBlock = new WeakMap<
 			EditorCodeBlock,
 			{ cells: ReturnType<typeof deriveCodeBlockCodeCells>; highlights: ReturnType<typeof deriveBlockHighlights> }
@@ -23,13 +23,13 @@ export const codeRenderingPlugin: EditorPlugin = {
 		events.on('codeBlockLayoutsChanged', refresh);
 		const level = store.getState().project.activeLevel;
 		refresh({ level, codeBlocks: level.blocks });
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(context => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(context => {
 			const { draw, state, codeBlock } = context;
 			const rendering = renderingByBlock.get(codeBlock)!;
 			if (!codeBlock.disabled) {
 				for (const { x, y, width, height, color } of rendering.highlights) draw.drawFill(x, y, color, width, height);
 			}
-			drawers.drawCodeBlockTextBackgrounds(context);
+			renderRegistry.drawCodeBlockTextBackgrounds(context);
 			if (state.featureFlags.codeLineSelection && state.project.selectedCodeBlock === codeBlock) {
 				draw.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}

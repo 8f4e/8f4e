@@ -1,6 +1,5 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
+import { PALETTE_INDICES, type PaletteToken, resolvePalette } from '@8f4e/editor-palette';
 import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createScreenshotPlugin } from '../src/index';
@@ -12,19 +11,8 @@ test('exports the rendered canvas as PNG without menus or screenshot overlays', 
 	canvas.style.width = '640px';
 	canvas.style.height = '384px';
 	document.body.appendChild(canvas);
-	const project = parseProjectSource(`8f4e/v1
-constants env
-; @pos 120 60
-constantsEnd
-note screenshot
-; @pos 4 3
-A clean capture of this patch.
-Menus and guides stay out of the image.
-noteEnd
-note offscreen
-; @pos 120 80
-This block is outside the viewport.
-noteEnd`);
+	const palette = resolvePalette();
+	const rgba = (token: PaletteToken) => palette.rgba[token].map(value => Math.round(value * 255));
 	let exportedBlob!: Blob;
 	const write = vi.fn(async (blob: Blob) => {
 		exportedBlob = blob;
@@ -38,44 +26,59 @@ noteEnd`);
 	let image: HTMLImageElement | undefined;
 	let imageUrl: string | undefined;
 	try {
+		const renderer = new Engine(canvas);
+		const { gl } = renderer;
+		const readLivePixel = (x: number, y: number) => {
+			const pixel = new Uint8Array(4);
+			gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+			return [...pixel];
+		};
 		editor = await initEditor(canvas, {
-			renderer: new Engine(canvas),
-			initialProject: project,
+			renderer,
 			plugins: [
-				dottedBackgroundPlugin,
 				{
-					...featurePlugin,
-					setup: context => {
-						events = context.events;
-						return featurePlugin.setup(context);
+					id: 'fixture-rendering',
+					setup: ({ events: dispatcher, renderRegistry }) => {
+						events = dispatcher;
+						const removeContent = renderRegistry.registerCanvasBackgroundDrawer(({ draw }) => {
+							draw.drawFill(32, 32, PALETTE_INDICES.primaryBase, 160, 64);
+						});
+						const removeOverlay = renderRegistry.registerCanvasOverlay(({ draw }) => {
+							draw.drawFill(32, 112, PALETTE_INDICES.positiveBase, 96, 48);
+						});
+						const removeMenu = renderRegistry.registerContextMenuOverlay(({ draw, state }) => {
+							if (state.contextMenu.open) draw.drawFill(520, 16, PALETTE_INDICES.negativeBase, 80, 80);
+						});
+						return () => {
+							removeMenu();
+							removeOverlay();
+							removeContent();
+						};
 					},
 				},
+				featurePlugin,
 			],
 		});
 		editor.state.editorMode = 'edit';
-		await vi.waitFor(() =>
-			expect(editor.state.project.activeLevel.blocks.some(block => block.code.includes('note screenshot'))).toBe(true)
-		);
 		editor.pauseRendering();
-		const pointer = (type: string, x: number, y: number) => {
-			events.dispatch(type, {
-				x,
-				y,
-				movementX: 0,
-				movementY: 0,
-				altKey: false,
-				buttons: type === 'pointerup' ? 0 : 1,
-				stopPropagation: false,
-				canvasWidth: canvas.width,
-				canvasHeight: canvas.height,
-			});
-		};
-		editor.renderFrame();
-		pointer('contextmenu', 520, 16);
+		events.dispatch('contextmenu', {
+			x: 520,
+			y: 16,
+			movementX: 0,
+			movementY: 0,
+			altKey: false,
+			buttons: 1,
+			stopPropagation: false,
+			canvasWidth: canvas.width,
+			canvasHeight: canvas.height,
+		});
 		await vi.waitFor(() =>
 			expect(editor.state.contextMenu.items.some(item => item.action === 'exportCanvasScreenshot')).toBe(true)
 		);
 		editor.renderFrame();
+		expect(readLivePixel(48, 48)).toEqual(rgba('primaryBase'));
+		expect(readLivePixel(48, 128)).toEqual(rgba('positiveBase'));
+		expect(readLivePixel(536, 32)).toEqual(rgba('negativeBase'));
 		const menu = editor.state.contextMenu;
 		const screenshotIndex = menu.items.findIndex(item => item.action === 'exportCanvasScreenshot');
 		events.dispatch('activateContextMenuItem', { index: screenshotIndex, x: 520, y: 16 });
@@ -84,14 +87,21 @@ noteEnd`);
 		expect(editor.state.featureFlags.canvasOverlays).toBe(true);
 		expect(showSaveFilePicker).toHaveBeenCalledWith(expect.objectContaining({ suggestedName: 'project.png' }));
 		expect(exportedBlob.type).toBe('image/png');
-		const bitmap = await createImageBitmap(exportedBlob);
-		expect([bitmap.width, bitmap.height]).toEqual([640, 384]);
-		bitmap.close();
 		imageUrl = URL.createObjectURL(exportedBlob);
 		image = document.createElement('img');
 		image.src = imageUrl;
 		document.body.appendChild(image);
 		await image.decode();
+		expect([image.naturalWidth, image.naturalHeight]).toEqual([640, 384]);
+		const decoded = document.createElement('canvas');
+		decoded.width = image.naturalWidth;
+		decoded.height = image.naturalHeight;
+		const context = decoded.getContext('2d')!;
+		context.drawImage(image, 0, 0);
+		const readExportedPixel = (x: number, y: number) => [...context.getImageData(x, y, 1, 1).data];
+		expect(readExportedPixel(48, 48)).toEqual(rgba('primaryBase'));
+		expect(readExportedPixel(48, 128)).toEqual([0, 0, 0, 0]);
+		expect(readExportedPixel(536, 32)).toEqual([0, 0, 0, 0]);
 		await expect(image).toMatchScreenshot();
 	} finally {
 		editor?.dispose();

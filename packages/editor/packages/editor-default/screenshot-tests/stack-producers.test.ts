@@ -2,7 +2,6 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { stackProducersPlugin } from '@8f4e/editor-plugin-stack-producers';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -34,7 +33,6 @@ entryEnd`);
 	const editor = await initEditor(canvas, {
 		renderer: new Engine(canvas),
 		plugins: [
-			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			stackProducersPlugin,

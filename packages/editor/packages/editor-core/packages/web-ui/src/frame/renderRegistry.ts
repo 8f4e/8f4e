@@ -1,8 +1,13 @@
 import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
-import type { DrawContext } from '../drawContext';
-import type { CodeBlockPositionEffect, RenderedCodeBlock, RenderGeometry } from '../render-geometry';
-import { createRenderLayerRegistry, type RenderLayerFactory, type RenderLayerStage } from '../render-layers';
-import type { MemoryViews } from '../types';
+import type { MemoryViews } from '../memoryViews';
+import type { DrawContext } from '../sprites/drawContext';
+import {
+	createRenderLayerRegistry,
+	type RenderLayerFactory,
+	type RenderLayerStage,
+} from '../webgl/renderLayerRegistry';
+import type { CodeBlockPositionEffect, FrameBlockPosition } from './blockPositions';
+import type { FrameContext } from './frameContext';
 
 export interface CodeBlockDrawerContext {
 	/** Drawing coordinates are relative to the visible block's presented origin. */
@@ -14,23 +19,18 @@ export interface CodeBlockDrawerContext {
 
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
-/** Draw one offscreen block's decoration using viewport coordinates and frame-scoped geometry. */
-export type OffscreenCodeBlockDrawer = (draw: DrawContext, renderedBlock: RenderedCodeBlock, state: State) => void;
+/** Draw one offscreen block's decoration using viewport coordinates and its frame-scoped position. */
+export type OffscreenCodeBlockDrawer = (draw: DrawContext, blockPosition: FrameBlockPosition, state: State) => void;
 
-export interface CanvasDrawerContext {
+export interface CanvasDrawerContext extends FrameContext {
 	/** Drawing coordinates are relative to the viewport's top-left corner. */
 	draw: DrawContext;
-	state: State;
-	/** The world origin and metrics used for this frame's drawing. Do not retain across frames. */
-	viewport: Readonly<State['viewport']>;
-	memoryViews: MemoryViews;
-	renderGeometry: RenderGeometry;
 }
 
 export type CanvasDrawer = (context: CanvasDrawerContext) => void;
 
 /** Registrations exposed to editor plugins. */
-export interface EditorDrawerRegistry {
+export interface EditorRenderRegistry {
 	/** Replace the presentation-only block position effect. Disposal clears only this registration. */
 	registerCodeBlockPositionEffect: (effect: CodeBlockPositionEffect) => () => void;
 	/** Register a GPU layer at a sprite boundary; its resources are bound to the renderer lifecycle. */
@@ -45,8 +45,6 @@ export interface EditorDrawerRegistry {
 	registerOffscreenCodeBlockDrawer: (drawer: OffscreenCodeBlockDrawer) => () => void;
 	/** Draw below code blocks, using viewport coordinates. */
 	registerCanvasBackgroundDrawer: (drawer: CanvasDrawer) => () => void;
-	/** Draw above code blocks and below overlays, using viewport coordinates. */
-	registerCanvasDrawer: (drawer: CanvasDrawer) => () => void;
 	/** Draw over ordinary canvas contents, before modal overlays, using viewport coordinates. */
 	registerCanvasOverlay: (drawer: CanvasDrawer) => () => void;
 	/** Draw context menus above ordinary overlays and below dialogs, independently of canvasOverlays. */
@@ -56,7 +54,7 @@ export interface EditorDrawerRegistry {
 }
 
 /** Renderer-owned invocation and lifecycle of registered drawers and layers. */
-export interface EditorDrawerHost extends EditorDrawerRegistry {
+export interface EditorRenderHost extends EditorRenderRegistry {
 	prepareCodeBlockOffsets: (
 		state: Parameters<CodeBlockPositionEffect>[0],
 		frameTime: number,
@@ -66,7 +64,6 @@ export interface EditorDrawerHost extends EditorDrawerRegistry {
 	drawCodeBlock: CodeBlockDrawer;
 	drawOffscreenCodeBlock: OffscreenCodeBlockDrawer;
 	drawCanvasBackground: CanvasDrawer;
-	drawCanvas: CanvasDrawer;
 	drawCanvasOverlays: CanvasDrawer;
 	drawContextMenuOverlays: CanvasDrawer;
 	drawModalOverlays: CanvasDrawer;
@@ -88,13 +85,12 @@ function createOrderedDrawerRegistry<Context>() {
 	};
 }
 
-export function createEditorDrawerRegistry(): EditorDrawerHost {
-	let offscreenDrawer: OffscreenCodeBlockDrawer | undefined;
+export function createEditorRenderRegistry(): EditorRenderHost {
+	let offscreenDrawer: { drawer: OffscreenCodeBlockDrawer } | undefined;
 	let positionEffect: { effect: CodeBlockPositionEffect } | undefined;
 	const blockDrawers = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
 	const textBackgrounds = createOrderedDrawerRegistry<CodeBlockDrawerContext>();
 	const canvasBackground = createOrderedDrawerRegistry<CanvasDrawerContext>();
-	const canvas = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const canvasOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const contextMenuOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
 	const modalOverlays = createOrderedDrawerRegistry<CanvasDrawerContext>();
@@ -115,20 +111,19 @@ export function createEditorDrawerRegistry(): EditorDrawerHost {
 		registerCodeBlockTextBackgroundDrawer: textBackgrounds.register,
 		drawCodeBlockTextBackgrounds: textBackgrounds.draw,
 		registerOffscreenCodeBlockDrawer: drawer => {
-			offscreenDrawer = drawer;
+			const registration = { drawer };
+			offscreenDrawer = registration;
 			return () => {
-				if (offscreenDrawer === drawer) offscreenDrawer = undefined;
+				if (offscreenDrawer === registration) offscreenDrawer = undefined;
 			};
 		},
 		registerCanvasBackgroundDrawer: canvasBackground.register,
-		registerCanvasDrawer: canvas.register,
 		registerCanvasOverlay: canvasOverlays.register,
 		registerContextMenuOverlay: contextMenuOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlock: blockDrawers.draw,
-		drawOffscreenCodeBlock: (draw, renderedBlock, state) => offscreenDrawer?.(draw, renderedBlock, state),
+		drawOffscreenCodeBlock: (draw, blockPosition, state) => offscreenDrawer?.drawer(draw, blockPosition, state),
 		drawCanvasBackground: canvasBackground.draw,
-		drawCanvas: canvas.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawContextMenuOverlays: contextMenuOverlays.draw,
 		drawModalOverlays: modalOverlays.draw,

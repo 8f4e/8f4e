@@ -18,10 +18,10 @@ by `codeBlockLayoutsChanged { level, codeBlocks }`. Only those blocks in the own
 source/display derivation, positions, and pending layout contributions;
 other blocks can still be updating. Unaffected blocks retain their prepared cells. The per-editor cache uses weak block
 keys so removed projects are not retained.
-It registers one `drawers.registerCodeBlockDrawer` callback, drawing nested highlights, contributed text backgrounds,
+It registers one `renderRegistry.registerCodeBlockDrawer` callback, drawing nested highlights, contributed text backgrounds,
 the selected-line fill, and cached text in that order. Feature plugins register backgrounds with
-`drawers.registerCodeBlockTextBackgroundDrawer`; code rendering invokes them through
-`drawers.drawCodeBlockTextBackgrounds` inside its own drawer, so late installations still draw below text. Hosts register their base block background before this plugin. Block parsing, highlighting, palette-index resolution, and glyph resolution happen
+`renderRegistry.registerCodeBlockTextBackgroundDrawer`; code rendering invokes them through
+`renderRegistry.drawCodeBlockTextBackgrounds` inside its own drawer, so late installations still draw below text. Hosts register their base block background before this plugin. Block parsing, highlighting, palette-index resolution, and glyph resolution happen
 outside the frame loop. Highlights cycle through three surface shades by nesting depth, clip at folded content, and
 are suppressed for disabled blocks. The plugin removes its listener, drawer, and cached data when disposed.
 It needs no browser resources.

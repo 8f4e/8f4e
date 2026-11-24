@@ -1,5 +1,4 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -13,7 +12,6 @@ test('renders code, notes, tabs, disabled blocks, folds, and contributed gaps', 
 	const editor = await initEditor(canvas, {
 		renderer: new Engine(canvas),
 		plugins: [
-			dottedBackgroundPlugin,
 			codeRenderingPlugin,
 			{
 				id: 'fixture-layout',

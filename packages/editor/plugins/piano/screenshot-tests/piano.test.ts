@@ -1,7 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import initState from '@8f4e/editor-state';
-import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
@@ -29,18 +28,16 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createEditorDrawerRegistry();
-	const context = {
+	const renderRegistry = createEditorRenderRegistry();
+	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
-	};
-	const disposeBackground = dottedBackgroundPlugin.setup(context);
-	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup(context);
+		renderRegistry,
+	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
@@ -67,7 +64,7 @@ entryEnd`);
 
 	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {
@@ -75,7 +72,6 @@ entryEnd`);
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		disposeBackground();
 		disposePlugin();
 		store.dispose();
 		canvas.remove();

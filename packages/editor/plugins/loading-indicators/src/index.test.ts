@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLoadingIndicatorsPlugin } from './index';
 
@@ -21,11 +21,11 @@ function setup(width = 320, height = 160, plugin = pluginWithMotion, initializeG
 	const store = initState(events, { callbacks: {} });
 	if (initializeGrid) setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	Object.assign(store.getState().viewport, { width, height });
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = plugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -35,11 +35,11 @@ function setup(width = 320, height = 160, plugin = pluginWithMotion, initializeG
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = () => {
 		for (const method of Object.values(draw)) method.mockClear();
-		drawers.drawCanvasOverlays({
+		renderRegistry.drawCanvasOverlays({
 			draw: draw as unknown as DrawContext,
 			state: store.getState(),
 			viewport: store.getState().viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

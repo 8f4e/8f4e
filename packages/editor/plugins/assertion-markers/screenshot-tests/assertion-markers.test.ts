@@ -1,6 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { serializeToProject } from '@8f4e/editor-state';
 import { runTests } from '@8f4e/test-runner';
 import { Engine } from 'glugglugglug';
@@ -24,7 +23,6 @@ async function setup(source: string) {
 		renderer: new Engine(canvas),
 		initialProject: parseProjectSource(source),
 		plugins: [
-			dottedBackgroundPlugin,
 			assertionMarkersPlugin,
 			{
 				id: 'test-state',

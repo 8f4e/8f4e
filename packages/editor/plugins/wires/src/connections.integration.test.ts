@@ -8,9 +8,9 @@ import initState, {
 } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
-import type { RenderGeometry } from '@8f4e/web-ui';
+import type { FrameBlockPositions } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
+import { createFrameBlockPositionsFixture } from './__tests__/blockPositionsFixture';
 import { createWireConnections, type WireConnectionVisitor } from './connections';
 
 const source = `8f4e/v1
@@ -48,9 +48,9 @@ async function setup(text = source, gridReady = true) {
 	const connections = createWireConnections(store, events);
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
-	const readConnections = (renderGeometry: RenderGeometry = createRenderGeometryFixture(state)) => {
+	const readConnections = (blockPositions: FrameBlockPositions = createFrameBlockPositionsFixture(state)) => {
 		const endpoints: Array<Parameters<WireConnectionVisitor>> = [];
-		connections.visit(renderGeometry, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
+		connections.visit(blockPositions, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
 		return endpoints;
 	};
 	cleanups.push(store.dispose, connections.dispose);
@@ -102,14 +102,14 @@ describe('wire connections', () => {
 		const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 		sourceBlock.x = -10000;
 		const [original] = readConnections();
-		const renderGeometry = createRenderGeometryFixture(state);
-		const blocks = renderGeometry.blocks.map(block =>
+		const blockPositions = createFrameBlockPositionsFixture(state);
+		const blocks = blockPositions.ordered.map(block =>
 			block.codeBlock === sink
 				? { ...block, x: block.x + 12, y: block.y + 20 }
 				: { ...block, x: block.x - 35, y: block.y - 70 }
 		);
 		expect(
-			readConnections({ blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) })
+			readConnections({ ordered: blocks, byCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) })
 		).toEqual([[original[0] + 12, original[1] + 20, original[2] - 35, original[3] - 70, original[4]]]);
 		expect(sourceBlock.x).toBe(-10000);
 		expect(readConnections()).toEqual([original]);

@@ -31,7 +31,7 @@ function prepareConnection(block: EditorCodeBlock, state: State): Array<{ y: num
 /** Draws immediate stack operand connections just outside the selected code block's left edge. */
 export const stackConnectionsPlugin: EditorPlugin = {
 	id: 'stack-connections',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const state = store.getState();
 		let selectedBlock: EditorCodeBlock | undefined;
 		let rows: ReturnType<typeof prepareConnection> = [];
@@ -50,9 +50,9 @@ export const stackConnectionsPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, viewport, renderGeometry }) => {
+		const unregister = renderRegistry.registerCanvasBackgroundDrawer(({ draw, viewport, blockPositions }) => {
 			if (!selectedBlock || !rows.length) return;
-			const renderedBlock = renderGeometry.blocksByCodeBlock.get(selectedBlock);
+			const renderedBlock = blockPositions.byCodeBlock.get(selectedBlock);
 			if (!renderedBlock) return;
 			const left = renderedBlock.x;
 			const x = left - viewport.vGrid;

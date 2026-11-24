@@ -2,7 +2,6 @@ import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, getEditorBlockId } from '@8f4e/editor-core';
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { displayRowToGridRow } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
@@ -63,7 +62,6 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			initialProject: parseProjectSource(projectSource),
 			plugins: [
 				compiler.plugin,
-				dottedBackgroundPlugin,
 				createLazyPluginLoaderPlugin([
 					{
 						id: 'texture-runtime',
@@ -219,7 +217,7 @@ int8u* pixels &screen:rgba
 ; @texture pixels ${magnification} 2 2
 moduleEnd
 entryEnd`),
-				plugins: [compiler.plugin, dottedBackgroundPlugin, createTextureRuntimePlugin(compiler)],
+				plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
 			});
 			editor.pauseRendering();
 			await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });

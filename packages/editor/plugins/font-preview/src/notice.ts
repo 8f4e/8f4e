@@ -21,7 +21,7 @@ interface FontNoticeLayout {
 }
 
 /** Keep the transient font credit panel outside modal state, source and history. */
-export function installFontNotice({ store, events, drawers }: EditorPluginContext): () => void {
+export function installFontNotice({ store, events, renderRegistry }: EditorPluginContext): () => void {
 	const state = store.getState();
 	let visibleFont: Font | undefined;
 	let layout: FontNoticeLayout | undefined;
@@ -98,7 +98,7 @@ export function installFontNotice({ store, events, drawers }: EditorPluginContex
 		prepare();
 		timer = setTimeout(hide, VISIBLE_MS);
 	};
-	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+	const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 		if (!layout) return;
 		draw.startGroup(layout.x, layout.y);
 		draw.drawFill(0, 0, PALETTE_INDICES.floatingSurface, layout.width, layout.height);

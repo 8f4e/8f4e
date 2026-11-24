@@ -1,5 +1,4 @@
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
-import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
@@ -11,7 +10,7 @@ test('meter plugin renders its directive', async () => {
 	canvas.height = 512;
 	canvas.style.background = '#000';
 	document.body.append(canvas);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const test = await setup(
 		meterPlugin,
 		[
@@ -27,23 +26,14 @@ test('meter plugin renders its directive', async () => {
 			'; @meter bipolar',
 			'moduleEnd',
 		],
-		{ drawers }
+		{ renderRegistry }
 	);
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
 
-	const disposeBackground = dottedBackgroundPlugin.setup({
-		store: test.store,
-		events: test.events,
-		menus: test.store.menus,
-		directives: test.store.directives,
-		layout: test.store.layout,
-		loading: test.store.loading,
-		drawers,
-	});
 	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {
@@ -51,7 +41,6 @@ test('meter plugin renders its directive', async () => {
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
-		disposeBackground();
 		canvas.remove();
 	}
 });

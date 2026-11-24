@@ -2,7 +2,7 @@ import { createMemoryViewManager } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
+import init, { createEditorRenderRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { dottedBackgroundPlugin } from '../src';
@@ -33,7 +33,7 @@ test('applies project appearance settings and restores defaults after project re
 	const store = initState(events, { callbacks: {} });
 	// Use the same registration order as editor-core, before renderer and project initialization.
 	registerWebUiConfig(store);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const removeBackground = dottedBackgroundPlugin.setup({
 		store,
 		events,
@@ -41,15 +41,15 @@ test('applies project appearance settings and restores defaults after project re
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
-	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
+	const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state }) => {
 		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
 	});
 	const { memoryViews } = createMemoryViewManager(new ArrayBuffer(0));
 	const renderer = await init(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: canvas.width, canvasHeight: canvas.height });

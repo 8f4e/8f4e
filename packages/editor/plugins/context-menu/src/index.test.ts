@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState, createMockViewport } from '@8f4e/editor-state-testing';
 import type { ContextMenuItem } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { contextMenuPlugin } from './index';
@@ -31,7 +31,7 @@ function setup({
 	const events = createEvents();
 	const state = createMockState({ viewport: createMockViewport(0, 0, 640, 480) });
 	const store = createStateManager(state);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const activate = vi.fn();
 	const close = vi.fn();
 	events.on('activateContextMenuItem', activate);
@@ -41,7 +41,7 @@ function setup({
 	const dispose = contextMenuPlugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 	} as unknown as EditorPluginContext);
 	if (!openBeforeInstall) open();
 	cleanups.push(() => {
@@ -51,11 +51,11 @@ function setup({
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = (viewport = state.viewport) => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawContextMenuOverlays({
+		renderRegistry.drawContextMenuOverlays({
 			draw: draw as unknown as DrawContext,
 			state,
 			viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

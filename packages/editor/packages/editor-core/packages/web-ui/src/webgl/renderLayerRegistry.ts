@@ -1,7 +1,5 @@
 import type { ResolvedPalette } from '@8f4e/editor-palette';
-import type { State } from '@8f4e/editor-state-types';
-import type { RenderGeometry } from './render-geometry';
-import type { MemoryViews } from './types';
+import type { FrameContext } from '../frame/frameContext';
 
 export type RenderLayerStage = 'beforeSprites' | 'afterSprites';
 
@@ -10,23 +8,17 @@ export interface RenderLayerContext {
 	palette: ResolvedPalette;
 }
 
-export interface RenderLayerFrameContext {
-	state: State;
-	/** The presented camera and installed grid dimensions for this frame. Do not retain across frames. */
-	viewport: Readonly<State['viewport']>;
-	memoryViews: MemoryViews;
-	renderGeometry: RenderGeometry;
-}
-
 /** A canvas-wide pass drawn in its registered stage, in plugin registration order. */
 export interface EditorRenderLayer {
-	draw: (context: RenderLayerFrameContext) => void;
+	draw: (context: FrameContext) => void;
 	loadPalette?: (palette: ResolvedPalette) => void;
 	releaseMemory?: () => void;
 	destroy: () => void;
 }
 
 export type RenderLayerFactory = (context: RenderLayerContext) => EditorRenderLayer;
+
+export type AttachedRenderLayers = ReturnType<ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers']>;
 
 function destroyLayers(layers: Iterable<EditorRenderLayer>): void {
 	const errors: unknown[] = [];
@@ -97,7 +89,7 @@ export function createRenderLayerRegistry() {
 				throw error;
 			}
 			return {
-				draw: (stage: RenderLayerStage, frame: RenderLayerFrameContext) => {
+				draw: (stage: RenderLayerStage, frame: FrameContext) => {
 					if (destroyed) return;
 					memoryReleased = false;
 					for (const registration of registrations) {

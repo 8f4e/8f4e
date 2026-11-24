@@ -48,7 +48,7 @@ function prepareRow(indicator: LoadingIndicator, columns: number, grid: number, 
 
 /** Prepare the overlay layout outside drawing; let the orbit linger briefly after pending work settles. */
 export function installPresentation(
-	{ store, events, drawers }: Pick<EditorPluginContext, 'store' | 'events' | 'drawers'>,
+	{ store, events, renderRegistry }: Pick<EditorPluginContext, 'store' | 'events' | 'renderRegistry'>,
 	options: Required<LoadingIndicatorsPluginOptions>
 ): () => void {
 	const state = store.getState();
@@ -108,7 +108,7 @@ export function installPresentation(
 		}
 	};
 	const visibility = installVisibility(store, prepare, options);
-	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+	const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 		const drawOrbit = canDrawOrbit && (orbitUntil === Infinity || Date.now() < orbitUntil);
 		if (!rows.length && !drawOrbit) return;
 		draw.startGroup(0, bottom);

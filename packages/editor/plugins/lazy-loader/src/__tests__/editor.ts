@@ -3,7 +3,7 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 import { createLazyPluginLoaderPlugin, type LazyEditorPlugin } from '../index';
 
@@ -42,7 +42,7 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	};
 	const dispose = createLazyPluginLoaderPlugin(plugins).setup(context);
 	cleanups.push(dispose);

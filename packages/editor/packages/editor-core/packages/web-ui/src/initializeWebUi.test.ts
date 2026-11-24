@@ -3,8 +3,8 @@ import { resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createEditorDrawerRegistry } from './drawers/registry';
-import initWebUi from './index';
+import { createEditorRenderRegistry } from './frame/renderRegistry';
+import initWebUi from './initializeWebUi';
 
 const loading = { add: vi.fn(() => ({ done: vi.fn(), fail: vi.fn(), cancel: vi.fn() })) };
 
@@ -38,7 +38,7 @@ const mocks = vi.hoisted(() => {
 	};
 });
 
-vi.mock('./drawers/codeBlocks', () => ({
+vi.mock('./frame/drawCodeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
 }));
 
@@ -87,11 +87,11 @@ describe('web-ui init', () => {
 	});
 
 	it('submits sprites through an injected renderer without constructing a canvas', async () => {
-		const drawers = createEditorDrawerRegistry();
-		drawers.registerCanvasDrawer(({ draw }) => draw.drawFill(4, 8, 0, 12, 16));
+		const renderRegistry = createEditorRenderRegistry();
+		renderRegistry.registerCanvasBackgroundDrawer(({ draw }) => draw.drawFill(4, 8, 0, 12, 16));
 		const view = await init(createStateManager(createMockState()), createMockEventDispatcher(), createMemoryViews(), {
 			loading,
-			drawers,
+			renderRegistry,
 		});
 		view.renderFrame();
 		expect(mocks.engine.drawSprite).toHaveBeenCalledExactlyOnceWith(4, 8, 256, 0, 12, 16);
@@ -101,10 +101,10 @@ describe('web-ui init', () => {
 
 	it('supplies the current presented viewport to a layer before sprite submission', async () => {
 		const store = createStateManager(createMockState({ viewport: { x: -23, y: 12 } }));
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const draw = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw, destroy: vi.fn() }));
-		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), { loading, drawers });
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw, destroy: vi.fn() }));
+		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), { loading, renderRegistry });
 		view.renderFrame();
 		expect(draw.mock.lastCall![0].viewport).toMatchObject({ x: -23, y: 12 });
 
@@ -130,18 +130,18 @@ describe('web-ui init', () => {
 				expect(state.gridSizeReady).toBe(false);
 			}
 		});
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const factory = vi.fn(() => {
 			expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
 			expect(state.gridSizeReady).toBe(true);
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
-		drawers.registerRenderLayer('beforeSprites', factory);
+		renderRegistry.registerRenderLayer('beforeSprites', factory);
 		const atlas = createFontAtlas(6, 10);
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
 		const view = await init(createStateManager(state), events, createMemoryViews(), {
 			loading,
-			drawers,
+			renderRegistry,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('x11miscfixed6x10');
@@ -183,13 +183,13 @@ describe('web-ui init', () => {
 		const error = new Error('Font unavailable');
 		const state = createMockState({ gridSizeReady: false, viewport: { vGrid: 0, hGrid: 0 } });
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const factory = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', factory);
+		renderRegistry.registerRenderLayer('beforeSprites', factory);
 		vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
-		await expect(init(createStateManager(state), events, createMemoryViews(), { loading, drawers })).rejects.toBe(
-			error
-		);
+		await expect(
+			init(createStateManager(state), events, createMemoryViews(), { loading, renderRegistry })
+		).rejects.toBe(error);
 		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		expect(state.gridSizeReady).toBe(false);
 		expect(events.dispatch).not.toHaveBeenCalled();
@@ -207,9 +207,9 @@ describe('web-ui init', () => {
 		});
 		const store = createStateManager(state);
 		const atlas = createFontAtlas(5, 8);
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const factory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn() }));
-		drawers.registerRenderLayer('beforeSprites', factory);
+		renderRegistry.registerRenderLayer('beforeSprites', factory);
 		let finishFont!: (value: typeof atlas) => void;
 		vi.mocked(loadFontAtlas).mockImplementationOnce(
 			() =>
@@ -219,7 +219,7 @@ describe('web-ui init', () => {
 		);
 		const mounting = init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
-			drawers,
+			renderRegistry,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('spleen5x8');
@@ -242,48 +242,46 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
-	it('renders canvas backgrounds, blocks, canvas drawers, and overlays in order with the current frame state', async () => {
+	it('renders canvas backgrounds, blocks, and overlays in order with the current frame state', async () => {
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const background = vi.fn();
-		const removeBackground = drawers.registerCanvasBackgroundDrawer(background);
-		const canvas = vi.fn();
-		const removeCanvas = drawers.registerCanvasDrawer(canvas);
+		const removeBackground = renderRegistry.registerCanvasBackgroundDrawer(background);
 		const overlay = vi.fn();
-		const removeOverlay = drawers.registerCanvasOverlay(overlay);
+		const removeOverlay = renderRegistry.registerCanvasOverlay(overlay);
 		const modal = vi.fn();
-		const removeModal = drawers.registerModalOverlay(modal);
+		const removeModal = renderRegistry.registerModalOverlay(modal);
 		// Late registrations stay within their drawing stage, even when higher stages registered first.
 		const menu = vi.fn();
-		const removeMenu = drawers.registerContextMenuOverlay(menu);
+		const removeMenu = renderRegistry.registerContextMenuOverlay(menu);
 		const lastOverlay = vi.fn();
-		const removeLastOverlay = drawers.registerCanvasOverlay(lastOverlay);
-		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, { loading, drawers });
+		const removeLastOverlay = renderRegistry.registerCanvasOverlay(lastOverlay);
+		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, {
+			loading,
+			renderRegistry,
+		});
 
 		overlay.mockClear();
 		background.mockClear();
-		canvas.mockClear();
 		modal.mockClear();
 		menu.mockClear();
 		lastOverlay.mockClear();
 		view.renderFrame();
 
 		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
-		const renderGeometry = mocks.drawCodeBlocks.mock.calls.at(-1)?.[4];
+		const blockPositions = mocks.drawCodeBlocks.mock.calls.at(-1)?.[4];
 
 		expect(frameState).toBe(state);
-		const frame = { draw: expect.anything(), state, viewport: state.viewport, memoryViews, renderGeometry };
+		const frame = { draw: expect.anything(), state, viewport: state.viewport, memoryViews, blockPositions };
 		expect(background).toHaveBeenCalledWith(frame);
 		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
-		expect(canvas).toHaveBeenCalledWith(frame);
-		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(canvas.mock.invocationCallOrder[0]);
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(overlay.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith(frame);
-		for (const drawer of [background, canvas, overlay, lastOverlay, menu, modal]) {
-			expect(drawer.mock.calls[0][0].renderGeometry).toBe(renderGeometry);
+		for (const drawer of [background, overlay, lastOverlay, menu, modal]) {
+			expect(drawer.mock.calls[0][0].blockPositions).toBe(blockPositions);
 		}
-		expect(canvas.mock.invocationCallOrder[0]).toBeLessThan(overlay.mock.invocationCallOrder[0]);
 		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(lastOverlay.mock.invocationCallOrder[0]);
 		expect(lastOverlay.mock.invocationCallOrder[0]).toBeLessThan(menu.mock.invocationCallOrder[0]);
 		expect(menu.mock.invocationCallOrder[0]).toBeLessThan(modal.mock.invocationCallOrder[0]);
@@ -292,18 +290,15 @@ describe('web-ui init', () => {
 		expect(overlay).toHaveBeenCalledOnce();
 		expect(lastOverlay).toHaveBeenCalledOnce();
 		expect(menu).toHaveBeenCalledTimes(2);
-		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(background).toHaveBeenCalledTimes(2);
 		expect(modal).toHaveBeenCalledTimes(2);
 		state.featureFlags.canvasOverlays = true;
 		removeBackground();
-		removeCanvas();
 		removeOverlay();
 		removeModal();
 		removeMenu();
 		removeLastOverlay();
 		view.renderFrame();
-		expect(canvas).toHaveBeenCalledTimes(2);
 		expect(background).toHaveBeenCalledTimes(2);
 		expect(overlay).toHaveBeenCalledOnce();
 		expect(lastOverlay).toHaveBeenCalledOnce();
@@ -319,16 +314,19 @@ describe('web-ui init', () => {
 			project: { activeLevel: { blocks: [block] } },
 		});
 		const memoryViews = createMemoryViews();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const drawAfter = vi.fn();
-		drawers.registerRenderLayer('afterSprites', () => ({ draw: drawAfter, destroy: vi.fn() }));
+		renderRegistry.registerRenderLayer('afterSprites', () => ({ draw: drawAfter, destroy: vi.fn() }));
 		const drawBefore = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn() }));
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn() }));
 		const drawTopLayer = vi.fn();
-		drawers.registerRenderLayer('afterSprites', () => ({ draw: drawTopLayer, destroy: vi.fn() }));
+		renderRegistry.registerRenderLayer('afterSprites', () => ({ draw: drawTopLayer, destroy: vi.fn() }));
 		const drawNextBefore = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawNextBefore, destroy: vi.fn() }));
-		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, { loading, drawers });
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: drawNextBefore, destroy: vi.fn() }));
+		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, {
+			loading,
+			renderRegistry,
+		});
 		view.renderFrame();
 
 		const layers = [drawBefore, drawNextBefore, drawAfter, drawTopLayer];
@@ -338,20 +336,20 @@ describe('web-ui init', () => {
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawAfter.mock.invocationCallOrder[0]);
 		expect(drawAfter.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 		const first = mocks.drawCodeBlocks.mock.calls[0][4];
-		const firstRecord = first.blocksByCodeBlock.get(block);
+		const firstRecord = first.byCodeBlock.get(block);
 		expect(firstRecord).toMatchObject({ x: 32, y: 80 });
 		for (const layer of layers) {
 			expect(layer.mock.calls[0][0]).toBe(drawBefore.mock.calls[0][0]);
-			expect(layer.mock.calls[0][0].renderGeometry).toBe(first);
+			expect(layer.mock.calls[0][0].blockPositions).toBe(first);
 		}
 
 		state.viewport.x = 16;
 		view.renderFrame();
 		const next = mocks.drawCodeBlocks.mock.calls[1][4];
 		expect(next).toBe(first);
-		expect(next.blocksByCodeBlock.get(block)).toBe(firstRecord);
+		expect(next.byCodeBlock.get(block)).toBe(firstRecord);
 		expect(firstRecord).toMatchObject({ x: 24, y: 80 });
-		for (const layer of layers) expect(layer.mock.calls[1][0].renderGeometry).toBe(next);
+		for (const layer of layers) expect(layer.mock.calls[1][0].blockPositions).toBe(next);
 		view.destroy();
 	});
 
@@ -362,31 +360,31 @@ describe('web-ui init', () => {
 			viewport: { x: 8, y: 16 },
 			project: { activeLevel: { blocks: [block, otherBlock] } },
 		});
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const drawBackground = vi.fn();
 		const drawLayer = vi.fn();
-		drawers.registerCanvasBackgroundDrawer(drawBackground);
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawLayer, destroy: vi.fn() }));
+		renderRegistry.registerCanvasBackgroundDrawer(drawBackground);
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: drawLayer, destroy: vi.fn() }));
 		const resolveOffset = vi.fn((candidate: typeof block) => (candidate === block ? { x: 6, y: -3 } : undefined));
 		const effect = vi.fn(() => resolveOffset);
-		const removePrevious = drawers.registerCodeBlockPositionEffect(effect);
-		const remove = drawers.registerCodeBlockPositionEffect(effect);
+		const removePrevious = renderRegistry.registerCodeBlockPositionEffect(effect);
+		const remove = renderRegistry.registerCodeBlockPositionEffect(effect);
 		removePrevious();
 
 		const view = await init(createStateManager(state), createMockEventDispatcher(), createMemoryViews(), {
 			loading,
-			drawers,
+			renderRegistry,
 		});
 		view.renderFrame(1250);
 
 		expect(effect).toHaveBeenCalledExactlyOnceWith(state, 1250, false);
 		expect(resolveOffset.mock.calls).toEqual([[block], [otherBlock]]);
 		const geometry = mocks.drawCodeBlocks.mock.calls[0][4];
-		const record = geometry.blocksByCodeBlock.get(block);
+		const record = geometry.byCodeBlock.get(block);
 		expect(record).toMatchObject({ x: 38, y: 77 });
-		expect(geometry.blocksByCodeBlock.get(otherBlock)).toMatchObject({ x: 792, y: 80 });
-		expect(drawBackground.mock.calls[0][0].renderGeometry).toBe(geometry);
-		expect(drawLayer.mock.calls[0][0].renderGeometry).toBe(geometry);
+		expect(geometry.byCodeBlock.get(otherBlock)).toMatchObject({ x: 792, y: 80 });
+		expect(drawBackground.mock.calls[0][0].blockPositions).toBe(geometry);
+		expect(drawLayer.mock.calls[0][0].blockPositions).toBe(geometry);
 		expect(block).toMatchObject({ x: 40, y: 96 });
 		expect(state.viewport).toMatchObject({ x: 8, y: 16 });
 
@@ -395,7 +393,7 @@ describe('web-ui init', () => {
 
 		expect(effect).toHaveBeenCalledOnce();
 		expect(mocks.drawCodeBlocks.mock.calls[1][4]).toBe(geometry);
-		expect(geometry.blocksByCodeBlock.get(block)).toBe(record);
+		expect(geometry.byCodeBlock.get(block)).toBe(record);
 		expect(record).toMatchObject({ x: 32, y: 80 });
 		view.destroy();
 	});
@@ -412,26 +410,26 @@ describe('web-ui init', () => {
 			off: emitter.off.bind(emitter),
 			dispatch: vi.fn(emitter.emit.bind(emitter)),
 		};
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const onBackground = vi.fn();
 		const onLayer = vi.fn();
 		const effect = vi.fn(() => () => ({ x: 12, y: 0 }));
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: onLayer, destroy: vi.fn() }));
-		drawers.registerCanvasBackgroundDrawer(onBackground);
-		drawers.registerCodeBlockPositionEffect(effect);
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: onLayer, destroy: vi.fn() }));
+		renderRegistry.registerCanvasBackgroundDrawer(onBackground);
+		renderRegistry.registerCodeBlockPositionEffect(effect);
 		const store = createStateManager(state);
-		const view = await init(store, events, createMemoryViews(), { loading, drawers });
+		const view = await init(store, events, createMemoryViews(), { loading, renderRegistry });
 		state.viewport.x = 124;
 		state.viewport.y = 72;
 		events.dispatch('viewportChanged', { previousX: 24, previousY: 32, x: 124, y: 72, source: 'navigation' });
 		events.dispatch.mockClear();
 		view.renderFrame(1000);
 		view.renderFrame(1100);
-		const { viewport, renderGeometry } = onBackground.mock.lastCall![0];
+		const { viewport, blockPositions } = onBackground.mock.lastCall![0];
 		expect(viewport).toBe(onLayer.mock.lastCall![0].viewport);
-		expect(renderGeometry).toBe(onLayer.mock.lastCall![0].renderGeometry);
+		expect(blockPositions).toBe(onLayer.mock.lastCall![0].blockPositions);
 		expect(viewport).toMatchObject({ x: 74, y: 52 });
-		expect(renderGeometry.blocksByCodeBlock.get(block)).toMatchObject({ x: 106, y: 44 });
+		expect(blockPositions.byCodeBlock.get(block)).toMatchObject({ x: 106, y: 44 });
 		expect(effect).toHaveBeenLastCalledWith(state, 1100, true);
 		expect(state.viewport).toMatchObject({ x: 124, y: 72 });
 		view.renderFrame(1200);
@@ -480,12 +478,12 @@ describe('web-ui init', () => {
 		const state = createMockState();
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const loadPalette = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
 		const view = await init(store, createMockEventDispatcher(), memoryViews, {
 			loading,
-			drawers,
+			renderRegistry,
 		});
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
 		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
@@ -509,10 +507,11 @@ describe('web-ui init', () => {
 		const state = createMockState();
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const drawBefore = vi.fn();
-		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn() }));
-		const view = await init(store, createMockEventDispatcher(), memoryViews, { loading, drawers });
+		const loadPalette = vi.fn();
+		renderRegistry.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn(), loadPalette }));
+		const view = await init(store, createMockEventDispatcher(), memoryViews, { loading, renderRegistry });
 		view.renderFrame();
 		expect(drawBefore.mock.lastCall![0].viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
 
@@ -527,12 +526,16 @@ describe('web-ui init', () => {
 		store.set('editorConfig.font', 'terminus10x18');
 		const drawAfter = vi.fn();
 		const pendingFactory = vi.fn(() => ({ draw: drawAfter, destroy: vi.fn() }));
-		drawers.registerRenderLayer('afterSprites', pendingFactory);
+		renderRegistry.registerRenderLayer('afterSprites', pendingFactory);
 		expect(pendingFactory).toHaveBeenCalledExactlyOnceWith({
 			gl: mocks.engine.gl,
 			palette: resolvePalette(),
 		});
 		expect(state.gridSizeReady).toBe(false);
+		const replacementPalette = resolvePalette({ primary: '#00ff00' });
+		store.set('editorConfig.color', { primary: '#00ff00' });
+		expect(loadPalette).toHaveBeenCalledExactlyOnceWith(replacementPalette);
+		expect(mocks.engine.setPalette).toHaveBeenLastCalledWith(toPaletteBytes(replacementPalette));
 		view.renderFrame();
 		expect(drawBefore.mock.lastCall![0]).toBe(drawAfter.mock.lastCall![0]);
 		expect(drawAfter.mock.lastCall![0].viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
@@ -540,6 +543,8 @@ describe('web-ui init', () => {
 		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(atlas.image, atlas.grid));
 		expect(state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
 		expect(state.gridSizeReady).toBe(true);
+		expect(loadPalette).toHaveBeenCalledOnce();
+		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(2);
 		view.renderFrame();
 		expect(drawBefore.mock.lastCall![0]).toBe(drawAfter.mock.lastCall![0]);
 		expect(drawAfter.mock.lastCall![0].viewport).toMatchObject({ vGrid: 10, hGrid: 18 });

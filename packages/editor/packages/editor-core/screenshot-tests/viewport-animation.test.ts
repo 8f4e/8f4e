@@ -33,11 +33,11 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 					const removePreparation = services.layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(codeBlock, textToGlyphIds(codeBlock.name));
 					});
-					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+					const removeDrawer = services.renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 						visible.push(codeBlock.name);
 						draw.drawGlyphs(8, 16, glyphsByBlock.get(codeBlock)!, PALETTE_INDICES.inkBase);
 					});
-					const removeCameraProbe = services.drawers.registerCanvasDrawer(({ viewport }) => {
+					const removeCameraProbe = services.renderRegistry.registerCanvasBackgroundDrawer(({ viewport }) => {
 						presented.x = viewport.x;
 						presented.y = viewport.y;
 					});

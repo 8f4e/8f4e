@@ -25,7 +25,7 @@ function easeInOutCubic(progress: number): number {
 }
 
 /** Own the visual camera between logical viewport commits. Sample only when drawing a frame. */
-export function createViewportTransition(initialOrigin: ViewportOrigin) {
+export function createCameraTransition(initialOrigin: ViewportOrigin) {
 	const frame: ViewportTransitionFrame = {
 		x: initialOrigin.x,
 		y: initialOrigin.y,

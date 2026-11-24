@@ -1,5 +1,3 @@
-import type { RenderHook } from 'glugglugglug';
-
 /**
  * Compiles and links a WebGL2 program while preserving detailed shader errors.
  *
@@ -66,19 +64,6 @@ export function prepareRenderPass(
 	gl.enable(gl.BLEND);
 	gl.blendEquation(gl.FUNC_ADD);
 	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-}
-
-/**
- * Removes one exact callback from a mutable render-hook list.
- *
- * @param hooks - Hook list to mutate.
- * @param hook - Callback identity to remove when present.
- */
-export function removeHook(hooks: RenderHook[], hook: RenderHook): void {
-	const index = hooks.indexOf(hook);
-	if (index !== -1) {
-		hooks.splice(index, 1);
-	}
 }
 
 /**

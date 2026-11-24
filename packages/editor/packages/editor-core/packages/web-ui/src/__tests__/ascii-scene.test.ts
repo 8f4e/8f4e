@@ -9,12 +9,12 @@ import type { State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { expect, it } from 'vitest';
-import type { EditorDrawerHost } from '../drawers/registry';
-import initWebUi, { createEditorDrawerRegistry, createSpriteCell, type MemoryViews, textToGlyphIds } from '../index';
+import type { EditorRenderHost } from '../frame/renderRegistry';
+import initWebUi, { createEditorRenderRegistry, createSpriteCell, type MemoryViews, textToGlyphIds } from '../index';
 
 async function withAsciiViewport(
 	state: State,
-	drawers: EditorDrawerHost,
+	renderRegistry: EditorRenderHost,
 	assertFrame: (render: () => string) => Promise<void>
 ): Promise<void> {
 	const emptyBuffer = new ArrayBuffer(0);
@@ -32,7 +32,7 @@ async function withAsciiViewport(
 	try {
 		const view = await initWebUi(store, createMockEventDispatcher(), renderer, memoryViews, {
 			defaultFont: 'ibmvga8x16',
-			drawers,
+			renderRegistry,
 			loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 		});
 		try {
@@ -71,16 +71,16 @@ it('snapshots a full viewport with overlap and clipping through the web-ui frame
 	const blocks = [back, front];
 	const glyphsByBlock = new Map(blocks.map(block => [block.creationIndex, block.code.map(textToGlyphIds)]));
 	const state = createMockState({ viewport, project: { activeLevel: { blocks } } });
-	const drawers = createEditorDrawerRegistry();
-	drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+	const renderRegistry = createEditorRenderRegistry();
+	renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 	});
-	drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		glyphsByBlock.get(codeBlock.creationIndex)!.forEach((glyphs, row) => {
 			draw.drawGlyphs(0, row * state.viewport.hGrid, glyphs, PALETTE_INDICES.inkBase);
 		});
 	});
-	await withAsciiViewport(state, drawers, async render => {
+	await withAsciiViewport(state, renderRegistry, async render => {
 		await expect(render()).toMatchFileSnapshot('./__snapshots__/overlapping-blocks.viewport.snap');
 	});
 });
@@ -105,11 +105,11 @@ it('snapshots the resolved text of a dragged module', async () => {
 	const codeCells = code.map(line =>
 		textToGlyphIds(line).map(glyph => (glyph === 32 ? null : createSpriteCell(glyph, PALETTE_INDICES.inkBase)))
 	);
-	const drawers = createEditorDrawerRegistry();
-	drawers.registerCodeBlockDrawer(({ draw, state }) => {
+	const renderRegistry = createEditorRenderRegistry();
+	renderRegistry.registerCodeBlockDrawer(({ draw, state }) => {
 		codeCells.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
-	await withAsciiViewport(state, drawers, async render => {
+	await withAsciiViewport(state, renderRegistry, async render => {
 		await expect(render()).toMatchFileSnapshot('./__snapshots__/dragged-module.viewport.snap');
 	});
 });

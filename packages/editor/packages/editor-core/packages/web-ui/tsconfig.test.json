@@ -2,15 +2,9 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"rootDir": "."
+		"rootDir": ".",
+		"types": ["vitest/globals", "@vitest/browser/matchers", "node"]
 	},
-	"include": [
-		"src/**/*.ts",
-		"src/**/*.test.ts",
-		"src/**/*.spec.ts"
-	],
-	"exclude": [
-		"node_modules",
-		"dist"
-	]
+	"include": ["src/**/*.ts", "screenshot-tests/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
 }

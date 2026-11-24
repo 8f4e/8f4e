@@ -1,10 +1,10 @@
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { describe, expect, it, vi } from 'vitest';
-import type { DrawContext } from '../../drawContext';
-import { createRenderGeometry } from '../../render-geometry';
-import type { MemoryViews } from '../../types';
-import { createEditorDrawerRegistry } from '../registry';
-import drawCodeBlocks from './index';
+import type { MemoryViews } from '../memoryViews';
+import type { DrawContext } from '../sprites/drawContext';
+import { createFrameBlockPositions } from './blockPositions';
+import drawCodeBlocks from './drawCodeBlocks';
+import { createEditorRenderRegistry } from './renderRegistry';
 
 function createMemoryViews(): MemoryViews {
 	return {
@@ -33,23 +33,23 @@ describe('drawCodeBlocks', () => {
 			viewport: { x: 8, y: -16 },
 			project: { activeLevel: { entries: [], path: '', blocks: [visible, offscreen] } },
 		});
-		const renderGeometry = createRenderGeometry().prepare(state);
+		const blockPositions = createFrameBlockPositions().prepare(state);
 		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const calls: string[] = [];
-		drawers.registerCodeBlockDrawer(context => {
+		renderRegistry.registerCodeBlockDrawer(context => {
 			expect(context).toEqual({ draw, state, codeBlock: visible, memoryViews });
 			expect(context.codeBlock).toBe(visible);
 			expect(draw.startGroup).toHaveBeenLastCalledWith(8, 32);
 			calls.push('first');
 		});
-		const removeSecond = drawers.registerCodeBlockDrawer(() => calls.push('second'));
-		drawers.registerCodeBlockDrawer(() => calls.push('third'));
-		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
+		const removeSecond = renderRegistry.registerCodeBlockDrawer(() => calls.push('second'));
+		renderRegistry.registerCodeBlockDrawer(() => calls.push('third'));
+		drawCodeBlocks(draw, state, memoryViews, renderRegistry, blockPositions);
 		expect(calls).toEqual(['first', 'second', 'third']);
 		removeSecond();
-		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
+		drawCodeBlocks(draw, state, memoryViews, renderRegistry, blockPositions);
 		expect(calls).toEqual(['first', 'second', 'third', 'first', 'third']);
 	});
 
@@ -62,25 +62,25 @@ describe('drawCodeBlocks', () => {
 				activeLevel: { entries: [], path: '', blocks: [offscreen, visible, lastOffscreen] },
 			},
 		});
-		const renderGeometry = createRenderGeometry().prepare(state);
+		const blockPositions = createFrameBlockPositions().prepare(state);
 		const draw = createDrawContext();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const calls: string[] = [];
-		drawers.registerOffscreenCodeBlockDrawer((context, renderedBlock, currentState) => {
+		renderRegistry.registerOffscreenCodeBlockDrawer((context, renderedBlock, currentState) => {
 			expect(context).toBe(draw);
 			expect(currentState).toBe(state);
-			expect(renderedBlock).toBe(renderGeometry.blocksByCodeBlock.get(renderedBlock.codeBlock));
+			expect(renderedBlock).toBe(blockPositions.byCodeBlock.get(renderedBlock.codeBlock));
 			calls.push(renderedBlock.codeBlock === offscreen ? 'offscreen' : 'last offscreen');
 		});
-		drawers.registerCodeBlockDrawer(() => calls.push('visible'));
-		drawCodeBlocks(draw, state, createMemoryViews(), drawers, renderGeometry);
+		renderRegistry.registerCodeBlockDrawer(() => calls.push('visible'));
+		drawCodeBlocks(draw, state, createMemoryViews(), renderRegistry, blockPositions);
 		expect(calls).toEqual(['offscreen', 'visible', 'last offscreen']);
 		expect(draw.startGroup).toHaveBeenCalledExactlyOnceWith(24 - state.viewport.x, 32 - state.viewport.y);
 		expect(draw.endGroup).toHaveBeenCalledOnce();
 
 		state.featureFlags.canvasOverlays = false;
 		calls.length = 0;
-		drawCodeBlocks(draw, state, createMemoryViews(), drawers, renderGeometry);
+		drawCodeBlocks(draw, state, createMemoryViews(), renderRegistry, blockPositions);
 		expect(calls).toEqual(['visible']);
 	});
 
@@ -94,16 +94,16 @@ describe('drawCodeBlocks', () => {
 			{ codeBlock: logicalOffscreen, x: 5, y: 15 },
 			{ codeBlock: logicalVisible, x: 3000, y: 20 },
 		];
-		const renderGeometry = { blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) };
+		const blockPositions = { ordered: blocks, byCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) };
 		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const visible = vi.fn();
 		const offscreen = vi.fn();
-		drawers.registerCodeBlockDrawer(visible);
-		drawers.registerOffscreenCodeBlockDrawer(offscreen);
+		renderRegistry.registerCodeBlockDrawer(visible);
+		renderRegistry.registerOffscreenCodeBlockDrawer(offscreen);
 
-		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
+		drawCodeBlocks(draw, state, memoryViews, renderRegistry, blockPositions);
 
 		expect(draw.startGroup).toHaveBeenCalledExactlyOnceWith(5, 15);
 		expect(visible).toHaveBeenCalledExactlyOnceWith({ draw, state, codeBlock: logicalOffscreen, memoryViews });
@@ -113,37 +113,53 @@ describe('drawCodeBlocks', () => {
 	});
 
 	it('replaces the offscreen drawer and clears only the current registration on disposal', () => {
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const draw = createDrawContext();
 		const state = createMockState();
 		const codeBlock = createMockCodeBlock({ x: 10000 });
 		const block = { codeBlock, x: 10000, y: 0 };
 		const first = vi.fn();
 		const second = vi.fn();
-		drawers.drawOffscreenCodeBlock(draw, block, state);
-		const removeFirst = drawers.registerOffscreenCodeBlockDrawer(first);
-		const removeSecond = drawers.registerOffscreenCodeBlockDrawer(second);
+		renderRegistry.drawOffscreenCodeBlock(draw, block, state);
+		const removeFirst = renderRegistry.registerOffscreenCodeBlockDrawer(first);
+		const removeSecond = renderRegistry.registerOffscreenCodeBlockDrawer(second);
 		removeFirst();
-		drawers.drawOffscreenCodeBlock(draw, block, state);
+		renderRegistry.drawOffscreenCodeBlock(draw, block, state);
 		expect(first).not.toHaveBeenCalled();
 		expect(second).toHaveBeenCalledExactlyOnceWith(draw, block, state);
 		removeSecond();
-		drawers.drawOffscreenCodeBlock(draw, block, state);
+		renderRegistry.drawOffscreenCodeBlock(draw, block, state);
 		expect(first).not.toHaveBeenCalled();
 		expect(second).toHaveBeenCalledOnce();
 	});
 
 	it('does not restore an overwritten offscreen drawer', () => {
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const first = vi.fn();
-		drawers.registerOffscreenCodeBlockDrawer(first);
-		const removeCurrent = drawers.registerOffscreenCodeBlockDrawer(vi.fn());
+		renderRegistry.registerOffscreenCodeBlockDrawer(first);
+		const removeCurrent = renderRegistry.registerOffscreenCodeBlockDrawer(vi.fn());
 		removeCurrent();
-		drawers.drawOffscreenCodeBlock(
+		renderRegistry.drawOffscreenCodeBlock(
 			createDrawContext(),
 			{ codeBlock: createMockCodeBlock(), x: 0, y: 0 },
 			createMockState()
 		);
 		expect(first).not.toHaveBeenCalled();
+	});
+
+	it('only removes the current offscreen registration even when the same callback is registered again', () => {
+		const renderRegistry = createEditorRenderRegistry();
+		const callback = vi.fn();
+		const draw = createDrawContext();
+		const block = { codeBlock: createMockCodeBlock(), x: 0, y: 0 };
+		const state = createMockState();
+		const removePrevious = renderRegistry.registerOffscreenCodeBlockDrawer(callback);
+		const removeCurrent = renderRegistry.registerOffscreenCodeBlockDrawer(callback);
+		removePrevious();
+		renderRegistry.drawOffscreenCodeBlock(draw, block, state);
+		expect(callback).toHaveBeenCalledExactlyOnceWith(draw, block, state);
+		removeCurrent();
+		renderRegistry.drawOffscreenCodeBlock(draw, block, state);
+		expect(callback).toHaveBeenCalledTimes(1);
 	});
 });

@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 
 export function setupPlugin(plugin: EditorPlugin) {
 	const emitter = new EventEmitter();
@@ -17,7 +17,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	return {
 		store,

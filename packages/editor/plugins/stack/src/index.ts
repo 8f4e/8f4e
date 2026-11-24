@@ -7,10 +7,10 @@ import type { StackLabel } from './types';
 export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'stack',
-		setup: ({ store, layout, drawers }) => {
+		setup: ({ store, layout, renderRegistry }) => {
 			const labelsByBlock = new WeakMap<EditorCodeBlock, StackLabel[]>();
 			const unregisterPreparation = registerStackPreparation(store, layout, labelsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 				drawStack(
 					draw,
 					state.viewport.vGrid,

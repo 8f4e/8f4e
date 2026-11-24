@@ -1,6 +1,5 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -44,11 +43,10 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 			],
 		},
 		plugins: [
-			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			{
 				id: 'fixture-text',
-				setup: ({ drawers, layout }) => {
+				setup: ({ renderRegistry, layout }) => {
 					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 					const removePreparation = layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(
@@ -56,7 +54,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid * 3,

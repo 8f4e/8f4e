@@ -1,7 +1,6 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
-import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
@@ -35,7 +34,6 @@ async function setup() {
 			],
 		},
 		plugins: [
-			dottedBackgroundPlugin,
 			createMouseInputPlugin({ inputTarget: canvas }),
 			createElasticViewportPlugin({ prefersReducedMotion: () => false }),
 			codeBlockBackgroundPlugin,
@@ -44,14 +42,14 @@ async function setup() {
 				id: 'viewport-entry-probe',
 				setup: services => {
 					events = services.events;
-					const removeCanvasDrawer = services.drawers.registerCanvasDrawer(({ renderGeometry }) => {
-						presentedX = renderGeometry.blocks.find(({ codeBlock }) => codeBlock.name === 'incoming')?.x;
+					const removeFrameProbe = services.renderRegistry.registerCanvasBackgroundDrawer(({ blockPositions }) => {
+						presentedX = blockPositions.ordered.find(({ codeBlock }) => codeBlock.name === 'incoming')?.x;
 					});
-					const removeCodeBlockDrawer = services.drawers.registerCodeBlockDrawer(({ codeBlock }) => {
+					const removeCodeBlockDrawer = services.renderRegistry.registerCodeBlockDrawer(({ codeBlock }) => {
 						if (codeBlock.name === 'incoming') drawn = true;
 					});
 					return () => {
-						removeCanvasDrawer();
+						removeFrameProbe();
 						removeCodeBlockDrawer();
 					};
 				},

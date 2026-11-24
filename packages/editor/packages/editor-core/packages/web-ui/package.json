@@ -27,7 +27,6 @@
     "@8f4e/editor-palette": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-types": "*",
-    "@8f4e/language-spec": "*",
     "@8f4e/sprite-generator": "*",
     "@8f4e/state-manager": "*",
     "glugglugglug": "*"
@@ -39,8 +38,5 @@
     "@vitest/browser-playwright": "4.1.12",
     "playwright": "1.65.1",
     "vitest": "4.1.12"
-  },
-  "scripts": {
-    "test:browser": "vitest --config=vitest.browser.config.ts --run"
   }
 }

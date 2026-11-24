@@ -9,7 +9,7 @@ export function createKeyboardEditingPlugin({ inputTarget }: { inputTarget: HTML
 			const { store } = context;
 			let editing: typeof import('./editing') | undefined;
 			let caret: ReturnType<typeof import('./editing')['createCaretPresentation']> | undefined;
-			const removeCaret = context.drawers.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
+			const removeCaret = context.renderRegistry.registerCodeBlockDrawer(drawContext => caret?.drawCaret(drawContext));
 			let loading = false;
 			let indicator: LoadingIndicatorHandle | undefined;
 			let disposed = false;

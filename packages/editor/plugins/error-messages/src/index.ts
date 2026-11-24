@@ -7,8 +7,8 @@ import { installGlobalErrors } from './global-errors';
 
 export const errorMessagesPlugin: EditorPlugin = {
 	id: 'error-messages',
-	setup: ({ store, layout, drawers }) => {
-		const disposeGlobalErrors = installGlobalErrors({ store, drawers });
+	setup: ({ store, layout, renderRegistry }) => {
+		const disposeGlobalErrors = installGlobalErrors({ store, renderRegistry });
 		const messagesByBlock = new WeakMap<EditorCodeBlock, Array<{ lines: GlyphIds[]; y: number }>>();
 		const contribution = layout.createContribution();
 		const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
@@ -46,7 +46,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 			);
 		};
 		const unsubscribePreparation = subscribeToBlockPreparation(store, layout, 'codeErrors', prepare);
-		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
+		const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 			for (const { lines, y } of messagesByBlock.get(codeBlock) ?? []) {
 				draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, lines.length * state.viewport.hGrid);
 				lines.forEach((line, row) =>
