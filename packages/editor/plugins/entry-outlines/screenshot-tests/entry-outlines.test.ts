@@ -1,5 +1,6 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -33,6 +34,7 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 			],
 		},
 		plugins: [
+			dottedBackgroundPlugin,
 			entryOutlinesPlugin,
 			{
 				id: 'fixture-blocks',

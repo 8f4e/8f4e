@@ -1,9 +1,12 @@
-import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { RenderHook, RenderPluginHost } from 'glugglugglug';
+import { PALETTE_INDICES, resolvePalette } from '@8f4e/editor-palette';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
+import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
-import BackgroundRenderer from './index';
+import BackgroundRenderer from './backgroundRenderer';
+import { dottedBackgroundPlugin } from './index';
 
-function createHost() {
+function createGl() {
 	let id = 0;
 	const resource = () => ({ id: ++id });
 	const gl = {
@@ -52,11 +55,7 @@ function createHost() {
 		uniform4fv: vi.fn(),
 		drawArrays: vi.fn(),
 	};
-	const host: RenderPluginHost = {
-		gl: gl as unknown as WebGL2RenderingContext,
-		hooks: { preDraw: [], postDraw: [] },
-	};
-	return { host, gl, draw: () => host.hooks.preDraw.forEach(hook => hook(host.gl)) };
+	return { gl, context: gl as unknown as WebGL2RenderingContext };
 }
 
 function palette(base: number[], even: number[], odd: number[]): Uint8Array {
@@ -71,11 +70,11 @@ const grid = { cellWidth: 8, cellHeight: 16 };
 
 describe('procedural background', () => {
 	it('draws one triangle and follows font and drawing-buffer size changes', () => {
-		const { host, gl, draw } = createHost();
-		const background = new BackgroundRenderer(host);
+		const { context, gl } = createGl();
+		const background = new BackgroundRenderer(context);
 		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
-		draw();
+		background.draw({ x: 0, y: 0 });
 		expect(gl.drawArrays).toHaveBeenLastCalledWith(gl.TRIANGLES, 0, 3);
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 0, 0);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 321 / 16, 197 / 16);
@@ -88,39 +87,39 @@ describe('procedural background', () => {
 		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
 		gl.drawingBufferWidth = 800;
 		gl.drawingBufferHeight = 601;
-		draw();
+		background.draw({ x: 0, y: 0 });
 		expect(gl.viewport).toHaveBeenLastCalledWith(0, 0, 800, 601);
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 80, 601 / 8);
 		background.destroy();
 	});
 
 	it('reads the current viewport on every draw and wraps over a complete alternating pattern', () => {
-		const { host, gl, draw } = createHost();
+		const { context, gl } = createGl();
 		let origin = { x: 9, y: 3 };
-		const background = new BackgroundRenderer(host, () => origin);
+		const background = new BackgroundRenderer(context);
 		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([20, 30, 40, 255], [99, 99, 99, 255], [58, 58, 58, 255]));
-		draw();
+		background.draw(origin);
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
 
 		origin = { x: -1_000_000_000_009, y: 1_000_000_000_019 };
 		gl.uniform2f.mockClear();
-		draw();
+		background.draw(origin);
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 16, 3 / 16);
 
 		background.setFont('spleen5x8', { cellWidth: 5, cellHeight: 8 });
 		gl.uniform2f.mockClear();
-		draw();
+		background.draw(origin);
 		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, -9 / 10, 3 / 8);
 		background.destroy();
 	});
 
 	it('composites translucent dots over the base before drawing and skips an invisible background', () => {
-		const { host, gl, draw } = createHost();
-		const background = new BackgroundRenderer(host);
+		const { context, gl } = createGl();
+		const background = new BackgroundRenderer(context);
 		background.setFont('ibmvga8x16', grid);
 		background.setPalette(palette([0, 0, 255, 128], [255, 0, 0, 128], [0, 0, 0, 0]));
-		draw();
+		background.draw({ x: 0, y: 0 });
 		const uploaded = (name: string) => [...gl.uniform4fv.mock.calls.find(([location]) => location.name === name)![1]];
 		expect(uploaded('u_baseColor')).toEqual([0, 0, expect.closeTo(128 / 255), expect.closeTo(128 / 255)]);
 		expect(uploaded('u_evenColor')).toEqual([
@@ -132,34 +131,109 @@ describe('procedural background', () => {
 		expect(uploaded('u_oddColor')).toEqual(uploaded('u_baseColor'));
 		background.setPalette(new Uint8Array(256 * 4));
 		gl.drawArrays.mockClear();
-		draw();
+		background.draw({ x: 0, y: 0 });
 		expect(gl.drawArrays).not.toHaveBeenCalled();
 		background.destroy();
 	});
 
-	it('detaches its own hook and deletes resources exactly once', () => {
-		const { host, gl } = createHost();
-		const other: RenderHook = vi.fn();
-		host.hooks.preDraw.push(other);
-		const background = new BackgroundRenderer(host);
-		expect(host.hooks.preDraw).toHaveLength(2);
+	it('deletes resources exactly once', () => {
+		const { context, gl } = createGl();
+		const background = new BackgroundRenderer(context);
 		background.destroy();
 		background.destroy();
-		expect(host.hooks.preDraw).toEqual([other]);
 		expect(gl.deleteProgram).toHaveBeenCalledOnce();
 		expect(gl.deleteVertexArray).toHaveBeenCalledOnce();
 	});
 
 	it.each(['fragment', 'link', 'vertex-array', 'uniform'] as const)('cleans up failed %s setup', failure => {
-		const { host, gl } = createHost();
+		const { context, gl } = createGl();
 		if (failure === 'fragment') gl.getShaderParameter.mockReturnValueOnce(true).mockReturnValueOnce(false);
 		if (failure === 'link') gl.getProgramParameter.mockReturnValue(false);
 		if (failure === 'vertex-array') gl.createVertexArray.mockReturnValue(null);
 		if (failure === 'uniform') gl.getUniformLocation.mockReturnValue(null);
-		expect(() => new BackgroundRenderer(host)).toThrow();
-		expect(host.hooks.preDraw).toHaveLength(0);
+		expect(() => new BackgroundRenderer(context)).toThrow();
 		expect(gl.deleteShader).toHaveBeenCalledTimes(2);
 		expect(gl.deleteProgram).toHaveBeenCalledTimes(failure === 'fragment' ? 0 : 1);
 		expect(gl.deleteVertexArray).toHaveBeenCalledTimes(failure === 'uniform' ? 1 : 0);
 	});
+});
+
+it('registers an optional before-sprites layer that tracks the presented viewport and installed font and palette', () => {
+	const { context, gl } = createGl();
+	const events = createMockEventDispatcher();
+	const store = initState(events, { callbacks: {} });
+	const state = store.getState();
+	setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+	Object.assign(state.viewport, { x: 100, y: 200 });
+	const frame = {
+		state,
+		viewport: { ...state.viewport, x: 9, y: 3 },
+		memoryViews: {} as MemoryViews,
+		renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+	};
+	const drawers = createEditorDrawerRegistry();
+	const services = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		drawers,
+	};
+	const dispose = dottedBackgroundPlugin.setup(services);
+	expect(gl.createProgram).not.toHaveBeenCalled();
+	const layers = drawers.attachRenderLayers({
+		gl: context,
+		palette: resolvePalette({ canvas: '#1a334c' }),
+		font: { name: 'ibmvga8x16', grid: { ...grid, columns: 16, cellCount: 257 } },
+	});
+
+	layers.draw('afterSprites', frame);
+	expect(gl.drawArrays).not.toHaveBeenCalled();
+	layers.draw('beforeSprites', frame);
+	expect(gl.drawArrays).toHaveBeenCalledOnce();
+	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([26 / 255, 51 / 255, 76 / 255, 1])
+	);
+
+	layers.loadFont({ name: 'spleen5x8', grid: { cellWidth: 5, cellHeight: 8, columns: 16, cellCount: 257 } });
+	layers.loadPalette(resolvePalette({ canvas: '#182030' }));
+	frame.viewport.x = 23;
+	frame.viewport.y = 9;
+	frame.viewport.vGrid = 5;
+	frame.viewport.hGrid = 8;
+	gl.uniform2f.mockClear();
+	gl.uniform4fv.mockClear();
+	layers.draw('beforeSprites', frame);
+	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
+	);
+
+	dispose();
+	gl.drawArrays.mockClear();
+	layers.draw('beforeSprites', frame);
+	expect(gl.drawArrays).not.toHaveBeenCalled();
+	expect(gl.deleteProgram).toHaveBeenCalledOnce();
+	expect(gl.deleteVertexArray).toHaveBeenCalledOnce();
+
+	const disposeReplacement = dottedBackgroundPlugin.setup(services);
+	gl.uniform2f.mockClear();
+	gl.uniform4fv.mockClear();
+	layers.draw('beforeSprites', frame);
+	expect(gl.drawArrays).toHaveBeenCalledOnce();
+	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
+	);
+	disposeReplacement();
+	layers.destroy();
+	expect(gl.deleteProgram).toHaveBeenCalledTimes(2);
+	expect(gl.deleteVertexArray).toHaveBeenCalledTimes(2);
+	store.dispose();
 });

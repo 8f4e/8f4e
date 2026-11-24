@@ -2,8 +2,8 @@ import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-pa
 import loadFontAtlas, { FONT_NAMES, type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import BackgroundRenderer from '../src/plugins/background';
-import { BACKGROUND_DOTS } from '../src/plugins/background/dot-settings';
+import BackgroundRenderer from '../src/backgroundRenderer';
+import { BACKGROUND_DOTS } from '../src/dot-settings';
 
 function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 	const bytes = new Uint8Array(256 * 4);
@@ -41,7 +41,8 @@ function createScene() {
 			gl.enable(state);
 		gl.blendFunc(gl.ZERO, gl.ZERO);
 	});
-	const background = new BackgroundRenderer(engine, () => viewportOrigin);
+	const background = new BackgroundRenderer(engine.gl);
+	engine.hooks.preDraw.push(() => background.draw(viewportOrigin));
 	let font: Font;
 	let grid: FontAtlas['grid'];
 	let bytes: Uint8Array;

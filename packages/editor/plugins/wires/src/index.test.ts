@@ -67,10 +67,19 @@ async function setup(text = source, installed = true) {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	const gl = createFakeWebGl();
-	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
+	const layers = drawers.attachRenderLayers({
+		gl,
+		palette: resolvePalette({}),
+		font: { name: 'ibmvga8x16', grid: { cellWidth: 8, cellHeight: 16, columns: 16, cellCount: 257 } },
+	});
 	const render = () => {
 		gl.drawArraysInstanced.mockClear();
-		layers.draw({ state, memoryViews, renderGeometry: createRenderGeometryFixture(state) });
+		layers.draw('afterSprites', {
+			state,
+			viewport: state.viewport,
+			memoryViews,
+			renderGeometry: createRenderGeometryFixture(state),
+		});
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);

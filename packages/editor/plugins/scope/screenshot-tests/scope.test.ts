@@ -1,3 +1,4 @@
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
@@ -22,6 +23,15 @@ async function expectScopeHistoryScreenshot(sampleCount: number): Promise<void> 
 		vi.advanceTimersByTime(10);
 	}
 	vi.useRealTimers();
+	const disposeBackground = dottedBackgroundPlugin.setup({
+		store: test.store,
+		events: test.events,
+		menus: test.store.menus,
+		directives: test.store.directives,
+		layout: test.store.layout,
+		loading: test.store.loading,
+		drawers,
+	});
 	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
 		drawers,
@@ -32,6 +42,7 @@ async function expectScopeHistoryScreenshot(sampleCount: number): Promise<void> 
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
+		disposeBackground();
 		canvas.remove();
 	}
 }

@@ -14,11 +14,11 @@ import { getAppearanceFont, getConfiguredPalette } from './config';
 import { DrawContext } from './drawContext';
 import drawCodeBlocks from './drawers/codeBlocks';
 import { createEditorDrawerRegistry, type EditorDrawerHost } from './drawers/registry';
-import BackgroundRenderer from './plugins/background';
 import { createRenderGeometry } from './render-geometry';
 import type { RenderLayerFrameContext } from './render-layers';
 import type { MemoryViews } from './types';
 import { createViewportTransition } from './viewport-transition';
+import { removeHook } from './webgl';
 
 export { type GlyphIds, textToGlyphIds } from '@8f4e/sprite-generator';
 export { getAppearanceFont, registerWebUiConfig } from './config';
@@ -32,7 +32,6 @@ export type {
 	OffscreenCodeBlockDrawer,
 } from './drawers/registry';
 export { createEditorDrawerRegistry } from './drawers/registry';
-export { createProgram, prepareRenderPass, requireResource, requireUniform } from './plugins/webgl';
 export type {
 	CodeBlockOffsetResolver,
 	CodeBlockPositionEffect,
@@ -43,11 +42,14 @@ export type {
 	EditorRenderLayer,
 	RenderLayerContext,
 	RenderLayerFactory,
+	RenderLayerFont,
 	RenderLayerFrameContext,
+	RenderLayerStage,
 } from './render-layers';
 export { createSpriteCell, type SpriteCell } from './spriteCell';
 // Re-export types
 export type { FontChangedEvent, MemoryViews } from './types';
+export { createProgram, prepareRenderPass, requireResource, requireUniform } from './webgl';
 
 export interface RenderStats {
 	timeToRenderMs: number;
@@ -114,17 +116,10 @@ async function mount(
 	const font = getAppearanceFont(state, defaultFont);
 	const fontAtlas = await loadFontAtlas(font);
 	const palette = getConfiguredPalette(state.editorConfig);
-	let frameStartedAt = performance.now();
-	engine.hooks.preDraw.push(() => {
-		frameStartedAt = performance.now();
-	});
 	const presentedViewport = { ...state.viewport };
 	const prefersReducedMotion = options.prefersReducedMotion ?? (() => false);
-	const background = new BackgroundRenderer(engine, () => presentedViewport);
 	const draw = new DrawContext(engine, fontAtlas.grid.cellWidth);
-	const paletteBytes = toPaletteBytes(palette);
-	engine.setPalette(paletteBytes);
-	background.setPalette(paletteBytes);
+	engine.setPalette(toPaletteBytes(palette));
 	const renderStatsIntervalFrames = Math.max(1, Math.floor(options.renderStatsIntervalFrames ?? 60));
 	let viewportWidth = engine.gl.drawingBufferWidth || state.viewport.width || 1;
 	let viewportHeight = engine.gl.drawingBufferHeight || state.viewport.height || 1;
@@ -132,23 +127,20 @@ async function mount(
 	let statsSampleStartFrameCount = 0;
 	let statsSampleStartTime = performance.now();
 
-	function installFontAtlas(atlas: FontAtlas, font: Font): void {
+	function installFontAtlas(atlas: FontAtlas): void {
 		engine.setSpriteAtlas(atlas.image, atlas.grid);
-		background.setFont(font, atlas.grid);
 		draw.setCharacterWidth(atlas.grid.cellWidth);
 	}
 
 	const drawers = options.drawers ?? createEditorDrawerRegistry();
-	let renderLayers: ReturnType<EditorDrawerHost['attachRenderLayers']>;
-	try {
-		installFontAtlas(fontAtlas, font);
-		updateGridSize(state, events, fontAtlas);
-		Object.assign(presentedViewport, state.viewport);
-		renderLayers = drawers.attachRenderLayers({ gl: engine.gl, palette });
-	} catch (error) {
-		background.destroy();
-		throw error;
-	}
+	installFontAtlas(fontAtlas);
+	updateGridSize(state, events, fontAtlas);
+	Object.assign(presentedViewport, state.viewport);
+	const renderLayers = drawers.attachRenderLayers({
+		gl: engine.gl,
+		palette,
+		font: { name: font, grid: fontAtlas.grid },
+	});
 	const viewportTransition = createViewportTransition(state.viewport);
 	const { onViewportChanged, reset: resetViewportTransition } = viewportTransition;
 	const guardPointerPress = (event: InternalPointerEvent) => {
@@ -164,17 +156,21 @@ async function mount(
 		store,
 		events,
 		options.loading,
-		installFontAtlas,
+		(atlas, font) => {
+			installFontAtlas(atlas);
+			renderLayers.loadFont({ name: font, grid: atlas.grid });
+		},
 		palette => {
-			const bytes = toPaletteBytes(palette);
-			engine.setPalette(bytes);
-			background.setPalette(bytes);
+			engine.setPalette(toPaletteBytes(palette));
 			renderLayers.loadPalette(palette);
 		},
 		defaultFont
 	);
 	let layerFrame: RenderLayerFrameContext;
-	engine.hooks.postDraw.push(() => renderLayers.draw(layerFrame));
+	const beforeSprites = () => renderLayers.draw('beforeSprites', layerFrame);
+	const afterSprites = () => renderLayers.draw('afterSprites', layerFrame);
+	engine.hooks.preDraw.push(beforeSprites);
+	engine.hooks.postDraw.push(afterSprites);
 
 	function getSampledFps(): number {
 		const now = performance.now();
@@ -210,17 +206,10 @@ async function mount(
 		});
 	}
 
-	const renderStatsHook = () => {
-		emitRenderStats(performance.now() - frameStartedAt);
-	};
-	engine.hooks.postDraw.push(renderStatsHook);
-
 	const geometry = createRenderGeometry();
-	const drawFrame = (frameTime: number, suppressBlockOffsets: boolean) => {
-		const offsets = drawers.prepareCodeBlockOffsets(state, frameTime, suppressBlockOffsets);
-		const renderGeometry = geometry.prepare(state, offsets, presentedViewport);
-		layerFrame = { state, memoryViews, renderGeometry };
-		const canvasFrame = { draw, state, viewport: presentedViewport, memoryViews, renderGeometry };
+	const drawFrame = () => {
+		const { renderGeometry } = layerFrame;
+		const canvasFrame = { draw, ...layerFrame };
 		drawers.drawCanvasBackground(canvasFrame);
 		drawCodeBlocks(draw, state, memoryViews, drawers, renderGeometry);
 		drawers.drawCanvas(canvasFrame);
@@ -272,7 +261,12 @@ async function mount(
 			Object.assign(presentedViewport, state.viewport);
 			presentedViewport.x = camera.x;
 			presentedViewport.y = camera.y;
-			engine.renderFrame(() => drawFrame(frameTime, camera.suppressBlockOffsets));
+			const frameStartedAt = performance.now();
+			const offsets = drawers.prepareCodeBlockOffsets(state, frameTime, camera.suppressBlockOffsets);
+			const renderGeometry = geometry.prepare(state, offsets, presentedViewport);
+			layerFrame = { state, viewport: presentedViewport, memoryViews, renderGeometry };
+			engine.renderFrame(drawFrame);
+			emitRenderStats(performance.now() - frameStartedAt);
 		},
 		destroy: () => {
 			events.off('viewportChanged', onViewportChanged);
@@ -281,10 +275,11 @@ async function mount(
 			events.off('pointerdown', guardPointerPress);
 			events.off('contextmenu', guardPointerPress);
 			unsubscribeAppearance();
+			removeHook(engine.hooks.preDraw, beforeSprites);
+			removeHook(engine.hooks.postDraw, afterSprites);
 			try {
 				renderLayers.destroy();
 			} finally {
-				background.destroy();
 				engine.destroy();
 			}
 		},

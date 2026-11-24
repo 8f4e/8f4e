@@ -3,6 +3,7 @@ import { type Editor, type EventDispatcher, getEditorBlockId } from '@8f4e/edito
 import { mountDefaultEditor } from '@8f4e/editor-default';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { centerViewportOnCodeBlock } from '@8f4e/editor-state';
@@ -36,6 +37,7 @@ test('uses PixelCode on coarse pointers and restores it after a project font ove
 			initialProjectUrl,
 			plugins: [
 				createProjectUrlLoaderPlugin({ fetch: globalThis.fetch, initialProjectUrl }),
+				dottedBackgroundPlugin,
 				codeBlockBackgroundPlugin,
 				codeRenderingPlugin,
 			],
@@ -88,6 +90,7 @@ test('positions home using the installed mobile grid on the first frame and the 
 			plugins: [
 				homePlugin,
 				createProjectUrlLoaderPlugin({ fetch: globalThis.fetch, initialProjectUrl }),
+				dottedBackgroundPlugin,
 				codeBlockBackgroundPlugin,
 				codeRenderingPlugin,
 				{

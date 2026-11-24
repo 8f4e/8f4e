@@ -36,8 +36,10 @@ promise. Mount completion, initial-project errors,
 rendering controls, compiler diagnostics, and disposal follow the
 [gallery editor's lifecycle](../editor-gallery/README.md).
 
-The compiler, URL loader, home navigation, block backgrounds, and code rendering load eagerly.
+The compiler, URL loader, home navigation, the dotted canvas background, block backgrounds, and code rendering load eagerly.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` even without a context menu.
+`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites, using the active font,
+palette, and presented camera.
 Core's `ready` event
 gates all optional imports through `src/deferred-plugins.ts`. `src/lazy-plugins.ts` matches visual/control plugins
 in the current view and the worker runtime throughout the project. Font payloads remain lazy.

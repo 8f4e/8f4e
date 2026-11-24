@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 import lerpSource from '@8f4e/stdlib/std/math/lerp.8f4e?raw';
 import { Engine } from 'glugglugglug';
@@ -33,6 +34,7 @@ entryEnd`);
 		initialProject: project,
 		featureFlags: { codeLineSelection: true },
 		plugins: [
+			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			tooltipsPlugin,

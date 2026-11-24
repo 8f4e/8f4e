@@ -9,7 +9,7 @@ export const wiresPlugin: EditorPlugin = {
 	setup: ({ store, events, drawers }) => {
 		const connections = createWireConnections(store, events);
 		try {
-			const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
+			const unregisterLayer = drawers.registerRenderLayer('afterSprites', ({ gl, palette }) => {
 				const lines = new LineDrawer(gl);
 				let colors = resolveWireColors(palette);
 				const drawConnection: WireConnectionVisitor = (inputX, inputY, outputX, outputY, selected) => {

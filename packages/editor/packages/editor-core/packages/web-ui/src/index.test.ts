@@ -32,22 +32,11 @@ const mocks = vi.hoisted(() => {
 		restoreRenderingMemory: vi.fn(),
 		destroy: vi.fn(),
 	};
-	const background = { setFont: vi.fn(), setPalette: vi.fn(), destroy: vi.fn() };
-
 	return {
 		engine,
-		background,
-		// biome-ignore lint/complexity/useArrowFunction: The background renderer is constructed with new.
-		BackgroundRenderer: vi.fn(function (_engine: typeof engine, _readViewportOrigin: () => { x: number; y: number }) {
-			return background;
-		}),
 		drawCodeBlocks: vi.fn(),
 	};
 });
-
-vi.mock('./plugins/background', () => ({
-	default: mocks.BackgroundRenderer,
-}));
 
 vi.mock('./drawers/codeBlocks', () => ({
 	default: mocks.drawCodeBlocks,
@@ -110,15 +99,18 @@ describe('web-ui init', () => {
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
 
-	it('supplies the current presented viewport origin to the procedural background', async () => {
+	it('supplies the current presented viewport to a layer before sprite submission', async () => {
 		const store = createStateManager(createMockState({ viewport: { x: -23, y: 12 } }));
-		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), { loading });
-		const readViewportOrigin = mocks.BackgroundRenderer.mock.lastCall![1];
-		expect(readViewportOrigin()).toMatchObject({ x: -23, y: 12 });
+		const drawers = createEditorDrawerRegistry();
+		const draw = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw, destroy: vi.fn() }));
+		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), { loading, drawers });
+		view.renderFrame();
+		expect(draw.mock.lastCall![0].viewport).toMatchObject({ x: -23, y: 12 });
 
 		store.set('viewport', { ...store.getState().viewport, x: 44, y: -39 });
 		view.renderFrame();
-		expect(readViewportOrigin()).toMatchObject({ x: 44, y: -39 });
+		expect(draw.mock.lastCall![0].viewport).toMatchObject({ x: 44, y: -39 });
 		view.destroy();
 		store.dispose();
 	});
@@ -134,7 +126,6 @@ describe('web-ui init', () => {
 		events.dispatch.mockImplementation((name: string) => {
 			if (name === 'gridSizeChanged') {
 				expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledOnce();
-				expect(mocks.background.setFont).toHaveBeenCalledOnce();
 				expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
 				expect(state.gridSizeReady).toBe(false);
 			}
@@ -145,15 +136,20 @@ describe('web-ui init', () => {
 			expect(state.gridSizeReady).toBe(true);
 			return { draw: vi.fn(), destroy: vi.fn() };
 		});
-		drawers.registerRenderLayer(factory);
-		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(6, 10));
+		drawers.registerRenderLayer('beforeSprites', factory);
+		const atlas = createFontAtlas(6, 10);
+		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
 		const view = await init(createStateManager(state), events, createMemoryViews(), {
 			loading,
 			drawers,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('x11miscfixed6x10');
-		expect(factory).toHaveBeenCalledOnce();
+		expect(factory).toHaveBeenCalledExactlyOnceWith({
+			gl: mocks.engine.gl,
+			palette: resolvePalette(),
+			font: { name: 'x11miscfixed6x10', grid: atlas.grid },
+		});
 		expect(events.dispatch.mock.calls).toEqual([['gridSizeChanged']]);
 		view.destroy();
 	});
@@ -163,9 +159,13 @@ describe('web-ui init', () => {
 		const state = createMockState();
 		const store = createStateManager(state);
 		const atlas = createFontAtlas(6, 12);
+		const drawers = createEditorDrawerRegistry();
+		const loadFont = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadFont }));
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
 		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
+			drawers,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('pixelcode6x12');
@@ -179,7 +179,7 @@ describe('web-ui init', () => {
 		await Promise.resolve();
 		expect(state.viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
 		expect(state.editorConfig).toEqual({});
-		expect(mocks.background.setFont).toHaveBeenLastCalledWith('pixelcode6x12', atlas.grid);
+		expect(loadFont).toHaveBeenLastCalledWith({ name: 'pixelcode6x12', grid: atlas.grid });
 		view.destroy();
 		store.dispose();
 	});
@@ -189,12 +189,17 @@ describe('web-ui init', () => {
 		const error = new Error('Font unavailable');
 		const state = createMockState({ gridSizeReady: false, viewport: { vGrid: 0, hGrid: 0 } });
 		const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
+		const drawers = createEditorDrawerRegistry();
+		const factory = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', factory);
 		vi.mocked(loadFontAtlas).mockRejectedValueOnce(error);
-		await expect(init(createStateManager(state), events, createMemoryViews(), { loading })).rejects.toBe(error);
+		await expect(init(createStateManager(state), events, createMemoryViews(), { loading, drawers })).rejects.toBe(
+			error
+		);
 		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		expect(state.gridSizeReady).toBe(false);
 		expect(events.dispatch).not.toHaveBeenCalled();
-		expect(mocks.BackgroundRenderer).not.toHaveBeenCalled();
+		expect(factory).not.toHaveBeenCalled();
 		expect(mocks.engine.setSpriteAtlas).not.toHaveBeenCalled();
 		expect(mocks.engine.destroy).toHaveBeenCalledOnce();
 	});
@@ -208,6 +213,9 @@ describe('web-ui init', () => {
 		});
 		const store = createStateManager(state);
 		const atlas = createFontAtlas(5, 8);
+		const drawers = createEditorDrawerRegistry();
+		const factory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn() }));
+		drawers.registerRenderLayer('beforeSprites', factory);
 		let finishFont!: (value: typeof atlas) => void;
 		vi.mocked(loadFontAtlas).mockImplementationOnce(
 			() =>
@@ -217,10 +225,11 @@ describe('web-ui init', () => {
 		);
 		const mounting = init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
+			drawers,
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('spleen5x8');
-		expect(mocks.BackgroundRenderer).not.toHaveBeenCalled();
+		expect(factory).not.toHaveBeenCalled();
 		expect(mocks.engine.setSpriteAtlas).not.toHaveBeenCalled();
 		expect(state.gridSizeReady).toBe(false);
 		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
@@ -228,7 +237,11 @@ describe('web-ui init', () => {
 		const view = await mounting;
 		expect(state.viewport).toMatchObject({ vGrid: 5, hGrid: 8 });
 		expect(state.gridSizeReady).toBe(true);
-		expect(mocks.background.setFont).toHaveBeenCalledExactlyOnceWith('spleen5x8', atlas.grid);
+		expect(factory).toHaveBeenCalledExactlyOnceWith({
+			gl: mocks.engine.gl,
+			palette: resolvePalette(),
+			font: { name: 'spleen5x8', grid: atlas.grid },
+		});
 		expect(mocks.engine.renderFrame).not.toHaveBeenCalled();
 		view.renderFrame();
 		expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
@@ -306,7 +319,7 @@ describe('web-ui init', () => {
 		view.destroy();
 	});
 
-	it('draws registered render layers above sprites in registration order', async () => {
+	it('draws registered render layers around sprites in stage and registration order', async () => {
 		const block = createMockCodeBlock({ x: 40, y: 96 });
 		const state = createMockState({
 			viewport: { x: 8, y: 16 },
@@ -314,21 +327,30 @@ describe('web-ui init', () => {
 		});
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
-		const drawLayer = vi.fn();
-		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
+		const drawAfter = vi.fn();
+		drawers.registerRenderLayer('afterSprites', () => ({ draw: drawAfter, destroy: vi.fn() }));
+		const drawBefore = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawBefore, destroy: vi.fn() }));
 		const drawTopLayer = vi.fn();
-		drawers.registerRenderLayer(() => ({ draw: drawTopLayer, destroy: vi.fn() }));
+		drawers.registerRenderLayer('afterSprites', () => ({ draw: drawTopLayer, destroy: vi.fn() }));
+		const drawNextBefore = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawNextBefore, destroy: vi.fn() }));
 		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, { loading, drawers });
 		view.renderFrame();
 
-		expect(drawLayer).toHaveBeenCalledOnce();
-		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawLayer.mock.invocationCallOrder[0]);
-		expect(drawLayer.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
+		const layers = [drawBefore, drawNextBefore, drawAfter, drawTopLayer];
+		for (const layer of layers) expect(layer).toHaveBeenCalledOnce();
+		expect(drawBefore.mock.invocationCallOrder[0]).toBeLessThan(drawNextBefore.mock.invocationCallOrder[0]);
+		expect(drawNextBefore.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder[0]);
+		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawAfter.mock.invocationCallOrder[0]);
+		expect(drawAfter.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
 		const first = mocks.drawCodeBlocks.mock.calls[0][4];
 		const firstRecord = first.blocksByCodeBlock.get(block);
 		expect(firstRecord).toMatchObject({ x: 32, y: 80 });
-		expect(drawLayer.mock.calls[0][0].renderGeometry).toBe(first);
-		expect(drawTopLayer.mock.calls[0][0].renderGeometry).toBe(first);
+		for (const layer of layers) {
+			expect(layer.mock.calls[0][0]).toBe(drawBefore.mock.calls[0][0]);
+			expect(layer.mock.calls[0][0].renderGeometry).toBe(first);
+		}
 
 		state.viewport.x = 16;
 		view.renderFrame();
@@ -336,8 +358,7 @@ describe('web-ui init', () => {
 		expect(next).toBe(first);
 		expect(next.blocksByCodeBlock.get(block)).toBe(firstRecord);
 		expect(firstRecord).toMatchObject({ x: 24, y: 80 });
-		expect(drawLayer.mock.calls[1][0].renderGeometry).toBe(next);
-		expect(drawTopLayer.mock.calls[1][0].renderGeometry).toBe(next);
+		for (const layer of layers) expect(layer.mock.calls[1][0].renderGeometry).toBe(next);
 		view.destroy();
 	});
 
@@ -352,7 +373,7 @@ describe('web-ui init', () => {
 		const drawBackground = vi.fn();
 		const drawLayer = vi.fn();
 		drawers.registerCanvasBackgroundDrawer(drawBackground);
-		drawers.registerRenderLayer(() => ({ draw: drawLayer, destroy: vi.fn() }));
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: drawLayer, destroy: vi.fn() }));
 		const resolveOffset = vi.fn((candidate: typeof block) => (candidate === block ? { x: 6, y: -3 } : undefined));
 		const effect = vi.fn(() => resolveOffset);
 		const removePrevious = drawers.registerCodeBlockPositionEffect(effect);
@@ -400,12 +421,13 @@ describe('web-ui init', () => {
 		};
 		const drawers = createEditorDrawerRegistry();
 		const onBackground = vi.fn();
+		const onLayer = vi.fn();
 		const effect = vi.fn(() => () => ({ x: 12, y: 0 }));
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: onLayer, destroy: vi.fn() }));
 		drawers.registerCanvasBackgroundDrawer(onBackground);
 		drawers.registerCodeBlockPositionEffect(effect);
 		const store = createStateManager(state);
 		const view = await init(store, events, createMemoryViews(), { loading, drawers });
-		const readViewportOrigin = mocks.BackgroundRenderer.mock.lastCall![1];
 		state.viewport.x = 124;
 		state.viewport.y = 72;
 		events.dispatch('viewportChanged', { previousX: 24, previousY: 32, x: 124, y: 72, source: 'navigation' });
@@ -413,13 +435,14 @@ describe('web-ui init', () => {
 		view.renderFrame(1000);
 		view.renderFrame(1100);
 		const { viewport, renderGeometry } = onBackground.mock.lastCall![0];
-		expect(viewport).toBe(readViewportOrigin());
+		expect(viewport).toBe(onLayer.mock.lastCall![0].viewport);
+		expect(renderGeometry).toBe(onLayer.mock.lastCall![0].renderGeometry);
 		expect(viewport).toMatchObject({ x: 74, y: 52 });
 		expect(renderGeometry.blocksByCodeBlock.get(block)).toMatchObject({ x: 106, y: 44 });
 		expect(effect).toHaveBeenLastCalledWith(state, 1100, true);
 		expect(state.viewport).toMatchObject({ x: 124, y: 72 });
 		view.renderFrame(1200);
-		expect(readViewportOrigin()).toMatchObject({ x: 124, y: 72 });
+		expect(onLayer.mock.lastCall![0].viewport).toMatchObject({ x: 124, y: 72 });
 		expect(events.dispatch).not.toHaveBeenCalled();
 		view.destroy();
 		expect(emitter.listenerCount('viewportChanged')).toBe(0);
@@ -466,48 +489,67 @@ describe('web-ui init', () => {
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
 		const loadPalette = vi.fn();
-		drawers.registerRenderLayer(() => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette }));
+		const loadFont = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadPalette, loadFont }));
 		const view = await init(store, createMockEventDispatcher(), memoryViews, {
 			loading,
 			drawers,
 		});
 		const paletteUploads = mocks.engine.setPalette.mock.calls.length;
-		const backgroundPaletteUploads = mocks.background.setPalette.mock.calls.length;
 		const atlasUploads = mocks.engine.setSpriteAtlas.mock.calls.length;
 		store.set('editorConfig.font', 'terminus8x16');
 		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(atlasUploads + 1));
 		expect(mocks.engine.setPalette).toHaveBeenCalledTimes(paletteUploads);
-		expect(mocks.background.setPalette).toHaveBeenCalledTimes(backgroundPaletteUploads);
+		expect(loadPalette).not.toHaveBeenCalled();
+		expect(loadFont).toHaveBeenCalledOnce();
 
 		const installCount = mocks.engine.setSpriteAtlas.mock.calls.length;
 		const palette = resolvePalette({ primary: '#00ff00' });
 		store.set('editorConfig.color', { primary: '#00ff00' });
 		expect(mocks.engine.setPalette).toHaveBeenLastCalledWith(toPaletteBytes(palette));
 		expect(loadPalette).toHaveBeenCalledExactlyOnceWith(palette);
-		expect(mocks.background.setPalette).toHaveBeenCalledWith(mocks.engine.setPalette.mock.calls.at(-1)?.[0]);
+		expect(loadFont).toHaveBeenCalledOnce();
 		expect(mocks.engine.setSpriteAtlas).toHaveBeenCalledTimes(installCount);
 		view.destroy();
 		store.dispose();
 	});
 
-	it('updates font dimensions and background settings when the atlas is replaced', async () => {
+	it('supplies installed font metrics to render layers only when an atlas is actually installed', async () => {
 		const { default: loadFontAtlas } = await import('@8f4e/sprite-generator');
 		const state = createMockState();
 		const store = createStateManager(state);
 		const memoryViews = createMemoryViews();
+		const drawers = createEditorDrawerRegistry();
+		const loadFont = vi.fn();
+		drawers.registerRenderLayer('beforeSprites', () => ({ draw: vi.fn(), destroy: vi.fn(), loadFont }));
+		const view = await init(store, createMockEventDispatcher(), memoryViews, { loading, drawers });
 
-		const view = await init(store, createMockEventDispatcher(), memoryViews, { loading });
-
-		vi.mocked(loadFontAtlas).mockResolvedValueOnce(createFontAtlas(10, 18));
-		store.set('editorConfig.font', 'terminus10x18');
-		await vi.waitFor(() =>
-			expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(
-				createFontAtlas(10, 18).image,
-				createFontAtlas(10, 18).grid
-			)
+		const atlas = createFontAtlas(10, 18);
+		let finishFont!: (value: typeof atlas) => void;
+		vi.mocked(loadFontAtlas).mockImplementationOnce(
+			() =>
+				new Promise(resolve => {
+					finishFont = resolve;
+				})
 		);
-		expect(mocks.background.setFont).toHaveBeenLastCalledWith('terminus10x18', createFontAtlas(10, 18).grid);
+		store.set('editorConfig.font', 'terminus10x18');
+		const pendingFactory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn(), loadFont: vi.fn() }));
+		drawers.registerRenderLayer('afterSprites', pendingFactory);
+		expect(loadFont).not.toHaveBeenCalled();
+		expect(pendingFactory).toHaveBeenCalledExactlyOnceWith({
+			gl: mocks.engine.gl,
+			palette: resolvePalette(),
+			font: { name: 'ibmvga8x16', grid: createFontAtlas().grid },
+		});
+		finishFont(atlas);
+		await vi.waitFor(() => expect(mocks.engine.setSpriteAtlas).toHaveBeenLastCalledWith(atlas.image, atlas.grid));
+		const font = { name: 'terminus10x18', grid: atlas.grid };
+		expect(loadFont).toHaveBeenCalledExactlyOnceWith(font);
+		expect(pendingFactory.mock.results[0].value.loadFont).toHaveBeenCalledExactlyOnceWith(font);
 		expect(state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
+		const lateFactory = vi.fn(() => ({ draw: vi.fn(), destroy: vi.fn() }));
+		drawers.registerRenderLayer('beforeSprites', lateFactory);
+		expect(lateFactory).toHaveBeenCalledExactlyOnceWith({ gl: mocks.engine.gl, palette: resolvePalette(), font });
 		view.destroy();
 		store.dispose();
 	});

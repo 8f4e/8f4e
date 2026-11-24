@@ -5,19 +5,18 @@ font atlas loading, and palette updates. Drawing reads editor state and memory v
 layout grid. The browser editor supplies a Glugglugglug engine.
 
 Rendering is backed by `glugglugglug`. Glyph IDs are CP437 slots 0–255 and fill is 256, so
-per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide GPU passes above the sprites. A procedural dotted background runs before the sprite pass.
+per-frame drawers submit positions, sizes, shared shape IDs, and numeric palette indices. Plugins can register canvas-wide
+GPU passes before or after the sprite pass. Web-ui does not install a background by itself.
 
 The default framebuffer has no depth buffer; passes use explicit drawing order. Custom raw-context hooks requiring
 depth testing must use a framebuffer with their own depth attachment.
 
 ## Rendering plugins
 
-Web-ui owns the procedural background under `src/plugins/background`. It precomposes dot colors over the base
-when the palette changes and draws one triangle before sprites. The shader's dot pattern follows the same presented
-camera as the scene, without any of the presentation offsets applied to individual blocks. Glugglugglug owns sprite rendering.
-
-Canvas-wide editor layers run after sprites in registration order and before render statistics are sampled.
-Web-ui supplies shader helpers and forwards palette changes, memory release, and disposal.
+Canvas-wide render layers run in their registered stages, before or after sprites, in registration order within a stage.
+Web-ui supplies shader helpers and forwards font and palette changes, memory release, and disposal.
+`@8f4e/editor-plugin-dotted-background` supplies the procedural background before sprites; compositions choose which
+background layers to install. Glugglugglug owns sprite rendering.
 `@8f4e/editor-plugin-wires` owns the WebGL wire pass; `@8f4e/editor-plugin-texture-runtime` owns block-bound framebuffer
 views in the overlay, their optional WASM execution, and shared GPU resources.
 
@@ -28,8 +27,8 @@ hooks and GPU render-layer registration. Pass that registry through `options.dra
 
 ### `registerCanvasBackgroundDrawer(drawer)`
 
-Registers viewport-coordinate drawing below code blocks and above the procedural background, independently of
-`canvasOverlays`. Callbacks receive `{ draw, state, memoryViews, renderGeometry }` and run in registration order. Registration returns an
+Registers viewport-coordinate sprite drawing below code blocks and above before-sprites GPU layers, independently of
+`canvasOverlays`. Callbacks receive `{ draw, state, viewport, memoryViews, renderGeometry }` and run in registration order. Registration returns an
 unregister function. The entry-outlines plugin draws borders and labels from core entry bounds through this hook. It uses the shared
 `CanvasDrawer` and `CanvasDrawerContext` types.
 
@@ -42,9 +41,20 @@ hook; web-ui contains no menu-specific drawing. The shared types are `CanvasDraw
 ### `registerModalOverlay(drawer)`
 
 Registers a viewport-coordinate sprite drawer after menus and ordinary canvas overlays. This stage runs even
-when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, memoryViews, renderGeometry }` and registration
+when `featureFlags.canvasOverlays` is false. The callback receives `{ draw, state, viewport, memoryViews, renderGeometry }` and registration
 returns an unregister function. `@8f4e/editor-plugin-dialogs` owns dialog layout and drawing through this hook;
 web-ui contains no dialog-specific rendering.
+
+### `registerRenderLayer(stage, factory)`
+
+Registers a GPU pass in `'beforeSprites'` or `'afterSprites'`. The factory receives the renderer's WebGL context,
+resolved palette, and installed font `{ name, grid }` when rendering resources become available. Its returned layer
+may implement `loadPalette(palette)`, `loadFont(font)` and `releaseMemory()` alongside the required `draw(context)` and
+`destroy()` methods. The latter runs on unregistration or renderer disposal.
+
+Each layer draws with `{ state, viewport, memoryViews, renderGeometry }`. The `viewport` is the current presented camera,
+and the geometry is prepared once before either GPU stage or sprite submission. Registrations made after initialization
+receive the current installed font and palette, not a pending font selection.
 
 ### `registerWebUiConfig(store)`
 
@@ -84,25 +94,27 @@ or startup failure.
 ### `RenderStats`
 
 Type emitted by `options.onRenderStats`:
+
 ```typescript
 interface RenderStats {
-  timeToRenderMs: number;
-  fps: number; // Calculated over the sampled frame interval
-  frameBudgetMs: number;
-  headroomMs: number;
-  fpsCapacity: number;
-  spriteCount: number;
-  uploadedInstanceBytes: number;
+	timeToRenderMs: number;
+	fps: number; // Calculated over the sampled frame interval
+	frameBudgetMs: number;
+	headroomMs: number;
+	fpsCapacity: number;
+	spriteCount: number;
+	uploadedInstanceBytes: number;
 }
 ```
 
 ### `FontAtlas`
 
 Type exported by `@8f4e/sprite-generator` representing a font atlas:
+
 ```typescript
 interface FontAtlas {
-  image: SpriteAtlasImage;
-  grid: SpriteAtlasGrid;
+	image: SpriteAtlasImage;
+	grid: SpriteAtlasGrid;
 }
 ```
 
@@ -133,11 +145,11 @@ after code rendering. These callbacks use the ordinary block context and run in 
 only the registered callback.
 Connectors and other plugins use the same registry. Registration order determines layering, including late installs;
 there are no separate block drawing phases. Ordinary canvas drawers, viewport overlays, modal overlays, and GPU render layers retain their own hooks.
-Without a background plugin, web-ui draws no block surface.
+Without the code-block-background plugin, web-ui draws no block surface.
 
 Editor-state commits navigation immediately and emits a single navigation-tagged `viewportChanged`. Web-ui samples a
 200 ms visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`. It projects
-blocks, culling, the shader background, and canvas drawers from this same camera. Canvas drawers receive its frame-scoped
+blocks, culling, and drawing layers from this same camera. Canvas drawers and GPU layers receive its frame-scoped
 `viewport`; layout and hit testing keep using `state.viewport`. The glide suppresses separate block offsets and new pointer
 presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.
 
@@ -163,8 +175,8 @@ also settle readiness, without invalidating unchanged grid geometry. Pending fon
 or update a destroyed renderer. A failed current replacement reports the error and retains the applied atlas and grid.
 Each font change replaces the `font` contribution with a custom message and reports done/failed on completion.
 Supersession and disposal cancel pending attempts; results remain in state independently of indicator visibility.
-Font changes replace the masks and update drawing metrics. Dot positions and sizes live beside the background plugin
-in `src/plugins/background/dot-settings.ts`; no background settings come from the font atlas.
+Font changes replace the masks and update drawing metrics. Registered render layers receive the installed font name and
+grid on attachment and after each replacement.
 
 Input/output connector sprites belong to `@8f4e/editor-plugin-connectors`. The optional WebGL wire pass belongs to
 `@8f4e/editor-plugin-wires`.

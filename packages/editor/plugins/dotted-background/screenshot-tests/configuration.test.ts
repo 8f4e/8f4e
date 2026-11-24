@@ -1,11 +1,11 @@
+import { createMemoryViewManager } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import createCanvas from './utils/createCanvas';
-import createMockMemoryViews from './utils/createMockMemoryViews';
+import { dottedBackgroundPlugin } from '../src';
 
 const SAMPLE_TEXT = textToGlyphIds('Sample text');
 
@@ -24,17 +24,30 @@ test('applies project appearance settings and restores defaults after project re
 			for (const callback of handlers.get(name) ?? []) callback(payload);
 		},
 	};
-	const canvas = createCanvas();
+	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 256;
+	canvas.style.background = '#000';
+	canvas.style.imageRendering = 'pixelated';
+	document.body.append(canvas);
 	const store = initState(events, { callbacks: {} });
 	// Use the same registration order as editor-core, before renderer and project initialization.
 	registerWebUiConfig(store);
 	const drawers = createEditorDrawerRegistry();
+	const removeBackground = dottedBackgroundPlugin.setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		drawers,
+	});
 	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
 		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
 	});
-	const renderer = await init(store, events, new Engine(canvas), createMockMemoryViews(), {
+	const { memoryViews } = createMemoryViewManager(new ArrayBuffer(0));
+	const renderer = await init(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
 		drawers,
 	});
@@ -92,6 +105,7 @@ test('applies project appearance settings and restores defaults after project re
 		const replacement = state.project.rootLevel.blocks.find(block => block.name === 'sample')!;
 		expect({ x: replacement.x, y: replacement.y }).toEqual({ x: 32, y: 32 });
 	} finally {
+		removeBackground();
 		renderer.destroy();
 		removeDrawer();
 		store.dispose();

@@ -130,9 +130,12 @@ and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte 
 When initializing core directly with these plugins, pass the same `defaultFont` to this factory and core so the
 font-preview plugin cycles from the rendered default.
 
-Compiler coordination, source loading/session restoration, file-session tracking, home navigation, block backgrounds,
-code rendering, and loading indicators are eager. Home navigation interprets `; @home` when a project or group is
+Compiler coordination, source loading/session restoration, file-session tracking, home navigation, the dotted canvas
+background, block backgrounds, code rendering, and loading indicators are eager. Home navigation interprets `; @home` when a project or group is
 first opened and contributes the Go @home action in edit mode. Hosts replacing the default plugin list can omit it.
+`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites, using the active font,
+palette, and presented camera. Hosts replacing the default plugin list can include `dottedBackgroundPlugin`,
+choose another background plugin, or omit background drawing entirely.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
 On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for connectors, assertion markers,
 keyboard input, tooltips, built-in module browsing, file actions, and the other authoring features. Core emits this

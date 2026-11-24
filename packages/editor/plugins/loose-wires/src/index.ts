@@ -39,7 +39,7 @@ export function createLooseWiresPlugin({ defaultSlack = DEFAULT_SLACK }: LooseWi
 				store.set('editorConfigSchemaContributions.looseWires', configContribution);
 				syncSlack();
 				store.subscribe('editorConfig.looseWires', syncSlack);
-				const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
+				const unregisterLayer = drawers.registerRenderLayer('afterSprites', ({ gl, palette }) => {
 					const drawer = createSlackWireDrawer(gl);
 					let colors = palette.rgba;
 					const drawConnection: WireConnectionVisitor = (inputX, inputY, outputX, outputY, selected) => {

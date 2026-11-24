@@ -55,7 +55,8 @@
   geometry for layout and hit testing. Use one block drawer registry in the visible-block traversal and the dedicated
   offscreen callback for offscreen decoration. Draw context menus above canvas overlays and
   dialogs above menus. Modal drawing is independent of `canvasOverlays`.
-- Web-ui owns generic render-layer initialization, palette updates, memory release and disposal. Feature plugins
-  own prepared glyphs, drawing data and rendering passes, including connector widgets and wires.
+- Web-ui owns generic before/after-sprite render-layer initialization, installed font and palette updates, memory
+  release and disposal. Feature plugins own prepared glyphs, drawing data and rendering passes, including the
+  dotted canvas background, connector widgets and wires. Compositions choose their background plugin.
 - Test against built workspace exports. Use `npx nx run @8f4e/editor-core:test:screenshot` for real-renderer
   viewport and culling coverage.

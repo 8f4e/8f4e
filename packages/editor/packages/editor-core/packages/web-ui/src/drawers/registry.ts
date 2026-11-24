@@ -1,7 +1,7 @@
 import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
 import type { CodeBlockPositionEffect, RenderedCodeBlock, RenderGeometry } from '../render-geometry';
-import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
+import { createRenderLayerRegistry, type RenderLayerFactory, type RenderLayerStage } from '../render-layers';
 import type { MemoryViews } from '../types';
 
 export interface CodeBlockDrawerContext {
@@ -33,8 +33,8 @@ export type CanvasDrawer = (context: CanvasDrawerContext) => void;
 export interface EditorDrawerRegistry {
 	/** Replace the presentation-only block position effect. Disposal clears only this registration. */
 	registerCodeBlockPositionEffect: (effect: CodeBlockPositionEffect) => () => void;
-	/** Register a GPU layer whose resources are bound to the renderer lifecycle. */
-	registerRenderLayer: (factory: RenderLayerFactory) => () => void;
+	/** Register a GPU layer at a sprite boundary; its resources are bound to the renderer lifecycle. */
+	registerRenderLayer: (stage: RenderLayerStage, factory: RenderLayerFactory) => () => void;
 	/** Draw inside each visible block, in registration order. */
 	registerCodeBlockDrawer: (drawer: CodeBlockDrawer) => () => void;
 	/** Register backgrounds drawn by the source-text painter above nested shading and below selection and text. */

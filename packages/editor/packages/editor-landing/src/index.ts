@@ -2,6 +2,7 @@ import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
@@ -38,6 +39,7 @@ export async function mountLandingEditor(
 		plugins: [
 			compiler.plugin,
 			homePlugin,
+			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			createProjectUrlLoaderPlugin({

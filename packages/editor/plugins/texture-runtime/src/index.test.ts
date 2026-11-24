@@ -114,7 +114,11 @@ async function setup({
 	events.dispatch('loadProject', { project: current.project });
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
-	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
+	const layers = drawers.attachRenderLayers({
+		gl,
+		palette: resolvePalette(),
+		font: { name: 'ibmvga8x16', grid: { cellWidth: 8, cellHeight: 16, columns: 16, cellCount: 257 } },
+	});
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
 	const frame = (
 		blocks: readonly RenderedCodeBlock[] = state.project.activeLevel.blocks.map(codeBlock => ({
@@ -124,8 +128,9 @@ async function setup({
 		}))
 	) => {
 		const buffer = current.memory.buffer;
-		layers.draw({
+		layers.draw('afterSprites', {
 			state,
+			viewport: state.viewport,
 			renderGeometry: { blocks, blocksByCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) },
 			memoryViews: {
 				int8: new Int8Array(buffer),

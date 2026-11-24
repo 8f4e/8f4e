@@ -60,6 +60,7 @@ it('starts without storage and waits for core initialization before resolving th
 		'compiler',
 		'project-file-session',
 		'home',
+		'dotted-background',
 		'code-block-background',
 		'code-rendering',
 		'loading-indicators',

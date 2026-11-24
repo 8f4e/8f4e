@@ -1,7 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { Font } from '@8f4e/sprite-generator';
-import type { RenderHook, RenderPluginHost, SpriteAtlasGrid } from 'glugglugglug';
-import { createProgram, prepareRenderPass, removeHook, requireResource, requireUniform } from '../webgl';
+import type { Font, FontAtlas } from '@8f4e/sprite-generator';
+import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
 import { BACKGROUND_DOTS } from './dot-settings';
 import { fragmentShaderSource, vertexShaderSource } from './shaders';
 
@@ -21,13 +20,8 @@ export default class BackgroundRenderer {
 	private patternHeight = 1;
 	private visible = false;
 	private destroyed = false;
-	private readonly drawHook: RenderHook = () => this.draw();
 
-	constructor(
-		private readonly host: RenderPluginHost,
-		private readonly readViewportOrigin?: () => ViewportOrigin
-	) {
-		const gl = host.gl;
+	constructor(private readonly gl: WebGL2RenderingContext) {
 		const program = createProgram(gl, vertexShaderSource, fragmentShaderSource, 'background');
 		let vertexArray: WebGLVertexArrayObject | null = null;
 		try {
@@ -43,12 +37,11 @@ export default class BackgroundRenderer {
 		}
 		this.program = program;
 		this.vertexArray = vertexArray;
-		host.hooks.preDraw.push(this.drawHook);
 	}
 
 	setFont(
 		font: Font,
-		{ cellWidth: characterWidth, cellHeight: characterHeight }: Pick<SpriteAtlasGrid, 'cellWidth' | 'cellHeight'>
+		{ cellWidth: characterWidth, cellHeight: characterHeight }: Pick<FontAtlas['grid'], 'cellWidth' | 'cellHeight'>
 	): void {
 		const backgroundDot = BACKGROUND_DOTS[font];
 		this.patternWidth = characterWidth * 2;
@@ -80,17 +73,16 @@ export default class BackgroundRenderer {
 	}
 
 	/** Programs and the empty VAO have no reloadable storage and survive rendering-memory release. */
-	private draw(): void {
+	draw(origin: ViewportOrigin): void {
 		if (!this.visible) return;
-		const gl = this.host.gl;
-		// The background shares the raw context with render hooks; establish every state needed by this pass.
+		const gl = this.gl;
+		// Establish the WebGL state this pass needs independently of other layers.
 		prepareRenderPass(gl, this.program, this.vertexArray);
-		const origin = this.readViewportOrigin?.();
 		// Wrap before uploading so large world coordinates retain pixel precision and column parity.
 		gl.uniform2f(
 			this.patternOffsetLocation,
-			((origin?.x ?? 0) % this.patternWidth) / this.patternWidth,
-			((origin?.y ?? 0) % this.patternHeight) / this.patternHeight
+			(origin.x % this.patternWidth) / this.patternWidth,
+			(origin.y % this.patternHeight) / this.patternHeight
 		);
 		gl.uniform2f(
 			this.patternScaleLocation,
@@ -106,8 +98,7 @@ export default class BackgroundRenderer {
 	destroy(): void {
 		if (this.destroyed) return;
 		this.destroyed = true;
-		removeHook(this.host.hooks.preDraw, this.drawHook);
-		this.host.gl.deleteVertexArray(this.vertexArray);
-		this.host.gl.deleteProgram(this.program);
+		this.gl.deleteVertexArray(this.vertexArray);
+		this.gl.deleteProgram(this.program);
 	}
 }

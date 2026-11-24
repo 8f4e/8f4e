@@ -219,7 +219,7 @@ source line, a message, and the target block identity or project-group scope. Co
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
 
 Register viewport-coordinate drawing below code blocks with `drawers.registerCanvasBackgroundDrawer(drawer)`.
-Callbacks receive `{ draw, state, viewport, memoryViews, renderGeometry }` above the procedural background and independently
+Callbacks receive `{ draw, state, viewport, memoryViews, renderGeometry }` above before-sprite GPU layers and independently
 of `canvasOverlays`. `renderGeometry.blocks` contains the ordered rendered blocks for the current project, including
 offscreen blocks; `renderGeometry.blocksByCodeBlock` indexes them by the original editor-state object. All drawing
 stages share the prepared geometry for the current frame. Web-ui reuses those objects and collections between frames;
@@ -262,11 +262,15 @@ with `{ id, buttonIndex }`; the editor checks the visible dialog and runs the bu
 probes do not activate dialogs. Default and gallery compositions
 install the presentation plugin through their deferred registries. Custom compositions must install it to show dialogs.
 
-Register canvas-wide GPU passes with `drawers.registerRenderLayer(factory)`. The factory receives `{ gl, palette }`
-once the renderer is ready and returns `{ draw, destroy, loadPalette?, releaseMemory? }`. `draw` receives
-`{ state, memoryViews, renderGeometry }` every frame after sprites in registration order, independently of block culling.
-Palette changes and memory release are forwarded to the layer. Registration may precede renderer initialization or
-arrive later; unregistering destroys the active layer, and renderer disposal destroys all layers before its context.
+Register canvas-wide GPU passes with `drawers.registerRenderLayer('beforeSprites', factory)` or
+`drawers.registerRenderLayer('afterSprites', factory)`. The factory receives `{ gl, palette, font }` (the installed
+font name and atlas grid) once the renderer is ready and returns `{ draw, destroy, loadPalette?, loadFont?, releaseMemory? }`.
+`draw` receives `{ state, viewport, memoryViews, renderGeometry }` every frame in its stage's registration order,
+independently of block culling. `viewport` is the presented camera, shared by both GPU stages and sprite drawers.
+Installed font changes, palette changes and memory release are forwarded to the layer. Registration may precede
+renderer initialization or arrive later; unregistering destroys the active layer, and renderer disposal destroys all
+layers before its context. The standard compositions select the dotted background plugin in the before-sprite
+stage; bare core installs no canvas background.
 Types and generic WebGL resource helpers are exported by `@8f4e/web-ui`.
 
 `@8f4e/editor-plugin-connectors` owns input/output connector sprites. `@8f4e/editor-plugin-wires` derives its own

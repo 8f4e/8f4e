@@ -30,6 +30,7 @@
     "@8f4e/editor-plugin-code-rendering": "*",
     "@8f4e/editor-plugin-compiler": "*",
     "@8f4e/editor-plugin-connectors": "*",
+    "@8f4e/editor-plugin-dotted-background": "*",
     "@8f4e/editor-plugin-error-messages": "*",
     "@8f4e/editor-plugin-home": "*",
     "@8f4e/editor-plugin-keyboard-editing": "*",

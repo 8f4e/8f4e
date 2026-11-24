@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { PaletteConfig } from '@8f4e/editor-palette';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import initState from '@8f4e/editor-state';
 import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -33,7 +34,7 @@ entryEnd`);
 	});
 	store.set('editorMode', 'edit');
 	const drawers = createEditorDrawerRegistry();
-	const disposePlugin = wavePlugin.setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -41,7 +42,9 @@ entryEnd`);
 		layout: store.layout,
 		loading: store.loading,
 		drawers,
-	});
+	};
+	const disposeBackground = dottedBackgroundPlugin.setup(context);
+	const disposePlugin = wavePlugin.setup(context);
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
@@ -73,6 +76,7 @@ entryEnd`);
 		await expect(canvas).toMatchScreenshot();
 	} finally {
 		renderer.destroy();
+		disposeBackground();
 		disposePlugin();
 		store.dispose();
 		canvas.remove();

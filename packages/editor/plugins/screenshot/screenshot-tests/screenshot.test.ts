@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createScreenshotPlugin } from '../src/index';
@@ -41,6 +42,7 @@ noteEnd`);
 			renderer: new Engine(canvas),
 			initialProject: project,
 			plugins: [
+				dottedBackgroundPlugin,
 				{
 					...featurePlugin,
 					setup: context => {

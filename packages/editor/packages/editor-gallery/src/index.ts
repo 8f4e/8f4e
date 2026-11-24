@@ -3,6 +3,7 @@ import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
@@ -54,6 +55,7 @@ export async function mountGalleryEditor(
 			compiler.plugin,
 			fileSession.plugin,
 			homePlugin,
+			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			createLoadingIndicatorsPlugin({ prefersReducedMotion }),

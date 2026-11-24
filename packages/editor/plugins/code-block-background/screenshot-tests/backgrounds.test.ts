@@ -1,5 +1,6 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -43,6 +44,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 			],
 		},
 		plugins: [
+			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			{
 				id: 'fixture-text',

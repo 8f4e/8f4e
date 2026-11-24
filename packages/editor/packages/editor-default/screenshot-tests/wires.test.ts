@@ -8,6 +8,7 @@ import initEditor, {
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { coordinateGridPlugin } from '@8f4e/editor-plugin-coordinate-grid';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
 import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { wiresPlugin } from '@8f4e/editor-plugin-wires';
 import { displayRowToGridRow } from '@8f4e/editor-state';
@@ -69,7 +70,7 @@ async function setup(text = source, plugins: readonly EditorPlugin[] = [connecto
 	const editor: Editor = await initEditor(canvas, {
 		renderer,
 		initialProject: project,
-		plugins: [...plugins, captureContext],
+		plugins: [dottedBackgroundPlugin, ...plugins, captureContext],
 	});
 	cleanups.push(() => {
 		editor.dispose();

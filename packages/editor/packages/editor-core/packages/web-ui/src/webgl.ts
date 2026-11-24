@@ -42,7 +42,7 @@ export function createProgram(
 }
 
 /**
- * Establishes the default-framebuffer state and premultiplied-alpha blending required by each plugin pass.
+ * Establishes the default-framebuffer state and premultiplied-alpha blending required by a render pass.
  *
  * @param gl - Shared WebGL2 context to configure.
  * @param program - Plugin shader program to bind.
