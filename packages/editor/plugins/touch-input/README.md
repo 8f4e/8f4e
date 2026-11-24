@@ -23,8 +23,7 @@ A 6-pixel threshold distinguishes panning from a tap. Panning follows the finger
 the viewport where the gesture ends. Adding another finger ends the gesture; removing it does not resume panning.
 Axis-restricted gestures yield to page scrolling when the initial movement is primarily in the disabled direction;
 `touch-action: pan-y` or `pan-x` permits that native scrolling. Panning on both axes uses `touch-action: none`.
-Disabling viewport dragging or disposing the plugin restores the original inline touch action. Controls remain usable
-when viewport dragging is disabled.
+Disposing the plugin restores the original inline touch action.
 
 Choose whether to install this plugin based on the host's pointer capabilities; it can load after the first render.
 The plugin has no capability checks and synthesizes no DOM mouse events. It does not edit block positions, source,

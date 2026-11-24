@@ -43,7 +43,7 @@ it('starts without storage and waits for core initialization before resolving th
 	const mounted = vi.fn();
 	const mounting = mountGalleryEditor(canvas, {
 		captureWheel: false,
-		featureFlags: { blockSelectionAndDragging: false },
+		featureFlags: { canvasOverlays: false },
 	}).then(editor => {
 		mounted(editor);
 		return editor;
@@ -52,7 +52,7 @@ it('starts without storage and waits for core initialization before resolving th
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.defaultFont).toBeUndefined();
-	expect(options.featureFlags).toEqual({ projectCreation: false, blockSelectionAndDragging: false });
+	expect(options.featureFlags).toEqual({ canvasOverlays: false });
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('watch');
 	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('stack');
@@ -86,6 +86,7 @@ it('starts without storage and waits for core initialization before resolving th
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('selection-animation');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
+	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).not.toContain('project-new');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-block-background',

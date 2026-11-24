@@ -4,13 +4,6 @@ import type { State } from '@8f4e/editor-state-types';
 /** State defaults for isolated renderer screenshots. */
 export default function createScreenshotState(overrides: Partial<State> = {}): State {
 	return createMockState({
-		featureFlags: {
-			contextMenu: true,
-			blockSelectionAndDragging: false,
-			codeLineSelection: true,
-			viewportDragging: false,
-			canvasOverlays: true,
-		},
 		editorMode: 'view',
 		...overrides,
 	});

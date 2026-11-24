@@ -63,10 +63,6 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 			const resetGesture = () => {
 				gesture = undefined;
 			};
-			const syncTouchAction = () => {
-				inputTarget.style.touchAction = state.featureFlags.viewportDragging ? TOUCH_ACTION[axis] : originalTouchAction;
-				if (!state.featureFlags.viewportDragging) resetGesture();
-			};
 			const onTouchStart = (event: TouchEvent) => {
 				if (event.defaultPrevented) return;
 				releasePointer('pointercancel');
@@ -81,7 +77,6 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 					event.preventDefault();
 					return;
 				}
-				if (!state.featureFlags.viewportDragging) return;
 				gesture = {
 					startX: touch.clientX,
 					startY: touch.clientY,
@@ -104,7 +99,7 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 					return;
 				}
 				if (!gesture) return;
-				if (event.touches.length !== 1 || event.defaultPrevented || !state.featureFlags.viewportDragging) {
+				if (event.touches.length !== 1 || event.defaultPrevented) {
 					resetGesture();
 					return;
 				}
@@ -145,8 +140,7 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 				releasePointer('pointercancel');
 				resetGesture();
 			};
-			syncTouchAction();
-			store.subscribe('featureFlags.viewportDragging', syncTouchAction);
+			inputTarget.style.touchAction = TOUCH_ACTION[axis];
 			events.on('loadProject', onLoadProject, { capture: true });
 			inputTarget.addEventListener('touchstart', onTouchStart, { passive: false });
 			inputTarget.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -157,7 +151,6 @@ export function createTouchInputPlugin({ inputTarget, axis = 'both' }: TouchInpu
 				inputTarget.removeEventListener('touchmove', onTouchMove);
 				inputTarget.removeEventListener('touchend', onTouchEnd);
 				inputTarget.removeEventListener('touchcancel', onTouchCancel);
-				store.unsubscribe('featureFlags.viewportDragging', syncTouchAction);
 				events.off('loadProject', onLoadProject);
 				releasePointer('pointercancel');
 				resetGesture();

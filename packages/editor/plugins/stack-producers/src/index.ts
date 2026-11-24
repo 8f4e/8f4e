@@ -16,12 +16,7 @@ export const stackProducersPlugin: EditorPlugin = {
 				? getStackOperandProducerRows(selectedBlock, state).map(row => row * state.viewport.hGrid)
 				: [];
 		};
-		const selectors = [
-			'project.selectedCodeBlock',
-			'compiler.result',
-			'compilerInputRevision',
-			'featureFlags.codeLineSelection',
-		] as const;
+		const selectors = ['project.selectedCodeBlock', 'compiler.result', 'compilerInputRevision'] as const;
 		for (const selector of selectors) store.subscribe(selector, refresh);
 		const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();

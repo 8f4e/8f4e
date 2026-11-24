@@ -81,7 +81,7 @@ export async function mountGalleryEditor(
 			}),
 		],
 		defaultFont,
-		featureFlags: { projectCreation: false, ...featureFlags },
+		featureFlags,
 		renderer: renderer ?? new Engine(canvas),
 	});
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });

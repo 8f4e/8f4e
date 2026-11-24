@@ -31,7 +31,7 @@ it('starts without storage and waits for core initialization before resolving th
 	const mounted = vi.fn();
 	const mounting = mountLandingEditor(canvas, {
 		captureWheel: false,
-		featureFlags: { blockSelectionAndDragging: false },
+		featureFlags: { canvasOverlays: false },
 	}).then(editor => {
 		mounted(editor);
 		return editor;
@@ -41,8 +41,7 @@ it('starts without storage and waits for core initialization before resolving th
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.defaultFont).toBeUndefined();
 	expect(options.featureFlags).toEqual({
-		projectCreation: false,
-		blockSelectionAndDragging: false,
+		canvasOverlays: false,
 		contextMenu: false,
 	});
 	expect(options.plugins![0]).toBe(compiler.plugin);
@@ -122,9 +121,9 @@ it('keeps context-menu requests disabled when the host supplies feature flags', 
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountLandingEditor(
 		{ ownerDocument: { defaultView: { matchMedia: () => ({ matches: false }) } } } as unknown as HTMLCanvasElement,
-		{ featureFlags: { contextMenu: true, projectCreation: true } }
+		{ featureFlags: { contextMenu: true, canvasOverlays: false } }
 	);
-	expect(vi.mocked(initEditor).mock.calls[0][1].featureFlags).toEqual({ projectCreation: true, contextMenu: false });
+	expect(vi.mocked(initEditor).mock.calls[0][1].featureFlags).toEqual({ canvasOverlays: false, contextMenu: false });
 });
 
 it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {

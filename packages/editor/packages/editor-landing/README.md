@@ -8,7 +8,7 @@ including after live edits.
 
 The composition omits assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary assets,
 MIDI input, keyboard-to-memory input, bars, meter, wave, crossfade, switch, button, and piano. It also omits entry
-outlines, offscreen block arrows, context menus, block authoring, project saving/export, file-session tracking, block copy/paste, and loading
+outlines, offscreen block arrows, context menus, project creation, block authoring, project saving/export, file-session tracking, block copy/paste, and loading
 indicators. Context-menu requests are disabled so an invisible menu cannot block input.
 
 ```ts
@@ -29,7 +29,7 @@ at mount time and IBM VGA 8×16 on other devices. A project font directive takes
 a project without one restores the mount's default. This preference is kept outside project source and saved files.
 
 `LandingEditorMountOptions` accepts `initialProjectUrl`,
-`captureWheel`, `touchNavigation`, `defaultFont`, and `featureFlags`. Project creation defaults to disabled; context menus are always
+`captureWheel`, `touchNavigation`, `defaultFont`, and `featureFlags`. Context menus are always
 disabled. The source's `@mode` directive selects the initial mode (view by default). Keyboard navigation and editing
 remain available on non-coarse pointers; no keyboard mode toggle or hint is installed. A failed initial URL rejects the mount
 promise. Mount completion, initial-project errors,

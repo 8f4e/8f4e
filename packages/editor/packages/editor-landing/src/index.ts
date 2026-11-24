@@ -59,7 +59,7 @@ export async function mountLandingEditor(
 			}),
 		],
 		defaultFont,
-		featureFlags: { projectCreation: false, ...featureFlags, contextMenu: false },
+		featureFlags: { ...featureFlags, contextMenu: false },
 		renderer: new Engine(canvas),
 	});
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });

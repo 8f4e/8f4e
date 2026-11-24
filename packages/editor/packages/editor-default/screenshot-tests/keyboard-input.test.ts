@@ -35,7 +35,6 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 			initialProject: parseProjectSource(
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'
 			),
-			featureFlags: { historyTracking: true },
 			plugins: [
 				...plugins,
 				{

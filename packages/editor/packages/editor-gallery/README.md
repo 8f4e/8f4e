@@ -52,7 +52,8 @@ straight lines used by the default and landing editors. Wires stay attached to t
 
 The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
 chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor
-`@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
+`@8f4e/editor-file-session`. Open From Disk and New Project belong to plugins in the default composition, omitted
+here.
 Plot, scope, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
 project-signal registry in `src/lazy-plugins.ts`. Watch matches `@watch`/`@w`, and stack matches `@stack`/`@s`.
 Both receive a live reduced-motion preference. Block drawers run in registration order, including later lazy installations.
@@ -87,7 +88,7 @@ mount promise before the first render; the host can reveal the canvas on fulfill
 The host owns page URLs, loading/error UI, canvas layout, visibility management, and any WebMCP bridge.
 
 `GalleryEditorMountOptions` supports `initialProjectUrl`, `sharedAudioContext`,
-`captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
+`captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
 from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, and history. Keyboard bindings belong to plugins.
@@ -125,7 +126,7 @@ DOM input listeners. Keyboard-to-memory loads only for raw `@config keyboard.*` 
 including unopened groups and configuration added during editing. Save shortcuts remain an independent plugin.
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
-persistence, Open From Disk, WASM exports, screenshots, built-in module browsing, and additional editing actions such as
+persistence, New Project, Open From Disk, WASM exports, screenshots, built-in module browsing, and additional editing actions such as
 visual grouping, execution toggles, favorites navigation/editing, and memory disconnection.
 
 Verify from the workspace root:

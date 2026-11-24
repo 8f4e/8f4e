@@ -98,7 +98,7 @@ another project resolves its own declaration independently. Mode changes do not 
 
 The directive chooses initial mode independently of installed input plugins. Omitting the keyboard mode-switching
 plugin does not prevent the directive from selecting edit mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
-project replacement preserve `codeLineSelection` and all other host feature flags. There is no host initial-mode
+project replacement preserve host feature flags. There is no host initial-mode
 option or editing feature flag.
 
 ### `@public`

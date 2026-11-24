@@ -39,12 +39,7 @@ export const stackConnectionsPlugin: EditorPlugin = {
 			selectedBlock = state.project.selectedCodeBlock;
 			rows = selectedBlock ? prepareConnection(selectedBlock, state) : [];
 		};
-		const selectors = [
-			'project.selectedCodeBlock.cursor.row',
-			'compiler.result',
-			'compilerInputRevision',
-			'featureFlags.codeLineSelection',
-		] as const;
+		const selectors = ['project.selectedCodeBlock.cursor.row', 'compiler.result', 'compilerInputRevision'] as const;
 		for (const selector of selectors) store.subscribe(selector, refresh);
 		const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();

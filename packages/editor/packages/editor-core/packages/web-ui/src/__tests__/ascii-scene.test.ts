@@ -99,7 +99,6 @@ it('snapshots the resolved text of a dragged module', async () => {
 	const state = createMockState({
 		viewport: createMockViewport(0, 0, 1024, 768),
 		editorMode: 'view',
-		featureFlags: { blockSelectionAndDragging: false, viewportDragging: false },
 		project: { activeLevel: { blocks: [block] }, draggedCodeBlock: block },
 	});
 	const codeCells = code.map(line =>

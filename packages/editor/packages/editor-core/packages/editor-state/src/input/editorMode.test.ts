@@ -10,8 +10,8 @@ afterEach(() => {
 });
 
 describe('editorMode', () => {
-	it.each([true, false])('preserves feature flags while switching modes (line selection: %s)', codeLineSelection => {
-		const state = createMockState({ editorMode: 'view', featureFlags: { codeLineSelection } });
+	it.each([true, false])('preserves feature flags while switching modes (context menu: %s)', contextMenu => {
+		const state = createMockState({ editorMode: 'view', featureFlags: { contextMenu, canvasOverlays: false } });
 		const store = createStateManager(state);
 		cleanups.push(store.dispose);
 		const emitter = new EventEmitter();

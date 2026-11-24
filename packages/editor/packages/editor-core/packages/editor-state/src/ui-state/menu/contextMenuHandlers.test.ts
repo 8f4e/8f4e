@@ -8,7 +8,7 @@ import createMenuRegistry from './menuRegistry';
 
 describe('contextMenu effect', () => {
 	it.each([false, true])('separates main-menu contributions without trailing dividers: %s', async contributed => {
-		const state = createMockState({ featureFlags: { projectCreation: false } });
+		const state = createMockState();
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const items = createMenuRegistry();
@@ -26,6 +26,7 @@ describe('contextMenu effect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const registry = createMenuRegistry();
+		registry.registerItem('mainMenu', () => ({ title: 'Inspect', action: 'inspect' }));
 		const generate = vi.fn(async (_state, { page }: { page: number }) => [{ title: `Page ${page}` }]);
 		const unregister = registry.registerMenu('inspector', generate);
 		const cleanup = registerContextMenuHandlers(store, events, registry);
@@ -42,7 +43,7 @@ describe('contextMenu effect', () => {
 		expect(state.contextMenu.items[1].title).toContain('Page 1');
 		await onMenuBack();
 		expect(state.contextMenu.items.some(item => item.action === 'menuBack')).toBe(false);
-		expect(state.contextMenu.items.some(item => item.action === 'new')).toBe(true);
+		expect(state.contextMenu.items).toEqual([{ title: 'Inspect', action: 'inspect' }]);
 		unregister();
 		cleanup();
 		store.dispose();

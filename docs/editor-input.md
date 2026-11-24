@@ -7,7 +7,7 @@ Mouse and touch plugins translate browser input into `pointerdown`, `pointermove
 Core's pointer-input feature handles block lookup and routes both adapters through the same control interactions.
 Dialogs and menus get priority, then controls can claim `codeBlockPointerDown` in capture order by setting
 `stopPropagation`. Unclaimed presses continue to default selection and dragging; ordinary block listeners run after
-selection. Control routing is independent of the block-dragging feature flag. Sliders and crossfaders consume
+selection. Sliders and crossfaders consume
 `codeBlockPointerMove`, and held controls release on `codeBlockPointerUp`.
 
 Event dispatch can select the capture or normal phase with `{ phase: 'capture' | 'normal' }`; omitting the option

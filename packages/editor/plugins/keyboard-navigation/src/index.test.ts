@@ -36,11 +36,8 @@ describe('keyboard navigation', () => {
 		expect(test.key('ArrowRight', { [modifier]: true }).defaultPrevented).toBe(true);
 		expect(navigate).toHaveBeenCalledWith({ direction: 'right' });
 	});
-	it('honors codeLineSelection and removes its listener', () => {
+	it('removes its listener on disposal', () => {
 		const test = setup(createKeyboardNavigationPlugin, 'view');
-		test.state.featureFlags.codeLineSelection = false;
-		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
-		test.state.featureFlags.codeLineSelection = true;
 		test.disposePlugin();
 		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
 		expect(test.block.cursor.row).toBe(1);

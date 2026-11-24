@@ -9,8 +9,7 @@ import { tooltipsPlugin } from '@8f4e/editor-plugin-tooltips';
 const editor = await initEditor(canvas, { ...options, plugins: [tooltipsPlugin] });
 ```
 
-Core installs no plugins by default. The `codeLineSelection` feature flag
-controls whether selected-line tooltips are visible.
+Core installs no plugins by default. Installing this plugin shows tooltips for the selected code line.
 
 Each installation keeps its tooltip state private and registers a block drawer. Registration order determines its
 layering. Selection, completed project changes, compiler, grid, and selected-line geometry changes invalidate the

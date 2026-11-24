@@ -30,7 +30,7 @@ describe('menus - main menu', () => {
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
 
-	it('starts with the new-project action when there are no navigation actions', () => {
+	it('has no built-in actions at the project root in edit mode', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
 			project: { activeLevel: { entries: [], path: '', blocks: [] } },
@@ -38,6 +38,6 @@ describe('menus - main menu', () => {
 
 		const menu = mainMenu(mockState, []);
 
-		expect(menu).toEqual([{ title: 'New Project', action: 'new', close: true }]);
+		expect(menu).toEqual([]);
 	});
 });

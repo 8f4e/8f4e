@@ -4,7 +4,7 @@ import { getCurrentCompiledLineForCodeBlock } from './getCurrentCompiledLineForC
 
 /** Returns distinct physical rows for the current instruction's immediate operand producers, including display gaps. */
 export function getStackOperandProducerRows(block: EditorCodeBlock, state: State): number[] {
-	if (!state.featureFlags.codeLineSelection || block.disabled) return [];
+	if (block.disabled) return [];
 	const line = getCurrentCompiledLineForCodeBlock(block, state);
 	if (!line?.stackAnalysisLine) return [];
 	const rows: number[] = [];

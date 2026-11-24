@@ -105,23 +105,8 @@ export interface FeatureFlags {
 	/** Enable/disable right-click context menu functionality */
 	contextMenu: boolean;
 
-	/** Enable default pointer selection and edit-mode dragging of code blocks. */
-	blockSelectionAndDragging: boolean;
-
-	/** Enable/disable selecting lines/caret positions; preserved across mode changes and project replacement. */
-	codeLineSelection: boolean;
-
-	/** Enable/disable panning/scrolling of the editor viewport */
-	viewportDragging: boolean;
-
 	/** Enable/disable plugin canvas overlays and offscreen block decorations */
 	canvasOverlays: boolean;
-
-	/** Enable/disable history tracking for undo/redo functionality */
-	historyTracking?: boolean;
-
-	/** Enable/disable the menu action that creates a new project */
-	projectCreation: boolean;
 }
 
 /**

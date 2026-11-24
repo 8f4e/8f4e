@@ -124,6 +124,7 @@ describe('default editor plugins', () => {
 				'loading-indicators',
 				'dialogs',
 				'context-menu',
+				'project-new',
 				'block-authoring',
 				'coordinate-grid',
 				'entry-outlines',

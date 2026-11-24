@@ -1069,18 +1069,6 @@ describe('public editor editing handle', () => {
 		}
 	});
 
-	it('applies API edits without recording history when tracking is disabled', () => {
-		const { editing, state, store } = setup();
-		store.set('featureFlags.historyTracking', false);
-		const block = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
-		editing.applyEdits({
-			expectedRevision: editing.getRevision(),
-			edits: [{ type: 'delete', blockId: getEditorBlockId(block) }],
-		});
-		expect(state.project.activeLevel.blocks.some(block => block.name === 'original')).toBe(false);
-		expect(state.historyStack).toHaveLength(0);
-	});
-
 	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {
 		const { editing, store, state, events, dispose } = setup();
 		const revision = editing.getRevision();

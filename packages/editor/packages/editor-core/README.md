@@ -329,6 +329,7 @@ into a private JavaScript history and renders it beneath the directive. Crossfad
 interaction and drawer. Watch and stack own separate inline value overlays; their factories receive a
 `prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
+The project-new plugin owns New Project and uses the generic project-loading operation.
 The project-open plugin owns Open From Disk and receives the editor's document. The project-save plugin owns
 Save/Export, its menu and shortcut, serialization, and browser writes; its factory receives the input element.
 Both receive one file session holding the current handle and its reset lifecycle. The WebAssembly-export plugin receives a document and compiler
@@ -434,7 +435,8 @@ Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`
 `{ project }` later. Core loads initial content after sizing the viewport. Project preparation through
 `prepareInitialProject` completes before the renderer loads the selected font, settles layout and first-visit placement,
 and draws the first frame. The `ready` event follows that frame.
-Open From Disk belongs to the project-open plugin. Core has no file callbacks or file-association flags; undo/redo
+New Project and Open From Disk belong to the project-new and project-open plugins, respectively. Core has no
+file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 
 Session restoration and autosaving belong to `@8f4e/editor-plugin-session-persistence`. Project URL fetching and

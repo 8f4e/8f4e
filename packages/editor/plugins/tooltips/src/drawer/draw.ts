@@ -97,7 +97,7 @@ export default function drawTooltip(
 	memoryViews: MemoryViews,
 	tooltip: TooltipState
 ): void {
-	if (!state.featureFlags.codeLineSelection || state.project.selectedCodeBlock !== codeBlock) {
+	if (state.project.selectedCodeBlock !== codeBlock) {
 		return;
 	}
 

@@ -41,7 +41,7 @@ export default function registerUndoRedo(
 	function onProjectChange(change: ProjectChange) {
 		// Generated source is outside the authored snapshot.
 		if (change.kind === 'generated') return;
-		if (change.kind === 'edit' && change.history === 'debounced' && state.featureFlags.historyTracking) {
+		if (change.kind === 'edit' && change.history === 'debounced') {
 			state.redoStack = [];
 			editPending = true;
 			if (saveTimeout) clearTimeout(saveTimeout);
@@ -53,7 +53,7 @@ export default function registerUndoRedo(
 		if (change.kind === 'replace') {
 			state.historyStack = [];
 			state.redoStack = [];
-		} else if (change.kind === 'edit' && change.history === 'checkpoint' && state.featureFlags.historyTracking) {
+		} else if (change.kind === 'edit' && change.history === 'checkpoint') {
 			pushHistory(present);
 			state.redoStack = [];
 		}
@@ -61,7 +61,6 @@ export default function registerUndoRedo(
 	}
 
 	function undo() {
-		if (!state.featureFlags.historyTracking) return;
 		commitPendingEdit();
 		const previousState = state.historyStack.pop();
 		if (!previousState) return;
@@ -71,7 +70,6 @@ export default function registerUndoRedo(
 	}
 
 	function redo() {
-		if (!state.featureFlags.historyTracking) return;
 		commitPendingEdit();
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
