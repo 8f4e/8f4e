@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/language-spec",
-  "version": "9.1.1",
+  "version": "9.1.2",
   "private": true,
   "description": "Shared public language spec and contracts for 8f4e",
   "type": "module",
