@@ -1,8 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { createCodeBlockCopyPastePlugin } from '@8f4e/editor-plugin-code-block-copy-paste';
-import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
-import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import initState, { serializeToProject, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -43,12 +41,9 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 	};
 	const document = { defaultView: browserWindow };
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
-	const fileSession = createProjectFileSession();
 	let clipboard = '';
 	const plugins = [
-		fileSession.plugin,
-		createProjectOpenPlugin({ document: inputTarget.ownerDocument, fileSession }),
-		createProjectSavePlugin({ inputTarget, fileSession }),
+		createProjectFilesPlugin({ inputTarget }),
 		createCodeBlockCopyPastePlugin({
 			readClipboardText: async () => clipboard,
 			writeClipboardText: async text => {

@@ -7,7 +7,7 @@ controls, visualizations, and URL loading. The landing editor uses the worker ru
 its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
 piano, assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary
 assets, MIDI, keyboard-to-memory input, bars, meter, wave, and crossfade. It also omits entry outlines, offscreen block
-arrows, context menus, project saving/export, file-session tracking, and block copy/paste. Plain-text paste remains available
+arrows, context menus, project file access/export, and block copy/paste. Plain-text paste remains available
 through keyboard editing. Each mount starts fresh, with no browser session persistence,
 WASM export, screenshots, built-in module browser, or optional authoring-action plugins. The website
 controls the canvas size. Homepage editors leave wheel scrolling to the surrounding document and start in edit mode

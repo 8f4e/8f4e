@@ -10,7 +10,8 @@
   own page layout, hosting and deployment. WebMCP is a page-owned adapter to one editor's public API.
 - The compiler plugin coordinates compilation and provides live artifact and memory handles. Runtime plugins own
   configuration, readiness and execution lifecycle independently. Publish runtime info and environment
-  constants under each runtime's own key. Worker and worklet packages own execution code.
+  constants under each runtime's own key. Keep worker and worklet execution code in separate packages nested
+  under their owning runtime plugins.
 - Plugin READMEs document factory dependencies, loading signals and lifecycle. Composition READMEs document plugin
   selection.
 
@@ -42,8 +43,8 @@
   Match raw configuration before the relevant schema loads.
 - Load mouse input on all devices, touch input on coarse pointers and selected keyboard plugins on non-coarse
   pointers. Forward host input options to the owning plugin.
-- Share one file session per editor that supports source files. Install it before project loaders and inject it
-  into the file plugins.
+- Keep the file association private to the default editor's project-files plugin. Use only the one-shot export
+  plugin in gallery editors.
 - Keep shared libraries external in editor library bundles, including imported dependency subpaths.
 - Test individual features against core services and exercise combined real plugins in composition suites. Test
   native input in the adapter or composition. Use `@8f4e/editor-default:test:screenshot` for full-editor composition

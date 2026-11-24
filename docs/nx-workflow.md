@@ -72,8 +72,9 @@ All packages in `packages/` (including nested directories) are automatically det
 - `@8f4e/sprite-generator` (`packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator`)
 - `@8f4e/compiler`
 - `@8f4e/compiler-worker`
-- `@8f4e/runtime-audio-worklet`
-- `@8f4e/runtime-web-worker`
+- `@8f4e/runtime-audio-worklet` (`packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet`)
+- `@8f4e/runtime-web-worker` (`packages/editor/plugins/worker-runtime/packages/runtime-web-worker`)
+- `@8f4e/runtime-test-runner` (`packages/editor/plugins/test-runtime/packages/runtime-test-runner`)
 
 ## Configuration
 

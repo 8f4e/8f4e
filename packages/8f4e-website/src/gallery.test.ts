@@ -373,8 +373,8 @@ test('keeps live editing and project export available in the gallery editor', as
 	canvas.dispatchEvent(saveKey);
 	expect(saveKey.defaultPrevented).toBe(true);
 	await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(2));
-	expect(requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
-	expect(showSaveFilePicker).toHaveBeenCalledOnce();
+	expect(requestPermission).not.toHaveBeenCalled();
+	expect(showSaveFilePicker).toHaveBeenCalledTimes(2);
 });
 
 test('loads and runs worker and test runtime plugins together through the gallery composition', async () => {

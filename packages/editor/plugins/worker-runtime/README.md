@@ -24,7 +24,8 @@ Concurrent runtimes should use distinct constant names. Contributions are ordina
 the compiler handles conflicting declarations. Statistics are published under the fixed `info.workerRuntime` namespace.
 
 The host supplies current compiler memory and bytecode getters. The plugin imports the worker entry from the
-separate `@8f4e/runtime-web-worker` execution package using Vite's `?worker` asset handling and owns its workers.
+nested [`@8f4e/runtime-web-worker`](packages/runtime-web-worker/README.md) execution package using Vite's
+`?worker` asset handling and owns its workers.
 
 Validate with `npx nx run @8f4e/editor-plugin-worker-runtime:build|test|typecheck`.
 

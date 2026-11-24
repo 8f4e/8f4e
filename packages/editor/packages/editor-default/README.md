@@ -110,8 +110,8 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-stack-producers` for highlighting the immediate producers of the selected instruction’s operands,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
-`@8f4e/editor-plugin-project-new` for blank-project creation, `@8f4e/editor-plugin-project-open` for opening projects,
-`@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`@8f4e/editor-plugin-project-new` for blank-project creation, `@8f4e/editor-plugin-project-files` for opening, saving
+and exporting project files, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Producers supply IDs and custom messages, such as `Compiling...`.
@@ -124,14 +124,14 @@ This overlay does not block input.
 `@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and gallery compositions; the landing composition omits it.
 
 `createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
-synchronously constructs the startup plugin set with resources for one editor. It creates one `@8f4e/editor-file-session`, installs its
-plugin before project loaders, and supplies it to Open and Save. The session shares the current handle and clears it
-on project replacement. Open receives the canvas's document. Save receives the canvas and owns serialization, writing,
-and Cmd/Ctrl+S. WebAssembly export receives a document and a live compiler-byte getter. File handling stays outside core.
+synchronously constructs the startup plugin set with resources for one editor. The deferred project-files plugin
+receives the canvas and owns the current file association, Open/Save/Export actions and Cmd/Ctrl+S. It clears the
+association on project replacement. WebAssembly export receives a document and a live compiler-byte getter.
+File handling stays outside core.
 When initializing core directly with these plugins, pass the same `defaultFont` to this factory and core so the
 font-preview plugin cycles from the rendered default.
 
-Compiler coordination, source loading/session restoration, file-session tracking, home navigation, the dotted canvas
+Compiler coordination, source loading/session restoration, home navigation, the dotted canvas
 background, block backgrounds, code rendering, and loading indicators are eager. Home navigation interprets `; @home` when a project or group is
 first opened and contributes the Go @home action in edit mode. Hosts replacing the default plugin list can omit it.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
@@ -200,7 +200,7 @@ from paths without loading module text, owns the menu and source cache, and inse
 dependencies. Omitting it removes the module browser. Standard-library include resolution remains in the host.
 
 Code changes automatically save a recovery session to browser storage. With the editor canvas focused, `Cmd+S`
-or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-save plugin. In browsers supporting the File System Access API in a secure
+or `Ctrl+S` saves canonical `.8f4e` source to disk through the project-files plugin. In browsers supporting the File System Access API in a secure
 context, the first Save chooses a destination and later saves reuse it. Opening a project from disk associates the
 selected file with the editor; the first Save can ask for write permission. The Export Project menu action acts as
 Save As: it chooses a destination and makes that file the target of later saves.

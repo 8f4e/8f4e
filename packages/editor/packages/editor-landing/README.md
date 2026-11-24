@@ -8,7 +8,7 @@ including after live edits.
 
 The composition omits assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary assets,
 MIDI input, keyboard-to-memory input, bars, meter, wave, crossfade, switch, button, and piano. It also omits entry
-outlines, offscreen block arrows, context menus, project creation, block authoring, project saving/export, file-session tracking, block copy/paste, and loading
+outlines, offscreen block arrows, context menus, project creation, block authoring, project file access/export, block copy/paste, and loading
 indicators. Context-menu requests are disabled so an invisible menu cannot block input.
 
 ```ts
@@ -49,7 +49,7 @@ mouse input. On devices with a fine primary pointer, it keeps a primary-button m
 even when the pointer leaves the canvas. Touch gestures and wheel scrolling are unchanged.
 Plain-text paste at the caret remains available through keyboard editing. The composition does not intercept
 Cmd/Ctrl+S. The galleries continue to use `editor-gallery` with entry outlines, arrows, context menus, project
-saving/export, and block copy/paste.
+source export, and block copy/paste.
 
 The composition omits `@8f4e/editor-plugin-loading-indicators`; the host owns loading UI. Producers still publish
 operation status in `state.loadingIndicators`, and completed records remain in state. No indicator drawer or
