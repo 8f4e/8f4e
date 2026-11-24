@@ -82,7 +82,7 @@ verify rendering equivalence, and measure its benefit and overhead.
 ## Affected Components
 
 - `packages/editor/plugins/code-rendering/src/index.ts` - Text row submission.
-- `packages/editor/packages/editor-core/packages/web-ui/src/drawContext.ts` - Resolved cell submission and positioning.
+- `packages/editor/packages/editor-core/packages/web-ui/src/sprites/drawContext.ts` - Resolved cell submission and positioning.
 - `packages/editor/plugins/code-rendering/src/deriveCodeBlockCodeCells.ts` -
   Existing display-row, prefix, tab, and gap contracts to preserve.
 - Code-block drawer tests, draw-context tests, browser fixtures, and benchmark tooling.

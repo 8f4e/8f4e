@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
 import initState, { EMPTY_DEFAULT_PROJECT, updateViewport } from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockViewport } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createElasticViewportPlugin } from './index';
 
@@ -15,7 +15,7 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const state = store.getState();
 	state.viewport = createMockViewport();
 	const small = createMockCodeBlock({ x: 300, y: 100, width: 80, height: 64 });
@@ -28,11 +28,11 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const frame = (time: number, suppressOffsets = false) =>
-		drawers.prepareCodeBlockOffsets(state, time, suppressOffsets);
+		renderRegistry.prepareCodeBlockOffsets(state, time, suppressOffsets);
 	const pan = (dx: number, dy = 0) => {
 		state.viewport.x += dx;
 		state.viewport.y += dy;

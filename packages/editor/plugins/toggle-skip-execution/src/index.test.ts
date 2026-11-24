@@ -1,7 +1,7 @@
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, Options } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { toggleSkipExecutionPlugin } from './index';
 
@@ -39,7 +39,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	const dispose = () => {

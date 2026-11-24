@@ -3,10 +3,10 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createFrameBlockPositionsFixture } from './__tests__/blockPositionsFixture';
 import { createFakeWebGl } from './__tests__/fake-webgl';
-import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
 import { wiresPlugin } from './index';
 
 const source = `8f4e/v1
@@ -51,7 +51,7 @@ async function setup(text = source, installed = true) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? wiresPlugin.setup({
 				store,
@@ -60,22 +60,27 @@ async function setup(text = source, installed = true) {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: undefined;
 	const state = store.getState();
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	const gl = createFakeWebGl();
-	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
+	const layers = renderRegistry.attachRenderLayers({ gl, palette: resolvePalette({}) });
 	const render = () => {
 		gl.drawArraysInstanced.mockClear();
-		layers.draw({ state, memoryViews, renderGeometry: createRenderGeometryFixture(state) });
+		layers.draw('afterSprites', {
+			state,
+			viewport: state.viewport,
+			memoryViews,
+			blockPositions: createFrameBlockPositionsFixture(state),
+		});
 	};
 	cleanups.push(store.dispose);
 	if (dispose) cleanups.push(dispose);
 	cleanups.push(() => layers.destroy());
-	return { store, state, events, drawers, memoryViews, gl, layers, render, dispose };
+	return { store, state, events, renderRegistry, memoryViews, gl, layers, render, dispose };
 }
 
 describe('wires plugin', () => {
@@ -92,11 +97,11 @@ describe('wires plugin', () => {
 	});
 
 	it('can install after the project and renderer are already initialized', async () => {
-		const { store, events, drawers, gl, render } = await setup(source, false);
+		const { store, events, renderRegistry, gl, render } = await setup(source, false);
 		const disposeWires = wiresPlugin.setup({
 			store,
 			events,
-			drawers,
+			renderRegistry,
 			layout: store.layout,
 			loading: store.loading,
 			menus: store.menus,

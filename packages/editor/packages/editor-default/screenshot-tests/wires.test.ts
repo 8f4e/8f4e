@@ -106,7 +106,7 @@ function registerSourceText(context: EditorPluginContext) {
 			codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 		);
 	});
-	const removeText = context.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	const removeText = context.renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.displayModel.lines.forEach((line, row) =>
 			draw.drawGlyphs(
 				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
@@ -146,9 +146,10 @@ entryEnd`,
 		return [...pixel];
 	};
 	const connected = readPixel();
+	expect(connected[3]).toBeGreaterThan(0);
 	new Int32Array(memory.buffer)[compiled.memoryPlan.modules.amplifier.memory.input.allocationUnitAddress] = -1;
 	render();
-	expect(connected).not.toEqual(readPixel());
+	expect(readPixel()).toEqual([0, 0, 0, 0]);
 });
 
 test('renders connectors and wires through the editor and restores them after GPU memory release', async () => {
@@ -206,10 +207,10 @@ entryEnd`,
 	let presentedInputX = 0;
 	let presentedReplicaX = 0;
 	cleanups.push(
-		context.drawers.registerCanvasDrawer(({ renderGeometry }) => {
-			presentedOutputX = renderGeometry.blocksByCodeBlock.get(output)!.x;
-			presentedInputX = renderGeometry.blocksByCodeBlock.get(input)!.x;
-			presentedReplicaX = renderGeometry.blocksByCodeBlock.get(replica)!.x;
+		context.renderRegistry.registerCanvasBackgroundDrawer(({ blockPositions }) => {
+			presentedOutputX = blockPositions.byCodeBlock.get(output)!.x;
+			presentedInputX = blockPositions.byCodeBlock.get(input)!.x;
+			presentedReplicaX = blockPositions.byCodeBlock.get(replica)!.x;
 		})
 	);
 	const start = performance.now() + 200;

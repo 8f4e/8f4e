@@ -3,7 +3,7 @@ import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT, setGridSiz
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeError, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { errorMessagesPlugin } from './index';
 
@@ -29,7 +29,7 @@ function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) 
 	for (const [id, list] of Object.entries(errors)) store.set(`codeErrors.${id}`, list);
 	const state = store.getState();
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = errorMessagesPlugin.setup({
 		store,
 		events,
@@ -37,20 +37,20 @@ function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) 
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
 	const render = (codeBlock: EditorCodeBlock = block) =>
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
 	const renderOverlay = () =>
-		drawers.drawCanvasOverlays({
+		renderRegistry.drawCanvasOverlays({
 			draw,
 			state,
 			viewport: state.viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	return { state, store, events, block, render, renderOverlay, drawFill, drawGlyphs, dispose };

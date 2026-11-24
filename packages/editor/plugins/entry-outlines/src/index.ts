@@ -4,7 +4,7 @@ import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
 export const entryOutlinesPlugin: EditorPlugin = {
 	id: 'entry-outlines',
-	setup: ({ drawers, store }) => {
+	setup: ({ renderRegistry, store }) => {
 		const state = store.getState();
 		let glyphsByName = new Map<string, GlyphIds>();
 		const prepare = () => {
@@ -22,7 +22,7 @@ export const entryOutlinesPlugin: EditorPlugin = {
 			entries = prepare();
 		};
 		store.subscribe('project.entryBounds', update);
-		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
+		const unregister = renderRegistry.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
 			draw.startGroup(-viewport.x, -viewport.y);
 			for (const {
 				bounds: { x, y, width, height },

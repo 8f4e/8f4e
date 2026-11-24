@@ -4,7 +4,7 @@ import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -45,7 +45,7 @@ function restoreSession(directive: string, nested = false) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({
 		storage,

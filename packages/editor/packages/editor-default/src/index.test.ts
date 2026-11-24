@@ -89,6 +89,7 @@ describe('default editor plugins', () => {
 			'home',
 			'project-url-loader',
 			'session-persistence',
+			'dotted-background',
 			'code-block-background',
 			'code-rendering',
 			'loading-indicators',
@@ -263,7 +264,7 @@ describe('default editor plugins', () => {
 		expect(ids).toEqual(expect.arrayContaining(['group-path', 'keyboard-navigation', 'keyboard-editing']));
 	});
 
-	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
+	it('keeps the compiler first when hosts replace or omit feature plugins, including the dotted background', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
 		const editor = await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {

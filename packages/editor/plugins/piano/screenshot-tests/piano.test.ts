@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
-import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
@@ -28,7 +28,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
@@ -36,7 +36,7 @@ entryEnd`);
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;
@@ -64,7 +64,7 @@ entryEnd`);
 
 	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {

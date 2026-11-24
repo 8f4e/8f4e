@@ -1,4 +1,4 @@
-import type { MemoryViews } from '../../src/types';
+import type { MemoryViews } from '@8f4e/web-ui';
 
 /**
  * Creates mock MemoryViews for screenshot tests.

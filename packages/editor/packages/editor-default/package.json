@@ -42,6 +42,7 @@
     "@8f4e/editor-plugin-coordinate-grid": "*",
     "@8f4e/editor-plugin-crossfade": "*",
     "@8f4e/editor-plugin-dialogs": "*",
+    "@8f4e/editor-plugin-dotted-background": "*",
     "@8f4e/editor-plugin-elastic-viewport": "*",
     "@8f4e/editor-plugin-enter-group-button": "*",
     "@8f4e/editor-plugin-entry-outlines": "*",
@@ -95,6 +96,7 @@
     "@8f4e/stdlib": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-palette": "*",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/web-ui-testing": "*",
     "@8f4e/config": "*",

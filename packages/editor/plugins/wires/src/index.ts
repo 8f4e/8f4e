@@ -6,10 +6,10 @@ import { resolveWireColors } from './wire-colors';
 /** Draws WebGL wires independently of connector sprite presentation. */
 export const wiresPlugin: EditorPlugin = {
 	id: 'wires',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const connections = createWireConnections(store, events);
 		try {
-			const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
+			const unregisterLayer = renderRegistry.registerRenderLayer('afterSprites', ({ gl, palette }) => {
 				const lines = new LineDrawer(gl);
 				let colors = resolveWireColors(palette);
 				const drawConnection: WireConnectionVisitor = (inputX, inputY, outputX, outputY, selected) => {
@@ -23,9 +23,9 @@ export const wiresPlugin: EditorPlugin = {
 					);
 				};
 				return {
-					draw: ({ state, memoryViews, renderGeometry }) => {
+					draw: ({ state, memoryViews, blockPositions }) => {
 						lines.reset();
-						if (state.dialogStack.length === 0) connections.visit(renderGeometry, memoryViews.int32, drawConnection);
+						if (state.dialogStack.length === 0) connections.visit(blockPositions, memoryViews.int32, drawConnection);
 						lines.flush();
 					},
 					loadPalette: nextPalette => {

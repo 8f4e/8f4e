@@ -1,7 +1,7 @@
 import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock, serializeToProject, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ProgramArtifacts, WebUiRenderer } from './index';
+import type { ProgramArtifacts, SpriteEngine } from './index';
 import type { EditorPluginContext } from './plugins';
 
 const events = {
@@ -66,7 +66,7 @@ const renderer = {
 	releaseRenderingMemory: noop,
 	restoreRenderingMemory: noop,
 	destroy: vi.fn(),
-} satisfies WebUiRenderer;
+} satisfies SpriteEngine;
 
 const requestFrame = vi.fn((_callback: FrameRequestCallback) => 23);
 const cancelFrame = vi.fn();
@@ -213,7 +213,10 @@ describe('editor init', () => {
 		const { default: initView, registerWebUiConfig } = await import('@8f4e/web-ui');
 		const drawer = vi.fn();
 		const plugins = [
-			{ id: 'test', setup: vi.fn(({ drawers }: EditorPluginContext) => drawers.registerCodeBlockDrawer(drawer)) },
+			{
+				id: 'test',
+				setup: vi.fn(({ renderRegistry }: EditorPluginContext) => renderRegistry.registerCodeBlockDrawer(drawer)),
+			},
 		];
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 		const editor = await init(canvas, {
@@ -229,7 +232,7 @@ describe('editor init', () => {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers: expect.objectContaining({ registerCodeBlockDrawer: expect.any(Function) }),
+			renderRegistry: expect.objectContaining({ registerCodeBlockDrawer: expect.any(Function) }),
 		});
 		expect(vi.mocked(initState).mock.invocationCallOrder.at(-1)).toBeLessThan(
 			plugins[0].setup.mock.invocationCallOrder[0]
@@ -243,14 +246,14 @@ describe('editor init', () => {
 		expect(view.renderFrame.mock.invocationCallOrder[0]).toBeLessThan(
 			events.dispatch.mock.invocationCallOrder[initialized]
 		);
-		const rendererDrawers = vi.mocked(initView).mock.calls.at(-1)![4]!.drawers!;
+		const rendererRegistry = vi.mocked(initView).mock.calls.at(-1)![4]!.renderRegistry!;
 		expect(vi.mocked(initView).mock.calls.at(-1)![4]!.defaultFont).toBe('pixelcode6x12');
-		expect(rendererDrawers).toBe(plugins[0].setup.mock.calls[0][0].drawers);
-		const drawContext = {} as Parameters<typeof rendererDrawers.drawCodeBlock>[0];
-		rendererDrawers.drawCodeBlock(drawContext);
+		expect(rendererRegistry).toBe(plugins[0].setup.mock.calls[0][0].renderRegistry);
+		const drawContext = {} as Parameters<typeof rendererRegistry.drawCodeBlock>[0];
+		rendererRegistry.drawCodeBlock(drawContext);
 		expect(drawer).toHaveBeenCalledOnce();
 		editor.dispose();
-		rendererDrawers.drawCodeBlock(drawContext);
+		rendererRegistry.drawCodeBlock(drawContext);
 		expect(drawer).toHaveBeenCalledOnce();
 	});
 
@@ -630,10 +633,7 @@ describe('editor init', () => {
 		const { default: initView } = await import('@8f4e/web-ui');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 
-		await init(canvas, {
-			renderer,
-			renderStatsIntervalFrames: 12,
-		});
+		await init(canvas, { renderer });
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
 		const viewOptions = viewCall[4]!;
@@ -647,7 +647,6 @@ describe('editor init', () => {
 			uploadedInstanceBytes: 500,
 		});
 
-		expect(viewOptions.renderStatsIntervalFrames).toBe(12);
 		expect(store.set).toHaveBeenCalledWith('info.graphics', {
 			timeToRenderMs: 10,
 			fps: 50,

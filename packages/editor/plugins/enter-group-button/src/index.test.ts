@@ -4,7 +4,7 @@ import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockPointerDownEvent, EditorCodeBlock, InternalPointerEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { enterGroupButtonPlugin } from './index';
 
@@ -47,7 +47,7 @@ function setup() {
 	const block = root.blocks.find(block => block.name === 'outer')!;
 	const ordinary = root.blocks.find(block => block.name === 'ordinary')!;
 	const height = block.height;
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = enterGroupButtonPlugin.setup({
 		store,
 		events,
@@ -55,7 +55,7 @@ function setup() {
 		menus: store.menus,
 		directives: store.directives,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
@@ -65,7 +65,7 @@ function setup() {
 	const render = (codeBlock = block) => {
 		drawFill.mockClear();
 		drawGlyphs.mockClear();
-		drawers.drawCodeBlock({
+		renderRegistry.drawCodeBlock({
 			state,
 			codeBlock,
 			draw: { drawFill, drawGlyphs } as unknown as DrawContext,

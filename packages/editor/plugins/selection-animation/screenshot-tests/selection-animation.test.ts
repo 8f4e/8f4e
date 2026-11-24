@@ -38,7 +38,7 @@ test('renders two phases of the selection animation', async () => {
 		plugins: [
 			{
 				id: 'fixture-text',
-				setup: ({ drawers, layout }) => {
+				setup: ({ renderRegistry, layout }) => {
 					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 					const removePreparation = layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(
@@ -46,7 +46,7 @@ test('renders two phases of the selection animation', async () => {
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.code.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid,

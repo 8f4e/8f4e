@@ -29,7 +29,7 @@ describe('keyboard mode hints', () => {
 			draw: draw as unknown as DrawContext,
 			state: test.state,
 			viewport: test.state.viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).toHaveBeenCalledWith(
@@ -54,7 +54,7 @@ describe('keyboard mode hints', () => {
 			draw: draw as unknown as DrawContext,
 			state: test.state,
 			viewport: test.state.viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews,
 		});
 		expect(draw.drawGlyphs).not.toHaveBeenCalled();

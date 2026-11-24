@@ -4,7 +4,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createScopePlugin } from '../index';
 
@@ -36,12 +36,12 @@ export async function setup(
 		installed = true,
 		name = 'audio',
 		compile = true,
-		drawers = createEditorDrawerRegistry(),
+		renderRegistry = createEditorRenderRegistry(),
 	}: {
 		installed?: boolean;
 		name?: string;
 		compile?: boolean;
-		drawers?: ReturnType<typeof createEditorDrawerRegistry>;
+		renderRegistry?: ReturnType<typeof createEditorRenderRegistry>;
 	} = {}
 ) {
 	const text =
@@ -67,7 +67,7 @@ export async function setup(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -98,7 +98,7 @@ export async function setup(
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		vi.mocked(draw.endGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const traces = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
 	const backgrounds = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.darkSurface);

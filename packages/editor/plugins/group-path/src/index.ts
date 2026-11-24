@@ -8,7 +8,7 @@ const BRANCH = textToGlyphIds('└─ ');
 export function createGroupPathPlugin({ topRow = 0 }: { topRow?: number } = {}): EditorPlugin {
 	return {
 		id: 'group-path',
-		setup: ({ store, drawers }) => {
+		setup: ({ store, renderRegistry }) => {
 			const state = store.getState();
 			let path = '';
 			let rows: GlyphIds[] = [];
@@ -27,7 +27,7 @@ export function createGroupPathPlugin({ topRow = 0 }: { topRow?: number } = {}):
 			store.subscribe('projectChange', refresh);
 			refresh();
 
-			const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+			const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 				if (!rows.length) return;
 				const { vGrid, hGrid } = state.viewport;
 				draw.startGroup(0, topRow * hGrid);

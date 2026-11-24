@@ -11,14 +11,14 @@ import type { Scope } from './types';
 export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.Memory | null }): EditorPlugin {
 	return {
 		id: 'scope',
-		setup: ({ store, events, layout, drawers }) => {
+		setup: ({ store, events, layout, renderRegistry }) => {
 			const state = store.getState();
 			const scopesByBlock = new WeakMap<EditorCodeBlock, Scope[]>();
 			const readScopeDirectives = createScopeDirectiveReader();
 			const sampler = createScopeSampler(getMemory);
 			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
 			const preparation = registerScopePreparation(layout, scopesByBlock, readScopeDirectives);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 				const scopes = scopesByBlock.get(codeBlock);
 				if (scopes) drawScopes(draw, scopes);
 			});

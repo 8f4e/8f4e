@@ -46,7 +46,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 			codeBlockBackgroundPlugin,
 			{
 				id: 'fixture-text',
-				setup: ({ drawers, layout }) => {
+				setup: ({ renderRegistry, layout }) => {
 					const glyphsByBlock = new WeakMap<object, GlyphIds[]>();
 					const removePreparation = layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(
@@ -54,7 +54,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid * 3,

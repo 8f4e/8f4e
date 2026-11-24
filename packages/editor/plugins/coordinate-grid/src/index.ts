@@ -11,8 +11,8 @@ const LABEL_OFFSET_Y = 2;
 /** World-anchored reference marks every 100 columns and 50 rows of the editor grid. */
 export const coordinateGridPlugin: EditorPlugin = {
 	id: 'coordinate-grid',
-	setup: ({ drawers }) =>
-		drawers.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
+	setup: ({ renderRegistry }) =>
+		renderRegistry.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
 			const { x, y, width, height, vGrid, hGrid } = viewport;
 			if (width <= 0 || height <= 0 || vGrid <= 0 || hGrid <= 0) return;
 

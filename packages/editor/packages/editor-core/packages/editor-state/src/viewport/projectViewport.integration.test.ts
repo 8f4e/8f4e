@@ -9,6 +9,7 @@ import initState, {
 	getEditorBlockId,
 	markGridSizePending,
 	setGridSize,
+	settleGridSize,
 	updateViewport,
 } from '../index';
 
@@ -160,23 +161,31 @@ it('returns to the remembered parent only after project-change subscribers finis
 	expect(test.resolver).toHaveBeenCalledTimes(2);
 });
 
-it.each([TEST_GRID_SIZE, { vGrid: 6, hGrid: 12 }])(
-	'resolves pending placement when a live grid installation completes with $vGrid×$hGrid dimensions',
-	grid => {
-		const test = setup();
-		setGridSize(test.state, test.events, TEST_GRID_SIZE);
-		test.load('note old\n; @pos 1 2\nnoteEnd');
-		markGridSizePending(test.state);
-		test.load('note replacement\n; @pos 10 20\nnoteEnd');
-		expect(test.resolver).toHaveBeenCalledOnce();
-		expect(test.position()).toEqual({ x: 0, y: 0 });
-		// The old atlas and its geometry remain usable while the replacement loads.
-		expect(test.block('replacement')).toMatchObject({ x: 80, y: 320 });
-		setGridSize(test.state, test.events, grid);
-		expect(test.resolver).toHaveBeenCalledTimes(2);
-		expect(test.position()).toEqual({ x: 10 * grid.vGrid, y: 20 * grid.hGrid });
-	}
-);
+it.each([
+	{ outcome: 'a replacement with different dimensions', replacementGrid: { vGrid: 6, hGrid: 12 }, gridChanges: 1 },
+	{ outcome: 'a replacement with equal dimensions', replacementGrid: TEST_GRID_SIZE, gridChanges: 0 },
+	{ outcome: 'the retained grid', replacementGrid: undefined, gridChanges: 0 },
+])('resolves pending placement with $outcome', ({ replacementGrid, gridChanges }) => {
+	const test = setup();
+	setGridSize(test.state, test.events, TEST_GRID_SIZE);
+	test.load('note old\n; @pos 1 2\nnoteEnd');
+	markGridSizePending(test.state);
+	test.load('note replacement\n; @pos 10 20\nnoteEnd');
+	expect(test.resolver).toHaveBeenCalledOnce();
+	expect(test.position()).toEqual({ x: 0, y: 0 });
+	// The old atlas and its geometry remain usable while the replacement loads.
+	expect(test.block('replacement')).toMatchObject({ x: 80, y: 320 });
+	const gridSizeChanged = vi.fn();
+	test.events.on('gridSizeChanged', gridSizeChanged);
+	if (replacementGrid) setGridSize(test.state, test.events, replacementGrid);
+	else settleGridSize(test.state, test.events);
+	const grid = replacementGrid ?? TEST_GRID_SIZE;
+	expect(test.state.viewport).toMatchObject(grid);
+	expect(test.state.gridSizeReady).toBe(true);
+	expect(gridSizeChanged).toHaveBeenCalledTimes(gridChanges);
+	expect(test.resolver).toHaveBeenCalledTimes(2);
+	expect(test.position()).toEqual({ x: 10 * grid.vGrid, y: 20 * grid.hGrid });
+});
 
 it.each([
 	{ source: 'pan', x: 32, y: -16 },

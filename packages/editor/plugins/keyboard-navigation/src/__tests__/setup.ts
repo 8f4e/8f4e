@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 
 class TestKeyboardEvent extends Event {
@@ -54,7 +54,7 @@ export function setup(
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {

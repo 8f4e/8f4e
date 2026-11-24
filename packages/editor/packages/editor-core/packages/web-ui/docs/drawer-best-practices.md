@@ -20,14 +20,14 @@ This keeps memory churn low and gives the garbage collector less work during int
 ## Precomputed Values
 
 - Precompute lookup tables at module scope for stable conversions. For example, `formatWatchValue.ts` in `@8f4e/editor-plugin-watch` builds `HEX_BYTE_LOOKUP` once instead of rebuilding hex strings from scratch for every byte on every frame.
-- Precompute geometry before rendering. Built-in widgets can store it in graphic data; plugins keep it in private models. For example, the piano plugin draws precomputed key geometry and pressed-overlay rows.
+- Precompute widget geometry in the owning plugin's private model before rendering. For example, the piano plugin draws precomputed key geometry and pressed-overlay rows.
 - Precompute repeated text measurements in widget data so drawers can use the resolved column positions directly.
 
 ## State And Drawing
 
-- Treat editor state as immutable input. Drawers should not mutate `state`, code block graphic data, memory views, or sprite lookup tables.
-- Resolve layout-heavy data before drawing when it naturally belongs in editor-state graphic data.
-- Draw block-local elements at their local coordinates; the block drawer's `draw` context already places them at the presented block origin. For canvas-wide or GPU drawing tied to blocks, use the objects in the current frame's `renderGeometry` instead of recomputing positions from the viewport and editor state. Treat rendering geometry as read-only and frame-scoped, since web-ui reuses its storage across frames.
+- Treat editor state as immutable input. Drawers should not mutate `state`, code blocks, memory views, or sprite lookup tables.
+- Resolve layout-heavy data before drawing, using editor-state for logical block geometry and plugin-owned models for their decorations.
+- Draw block-local elements at their local coordinates; the block drawer's `draw` context already places them at the presented block origin. For canvas-wide or GPU drawing tied to blocks, use the objects in the current frame's `blockPositions` instead of recomputing positions from the viewport and editor state. Treat block positions as read-only and frame-scoped, since web-ui reuses their storage across frames.
 - Use viewport grid sizes for placement and dimensions so drawer output stays aligned with the rest of the code block renderer.
 - Exit early when required sprite lookups, widgets, memory views, or renderable data are missing.
 

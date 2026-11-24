@@ -1,19 +1,19 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { codeBlockBackgroundPlugin } from './index';
 
 function setup() {
 	const codeBlock = createMockCodeBlock({ width: 96, height: 64 });
 	const state = createMockState();
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
-	const dispose = codeBlockBackgroundPlugin.setup({ drawers } as unknown as EditorPluginContext);
+	const dispose = codeBlockBackgroundPlugin.setup({ renderRegistry } as unknown as EditorPluginContext);
 	const render = () =>
-		drawers.drawCodeBlock({
+		renderRegistry.drawCodeBlock({
 			draw: { drawFill, drawGlyphs } as unknown as DrawContext,
 			state,
 			codeBlock,

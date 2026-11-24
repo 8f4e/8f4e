@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { displayRowToGridRow, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -35,7 +35,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? createSliderPlugin({ writeMemory: write }).setup({
 				store,
@@ -44,7 +44,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -62,7 +62,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const point = (position = 0.5, sourceLineIndex = 2) => {
 		const x = (block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
@@ -102,7 +102,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		initialRevision,
 		memoryViews,
 		events,
-		drawers,
+		renderRegistry,
 		draw,
 		write,
 		render,
@@ -131,7 +131,7 @@ describe('slider plugin', () => {
 				directives: test.store.directives,
 				layout: test.store.layout,
 				loading: test.store.loading,
-				drawers: test.drawers,
+				renderRegistry: test.renderRegistry,
 			})
 		);
 		expect(createContribution).toHaveBeenCalledOnce();

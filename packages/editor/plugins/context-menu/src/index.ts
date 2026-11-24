@@ -5,7 +5,7 @@ import layoutMenu, { projectMenuAnchor } from './layoutMenu';
 
 export const contextMenuPlugin: EditorPlugin = {
 	id: 'context-menu',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const state = store.getState();
 		let layout: ReturnType<typeof layoutMenu> | undefined;
 		let highlighted = 0;
@@ -37,7 +37,7 @@ export const contextMenuPlugin: EditorPlugin = {
 					y: event.y,
 				} satisfies ActivateContextMenuItemEvent);
 		};
-		const unregisterDrawer = drawers.registerContextMenuOverlay(({ draw, viewport }) => {
+		const unregisterDrawer = renderRegistry.registerContextMenuOverlay(({ draw, viewport }) => {
 			if (!layout) return;
 			const displayedLayout =
 				viewport.x === state.viewport.x && viewport.y === state.viewport.y

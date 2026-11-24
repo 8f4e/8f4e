@@ -2,7 +2,7 @@ import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
 import createStateManager from '@8f4e/state-manager';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { entryOutlinesPlugin } from './index';
 
@@ -10,17 +10,17 @@ function setup() {
 	const state = createMockState({
 		project: { entryBounds: [{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 }] },
 	});
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const store = createStateManager(state);
-	const dispose = entryOutlinesPlugin.setup({ drawers, store } as unknown as EditorPluginContext);
+	const dispose = entryOutlinesPlugin.setup({ renderRegistry, store } as unknown as EditorPluginContext);
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
 	const render = (viewport = state.viewport) => {
 		for (const method of Object.values(draw)) method.mockClear();
-		drawers.drawCanvasBackground({
+		renderRegistry.drawCanvasBackground({
 			draw: draw as unknown as DrawContext,
 			state,
 			viewport,
-			renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
 			memoryViews: {} as MemoryViews,
 		});
 	};

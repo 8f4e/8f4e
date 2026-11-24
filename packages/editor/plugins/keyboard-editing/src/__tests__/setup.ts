@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 
 class TestKeyboardEvent extends Event {
@@ -47,7 +47,7 @@ export function setup(
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'main')!;
 	store.set('project.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, y: 0 };
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = createPlugin({ inputTarget }).setup({
 		store,
 		events,
@@ -55,7 +55,7 @@ export function setup(
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {
@@ -81,6 +81,6 @@ export function setup(
 		paste,
 		blur,
 		disposePlugin,
-		drawCodeBlock: drawers.drawCodeBlock,
+		drawCodeBlock: renderRegistry.drawCodeBlock,
 	};
 }

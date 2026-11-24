@@ -12,11 +12,11 @@ export function createButtonPlugin({
 }): EditorPlugin {
 	return {
 		id: 'button',
-		setup: ({ store, events, layout, drawers }) => {
+		setup: ({ store, events, layout, renderRegistry }) => {
 			const state = store.getState();
 			const buttonsByBlock = new WeakMap<EditorCodeBlock, ButtonWidget[]>();
 			const unregisterPreparation = registerButtonPreparation(store, layout, buttonsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerButtonInteraction(state, events, buttonsByBlock, writeMemory);

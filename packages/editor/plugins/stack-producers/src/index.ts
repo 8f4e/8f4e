@@ -6,7 +6,7 @@ import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock } from '@8f4e/editor
 /** Highlights the source instructions that immediately produced the selected instruction's stack operands. */
 export const stackProducersPlugin: EditorPlugin = {
 	id: 'stack-producers',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const state = store.getState();
 		let selectedBlock: EditorCodeBlock | undefined;
 		let rows: number[] = [];
@@ -27,7 +27,7 @@ export const stackProducersPlugin: EditorPlugin = {
 			if (selectedBlock && codeBlocks.includes(selectedBlock)) refresh();
 		};
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-		const unregister = drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
+		const unregister = renderRegistry.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
 			if (codeBlock !== selectedBlock) return;
 			for (const y of rows) {
 				draw.drawFill(0, y, PALETTE_INDICES.secondaryAlpha30, codeBlock.width, state.viewport.hGrid);

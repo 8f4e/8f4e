@@ -99,7 +99,7 @@ test('positions home using the installed mobile grid on the first frame and the 
 							placements.push({ name: level.blocks.find(block => block.blockType === 'note')?.name, vGrid, hGrid });
 						};
 						events.on('resolveInitialProjectViewport', onResolvePosition);
-						const unregister = context.drawers.registerCanvasDrawer(({ state, viewport }) => {
+						const unregister = context.renderRegistry.registerCanvasBackgroundDrawer(({ state, viewport }) => {
 							const { x, y, vGrid, hGrid } = viewport;
 							firstFrame ??= { x, y, vGrid, hGrid, gridSizeReady: state.gridSizeReady };
 						});

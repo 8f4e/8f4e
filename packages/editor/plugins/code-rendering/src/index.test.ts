@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, DrawContext } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, DrawContext } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { codeRenderingPlugin } from './index';
 
@@ -22,11 +22,11 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	});
 	const state = store.getState();
 	const block = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = codeRenderingPlugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -51,10 +51,10 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 	const render = (codeBlock: EditorCodeBlock = block) => {
 		drawRows.mockClear();
 		drawFills.mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 		return drawRows.mock.calls.map(([, , cells]) => cells);
 	};
-	return { store, events, emitter, state, block, render, drawRows, drawFills, drawers };
+	return { store, events, emitter, state, block, render, drawRows, drawFills, renderRegistry };
 }
 
 it('refreshes nested block highlights after edits, layout contributions, and grid changes', () => {
@@ -287,7 +287,7 @@ it('isolates prepared text and highlights between editors and unregisters drawin
 it('draws contributed text backgrounds above nested shading and below selection and text', () => {
 	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
 	test.store.set('project.selectedCodeBlock', test.block);
-	const unregister = test.drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
+	const unregister = test.renderRegistry.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 32, PALETTE_INDICES.secondarySoft, codeBlock.width, 16);
 	});
 	test.render();

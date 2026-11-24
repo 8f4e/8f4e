@@ -2,7 +2,7 @@ import { PALETTE_INDICES, PALETTE_TOKENS, resolvePalette } from '@8f4e/editor-pa
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
 import { CP437_CHARACTERS } from '@8f4e/sprite-generator';
 import createStateManager from '@8f4e/state-manager';
-import init, { createEditorDrawerRegistry, type SpriteCell } from '@8f4e/web-ui';
+import initializeWebUi, { createEditorRenderRegistry, type SpriteCell } from '@8f4e/web-ui';
 import { page as browserPage } from '@vitest/browser/context';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -43,27 +43,27 @@ test.each(pages)('font color rendering page $page', async ({ page, tokens }) => 
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
 	const codeBlocks = new Map<number, Array<Array<SpriteCell | null>>>();
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const palette = resolvePalette(colors);
-	drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+	renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 		// Keep each sample visible, including surface colors and dark foreground materials.
 		const [r, g, b] = palette.rgba[tokens[codeBlock.creationIndex]];
 		draw.drawFill(0, 0, PALETTE_INDICES[r + g + b > 1.5 ? 'black' : 'white'], codeBlock.width, codeBlock.height);
 	});
-	drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+	renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlocks
 			.get(codeBlock.creationIndex)!
 			.forEach((cells, row) => draw.drawResolvedText(state.viewport.vGrid, row * state.viewport.hGrid, cells));
 	});
 
-	const renderer = await init(
+	const renderer = await initializeWebUi(
 		createStateManager(state),
 		createMockEventDispatcher(),
 		new Engine(canvas),
 		createMockMemoryViews(),
 		{
 			loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
-			drawers,
+			renderRegistry,
 		}
 	);
 	try {

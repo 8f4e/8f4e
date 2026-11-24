@@ -1,7 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createProjectOpenPlugin } from './index';
@@ -37,7 +37,7 @@ function setup({
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: undefined;
 	const disposePlugin = () => {

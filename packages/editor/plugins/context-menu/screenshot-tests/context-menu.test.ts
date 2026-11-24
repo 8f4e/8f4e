@@ -25,7 +25,7 @@ test.each([
 				id: 'fixture-menu',
 				setup: context => {
 					events = context.events;
-					const removeOverlay = context.drawers.registerCanvasOverlay(({ draw }) => {
+					const removeOverlay = context.renderRegistry.registerCanvasOverlay(({ draw }) => {
 						draw.drawFill(width - 180, height - 96, PALETTE_INDICES.negativeSurface, 180, 96);
 						draw.drawGlyphs(width - 172, height - 80, FLOATING_UI, PALETTE_INDICES.negativeOn);
 					});

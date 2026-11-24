@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { getProjectModules } from '@8f4e/language-spec';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { createDefaultEditorPlugins } from './index';
 
@@ -30,7 +30,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	events.dispatch('enterEditMode');
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposers: Array<() => void> = [];
 	try {
 		const plugins = createDefaultEditorPlugins({
@@ -54,7 +54,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 					directives: store.directives,
 					layout: store.layout,
 					loading: store.loading,
-					drawers,
+					renderRegistry,
 				})
 			);
 		}

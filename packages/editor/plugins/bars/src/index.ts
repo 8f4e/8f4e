@@ -6,10 +6,10 @@ import type { Bars } from './types';
 
 export const barsPlugin: EditorPlugin = {
 	id: 'bars',
-	setup: ({ store, layout, drawers }) => {
+	setup: ({ store, layout, renderRegistry }) => {
 		const barsByBlock = new WeakMap<EditorCodeBlock, Bars[]>();
 		const unregisterPreparation = registerBarsPreparation(store, layout, barsByBlock);
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 			drawBars(draw, barsByBlock.get(codeBlock) ?? [], memoryViews);
 		});
 		return () => {

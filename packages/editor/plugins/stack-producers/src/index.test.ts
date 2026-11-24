@@ -3,7 +3,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { stackProducersPlugin } from './index';
 
@@ -30,11 +30,11 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 		...compiled,
 		inputRevision: state.compilerInputRevision,
 	});
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const context = {
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -44,7 +44,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const draw = { drawFill: vi.fn<DrawContext['drawFill']>() };
 	const drawBackground = () => {
 		draw.drawFill.mockClear();
-		drawers.drawCodeBlockTextBackgrounds({
+		renderRegistry.drawCodeBlockTextBackgrounds({
 			draw: draw as unknown as DrawContext,
 			state,
 			codeBlock: block,

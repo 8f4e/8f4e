@@ -22,9 +22,9 @@
   "devDependencies": {
     "glugglugglug": "*",
     "@8f4e/config": "*",
+    "@8f4e/editor-palette": "*",
     "@8f4e/web-ui": "*",
     "vitest": "4.1.12",
-    "@8f4e/compiler": "*",
     "@vitest/browser-playwright": "4.1.12",
     "@vitest/browser": "4.1.12"
   }

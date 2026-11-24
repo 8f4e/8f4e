@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createCodeBlockCopyPastePlugin } from '../index';
 
@@ -47,7 +47,7 @@ export function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);
 	const state = store.getState();

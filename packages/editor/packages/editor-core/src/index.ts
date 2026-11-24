@@ -12,12 +12,12 @@ import type {
 } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import initView, {
-	createEditorDrawerRegistry,
+	createEditorRenderRegistry,
 	type MemoryViews,
 	type RenderStats,
 	registerWebUiConfig,
+	type SpriteEngine,
 	type WebUiOptions,
-	type WebUiRenderer,
 } from '@8f4e/web-ui';
 
 import { disposeAll } from './disposeAll';
@@ -73,11 +73,11 @@ export type {
 	CodeBlockDrawerContext,
 	CodeBlockOffsetResolver,
 	CodeBlockPositionEffect,
-	EditorDrawerRegistry,
+	EditorRenderRegistry,
+	FrameBlockPosition,
+	FrameBlockPositions,
 	OffscreenCodeBlockDrawer,
-	RenderedCodeBlock,
-	RenderGeometry,
-	WebUiRenderer,
+	SpriteEngine,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
 export { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
@@ -101,7 +101,7 @@ export interface Editor {
 
 export interface EditorOptions {
 	/** Renderer supplied by the host. The editor takes ownership, including on initialization failure. */
-	renderer: WebUiRenderer;
+	renderer: SpriteEngine;
 	/** Initial project content; defaults to an empty project. */
 	initialProject?: ProjectObjectModel;
 	/** Font used when the project does not select one. Defaults to ibmvga8x16. */
@@ -110,7 +110,6 @@ export interface EditorOptions {
 	plugins?: readonly EditorPlugin[];
 	featureFlags?: Partial<State['featureFlags']>;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
-	renderStatsIntervalFrames?: number;
 }
 
 interface CanvasSize {
@@ -191,7 +190,7 @@ export default async function init(
 		registerWebUiConfig(store);
 		const editing = createEditorCommandApi(store, events);
 		cleanups.push(editing.dispose);
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		cleanups.push(
 			installEditorPlugins(options.plugins ?? [], {
 				store,
@@ -200,7 +199,7 @@ export default async function init(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		);
 		const state = store.getState();
@@ -220,8 +219,7 @@ export default async function init(
 			loading: store.loading,
 			defaultFont: options.defaultFont,
 			prefersReducedMotion: () => reducedMotion?.matches ?? false,
-			drawers,
-			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
+			renderRegistry,
 			onRenderStats: stats => {
 				store.set('info.graphics', toGraphicsInfoRecord(stats));
 			},

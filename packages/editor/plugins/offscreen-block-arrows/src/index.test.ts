@@ -1,20 +1,20 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, textToGlyphIds } from '@8f4e/web-ui';
+import { createMockCodeBlock, createMockViewport } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type DrawContext, textToGlyphIds } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { offscreenBlockArrowsPlugin } from './index';
 
 function setup() {
-	const state = createMockState({ viewport: { x: 0, y: 0, width: 1024, height: 768, vGrid: 8, hGrid: 16 } });
-	const drawers = createEditorDrawerRegistry();
-	const dispose = offscreenBlockArrowsPlugin.setup({ drawers } as unknown as EditorPluginContext);
+	const viewport = createMockViewport(0, 0, 1024, 768);
+	const renderRegistry = createEditorRenderRegistry();
+	const dispose = offscreenBlockArrowsPlugin.setup({ renderRegistry } as unknown as EditorPluginContext);
 	const drawGlyphs = vi.fn();
 	const render = (x: number, y: number, codeBlock = createMockCodeBlock({ x, y })) => {
 		drawGlyphs.mockClear();
-		drawers.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, { codeBlock, x, y }, state);
+		renderRegistry.drawOffscreenCodeBlock({ drawGlyphs } as unknown as DrawContext, { codeBlock, x, y }, viewport);
 	};
-	return { state, drawGlyphs, render, dispose };
+	return { viewport, drawGlyphs, render, dispose };
 }
 
 it.each([
@@ -38,7 +38,7 @@ it.each([
 it('uses viewport-relative coordinates and raw viewport edges after panning and resizing', () => {
 	const test = setup();
 	test.render(1200, 384);
-	Object.assign(test.state.viewport, { x: 10, y: 20, width: 125, height: 63 });
+	Object.assign(test.viewport, { x: 10, y: 20, width: 125, height: 63 });
 	test.render(990, 32);
 	expect(test.drawGlyphs).toHaveBeenCalledExactlyOnceWith(117, 32, textToGlyphIds('►'), PALETTE_INDICES.secondaryBase);
 	test.render(63, 980);

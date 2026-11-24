@@ -1,6 +1,6 @@
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMouseInputPlugin } from './index';
 
@@ -24,7 +24,7 @@ function setup(captureWheel = true, viewportDragging = true) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	events.dispatch.mockClear();
 	cleanups.push(store.dispose, dispose);

@@ -1,13 +1,10 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import init, { createEditorDrawerRegistry, registerWebUiConfig, textToGlyphIds } from '@8f4e/web-ui';
+import initializeWebUi, { createEditorRenderRegistry, registerWebUiConfig } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
-import createCanvas from './utils/createCanvas';
 import createMockMemoryViews from './utils/createMockMemoryViews';
-
-const SAMPLE_TEXT = textToGlyphIds('Sample text');
 
 test('applies project appearance settings and restores defaults after project replacement', async () => {
 	const handlers = new Map<string, Set<(event: unknown) => void>>();
@@ -24,20 +21,27 @@ test('applies project appearance settings and restores defaults after project re
 			for (const callback of handlers.get(name) ?? []) callback(payload);
 		},
 	};
-	const canvas = createCanvas();
+	const canvas = document.createElement('canvas');
 	canvas.width = 512;
 	canvas.height = 256;
 	const store = initState(events, { callbacks: {} });
 	// Use the same registration order as editor-core, before renderer and project initialization.
 	registerWebUiConfig(store);
-	const drawers = createEditorDrawerRegistry();
-	const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, state }) => {
-		draw.drawGlyphs(state.viewport.vGrid, state.viewport.hGrid, SAMPLE_TEXT, PALETTE_INDICES.inkBase);
+	const renderRegistry = createEditorRenderRegistry();
+	const removeDrawer = renderRegistry.registerCanvasBackgroundDrawer(({ draw }) => {
+		draw.drawFill(0, 0, PALETTE_INDICES.inkBase, 8, 8);
 	});
-	const renderer = await init(store, events, new Engine(canvas), createMockMemoryViews(), {
+	const engine = new Engine(canvas);
+	const renderer = await initializeWebUi(store, events, engine, createMockMemoryViews(0), {
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
+	const readInk = () => {
+		renderer.renderFrame();
+		const pixels = new Uint8Array(4);
+		engine.gl.readPixels(2, canvas.height - 3, 1, 1, engine.gl.RGBA, engine.gl.UNSIGNED_BYTE, pixels);
+		return [...pixels];
+	};
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: canvas.width, canvasHeight: canvas.height });
 	const module = {
@@ -47,6 +51,7 @@ test('applies project appearance settings and restores defaults after project re
 		code: ['module sample', '; @pos 4 2', 'int value 1', 'moduleEnd'],
 	};
 	try {
+		const defaultInk = readInk();
 		events.dispatch('loadProject', {
 			project: {
 				...EMPTY_DEFAULT_PROJECT,
@@ -59,7 +64,7 @@ test('applies project appearance settings and restores defaults after project re
 							'note settings',
 							'; @pos 4 10',
 							'; @config font x11miscfixed6x10',
-							'; @config color.canvas #361845',
+							'; @config color.ink #361845',
 							'noteEnd',
 						],
 					},
@@ -67,11 +72,11 @@ test('applies project appearance settings and restores defaults after project re
 			},
 		});
 		await expect.poll(() => state.viewport.vGrid).toBe(6);
+		expect(state.viewport.hGrid).toBe(10);
 		const block = state.project.rootLevel.blocks.find(block => block.name === 'sample')!;
 		expect({ x: block.x, y: block.y }).toEqual({ x: 24, y: 20 });
 		expect(state.codeErrors['editor-directives']).toEqual([]);
-		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot('configured-appearance');
+		expect(readInk()).toEqual([54, 24, 69, 255]);
 		const settings = state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(store, [
 			{
@@ -82,19 +87,20 @@ test('applies project appearance settings and restores defaults after project re
 			},
 		]);
 		await expect.poll(() => state.viewport.vGrid).toBe(10);
+		expect(state.viewport.hGrid).toBe(18);
 		expect({ x: block.x, y: block.y }).toEqual({ x: 40, y: 36 });
-		renderer.renderFrame();
-		await expect(canvas).toMatchScreenshot('edited-appearance');
+		expect(readInk()).toEqual([16, 36, 50, 255]);
 		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT, execution: [module], entries: ['main'] } });
 		await expect.poll(() => state.viewport.vGrid).toBe(8);
 		expect(state.viewport.hGrid).toBe(16);
 		expect(state.editorConfig).toEqual({});
 		const replacement = state.project.rootLevel.blocks.find(block => block.name === 'sample')!;
 		expect({ x: replacement.x, y: replacement.y }).toEqual({ x: 32, y: 32 });
+		expect(readInk()).toEqual(defaultInk);
 	} finally {
 		renderer.destroy();
 		removeDrawer();
 		store.dispose();
-		canvas.remove();
+		engine.gl.getExtension('WEBGL_lose_context')?.loseContext();
 	}
 });

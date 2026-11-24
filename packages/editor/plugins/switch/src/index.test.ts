@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSwitchPlugin } from './index';
 
@@ -50,7 +50,7 @@ async function setup(code = source, installed = true) {
 		},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = installed
 		? createSwitchPlugin({ writeMemory: write }).setup({
 				store,
@@ -59,7 +59,7 @@ async function setup(code = source, installed = true) {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -83,7 +83,7 @@ async function setup(code = source, installed = true) {
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const press = () =>
 		events.dispatch('codeBlockPointerDown', {
@@ -91,7 +91,20 @@ async function setup(code = source, installed = true) {
 			x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
 			y: codeBlock.y + 2 * state.viewport.hGrid - state.viewport.y + 1,
 		});
-	return { store, state, events, drawers, codeBlock, memoryViews, draw, write, render, press, address, disposePlugin };
+	return {
+		store,
+		state,
+		events,
+		renderRegistry,
+		codeBlock,
+		memoryViews,
+		draw,
+		write,
+		render,
+		press,
+		address,
+		disposePlugin,
+	};
 }
 
 describe('switch plugin', () => {

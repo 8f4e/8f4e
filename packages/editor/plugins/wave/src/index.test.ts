@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -33,7 +33,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 		callbacks: {},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? wavePlugin.setup({
 				store,
@@ -42,7 +42,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -59,7 +59,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		vi.mocked(draw.endGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	return { store, state, codeBlock, events, draw, memoryViews, render, dispose };
 }

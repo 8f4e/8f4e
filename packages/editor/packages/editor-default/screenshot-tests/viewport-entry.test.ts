@@ -42,14 +42,14 @@ async function setup() {
 				id: 'viewport-entry-probe',
 				setup: services => {
 					events = services.events;
-					const removeCanvasDrawer = services.drawers.registerCanvasDrawer(({ renderGeometry }) => {
-						presentedX = renderGeometry.blocks.find(({ codeBlock }) => codeBlock.name === 'incoming')?.x;
+					const removeFrameProbe = services.renderRegistry.registerCanvasBackgroundDrawer(({ blockPositions }) => {
+						presentedX = blockPositions.ordered.find(({ codeBlock }) => codeBlock.name === 'incoming')?.x;
 					});
-					const removeCodeBlockDrawer = services.drawers.registerCodeBlockDrawer(({ codeBlock }) => {
+					const removeCodeBlockDrawer = services.renderRegistry.registerCodeBlockDrawer(({ codeBlock }) => {
 						if (codeBlock.name === 'incoming') drawn = true;
 					});
 					return () => {
-						removeCanvasDrawer();
+						removeFrameProbe();
 						removeCodeBlockDrawer();
 					};
 				},

@@ -1,14 +1,14 @@
 import type { EditorPluginContext, State } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { expect, it, vi } from 'vitest';
 import { coordinateGridPlugin } from './index';
 
 function setup(viewport: Partial<State['viewport']>) {
 	const state = createMockState({ viewport: { x: 0, y: 0, vGrid: 8, hGrid: 16, ...viewport } });
-	const drawers = createEditorDrawerRegistry();
-	const dispose = coordinateGridPlugin.setup({ drawers } as unknown as EditorPluginContext);
+	const renderRegistry = createEditorRenderRegistry();
+	const dispose = coordinateGridPlugin.setup({ renderRegistry } as unknown as EditorPluginContext);
 	const draw = { drawFill: vi.fn(), drawNumericText: vi.fn() };
 	const presentedViewport = { ...state.viewport };
 	const frame = {
@@ -16,12 +16,12 @@ function setup(viewport: Partial<State['viewport']>) {
 		state,
 		viewport: presentedViewport,
 		memoryViews: {} as MemoryViews,
-		renderGeometry: { blocks: [], blocksByCodeBlock: new Map() },
+		blockPositions: { ordered: [], byCodeBlock: new Map() },
 	};
 	const render = () => {
 		draw.drawFill.mockClear();
 		draw.drawNumericText.mockClear();
-		drawers.drawCanvasBackground(frame);
+		renderRegistry.drawCanvasBackground(frame);
 	};
 	return { state, viewport: presentedViewport, draw, render, dispose };
 }

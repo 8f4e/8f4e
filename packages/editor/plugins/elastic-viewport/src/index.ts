@@ -179,7 +179,7 @@ export function createElasticViewportPlugin(options: ElasticViewportPluginOption
 	const tuning = resolveElasticViewportOptions(options);
 	return {
 		id: 'elastic-viewport',
-		setup: ({ store, events, drawers }) => {
+		setup: ({ store, events, renderRegistry }) => {
 			const state = store.getState();
 			const { effect, prepareBlends, onViewportChanged } = createPositionEffect(tuning);
 			const refresh = ({ codeBlocks }: { codeBlocks: readonly EditorCodeBlock[] }) => {
@@ -189,7 +189,7 @@ export function createElasticViewportPlugin(options: ElasticViewportPluginOption
 			refresh({ codeBlocks: state.project.activeLevel.blocks });
 			events.on('codeBlockLayoutsChanged', refresh);
 			events.on('viewportChanged', onViewportChanged);
-			const unregister = drawers.registerCodeBlockPositionEffect(effect);
+			const unregister = renderRegistry.registerCodeBlockPositionEffect(effect);
 			return () => {
 				events.off('codeBlockLayoutsChanged', refresh);
 				events.off('viewportChanged', onViewportChanged);

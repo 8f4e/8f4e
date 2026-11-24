@@ -49,6 +49,7 @@ it('starts without storage and waits for core initialization before resolving th
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
 		'home',
+		'dotted-background',
 		'code-block-background',
 		'code-rendering',
 		'project-url-loader',

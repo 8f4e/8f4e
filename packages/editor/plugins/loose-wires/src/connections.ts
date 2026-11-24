@@ -1,6 +1,6 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
-import type { RenderGeometry } from '@8f4e/web-ui';
+import type { FrameBlockPositions } from '@8f4e/web-ui';
 import { deriveEndpoints, type WireEndpoints, type WireOutput } from './deriveEndpoints';
 
 /** Receives the viewport-relative pixel endpoints for an input and its matching output. */
@@ -43,8 +43,8 @@ export function createWireConnections(store: EditorPluginContext['store'], event
 	store.subscribe('compiler.result', refreshActiveLevel);
 	return {
 		/** Visit active connections, including offscreen endpoints, using current pointer values. */
-		visit: (renderGeometry: RenderGeometry, memory: Int32Array, visitor: WireConnectionVisitor) =>
-			visitConnections(state, renderGeometry, memory, geometry, visitor),
+		visit: (blockPositions: FrameBlockPositions, memory: Int32Array, visitor: WireConnectionVisitor) =>
+			visitConnections(state, blockPositions, memory, geometry, visitor),
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', refresh);
 			store.unsubscribe('compiler.result', refreshActiveLevel);
@@ -55,12 +55,12 @@ export function createWireConnections(store: EditorPluginContext['store'], event
 
 export function visitConnections(
 	state: State,
-	renderGeometry: RenderGeometry,
+	blockPositions: FrameBlockPositions,
 	memory: Int32Array,
 	{ endpointsByBlock, outputsByByteAddress }: WireGeometry,
 	visit: WireConnectionVisitor
 ): void {
-	for (const { codeBlock, x, y } of renderGeometry.blocks) {
+	for (const { codeBlock, x, y } of blockPositions.ordered) {
 		const isSelected = codeBlock === state.project.selectedCodeBlock;
 
 		if (!codeBlock.name) {
@@ -75,7 +75,7 @@ export function visitConnections(
 			if (!output) {
 				continue;
 			}
-			const renderedOutput = renderGeometry.blocksByCodeBlock.get(output.codeBlock);
+			const renderedOutput = blockPositions.byCodeBlock.get(output.codeBlock);
 			if (!renderedOutput) continue;
 
 			visit(x + input.x, y + input.y, renderedOutput.x + output.x, renderedOutput.y + output.y, isSelected);

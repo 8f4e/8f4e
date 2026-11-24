@@ -34,7 +34,7 @@ function contains(button: ButtonBounds, x: number, y: number): boolean {
 
 export const enterGroupButtonPlugin: EditorPlugin = {
 	id: 'enter-group-button',
-	setup: ({ store, events, layout, drawers }) => {
+	setup: ({ store, events, layout, renderRegistry }) => {
 		const state = store.getState();
 		let shadowColor = PALETTE_INDICES.black;
 		const updateShadowColor = () => {
@@ -112,7 +112,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			reset();
 		};
 
-		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
+		const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 			const button = buttons.get(codeBlock);
 			if (!button) return;
 			const pressed = pressedBlock === codeBlock && pressedInside;

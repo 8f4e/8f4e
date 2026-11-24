@@ -8,12 +8,12 @@ import type { ConnectorWidgets } from './types';
 /** Owns input/output connector sprite presentation for one editor. */
 export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',
-	setup: ({ store, layout, drawers }) => {
+	setup: ({ store, layout, renderRegistry }) => {
 		const widgetsByBlock = new WeakMap<EditorCodeBlock, ConnectorWidgets>();
 		const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
 			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});
-		const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
+		const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 			const widgets = widgetsByBlock.get(codeBlock);
 			if (widgets) drawConnectors(draw, state, widgets, memoryViews);
 		});

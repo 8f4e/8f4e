@@ -7,10 +7,10 @@ import type { WatchValue } from './types';
 export function createWatchPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'watch',
-		setup: ({ store, layout, drawers }) => {
+		setup: ({ store, layout, renderRegistry }) => {
 			const watchesByBlock = new WeakMap<EditorCodeBlock, WatchValue[]>();
 			const unregisterPreparation = registerWatchPreparation(store, layout, watchesByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 				drawWatch(
 					draw,
 					state.viewport.vGrid,

@@ -34,7 +34,7 @@ async function setup(source: string) {
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = services.renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						const errors = getCodeBlockErrors(state, codeBlock);
 						if (!errors.length) return;
 						draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);

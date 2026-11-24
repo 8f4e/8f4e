@@ -1,4 +1,4 @@
-import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
@@ -10,7 +10,7 @@ test('bars plugin renders its directive', async () => {
 	canvas.height = 512;
 	canvas.style.background = '#000';
 	document.body.append(canvas);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const test = await setup(
 		barsPlugin,
 		[
@@ -22,7 +22,7 @@ test('bars plugin renders its directive', async () => {
 			'; @bars &points count(points) 0 1',
 			'moduleEnd',
 		],
-		{ drawers }
+		{ renderRegistry }
 	);
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
@@ -32,7 +32,7 @@ test('bars plugin renders its directive', async () => {
 
 	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {
