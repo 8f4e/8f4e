@@ -1,5 +1,5 @@
 import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
-import { getBlockType, getCodeBlockNameFromSource, insertCodeBlock } from '@8f4e/editor-state';
+import { getCodeBlockNameFromSource, getCodeBlockTypeFromSource, insertCodeBlock } from '@8f4e/editor-state';
 import { createModuleCatalog } from './catalog';
 import { ADD_EXAMPLE_MODULE, buildCategoryTree, EXAMPLE_MODULES_MENU, getCategoryMenuItems } from './categoryMenu';
 import extractPublicBlockFromModuleSource from './extractPublicBlockFromModuleSource';
@@ -67,13 +67,8 @@ export function createExampleModulesPlugin({
 					if (disposed || state.editorMode !== 'edit') return;
 					const dependencyCode = extractPublicBlockFromModuleSource(dependencySource);
 					const name = getCodeBlockNameFromSource(dependencyCode);
-					const type = getBlockType(dependencyCode);
-					if (
-						state.codeBlockRendering.currentProject.blocks.some(
-							block => block.name === name && block.blockType === type
-						)
-					)
-						continue;
+					const type = getCodeBlockTypeFromSource(dependencyCode);
+					if (state.project.activeLevel.blocks.some(block => block.name === name && block.blockType === type)) continue;
 					const insertedDependency = insertCodeBlock(store, {
 						code: dependencyCode,
 						x: gridX * state.viewport.vGrid - state.viewport.x,

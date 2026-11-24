@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { subscribeToBlockPreparation } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import drawConnectors from './drawer/connectors';
 import deriveConnectors from './layout/deriveConnectors';
 import type { ConnectorWidgets } from './types';
@@ -9,7 +9,7 @@ import type { ConnectorWidgets } from './types';
 export const connectorsPlugin: EditorPlugin = {
 	id: 'connectors',
 	setup: ({ store, layout, drawers }) => {
-		const widgetsByBlock = new WeakMap<CodeBlockGraphicData, ConnectorWidgets>();
+		const widgetsByBlock = new WeakMap<EditorCodeBlock, ConnectorWidgets>();
 		const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
 			widgetsByBlock.set(codeBlock, deriveConnectors(codeBlock, state));
 		});

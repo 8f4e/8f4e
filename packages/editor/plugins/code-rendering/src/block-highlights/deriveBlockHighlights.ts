@@ -1,6 +1,6 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import { gapCalculator } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, Viewport } from '@8f4e/editor-state-types';
+import { displayRowToGridRow } from '@8f4e/editor-state';
+import type { EditorCodeBlock, Viewport } from '@8f4e/editor-state-types';
 import parseHighlightBlocks from './parseHighlightBlocks';
 
 const HIGHLIGHT_COLORS = [
@@ -18,7 +18,7 @@ interface BlockHighlight {
 }
 
 export default function deriveBlockHighlights(
-	graphicData: CodeBlockGraphicData,
+	graphicData: EditorCodeBlock,
 	viewport: Pick<Viewport, 'vGrid' | 'hGrid'>
 ): BlockHighlight[] {
 	const highlights: BlockHighlight[] = [];
@@ -37,7 +37,7 @@ export default function deriveBlockHighlights(
 
 		highlights.push({
 			x: viewport.vGrid * (2 + graphicData.lineNumberColumnWidth),
-			y: gapCalculator(highlightStartLine, graphicData.gaps) * viewport.hGrid,
+			y: displayRowToGridRow(highlightStartLine, graphicData.gaps) * viewport.hGrid,
 			width: graphicData.width - viewport.vGrid * (2 + graphicData.lineNumberColumnWidth),
 			height: (highlightEndLine - highlightStartLine + 1) * viewport.hGrid,
 			color: HIGHLIGHT_COLORS[block.depth % HIGHLIGHT_COLORS.length],

@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import drawCrossfade from './drawer/draw';
 import { registerCrossfadeInteraction } from './state/interaction';
 import { registerCrossfadePreparation } from './state/layout';
@@ -14,7 +14,7 @@ export function createCrossfadePlugin({
 		id: 'crossfade',
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
-			const crossfadesByBlock = new WeakMap<CodeBlockGraphicData, Crossfade[]>();
+			const crossfadesByBlock = new WeakMap<EditorCodeBlock, Crossfade[]>();
 			const unregisterPreparation = registerCrossfadePreparation(store, layout, crossfadesByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawCrossfade(draw, crossfadesByBlock.get(codeBlock) ?? [], memoryViews);

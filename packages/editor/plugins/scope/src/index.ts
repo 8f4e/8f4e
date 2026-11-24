@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock } from '@8f4e/editor-state-types';
 import drawScopes from './drawer/draw';
 import { createScopeDirectiveReader } from './helpers/data';
 import { registerScopeErrors } from './state/errors';
@@ -13,7 +13,7 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 		id: 'scope',
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
-			const scopesByBlock = new WeakMap<CodeBlockGraphicData, Scope[]>();
+			const scopesByBlock = new WeakMap<EditorCodeBlock, Scope[]>();
 			const readScopeDirectives = createScopeDirectiveReader();
 			const sampler = createScopeSampler(getMemory);
 			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
@@ -28,22 +28,22 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 					!state.compiler.isCompiling && state.compiler.result.inputRevision === state.compilerInputRevision;
 				const active: Scope[] = [];
 				if (ready) {
-					for (const block of state.codeBlockRendering.currentProject.blocks) {
+					for (const block of state.project.activeLevel.blocks) {
 						const scopes = scopesByBlock.get(block);
 						if (scopes) active.push(...scopes);
 					}
 				}
 				sampler.sync(active);
 			};
-			const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
-				if (project === state.codeBlockRendering.currentProject) syncSampling();
+			const onLayoutsChanged = ({ level }: CodeBlockLayoutsChangedEvent) => {
+				if (level === state.project.activeLevel) syncSampling();
 			};
 			const onCompilerResult = () => {
 				preparation.refresh(state);
 				syncSampling();
 			};
 			events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-			store.subscribe('codeBlockRendering.currentProject.blocks', syncSampling);
+			store.subscribe('project.activeLevel.blocks', syncSampling);
 			store.subscribe('compilerInputRevision', syncSampling);
 			store.subscribe('compiler.result', onCompilerResult);
 			store.subscribe('compiler.isCompiling', syncSampling);
@@ -51,7 +51,7 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 
 			return () => {
 				events.off('codeBlockLayoutsChanged', onLayoutsChanged);
-				store.unsubscribe('codeBlockRendering.currentProject.blocks', syncSampling);
+				store.unsubscribe('project.activeLevel.blocks', syncSampling);
 				store.unsubscribe('compilerInputRevision', syncSampling);
 				store.unsubscribe('compiler.result', onCompilerResult);
 				store.unsubscribe('compiler.isCompiling', syncSampling);

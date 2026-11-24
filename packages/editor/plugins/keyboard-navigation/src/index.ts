@@ -22,7 +22,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 					return;
 				}
 				const state = store.getState();
-				const block = state.codeBlockRendering.selectedCodeBlock;
+				const block = state.project.selectedCodeBlock;
 				if (state.editorMode !== 'view' || !state.featureFlags.codeLineSelection || !block) return;
 				if (direction === 'left' || direction === 'right') return;
 				event.preventDefault();
@@ -31,7 +31,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 					block.cursor.row + (direction === 'up' ? -1 : 1),
 					block.cursor.col
 				);
-				store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row, col });
+				store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 			};
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => inputTarget.removeEventListener('keydown', onKeydown);

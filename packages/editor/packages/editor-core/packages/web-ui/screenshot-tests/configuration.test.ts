@@ -67,12 +67,12 @@ test('applies project appearance settings and restores defaults after project re
 			},
 		});
 		await expect.poll(() => state.viewport.vGrid).toBe(6);
-		const block = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'sample')!;
+		const block = state.project.rootLevel.blocks.find(block => block.name === 'sample')!;
 		expect({ x: block.x, y: block.y }).toEqual({ x: 24, y: 20 });
 		expect(state.codeErrors['editor-directives']).toEqual([]);
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('configured-appearance');
-		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+		const settings = state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: settings,
@@ -89,7 +89,7 @@ test('applies project appearance settings and restores defaults after project re
 		await expect.poll(() => state.viewport.vGrid).toBe(8);
 		expect(state.viewport.hGrid).toBe(16);
 		expect(state.editorConfig).toEqual({});
-		const replacement = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'sample')!;
+		const replacement = state.project.rootLevel.blocks.find(block => block.name === 'sample')!;
 		expect({ x: replacement.x, y: replacement.y }).toEqual({ x: 32, y: 32 });
 	} finally {
 		renderer.destroy();

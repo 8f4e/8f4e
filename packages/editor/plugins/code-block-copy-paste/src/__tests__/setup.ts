@@ -55,7 +55,7 @@ export function setup() {
 		clipboard = text;
 		await events.dispatchAsync('pasteCodeBlocks', { x, y });
 	};
-	const openMenu = async (codeBlock?: (typeof state.codeBlockRendering.currentProject.blocks)[number]) => {
+	const openMenu = async (codeBlock?: (typeof state.project.activeLevel.blocks)[number]) => {
 		await events.dispatchAsync(
 			'contextmenu',
 			codeBlock ? { x: codeBlock.x - state.viewport.x + 8, y: codeBlock.y - state.viewport.y + 8 } : { x: 600, y: 300 }

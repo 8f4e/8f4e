@@ -1,6 +1,6 @@
 import initEditor, { type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
@@ -53,7 +53,7 @@ test('draws wrapped contributor messages between source rows and clears their re
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid,
-								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+								displayRowToGridRow(row, codeBlock.gaps) * state.viewport.hGrid,
 								glyphsByBlock.get(codeBlock)![row],
 								PALETTE_INDICES.inkBase
 							)
@@ -70,11 +70,11 @@ test('draws wrapped contributor messages between source rows and clears their re
 	editor.pauseRendering();
 	try {
 		const state = editor.state;
-		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		const group = state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
 		editor.navigation.openGroup(getEditorBlockId(group));
 		state.viewport.x = 0;
 		state.viewport.y = 0;
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'checks')!;
 		const height = block.height;
 		context.store.set('codeErrors.fixture-one', [
 			{ codeBlockId: block.creationIndex, lineNumber: 3, message: 'Assertion failed: expected 9, received 10' },

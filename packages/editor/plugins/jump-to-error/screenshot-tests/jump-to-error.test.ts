@@ -1,6 +1,6 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { gapCalculator, getCodeBlockErrors } from '@8f4e/editor-state';
+import { displayRowToGridRow, getCodeBlockErrors } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
@@ -39,7 +39,7 @@ async function setup(source: string) {
 						if (!errors.length) return;
 						draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
 						codeBlock.displayModel.lines.forEach((line, row) => {
-							const y = gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid;
+							const y = displayRowToGridRow(row, codeBlock.gaps) * state.viewport.hGrid;
 							const isError = errors.some(error => error.lineNumber === line.sourceLineIndex);
 							if (isError) draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, state.viewport.hGrid);
 							draw.drawGlyphs(
@@ -98,14 +98,14 @@ moduleEnd
 entryEnd`);
 	const { state, context, editor, canvas } = fixture;
 	try {
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'problem')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'problem')!;
 		const error = { codeBlockId: block.creationIndex, lineNumber: 2, message: 'Fixture error' };
 		context.store.set('codeErrors.fixture', [error]);
 		const revision = editor.editing.getRevision();
 		const compilerRevision = state.compilerInputRevision;
 		expect(fixture.press().stopPropagation).toBe(true);
 		expect(fixture.blockPressed).not.toHaveBeenCalled();
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.selectedCodeBlock).toBe(block);
 		expect(state.viewport.x).toBe(block.x + block.width / 2 - 320);
 		expect(state.viewport.y).toBe(block.y + (error.lineNumber + 0.5) * state.viewport.hGrid - 192);
 		expect(editor.editing.getRevision()).toBe(revision);
@@ -135,8 +135,8 @@ groupEnd
 entryEnd`);
 	try {
 		const { state, context, editor } = fixture;
-		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!;
-		const block = group.childProject!.blocks.find(block => block.name === 'folded')!;
+		const group = state.project.rootLevel.blocks.find(block => block.name === 'audio')!;
+		const block = group.childLevel!.blocks.find(block => block.name === 'folded')!;
 		context.events.dispatch('openProjectGroup', { codeBlock: group });
 		context.events.dispatch('goToRootProjectGroup');
 		const error = { codeBlockId: block.creationIndex, lineNumber: 3, message: 'Folded fixture error' };
@@ -144,8 +144,8 @@ entryEnd`);
 		expect(block.isCollapsed).toBe(true);
 		const revision = editor.editing.getRevision();
 		expect(fixture.press(phase).stopPropagation).toBe(true);
-		expect(state.codeBlockRendering.currentProject.path).toBe('audio');
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.activeLevel.path).toBe('audio');
+		expect(state.project.selectedCodeBlock).toBe(block);
 		expect(block.isCollapsed).toBe(false);
 		expect(state.editorMode).toBe('view');
 		expect(state.viewport.x).toBe(block.x + block.width / 2 - 320);
@@ -166,7 +166,7 @@ moduleEnd
 entryEnd`);
 	try {
 		const { state, context } = fixture;
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		context.store.set('codeErrors.fixture', [{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Fixture' }]);
 		const previous = { x: state.viewport.x, y: state.viewport.y };
 		const intercept = (event: InternalPointerEvent) => {
@@ -177,7 +177,7 @@ entryEnd`);
 		expect(state.viewport).toMatchObject(previous);
 		context.events.off('pointerdown', intercept);
 		fixture.press();
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.selectedCodeBlock).toBe(block);
 	} finally {
 		fixture.dispose();
 	}

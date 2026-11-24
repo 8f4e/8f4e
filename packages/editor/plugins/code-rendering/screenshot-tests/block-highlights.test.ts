@@ -63,10 +63,10 @@ test('renders nested block highlights below selection and text with disabled and
 	});
 	editor.pauseRendering();
 	try {
-		const group = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		const group = editor.state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
 		editor.navigation.openGroup(getEditorBlockId(group));
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
-		editor.state.codeBlockRendering.selectedCodeBlock = block;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
+		editor.state.project.selectedCodeBlock = block;
 		block.cursor.row = 6;
 		block.cursor.y = editor.state.viewport.hGrid * 6;
 		editor.renderFrame();

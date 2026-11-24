@@ -57,8 +57,8 @@ entryEnd`);
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	store.set('editorMode', 'edit');
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
-	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
+	store.set('project.activeLevel.blocks', [codeBlock]);
 	const colors = {
 		canvas: '#000',
 		surface: '#111',

@@ -69,14 +69,14 @@ entryEnd`
 	events.dispatch('loadProject', { project });
 	store.set('editorMode', 'edit');
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
-	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
+	store.set('project.activeLevel.blocks', [codeBlock]);
 	codeBlock.gridX = 55;
 	codeBlock.gridY = 4;
 	codeBlock.x = 440;
 	codeBlock.y = 64;
-	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+	store.set('project.selectedCodeBlock', codeBlock);
+	store.set('project.selectedCodeBlock.cursor.row', row);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),

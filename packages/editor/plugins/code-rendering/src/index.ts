@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock } from '@8f4e/editor-state-types';
 import deriveBlockHighlights from './block-highlights/deriveBlockHighlights';
 import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
 
@@ -8,7 +8,7 @@ export const codeRenderingPlugin: EditorPlugin = {
 	id: 'code-rendering',
 	setup: ({ store, events, drawers }) => {
 		let renderingByBlock = new WeakMap<
-			CodeBlockGraphicData,
+			EditorCodeBlock,
 			{ cells: ReturnType<typeof deriveCodeBlockCodeCells>; highlights: ReturnType<typeof deriveBlockHighlights> }
 		>();
 		const refresh = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
@@ -21,8 +21,8 @@ export const codeRenderingPlugin: EditorPlugin = {
 			}
 		};
 		events.on('codeBlockLayoutsChanged', refresh);
-		const project = store.getState().codeBlockRendering.currentProject;
-		refresh({ project, codeBlocks: project.blocks });
+		const level = store.getState().project.activeLevel;
+		refresh({ level, codeBlocks: level.blocks });
 		const unregisterDrawer = drawers.registerCodeBlockDrawer(context => {
 			const { draw, state, codeBlock } = context;
 			const rendering = renderingByBlock.get(codeBlock)!;
@@ -30,7 +30,7 @@ export const codeRenderingPlugin: EditorPlugin = {
 				for (const { x, y, width, height, color } of rendering.highlights) draw.drawFill(x, y, color, width, height);
 			}
 			drawers.drawCodeBlockTextBackgrounds(context);
-			if (state.featureFlags.codeLineSelection && state.codeBlockRendering.selectedCodeBlock === codeBlock) {
+			if (state.featureFlags.codeLineSelection && state.project.selectedCodeBlock === codeBlock) {
 				draw.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 			const rows = rendering.cells;

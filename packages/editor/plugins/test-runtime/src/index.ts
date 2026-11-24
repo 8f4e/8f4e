@@ -22,7 +22,7 @@ export function createTestRuntimePlugin({
 			let runLoading: LoadingIndicatorHandle | undefined;
 			let assertions: TestAssertionResult[] = [];
 			const publishErrors = () =>
-				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.codeBlockRendering.rootProject));
+				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.project.rootLevel));
 
 			function publish(result: TestRunResult | { status: 'idle' | 'running' }) {
 				const completed = result.status === 'passed' || result.status === 'failed';

@@ -164,9 +164,7 @@ entryEnd`),
 			return new DataView(memory.buffer).getInt32(compiled.memoryPlan.modules.test.memory.value.byteAddress, true);
 		};
 		expect(await readValue()).toBe(42);
-		const environment = test.state.codeBlockRendering.rootProject.blocks.find(
-			block => block.readOnly && block.name === 'env'
-		)!;
+		const environment = test.state.project.rootLevel.blocks.find(block => block.readOnly && block.name === 'env')!;
 		await test.events.dispatchAsync('copyCodeBlock', { codeBlock: environment });
 		// Pasting after the generated block in source order used to shadow later contributions.
 		await test.events.dispatchAsync('pasteCodeBlocks', { x: 400, y: 300 });
@@ -178,7 +176,7 @@ entryEnd`),
 		expect(savedSource).toContain('const GENERATED 99');
 		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'duplicate-env.8f4e'));
 		await test.events.dispatchAsync('importProject');
-		const blocks = test.state.codeBlockRendering.rootProject.blocks;
+		const blocks = test.state.project.rootLevel.blocks;
 		const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
 		expect(environments).toHaveLength(1);
 		const [generated] = environments;
@@ -198,8 +196,8 @@ entryEnd`),
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
 		test.events.dispatch('enterEditMode');
-		const block = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!;
-		test.store.projectEdits.apply({
+		const block = test.state.project.rootLevel.blocks.find(block => block.name === 'test')!;
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: block, code: ['module test', 'int value 2', 'moduleEnd'] }],
 		});
 		test.events.dispatch('undo');
@@ -241,13 +239,13 @@ entryEnd`),
 		test.browserWindow.showOpenFilePicker.mockReturnValueOnce(opened.promise);
 		const save = test.events.dispatchAsync('saveProject');
 		const open = test.events.dispatchAsync('importProject');
-		const original = test.state.codeBlockRendering.rootProject;
+		const original = test.state.project.rootLevel;
 		test.disposePlugin();
 		picked.resolve(test.handle);
 		opened.resolve([test.handle]);
 		await Promise.all([save, open]);
 		expect(test.handle.writable.close).toHaveBeenCalledOnce();
-		expect(test.state.codeBlockRendering.rootProject).toBe(original);
+		expect(test.state.project.rootLevel).toBe(original);
 	});
 	it('keeps file destinations and shortcuts isolated between editors', async () => {
 		const first = setup();

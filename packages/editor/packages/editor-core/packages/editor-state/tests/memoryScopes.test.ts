@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { beforeAll, describe, expect, it } from 'vitest';
-import resolveMemoryTarget, { type MemoryScope } from '~/pureHelpers/resolveMemoryTarget';
-import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
+import { createMockState } from '~/__tests__/helpers/mockEditorState';
+import resolveMemoryTarget, { type MemoryScope } from '~/memory/resolveMemoryTarget';
 
 const source = readFileSync(new URL('./fixtures/memory-scopes.8f4e', import.meta.url), 'utf8');
 

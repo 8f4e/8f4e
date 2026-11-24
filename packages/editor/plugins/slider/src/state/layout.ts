@@ -1,14 +1,14 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { SliderDirectiveData } from '../helpers/data';
 import { createSliderDirectiveData } from '../helpers/data';
 import type { Slider } from '../types';
 
 function resolveSliderLayout(
 	slider: SliderDirectiveData,
-	graphicData: CodeBlockGraphicData,
+	graphicData: EditorCodeBlock,
 	state: State,
 	sliders: Slider[]
 ): void {
@@ -33,7 +33,7 @@ function resolveSliderLayout(
 		width: graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
 		height: state.viewport.hGrid * 2,
 		x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-		y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+		y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 		memoryName: memory.memory.name!,
 		allocationUnitAddress: memory.memory.allocationUnitAddress,
 		byteAddress: memory.memory.byteAddress,
@@ -48,7 +48,7 @@ function resolveSliderLayout(
 export function registerSliderPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
+	slidersByBlock: WeakMap<EditorCodeBlock, Slider[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {

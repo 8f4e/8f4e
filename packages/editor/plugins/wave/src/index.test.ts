@@ -53,7 +53,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
@@ -77,11 +77,11 @@ describe('wave plugin', () => {
 			'; @wave &samples count(samples)',
 			'moduleEnd',
 		]);
-		test.store.set('codeBlockRendering.selectedCodeBlock', test.codeBlock);
+		test.store.set('project.selectedCodeBlock', test.codeBlock);
 		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory.samples;
 		test.memoryViews.float32[memory.allocationUnitAddress + 1] = 1;
 		for (let frame = 0; frame < 4; frame++) {
-			test.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', frame);
+			test.store.set('project.selectedCodeBlock.cursor.col', frame);
 			test.render();
 		}
 		const columns = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
@@ -268,7 +268,7 @@ describe('wave plugin', () => {
 
 	it('replaces waves and layout gaps after source edits', async () => {
 		const test = await setup();
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{
 					codeBlock: test.codeBlock,
@@ -279,7 +279,7 @@ describe('wave plugin', () => {
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 128);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no wave' : line)) },
 			],
@@ -352,7 +352,7 @@ describe('wave plugin', () => {
 	it('unregisters all definitions and the drawer on disposal', async () => {
 		const test = await setup();
 		test.dispose();
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
 		});
 		test.render();

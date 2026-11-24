@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, CodeError } from '@8f4e/editor-state-types';
+import type { CodeError, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -28,7 +28,7 @@ function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) 
 	});
 	for (const [id, list] of Object.entries(errors)) store.set(`codeErrors.${id}`, list);
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	const drawers = createEditorDrawerRegistry();
 	const dispose = errorMessagesPlugin.setup({
 		store,
@@ -43,7 +43,7 @@ function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) 
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
-	const render = (codeBlock: CodeBlockGraphicData = block) =>
+	const render = (codeBlock: EditorCodeBlock = block) =>
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
 	const renderOverlay = () =>
 		drawers.drawCanvasOverlays({
@@ -161,10 +161,10 @@ entryEnd
 groupEnd
 entryEnd`),
 		});
-		const root = test.state.codeBlockRendering.currentProject.blocks;
+		const root = test.state.project.activeLevel.blocks;
 		const scope = root.find(block => block.isProjectScope)!;
 		const group = root.find(block => block.name === 'audio')!;
-		const child = group.childProject!.blocks.find(block => block.name === 'child')!;
+		const child = group.childLevel!.blocks.find(block => block.name === 'child')!;
 		test.store.set('codeErrors.custom', [
 			{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
 			{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 1, message: 'Group error' },

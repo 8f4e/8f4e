@@ -62,8 +62,8 @@ async function setup() {
 	const start = performance.now() + 200;
 	const clock = vi.spyOn(performance, 'now');
 	cleanups.push(() => clock.mockRestore());
-	const { viewport, codeBlockRendering } = editor.state;
-	const incoming = codeBlockRendering.currentProject.blocks.find(block => block.name === 'incoming')!;
+	const { viewport, project } = editor.state;
+	const incoming = project.activeLevel.blocks.find(block => block.name === 'incoming')!;
 	viewport.x = incoming.x - viewport.width - 6;
 	viewport.y = 0;
 	const frame = (elapsed: number) => {

@@ -1,5 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import { displayRowToGridRow, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { parseTextureDirective, type TextureDirective } from './directive';
 
 interface BlockTexture extends TextureDirective {
@@ -8,7 +8,7 @@ interface BlockTexture extends TextureDirective {
 }
 
 export function createTextureLayout(layout: EditorLayoutRegistry) {
-	const viewsByBlock = new WeakMap<CodeBlockGraphicData, BlockTexture[]>();
+	const viewsByBlock = new WeakMap<EditorCodeBlock, BlockTexture[]>();
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'texture' }]).flatMap(directive => {
@@ -39,7 +39,7 @@ export function createTextureLayout(layout: EditorLayoutRegistry) {
 				return {
 					...data,
 					x: leftColumns * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, codeBlock.gaps) + 1 + preceding) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, codeBlock.gaps) + 1 + preceding) * state.viewport.hGrid,
 				};
 			})
 		);

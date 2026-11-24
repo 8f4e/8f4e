@@ -59,14 +59,14 @@ async function setup() {
 
 test('Ctrl/Cmd+V pastes plain text into the selected block through native clipboard input', async () => {
 	const { canvas, editor, state, context } = await setup();
-	const target = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const target = () => state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	await expect
 		.poll(async () => {
 			const block = target();
 			await userEvent.click(canvas, {
 				position: { x: block.x - state.viewport.x + 40, y: block.y - state.viewport.y + 3 * state.viewport.hGrid + 8 },
 			});
-			return state.codeBlockRendering.selectedCodeBlock?.name;
+			return state.project.selectedCodeBlock?.name;
 		})
 		.toBe('target');
 	const block = target();
@@ -81,7 +81,7 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	const modifier = navigator.platform.startsWith('Mac') ? 'Meta' : 'Control';
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
-	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	expect(state.project.activeLevel.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
 	await expect
 		.poll(() => state.loadingIndicators.find(item => item.id === 'plugin:coordinate-grid')?.status)
 		.toBe('done');
@@ -113,7 +113,7 @@ test('the block paste menu changes placement while preserving duplicate names, g
 	};
 	const pos = `; @pos ${Math.round((state.viewport.x + pastePosition.x) / state.viewport.vGrid)} ${Math.round((state.viewport.y + pastePosition.y) / state.viewport.hGrid)}`;
 	await userEvent.click(canvas, { position: pastePosition });
-	const sameNamed = () => state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'same');
+	const sameNamed = () => state.project.activeLevel.blocks.filter(block => block.name === 'same');
 	await expect.poll(() => sameNamed().length).toBe(2);
 	expect(sameNamed()[1].code).toEqual(['module same', pos, '; @group audio', 'push &same:value', 'moduleEnd']);
 });

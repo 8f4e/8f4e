@@ -1,5 +1,5 @@
 import type {
-	CodeBlockGraphicData,
+	EditorCodeBlock,
 	EventDispatcher,
 	GridSize,
 	ProjectLevel,
@@ -25,18 +25,23 @@ type DeepPartial<T> = T extends (...args: never[]) => unknown
 			}
 		: T;
 
+type ProjectOverrides = Omit<Partial<State['project']>, 'rootLevel' | 'activeLevel'> &
+	(
+		| { rootLevel?: Partial<ProjectLevel>; activeLevel?: never }
+		| { rootLevel?: never; activeLevel: Partial<ProjectLevel> }
+		| { rootLevel: ProjectLevel; activeLevel: ProjectLevel }
+	);
+
 // EditorConfig already accepts partial JSON; expanding its recursive values adds no useful constraints.
 type StateOverrides = {
-	[K in keyof State]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
-};
+	[K in Exclude<keyof State, 'project'>]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
+} & { project?: ProjectOverrides };
 
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
 }
 
-export function createMockCodeBlock(
-	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
-): CodeBlockGraphicData {
+export function createMockCodeBlock(options: Partial<EditorCodeBlock> & { cursorY?: number } = {}): EditorCodeBlock {
 	const { cursorY, ...overrides } = options;
 
 	const x = overrides.x ?? 0;
@@ -61,7 +66,7 @@ export function createMockCodeBlock(
 		isCollapsed: false,
 	};
 
-	const defaults: CodeBlockGraphicData = {
+	const defaults: EditorCodeBlock = {
 		x,
 		y,
 		gridX,
@@ -137,7 +142,21 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
+	const { project: projectOverrides, ...stateOverrides } = overrides;
+	let rootLevel: ProjectLevel;
+	let activeLevel: ProjectLevel;
+	if (projectOverrides?.rootLevel && projectOverrides.activeLevel) {
+		({ rootLevel, activeLevel } = projectOverrides);
+	} else {
+		rootLevel = {
+			entries: [],
+			path: '',
+			blocks: [],
+			...(projectOverrides?.rootLevel ?? projectOverrides?.activeLevel),
+		};
+		activeLevel = rootLevel;
+	}
+	const { rootLevel: _root, activeLevel: _active, ...projectStateOverrides } = projectOverrides ?? {};
 
 	const defaults: State = {
 		compilerInputRevision: 0,
@@ -156,9 +175,9 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			},
 		},
 		callbacks: {},
-		codeBlockRendering: {
-			rootProject,
-			currentProject: rootProject,
+		project: {
+			rootLevel,
+			activeLevel,
 			entryBounds: [],
 			nextCodeBlockCreationIndex: 0,
 		},
@@ -185,7 +204,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 		featureFlags: {
 			contextMenu: true,
-			moduleDragging: true,
+			blockSelectionAndDragging: true,
 			codeLineSelection: true,
 			viewportDragging: true,
 			canvasOverlays: true,
@@ -219,25 +238,14 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 	};
 
-	const state = mergeDeep<State>(defaults, overrides);
-	const rendering = overrides.codeBlockRendering;
-	if (rendering?.currentProject && !rendering.rootProject) {
-		state.codeBlockRendering.rootProject = state.codeBlockRendering.currentProject;
-	}
-	const initialize = (level: ProjectLevel, path: string): ProjectLevel[] => {
+	const state = mergeDeep<State>(defaults, { ...stateOverrides, project: projectStateOverrides });
+	const initialize = (level: ProjectLevel, path: string): void => {
 		level.path = path;
-		return [
-			level,
-			...level.blocks.flatMap(block =>
-				block.childProject ? initialize(block.childProject, path ? `${path}/${block.name}` : block.name) : []
-			),
-		];
+		for (const block of level.blocks) {
+			if (block.childLevel) initialize(block.childLevel, path ? `${path}/${block.name}` : block.name);
+		}
 	};
-	const levels = initialize(state.codeBlockRendering.rootProject, '');
-	state.codeBlockRendering.currentProject = rendering?.currentProject
-		? (levels.find(level => level.blocks === state.codeBlockRendering.currentProject.blocks) ??
-			state.codeBlockRendering.currentProject)
-		: state.codeBlockRendering.rootProject;
+	initialize(rootLevel, '');
 	return state;
 }
 

@@ -74,7 +74,7 @@ const cancelFrame = vi.fn();
 vi.mock('@8f4e/editor-state', async importOriginal => ({
 	...(await importOriginal<typeof import('@8f4e/editor-state')>()),
 	default: vi.fn(() => store),
-	createEditorEditingHandle: vi.fn(() => ({ handle: {}, navigation: {}, dispose: vi.fn() })),
+	createEditorCommandApi: vi.fn(() => ({ handle: {}, navigation: {}, dispose: vi.fn() })),
 }));
 
 vi.mock('@8f4e/web-ui', async importOriginal => ({
@@ -357,11 +357,11 @@ describe('editor init', () => {
 							events.dispatch('loadProject', { project });
 							projectInstalled();
 						});
-						events.on('resolveInitialProjectViewport', ({ project, position }) => {
+						events.on('resolveInitialProjectViewport', ({ level, position }) => {
 							const state = store.getState();
 							expect(state.gridSizeReady).toBe(true);
-							expect(project).toBe(state.codeBlockRendering.currentProject);
-							const block = project.blocks.find(block => block.name === 'loaded')!;
+							expect(level).toBe(state.project.activeLevel);
+							const block = level.blocks.find(block => block.name === 'loaded')!;
 							expect(block).toMatchObject({ x: 40, y: 72 });
 							expect(block.width).toBeGreaterThan(0);
 							Object.assign(position, { x: block.x, y: block.y });
@@ -464,13 +464,13 @@ describe('editor init', () => {
 		});
 		try {
 			const state = editor.state;
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+			const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 			const viewportChanged = vi.fn();
 			context.events.on('viewportChanged', viewportChanged);
 			jumpToCodeBlock(context.store, block.creationIndex, context.events);
 			const { x, y } = state.viewport;
 			expect(x).toBeGreaterThan(0);
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+			expect(state.project.selectedCodeBlock).toBe(block);
 			expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({
 				previousX: 0,
 				previousY: 0,

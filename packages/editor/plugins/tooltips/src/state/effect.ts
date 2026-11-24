@@ -23,7 +23,7 @@ export default function createTooltip(
 	const state = store.getState();
 
 	function prepareSelectedLineTooltip(now: number): void {
-		const selectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
+		const selectedCodeBlock = state.project.selectedCodeBlock;
 
 		if (!state.featureFlags.codeLineSelection || !selectedCodeBlock) {
 			tooltip = createEmptyTooltipState();
@@ -75,7 +75,7 @@ export default function createTooltip(
 		});
 	};
 	const onLayoutsChanged = ({ codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		const selected = state.codeBlockRendering.selectedCodeBlock;
+		const selected = state.project.selectedCodeBlock;
 		if (
 			state.featureFlags.codeLineSelection &&
 			selected &&
@@ -87,7 +87,7 @@ export default function createTooltip(
 	};
 
 	const selectors = [
-		'codeBlockRendering.selectedCodeBlock',
+		'project.selectedCodeBlock',
 		'projectChange',
 		'featureFlags.codeLineSelection',
 		'compiler.result',

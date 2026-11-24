@@ -48,7 +48,11 @@ import { Engine } from 'glugglugglug';
 const editor = await initEditor(canvas, {
 	...options,
 	renderer: new Engine(canvas),
-	plugins: [createMouseInputPlugin({ inputTarget: canvas }), toggleSkipExecutionPlugin, createSwitchPlugin({ writeMemory })],
+	plugins: [
+		createMouseInputPlugin({ inputTarget: canvas }),
+		toggleSkipExecutionPlugin,
+		createSwitchPlugin({ writeMemory }),
+	],
 });
 ```
 
@@ -71,7 +75,7 @@ their payloads for subscriptions and synchronous/asynchronous dispatch. Required
 block list in `codeBlockLayoutsChanged`, cannot be omitted. Plugin action names remain open; annotate a custom
 handler's parameter to declare its payload instead of supplying an independent event-payload type argument.
 
-Core dispatches `resolveInitialProjectViewport { project, position }` after settling the destination project level's
+Core dispatches `resolveInitialProjectViewport { level, position }` after settling the destination project level's
 source and layout, before committing a viewport for its first visit. Plugins may synchronously replace the request's
 pixel `position`, which defaults to the origin. If the requested grid is not ready, core defers resolution until layout
 settles. Remembered positions bypass this request.
@@ -98,7 +102,7 @@ Plugins that sample memory outside the renderer can use `createMemoryViewManager
 of the current compiler memory. Call `updateMemoryViews(memoryRef)` when obtaining the live memory handle; it replaces
 the views only when the underlying buffer changes.
 
-Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
+Register menu items with `menus.registerItem('codeBlockMenu', provider)`. Providers receive the current
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
@@ -118,7 +122,7 @@ array or a promise and receive current state whenever the menu opens or is revis
 `{ action: 'openSubMenu', payload: { menu: id, payload: yourData }, close: false }`. Core stores the request, supplies
 Back navigation, and handles decoration, sizing, positioning, and clicks. Menu IDs identify one generator per editor;
 use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
-The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', payload: { codeBlock } }`.
+The built-in block submenu also uses this request shape: `{ menu: 'codeBlockMenu', payload: { codeBlock } }`.
 
 Use explicit block actions through `events.dispatch`:
 
@@ -223,7 +227,7 @@ consumers must not retain them or read them after the drawing pass. Keep present
 the rendered block objects for drawing attached decorations and cross-block connections. Use the frame's `viewport`
 for other world-to-canvas projections; `state.viewport` is the logical viewport used by editor input and layout.
 `@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
-world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
+world-space regions in `state.project.entryBounds`, alongside entry definitions and block membership.
 Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
 bounds. Bounds update after changes to world layout, projects, or grid dimensions. These semantics work without a drawing plugin.
 
@@ -296,7 +300,7 @@ removed; dispatch traverses those snapshots without sorting or filtering registr
 
 Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
 contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
-`createCodeErrorBlockLookup(rootProject)` indexes document identities and project scopes once for a batch of errors,
+`createCodeErrorBlockLookup(rootLevel)` indexes document identities and project scopes once for a batch of errors,
 retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
@@ -368,8 +372,8 @@ Plugins use these public exports rather than importing core files.
 `serializeToProject` and `getExportBaseName` provide shared project-model serialization and naming;
 `logError` records failures in the editor console. These helpers and filename configuration remain available
 independently of the export and persistence plugins.
-Project-model serialization lives under `pureHelpers/projectSerialization`; filename configuration belongs to
-`features/editor-config`. The project-save plugin owns its private `.8f4e` text formatter.
+Project-model serialization lives under `project/serialization`; filename configuration belongs to
+`editor-config`. The project-save plugin owns its private `.8f4e` text formatter.
 `serializeToProject(state)` and `serializeProjectLevel(level)` return detached models with independent source arrays
 throughout nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
 
@@ -381,13 +385,13 @@ The public `editor.editing.getRevision()` token combines that revision with its 
 Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `store.projectEdits.apply({ updates, inserts, deletes })`. An update supplies
-`{ codeBlock, code }` with replacement source, an insertion supplies `{ project, source }` with source and optional
-entry/child-project data, and deletion supplies existing block handles. All three collections are optional and form
+Source-mutating plugin actions use `store.projectTransactions.apply({ updates, inserts, deletes })`. An update supplies
+`{ codeBlock, code }` with replacement source, an insertion supplies `{ targetLevel, source }` with source and optional
+entry/child-level data, and deletion supplies existing block handles. All three collections are optional and form
 one synchronous transaction. Existing blocks and project levels retain their identities. For simple source-only
 changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
 adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.
-Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
+Both `projectTransactions.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
 `debounced` (default) or `checkpoint`. Changes confined to the generated managed environment publish a `generated`
 change without affecting history; authored changes in the same transaction still follow the requested policy.
 

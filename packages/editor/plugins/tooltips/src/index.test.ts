@@ -49,9 +49,9 @@ entryEnd`);
 	events.dispatch('loadProject', { project });
 	events.dispatch('enterEditMode');
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
-	store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
+	store.set('project.selectedCodeBlock', codeBlock);
+	store.set('project.selectedCodeBlock.cursor.row', 4);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -87,7 +87,7 @@ describe('tooltips plugin', () => {
 			5 * 16
 		);
 		expect(vi.mocked(test.draw.drawFill).mock.calls.map(call => call[2])).toContain(PALETTE_INDICES.negativeSoft);
-		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		test.store.set('project.selectedCodeBlock', undefined);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

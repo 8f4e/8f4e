@@ -1,5 +1,5 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { DrawContext, GlyphIds, MemoryViews } from '@8f4e/web-ui';
 import type { TooltipLiveValue, TooltipState } from '../types';
 import { formatMemoryValue } from './memoryValue';
@@ -93,11 +93,11 @@ function drawLiveValue(
 export default function drawTooltip(
 	engine: DrawContext,
 	state: State,
-	codeBlock: CodeBlockGraphicData,
+	codeBlock: EditorCodeBlock,
 	memoryViews: MemoryViews,
 	tooltip: TooltipState
 ): void {
-	if (!state.featureFlags.codeLineSelection || state.codeBlockRendering.selectedCodeBlock !== codeBlock) {
+	if (!state.featureFlags.codeLineSelection || state.project.selectedCodeBlock !== codeBlock) {
 		return;
 	}
 

@@ -34,7 +34,7 @@ entryEnd`),
 	});
 	editor.pauseRendering();
 	try {
-		const block = () => editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+		const block = () => editor.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 		expect(editor.state.codeErrors.scope).toEqual([
 			{
 				codeBlockId: block().creationIndex,

@@ -61,9 +61,7 @@ functionEnd float`,
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
-		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'env')).toBe(true)
-		);
+		await vi.waitFor(() => expect(state.project.activeLevel.blocks.some(block => block.name === 'env')).toBe(true));
 		editor.pauseRendering();
 		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
@@ -98,15 +96,10 @@ functionEnd float`,
 		await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes('Gain'))).toBe(true));
 		await click('Gain');
 		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
-				'env',
-				'gain',
-				'scales',
-				'shape',
-			])
+			expect(state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'gain', 'scales', 'shape'])
 		);
 		expect(state.contextMenu.open).toBe(false);
-		for (const block of state.codeBlockRendering.currentProject.blocks) expect(block.code).not.toContain('; @public');
+		for (const block of state.project.activeLevel.blocks) expect(block.code).not.toContain('; @public');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

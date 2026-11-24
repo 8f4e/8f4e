@@ -49,18 +49,18 @@ entryEnd`);
 	editor.pauseRendering();
 	try {
 		const { store, layout } = context!;
-		const visible = editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'example');
-		store.set('codeBlockRendering.currentProject.blocks', visible);
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'example')!;
+		const visible = editor.state.project.activeLevel.blocks.filter(block => block.name === 'example');
+		store.set('project.activeLevel.blocks', visible);
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'example')!;
 		store.set('compiler.result', {
 			...compiled,
 			inputRevision: editor.state.compilerInputRevision,
 		});
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 11);
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', 11);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('conditional-result-producers');
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 4);
+		store.set('project.selectedCodeBlock.cursor.row', 4);
 		const contribution = layout.createContribution();
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 1 }] });
 		editor.renderFrame();

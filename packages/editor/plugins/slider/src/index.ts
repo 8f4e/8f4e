@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { drawSliders } from './drawer/draw';
 import { getSliderDefaultEdits } from './helpers/saveDefaults';
 import { registerSliderInteraction } from './state/interaction';
@@ -18,13 +18,13 @@ export function createSliderPlugin({
 		id: 'slider',
 		setup: ({ store, events, menus, layout, drawers }) => {
 			const state = store.getState();
-			const slidersByBlock = new WeakMap<CodeBlockGraphicData, Slider[]>();
+			const slidersByBlock = new WeakMap<EditorCodeBlock, Slider[]>();
 			const unregisterPreparation = registerSliderPreparation(store, layout, slidersByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);
-			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+			const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 				if (state.editorMode !== 'edit' || codeBlock.readOnly || !slidersByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save slider values to code',
@@ -34,11 +34,7 @@ export function createSliderPlugin({
 					disabled: !state.callbacks.getWordFromMemory,
 				};
 			});
-			const onSave = ({
-				codeBlock = state.codeBlockRendering.selectedCodeBlock,
-			}: {
-				codeBlock?: CodeBlockGraphicData;
-			} = {}) => {
+			const onSave = ({ codeBlock = state.project.selectedCodeBlock }: { codeBlock?: EditorCodeBlock } = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getSliderDefaultEdits(state, slidersByBlock.get(codeBlock) ?? []);
 				applyCodeBlockSourceEdits(store, edits);

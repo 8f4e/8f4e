@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { mainMenu } from '../../src/features/menu/menus';
-import { createMockState } from '../../src/pureHelpers/testingUtils/testUtils';
+import { createMockCodeBlock, createMockState } from '../../src/__tests__/helpers/mockEditorState';
+import { mainMenu } from '../../src/ui-state/menu/menus/index';
 
 describe('menus - main menu', () => {
-	it('adds a go-back action when rendering a nested project slice', () => {
-		const rootCodeBlocks = [];
-		const nestedProjectCodeBlocks = [];
+	it('adds a go-back action when a child level is active', () => {
+		const childLevel = { entries: [], path: '', blocks: [] };
+		const rootLevel = { entries: [], path: '', blocks: [createMockCodeBlock({ childLevel })] };
 		const mockState = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			project: {
+				rootLevel,
+				activeLevel: childLevel,
 			},
 		});
 
@@ -33,7 +33,7 @@ describe('menus - main menu', () => {
 	it('starts with the new-project action when there are no navigation actions', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [] } },
+			project: { activeLevel: { entries: [], path: '', blocks: [] } },
 		});
 
 		const menu = mainMenu(mockState, []);

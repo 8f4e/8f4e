@@ -1,9 +1,4 @@
-import type {
-	CodeBlockGraphicData,
-	EditorPlugin,
-	LoadingIndicatorHandle,
-	ParsedDirectiveRecord,
-} from '@8f4e/editor-core';
+import type { EditorCodeBlock, EditorPlugin, LoadingIndicatorHandle, ParsedDirectiveRecord } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 
 export { createDeferredPluginLoaderPlugin } from './deferred';
@@ -16,10 +11,10 @@ export interface LazyEditorPlugin {
 	load: () => Promise<EditorPlugin>;
 }
 
-function collectProjectDirectives(blocks: readonly CodeBlockGraphicData[]): ParsedDirectiveRecord[] {
+function collectProjectDirectives(blocks: readonly EditorCodeBlock[]): ParsedDirectiveRecord[] {
 	return blocks.flatMap(block => [
 		...block.parsedDirectives,
-		...collectProjectDirectives(block.childProject?.blocks ?? []),
+		...collectProjectDirectives(block.childLevel?.blocks ?? []),
 	]);
 }
 
@@ -58,10 +53,10 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				}
 			};
 			const scan = () => {
-				const { currentProject, rootProject } = store.getState().codeBlockRendering;
+				const { activeLevel, rootLevel } = store.getState().project;
 				const directives = {
-					view: currentProject.blocks.flatMap(block => block.parsedDirectives),
-					project: collectProjectDirectives(rootProject.blocks),
+					view: activeLevel.blocks.flatMap(block => block.parsedDirectives),
+					project: collectProjectDirectives(rootLevel.blocks),
 				};
 				for (const entry of plugins) {
 					if (!installed.has(entry.id) && !pending.has(entry.id) && entry.matches(directives[entry.scope])) {
@@ -79,13 +74,13 @@ export function createLazyPluginLoaderPlugin(plugins: readonly LazyEditorPlugin[
 				});
 			};
 			store.subscribe('projectChange', scheduleScan);
-			store.subscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
+			store.subscribe('project.activeLevel.blocks', scheduleScan);
 			scan();
 
 			return () => {
 				disposed = true;
 				store.unsubscribe('projectChange', scheduleScan);
-				store.unsubscribe('codeBlockRendering.currentProject.blocks', scheduleScan);
+				store.unsubscribe('project.activeLevel.blocks', scheduleScan);
 				for (const indicator of pending.values()) indicator.cancel();
 				pending.clear();
 				const errors: unknown[] = [];

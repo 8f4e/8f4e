@@ -1,12 +1,12 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	prepareAddressBinding,
 	prepareBuffer,
 	prepareMemoryAccess,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWaveDirectiveData } from '../helpers/data';
 import { createWaveformPeaks } from '../helpers/peaks';
 import type { Wave } from '../types';
@@ -14,7 +14,7 @@ import type { Wave } from '../types';
 export function registerWavePreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	wavesByBlock: WeakMap<CodeBlockGraphicData, Wave[]>
+	wavesByBlock: WeakMap<EditorCodeBlock, Wave[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const heights = { wave: 2, wave2: 4, wave4: 8 };
@@ -57,7 +57,7 @@ export function registerWavePreparation(
 				columnWidth: Math.max(1, Math.floor(width / peaks.minima.length)),
 				height: state.viewport.hGrid * heightRows,
 				x: (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-				y: (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
+				y: (displayRowToGridRow(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
 				buffer,
 				playhead: playhead && prepareAddressBinding(playhead),
 				inverseElementByteSize: 1 / spec.elementByteSize,

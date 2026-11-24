@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import initWebUi, { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { AsciiRenderer } from '@8f4e/web-ui-testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -61,7 +61,7 @@ async function setup(text = source) {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 
-	const connectorPositions = (codeBlock: CodeBlockGraphicData) => {
+	const connectorPositions = (codeBlock: EditorCodeBlock) => {
 		const drawFill = vi.fn();
 		drawers.drawCodeBlock({
 			draw: { drawFill, drawSprite: vi.fn() } as unknown as DrawContext,
@@ -94,7 +94,7 @@ describe('connectors plugin', () => {
 
 	it('positions connector sprites after another plugin adds rows', async () => {
 		const { state, store, connectorPositions } = await setup();
-		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 		const contribution = store.layout.createContribution();
 		cleanups.push(contribution.dispose);
 		contribution.update(sink, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
@@ -103,7 +103,7 @@ describe('connectors plugin', () => {
 
 	it('reads the relocated memory declaration after accepting compiler metadata', async () => {
 		const { store, state, drawers, memoryViews } = await setup();
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
 		const original = state.compiler.result.memoryPlan.modules.source.memory.output;
 		const compiled = await compileProject(parseProjectSource(source), { startingMemoryAllocationUnitAddress: 16 });
 		const relocated = compiled.memoryPlan.modules.source.memory.output;
@@ -139,7 +139,7 @@ moduleEnd
 entryEnd
 groupEnd
 entryEnd`);
-		const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'patch')!;
+		const group = test.state.project.activeLevel.blocks.find(block => block.name === 'patch')!;
 		const { hGrid } = test.state.viewport;
 		const rows = () => test.connectorPositions(group).map(position => position.y);
 		expect(rows()).toEqual([hGrid]);

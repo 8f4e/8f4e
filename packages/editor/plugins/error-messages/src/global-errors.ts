@@ -8,7 +8,7 @@ export function installGlobalErrors({ store, drawers }: Pick<EditorPluginContext
 	const state = store.getState();
 	let lines: GlyphIds[] = [];
 	const refresh = () => {
-		const findBlock = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject);
+		const findBlock = createCodeErrorBlockLookup(state.project.rootLevel);
 		const width = Math.max(1, Math.floor(state.viewport.width / state.viewport.vGrid) - 2);
 		lines = Object.values(state.codeErrors)
 			.flat()
@@ -19,13 +19,7 @@ export function installGlobalErrors({ store, drawers }: Pick<EditorPluginContext
 				return wrapText(`Error: ${error.message}`, width).map(textToGlyphIds);
 			});
 	};
-	const selectors = [
-		'codeErrors',
-		'projectChange',
-		'codeBlockRendering.rootProject',
-		'viewport.width',
-		'viewport.vGrid',
-	] as const;
+	const selectors = ['codeErrors', 'projectChange', 'project.rootLevel', 'viewport.width', 'viewport.vGrid'] as const;
 	for (const selector of selectors) store.subscribe(selector, refresh);
 	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
 		if (!lines.length || !state.featureFlags.canvasOverlays) return;

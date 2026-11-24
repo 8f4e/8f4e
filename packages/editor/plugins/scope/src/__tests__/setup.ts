@@ -88,7 +88,7 @@ export async function setup(
 		store.set('compiler.isCompiling', false);
 	};
 	if (compile) acceptCompilation();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = {
 		startGroup: vi.fn(),
 		endGroup: vi.fn(),

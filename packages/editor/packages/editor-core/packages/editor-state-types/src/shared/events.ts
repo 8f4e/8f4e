@@ -1,5 +1,5 @@
 import type { CodeBlockLayoutsChangedEvent } from '../features/code-blocks/layout';
-import type { CodeBlockGraphicData, ProjectLevel } from '../features/code-blocks/types';
+import type { EditorCodeBlock, ProjectLevel } from '../features/code-blocks/types';
 import type { ProgramArtifacts } from '../features/program-compiler/types';
 import type { Position } from './types';
 
@@ -12,11 +12,11 @@ export interface EditorLifecycleEvents {
 	dispose: void;
 	beforeProjectEdit: void;
 	compilationSucceeded: ProgramArtifacts;
-	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
+	codeBlockLayoutContributionsChanged: { codeBlock?: EditorCodeBlock };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
 	/** Resolve first-visit placement after the destination project source and layout have settled. */
-	resolveInitialProjectViewport: { project: ProjectLevel; position: Position };
+	resolveInitialProjectViewport: { level: ProjectLevel; position: Position };
 	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
 	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };
 }

@@ -1,6 +1,6 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits, clampSourcePosition } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, Direction } from '@8f4e/editor-state-types';
+import type { Direction, EditorCodeBlock } from '@8f4e/editor-state-types';
 import deleteBackward from './deleteBackward';
 import insertNewLine from './insertNewLine';
 import insertText from './insertText';
@@ -17,13 +17,13 @@ const directions: Record<string, Direction> = {
 
 function applyTextEdit(
 	store: EditorPluginContext['store'],
-	block: CodeBlockGraphicData,
+	block: EditorCodeBlock,
 	edit: ReturnType<typeof insertText>
 ) {
 	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }]);
-	if (store.getState().codeBlockRendering.selectedCodeBlock !== block) return;
+	if (store.getState().project.selectedCodeBlock !== block) return;
 	const [row, col] = clampSourcePosition(block.code, edit.row, edit.col);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row, col });
+	store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 }
 
 export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPluginContext): void {
@@ -38,14 +38,14 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 		}
 		return;
 	}
-	const block = state.codeBlockRendering.selectedCodeBlock;
+	const block = state.project.selectedCodeBlock;
 	if (!block) return;
 	const direction = directions[key];
 	if (direction) {
 		if (!state.featureFlags.codeLineSelection) return;
 		event.preventDefault();
 		const [row, col] = moveCaret(block.code, block.tabStopsByLine, block.cursor.row, block.cursor.col, direction);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row, col });
+		store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 		return;
 	}
 	if (block.readOnly) return;
@@ -62,7 +62,7 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContext): void {
 	const state = store.getState();
 	if (event.defaultPrevented || state.editorMode !== 'edit') return;
-	const block = state.codeBlockRendering.selectedCodeBlock;
+	const block = state.project.selectedCodeBlock;
 	if (!block || block.readOnly) return;
 	const text = event.clipboardData!.getData('text/plain');
 	if (text.length === 0) return;

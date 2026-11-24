@@ -56,7 +56,7 @@ test setup rather than adding production fallbacks for fields guaranteed by the 
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state-testing/src/index.ts` and its tests/README.
-- `packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/testingUtils/testUtils.ts` and consumers.
+- `packages/editor/packages/editor-core/packages/editor-state/src/__tests__/helpers/mockEditorState.ts` and consumers.
 - Runtime fixtures in `packages/editor/packages/runtime-audio-worklet/src/runtimeDef.test.ts` and
   `packages/editor/packages/runtime-web-worker/src/runtimeDef.test.ts`.
 - Full-state fixtures in web-ui and editor-core environment-plugin tests, plus their test dependency declarations.

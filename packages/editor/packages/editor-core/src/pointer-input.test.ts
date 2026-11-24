@@ -10,11 +10,11 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(moduleDragging = true) {
+function setup(blockSelectionAndDragging = true) {
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		featureFlags: { moduleDragging },
+		featureFlags: { blockSelectionAndDragging },
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
@@ -24,7 +24,7 @@ function setup(moduleDragging = true) {
 		},
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	const pointer: InternalPointerEvent = {
 		x: block.x - state.viewport.x + 8,
 		y: block.y - state.viewport.y + 8,
@@ -43,26 +43,29 @@ function setup(moduleDragging = true) {
 	return { events, store, state, block, pointer };
 }
 
-it.each([true, false])('routes controls before block selection with moduleDragging=%s', moduleDragging => {
-	const test = setup(moduleDragging);
-	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		event.stopPropagation = true;
-	});
-	test.events.on('codeBlockPointerDown', pressed, { capture: true });
-	test.events.dispatch('pointerdown', test.pointer);
-	expect(pressed).toHaveBeenCalledOnce();
-	expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
-	expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
-	expect(test.pointer.stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-});
+it.each([true, false])(
+	'routes controls before block selection with blockSelectionAndDragging=%s',
+	blockSelectionAndDragging => {
+		const test = setup(blockSelectionAndDragging);
+		const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
+			expect(test.state.project.selectedCodeBlock).toBeUndefined();
+			expect(test.state.project.draggedCodeBlock).toBeUndefined();
+			event.stopPropagation = true;
+		});
+		test.events.on('codeBlockPointerDown', pressed, { capture: true });
+		test.events.dispatch('pointerdown', test.pointer);
+		expect(pressed).toHaveBeenCalledOnce();
+		expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
+		expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
+		expect(test.pointer.stopPropagation).toBe(true);
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
+	}
+);
 
 it('delivers ordinary block presses after default selection', () => {
 	const test = setup();
 	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(event.codeBlock);
+		expect(test.state.project.selectedCodeBlock).toBe(event.codeBlock);
 	});
 	test.events.on('codeBlockPointerDown', pressed);
 	test.events.dispatch('pointerdown', test.pointer);
@@ -76,8 +79,8 @@ it('probes interactions without committing default selection, dragging, or viewp
 	test.events.dispatch('pointerdown', test.pointer, { phase: 'capture' });
 	test.events.dispatch('pointermove', { ...test.pointer, movementX: 40, movementY: 30 }, { phase: 'capture' });
 	test.events.dispatch('pointerup', { ...test.pointer, buttons: 0 }, { phase: 'capture' });
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	expect(test.state.viewport).toMatchObject(viewport);
 	expect(test.state.projectChange.revision).toBe(revision);
 });
@@ -136,8 +139,8 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	expect(test.pointer.stopPropagation).toBe(true);
 	expect(test.state.contextMenu.open).toBe(false);
 	expect(blockPressed).not.toHaveBeenCalled();
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	expect(test.state.projectChange.revision).toBe(revision);
 });
 
@@ -209,5 +212,5 @@ it('offers input to the most recently registered control inside the foremost blo
 	test.events.dispatch('pointerdown', test.pointer);
 	expect(upper).toHaveBeenCalledOnce();
 	expect(lower).not.toHaveBeenCalled();
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
 });

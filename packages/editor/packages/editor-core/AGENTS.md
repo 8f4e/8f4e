@@ -22,7 +22,7 @@
 
 ## Editing and Layout
 
-- Route project mutations through the synchronous project editing service. It uses the shared source update path
+- Route project mutations through the synchronous project transaction service. It uses the shared source update path
   to settle facts, configuration, generated environment source and any available layout, then notifies consumers.
   Authored updates and deletions of read-only blocks have no effect; only their owner materializes generated source.
 - Keep public edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate command preconditions
@@ -35,12 +35,12 @@
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
   Keep remembered viewport and selection in memory. The editor source snapshot owns history, including retained
   draft facts. Reconcile remembered views by owning block identity within each parent, not compiler-facing paths;
-  `pureHelpers/projectSerialization` projects settled source into compiler/file data. Project-save
+  `project/serialization` projects settled source into compiler/file data. Project-save
   owns the text file format.
 - Project membership tracks ownership per project level independently of source preparation and layout. The layout
-  coordinator uses that membership to publish `codeBlockLayoutsChanged { project, codeBlocks }` after the affected
+  coordinator uses that membership to publish `codeBlockLayoutsChanged { level, codeBlocks }` after the affected
   blocks settle. Initialize the mutation and rendering services independently; only the dragger owns drag state.
-  Consumers refresh the listed blocks and use project identity for view checks.
+  Consumers refresh the listed blocks and use level identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
   Compiler-dependent plugins observe metadata themselves rather than relying on layout recalculation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.

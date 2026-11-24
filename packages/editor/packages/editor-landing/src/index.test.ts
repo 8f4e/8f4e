@@ -31,7 +31,7 @@ it('starts without storage and waits for core initialization before resolving th
 	const mounted = vi.fn();
 	const mounting = mountLandingEditor(canvas, {
 		captureWheel: false,
-		featureFlags: { moduleDragging: false },
+		featureFlags: { blockSelectionAndDragging: false },
 	}).then(editor => {
 		mounted(editor);
 		return editor;
@@ -40,7 +40,11 @@ it('starts without storage and waits for core initialization before resolving th
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.defaultFont).toBeUndefined();
-	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false, contextMenu: false });
+	expect(options.featureFlags).toEqual({
+		projectCreation: false,
+		blockSelectionAndDragging: false,
+		contextMenu: false,
+	});
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',

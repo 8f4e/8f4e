@@ -8,7 +8,7 @@ export interface EditorBlockSnapshot {
 	readonly gridX: number;
 	readonly gridY: number;
 	readonly isProjectScope: boolean;
-	readonly childProject?: EditorLevelSnapshot;
+	readonly childLevel?: EditorLevelSnapshot;
 }
 
 export interface EditorLevelSnapshot {
@@ -19,6 +19,6 @@ export interface EditorLevelSnapshot {
 
 /** Authored editor source with editable block boundaries and metadata, excluding the managed environment and derived layout. */
 export interface EditorProjectSnapshot {
-	readonly rootProject: EditorLevelSnapshot;
+	readonly rootLevel: EditorLevelSnapshot;
 	readonly nextCodeBlockCreationIndex: number;
 }

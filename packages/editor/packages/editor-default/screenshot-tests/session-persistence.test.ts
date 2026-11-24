@@ -41,9 +41,7 @@ test('restores a retained project in a new editor instance', async () => {
 		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
 			expect(
-				editor!.state.codeBlockRendering.currentProject.blocks.some(block =>
-					block.code.includes('Retained across editor instances.')
-				)
+				editor!.state.project.activeLevel.blocks.some(block => block.code.includes('Retained across editor instances.'))
 			).toBe(true)
 		);
 		editor.pauseRendering();

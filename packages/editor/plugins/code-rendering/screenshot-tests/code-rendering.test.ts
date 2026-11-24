@@ -91,7 +91,7 @@ test('renders code, notes, tabs, disabled blocks, folds, and contributed gaps', 
 	editor.pauseRendering();
 	try {
 		// Exercise the isolated renderer in a child project, away from the managed root environment.
-		const group = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		const group = editor.state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
 		editor.navigation.openGroup(getEditorBlockId(group));
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot();

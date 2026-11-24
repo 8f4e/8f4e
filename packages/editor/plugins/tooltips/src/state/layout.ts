@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import { tooltipHorizontalPaddingChars } from '../helpers/constants';
 import type {
 	SelectedLineTooltipContent,
@@ -45,7 +45,7 @@ export function createEmptyTooltipState(): TooltipState {
 function getTooltipLayout(
 	content: SelectedLineTooltipContent,
 	state: State,
-	selectedCodeBlock: CodeBlockGraphicData
+	selectedCodeBlock: EditorCodeBlock
 ): TooltipLayout {
 	const horizontalPadding = tooltipHorizontalPaddingChars * state.viewport.vGrid;
 	const width = (content.widthChars + tooltipHorizontalPaddingChars * 2) * state.viewport.vGrid;
@@ -102,7 +102,7 @@ function getTooltipHighlights(
 export function getTooltipState(
 	content: SelectedLineTooltipContent,
 	state: State,
-	selectedCodeBlock: CodeBlockGraphicData,
+	selectedCodeBlock: EditorCodeBlock,
 	previous: TooltipState,
 	now = performance.now()
 ): TooltipState {

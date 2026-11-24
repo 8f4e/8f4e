@@ -44,8 +44,8 @@ export function setup(
 	});
 	store.set('editorMode', mode);
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!;
-	store.set('codeBlockRendering.selectedCodeBlock', block);
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'main')!;
+	store.set('project.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, y: 0 };
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = createPlugin({ inputTarget }).setup({

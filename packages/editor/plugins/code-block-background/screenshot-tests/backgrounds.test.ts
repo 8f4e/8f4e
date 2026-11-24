@@ -1,6 +1,6 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -58,7 +58,7 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid * 3,
-								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+								displayRowToGridRow(row, codeBlock.gaps) * state.viewport.hGrid,
 								glyphsByBlock.get(codeBlock)![row],
 								PALETTE_INDICES.inkBase
 							)
@@ -74,16 +74,16 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 	});
 	editor.pauseRendering();
 	try {
-		const group = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		const group = editor.state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
 		editor.navigation.openGroup(getEditorBlockId(group));
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
-		editor.state.codeBlockRendering.draggedCodeBlock = editor.state.codeBlockRendering.currentProject.blocks.find(
+		editor.state.project.draggedCodeBlock = editor.state.project.activeLevel.blocks.find(
 			block => block.name === 'dragged'
 		);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('block-backgrounds');
-		editor.state.codeBlockRendering.selectedCodeBlock = editor.state.codeBlockRendering.currentProject.blocks.find(
+		editor.state.project.selectedCodeBlock = editor.state.project.activeLevel.blocks.find(
 			block => block.name === 'normal'
 		);
 		editor.renderFrame();

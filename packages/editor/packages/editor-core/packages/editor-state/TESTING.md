@@ -38,7 +38,7 @@ describe('MyComponent', () => {
 
 ### createMockCodeBlock
 
-Create mock CodeBlockGraphicData objects using an options object:
+Create mock EditorCodeBlock objects using an options object:
 
 ```typescript
 // Basic usage with defaults

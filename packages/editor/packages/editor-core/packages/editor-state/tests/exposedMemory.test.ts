@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	getProjectGroups,
@@ -8,14 +8,14 @@ import {
 	type ProjectObjectModel,
 } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it } from 'vitest';
-import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
-import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
-import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
+import { createMockCodeBlock, createMockState } from '~/__tests__/helpers/mockEditorState';
+import getCodeBlockMemoryScope from '~/memory/getCodeBlockMemoryScope';
+import resolveMemoryIdentifier from '~/memory/resolveMemoryIdentifier';
+import resolveMemoryTarget from '~/memory/resolveMemoryTarget';
 
 const source = readFileSync(new URL('./fixtures/exposed-controls.8f4e', import.meta.url), 'utf8');
 
-function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockGraphicData[] {
+function createBlocks(project: ProjectObjectModel, projectPath = ''): EditorCodeBlock[] {
 	return [
 		...getProjectModules(project).map(block =>
 			createMockCodeBlock({ code: block.code, projectPath, blockType: 'module' })
@@ -25,7 +25,7 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockG
 				name: group.name,
 				code: group.code,
 				projectPath,
-				childProject: {
+				childLevel: {
 					entries: [],
 					path: '',
 					blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
@@ -46,10 +46,10 @@ async function setup() {
 	(instance.exports.initDefaults as CallableFunction)();
 	const int32 = new Int32Array(memory.buffer);
 	state.callbacks.getWordFromMemory = address => int32[address];
-	state.codeBlockRendering.rootProject.blocks = createBlocks(project);
-	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
-	const audio = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!;
-	const controls = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'controls')!;
+	state.project.rootLevel.blocks = createBlocks(project);
+	state.project.activeLevel.blocks = state.project.rootLevel.blocks;
+	const audio = state.project.rootLevel.blocks.find(block => block.name === 'audio')!;
+	const controls = state.project.rootLevel.blocks.find(block => block.name === 'controls')!;
 	return { state, audio, controls };
 }
 
@@ -78,7 +78,7 @@ describe('shared exposed memory resolution', () => {
 
 	it('resolves nested and sibling namespaces without searching unrelated scopes', () => {
 		const { state, audio } = test;
-		const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
+		const nested = audio.childLevel!.blocks.find(block => block.name === 'nested')!;
 		expect(resolveMemoryTarget(state, getCodeBlockMemoryScope(audio), 'nested:gain')?.moduleId).toBe(
 			'audio/nested/voice'
 		);

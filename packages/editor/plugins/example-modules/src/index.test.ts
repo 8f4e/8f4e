@@ -77,8 +77,8 @@ describe('example modules plugin', () => {
 			contribution.dispose();
 		});
 		await test.addModule();
-		const target = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
-		const dependency = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'dep')!;
+		const target = test.state.project.activeLevel.blocks.find(block => block.name === 'target')!;
+		const dependency = test.state.project.activeLevel.blocks.find(block => block.name === 'dep')!;
 		expect(target.width).toBe(60 * test.state.viewport.vGrid);
 		expect(dependency.gridX).toBe(target.gridX + 60 + 4);
 	});
@@ -114,14 +114,10 @@ describe('example modules plugin', () => {
 		);
 		click('Target');
 		await vi.waitFor(() =>
-			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
-				'env',
-				'target',
-				'dep',
-			])
+			expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'target', 'dep'])
 		);
 		expect(test.state.contextMenu.open).toBe(false);
-		const [target, dep] = test.state.codeBlockRendering.currentProject.blocks.slice(1);
+		const [target, dep] = test.state.project.activeLevel.blocks.slice(1);
 		expect(target.code).not.toContain('; @public');
 		expect(target.gridX).toBe(Math.round((test.state.viewport.x + position.x) / test.state.viewport.vGrid));
 		expect(target.gridY).toBe(Math.round((test.state.viewport.y + position.y) / test.state.viewport.hGrid));
@@ -133,12 +129,7 @@ describe('example modules plugin', () => {
 		const test = setup();
 		await test.addModule();
 		await test.addModule();
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
-			'env',
-			'target',
-			'dep',
-			'target',
-		]);
+		expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'target', 'dep', 'target']);
 	});
 
 	it('does not confuse a dependency with a different block type of the same name', async () => {
@@ -146,9 +137,7 @@ describe('example modules plugin', () => {
 		test.events.dispatch('insertCodeBlock', { code: ['module dep', 'moduleEnd'], x: 400, y: 100 });
 		await test.addModule();
 		expect(
-			test.state.codeBlockRendering.currentProject.blocks
-				.filter(block => block.name === 'dep')
-				.map(block => block.blockType)
+			test.state.project.activeLevel.blocks.filter(block => block.name === 'dep').map(block => block.blockType)
 		).toEqual(['module', 'constants']);
 	});
 
@@ -157,7 +146,7 @@ describe('example modules plugin', () => {
 			sources: new Map([['audio/simple', async () => publicSource('module simple\n; @public\nmoduleEnd')]]),
 		});
 		await test.addModule('simple');
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'simple']);
+		expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'simple']);
 	});
 
 	it('does not treat an ignored reserved root env insertion as a created example block', async () => {
@@ -169,7 +158,7 @@ describe('example modules plugin', () => {
 				],
 			]),
 		});
-		const root = test.state.codeBlockRendering.rootProject;
+		const root = test.state.project.rootLevel;
 		const environment = root.blocks[0];
 		await test.addModule('env');
 		expect(root.blocks).toEqual([environment]);
@@ -187,13 +176,10 @@ describe('example modules plugin', () => {
 		});
 		await test.addModule('sample');
 
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.blockType)).toEqual([
-			'constants',
-			'note',
-		]);
-		expect(test.state.codeBlockRendering.currentProject.blocks[1].name).toBe('sampleSettings');
-		expect(test.state.codeBlockRendering.currentProject.blocks[1].code).not.toContain('; @public');
-		expect(test.state.codeBlockRendering.currentProject.blocks[1].code).toContain('; @config testSetting sample');
+		expect(test.state.project.activeLevel.blocks.map(block => block.blockType)).toEqual(['constants', 'note']);
+		expect(test.state.project.activeLevel.blocks[1].name).toBe('sampleSettings');
+		expect(test.state.project.activeLevel.blocks[1].code).not.toContain('; @public');
+		expect(test.state.project.activeLevel.blocks[1].code).toContain('; @config testSetting sample');
 	});
 
 	it('continues inserting available dependencies when one chunk fails', async () => {
@@ -211,11 +197,7 @@ describe('example modules plugin', () => {
 			]),
 		});
 		await test.addModule();
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual([
-			'env',
-			'target',
-			'dep',
-		]);
+		expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'target', 'dep']);
 		expect(warning).toHaveBeenCalledWith('Failed to load dependency: unavailable', expect.any(Error));
 	});
 
@@ -239,7 +221,7 @@ describe('example modules plugin', () => {
 			await Promise.resolve();
 			expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 			test.events.dispatch(ADD_EXAMPLE_MODULE, { slug: 'target', x: 100, y: 112 });
-			expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
+			expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env']);
 		}
 	);
 
@@ -257,7 +239,7 @@ describe('example modules plugin', () => {
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		finish(publicSource(mainCode));
 		await insertion;
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env']);
+		expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env']);
 	});
 
 	it('does not insert a dependency whose load finishes after disposal', async () => {
@@ -281,7 +263,7 @@ describe('example modules plugin', () => {
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		finish(publicSource(dependencyCode, 'constants'));
 		await insertion;
-		expect(test.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);
+		expect(test.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'target']);
 	});
 
 	it('isolates menus, source caches, and disposal between editors', async () => {
@@ -293,6 +275,6 @@ describe('example modules plugin', () => {
 		first.disposePlugin();
 		await second.addModule();
 		expect(load).toHaveBeenCalledTimes(2);
-		expect(second.state.codeBlockRendering.currentProject.blocks.map(block => block.name)).toEqual(['env', 'target']);
+		expect(second.state.project.activeLevel.blocks.map(block => block.name)).toEqual(['env', 'target']);
 	});
 });

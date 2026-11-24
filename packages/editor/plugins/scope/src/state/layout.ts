@@ -1,16 +1,11 @@
-import { gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	prepareAddressedRead,
 	prepareMemoryAccess,
 	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
-import type {
-	CodeBlockGraphicData,
-	CodeBlockLayoutContext,
-	EditorLayoutRegistry,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutContext, EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { ScopeDirectiveReader } from '../helpers/data';
 import type { Scope } from '../types';
 import { createScopeHistory, resizeScopeHistory } from './history';
@@ -19,7 +14,7 @@ const HEIGHT_IN_ROWS = 8;
 
 export function registerScopePreparation(
 	layout: EditorLayoutRegistry,
-	scopesByBlock: WeakMap<CodeBlockGraphicData, Scope[]>,
+	scopesByBlock: WeakMap<EditorCodeBlock, Scope[]>,
 	readScopeDirectives: ScopeDirectiveReader
 ) {
 	const contribution = layout.createContribution();
@@ -67,7 +62,7 @@ export function registerScopePreparation(
 			const geometry = {
 				key,
 				x,
-				y: (gapCalculator(displayRow, codeBlock.gaps) + 1 + otherRows + offset) * hGrid,
+				y: (displayRowToGridRow(displayRow, codeBlock.gaps) + 1 + otherRows + offset) * hGrid,
 				width,
 				height: hGrid * HEIGHT_IN_ROWS,
 				minValue: data.minValueOverride ?? read.spec.minValue,
@@ -92,7 +87,7 @@ export function registerScopePreparation(
 	return {
 		refresh: (state: State) => {
 			if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
-			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state }, 'data');
+			for (const codeBlock of state.project.activeLevel.blocks) prepare({ codeBlock, state }, 'data');
 		},
 		dispose: () => {
 			unsubscribe();

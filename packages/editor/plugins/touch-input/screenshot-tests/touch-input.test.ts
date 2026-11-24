@@ -34,7 +34,7 @@ test('native one-finger dragging pans without clicking or moving blocks, while t
 	try {
 		const source = serializeToProject(editor.state);
 		const revision = editor.state.projectChange.revision;
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const { x: blockX, y: blockY } = block;
 		const { x, y } = editor.state.viewport;
 		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });

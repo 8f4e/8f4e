@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EditorPlugin } from '@8f4e/editor-core';
+import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
 import { deleteCodeBlocks } from '@8f4e/editor-state';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 
@@ -62,7 +62,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			const name = blockType === 'note' ? '' : ` ${getRandomCodeBlockName()}`;
 			events.dispatch('insertCodeBlock', { x, y, code: [block.start + name, '', '', block.end] });
 		};
-		const onDelete = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
+		const onDelete = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
 			deleteCodeBlocks(store, [codeBlock]);
 		};
@@ -72,9 +72,9 @@ export const blockAuthoringPlugin: EditorPlugin = {
 				return { title, action: 'createCodeBlock', payload: { blockType: type }, close: true };
 			})
 		);
-		const removeDeleteItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+		const removeDeleteItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
-			const label = codeBlock.childProject
+			const label = codeBlock.childLevel
 				? 'group'
 				: codeBlock.blockType === 'function'
 					? 'function'

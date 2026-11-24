@@ -77,8 +77,8 @@ export async function setup(
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
-	store.set('codeBlockRendering.currentProject.blocks', [block]);
+	const block = state.project.activeLevel.blocks.find(block => block.name === name)!;
+	store.set('project.activeLevel.blocks', [block]);
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();

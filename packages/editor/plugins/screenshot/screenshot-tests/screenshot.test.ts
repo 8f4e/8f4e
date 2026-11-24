@@ -52,9 +52,7 @@ noteEnd`);
 		});
 		editor.state.editorMode = 'edit';
 		await vi.waitFor(() =>
-			expect(
-				editor.state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note screenshot'))
-			).toBe(true)
+			expect(editor.state.project.activeLevel.blocks.some(block => block.code.includes('note screenshot'))).toBe(true)
 		);
 		editor.pauseRendering();
 		const pointer = (type: string, x: number, y: number) => {

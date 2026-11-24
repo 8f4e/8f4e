@@ -11,7 +11,7 @@ export function registerScopeErrors(
 	const state = store.getState();
 	const refresh = () => {
 		const errors: CodeError[] = [];
-		for (const block of walkProjectBlocks(state.codeBlockRendering.rootProject)) {
+		for (const block of walkProjectBlocks(state.project.rootLevel)) {
 			for (const diagnostic of readScopeDirectives(block.parsedDirectives).diagnostics) {
 				errors.push({
 					codeBlockId: block.creationIndex,

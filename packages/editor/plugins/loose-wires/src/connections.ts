@@ -1,10 +1,5 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import type {
-	CodeBlockGraphicData,
-	CodeBlockLayoutsChangedEvent,
-	EventDispatcher,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { RenderGeometry } from '@8f4e/web-ui';
 import { deriveEndpoints, type WireEndpoints, type WireOutput } from './deriveEndpoints';
 
@@ -18,41 +13,41 @@ export type WireConnectionVisitor = (
 ) => void;
 
 interface WireGeometry {
-	endpointsByBlock: WeakMap<CodeBlockGraphicData, WireEndpoints>;
+	endpointsByBlock: WeakMap<EditorCodeBlock, WireEndpoints>;
 	outputsByByteAddress: ReadonlyMap<number, WireOutput>;
 }
 
 /** Track settled connection geometry for one renderer, independently of connector presentation. */
 export function createWireConnections(store: EditorPluginContext['store'], events: EventDispatcher) {
 	const state = store.getState();
-	const endpointsByBlock = new WeakMap<CodeBlockGraphicData, WireEndpoints>();
+	const endpointsByBlock = new WeakMap<EditorCodeBlock, WireEndpoints>();
 	const outputsByByteAddress = new Map<number, WireOutput>();
 	const geometry = { endpointsByBlock, outputsByByteAddress };
-	const refresh = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.codeBlockRendering.currentProject) return;
+	const refresh = ({ level, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (level !== state.project.activeLevel) return;
 		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		for (const block of codeBlocks) endpointsByBlock.set(block, deriveEndpoints(block, state));
 		outputsByByteAddress.clear();
-		for (const block of project.blocks) {
+		for (const block of level.blocks) {
 			for (const output of endpointsByBlock.get(block)?.outputs ?? []) {
 				outputsByByteAddress.set(output.byteAddress, output);
 			}
 		}
 	};
-	const refreshCurrentProject = () => {
-		const project = state.codeBlockRendering.currentProject;
-		refresh({ project, codeBlocks: project.blocks });
+	const refreshActiveLevel = () => {
+		const level = state.project.activeLevel;
+		refresh({ level, codeBlocks: level.blocks });
 	};
-	refreshCurrentProject();
+	refreshActiveLevel();
 	events.on('codeBlockLayoutsChanged', refresh);
-	store.subscribe('compiler.result', refreshCurrentProject);
+	store.subscribe('compiler.result', refreshActiveLevel);
 	return {
 		/** Visit active connections, including offscreen endpoints, using current pointer values. */
 		visit: (renderGeometry: RenderGeometry, memory: Int32Array, visitor: WireConnectionVisitor) =>
 			visitConnections(state, renderGeometry, memory, geometry, visitor),
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', refresh);
-			store.unsubscribe('compiler.result', refreshCurrentProject);
+			store.unsubscribe('compiler.result', refreshActiveLevel);
 			outputsByByteAddress.clear();
 		},
 	};
@@ -66,7 +61,7 @@ export function visitConnections(
 	visit: WireConnectionVisitor
 ): void {
 	for (const { codeBlock, x, y } of renderGeometry.blocks) {
-		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
+		const isSelected = codeBlock === state.project.selectedCodeBlock;
 
 		if (!codeBlock.name) {
 			continue;

@@ -9,7 +9,7 @@ export const entryOutlinesPlugin: EditorPlugin = {
 		let glyphsByName = new Map<string, GlyphIds>();
 		const prepare = () => {
 			const nextGlyphsByName = new Map<string, GlyphIds>();
-			const entries = state.codeBlockRendering.entryBounds.map(bounds => {
+			const entries = state.project.entryBounds.map(bounds => {
 				const glyphs = glyphsByName.get(bounds.entryName) ?? textToGlyphIds(bounds.entryName);
 				nextGlyphsByName.set(bounds.entryName, glyphs);
 				return { bounds, glyphs };
@@ -21,7 +21,7 @@ export const entryOutlinesPlugin: EditorPlugin = {
 		const update = () => {
 			entries = prepare();
 		};
-		store.subscribe('codeBlockRendering.entryBounds', update);
+		store.subscribe('project.entryBounds', update);
 		const unregister = drawers.registerCanvasBackgroundDrawer(({ draw, viewport }) => {
 			draw.startGroup(-viewport.x, -viewport.y);
 			for (const {
@@ -38,7 +38,7 @@ export const entryOutlinesPlugin: EditorPlugin = {
 		});
 		return () => {
 			unregister();
-			store.unsubscribe('codeBlockRendering.entryBounds', update);
+			store.unsubscribe('project.entryBounds', update);
 		};
 	},
 };

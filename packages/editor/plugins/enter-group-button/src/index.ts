@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES, type PaletteConfig, resolvePalette } from '@8f4e/editor-palette';
-import { gapCalculator } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
+import { displayRowToGridRow } from '@8f4e/editor-state';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock, InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
@@ -44,11 +44,11 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 		};
 		updateShadowColor();
 		store.subscribe('editorConfig.color', updateShadowColor);
-		const buttons = new WeakMap<CodeBlockGraphicData, ButtonBounds>();
+		const buttons = new WeakMap<EditorCodeBlock, ButtonBounds>();
 		const contribution = layout.createContribution();
 		const unsubscribeLayout = layout.subscribe(({ codeBlock, state }) => {
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[0];
-			if (!codeBlock.childProject || row === undefined) {
+			if (!codeBlock.childLevel || row === undefined) {
 				buttons.delete(codeBlock);
 				contribution.remove(codeBlock);
 				return;
@@ -61,7 +61,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			const x = Math.floor((codeBlock.width / vGrid - columns) / 2) * vGrid;
 			buttons.set(codeBlock, {
 				x,
-				y: (gapCalculator(row, codeBlock.gaps) + 1) * hGrid,
+				y: (displayRowToGridRow(row, codeBlock.gaps) + 1) * hGrid,
 				width: columns * vGrid,
 				height: hGrid,
 				labelX: x + Math.floor((columns - LABEL.length) / 2) * vGrid,
@@ -71,13 +71,13 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			});
 		});
 
-		let pressedBlock: CodeBlockGraphicData | undefined;
+		let pressedBlock: EditorCodeBlock | undefined;
 		let pressedInside = false;
 		const reset = () => {
 			pressedBlock = undefined;
 			pressedInside = false;
 		};
-		const hitTest = (block: CodeBlockGraphicData, { x, y }: InternalPointerEvent) => {
+		const hitTest = (block: EditorCodeBlock, { x, y }: InternalPointerEvent) => {
 			const button = buttons.get(block);
 			return !!button && contains(button, x - block.x + state.viewport.x, y - block.y + state.viewport.y);
 		};
@@ -103,7 +103,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			if (!codeBlock) return;
 			reset();
 			event.stopPropagation = true;
-			if (state.codeBlockRendering.currentProject.blocks.includes(codeBlock) && hitTest(codeBlock, event)) {
+			if (state.project.activeLevel.blocks.includes(codeBlock) && hitTest(codeBlock, event)) {
 				events.dispatch('openProjectGroup', { codeBlock });
 			}
 		};
@@ -130,7 +130,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 		events.on('pointermove', onPointerMove, inputLayer);
 		events.on('pointerup', onPointerUp, inputLayer);
 		events.on('pointercancel', onPointerCancel, inputLayer);
-		store.subscribe('codeBlockRendering.currentProject', reset);
+		store.subscribe('project.activeLevel', reset);
 		store.subscribe('dialogStack', reset);
 		store.subscribe('contextMenu.open', reset);
 		return () => {
@@ -138,7 +138,7 @@ export const enterGroupButtonPlugin: EditorPlugin = {
 			events.off('pointermove', onPointerMove);
 			events.off('pointerup', onPointerUp);
 			events.off('pointercancel', onPointerCancel);
-			store.unsubscribe('codeBlockRendering.currentProject', reset);
+			store.unsubscribe('project.activeLevel', reset);
 			store.unsubscribe('dialogStack', reset);
 			store.unsubscribe('contextMenu.open', reset);
 			store.unsubscribe('editorConfig.color', updateShadowColor);

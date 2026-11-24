@@ -1,14 +1,14 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createCrossfadeDirectiveData } from '../helpers/data';
 import type { Crossfade } from '../types';
 
 export function registerCrossfadePreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	crossfadesByBlock: WeakMap<CodeBlockGraphicData, Crossfade[]>
+	crossfadesByBlock: WeakMap<EditorCodeBlock, Crossfade[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = subscribeToBlockPreparation(
@@ -58,7 +58,7 @@ export function registerCrossfadePreparation(
 					width,
 					height: state.viewport.hGrid * 2,
 					x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 					leftWordAddress: left.allocationUnitAddress,
 					rightWordAddress: right.allocationUnitAddress,
 					handleWidth,

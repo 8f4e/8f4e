@@ -8,7 +8,7 @@ import { entryOutlinesPlugin } from './index';
 
 function setup() {
 	const state = createMockState({
-		codeBlockRendering: { entryBounds: [{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 }] },
+		project: { entryBounds: [{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 }] },
 	});
 	const drawers = createEditorDrawerRegistry();
 	const store = createStateManager(state);
@@ -58,7 +58,7 @@ it('projects world bounds into the presented viewport', () => {
 it('reads current bounds and grid dimensions when drawing', () => {
 	const test = setup();
 	test.render();
-	test.store.set('codeBlockRendering.entryBounds', [{ entryName: 'changed', x: 400, y: 128, width: 100, height: 64 }]);
+	test.store.set('project.entryBounds', [{ entryName: 'changed', x: 400, y: 128, width: 100, height: 64 }]);
 	test.state.viewport.vGrid = 4;
 	test.render();
 	expect(test.draw.drawFill).toHaveBeenCalledWith(400, 128, PALETTE_INDICES.strokeBase, 100, 1);
@@ -73,7 +73,7 @@ it('reads current bounds and grid dimensions when drawing', () => {
 
 it('draws no outlines for an empty bounds list', () => {
 	const test = setup();
-	test.store.set('codeBlockRendering.entryBounds', []);
+	test.store.set('project.entryBounds', []);
 	test.render();
 	expect(test.draw.drawFill).not.toHaveBeenCalled();
 	expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
@@ -86,7 +86,7 @@ it('reuses prepared glyphs between frames and prepares updated Unicode labels', 
 	const glyphs = test.draw.drawGlyphs.mock.calls[0][2];
 	test.render();
 	expect(test.draw.drawGlyphs.mock.calls[0][2]).toBe(glyphs);
-	test.store.set('codeBlockRendering.entryBounds', [{ entryName: 'éΩ', x: 16, y: 64, width: 224, height: 192 }]);
+	test.store.set('project.entryBounds', [{ entryName: 'éΩ', x: 16, y: 64, width: 224, height: 192 }]);
 	test.render();
 	expect(test.draw.drawGlyphs.mock.calls[0][2]).toEqual([130, 234]);
 	test.dispose();
@@ -94,7 +94,7 @@ it('reuses prepared glyphs between frames and prepares updated Unicode labels', 
 
 it('reuses glyphs when entry bounds change and entries are reordered during viewport movement', () => {
 	const test = setup();
-	test.store.set('codeBlockRendering.entryBounds', [
+	test.store.set('project.entryBounds', [
 		{ entryName: 'audio', x: 16, y: 64, width: 224, height: 192 },
 		{ entryName: 'control', x: 320, y: 64, width: 128, height: 96 },
 	]);
@@ -102,7 +102,7 @@ it('reuses glyphs when entry bounds change and entries are reordered during view
 	const [audioGlyphs, controlGlyphs] = test.draw.drawGlyphs.mock.calls.map(call => call[2]);
 	for (const offset of [8, 16, 24]) {
 		test.store.set('viewport.x', offset);
-		test.store.set('codeBlockRendering.entryBounds', [
+		test.store.set('project.entryBounds', [
 			{ entryName: 'control', x: 320 + offset, y: 128, width: 256, height: 96 },
 			{ entryName: 'audio', x: 16 + offset, y: 128, width: 448, height: 192 },
 		]);
@@ -123,6 +123,6 @@ it('isolates installations and removes only its drawing on disposal', () => {
 	second.render();
 	expect(first.draw.drawFill).not.toHaveBeenCalled();
 	expect(second.draw.drawFill).toHaveBeenCalledTimes(4);
-	expect(first.state.codeBlockRendering.entryBounds).toHaveLength(1);
+	expect(first.state.project.entryBounds).toHaveLength(1);
 	second.dispose();
 });

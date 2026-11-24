@@ -1,6 +1,6 @@
-import { gapCalculator, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
+import { displayRowToGridRow, getCompiledModuleForCodeBlock } from '@8f4e/editor-state';
 import { getProjectGroupMemoryExposures } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 
 export interface WireInput {
@@ -10,7 +10,7 @@ export interface WireInput {
 }
 
 export interface WireOutput {
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 	x: number;
 	y: number;
 	byteAddress: number;
@@ -22,7 +22,7 @@ export interface WireEndpoints {
 }
 
 /** Prepare block-local endpoints from the compiler's memory metadata and settled layout. */
-export function deriveEndpoints(codeBlock: CodeBlockGraphicData, state: State): WireEndpoints {
+export function deriveEndpoints(codeBlock: EditorCodeBlock, state: State): WireEndpoints {
 	const endpoints: WireEndpoints = { inputs: [], outputs: [] };
 	if (!codeBlock.name) return endpoints;
 
@@ -30,8 +30,9 @@ export function deriveEndpoints(codeBlock: CodeBlockGraphicData, state: State): 
 	const height = state.viewport.hGrid;
 	const inputX = Math.round(width / 2);
 	const outputX = Math.round(codeBlock.width - width + width / 2);
-	const lineY = (lineNumber: number) => Math.round(gapCalculator(lineNumber, codeBlock.gaps) * height + height / 2);
-	const isProjectGroup = codeBlock.childProject !== undefined;
+	const lineY = (lineNumber: number) =>
+		Math.round(displayRowToGridRow(lineNumber, codeBlock.gaps) * height + height / 2);
+	const isProjectGroup = codeBlock.childLevel !== undefined;
 	const addMemory = (memory: PlannedMemoryDeclaration, lineNumber: number) => {
 		const isPointer = memory.pointerDepth > 0;
 		if (isPointer && memory.numberOfElements === 0) return;

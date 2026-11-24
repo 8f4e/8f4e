@@ -1,13 +1,13 @@
 import { createMockCodeBlock, createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import type { PianoKeyboard } from '../types';
 import { getPianoDefaultEdits } from './saveDefaults';
 
-function createProjectState(blocks: CodeBlockGraphicData[], read: State['callbacks']['getWordFromMemory']): State {
+function createProjectState(blocks: EditorCodeBlock[], read: State['callbacks']['getWordFromMemory']): State {
 	const state = createMockState();
-	state.codeBlockRendering.rootProject.blocks = blocks;
-	state.codeBlockRendering.currentProject.blocks = blocks;
+	state.project.rootLevel.blocks = blocks;
+	state.project.activeLevel.blocks = blocks;
 	state.callbacks.getWordFromMemory = read;
 	return state;
 }

@@ -1,14 +1,14 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, prepareBuffer } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createBarsDirectiveData } from '../helpers/data';
 import type { Bars } from '../types';
 
 export function registerBarsPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	barsByBlock: WeakMap<CodeBlockGraphicData, Bars[]>
+	barsByBlock: WeakMap<EditorCodeBlock, Bars[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = subscribeToBlockPreparation(
@@ -41,7 +41,7 @@ export function registerBarsPreparation(
 					width,
 					height: state.viewport.hGrid * 8,
 					x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 					inverseValueRange: maxValue === minValue ? 0 : 1 / (maxValue - minValue),
 					buffer,
 					minValue,

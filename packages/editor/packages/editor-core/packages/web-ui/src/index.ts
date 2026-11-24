@@ -156,7 +156,7 @@ async function mount(
 	};
 	const inputGate = { capture: true, layer: INPUT_LAYERS.modalOverlay + 1 };
 	events.on('viewportChanged', onViewportChanged);
-	store.subscribe('codeBlockRendering.currentProject', resetViewportTransition);
+	store.subscribe('project.activeLevel', resetViewportTransition);
 	events.on('gridSizeChanged', resetViewportTransition);
 	events.on('pointerdown', guardPointerPress, inputGate);
 	events.on('contextmenu', guardPointerPress, inputGate);
@@ -276,7 +276,7 @@ async function mount(
 		},
 		destroy: () => {
 			events.off('viewportChanged', onViewportChanged);
-			store.unsubscribe('codeBlockRendering.currentProject', resetViewportTransition);
+			store.unsubscribe('project.activeLevel', resetViewportTransition);
 			events.off('gridSizeChanged', resetViewportTransition);
 			events.off('pointerdown', guardPointerPress);
 			events.off('contextmenu', guardPointerPress);

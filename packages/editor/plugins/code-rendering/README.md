@@ -14,7 +14,7 @@ const editor = await initEditor(canvas, { renderer: new Engine(canvas), plugins:
 ```
 
 Each installation prepares its own sprite cells and nested block highlight rectangles for the blocks supplied
-by `codeBlockLayoutsChanged { project, codeBlocks }`. Only those blocks in the owning group have completed
+by `codeBlockLayoutsChanged { level, codeBlocks }`. Only those blocks in the owning group have completed
 source/display derivation, positions, and pending layout contributions;
 other blocks can still be updating. Unaffected blocks retain their prepared cells. The per-editor cache uses weak block
 keys so removed projects are not retained.

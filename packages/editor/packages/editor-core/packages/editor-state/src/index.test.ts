@@ -2,10 +2,10 @@ import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
+import { createMockCodeBlock } from './__tests__/helpers/mockEditorState';
+import { createMockEventDispatcherWithVitest } from './__tests__/helpers/mockEventDispatcher';
 import initState, { setGridSize } from './index';
-import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
+import { EMPTY_DEFAULT_PROJECT } from './project/emptyDefaultProject';
 
 describe('editor state lifecycle', () => {
 	it('starts in view mode before a project is loaded', () => {
@@ -52,16 +52,14 @@ describe('editor state lifecycle', () => {
 		expect(
 			store
 				.getState()
-				.codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')
+				.project.rootLevel.blocks.filter(block => block.blockType === 'note')
 				.map(block => block.code)
 		).toEqual([code]);
 		expect(store.getState().editorConfig.testSetting).toBe('sample');
 
 		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 
-		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
-			[]
-		);
+		expect(store.getState().project.rootLevel.blocks.filter(block => block.blockType === 'note')).toEqual([]);
 		expect(store.getState().editorConfig.testSetting).toBeUndefined();
 		store.dispose();
 	});
@@ -101,8 +99,8 @@ describe('editor state lifecycle', () => {
 		});
 		state.viewport.x = 0;
 		state.viewport.y = 0;
-		state.codeBlockRendering.currentProject.blocks = [codeBlock];
-		state.codeBlockRendering.selectedCodeBlock = codeBlock;
+		state.project.activeLevel.blocks = [codeBlock];
+		state.project.selectedCodeBlock = codeBlock;
 		state.contextMenu.open = true;
 		state.contextMenu.items = [
 			{
@@ -139,7 +137,7 @@ describe('editor state lifecycle', () => {
 		expect(onCodeBlockPointerDown).not.toHaveBeenCalled();
 		expect(onMenuAction).toHaveBeenCalledTimes(activate ? 1 : 0);
 		expect(codeBlock.code[1]).toBe('int value 2');
-		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(state.project.draggedCodeBlock).toBeUndefined();
 
 		store.dispose();
 	});

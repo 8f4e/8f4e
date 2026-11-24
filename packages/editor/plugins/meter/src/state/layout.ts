@@ -1,5 +1,5 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	getMemoryTargetAtSourceLine,
@@ -7,7 +7,7 @@ import {
 	prepareMemoryAccess,
 	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createMeterDirectiveData } from '../helpers/data';
 import type { Meter } from '../types';
 
@@ -17,7 +17,7 @@ const RED_THRESHOLD = 0.9;
 export function registerMeterPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	metersByBlock: WeakMap<CodeBlockGraphicData, Meter[]>
+	metersByBlock: WeakMap<EditorCodeBlock, Meter[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = subscribeToBlockPreparation(
@@ -66,7 +66,7 @@ export function registerMeterPreparation(
 					width,
 					height: state.viewport.hGrid,
 					x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 					isBipolar,
 					amplitudeLimit,
 					inverseValueRange,

@@ -85,9 +85,7 @@ describe('wires plugin', () => {
 		render();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 		state.dialogStack = [];
-		state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.currentProject.blocks.find(
-			block => block.name === 'sink'
-		);
+		state.project.selectedCodeBlock = state.project.activeLevel.blocks.find(block => block.name === 'sink');
 		render();
 		const bytes = gl.bufferSubData.mock.calls.at(-1)![2] as Uint8Array;
 		expect(new DataView(bytes.buffer, bytes.byteOffset).getFloat32(16, true)).toBe(2);
@@ -125,7 +123,7 @@ describe('wires plugin', () => {
 		expect(gl.bufferData).toHaveBeenCalledTimes(uploads + 1);
 		runCleanup(dispose!);
 		events.dispatch('gridSizeChanged');
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		state.project.selectedCodeBlock = undefined;
 		render();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();
 		expect(gl.deleteBuffer).toHaveBeenCalledOnce();

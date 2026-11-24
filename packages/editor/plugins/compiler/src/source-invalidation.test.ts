@@ -35,7 +35,7 @@ async function setup(lines: string[]) {
 	expect(worker.postedMessages).toHaveLength(1);
 	worker.emitMessage(createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })));
 	const state = store.getState();
-	const block = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'module')!;
+	const block = state.project.rootLevel.blocks.find(block => block.blockType === 'module')!;
 	return { store, events, worker, state, block };
 }
 

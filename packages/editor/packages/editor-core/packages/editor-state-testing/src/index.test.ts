@@ -1,3 +1,4 @@
+import type { ProjectLevel } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 
 import { createMockCodeBlock, createMockEventDispatcher, createMockState, createMockViewport } from './index';
@@ -64,9 +65,7 @@ describe('editor-state testing utilities', () => {
 		expect(state.info.compiler?.compilationTimeMs).toBe(120);
 		expect(state.viewport.width).toBe(400);
 		expect(state.viewport.height).toBe(768);
-		expect(state.codeBlockRendering.currentProject.blocks).not.toBe(
-			secondState.codeBlockRendering.currentProject.blocks
-		);
+		expect(state.project.activeLevel.blocks).not.toBe(secondState.project.activeLevel.blocks);
 	});
 
 	it('creates no-op event dispatchers and viewports', () => {
@@ -90,39 +89,57 @@ describe('editor-state testing utilities', () => {
 		expect(state.compiler.result.memoryDefaultsByModuleId).toEqual({});
 		expect(state.compiler.result.memoryPlan.moduleList).not.toBe(other.compiler.result.memoryPlan.moduleList);
 		state.compiler.result.projectMemoryExposuresByGroupPath.root = [];
-		state.codeBlockRendering.currentProject.blocks.push(createMockCodeBlock());
+		state.project.activeLevel.blocks.push(createMockCodeBlock());
 		expect(other.compiler.result.memoryPlan.moduleList).toEqual([]);
 		expect(other.compiler.result.projectMemoryExposuresByGroupPath).toEqual({});
-		expect(other.codeBlockRendering.currentProject.blocks).toEqual([]);
+		expect(other.project.activeLevel.blocks).toEqual([]);
 	});
 
-	it('uses a root-only block override as the active slice without copying it', () => {
+	it('uses a root-only block override as the active level', () => {
 		const blocks = [createMockCodeBlock()];
-		const state = createMockState({ codeBlockRendering: { rootProject: { entries: [], path: '', blocks: blocks } } });
-		expect(state.codeBlockRendering.rootProject.blocks).toBe(blocks);
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		const state = createMockState({ project: { rootLevel: { entries: [], path: '', blocks: blocks } } });
+		expect(state.project.rootLevel.blocks).toBe(blocks);
+		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 	});
 
 	it('owns an active-only block override in the root tree', () => {
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: blocks } },
+			project: { activeLevel: { blocks } },
 		});
-		expect(state.codeBlockRendering.rootProject.blocks).toBe(blocks);
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		expect(state.project.rootLevel.blocks).toBe(blocks);
+		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 	});
 
-	it('preserves an explicitly selected nested slice and its project ownership', () => {
-		const nested = [createMockCodeBlock({ projectPath: 'group' })];
-		const root = [createMockCodeBlock({ name: 'group', childProject: { entries: [], path: '', blocks: nested } })];
+	it('preserves explicitly selected levels by object identity', () => {
+		const nested = { entries: [], path: '', blocks: [createMockCodeBlock({ projectPath: 'group' })] };
+		const root = { entries: [], path: '', blocks: [createMockCodeBlock({ name: 'group', childLevel: nested })] };
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: root },
-				currentProject: { entries: [], path: '', blocks: nested },
+			project: {
+				rootLevel: root,
+				activeLevel: nested,
 			},
 		});
-		expect(state.codeBlockRendering.rootProject.blocks).toBe(root);
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(root[0].childProject?.blocks);
+		expect(state.project.rootLevel).toBe(root);
+		expect(state.project.activeLevel).toBe(nested);
+		expect(state.project.activeLevel).toBe(root.blocks[0].childLevel);
+	});
+
+	it('preserves selection between distinct levels even when their paths and block arrays match', () => {
+		const first: ProjectLevel = { entries: [], path: '', blocks: [] };
+		const second: ProjectLevel = { ...first };
+		const root = {
+			entries: [],
+			path: '',
+			blocks: [
+				createMockCodeBlock({ name: 'group', childLevel: first }),
+				createMockCodeBlock({ name: 'group', childLevel: second }),
+			],
+		};
+		const state = createMockState({ project: { rootLevel: root, activeLevel: second } });
+		expect(first.path).toBe(second.path);
+		expect(first.blocks).toBe(second.blocks);
+		expect(state.project.activeLevel).toBe(second);
 	});
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {
@@ -130,11 +147,11 @@ describe('editor-state testing utilities', () => {
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
 			callbacks: { getWordFromMemory },
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: blocks } },
+			project: { activeLevel: { entries: [], path: '', blocks: blocks } },
 			compiler: { isCompiling: true },
 		});
 		expect(state.callbacks.getWordFromMemory).toBe(getWordFromMemory);
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		expect(state.project.activeLevel.blocks).toBe(blocks);
 		expect(state.compiler.isCompiling).toBe(true);
 		expect(state.compiler.result.memoryPlan).toEqual({ modules: {}, moduleList: [] });
 	});

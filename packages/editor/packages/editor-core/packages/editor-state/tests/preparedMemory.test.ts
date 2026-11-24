@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it, vi } from 'vitest';
+import { createMockState } from '~/__tests__/helpers/mockEditorState';
 import {
 	prepareAddressBinding,
 	prepareAddressedRead,
@@ -11,13 +12,12 @@ import {
 	readElementCount,
 	readElementIndex,
 	readNumericValue,
-} from '~/pureHelpers/preparedMemory';
+} from '~/memory/preparedMemory';
 import {
 	getDeclarationsByByteAddress,
 	prepareMemoryAccess,
 	resolveMemoryAccess,
-} from '~/pureHelpers/resolveMemoryIdentifier';
-import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
+} from '~/memory/resolveMemoryIdentifier';
 
 const sampleTypes = [
 	{ type: 'int8', view: 'int8', size: 1, first: -12, second: 34 },

@@ -113,9 +113,9 @@ test('keeps the loading canvas while mounting waits for the project and reveals 
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(
-		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code
-	).toContain('module galleryExample ; @mode edit');
+	expect(editor.state.project.rootLevel.blocks.find(block => block.name === 'galleryExample')?.code).toContain(
+		'module galleryExample ; @mode edit'
+	);
 });
 
 test('keeps the loading status visible until the editor has mounted', async () => {
@@ -179,8 +179,8 @@ entryEnd`),
 	await expect.poll(() => editor.state.viewport.width).toBe(704);
 	// Refresh the overlay layout without transient loading times in the capture.
 	editor.state.loadingIndicators = [];
-	const rendering = editor.state.codeBlockRendering;
-	rendering.selectedCodeBlock = rendering.currentProject.blocks.find(block => block.name === 'amp');
+	const rendering = editor.state.project;
+	rendering.selectedCodeBlock = rendering.activeLevel.blocks.find(block => block.name === 'amp');
 	editor.resize(704, 272);
 	editor.renderFrame();
 	await expect(canvas).toMatchScreenshot(screenshot);
@@ -191,7 +191,7 @@ entryEnd`),
 		expect(initialSlack).toBe(0);
 		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', cancelable: true }));
 		expect(editor.state.editorMode).toBe('edit');
-		const configNote = rendering.currentProject.blocks.find(block => block.name === 'wireConfig')!;
+		const configNote = rendering.activeLevel.blocks.find(block => block.name === 'wireConfig')!;
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
 			edits: [{ type: 'delete', blockId: getEditorBlockId(configNote) }],
@@ -233,7 +233,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	canvas.style.width = '640px';
 	canvas.style.height = '400px';
 	await expect.poll(() => editor.state.viewport.width).toBe(640);
-	const sources = editor.state.codeBlockRendering.rootProject.blocks.map(block => [...block.code]);
+	const sources = editor.state.project.rootLevel.blocks.map(block => [...block.code]);
 	const revision = editor.editing.getRevision();
 	const sourceFont = editor.state.editorConfig.font;
 	const key = (key: string) => {
@@ -253,7 +253,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	editor.state.loadingIndicators = [];
 	editor.resize(640, 400);
 	await expect(canvas).toMatchScreenshot('gallery-font-credits');
-	expect(editor.state.codeBlockRendering.rootProject.blocks.map(block => block.code)).toEqual(sources);
+	expect(editor.state.project.rootLevel.blocks.map(block => block.code)).toEqual(sources);
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
 	expect(editor.state.appearance.fontOverride).toBeUndefined();
@@ -467,7 +467,7 @@ entryEnd`),
 		timeout: 10000,
 	});
 	const state = editor.state;
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
 	await vi.waitFor(
 		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
 		{ timeout: 10000 }
@@ -674,14 +674,12 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	expect(await retained.execute(args)).toMatchObject({ error: { code: 'disposed' } });
 	await tools.get('get_project_metadata')!.execute({});
 	expect(await tools.get('apply_edits')!.execute(args)).toMatchObject({ error: { code: 'source_required' } });
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'module')!.code[0]
-	).toBe('module secondExample ; @mode edit');
+	expect(editor.state.project.activeLevel.blocks.find(block => block.blockType === 'module')!.code[0]).toBe(
+		'module secondExample ; @mode edit'
+	);
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
-	).toHaveLength(0);
+	expect(editor.state.project.activeLevel.blocks.filter(block => block.blockType === 'module')).toHaveLength(0);
 	expect(tools.size).toBe(18);
 });
 
@@ -728,7 +726,7 @@ entryEnd`;
 		timeout: 10000,
 	});
 	const [left, right] = ['left', 'right'].map(
-		name => editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === name)!
+		name => editor.state.project.rootLevel.blocks.find(block => block.name === name)!
 	);
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
@@ -739,7 +737,7 @@ entryEnd`;
 		})),
 	});
 	editor.navigation.openGroup(getEditorBlockId(right));
-	const counter = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'counter')!;
+	const counter = editor.state.project.activeLevel.blocks.find(block => block.name === 'counter')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -765,7 +763,7 @@ entryEnd`;
 	expect(projectSource.match(/^group (left|right) use counter$/gm)).toHaveLength(2);
 	expect(projectSource).toContain('int value 22');
 	expect(projectSource).not.toContain('int value 1');
-	const moved = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
+	const moved = editor.state.project.rootLevel.blocks.find(block => block.name === 'left')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -801,6 +799,6 @@ test('loads an example without a generated preview and omits its image', async (
 	expect(view.gallery.querySelector('.example-preview')).toBeNull();
 	expect(view.gallery.querySelector('.example-title')?.textContent).toBe('unpreviewed');
 	expect(
-		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code.join('\n')
+		editor.state.project.rootLevel.blocks.find(block => block.name === 'galleryExample')?.code.join('\n')
 	).toContain('module galleryExample');
 });

@@ -30,7 +30,7 @@ it.each([
 ] as const)('draws the %s block surface', (_name, disabled, dragged, color) => {
 	const test = setup();
 	test.codeBlock.disabled = disabled;
-	if (dragged) test.state.codeBlockRendering.draggedCodeBlock = test.codeBlock;
+	if (dragged) test.state.project.draggedCodeBlock = test.codeBlock;
 	test.render();
 	expect(test.drawFill).toHaveBeenCalledExactlyOnceWith(0, 0, color, 96, 64);
 	test.dispose();
@@ -40,7 +40,7 @@ it.each([false, true])('draws block markers and header (selected=%s)', selected 
 	const test = setup();
 	test.state.viewport.vGrid = 6;
 	test.state.viewport.hGrid = 10;
-	if (selected) test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+	if (selected) test.state.project.selectedCodeBlock = test.codeBlock;
 	test.render();
 	const color = selected ? PALETTE_INDICES.secondaryBase : PALETTE_INDICES.inkBase;
 	expect(test.drawGlyphs.mock.calls).toEqual([
@@ -59,7 +59,7 @@ it.each([false, true])('draws block markers and header (selected=%s)', selected 
 
 it('keeps the selected header aligned with current dimensions and removes it on deselection', () => {
 	const test = setup();
-	test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+	test.state.project.selectedCodeBlock = test.codeBlock;
 	test.render();
 	test.codeBlock.width = 128;
 	test.codeBlock.height = 80;
@@ -74,7 +74,7 @@ it('keeps the selected header aligned with current dimensions and removes it on 
 		[0, 0, PALETTE_INDICES.surfaceSubdued, 128, 80],
 		[0, 0, PALETTE_INDICES.secondaryAlpha30, 128, 16],
 	]);
-	test.state.codeBlockRendering.selectedCodeBlock = createMockCodeBlock();
+	test.state.project.selectedCodeBlock = createMockCodeBlock();
 	test.drawFill.mockClear();
 	test.drawGlyphs.mockClear();
 	test.render();

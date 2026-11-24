@@ -1,12 +1,12 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData, ContextMenuItem } from '@8f4e/editor-state-types';
+import type { ContextMenuItem, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import { type Group, getGroup, getGroupBlocks } from './groups';
 
 export function registerGroupMenus({ store, menus }: EditorPluginContext): () => void {
 	const state = store.getState();
-	const registerEditingItem = (create: (block: CodeBlockGraphicData, group: Group) => ContextMenuItem | undefined) =>
-		menus.registerItem('moduleMenu', ({ codeBlock }) => {
+	const registerEditingItem = (create: (block: EditorCodeBlock, group: Group) => ContextMenuItem | undefined) =>
+		menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
 			const group = getGroup(codeBlock.parsedDirectives);
 			return group && state.editorMode === 'edit' && !codeBlock.readOnly ? create(codeBlock, group) : undefined;
 		});
@@ -54,7 +54,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 		payload: { codeBlock },
 		close: true,
 	}));
-	const unregisterCopy = menus.registerItem('moduleMenu', ({ codeBlock }) => {
+	const unregisterCopy = menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
 		if (!getGroup(codeBlock.parsedDirectives)) return;
 		return {
 			title: 'Copy group',

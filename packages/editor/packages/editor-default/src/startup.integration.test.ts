@@ -72,22 +72,18 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
 		expect(store.getState().gridSizeReady).toBe(false);
 		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
-		expect(
-			store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'remote')?.gaps.size
-		).toBe(0);
+		expect(store.getState().project.activeLevel.blocks.find(block => block.name === 'remote')?.gaps.size).toBe(0);
 		setGridSize(store.getState(), events, { vGrid: 8, hGrid: 16 });
 		events.dispatch('ready');
 		await vi.waitFor(() =>
 			expect(
 				store
 					.getState()
-					.codeBlockRendering.currentProject.blocks.find(block => block.name === 'remote')
+					.project.activeLevel.blocks.find(block => block.name === 'remote')
 					?.gaps.get(2)?.size
 			).toBe(8)
 		);
-		expect(store.getState().codeBlockRendering.currentProject.blocks.some(block => block.name === 'oldSession')).toBe(
-			false
-		);
+		expect(store.getState().project.activeLevel.blocks.some(block => block.name === 'oldSession')).toBe(false);
 	} finally {
 		while (disposers.length) disposers.pop()!();
 		store.dispose();

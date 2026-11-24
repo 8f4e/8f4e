@@ -1,15 +1,10 @@
-export {
-	getMemoryValueSpec,
-	getPointeeValueSpec,
-	type TypedValueSpec,
-} from './features/code-blocks/features/directives/shared/typedValueSpec';
-export { default as getCodeBlockMemoryScope } from './pureHelpers/getCodeBlockMemoryScope';
+export { default as getCodeBlockMemoryScope } from './memory/getCodeBlockMemoryScope';
 export {
 	getMemoryDefaultEdits,
 	type MemoryDefaultEdit,
 	type MemoryDefaultValue,
-} from './pureHelpers/getMemoryDefaultEdits';
-export { default as getMemoryTargetAtSourceLine } from './pureHelpers/getMemoryTargetAtSourceLine';
+} from './memory/getMemoryDefaultEdits';
+export { default as getMemoryTargetAtSourceLine } from './memory/getMemoryTargetAtSourceLine';
 export {
 	isAddressAccess,
 	type NumericMemoryViews,
@@ -27,8 +22,8 @@ export {
 	readElementCount,
 	readElementIndex,
 	readNumericValue,
-} from './pureHelpers/preparedMemory';
-export { getProjectGroupMemoryExposures } from './pureHelpers/projectGroupMemoryExposures';
+} from './memory/preparedMemory';
+export { getProjectGroupMemoryExposures } from './memory/projectGroupMemoryExposures';
 export {
 	default as resolveMemoryIdentifier,
 	getDeclarationsByByteAddress,
@@ -38,6 +33,11 @@ export {
 	type ResolvedMemoryAccess,
 	resolveMemoryAccess,
 	resolveMemoryAddress,
-} from './pureHelpers/resolveMemoryIdentifier';
-export type { MemoryScope, ResolvedMemoryTarget } from './pureHelpers/resolveMemoryTarget';
-export { default as resolveMemoryTarget } from './pureHelpers/resolveMemoryTarget';
+} from './memory/resolveMemoryIdentifier';
+export type { MemoryScope, ResolvedMemoryTarget } from './memory/resolveMemoryTarget';
+export { default as resolveMemoryTarget } from './memory/resolveMemoryTarget';
+export {
+	getMemoryValueSpec,
+	getPointeeValueSpec,
+	type TypedValueSpec,
+} from './memory/typedValueSpec';

@@ -1,7 +1,7 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createSwitchDirectiveData } from './data';
 
 export interface SwitchWidget {
@@ -18,7 +18,7 @@ export interface SwitchWidget {
 export function registerSwitchPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	widgets: WeakMap<CodeBlockGraphicData, SwitchWidget[]>
+	widgets: WeakMap<EditorCodeBlock, SwitchWidget[]>
 ): () => void {
 	const unsubscribe = subscribeToBlockPreparation(
 		store,
@@ -38,7 +38,7 @@ export function registerSwitchPreparation(
 					width: state.viewport.vGrid * 4,
 					height: state.viewport.hGrid,
 					x: graphicData.width - 4 * state.viewport.vGrid,
-					y: gapCalculator(row, graphicData.gaps) * state.viewport.hGrid,
+					y: displayRowToGridRow(row, graphicData.gaps) * state.viewport.hGrid,
 					allocationUnitAddress: memory.allocationUnitAddress,
 					isInteger: memory.isInteger ?? true,
 					offValue: data.offValue,

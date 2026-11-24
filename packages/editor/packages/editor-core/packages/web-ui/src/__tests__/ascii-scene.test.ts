@@ -70,7 +70,7 @@ it('snapshots a full viewport with overlap and clipping through the web-ui frame
 	});
 	const blocks = [back, front];
 	const glyphsByBlock = new Map(blocks.map(block => [block.creationIndex, block.code.map(textToGlyphIds)]));
-	const state = createMockState({ viewport, codeBlockRendering: { currentProject: { blocks } } });
+	const state = createMockState({ viewport, project: { activeLevel: { blocks } } });
 	const drawers = createEditorDrawerRegistry();
 	drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 0, PALETTE_INDICES.surfaceBase, codeBlock.width, codeBlock.height);
@@ -99,8 +99,8 @@ it('snapshots the resolved text of a dragged module', async () => {
 	const state = createMockState({
 		viewport: createMockViewport(0, 0, 1024, 768),
 		editorMode: 'view',
-		featureFlags: { moduleDragging: false, viewportDragging: false },
-		codeBlockRendering: { currentProject: { blocks: [block] }, draggedCodeBlock: block },
+		featureFlags: { blockSelectionAndDragging: false, viewportDragging: false },
+		project: { activeLevel: { blocks: [block] }, draggedCodeBlock: block },
 	});
 	const codeCells = code.map(line =>
 		textToGlyphIds(line).map(glyph => (glyph === 32 ? null : createSpriteCell(glyph, PALETTE_INDICES.inkBase)))

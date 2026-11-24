@@ -310,7 +310,7 @@ describe('web-ui init', () => {
 		const block = createMockCodeBlock({ x: 40, y: 96 });
 		const state = createMockState({
 			viewport: { x: 8, y: 16 },
-			codeBlockRendering: { currentProject: { blocks: [block] } },
+			project: { activeLevel: { blocks: [block] } },
 		});
 		const memoryViews = createMemoryViews();
 		const drawers = createEditorDrawerRegistry();
@@ -346,7 +346,7 @@ describe('web-ui init', () => {
 		const otherBlock = createMockCodeBlock({ x: 800, y: 96 });
 		const state = createMockState({
 			viewport: { x: 8, y: 16 },
-			codeBlockRendering: { currentProject: { blocks: [block, otherBlock] } },
+			project: { activeLevel: { blocks: [block, otherBlock] } },
 		});
 		const drawers = createEditorDrawerRegistry();
 		const drawBackground = vi.fn();
@@ -390,7 +390,7 @@ describe('web-ui init', () => {
 		const block = createMockCodeBlock({ x: 180, y: 96 });
 		const state = createMockState({
 			viewport: { x: 24, y: 32 },
-			codeBlockRendering: { currentProject: { blocks: [block] } },
+			project: { activeLevel: { blocks: [block] } },
 		});
 		const emitter = new EventEmitter();
 		const events = {
