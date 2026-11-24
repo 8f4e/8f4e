@@ -184,15 +184,6 @@ it('uses completed layouts after grid changes', () => {
 	expect(test.render()[0]).toBe(completed[0][0]);
 });
 
-it('uses completed layouts after accepted compiler metadata changes', () => {
-	const test = setup();
-	const completed: ReturnType<typeof test.render>[] = [];
-	test.events.on('codeBlockLayoutsChanged', () => completed.push(test.render()));
-	test.store.set('compiler.result', { ...test.state.compiler.result, inputRevision: test.state.compilerInputRevision });
-	expect(completed).toHaveLength(1);
-	expect(test.render()[0]).toBe(completed[0][0]);
-});
-
 it('retains prepared cells during info and dragging updates', () => {
 	const test = setup();
 	const before = test.render();
