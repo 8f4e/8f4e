@@ -40,12 +40,8 @@ export default function historyTracking(
 	}
 
 	function onProjectChange(change: ProjectChange) {
-		if (change.kind === 'edit' && change.history === 'skip') {
-			// Do not turn a skipped operation into a separate checkpoint, discard redo, or
-			// replace a pending authored before-state. Generated source is outside the snapshot.
-			if (!change.generatedOnly && !editPending) present = projectEdits.capture();
-			return;
-		}
+		// Generated source is outside the authored snapshot.
+		if (change.kind === 'generated') return;
 		if (change.kind === 'edit' && change.history === 'debounced' && state.featureFlags.historyTracking) {
 			state.redoStack = [];
 			editPending = true;

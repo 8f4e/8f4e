@@ -76,7 +76,7 @@ describe('scope plugin', () => {
 	it('keeps history and timer cadence across layout refreshes and crops to the resized width', async () => {
 		const test = await setup(source);
 		vi.advanceTimersByTime(150);
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result', { ...test.state.compiler.result });
 		vi.advanceTimersByTime(50);
 		test.render();
 		expect(test.traces()).toHaveLength(2);

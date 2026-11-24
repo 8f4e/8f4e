@@ -49,7 +49,7 @@ it.each(['disabled', 'customDisabled'])(
 			events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 			events.dispatch('enterEditMode');
 			const changed = vi.fn(() => serializeToProject(state));
-			events.on('compilationInputChanged', changed);
+			store.subscribe('compilerInputRevision', changed);
 			const block = insertCodeBlock(store, {
 				x: 80,
 				y: 64,

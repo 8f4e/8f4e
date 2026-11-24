@@ -2,7 +2,7 @@ import { parseProjectSource } from '@8f4e/compiler';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { removeMemoryConnectionsPlugin } from './index';
 
@@ -111,15 +111,6 @@ describe('remove memory connections plugin', () => {
 		expect(test.block.code).toEqual(code);
 		expect(test.state.compilerInputRevision).toBe(revision);
 		expect(test.state.projectChange.revision).toBe(projectRevision);
-	});
-
-	it('announces changed inputs with the disconnected source', () => {
-		const test = setup();
-		const changed = vi.fn(() => [...test.block.code]);
-		test.events.on('compilationInputChanged', changed);
-		test.events.dispatch('removeConnections', { codeBlock: test.block });
-		expect(changed).toHaveBeenCalledOnce();
-		expect(changed.mock.results[0].value).toEqual(test.block.code);
 	});
 
 	it('hides the action and does not edit in view mode', async () => {

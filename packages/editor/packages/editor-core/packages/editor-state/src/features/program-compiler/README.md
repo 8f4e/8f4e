@@ -22,8 +22,8 @@ configuration), line insertions/deletions (including comments and blank lines), 
 invalidate compilation. The only exemption is an in-place change to the text of existing ordinary comment-only lines,
 with their positions unchanged. Directive continuation lines are directive source. Identical replacements are no-ops.
 
-Core's input-change publisher observes the revision and emits `compilationInputChanged`. A compiler plugin can listen
-without understanding individual editing actions. The standard compiler plugin debounces those events, serializes the
+By subscribing to the revision, a compiler plugin can respond without understanding individual editing actions.
+The standard compiler plugin debounces revision changes, serializes the
 latest code-block tree, and ignores obsolete responses. Its `recompileDebounceDelay` setting is available only when the
 plugin is installed.
 

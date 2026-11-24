@@ -16,7 +16,7 @@
   destination and depends on generic grid dimensions.
 - Keep raw loading records, contributor-owned errors and assertion results in state. Producers own outcomes and
   presentation plugins own derived geometry and visibility. Replacing a loading ID invalidates older handles.
-- Emit `compilationInputChanged` on compiler-input revisions and consume accepted program artifacts to update
+- Publish `compilerInputRevision` after input changes and consume accepted program artifacts to update
   memory views. Keep accepted metadata in `state.compiler.result` independently of progress. Scheduling, worker
   lifetime and writable memory handles belong to the compiler plugin.
 

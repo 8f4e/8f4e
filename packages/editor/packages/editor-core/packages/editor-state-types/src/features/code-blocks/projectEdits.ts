@@ -30,8 +30,8 @@ export interface ProjectEditResult {
 }
 
 export interface ProjectEditOptions {
-	/** Skipped edits create no independent history step, preserve pending edits, and do not clear redo. */
-	history?: 'debounced' | 'checkpoint' | 'skip';
+	/** Group edits into a typing burst by default, or record one immediate undo step. */
+	history?: 'debounced' | 'checkpoint';
 }
 
 /** Synchronous project mutation and settlement. Callers own edit-mode policy; the compiler validates the source. */

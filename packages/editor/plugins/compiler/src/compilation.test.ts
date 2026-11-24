@@ -57,25 +57,23 @@ describe('compilation scheduling and publication', () => {
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
 
-	it('listens for compilation input changes without subscribing to editing state', () => {
+	it('subscribes only to the compiler input revision', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
-		const on = vi.spyOn(events, 'on');
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		expect(subscribeSpy).not.toHaveBeenCalled();
-		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
+		expect(subscribeSpy).toHaveBeenCalledExactlyOnceWith('compilerInputRevision', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(300);
 		const block = mockState.codeBlockRendering.rootProject.blocks[0];
 		block.code = ['function helper', 'push 2', 'functionEnd'];
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1);
@@ -335,9 +333,9 @@ describe('compilation scheduling and publication', () => {
 
 	it('cancels a scheduled compilation when disposed', async () => {
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		dispose();
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(mockCompileCode).not.toHaveBeenCalled();
@@ -361,7 +359,7 @@ describe('compilation scheduling and publication', () => {
 				})
 		);
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
 		dispose();
@@ -413,7 +411,7 @@ describe('compilation scheduling and publication', () => {
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 
@@ -423,7 +421,7 @@ describe('compilation scheduling and publication', () => {
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 

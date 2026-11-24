@@ -148,7 +148,7 @@ describe('codeBlockDragger', () => {
 		expect(environment.code).toContain('; @pos 0 0');
 	});
 
-	it('commits only surviving targets when a secondary block is deleted during a drag', () => {
+	it('cancels the entire drag when a secondary block is deleted', () => {
 		const test = setup(projectSource(firstSource, secondSource));
 		const first = test.block('first');
 		const second = test.block('second');
@@ -158,15 +158,34 @@ describe('codeBlockDragger', () => {
 		test.move(10, 20);
 		expect(second).toMatchObject({ x: 210, y: 220 });
 		test.store.projectEdits.apply({ deletes: [second] });
-		// The detached target's preview is discarded immediately; collection settlement recomputes layout.
+		expect(first).toMatchObject({ x: 50, y: 100 });
 		expect(second).toMatchObject({ x: 200, y: 200 });
-		test.move(10, 20);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.move(10, 20).stopPropagation).toBe(false);
 		expect(second).toMatchObject({ x: 200, y: 200 });
 		test.release();
 		expect(test.visibleNames()).toEqual(['env', 'first']);
-		expect(first.code).toContain('; @pos 6 6');
+		expect(first.code).toContain('; @pos 5 5');
 		expect(second.code).toContain('; @pos 20 10');
-		expect(test.revision()).toEqual(before.map(value => value + 2));
+		expect(test.revision()).toEqual(before.map(value => value + 1));
+	});
+
+	it('cancels the drag when a block is inserted in the visible level', () => {
+		const test = setup();
+		const first = test.block('first');
+		const before = test.revision();
+		test.press(first);
+		test.move(10, 20);
+		expect(first).toMatchObject({ x: 60, y: 120 });
+		test.store.projectEdits.apply({
+			inserts: [{ project: test.state.codeBlockRendering.currentProject, source: { code: secondSource.split('\n') } }],
+		});
+		expect(first).toMatchObject({ x: 50, y: 100 });
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
+		expect(first.code).toContain('; @pos 5 5');
+		expect(test.revision()).toEqual(before.map(value => value + 1));
 	});
 
 	it('cancels the entire drag when its primary block is deleted', () => {

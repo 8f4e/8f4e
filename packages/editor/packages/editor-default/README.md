@@ -220,7 +220,7 @@ npx nx run @8f4e/editor-default:typecheck
 
 The compiler plugin receives the stdlib include resolver when it is created; editor state does not forward compiler or include-loading callbacks. Button, switch, slider, piano, crossfade, and keyboard-memory factories receive the compiler plugin's live `writeMemory` function directly. Audio, worker, test, and texture runtime plugins load through the ordinary lazy registry and own independent execution lifecycles.
 
-The public editor API has no callbacks bag. Core announces input changes through `compilationInputChanged`.
+The public editor API has no callbacks bag. Core publishes input changes through `state.compilerInputRevision`.
 The compiler plugin owns debouncing, worker communication, stale-result rejection, diagnostics, and statistics.
 It contributes the `recompileDebounceDelay` directive schema through the shared config mechanism.
 The `compilationSucceeded` event carries only `{ memoryRef }`. Core uses it to update its memory views before

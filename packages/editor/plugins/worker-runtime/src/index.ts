@@ -50,7 +50,7 @@ export function createWorkerRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'worker-runtime',
-		setup: ({ store, events, loading }) => {
+		setup: ({ store, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
 			let initializationId = 0;
@@ -67,7 +67,6 @@ export function createWorkerRuntimePlugin({
 					case 'initialized':
 						if (data.requestId !== initializationId) return;
 						finishStartup('done');
-						events.dispatch('memoryValuesChanged');
 						break;
 					case 'stats':
 						store.set('info.workerRuntime', { ...data.payload });

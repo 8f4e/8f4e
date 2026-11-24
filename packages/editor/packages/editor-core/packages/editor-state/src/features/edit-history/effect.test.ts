@@ -167,64 +167,30 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()[1]).toBe('push 13');
 	});
 
-	it('skips a source edit without clearing redo or suppressing source and layout settlement', async () => {
-		replaceLine(1, 'push 12');
-		await vi.advanceTimersByTimeAsync(1000);
-		dispatch('undo');
-		const restored = currentModule();
-		const previousRevision = state.projectChange.revision;
-		const compilerRevision = state.compilerInputRevision;
-		const redo = state.redoStack[0];
-		const projectChanged = vi.fn();
-		store.subscribe('projectChange', projectChanged);
-
-		expect(
-			applyCodeBlockSourceEdits(
-				store,
-				[
-					{
-						codeBlock: restored,
-						code: ['module main', '; @pos 4 5', 'push 2', 'drop', 'moduleEnd'],
-					},
-				],
-				{ history: 'skip' }
-			)
-		).toBe(true);
-		expect(restored).toMatchObject({ gridX: 4, gridY: 5, x: 4 * TEST_GRID_SIZE.vGrid, y: 5 * TEST_GRID_SIZE.hGrid });
-		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
-		expect(state.projectChange).toEqual({ revision: previousRevision + 1, kind: 'edit', history: 'skip' });
-		expect(projectChanged).toHaveBeenCalledOnce();
-		await vi.advanceTimersByTimeAsync(2000);
-		expect(state.historyStack).toHaveLength(0);
-		expect(state.redoStack).toEqual([redo]);
-		dispatch('redo');
-		expect(selectedBlockCode()[1]).toBe('push 12');
-	});
-
-	it('only captures idle skipped authored changes, retaining the baseline across generated changes', async () => {
+	it('preserves authored history and redo across idle generated changes', async () => {
 		const capture = vi.spyOn(store.projectEdits, 'capture');
 		store.set('envConstantContributions.test', ['const GENERATED 42']);
 		expect(state.projectChange).toEqual({
 			revision: baselineRevision + 1,
-			kind: 'edit',
-			history: 'skip',
-			generatedOnly: true,
+			kind: 'generated',
 		});
 		expect(environment().code).toContain('const GENERATED 42');
 		expect(capture).not.toHaveBeenCalled();
-
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 2', 'drop', 'moduleEnd'] }], {
-			history: 'skip',
-		});
-		expect(capture).toHaveBeenCalledOnce();
-		store.set('envConstantContributions.test', ['const GENERATED 43']);
-		expect(capture).toHaveBeenCalledOnce();
 
 		replaceLine(1, 'push 3');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 		dispatch('undo');
-		expect(selectedBlockCode()[1]).toBe('push 2');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+		expect(state.redoStack).toHaveLength(1);
+		capture.mockClear();
+
+		store.set('envConstantContributions.test', ['const GENERATED 43']);
+		expect(capture).not.toHaveBeenCalled();
+		expect(state.historyStack).toHaveLength(0);
+		expect(state.redoStack).toHaveLength(1);
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 3');
 		expect(environment().code).toContain('const GENERATED 43');
 	});
 
@@ -240,30 +206,17 @@ describe('history tracking with real project mutations', () => {
 			store.set('envConstantContributions.test', [`const GENERATED ${value}`]);
 		});
 		store.set('editorConfigSchemaContributions.test', { root: 'test', schema: { type: 'integer' } });
-		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'edit', history: 'skip', generatedOnly: true });
+		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'generated' });
 		expect(environment().code).toContain('const GENERATED 42');
 		expect(capture).not.toHaveBeenCalled();
 		expect(state.historyStack).toHaveLength(1);
-	});
-
-	it('does not postpone or discard a pending authored edit when ordinary source is skipped', async () => {
-		replaceLine(1, 'push 12');
-		await vi.advanceTimersByTimeAsync(600);
-		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 123', 'drop', 'moduleEnd'] }], {
-			history: 'skip',
-		});
-		expect(state.historyStack).toHaveLength(0);
-		await vi.advanceTimersByTimeAsync(400);
-		expect(state.historyStack).toHaveLength(1);
-		dispatch('undo');
-		expect(selectedBlockCode()[1]).toBe('push 1');
 	});
 
 	it('keeps a pending typing step open across contribution refresh and a read-only checkpoint request', async () => {
 		replaceLine(1, 'push 12');
 		await vi.advanceTimersByTimeAsync(600);
 		store.set('envConstantContributions.test', ['const GENERATED 42']);
-		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip', generatedOnly: true });
+		expect(state.projectChange).toMatchObject({ kind: 'generated' });
 		const beforeProjectEdit = vi.fn();
 		events.on('beforeProjectEdit', beforeProjectEdit);
 		const generatedChange = state.projectChange;
@@ -326,8 +279,8 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it.each([
-		['debounced', 'compilationInputChanged'],
-		['checkpoint', 'compilationInputChanged'],
+		['debounced', 'compilerInputRevision'],
+		['checkpoint', 'compilerInputRevision'],
 		['debounced', 'projectChange'],
 		['checkpoint', 'projectChange'],
 	] as const)(
@@ -335,12 +288,10 @@ describe('history tracking with real project mutations', () => {
 		(history, notification) => {
 			const capture = vi.spyOn(store.projectEdits, 'capture');
 			const contribute = () => {
-				if (notification === 'compilationInputChanged') events.off(notification, contribute);
-				else store.unsubscribe(notification, contribute);
+				store.unsubscribe(notification, contribute);
 				store.set('envConstantContributions.test', ['const GENERATED 42']);
 			};
-			if (notification === 'compilationInputChanged') events.on(notification, contribute);
-			else store.subscribe(notification, contribute);
+			store.subscribe(notification, contribute);
 			const changes: ProjectChange[] = [];
 			store.subscribe('projectChange', change => changes.push(change));
 
@@ -350,7 +301,7 @@ describe('history tracking with real project mutations', () => {
 
 			expect(changes).toEqual([
 				{ revision: baselineRevision + 1, kind: 'edit', history },
-				{ revision: baselineRevision + 2, kind: 'edit', history: 'skip', generatedOnly: true },
+				{ revision: baselineRevision + 2, kind: 'generated' },
 			]);
 			expect(capture).toHaveBeenCalledTimes(history === 'checkpoint' ? 1 : 0);
 			dispatch('undo');

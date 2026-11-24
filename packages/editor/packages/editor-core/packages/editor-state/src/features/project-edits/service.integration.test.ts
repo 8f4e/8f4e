@@ -24,7 +24,7 @@ function setup(source: string, { grid = false } = {}) {
 	const projectChanged = vi.fn(() => serializeToProject(state));
 	const compilerChanged = vi.fn(() => serializeToProject(state));
 	store.subscribe('projectChange', projectChanged);
-	events.on('compilationInputChanged', compilerChanged);
+	store.subscribe('compilerInputRevision', compilerChanged);
 	return { store, state, events, load, block, projectChanged, compilerChanged };
 }
 

@@ -44,12 +44,10 @@ the config ownership checked after extraction, for future architectural discussi
   instantiates compiled code, knows its host/assertion imports, and resolves compiler memory symbols. Generic texture
   drawing and execution of the compiled overlay are distinct responsibilities to reconsider.
 
-- **Compilation-specific change notifications.** Editing, block creation/deletion, and generated constants call
-  [incrementCompilerInputRevision](../../packages/editor/packages/editor-core/packages/editor-state/src/features/program-compiler/incrementCompilerInputRevision.ts).
-  [Core's publisher](../../packages/editor/packages/editor-core/packages/editor-state/src/features/program-compiler/inputChanges.ts)
-  observes `compilerInputRevision` and emits `compilationInputChanged`, which the compiler plugin listens to. Piano,
-  slider, skip-execution, and memory-disconnection plugins also call the revision helper after changing source inputs.
-  This is input-protocol coupling beyond compiled results; an editor-owned source-change contract could replace it.
+- **Compilation-specific input revisions.** The [project editing service](../../packages/editor/packages/editor-core/packages/editor-state/src/features/project-edits/service.ts)
+  settles editing, block creation/deletion, and generated constants before advancing `compilerInputRevision`.
+  The compiler plugin subscribes directly to the revision, which is separate from the general project-change
+  revision so edits that do not affect compilation inputs need not schedule work.
 
 - **Artifact event and publication order.** [Editor core](../../packages/editor/packages/editor-core/src/index.ts)
   consumes `compilationSucceeded` with `ProgramArtifacts` containing memory and bytecode. The compiler plugin must

@@ -26,7 +26,7 @@ function setup() {
 	const beforeEdit = vi.fn();
 	const compilationChanged = vi.fn();
 	events.on('beforeProjectEdit', beforeEdit);
-	events.on('compilationInputChanged', compilationChanged);
+	store.subscribe('compilerInputRevision', compilationChanged);
 	return { store, state, editing, group, member, beforeEdit, compilationChanged };
 }
 

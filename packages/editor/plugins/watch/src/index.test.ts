@@ -281,7 +281,6 @@ describe('watch plugin', () => {
 			expect.any(Number)
 		);
 		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});
-		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawNumericText).not.toHaveBeenCalled();
 	});

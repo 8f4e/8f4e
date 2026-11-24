@@ -48,7 +48,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
 		await Promise.resolve();
 	};
-	return { state, events, block, disposePlugin, openMenu };
+	return { state, store, events, block, disposePlugin, openMenu };
 }
 
 afterEach(() => {
@@ -81,7 +81,7 @@ describe('favorites plugin', () => {
 	it('publishes one project and compilation-input change when favoriting a block', () => {
 		const test = setup();
 		const onInputChanged = vi.fn();
-		test.events.on('compilationInputChanged', onInputChanged);
+		test.store.subscribe('compilerInputRevision', onInputChanged);
 		const revision = test.state.compilerInputRevision;
 		const projectRevision = test.state.projectChange.revision;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
@@ -94,7 +94,7 @@ describe('favorites plugin', () => {
 		const test = setup(['module target', 'int value 1 ; @favorite', 'moduleEnd']);
 		const revision = test.state.compilerInputRevision;
 		const onInputChanged = vi.fn();
-		test.events.on('compilationInputChanged', onInputChanged);
+		test.store.subscribe('compilerInputRevision', onInputChanged);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		expect(test.block.code).toEqual(['module target', 'int value 1', 'moduleEnd']);
 		expect(test.state.compilerInputRevision).toBe(revision + 1);

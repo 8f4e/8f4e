@@ -388,11 +388,9 @@ describe('slider plugin', () => {
 				},
 			],
 		});
-		test.store.set('compiler.isCompiling', false);
 		test.press(1);
 		expect(test.write).toHaveBeenLastCalledWith(target.allocationUnitAddress, 127, true);
 		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});
-		test.store.set('compiler.isCompiling', false);
 		test.write.mockClear();
 		test.render();
 		test.press();

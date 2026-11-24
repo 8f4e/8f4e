@@ -24,7 +24,7 @@ export default function codeBlockDragger(
 	events: EventDispatcher
 ): () => void {
 	const state = store.getState();
-	// Resolve targets on pointerdown and keep them current when the visible collection changes.
+	// Resolve targets on pointerdown and cancel the gesture if the visible collection changes.
 	// Pointer moves only visit the prepared targets, not the entire project.
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
@@ -45,22 +45,6 @@ export default function codeBlockDragger(
 
 	function canDrag() {
 		return state.gridSizeReady && state.viewport.vGrid > 0 && state.viewport.hGrid > 0;
-	}
-
-	function refreshDragTargets() {
-		if (dragSet.length === 0) return;
-		const { currentProject, draggedCodeBlock } = state.codeBlockRendering;
-		const members = new Set(currentProject.blocks);
-		if (!draggedCodeBlock || !members.has(draggedCodeBlock)) {
-			finishDrag();
-			return;
-		}
-		dragSet = dragSet.filter(block => {
-			if (members.has(block)) return true;
-			if (didDrag) discardPreview(block);
-			return false;
-		});
-		if (dragSet.length === 0) finishDrag();
 	}
 
 	function canContinueDrag() {
@@ -85,9 +69,9 @@ export default function codeBlockDragger(
 				targets: [clickedBlock],
 			};
 			events.dispatch('resolveCodeBlockDragTargets', dragTargets);
-			dragSet = dragTargets.targets.filter(block => !block.readOnly);
+			const members = new Set(state.codeBlockRendering.currentProject.blocks);
+			dragSet = dragTargets.targets.filter(block => !block.readOnly && members.has(block));
 			if (dragSet.length === 0) finishDrag();
-			else refreshDragTargets();
 		}
 
 		// Bring dragged module forward within its z-order partition.
@@ -153,7 +137,7 @@ export default function codeBlockDragger(
 	events.on('pointermove', onPointerMove);
 	events.on('pointerup', onPointerUp);
 	events.on('gridSizeChanged', finishDrag);
-	store.subscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
+	store.subscribe('codeBlockRendering.currentProject.blocks', finishDrag);
 
 	return () => {
 		finishDrag();
@@ -161,6 +145,6 @@ export default function codeBlockDragger(
 		events.off('pointermove', onPointerMove);
 		events.off('pointerup', onPointerUp);
 		events.off('gridSizeChanged', finishDrag);
-		store.unsubscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
+		store.unsubscribe('codeBlockRendering.currentProject.blocks', finishDrag);
 	};
 }

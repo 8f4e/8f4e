@@ -46,7 +46,7 @@ describe('insertCodeBlocks', () => {
 		]);
 		for (const block of blocks) expect(block.code).toContain('push &same:value');
 	});
-	it('preserves nested entry tables and source names without renaming project groups', () => {
+	it('preserves nested source data and updates descendant ownership when adding and removing a group', () => {
 		const { store } = setup('group layer\ngroupEnd');
 		const [owner] = insertCodeBlocks(store, {
 			x: 0,
@@ -84,6 +84,22 @@ describe('insertCodeBlocks', () => {
 			entries: ['silent'],
 			blocks: [],
 		});
+		const nested = owner.childProject!.blocks[1].childProject!;
+		const descendant = owner.childProject!.blocks[0];
+		const { changed, insertedBlocks } = store.projectEdits.apply({
+			updates: [{ codeBlock: descendant, code: ['module changed', 'moduleEnd'] }],
+			inserts: [{ project: nested, source: { code: ['note added', 'noteEnd'] } }],
+		});
+		expect(changed).toBe(true);
+		expect(descendant.name).toBe('changed');
+		expect(nested.blocks).toEqual(insertedBlocks);
+		store.projectEdits.apply({ deletes: [owner] });
+		expect(() =>
+			store.projectEdits.apply({ inserts: [{ project: nested, source: { code: ['note detached', 'noteEnd'] } }] })
+		).toThrow(expect.objectContaining({ code: 'detached_project' }));
+		expect(() =>
+			store.projectEdits.apply({ updates: [{ codeBlock: insertedBlocks[0], code: ['note detached', 'noteEnd'] }] })
+		).toThrow(expect.objectContaining({ code: 'detached_block' }));
 	});
 	it('does not convert pixel coordinates before a grid is installed', () => {
 		const { store, state } = setup('module same\nmoduleEnd', false);

@@ -22,7 +22,7 @@ function setup() {
 	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging: false } });
 	const state = store.getState();
 	const onInputChanged = vi.fn();
-	events.on('compilationInputChanged', onInputChanged);
+	store.subscribe('compilerInputRevision', onInputChanged);
 	cleanups.push(store.dispose);
 	setGridSize(state, events, { vGrid: 8, hGrid: 16 });
 	events.dispatch('resize', { canvasWidth: 800, canvasHeight: 600 });

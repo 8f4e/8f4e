@@ -101,7 +101,7 @@ describe('keyboard editing', () => {
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		const onInputChanged = vi.fn();
-		test.events.on('compilationInputChanged', onInputChanged);
+		test.store.subscribe('compilerInputRevision', onInputChanged);
 		test.key('x');
 		test.paste(' more');
 		expect(test.block.code[1]).toBe('; explanationx more');

@@ -108,12 +108,10 @@ it('handles initialized and stats messages through its fixed info namespace', ()
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
 		{ id: 'worker-runtime', message: 'Starting worker runtime...', status: 'loading' },
 	]);
-	test.events.dispatch.mockClear();
 	test.workers[0].onMessage({
 		data: { type: 'initialized', requestId: test.workers[0].postMessage.mock.calls.at(-1)![0].requestId, payload: {} },
 	});
 	test.workers[0].onMessage({ data: { type: 'stats', payload: stats } });
-	expect(test.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 	expect(test.state.info.workerRuntime).toEqual(stats);
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });

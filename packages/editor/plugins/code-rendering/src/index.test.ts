@@ -175,11 +175,11 @@ it('draws contributed rows before notifying other layout listeners', () => {
 	expect(test.render()[0]).toBe(completed[0][0]);
 });
 
-it.each(['memoryValuesChanged', 'gridSizeChanged'])('uses completed layouts after %s', event => {
+it('uses completed layouts after grid changes', () => {
 	const test = setup();
 	const completed: ReturnType<typeof test.render>[] = [];
 	test.events.on('codeBlockLayoutsChanged', () => completed.push(test.render()));
-	test.events.dispatch(event);
+	test.events.dispatch('gridSizeChanged');
 	expect(completed).toHaveLength(1);
 	expect(test.render()[0]).toBe(completed[0][0]);
 });

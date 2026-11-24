@@ -37,7 +37,7 @@ import {
 import { captureProjectSnapshot, snapshotFromProjectModel } from './snapshot';
 
 type RestoreKind = 'replace' | 'restore';
-const generatedChange = { kind: 'edit', history: 'skip', generatedOnly: true } as const satisfies ProjectChangeDetails;
+const generatedChange = { kind: 'generated' } as const satisfies ProjectChangeDetails;
 
 /** A structural plan conflict detected before beginning a mutation. */
 export class ProjectEditPlanError extends Error {
@@ -172,7 +172,7 @@ export function createProjectEditService(
 
 	const publish = (mutation: Mutation, change: ProjectChangeDetails): boolean => {
 		const { changed, compilation } = collectChanges(mutation);
-		const force = change.kind !== 'edit';
+		const force = change.kind === 'restore' || change.kind === 'replace';
 		if (!changed && !force) return false;
 		if (compilation || force) store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		store.set('projectChange', { revision: state.projectChange.revision + 1, ...change });
@@ -341,7 +341,7 @@ export function createProjectEditService(
 					added.push(block);
 					insertedByProject.set(project, added);
 				}
-				for (const project of mutation.collections) membership.syncProject(project);
+				if (mutation.collections.size > 0) membership.reset(rendering.rootProject);
 				for (const [project, blocks] of insertedByProject) {
 					prepareProjectSources(project, blocks, directives);
 					// A hidden project's usable positions are still derived from authored grid coordinates.

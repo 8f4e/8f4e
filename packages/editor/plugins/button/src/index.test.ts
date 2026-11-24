@@ -252,17 +252,17 @@ describe('button plugin', () => {
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 	});
 
-	it('rebinds after runtime memory metadata changes and drops unresolved buttons', async () => {
+	it('rebinds after compiler memory metadata changes and drops unresolved buttons', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.controls.memory };
 		const address = memory.gate.allocationUnitAddress + 4;
 		memory.gate = { ...memory.gate, allocationUnitAddress: address };
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', { ...memory });
 		test.press();
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 		delete memory.gate;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', memory);
 		test.write.mockClear();
 		test.press();
 		test.render();

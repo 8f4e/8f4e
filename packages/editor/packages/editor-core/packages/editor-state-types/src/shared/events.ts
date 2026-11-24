@@ -11,12 +11,10 @@ export interface EditorLifecycleEvents {
 	ready: void;
 	dispose: void;
 	beforeProjectEdit: void;
-	compilationInputChanged: void;
 	compilationSucceeded: ProgramArtifacts;
 	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
-	memoryValuesChanged: void;
 	/** Resolve first-visit placement after the destination project source and layout have settled. */
 	resolveInitialProjectViewport: { project: ProjectLevel; position: Position };
 	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */

@@ -203,10 +203,10 @@ describe('toggle skip execution plugin', () => {
 	it('announces updated inputs through editor initialization', () => {
 		const events = createEvents();
 		const changed = vi.fn();
-		events.on('compilationInputChanged', changed);
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
 		});
+		store.subscribe('compilerInputRevision', changed);
 		events.dispatch('enterEditMode');
 		try {
 			const block = insertSource(store, ['module test', 'moduleEnd']);

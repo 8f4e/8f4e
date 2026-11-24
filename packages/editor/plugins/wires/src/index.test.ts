@@ -130,7 +130,7 @@ describe('wires plugin', () => {
 		render();
 		expect(gl.bufferData).toHaveBeenCalledTimes(uploads + 1);
 		runCleanup(dispose!);
-		events.dispatch('memoryValuesChanged');
+		events.dispatch('gridSizeChanged');
 		state.codeBlockRendering.selectedCodeBlock = undefined;
 		render();
 		expect(gl.drawArraysInstanced).not.toHaveBeenCalled();

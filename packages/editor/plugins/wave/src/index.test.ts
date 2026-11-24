@@ -313,20 +313,20 @@ describe('wave plugin', () => {
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.audio.memory };
 		memory.samples = {
 			...memory.samples,
 			byteAddress: memory.samples.byteAddress + 64,
 			allocationUnitAddress: memory.samples.allocationUnitAddress + 16,
 		};
 		test.memoryViews.float32[memory.samples.allocationUnitAddress] = -1;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.audio.memory', { ...memory });
 		test.render();
 		expect(
 			vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase)[0][1]
 		).toBe(31);
 		delete memory.samples;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.audio.memory', memory);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

@@ -371,7 +371,7 @@ throughout nested groups. Their fixed field order and grid/creation ordering sup
 ## Project changes
 
 API revisions, history, and session persistence share `state.projectChange`, a record containing a monotonic
-`revision` and an operation `kind` (`edit`, `replace` or `restore`). Edit changes also carry a history policy.
+`revision` and an operation `kind` (`edit`, `generated`, `replace` or `restore`). Authored edits also carry a history policy.
 The public `editor.editing.getRevision()` token combines that revision with its editor-handle identity.
 Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
@@ -383,9 +383,8 @@ one synchronous transaction. Existing blocks and project levels retain their ide
 changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
 adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.
 Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
-`debounced` (default), `checkpoint`, or `skip`. Skipped edits publish revisions without making a separate undo step,
-discarding redo, or flushing pending typing. Generated managed-environment-only changes automatically skip history;
-authored changes in the same transaction still follow the requested policy.
+`debounced` (default) or `checkpoint`. Changes confined to the generated managed environment publish a `generated`
+change without affecting history; authored changes in the same transaction still follow the requested policy.
 
 The service prepares source metadata, settles configuration and
 synchronous generated source, refreshes available layout, and publishes the final change. Only actual changes to
@@ -489,6 +488,7 @@ for three seconds. The panel scales down to fit smaller viewports.
 
 Runtime execution belongs to ordinary browser plugins. Each receives compiler getters through its factory, imports its own worker/worklet assets, contributes schemas and constants, and publishes its own info namespace. The audio plugin can borrow a host-supplied AudioContext. Runtimes can run concurrently; core owns no execution registry or selector. Shared `state.info` records remain available as data; updates do not invalidate code-block layout or text render data. Memory-writing plugins receive a `writeMemory(address, value, isInteger)` function directly from their host.
 
-Core emits `compilationInputChanged` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef`) to update generic memory views. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
+Core advances `state.compilerInputRevision` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to observe that revision, schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef`) to update generic memory views. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
 
-Plugins dispatch `memoryValuesChanged` when external execution changes memory, so core can refresh derived layout and rendering.
+Accepted metadata in `state.compiler.result` refreshes block layouts. Compiler progress and runtime memory
+updates do not invalidate layout; memory displays and controls read live memory.

@@ -1,6 +1,4 @@
-import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { EventDispatcher } from '@8f4e/editor-core';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import { executeTests } from '@8f4e/runtime-test-runner/execute-tests';
 import type { TestRunResult, TestRuntimeProgram } from '@8f4e/runtime-test-runner/types';
@@ -42,25 +40,17 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 		editorConfig: { testRuntime: { enabled: true } },
 	});
 	const store = createStateManager(state);
-	const emitter = new EventEmitter();
-	const events = {
-		on: emitter.on.bind(emitter),
-		off: emitter.off.bind(emitter),
-		dispatch: vi.fn(emitter.emit.bind(emitter)),
-	} satisfies EventDispatcher;
 	const dispose = createTestRuntimePlugin({
 		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
 		getMemory: () => program?.memory ?? null,
 		getAssertionSites: () => program?.assertionSites,
 	}).setup({
 		store,
-		events,
 		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 	} as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,
 		store,
-		events,
 		dispose,
 		setProgram: (value?: TestRuntimeProgram) => {
 			program = value;
@@ -82,7 +72,7 @@ describe('TestRuntime lifecycle', () => {
 
 	it('publishes source sites, outcomes, and failure details and clears them on restart and disposal', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const { state, store, events, dispose } = setup(createProgram());
+		const { state, store, dispose } = setup(createProgram());
 		const otherErrors = [{ codeBlockId: 99, lineNumber: 0, message: 'Another contributor' }];
 		store.set('codeErrors.other', otherErrors);
 		const assertion = {
@@ -113,11 +103,11 @@ describe('TestRuntime lifecycle', () => {
 		]);
 		const block = createMockCodeBlock({ creationIndex: 7, disabled: true });
 		state.codeBlockRendering.rootProject.blocks = [block];
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.codeErrors['test-runtime']).toEqual([]);
 		expect(state.assertionResults).toHaveLength(1);
 		block.disabled = false;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.codeErrors['test-runtime']).toHaveLength(1);
 		store.set('compiler.isCompiling', true);
 		expect(state.assertionResults).toEqual([]);
@@ -126,7 +116,7 @@ describe('TestRuntime lifecycle', () => {
 		FakeWorker.instances[1].emit(result);
 		expect(state.assertionResults).toHaveLength(1);
 		dispose();
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.assertionResults).toEqual([]);
 		expect(state.codeErrors['test-runtime']).toBeUndefined();
 		expect(state.codeErrors.other).toBe(otherErrors);
@@ -223,12 +213,11 @@ entryEnd`),
 
 	it('publishes runtime errors and stops responding after disposal', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const { store, state, events, setProgram, dispose } = setup(createProgram());
+		const { store, state, setProgram, dispose } = setup(createProgram());
 		const worker = FakeWorker.instances[0];
 		worker.emit({ status: 'error', error: 'integer divide by zero' });
 		expect(state.info.testRuntime).toMatchObject({ status: 'error' });
 		expect(state.assertionResults).toEqual([]);
-		expect(events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		dispose();
 		setProgram(createProgram());
 		store.set('compiler.isCompiling', false);
