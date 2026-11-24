@@ -5,20 +5,25 @@ import {
 	prepareMemoryAccess,
 	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockLayoutContext,
+	EditorLayoutRegistry,
+	State,
+} from '@8f4e/editor-state-types';
 import type { ScopeDirectiveReader } from '../helpers/data';
 import type { Scope } from '../types';
 import { createScopeHistory, resizeScopeHistory } from './history';
 
 const HEIGHT_IN_ROWS = 8;
 
-export function registerScopeLayout(
+export function registerScopePreparation(
 	layout: EditorLayoutRegistry,
 	scopesByBlock: WeakMap<CodeBlockGraphicData, Scope[]>,
 	readScopeDirectives: ScopeDirectiveReader
-): () => void {
+) {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
 		const items = readScopeDirectives(codeBlock.parsedDirectives).scopes;
 		if (!items.length) {
 			scopesByBlock.delete(codeBlock);
@@ -80,9 +85,16 @@ export function registerScopeLayout(
 		}
 		if (scopes.length) scopesByBlock.set(codeBlock, scopes);
 		else scopesByBlock.delete(codeBlock);
-	});
-	return () => {
-		unsubscribe();
-		contribution.dispose();
+	};
+	const unsubscribe = layout.subscribe(prepare);
+	return {
+		refresh: (state: State) => {
+			if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
+			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state });
+		},
+		dispose: () => {
+			unsubscribe();
+			contribution.dispose();
+		},
 	};
 }

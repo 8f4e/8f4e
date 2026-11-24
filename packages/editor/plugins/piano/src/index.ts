@@ -4,7 +4,7 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
 import { drawPianoKeyboards } from './drawer/draw';
 import { getPianoDefaultEdits } from './helpers/saveDefaults';
 import { registerPianoInteraction } from './state/interaction';
-import { registerPianoLayout } from './state/layout';
+import { registerPianoPreparation } from './state/layout';
 import type { PianoKeyboard } from './types';
 
 const saveAction = 'savePianoValuesToCode';
@@ -19,7 +19,7 @@ export function createPianoPlugin({
 		setup: ({ store, events, menus, layout, drawers }) => {
 			const state = store.getState();
 			const keyboardsByBlock = new WeakMap<CodeBlockGraphicData, PianoKeyboard[]>();
-			const unregisterLayout = registerPianoLayout(layout, keyboardsByBlock);
+			const unregisterPreparation = registerPianoPreparation(store, layout, keyboardsByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
 			});
@@ -49,7 +49,7 @@ export function createPianoPlugin({
 				unregisterMenuItem();
 				unregisterInteraction();
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

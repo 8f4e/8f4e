@@ -161,8 +161,11 @@ display rows and skips hidden lines. Each update replaces this contribution's co
 `contribution.remove(codeBlock)` clears one block, and `contribution.dispose()` removes the owner's requests.
 
 `layout.subscribe(listener)` reports the visible blocks when positive grid dimensions are available and reports them
-again when core calculates their layout, including source, compiler metadata, grid size, and contribution changes.
-It returns an unsubscribe function.
+again when core calculates their layout, including source, grid size, selection and contribution changes.
+It returns an unsubscribe function. Plugin preparation that depends on other data observes that data directly.
+`subscribeToBlockPreparation(store, layout, 'compiler.result', prepare)` from `@8f4e/editor-state` is an opt-in
+convenience for preparing block-local data from layout and an explicit state selector; data changes prepare the
+current view without invalidating its geometry.
 Each block retains `tabStopsByLine`, derived from its cached directive records when source changes. Caret movement,
 pointer placement, sizing and presentation reuse those tab stops. Block navigation also uses the settled display model.
 Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or
@@ -490,5 +493,6 @@ Runtime execution belongs to ordinary browser plugins. Each receives compiler ge
 
 Core advances `state.compilerInputRevision` after compilation inputs change. Install `@8f4e/editor-plugin-compiler` to observe that revision, schedule compilation and publish diagnostics, compiler metadata, and statistics. Core consumes its `compilationSucceeded` event with `ProgramArtifacts` (`memoryRef`) to update generic memory views. Public editor options no longer expose a callbacks bag; core constructs its internal browser callbacks. The compiler factory returns stable artifact getters and a memory writer for dependent feature and runtime plugins; core has no compile callback. Plugins dispose in reverse installation order, releasing runtime resources before their compiler dependency.
 
-Accepted metadata in `state.compiler.result` refreshes block layouts. Compiler progress and runtime memory
-updates do not invalidate layout; memory displays and controls read live memory.
+Compiler metadata, compilation progress and runtime memory updates do not automatically invalidate block layouts.
+Plugins observe accepted `state.compiler.result` to update their bindings and presentation, and update their layout
+contributions if space requirements change. Memory displays and controls read live memory.

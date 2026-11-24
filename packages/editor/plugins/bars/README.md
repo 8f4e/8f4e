@@ -21,8 +21,9 @@ Pointer sources accept `&samples`, a typed pointer name, or `*address` for a dou
 `; @bars *address length` follows both live pointer values and reads the final pointee's sample type.
 The shared `prepareBuffer` helper prepares the source, sample type, and literal/live count. Drawing reads the current
 typed-element index and count through shared readers; range overrides and bar geometry remain local.
+The plugin prepares bindings when accepted compiler metadata changes and responds to block layout separately.
 
-Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases compiler and layout subscriptions, layout contributions, and the drawer. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-bars:build

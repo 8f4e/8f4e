@@ -64,14 +64,8 @@ async function setup(text = source, installed = true) {
 			})
 		: undefined;
 	const state = store.getState();
-	Object.assign(state.compiler.result, {
-		memoryPlan: compiled.memoryPlan,
-		memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-		compiledModules: compiled.compiledModules,
-		compiledFunctions: compiled.compiledFunctions,
-		projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
-	});
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	const gl = createFakeWebGl();
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette({}) });
 	const render = () => {

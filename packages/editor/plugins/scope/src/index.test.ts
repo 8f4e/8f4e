@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setup } from './__tests__/setup';
 import * as sampling from './state/sampling';
@@ -73,7 +74,7 @@ describe('scope plugin', () => {
 		expect(points.at(-1)![0]).toBe(width - 1);
 	});
 
-	it('keeps history and timer cadence across layout refreshes and crops to the resized width', async () => {
+	it('keeps history and timer cadence across compiler metadata and layout refreshes', async () => {
 		const test = await setup(source);
 		vi.advanceTimersByTime(150);
 		test.store.set('compiler.result', { ...test.state.compiler.result });
@@ -88,6 +89,30 @@ describe('scope plugin', () => {
 		test.render();
 		expect(test.backgrounds()[0][3]).toBe(width / 2);
 		expect(test.traces()).toHaveLength(width / 2);
+	});
+
+	it('rebinds sampling to relocated memory without a layout change', async () => {
+		const test = await setup(source);
+		const previousAddress = test.compiled.memoryPlan.modules.audio.memory.level.allocationUnitAddress;
+		test.memoryViews.float32[previousAddress] = -1;
+		vi.advanceTimersByTime(100);
+		test.render();
+		expect(test.traces().at(-1)![1]).toBe(test.state.viewport.hGrid * 8 - 1);
+
+		const project = parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n'));
+		const relocated = await compileProject(project, { startingMemoryAllocationUnitAddress: 16 });
+		const address = relocated.memoryPlan.modules.audio.memory.level.allocationUnitAddress;
+		expect(address).not.toBe(previousAddress);
+		test.memoryViews.float32[address] = 1;
+		const onLayoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', onLayoutsChanged);
+		test.store.set('compiler.result', { ...relocated, inputRevision: test.state.compilerInputRevision });
+		vi.advanceTimersByTime(100);
+
+		test.render();
+		expect(test.traces()).toHaveLength(1);
+		expect(test.traces()[0][1]).toBe(0);
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
 	});
 
 	it('supports independently sampled scopes sharing a source line', async () => {

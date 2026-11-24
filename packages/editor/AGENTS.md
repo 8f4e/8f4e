@@ -25,7 +25,8 @@
 - Use generic drawer hooks and shared palette tokens. Prepare static glyph IDs outside the render path and retain
   them with the owning feature. Use ASCII IDs directly for live numeric text.
 - Use live compiler handles for memory access. Inject the current writer into memory controls and read current
-  values when drawing or sampling. Derive layout from accepted compiler metadata, not runtime memory changes.
+  values when drawing or sampling. Observe compiler metadata directly when preparing data that depends on it;
+  update layout contributions only when space requirements change.
 - Use generic schema, error and environment constant contributions. Use `loading.add` for operations that
   surface loading status. Producers report outcomes and cancel superseded or disposed work.
 - Batch project mutations with `store.projectEdits.apply`; use `applyCodeBlockSourceEdits` and the positioned

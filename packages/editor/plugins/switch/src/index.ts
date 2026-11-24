@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
-import { registerSwitchLayout, type SwitchWidget } from './layout';
+import { registerSwitchPreparation, type SwitchWidget } from './layout';
 
 const ON_LABEL = textToGlyphIds('[ |]');
 const OFF_LABEL = textToGlyphIds('[| ]');
@@ -19,7 +19,7 @@ export function createSwitchPlugin({
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
 			const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
-			const unregisterLayout = registerSwitchLayout(layout, widgets);
+			const unregisterPreparation = registerSwitchPreparation(store, layout, widgets);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				for (const control of widgets.get(codeBlock) ?? []) {
 					const value = memoryViews.int32[control.allocationUnitAddress] || 0;
@@ -59,7 +59,7 @@ export function createSwitchPlugin({
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

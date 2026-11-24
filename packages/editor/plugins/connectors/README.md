@@ -8,6 +8,7 @@ depend on either plugin.
 Connector sprites draw through the ordered block drawer registry. They follow declaration rows and group
 `expose` rows, including the spacing contributed by other layout plugins. Group rows use compiler-resolved
 exposures and, while compilation is pending, the current rows recorded by editor source processing.
+The plugin refreshes its bindings on accepted compiler metadata changes independently of layout updates.
 
 Sprite layout derives pointer inputs, pointer-slot address outputs, and public value outputs from the compiler
 memory plan, including exposed memory on nested project groups.

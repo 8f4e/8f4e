@@ -1,4 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
@@ -114,12 +115,13 @@ function resolvePianoLayout(
 
 import { PIANO_KEYBOARD_MIN_GRID_WIDTH } from './constants';
 
-export function registerPianoLayout(
+export function registerPianoPreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
 	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'piano' }]).flatMap(directive => {
 			const data = createPianoDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];

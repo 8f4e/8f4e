@@ -53,19 +53,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						id: 'test-artifacts',
 						setup: services => {
 							context = services;
-							Object.assign(services.store.getState().compiler.result, {
-								memoryPlan: compiled.memoryPlan,
-								memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-								compiledModules: compiled.compiledModules,
-								compiledFunctions: compiled.compiledFunctions,
-								projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
-							});
-							const publish = () =>
-								services.events.dispatch('compilationSucceeded', {
-									memoryRef: memory,
-								});
-							services.events.on('prepareInitialProject', publish);
-							return () => services.events.off('prepareInitialProject', publish);
+							return () => {};
 						},
 					},
 					createLazyPluginLoaderPlugin([
@@ -75,6 +63,13 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			});
 			editor.state.editorMode = 'edit';
 			editor.pauseRendering();
+			context.events.dispatch('compilationSucceeded', { memoryRef: memory });
+			const publishResult = () =>
+				context.store.set('compiler.result', {
+					...compiled,
+					inputRevision: context.store.getState().compilerInputRevision,
+				});
+			if (trigger !== 'source edit') publishResult();
 			if (trigger === 'group navigation') {
 				expect(load).not.toHaveBeenCalled();
 				context.events.dispatch('pointermove', { buttons: 1, movementX: 64, movementY: 96 });
@@ -90,6 +85,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			if (trigger === 'source edit') {
 				expect(load).not.toHaveBeenCalled();
 				applyCodeBlockSourceEdits(context.store, [{ codeBlock: block, code: project.execution[0].code }]);
+				publishResult();
 			}
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 			expect(load).toHaveBeenCalledOnce();

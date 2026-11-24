@@ -57,22 +57,11 @@ async function setup(text = source, plugins: readonly EditorPlugin[] = [connecto
 	canvas.style.width = '800px';
 	canvas.style.height = '400px';
 	document.body.appendChild(canvas);
-	let editorEvents: EditorPluginContext['events'];
 	let context!: EditorPluginContext;
-	const installArtifacts: EditorPlugin = {
-		id: 'test-artifacts',
+	const captureContext: EditorPlugin = {
+		id: 'capture-context',
 		setup: services => {
 			context = services;
-			const { store, events } = services;
-			editorEvents = events;
-			Object.assign(store.getState().compiler.result, {
-				memoryPlan: compiled.memoryPlan,
-				memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-				compiledModules: compiled.compiledModules,
-				compiledFunctions: compiled.compiledFunctions,
-				projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
-			});
-			events.dispatch('compilationSucceeded', { memoryRef: memory });
 			return () => {};
 		},
 	};
@@ -80,12 +69,14 @@ async function setup(text = source, plugins: readonly EditorPlugin[] = [connecto
 	const editor: Editor = await initEditor(canvas, {
 		renderer,
 		initialProject: project,
-		plugins: [...plugins, installArtifacts],
+		plugins: [...plugins, captureContext],
 	});
 	cleanups.push(() => {
 		editor.dispose();
 		canvas.remove();
 	});
+	context.events.dispatch('compilationSucceeded', { memoryRef: memory });
+	context.store.set('compiler.result', { ...compiled, inputRevision: editor.state.compilerInputRevision });
 	const render = () => {
 		editor.pauseRendering();
 		editor.state.viewport.x = 0;
@@ -97,7 +88,7 @@ async function setup(text = source, plugins: readonly EditorPlugin[] = [connecto
 		editor,
 		canvas,
 		render,
-		events: editorEvents!,
+		events: context.events,
 		context,
 		memory,
 		project,
@@ -398,9 +389,7 @@ entryEnd`);
 	const relocated = await compileProject(project, { cache: compiled.cache, startingMemoryAllocationUnitAddress: 32 });
 	words.fill(0);
 	await initDefaults(relocated.codeBuffer, memory);
-	context.store.set('compiler.result', { ...editor.state.compiler.result, ...relocated });
-	context.store.set('compiler.isCompiling', true);
-	context.store.set('compiler.isCompiling', false);
+	context.store.set('compiler.result', { ...relocated, inputRevision: editor.state.compilerInputRevision });
 	const relocatedSlot = relocated.memoryPlan.modules['storage/selector'].memory.address;
 	expect(relocatedSlot.byteAddress).not.toBe(slot.byteAddress);
 	words[relocatedSlot.allocationUnitAddress] = relocated.memoryPlan.modules.secondBuffer.memory.samples.byteAddress;

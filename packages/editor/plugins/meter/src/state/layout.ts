@@ -1,4 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	getMemoryTargetAtSourceLine,
@@ -13,62 +14,68 @@ import type { Meter } from '../types';
 const GREEN_START_FACTOR = 0.75;
 const RED_THRESHOLD = 0.9;
 
-export function registerMeterLayout(
+export function registerMeterPreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
 	metersByBlock: WeakMap<CodeBlockGraphicData, Meter[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const scope = getCodeBlockMemoryScope(graphicData);
-		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'meter' }]).flatMap(directive => {
-			const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
-			if (!data) return [];
-			const declaration =
-				data.memoryId === undefined ? getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber) : undefined;
-			if (data.memoryId === undefined && !declaration) return [];
-			const access = declaration?.target
-				? { target: declaration.target, options: {} }
-				: prepareMemoryAccess(state, scope, data.memoryId);
-			const read = access && (prepareAddressedRead(access) ?? prepareNumericRead(access));
-			return [{ data, read }];
-		});
-		contribution.update(graphicData, {
-			verticalSpaceAfterSourceLine: items.map(({ data }) => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
-		});
-		metersByBlock.set(graphicData, []);
-		items.forEach(({ data, read }) => {
-			if (!read) return;
-			const valueSpec = read.spec;
-
-			const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
-			const minValue = data.minValueOverride ?? valueSpec.minValue;
-			const maxValue = data.maxValueOverride ?? valueSpec.maxValue;
-			const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
-			const isBipolar = minValue < 0 && maxValue > 0;
-			const amplitudeLimit = isBipolar ? Math.max(Math.abs(minValue), Math.abs(maxValue)) : 0;
-			const inverseValueRange = maxValue === minValue ? 0 : 1 / (maxValue - minValue);
-			const greenEndX = Math.floor(width * RED_THRESHOLD * GREEN_START_FACTOR);
-			const yellowEndX = Math.floor(width * RED_THRESHOLD);
-			const overloadMarkerWidth = Math.min(state.viewport.vGrid, width);
-
-			metersByBlock.get(graphicData)!.push({
-				width,
-				height: state.viewport.hGrid,
-				x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-				y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
-				isBipolar,
-				amplitudeLimit,
-				inverseValueRange,
-				greenEndX,
-				yellowEndX,
-				overloadMarkerX: width - overloadMarkerWidth,
-				overloadMarkerWidth,
-				read,
-				minValue,
-				maxValue,
+	const unsubscribe = subscribeToBlockPreparation(
+		store,
+		layout,
+		'compiler.result',
+		({ codeBlock: graphicData, state }) => {
+			const scope = getCodeBlockMemoryScope(graphicData);
+			const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'meter' }]).flatMap(directive => {
+				const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
+				if (!data) return [];
+				const declaration =
+					data.memoryId === undefined ? getMemoryTargetAtSourceLine(state, graphicData, data.lineNumber) : undefined;
+				if (data.memoryId === undefined && !declaration) return [];
+				const access = declaration?.target
+					? { target: declaration.target, options: {} }
+					: prepareMemoryAccess(state, scope, data.memoryId);
+				const read = access && (prepareAddressedRead(access) ?? prepareNumericRead(access));
+				return [{ data, read }];
 			});
-		});
-	});
+			contribution.update(graphicData, {
+				verticalSpaceAfterSourceLine: items.map(({ data }) => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
+			});
+			metersByBlock.set(graphicData, []);
+			items.forEach(({ data, read }) => {
+				if (!read) return;
+				const valueSpec = read.spec;
+
+				const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
+				const minValue = data.minValueOverride ?? valueSpec.minValue;
+				const maxValue = data.maxValueOverride ?? valueSpec.maxValue;
+				const width = graphicData.width - (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid;
+				const isBipolar = minValue < 0 && maxValue > 0;
+				const amplitudeLimit = isBipolar ? Math.max(Math.abs(minValue), Math.abs(maxValue)) : 0;
+				const inverseValueRange = maxValue === minValue ? 0 : 1 / (maxValue - minValue);
+				const greenEndX = Math.floor(width * RED_THRESHOLD * GREEN_START_FACTOR);
+				const yellowEndX = Math.floor(width * RED_THRESHOLD);
+				const overloadMarkerWidth = Math.min(state.viewport.vGrid, width);
+
+				metersByBlock.get(graphicData)!.push({
+					width,
+					height: state.viewport.hGrid,
+					x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+					y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+					isBipolar,
+					amplitudeLimit,
+					inverseValueRange,
+					greenEndX,
+					yellowEndX,
+					overloadMarkerX: width - overloadMarkerWidth,
+					overloadMarkerWidth,
+					read,
+					minValue,
+					maxValue,
+				});
+			});
+		}
+	);
 	return () => {
 		unsubscribe();
 		contribution.dispose();

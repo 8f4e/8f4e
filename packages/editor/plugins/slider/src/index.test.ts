@@ -52,12 +52,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
@@ -379,6 +375,8 @@ describe('slider plugin', () => {
 			'audio'
 		);
 		const target = test.compiled.memoryPlan.modules['audio/other'].memory.level;
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
 		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {
 			audio: [
 				{
@@ -388,6 +386,7 @@ describe('slider plugin', () => {
 				},
 			],
 		});
+		expect(layoutsChanged).not.toHaveBeenCalled();
 		test.press(1);
 		expect(test.write).toHaveBeenLastCalledWith(target.allocationUnitAddress, 127, true);
 		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});

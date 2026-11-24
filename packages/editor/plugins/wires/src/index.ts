@@ -7,7 +7,7 @@ import { resolveWireColors } from './wire-colors';
 export const wiresPlugin: EditorPlugin = {
 	id: 'wires',
 	setup: ({ store, events, drawers }) => {
-		const connections = createWireConnections(store.getState(), events);
+		const connections = createWireConnections(store, events);
 		try {
 			const unregisterLayer = drawers.registerRenderLayer(({ gl, palette }) => {
 				const lines = new LineDrawer(gl);

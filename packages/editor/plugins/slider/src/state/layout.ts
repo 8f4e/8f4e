@@ -1,4 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
 import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { SliderDirectiveData } from '../helpers/data';
@@ -44,12 +45,13 @@ function resolveSliderLayout(
 	});
 }
 
-export function registerSliderLayout(
+export function registerSliderPreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
 	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'slider' }]).flatMap(directive => {
 			const data = createSliderDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];

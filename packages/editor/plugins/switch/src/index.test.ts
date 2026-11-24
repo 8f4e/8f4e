@@ -67,12 +67,8 @@ async function setup(code = source, installed = true) {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
@@ -223,8 +219,11 @@ describe('switch plugin', () => {
 	it('rebinds after compiler memory metadata changes and drops unresolved widgets', async () => {
 		const test = await setup();
 		const memory = { ...test.state.compiler.result.memoryPlan.modules.controls.memory };
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
 		test.store.set('compiler.result.memoryPlan.modules.controls.memory', { ...memory });
+		expect(layoutsChanged).not.toHaveBeenCalled();
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address + 4, 1, true);
 		delete memory.gate;

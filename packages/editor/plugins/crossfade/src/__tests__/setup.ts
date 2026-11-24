@@ -74,12 +74,8 @@ export async function setup(
 		dispose();
 		store.dispose();
 	});
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	store.set('codeBlockRendering.currentProject.blocks', [block]);

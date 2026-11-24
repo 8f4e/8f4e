@@ -144,6 +144,7 @@ export { matchEditorDirectives } from './features/code-blocks/features/directive
 export { default as getCodeBlockGridWidth } from './features/code-blocks/getCodeBlockGridWidth';
 export { insertCodeBlock } from './features/code-blocks/insertCodeBlock';
 export { insertCodeBlocks } from './features/code-blocks/insertCodeBlocks';
+export { subscribeToBlockPreparation } from './features/code-blocks/layout/subscribeToBlockPreparation';
 export { applyCodeBlockSourceEdits } from './features/code-blocks/sourceEdits';
 export { default as getBlockType } from './features/code-blocks/utils/codeParsers/getBlockType';
 export { default as findClosestCodeBlockInDirection } from './features/code-blocks/utils/finders/findClosestCodeBlockInDirection';

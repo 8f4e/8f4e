@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
+import { gapCalculator, getCodeBlockErrors, subscribeToBlockPreparation, wrapText } from '@8f4e/editor-state';
 import type { CodeBlockGraphicData, CodeBlockLayoutContext } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { installGlobalErrors } from './global-errors';
@@ -45,12 +45,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 				})
 			);
 		};
-		const refresh = () => {
-			const state = store.getState();
-			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state });
-		};
-		const unsubscribeLayout = layout.subscribe(prepare);
-		store.subscribe('codeErrors', refresh);
+		const unsubscribePreparation = subscribeToBlockPreparation(store, layout, 'codeErrors', prepare);
 		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 			for (const { lines, y } of messagesByBlock.get(codeBlock) ?? []) {
 				draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, lines.length * state.viewport.hGrid);
@@ -61,8 +56,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 		});
 		return () => {
 			disposeGlobalErrors();
-			store.unsubscribe('codeErrors', refresh);
-			unsubscribeLayout();
+			unsubscribePreparation();
 			removeDrawer();
 			contribution.dispose();
 		};

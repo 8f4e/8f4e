@@ -31,7 +31,7 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-async function setup(text = source) {
+async function setup(text = source, gridReady = true) {
 	const project = parseProjectSource(text);
 	const compiled = await compileProject(project);
 	const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
@@ -43,17 +43,11 @@ async function setup(text = source) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: { getWordFromMemory: address => memoryViews.int32[address] } });
-	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	if (gridReady) setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
-	Object.assign(state.compiler.result, {
-		memoryPlan: compiled.memoryPlan,
-		memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-		compiledModules: compiled.compiledModules,
-		compiledFunctions: compiled.compiledFunctions,
-		projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
-	});
-	const connections = createWireConnections(state, events);
+	const connections = createWireConnections(store, events);
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	const readConnections = (renderGeometry: RenderGeometry = createRenderGeometryFixture(state)) => {
 		const endpoints: Array<Parameters<WireConnectionVisitor>> = [];
 		connections.visit(renderGeometry, memoryViews.int32, (...endpoint) => endpoints.push(endpoint));
@@ -251,21 +245,29 @@ entryEnd`);
 		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: block, code: [...block.code.slice(0, 2), 'float _padding 0', ...block.code.slice(2)] },
 		]);
-		store.set('compiler.isCompiling', true);
 		const result = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject));
-		store.set('compiler.result', {
-			...state.compiler.result,
-			compiledModules: result.compiledModules,
-			memoryPlan: result.memoryPlan,
-			memoryDefaultsByModuleId: result.memoryDefaultsByModuleId,
-		});
-		store.set('compiler.isCompiling', false);
+		store.set('compiler.result', { ...result, inputRevision: state.compilerInputRevision });
 		const { source: compiledSource, sink } = result.memoryPlan.modules;
 		const outputAddress = compiledSource.memory.output.byteAddress;
 		expect(outputAddress).not.toBe(previousAddress);
 		memoryViews.int32[sink.memory.input.allocationUnitAddress] = previousAddress;
 		expect(readConnections()).toHaveLength(0);
 		memoryViews.int32[sink.memory.input.allocationUnitAddress] = outputAddress;
+		expect(readConnections()).toHaveLength(1);
+		expect(readConnections()[0][3]).toBe(block.y + Math.round(3.5 * state.viewport.hGrid) - state.viewport.y);
+	});
+
+	it('uses compiler metadata accepted before the grid is available once layout settles', async () => {
+		const { state, store, events, memoryViews, readConnections } = await setup(source, false);
+		const result = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject), {
+			startingMemoryAllocationUnitAddress: 16,
+		});
+		store.set('compiler.result', { ...result, inputRevision: state.compilerInputRevision });
+		const { source: compiledSource, sink } = result.memoryPlan.modules;
+		memoryViews.int32[sink.memory.input.allocationUnitAddress] = compiledSource.memory.output.byteAddress;
+		expect(readConnections()).toHaveLength(0);
+
+		setGridSize(state, events, TEST_GRID_SIZE);
 		expect(readConnections()).toHaveLength(1);
 	});
 

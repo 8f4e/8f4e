@@ -6,7 +6,8 @@ editor uses [`@8f4e/editor-plugin-loose-wires`](../loose-wires/README.md) instea
 
 The wire tracker uses compiler metadata and settled editor layout to find declaration, fixed reference, and group
 `expose` endpoints, including endpoints outside the viewport. It indexes outputs by byte address for the current
-project level. Each frame reads live pointer slots from memory and uses the compiler-resolved address for fixed
+project level. It refreshes the index on accepted compiler metadata changes and settled layout notifications
+independently. Each frame reads live pointer slots from memory and uses the compiler-resolved address for fixed
 references. Endpoint offsets stay relative to their blocks; the frame's web-ui rendering geometry supplies each
 block's viewport-relative origin, including offscreen endpoints.
 
