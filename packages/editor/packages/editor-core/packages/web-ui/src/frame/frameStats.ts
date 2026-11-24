@@ -18,21 +18,27 @@ export function createFrameStats(
 	onRenderStats: ((stats: RenderStats) => void) | undefined
 ) {
 	let sampledFrameCount = 0;
-	let sampleStartTime = performance.now();
+	let sampleStartTime = onRenderStats ? performance.now() : 0;
 
 	function reset(): void {
 		sampledFrameCount = 0;
-		sampleStartTime = performance.now();
+		if (onRenderStats) sampleStartTime = performance.now();
 	}
 
 	return {
 		reset,
-		emit(timeToRenderMs: number) {
+		beginFrame(): number | undefined {
+			return onRenderStats && sampledFrameCount === SAMPLE_INTERVAL_FRAMES - 1 ? performance.now() : undefined;
+		},
+		endFrame(frameStartedAt: number | undefined) {
 			if (!onRenderStats) return;
-			sampledFrameCount++;
-			if (sampledFrameCount < SAMPLE_INTERVAL_FRAMES) return;
+			if (frameStartedAt === undefined) {
+				sampledFrameCount++;
+				return;
+			}
 
 			const now = performance.now();
+			const timeToRenderMs = now - frameStartedAt;
 			const elapsedMs = now - sampleStartTime;
 			sampledFrameCount = 0;
 			sampleStartTime = now;

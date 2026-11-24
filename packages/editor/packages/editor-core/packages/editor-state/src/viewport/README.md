@@ -14,8 +14,10 @@ dimensions through `setGridSize` when they are known.
 
 `markGridSizePending(state)` marks the requested grid unavailable (`state.gridSizeReady = false`) while keeping
 the previously installed dimensions usable for layout and drawing. `setGridSize(state, events, size)` installs the
-positive dimensions and dispatches `gridSizeChanged` when they differ, settling layout synchronously. It then marks
-`state.gridSizeReady` true and resolves any pending first-visit placement. A pending grid can resolve to the same
+positive dimensions and dispatches `gridSizeChanged` when they differ, settling layout synchronously. It then calls
+`settleGridSize(state, events)` to mark `state.gridSizeReady` true and resolve any pending first-visit placement.
+When a pending replacement is canceled or fails, the renderer calls `settleGridSize` directly on the still-installed
+positive grid, without changing its dimensions or invalidating layout. A newly installed font may also use the same
 dimensions. Ordinary font changes do not reposition an already placed viewport.
 
 Block positions use world coordinates. Canvas coordinates are relative to the canvas's top-left corner; convert

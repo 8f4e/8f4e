@@ -37,12 +37,12 @@ export function createFrameRenderer(
 
 	return {
 		draw(frameTime: number, viewport: Readonly<State['viewport']>, suppressBlockOffsets: boolean) {
-			const frameStartedAt = performance.now();
+			const frameStartedAt = stats.beginFrame();
 			const offsets = renderRegistry.prepareCodeBlockOffsets(state, frameTime, suppressBlockOffsets);
 			const blockPositions = positions.prepare(state.project.activeLevel.blocks, viewport, offsets);
 			frameContext = { state, viewport, memoryViews, blockPositions };
 			engine.renderFrame(drawSprites);
-			stats.emit(performance.now() - frameStartedAt);
+			stats.endFrame(frameStartedAt);
 		},
 		destroy() {
 			const preDrawIndex = engine.hooks.preDraw.indexOf(beforeSprites);

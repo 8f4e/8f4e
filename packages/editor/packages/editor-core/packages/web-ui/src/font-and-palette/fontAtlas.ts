@@ -1,4 +1,4 @@
-import { logError, markGridSizePending, setGridSize } from '@8f4e/editor-state';
+import { logError, markGridSizePending, setGridSize, settleGridSize } from '@8f4e/editor-state';
 import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
@@ -50,7 +50,7 @@ export function createFontAtlasController(
 			if (!state.gridSizeReady) {
 				// Configuration can resolve during a source refresh. Let that refresh settle layout first.
 				await Promise.resolve();
-				if (!disposed && currentGeneration === generation) setGridSize(state, events, state.viewport);
+				if (!disposed && currentGeneration === generation) settleGridSize(state, events);
 			}
 			return;
 		}
@@ -67,7 +67,7 @@ export function createFontAtlasController(
 			if (disposed || currentGeneration !== generation) return;
 			logError(state, `Failed to load font ${font}: ${String(error)}`);
 			indicator.fail();
-			if (!disposed && currentGeneration === generation) setGridSize(state, events, state.viewport);
+			if (!disposed && currentGeneration === generation) settleGridSize(state, events);
 		} finally {
 			indicator.cancel();
 			if (fontLoading?.indicator === indicator) fontLoading = undefined;

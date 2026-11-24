@@ -564,6 +564,23 @@ describe('web-ui init', () => {
 		store.dispose();
 	});
 
+	it('does not read the measurement clock when no render stats callback is supplied', async () => {
+		const view = await init(createStateManager(createMockState()), createMockEventDispatcher(), createMemoryViews(), {
+			loading,
+			renderRegistry: createEditorRenderRegistry(),
+		});
+		const performanceNow = vi.spyOn(performance, 'now');
+		try {
+			view.resetRenderStats();
+			for (let frame = 1; frame <= 60; frame++) view.renderFrame(frame);
+			expect(mocks.engine.renderFrame).toHaveBeenCalledTimes(60);
+			expect(performanceNow).not.toHaveBeenCalled();
+		} finally {
+			view.destroy();
+			performanceNow.mockRestore();
+		}
+	});
+
 	it('restarts FPS sampling when the host resumes after a pause without drawing', async () => {
 		let now = 0;
 		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
@@ -574,17 +591,20 @@ describe('web-ui init', () => {
 			onRenderStats,
 		});
 		try {
-			view.renderFrame();
+			view.renderFrame(now);
 			now = 1000;
 			view.resetRenderStats();
 			expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
+			performanceNow.mockClear();
 			for (let frame = 1; frame < 60; frame++) {
 				now += 10;
-				view.renderFrame();
+				view.renderFrame(now);
 			}
 			expect(onRenderStats).not.toHaveBeenCalled();
+			expect(performanceNow).not.toHaveBeenCalled();
 			now += 10;
-			view.renderFrame();
+			view.renderFrame(now);
+			expect(performanceNow).toHaveBeenCalledTimes(2);
 			expect(onRenderStats).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
 		} finally {
 			view.destroy();
@@ -592,7 +612,7 @@ describe('web-ui init', () => {
 		}
 	});
 
-	it('emits render stats every 60 frames', async () => {
+	it('measures and emits render stats every 60 frames', async () => {
 		let now = 0;
 		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
 		const state = createMockState();
@@ -605,17 +625,20 @@ describe('web-ui init', () => {
 			onRenderStats,
 		});
 		try {
+			performanceNow.mockClear();
 			for (let frame = 1; frame < 60; frame++) {
 				now += 25;
-				view.renderFrame();
+				view.renderFrame(now);
 			}
 			expect(onRenderStats).not.toHaveBeenCalled();
+			expect(performanceNow).not.toHaveBeenCalled();
 
 			now += 15;
 			mocks.drawCodeBlocks.mockImplementationOnce(() => {
 				now += 10;
 			});
-			view.renderFrame();
+			view.renderFrame(now);
+			expect(performanceNow).toHaveBeenCalledTimes(2);
 			expect(onRenderStats).toHaveBeenCalledExactlyOnceWith({
 				timeToRenderMs: 10,
 				fps: 40,
@@ -626,13 +649,16 @@ describe('web-ui init', () => {
 				uploadedInstanceBytes: 2000,
 			});
 
+			performanceNow.mockClear();
 			for (let frame = 1; frame < 60; frame++) {
 				now += 20;
-				view.renderFrame();
+				view.renderFrame(now);
 			}
 			expect(onRenderStats).toHaveBeenCalledTimes(1);
+			expect(performanceNow).not.toHaveBeenCalled();
 			now += 20;
-			view.renderFrame();
+			view.renderFrame(now);
+			expect(performanceNow).toHaveBeenCalledTimes(2);
 			expect(onRenderStats).toHaveBeenCalledTimes(2);
 			expect(onRenderStats).toHaveBeenLastCalledWith(expect.objectContaining({ fps: 50, frameBudgetMs: 20 }));
 		} finally {

@@ -114,7 +114,7 @@ Type emitted by `options.onRenderStats`:
 
 ```typescript
 interface RenderStats {
-	timeToRenderMs: number;
+	timeToRenderMs: number; // Duration of the 60th frame only
 	fps: number; // Calculated over the sampled frame interval
 	frameBudgetMs: number;
 	headroomMs: number;

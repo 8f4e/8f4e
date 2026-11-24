@@ -75,5 +75,5 @@ export { default as serializeToProject } from './project/serialization/serialize
 export { findParentProjectLevel, walkProjectBlocks, walkProjectLevels } from './project/tree';
 export type { CodeBlockBounds } from './viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './viewport/centerViewportOnCodeBlock';
-export { markGridSizePending, setGridSize } from './viewport/gridSize';
+export { markGridSizePending, setGridSize, settleGridSize } from './viewport/gridSize';
 export { default as updateViewport } from './viewport/updateViewport';
