@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-files",
-  "version": "0.4.4",
+  "version": "0.1.0",
   "private": true,
   "description": "Project file access and one-shot source export plugins for the 8f4e editor",
   "type": "module",

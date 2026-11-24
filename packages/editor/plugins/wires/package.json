@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-wires",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "description": "WebGL connector wires for the 8f4e editor",
   "type": "module",
