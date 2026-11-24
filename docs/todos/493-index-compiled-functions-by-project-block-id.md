@@ -43,7 +43,7 @@ keys are needed; this is a secondary index rather than a wholesale object-to-Map
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/utils/getCompiledFunctionForCodeBlock.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/compiler-metadata/getCompiledFunctionForCodeBlock.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/stack/resolve.ts`
 - `packages/editor/plugins/tooltips/src/state/effect.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/program-compiler/effect.ts`

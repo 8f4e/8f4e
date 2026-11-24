@@ -1,0 +1,99 @@
+import { describe, expect, it } from 'vitest';
+import getCodeBlockNameFromSource from '../../project/blocks/getCodeBlockNameFromSource';
+import getBlockType from '../../project/blocks/getCodeBlockTypeFromSource';
+import { parseBlockDirectives } from '../parseBlockDirectives';
+import { resolveGlobalEditorDirectives } from './resolveGlobalEditorDirectives';
+
+function createParsedBlock(code: string[], name?: string, projectPath = '') {
+	return {
+		projectPath,
+		creationIndex: 0,
+		parsedDirectives: parseBlockDirectives(code),
+		name: name ?? getCodeBlockNameFromSource(code),
+		blockType: getBlockType(code),
+	};
+}
+
+describe('@config directive', () => {
+	it('records config entries for validation and resolution', () => {
+		const result = resolveGlobalEditorDirectives([
+			createParsedBlock([
+				'module a',
+				'; @config testSetting sample',
+				'; @config settings.first #112233',
+				'; @config settings.second #010203',
+				'moduleEnd',
+			]),
+		]);
+
+		expect(result.resolved.configEntries).toEqual([
+			{ path: 'testSetting', value: 'sample', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.first', value: '#112233', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.second', value: '#010203', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
+		]);
+		expect(result.errors).toEqual([]);
+	});
+
+	it('records config entries with dash continuation arguments', () => {
+		const result = resolveGlobalEditorDirectives([
+			createParsedBlock(['module a', '; @config', '; - settings.target', '; - frame:buffer', 'moduleEnd']),
+		]);
+
+		expect(result.resolved.configEntries).toEqual([
+			{ path: 'settings.target', value: 'frame:buffer', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+		]);
+		expect(result.errors).toEqual([]);
+	});
+
+	it('records the current module for config entries', () => {
+		const result = resolveGlobalEditorDirectives([
+			createParsedBlock(['module example', '; @config custom.target buffer', 'moduleEnd'], 'example', 'outer'),
+		]);
+
+		expect(result.resolved.configEntries).toEqual([
+			{
+				path: 'custom.target',
+				value: 'buffer',
+				sourceLineIndex: 1,
+				codeBlockId: 0,
+				moduleId: 'outer/example',
+			},
+		]);
+		expect(result.errors).toEqual([]);
+	});
+
+	it('lets validators handle path-specific meaning', () => {
+		const result = resolveGlobalEditorDirectives([
+			createParsedBlock([
+				'module a',
+				'; @config testSetting tiny',
+				'; @config blockScale 4',
+				'; @config settings.first ???',
+				'moduleEnd',
+			]),
+		]);
+
+		expect(result.resolved.configEntries).toEqual([
+			{ path: 'testSetting', value: 'tiny', sourceLineIndex: 1, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'blockScale', value: '4', sourceLineIndex: 2, codeBlockId: 0, moduleId: 'a' },
+			{ path: 'settings.first', value: '???', sourceLineIndex: 3, codeBlockId: 0, moduleId: 'a' },
+		]);
+		expect(result.errors).toEqual([]);
+	});
+
+	it('requires exactly a path and value', () => {
+		const result = resolveGlobalEditorDirectives([
+			createParsedBlock([
+				'module a',
+				'; @config',
+				'; @config testSetting',
+				'; @config testSetting sample extra',
+				'moduleEnd',
+			]),
+		]);
+
+		expect(result.resolved).toEqual({});
+		expect(result.errors).toHaveLength(3);
+		expect(result.errors.every(error => error.message.includes('requires exactly 2 arguments'))).toBe(true);
+	});
+});

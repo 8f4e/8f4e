@@ -8,10 +8,10 @@ import {
 	type ProjectObjectModel,
 } from '@8f4e/language-spec';
 import { beforeEach, describe, expect, it } from 'vitest';
-import getCodeBlockMemoryScope from '~/pureHelpers/getCodeBlockMemoryScope';
-import resolveMemoryIdentifier from '~/pureHelpers/resolveMemoryIdentifier';
-import resolveMemoryTarget from '~/pureHelpers/resolveMemoryTarget';
-import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
+import { createMockCodeBlock, createMockState } from '~/__tests__/helpers/mockEditorState';
+import getCodeBlockMemoryScope from '~/memory/getCodeBlockMemoryScope';
+import resolveMemoryIdentifier from '~/memory/resolveMemoryIdentifier';
+import resolveMemoryTarget from '~/memory/resolveMemoryTarget';
 
 const source = readFileSync(new URL('./fixtures/exposed-controls.8f4e', import.meta.url), 'utf8');
 

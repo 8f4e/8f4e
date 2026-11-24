@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { mainMenu } from '../../src/features/menu/menus';
-import { createMockState } from '../../src/pureHelpers/testingUtils/testUtils';
+import { createMockState } from '../../src/__tests__/helpers/mockEditorState';
+import { mainMenu } from '../../src/ui-state/menu/menus/index';
 
 describe('menus - main menu', () => {
 	it('adds a go-back action when rendering a nested project slice', () => {

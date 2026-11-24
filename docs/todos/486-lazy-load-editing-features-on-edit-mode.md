@@ -48,11 +48,11 @@ that already work in view mode, such as project controls, available according to
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/index.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/input/editorMode.ts`
 - `packages/editor/plugins/keyboard-editing/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/text-geometry/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/edit-history/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/layout/text-geometry/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/project/undoRedo.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/project/` and `packages/editor/packages/editor-core/packages/editor-state/src/input/`
 - `packages/editor/plugins/keyboard-navigation/`
 - `packages/editor/plugins/keyboard-mode-switching/`
 - Default/gallery browser composition

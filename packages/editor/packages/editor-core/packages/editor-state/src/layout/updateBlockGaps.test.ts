@@ -1,0 +1,74 @@
+import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import { describe, expect, it } from 'vitest';
+import type { BlockLayoutDraft } from './blockLayoutDraft';
+import gaps from './updateBlockGaps';
+
+describe('gaps', () => {
+	it('inserts contributed gaps using display rows', async () => {
+		const blockLayout: BlockLayoutDraft = {
+			displayModel: {
+				lines: [
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 1, text: '; layout space' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
+				],
+				displayRowToSourceLineIndex: [0, 1, 3],
+				sourceLineIndexToDisplayRow: [0, 1, undefined, 2],
+				isCollapsed: false,
+			},
+			verticalSpaceAfterSourceLine: [],
+		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
+		const graphicData = createMockCodeBlock({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
+
+		gaps(graphicData, blockLayout);
+
+		expect(graphicData.gaps.get(1)).toEqual({ size: 8 });
+	});
+
+	it('adds multiple vertical-space requests on the same display row', async () => {
+		const blockLayout: BlockLayoutDraft = {
+			displayModel: {
+				lines: [
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 1, text: 'int value' },
+					{ sourceLineIndex: 2, text: 'moduleEnd' },
+				],
+				displayRowToSourceLineIndex: [0, 1, 2],
+				sourceLineIndexToDisplayRow: [0, 1, 2],
+				isCollapsed: false,
+			},
+			verticalSpaceAfterSourceLine: [],
+		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 3 });
+		const graphicData = createMockCodeBlock({ code: ['module foo', 'int value', 'moduleEnd'] });
+
+		gaps(graphicData, blockLayout);
+
+		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
+	});
+
+	it('skips gaps for source lines hidden from the display model', async () => {
+		const blockLayout: BlockLayoutDraft = {
+			displayModel: {
+				lines: [
+					{ sourceLineIndex: 0, text: 'module foo' },
+					{ sourceLineIndex: 3, text: 'moduleEnd' },
+				],
+				displayRowToSourceLineIndex: [0, 3],
+				sourceLineIndexToDisplayRow: [0, undefined, undefined, 1],
+				isCollapsed: true,
+			},
+			verticalSpaceAfterSourceLine: [],
+		};
+		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
+		const graphicData = createMockCodeBlock({
+			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
+		});
+
+		gaps(graphicData, blockLayout);
+
+		expect(graphicData.gaps.size).toBe(0);
+	});
+});

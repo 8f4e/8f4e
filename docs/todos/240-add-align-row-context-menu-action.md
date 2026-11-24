@@ -78,9 +78,8 @@ There is no quick layout action to arrange multiple related code blocks into a c
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/menu/menus/moduleMenu.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/**/effect.ts` (new align-row handler)
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/**/effect.test.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/ui-state/menu/menus/moduleMenu.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/project/` (new align-row handler and its tests)
 
 ## Notes
 

@@ -43,7 +43,7 @@ This keeps `graphicHelper.codeBlocks` as the canonical z-ordered array, but remo
 - Update:
   - `features/code-blocks/features/codeBlockCreator/effect.ts`
   - `features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.ts`
-  - `features/code-blocks/features/codeBlockDragger/effect.ts`
+  - `input/blockDragging.ts`
   - any remaining load/population path that hand-rolls the same partitioning
 - Make the single-block creation path derive `alwaysOnTop` before insertion instead of relying on the default field value.
 
@@ -64,7 +64,7 @@ This keeps `graphicHelper.codeBlocks` as the canonical z-ordered array, but remo
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/effect.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockDragger/effect.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/input/blockDragging.ts`
 - `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/graphicHelper/effect.ts`
 
 ## Risks & Considerations

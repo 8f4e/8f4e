@@ -1,0 +1,228 @@
+# Code Blocks Feature
+
+## Purpose
+
+Manages the lifecycle of code blocks in the editor: creation, selection, drag operations, deletion, and visual representation. Code blocks are the primary building blocks of 8f4e programs, containing code and metadata that determine how they are compiled and rendered.
+
+## Key Behaviors
+
+- **Block Lifecycle**: Creates, updates, and deletes code blocks
+- **Selection**: Tracks which block is currently selected for editing
+- **Drag Operations**: Handles repositioning blocks in the viewport
+- **Graphics Derivation**: Computes visual properties (position, size, color) from block data
+- **Layout Contributions**: Applies plugin requests for additional rows and minimum width
+
+`@8f4e/editor-plugin-error-messages` owns inline message wrapping, row reservations, and drawing. Core stores raw
+errors in contributor-owned `state.codeErrors` lists and applies generic layout contributions.
+
+Nested language-block highlighting belongs to `@8f4e/editor-plugin-code-rendering`, including its tolerant parser,
+background colors, rectangle geometry, and private cache. Core supplies block/display bounds, grid dimensions, and gaps.
+
+`@8f4e/editor-plugin-connectors` owns input/output connector sprites, and `@8f4e/editor-plugin-wires` independently
+owns wire layout and drawing. Both use the editor's group exposure rows and the compiler's resolved targets.
+Core retains no widget presentation data; language semantics stay in the compiler.
+
+Switch, button, and waveform features are provided by `@8f4e/editor-plugin-switch`, `@8f4e/editor-plugin-button`, and
+`@8f4e/editor-plugin-wave`, included in `@8f4e/editor-default`. Their plugins own derived data and drawing through the
+[plugin API](../../../../README.md#plugins), with switch and button plugins also owning their interactions. Meter, plot, bars, watch, stack, crossfade, piano, and
+slider also live in their own `@8f4e/editor-plugin-<name>` packages. Core carries no derived data or drawers for these
+features; the default composition selects and installs them.
+
+Favorites and Remove connections are provided by `@8f4e/editor-plugin-favorites` and
+`@8f4e/editor-plugin-remove-memory-connections`. They own their action handlers and block-menu contributions.
+The favorites plugin reads cached directives and owns its navigation submenu. Core exposes generic block jumping
+and directive editing through public helpers.
+
+Visual grouping through `; @group <name> [nonstick]` belongs to `@8f4e/editor-plugin-grouping`, including group menus,
+actions, drag-target selection, and copying. Membership stays private to that plugin. Core dispatches
+the generic `resolveCodeBlockDragTargets` event before moving blocks.
+
+## Block Types
+
+Code blocks are categorized by type, which determines compilation and rendering behavior:
+
+- **`module`** - Top-level code modules compiled as standalone units
+- **`function`** - Function definitions compiled separately
+- **`constants`** - Constant definitions (compiled as modules)
+- **`note`** - Editor-only notes
+- **`unknown`** - Unclassified blocks (fallback)
+
+Block types are automatically detected and updated based on code content without replacing the block. An incomplete
+declaration retains its last execution entry; a completed non-execution block clears it. Converting that block back to
+a module uses an explicitly assigned entry or `main`. Empty authored entry sections remain part of the project.
+
+## Source Organization
+
+The project and its related editor-state domains handle specific aspects:
+
+- `blockActionCommands.ts` - Generic source insertion and enable/disable action bindings
+- `../input/blockDragging.ts` - Drag and drop operations
+- `../input/blockNavigation.ts` - Keyboard navigation between blocks
+- `../layout/trackBlockLayout.ts` - Visual properties and cursor geometry
+
+New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
+Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
+
+Source changes use `blocks/refreshSourceMetadata.ts` to parse directives and retain their block flags and display facts, update
+block type and valid grid coordinates, and settle stacking. The project editing service owns synchronous mutation
+transactions and coordinates source normalization, global configuration, generated environment source and layout.
+Source facts and compiler inputs settle without
+pixel geometry. Layout builds display rows from the retained facts and current selection without rerunning directive
+handlers. An incomplete or invalid position directive retains the existing block position. Interactive and programmatic
+edits use this same path; ordinary layout invalidations do not reparse source. Project membership tracks each block's owning
+`ProjectLevel`, independently of source preparation and layout calculations. The ownership index is rebuilt on project
+loading and block-collection changes. Navigating between existing levels refreshes layout without changing source
+or global configuration. Renaming a group retains its runtime identity while updating its source path.
+Editor-state initialization constructs membership, the layout coordinator and the project editing service separately;
+the rendering effect consumes the coordinator for layout and selection without owning source mutation. The dragger owns
+its transient gesture state and cancels the entire gesture when the active project collection changes.
+
+The coordinator queues changed blocks by owning group, settles nested plugin contributions, and projects grid
+positions to world pixels before publishing completion for each affected group. Pixel layout waits for the first
+positive grid dimensions; while a replacement grid is pending, the previously installed grid remains usable. Panning and resizing do not move
+blocks in the project. Other blocks can still be in the middle of a source update and must not be read as part of a
+completion notification.
+
+## Events & Callbacks
+
+### Key Events
+
+- `insertCodeBlock({ x, y, code })`: insert supplied source lines
+- `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
+- `state.projectChange`: reports completed project mutations after metadata, configuration, generated source and
+  available layout settle
+- `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
+  group, or the current group when no block is supplied
+- `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,
+  contributions, and positions. Rendering prepares only the listed blocks; active-view consumers compare `project`
+  with `currentProject`. Empty groups still publish a completion when navigation replaces the visible slice.
+- Block deletion and selection events
+- Drag start/update/end events
+- Block type update events
+
+### State Touched
+
+- `state.codeBlockRendering.rootProject` - Recursive root project level
+- `state.codeBlockRendering.currentProject` - Direct reference to the project level currently rendered
+- `state.codeBlockRendering.selectedCodeBlock` - Currently selected block reference
+- Block-specific properties: position, size, blockType, code, cursor, display rows, and gaps
+
+Project-group blocks use the same `CodeBlockGraphicData` representation as other blocks. Their optional
+`childProject` field owns a `ProjectLevel` with its canonical `path`, `blocks`, local `entries`, optional remembered
+`viewport`, and `selectedBlock`.
+`rootProject` owns the recursive tree; `currentProject` refers directly to the level being rendered. Shared tree helpers
+resolve levels and parents by path, without recovering identity from block arrays.
+
+`reconstruction.ts` builds graphical project trees and transfers remembered views, selections, and existing
+positions for same-project edits. The project editing service installs the result and owns selection reset, layout/source
+refresh coordination, and compiler-input notifications.
+
+Core retains the selected source row/column, pointer-to-source mapping, and shared vertical coordinates for line
+highlighting, tooltips, viewport centering, and navigation. The keyboard-editing plugin owns caret movement and
+presentation, including horizontal placement derived from shared tab/source geometry.
+
+**Open group**, **Go back**, and root navigation save the departing level's position and restore the destination's
+remembered position and selected block. If the group block was selected before entry, returning reselects it.
+Reopening a group also restores its last selection. An explicitly cleared selection stays cleared, and deleted blocks
+are not restored. A remembered position always takes precedence, including a remembered origin.
+Project restoration captures the departing view for same-project edits and requests placement once after the
+project change and synchronous layout contributions settle. Only first visits resolve the initial viewport through
+the `resolveInitialProjectViewport` event. Core defers this request while the selected grid is pending and applies
+the synchronous plugin contribution once the grid is installed. A level left before placement remains unvisited, and manual navigation
+takes precedence over pending placement. Without a contributed position, the viewport starts at `(0, 0)`. Positions live only
+in browser memory together with remembered selections: project serialization, clipboard payloads, and session storage
+exclude both. Same-project edits and undo/redo transfer remembered views and selections to rebuilt levels, resolving
+selections to the new live blocks. They preserve the active level, falling back to the root if that level was removed.
+Loading a different project creates fresh levels without remembered views or selections. Switching levels stops
+the presented camera in web-ui; navigating to the current level leaves its view and selection alone.
+
+`@8f4e/editor-plugin-assertion-markers` owns assertion site aggregation, geometry, and drawing over line numbers.
+It reads `state.assertionResults` and current block layout through the generic drawer hook. Core block state
+contains no marker rectangles.
+
+Test-runtime publishes the first failed invocation of each source assertion as a raw error under
+`codeErrors.test-runtime`, including expected and received values. It excludes included/unowned sites and disabled
+blocks, and clears its errors when execution restarts. Error-messages displays those errors independently of the
+marker plugin through the same contribution path as other source errors.
+
+## Integration Points
+
+- **Compiler**: Blocks are sorted by `creationIndex` and filtered by type for compilation
+- **Viewport**: Block positions are in viewport coordinates
+- **Edit History**: Block changes trigger history snapshots
+
+Memory references use the `MemoryScope` type exported through `@8f4e/editor-state/memory`. A module scope
+(`{ kind: 'module', moduleId }`) resolves unqualified names in that module's allocated declarations and fixed references. A project scope
+(`{ kind: 'project', groupPath }`) resolves unqualified names in the group's exposed aliases; the root project uses
+the empty group path. Qualified names resolve relative to the scope's project path, while paths containing `/` are
+canonical. Local module declarations and group exposures remain distinct even when a module and group share a name.
+
+Widgets, connectors, and other code-block consumers use `getCodeBlockMemoryScope` to convert graphical blocks at the
+editor boundary. Configuration and renderer consumers construct scopes from their known project paths or canonical
+module IDs. `resolveMemoryTarget` handles target lookup using these explicit scopes, and `resolveMemoryIdentifier`
+adds address operators, dereferencing, and indexing. The watch plugin owns binary/hex formatting prefixes and
+end-address display syntax. The resolvers accept no graphical blocks or implicit string scopes.
+
+Fixed references such as `float& buffer &source:samples` resolve to the backing declaration and its owning module,
+with the original reference metadata retained in `ResolvedMemoryTarget.reference`. A bare `buffer` supplies the
+fixed target address; `*buffer` reads the target value, and `*buffer[1]` selects its second element. `&buffer` is
+unresolved because a fixed reference allocates no addressable slot. Buffer displays derive their sample format and
+`count(buffer)` from the backing declaration; live count arguments read its current value.
+
+Consumers prepare names once with `prepareMemoryAccess`. Its `PreparedMemoryAccess` retains the resolved declaration
+and parsed address/dereference/index options without reading runtime memory. `prepareAddressBinding` turns an address
+source into a fixed byte address or a plan for up to two pointer loads. `readByteAddress` reads the current
+32-bit pointer words using that plan.
+
+`prepareNumericRead` describes scalar storage or an explicit dereference. Each `*` follows one allocated pointer.
+For a fixed reference, the first `*` selects the bound declaration, and additional dereferences follow its live
+pointers. For example, `**doublePointer` follows two live pointers, while `**fixedPointer` follows one pointer stored
+in the bound slot. The declaration determines the resulting type and supported depth.
+`prepareAddressedRead` describes samples at an address source, following a typed pointer implicitly or both pointer
+levels for `*doublePointer`. Both produce `PreparedNumericRead`, which holds the typed-view kind, element byte size,
+default display bounds, and a fixed typed-element index or live address binding. `readNumericValue`
+reads current structural numeric views; `readElementIndex` supplies the index for buffer drawing loops. These helpers
+depend on no renderer and retain no runtime views. Plugins keep radix, precision, text, colors, and overload behavior.
+
+Offsets are normalized during preparation: `&samples[1]` advances by one stored element, `pointers[1]` selects the
+second 32-bit pointer slot, and `*pointer[1]` advances by one pointee element after reading the live pointer. Byte
+addresses, allocation-unit pointer indices, and typed-element indices remain distinct fields.
+
+`prepareBuffer` combines source, sample type, and `prepareElementCount` for wave, bars, and plot. Counts can be literal,
+`count(declaration)` metadata, or a live typed read; `readElementCount` returns the current count. The buffer retains
+the source's public identity and backing module/declaration. Source/compiler invalidation refreshes prepared bindings
+through each plugin's existing lifecycle. Watch end-address displays reuse the memory-plan address index and
+`readDeclarationEndAddress` for live target boundaries.
+
+One-off metadata consumers can still use `resolveMemoryAccess` or `resolveMemoryIdentifier`. Their `ResolvedMemoryAccess`
+result includes storage and access flags plus the original source target; frame readers use the prepared primitives.
+
+Memory controls use `resolveMemoryAddress` to accept either an explicit allocated address (`&samples`) or a bare
+fixed reference (`buffer`). It rejects ordinary memory values and runtime pointers without an address operator.
+Directive arguments use `isMemoryTarget` for control targets and `isPointerSource` for display sources. Pointer
+sources additionally accept `*address` to follow a double pointer; controls use declaration addresses and references.
+`getMemoryTargetAtSourceLine` resolves inline allocated or fixed declarations, including anonymous allocated memory.
+It returns `undefined` for rows without a memory declaration and `{ target: undefined }` for declarations awaiting
+matching accepted compiler metadata, allowing widgets to reserve layout space while compilation is pending.
+`resolveMemoryAccess` applies the same address and dereference rules to those targets. Tooltips use the shared target
+lookup during preparation. Connectors consume the resolved reference targets already supplied by the compiler;
+each plugin retains its own value formatting and source-row geometry.
+
+## References
+
+- See `blocks/` for block manipulation helpers
+- See `entries/` and `serialization/` for project entry and serialization implementations
+- See `../../../../docs/editor-directives.md` for editor-only directive syntax (`; @...`) and supported directives
+
+## Layout Contributions
+
+The independent `store.layout` service owns contributions and subscriptions. Plugins submit complete space/minimum-width
+requests through `createContribution().update(block, value)` and subscribe to calculated blocks with `layout.subscribe`.
+A subscription can update its own requests; unchanged values do not trigger another calculation. Core processes changed
+requests synchronously and refreshes rendered text after layouts settle. Directive drafts contain only block/display
+semantics. Match live blocks with `matchEditorDirectives(codeBlock.parsedDirectives, definitions)`. Core updates
+records on source changes and retains unknown directives for late plugins. Raw-source parsing remains available
+through `parseBlockDirectives` for incoming source and whole-project scans. Standalone and trailing directives share
+the same syntax; matching preserves source context and normalizes aliases.
+
+Block copy/paste menus and browser clipboard access are owned by `editor-plugin-code-block-copy-paste`. Core exports `insertCodeBlocks` for positioned source batches and pure `serializeCodeBlocks` for portable source data. Insertion preserves names and references and rewrites only `@pos`.

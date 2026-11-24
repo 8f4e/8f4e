@@ -18,7 +18,7 @@ in its owning core feature or optional plugin package. Layout requests and geome
 
 The shared directive engine should stay generic. It should coordinate directive parsing and application, but it should not hardcode directive-specific behavior such as plotter buckets, wave rules, or layout switches.
 
-This document is specifically about the code-block directive system under `code-blocks/features/directives/`. Global editor directives are a separate feature area and should follow the same ownership principle, but they do not live in this pipeline.
+This document is specifically about the code-block directive system under `directives/block/`. Global editor directives under `directives/global/` should follow the same ownership principle, but they do not live in this pipeline.
 
 ## Architecture Overview
 
@@ -27,7 +27,7 @@ There are three distinct concerns that must stay separate:
 **Directive semantics** — what a directive means:
 - parsing directive arguments
 - deriving block state and source display semantics
-- owned by each directive folder under `directives/`
+- owned by each directive's semantic files under `directives/block/`
 
 **Layout** — space, dimensions, and widget geometry:
 - independent contribution values and layout subscriptions
@@ -36,39 +36,38 @@ There are three distinct concerns that must stay separate:
 **Directive editing** — how directive source lines are rewritten:
 - inserting, removing, or updating directive lines in code
 - canonicalizing directive placement
-- owned by the shared `directiveEditing/` feature
+- owned by the shared `directives/editing/` feature
 
 ## Directory Layout
 
 Directive semantic code lives under:
 
-`packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/`
+`packages/editor/packages/editor-core/packages/editor-state/src/directives/block/`
 
 Shared directive editing primitives live under:
 
-`packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directiveEditing/`
+`packages/editor/packages/editor-core/packages/editor-state/src/directives/editing/`
 
 Typical structure:
 
 ```txt
 directives/
-  registry.ts
-  utils.ts
-  hide/
-    data.ts
-    plugin.ts
-    resolve.ts
-    data.test.ts
-    resolve.test.ts
-
-directiveEditing/
-  index.ts
-  removeDirective.ts
-  upsertDirective.ts
-  updateDirectiveArgs.ts
+  blockDirectiveRegistry.ts
+  directiveRecords.ts
+  block/
+    hideDirective.ts
+    positionDirective.ts
+    positionDirective.test.ts
+    upsertPositionDirective.ts
+    upsertPositionDirective.test.ts
+  editing/
+    index.ts
+    removeDirective.ts
+    upsertDirective.ts
+    updateDirectiveArgs.ts
 ```
 
-Each directive folder should contain its own semantic logic. Avoid putting directive-specific logic back into `registry.ts`. Source rewriting belongs in `directiveEditing/`.
+Each directive should keep its own semantic logic in clearly named files. Avoid putting directive-specific logic back into `blockDirectiveRegistry.ts`. Shared source rewriting primitives belong in `directives/editing/`.
 
 Optional directive interpretation belongs in editor plugin packages. Generic parsing remains in core. Plugins can
 use `matchEditorDirectives(codeBlock.parsedDirectives, [{ name, aliases }])` without registering a directive handler.
@@ -96,10 +95,10 @@ layout service, for example to reserve space after asynchronously loaded data ar
 
 ## Shared Directive Editing Primitives
 
-Use the helpers in `directiveEditing/` whenever you need to rewrite directive source lines:
+Use the helpers in `directives/editing/` whenever you need to rewrite directive source lines. From a file in `directives/block/`:
 
 ```ts
-import { removeDirective, upsertDirective, updateDirectiveArgs } from '../directiveEditing';
+import { removeDirective, upsertDirective, updateDirectiveArgs } from '../editing';
 ```
 
 ### `removeDirective(code, name)`
@@ -150,7 +149,7 @@ text are exempt. Empty and unchanged batches are no-ops.
 The main shared types are in:
 
 - `packages/editor/packages/editor-core/packages/editor-state-types/src/features/code-blocks/features/directives/types.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/registry.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/directives/blockDirectiveRegistry.ts`
 
 Derived directive facts contain `blockState` and `displayState`; the display model is built separately during layout.
 Layout types live separately in
@@ -159,22 +158,21 @@ Layout types live separately in
 
 ## Adding a New Directive
 
-Create a new folder under `directives/`, for example:
+Create a descriptively named file under `directives/block/`, with its tests alongside it. For example:
 
 ```txt
 directives/
-  hide/
-    data.ts
-    plugin.ts
-    data.test.ts
+  block/
+    exampleDirective.ts
+    exampleDirective.test.ts
 ```
 
 Then:
 
-1. Add a directive plugin in `plugin.ts`
-2. If needed, add argument-to-data helpers in `data.ts`
-3. Register the plugin in `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/registry.ts`
-4. Add tests in the same directive folder
+1. Add a directive definition in its own semantic file
+2. If needed, add descriptively named argument-to-data helpers alongside it
+3. Register the definition in `packages/editor/packages/editor-core/packages/editor-state/src/directives/blockDirectiveRegistry.ts`
+4. Add tests alongside the directive
 5. Update the user-facing docs in [editor-directives.md](./editor-directives.md)
 
 If you are adding project-level settings owned by an extension or runtime, prefer a schema-backed `@config` root
@@ -184,7 +182,7 @@ when read through `resolveSchemaConfigRoot(...)` with state. When a config direc
 memory-formatted values can use a local memory name; the config parser normalizes it to `module:memory` before consumers
 receive `state.editorConfig`.
 
-If you need to insert or update the directive in source code (e.g., from an effect or action), use the `directiveEditing/` helpers rather than writing inline regex logic.
+If you need to insert or update the directive in source code (e.g., from an effect or action), use the `directives/editing/` helpers rather than writing inline regex logic.
 
 ## Parsing
 
@@ -192,7 +190,7 @@ Directive syntax parsing is centralized.
 
 The shared parser in:
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/utils.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/directives/directiveRecords.ts`
 
 handles the common syntax:
 
@@ -211,21 +209,21 @@ Plugins may use source context for feature-specific interpretation, such as infe
 Directives should not re-parse their own comment syntax.
 
 Use the shared argument validators in
-`packages/editor/packages/editor-core/packages/editor-state/src/shared/editorDirectiveArgumentTypes.ts` for the
+`packages/editor/packages/editor-core/packages/editor-state/src/directives/editorDirectiveArgumentTypes.ts` for the
 canonical memory-id, memory-address, pointer-source, numeric, and element-count forms. This keeps argument contracts
-consistent across directives instead of accepting ad hoc string variants in individual `data.ts` files.
+consistent across directives instead of accepting ad hoc string variants in individual directive files.
 
-Directive folders should only:
+Directive semantic files should only:
 
 - interpret `args`
 - derive typed directive data
 - derive block/display semantics or use the separate layout service for widget requests and geometry
 
-If a directive needs more context than a single line, keep that extra derivation logic inside the directive folder. Do not move it into the central registry.
+If a directive needs more context than a single line, keep that extra derivation logic with the directive's semantic files. Do not move it into the central registry.
 
 ## Block Contributions
 
-Use `plugin.ts` to contribute block-level metadata such as:
+Use the directive's definition file to contribute block-level metadata such as:
 
 - `disabled`
 - `alwaysOnTop`
@@ -270,19 +268,19 @@ callbacks remain. Use plugin integration tests and browser screenshots to verify
 
 Good:
 
-- one folder per directive for semantics
-- `directiveEditing/` for all source rewriting mechanics
+- clearly named semantic files per directive
+- `directives/editing/` for shared source rewriting mechanics
 - generic shared directive engine
 - generic directive syntax parsing
 - plugin-owned argument interpretation and independent layout requests/widget geometry
 - directive-owned tests
-- action features remain separate (e.g., group togglers) but delegate source edits to `directiveEditing/`
+- action features remain separate (e.g., group togglers) but delegate source edits to `directives/editing/`
 
 Bad:
 
 - central registry switches with directive-specific numbers or behavior
 - layout requests or callbacks embedded in directive state, or shared concrete widget buckets
-- directive logic split across unrelated feature folders
+- directive logic split across unrelated domains
 - directive-specific comment parsers that duplicate the shared syntax parser
 - reintroducing directive-specific `updateGraphicData.ts` files outside `directives/`
-- inline regex-based directive line manipulation in effect/action files (use `directiveEditing/` instead)
+- inline regex-based directive line manipulation in effect/action files (use `directives/editing/` instead)

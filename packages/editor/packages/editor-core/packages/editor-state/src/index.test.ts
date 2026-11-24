@@ -2,10 +2,10 @@ import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
+import { createMockCodeBlock } from './__tests__/helpers/mockEditorState';
+import { createMockEventDispatcherWithVitest } from './__tests__/helpers/mockEventDispatcher';
 import initState, { setGridSize } from './index';
-import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
+import { EMPTY_DEFAULT_PROJECT } from './project/emptyDefaultProject';
 
 describe('editor state lifecycle', () => {
 	it('starts in view mode before a project is loaded', () => {

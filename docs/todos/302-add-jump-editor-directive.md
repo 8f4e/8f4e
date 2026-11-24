@@ -75,8 +75,8 @@ Key requirements:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/directives/` - jump directive parsing, widget registration, and interaction
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/codeBlockNavigation/` - reused jump navigation path
+- `packages/editor/packages/editor-core/packages/editor-state/src/directives/` - jump directive parsing, widget registration, and interaction
+- `packages/editor/packages/editor-core/packages/editor-state/src/input/blockNavigation.ts` - reused jump navigation path
 - `packages/editor/docs/editor-directives.md` - directive documentation
 
 ## Risks & Considerations
