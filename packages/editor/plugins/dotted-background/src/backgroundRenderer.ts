@@ -12,7 +12,6 @@ export default class BackgroundRenderer {
 	private readonly patternOffsetLocation: WebGLUniformLocation;
 	private readonly dotBoundsLocation: WebGLUniformLocation;
 	private readonly colorLocations: WebGLUniformLocation[];
-	private readonly colors = [new Float32Array(4), new Float32Array(4), new Float32Array(4)];
 	private uploadedVGrid?: number;
 	private uploadedHGrid?: number;
 	private visible = false;
@@ -36,22 +35,25 @@ export default class BackgroundRenderer {
 		this.vertexArray = vertexArray;
 	}
 
-	/** Prepare premultiplied colors, compositing each dot color over the base once per palette change. */
+	/** Prepare and upload premultiplied colors, compositing each dot color over the base once per palette change. */
 	setPalette(bytes: Uint8Array): void {
-		for (const [index, token] of (['canvasBase', 'canvasDetail2', 'canvasDetail1'] as const).entries()) {
+		const colors = (['canvasBase', 'canvasDetail2', 'canvasDetail1'] as const).map(token => {
 			const offset = PALETTE_INDICES[token] * 4;
-			const color = this.colors[index];
 			const alpha = bytes[offset + 3] / 255;
-			color[0] = (bytes[offset] / 255) * alpha;
-			color[1] = (bytes[offset + 1] / 255) * alpha;
-			color[2] = (bytes[offset + 2] / 255) * alpha;
-			color[3] = alpha;
-		}
-		for (const color of this.colors.slice(1)) {
+			return new Float32Array([
+				(bytes[offset] / 255) * alpha,
+				(bytes[offset + 1] / 255) * alpha,
+				(bytes[offset + 2] / 255) * alpha,
+				alpha,
+			]);
+		});
+		for (const color of colors.slice(1)) {
 			const remaining = 1 - color[3];
-			for (let channel = 0; channel < 4; channel++) color[channel] += this.colors[0][channel] * remaining;
+			for (let channel = 0; channel < 4; channel++) color[channel] += colors[0][channel] * remaining;
 		}
-		this.visible = this.colors.some(color => color[3] !== 0);
+		this.visible = colors.some(color => color[3] !== 0);
+		this.gl.useProgram(this.program);
+		for (const [index, color] of colors.entries()) this.gl.uniform4fv(this.colorLocations[index], color);
 	}
 
 	/** Programs and the empty VAO have no reloadable storage and survive rendering-memory release. */
@@ -72,8 +74,6 @@ export default class BackgroundRenderer {
 			this.uploadedVGrid = vGrid;
 			this.uploadedHGrid = hGrid;
 		}
-		for (let index = 0; index < this.colors.length; index++)
-			gl.uniform4fv(this.colorLocations[index], this.colors[index]);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 

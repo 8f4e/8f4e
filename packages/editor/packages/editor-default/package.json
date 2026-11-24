@@ -96,6 +96,7 @@
     "@8f4e/stdlib": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-palette": "*",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/web-ui-testing": "*",
     "@8f4e/config": "*",

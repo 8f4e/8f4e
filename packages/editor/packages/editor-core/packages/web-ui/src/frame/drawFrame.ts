@@ -29,7 +29,7 @@ export function createFrameRenderer(
 	const drawSprites = () => {
 		const canvasFrame = { draw, ...frameContext };
 		renderRegistry.drawCanvasBackground(canvasFrame);
-		drawCodeBlocks(draw, state, memoryViews, renderRegistry, frameContext.blockPositions);
+		drawCodeBlocks(canvasFrame, renderRegistry);
 		if (state.featureFlags.canvasOverlays) renderRegistry.drawCanvasOverlays(canvasFrame);
 		renderRegistry.drawContextMenuOverlays(canvasFrame);
 		renderRegistry.drawModalOverlays(canvasFrame);

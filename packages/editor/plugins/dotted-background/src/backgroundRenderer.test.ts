@@ -141,11 +141,14 @@ describe('procedural background', () => {
 		background.destroy();
 	});
 
-	it('composites translucent dots over the base before drawing and skips an invisible background', () => {
+	it('uploads composited colors only on palette changes and skips an invisible background', () => {
 		const { context, gl } = createGl();
 		const background = new BackgroundRenderer(context);
 		background.setPalette(palette([0, 0, 255, 128], [255, 0, 0, 128], [0, 0, 0, 0]));
-		background.draw({ x: 0, y: 0, ...grid });
+		expect(gl.useProgram).toHaveBeenCalledExactlyOnceWith(gl.createProgram.mock.results[0].value);
+		expect(gl.useProgram.mock.invocationCallOrder[0]).toBeLessThan(gl.uniform4fv.mock.invocationCallOrder[0]);
+		expect(gl.uniform4fv).toHaveBeenCalledTimes(3);
+		expect(gl.drawArrays).not.toHaveBeenCalled();
 		const uploaded = (name: string) => [...gl.uniform4fv.mock.calls.find(([location]) => location.name === name)![1]];
 		expect(uploaded('u_baseColor')).toEqual([0, 0, expect.closeTo(128 / 255), expect.closeTo(128 / 255)]);
 		expect(uploaded('u_evenColor')).toEqual([
@@ -155,10 +158,16 @@ describe('procedural background', () => {
 			expect.closeTo(1 - (127 / 255) ** 2),
 		]);
 		expect(uploaded('u_oddColor')).toEqual(uploaded('u_baseColor'));
+		background.draw({ x: 0, y: 0, ...grid });
+		background.draw({ x: 9, y: 3, ...grid });
+		expect(gl.uniform4fv).toHaveBeenCalledTimes(3);
+		expect(gl.drawArrays).toHaveBeenCalledTimes(2);
 		background.setPalette(new Uint8Array(256 * 4));
+		expect(gl.uniform4fv).toHaveBeenCalledTimes(6);
 		gl.drawArrays.mockClear();
 		background.draw({ x: 0, y: 0, ...grid });
 		expect(gl.drawArrays).not.toHaveBeenCalled();
+		expect(gl.uniform4fv).toHaveBeenCalledTimes(6);
 		background.destroy();
 	});
 
@@ -213,19 +222,25 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 		gl: context,
 		palette: resolvePalette({ canvas: '#1a334c' }),
 	});
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([26 / 255, 51 / 255, 76 / 255, 1])
+	);
 
+	gl.uniform4fv.mockClear();
 	layers.draw('afterSprites', frame);
 	expect(gl.drawArrays).not.toHaveBeenCalled();
 	layers.draw('beforeSprites', frame);
 	expect(gl.drawArrays).toHaveBeenCalledOnce();
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
 	expect(gl.uniform4f).toHaveBeenCalledWith({ name: 'u_dotBounds' }, 3 / 8, 7 / 16, 5 / 8, 9 / 16);
-	expect(gl.uniform4fv).toHaveBeenCalledWith(
-		{ name: 'u_baseColor' },
-		new Float32Array([26 / 255, 51 / 255, 76 / 255, 1])
-	);
+	expect(gl.uniform4fv).not.toHaveBeenCalled();
 
 	layers.loadPalette(resolvePalette({ canvas: '#182030' }));
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
+	);
 	frame.viewport.x = 23;
 	frame.viewport.y = 9;
 	frame.viewport.vGrid = 5;
@@ -235,10 +250,7 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	layers.draw('beforeSprites', frame);
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
 	expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
-	expect(gl.uniform4fv).toHaveBeenCalledWith(
-		{ name: 'u_baseColor' },
-		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
-	);
+	expect(gl.uniform4fv).not.toHaveBeenCalled();
 
 	dispose();
 	gl.drawArrays.mockClear();
@@ -248,16 +260,17 @@ it('registers an optional before-sprites layer that tracks the presented viewpor
 	expect(gl.deleteVertexArray).toHaveBeenCalledOnce();
 
 	const disposeReplacement = dottedBackgroundPlugin.setup(services);
+	expect(gl.uniform4fv).toHaveBeenCalledWith(
+		{ name: 'u_baseColor' },
+		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
+	);
 	gl.uniform2f.mockClear();
 	gl.uniform4fv.mockClear();
 	layers.draw('beforeSprites', frame);
 	expect(gl.drawArrays).toHaveBeenCalledOnce();
 	expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 3 / 10, 1 / 8);
 	expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
-	expect(gl.uniform4fv).toHaveBeenCalledWith(
-		{ name: 'u_baseColor' },
-		new Float32Array([24 / 255, 32 / 255, 48 / 255, 1])
-	);
+	expect(gl.uniform4fv).not.toHaveBeenCalled();
 	disposeReplacement();
 	layers.destroy();
 	expect(gl.deleteProgram).toHaveBeenCalledTimes(2);

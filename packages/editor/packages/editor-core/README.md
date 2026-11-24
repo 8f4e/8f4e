@@ -202,9 +202,9 @@ Only the latest registration is active, and its disposer removes it without rest
 Install `@8f4e/editor-plugin-code-block-background` before code rendering. It owns the
 normal, disabled, and dragged base surfaces and corner markers, including their selected colors. Code rendering
 draws nested highlights, the selected-line fill, and text in that order. Other plugins add their drawers after these.
-For offscreen blocks, `renderRegistry.registerOffscreenCodeBlockDrawer((draw, renderedBlock, state) => ...)` replaces a single
+For offscreen blocks, `renderRegistry.registerOffscreenCodeBlockDrawer((draw, renderedBlock, viewport) => ...)` replaces a single
 callback in the same traversal. A `FrameBlockPosition` contains the original `codeBlock` reference and its presentation
-origin (`x`, `y`) in viewport coordinates. The latest registration wins; disposal clears
+origin (`x`, `y`) in presented viewport coordinates. The latest registration wins; disposal clears
 its slot only if that callback is still registered, without restoring a previous callback. `canvasOverlays` hides
 these decorations during screenshot capture. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow placement and drawing.
 

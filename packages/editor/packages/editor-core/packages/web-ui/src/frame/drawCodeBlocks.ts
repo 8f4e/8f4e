@@ -1,17 +1,10 @@
-import type { State } from '@8f4e/editor-state-types';
-import type { MemoryViews } from '../memoryViews';
-import type { DrawContext } from '../sprites/drawContext';
-import type { FrameBlockPositions } from './blockPositions';
-import type { EditorRenderHost } from './renderRegistry';
+import type { CanvasDrawerContext, EditorRenderHost } from './renderRegistry';
 
 export default function drawCodeBlocks(
-	draw: DrawContext,
-	state: State,
-	memoryViews: MemoryViews,
-	renderRegistry: EditorRenderHost,
-	blockPositions: FrameBlockPositions
+	{ draw, state, memoryViews, viewport, blockPositions }: CanvasDrawerContext,
+	renderRegistry: EditorRenderHost
 ): void {
-	const { width, height } = state.viewport;
+	const { width, height } = viewport;
 
 	for (const blockPosition of blockPositions.ordered) {
 		const { codeBlock, x, y } = blockPosition;
@@ -20,7 +13,7 @@ export default function drawCodeBlocks(
 			renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 			draw.endGroup();
 		} else if (state.featureFlags.canvasOverlays) {
-			renderRegistry.drawOffscreenCodeBlock(draw, blockPosition, state);
+			renderRegistry.drawOffscreenCodeBlock(draw, blockPosition, viewport);
 		}
 	}
 }

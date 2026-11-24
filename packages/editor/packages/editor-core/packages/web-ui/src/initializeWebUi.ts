@@ -6,7 +6,7 @@ import { createFontAtlasController, loadInitialFontAtlas } from './font-and-pale
 import { createPaletteController } from './font-and-palette/palette';
 import { createFrameRenderer } from './frame/drawFrame';
 import { createFrameStats, type RenderStats } from './frame/frameStats';
-import { createEditorRenderRegistry, type EditorRenderHost } from './frame/renderRegistry';
+import type { EditorRenderHost } from './frame/renderRegistry';
 import type { MemoryViews } from './memoryViews';
 import { createResourceLifecycle } from './webgl/resourceLifecycle';
 import type { SpriteEngine } from './webgl/spriteEngine';
@@ -17,9 +17,8 @@ export interface WebUiOptions {
 	defaultFont?: Font;
 	/** Read the host's live motion preference without creating browser listeners in web-ui. */
 	prefersReducedMotion?: () => boolean;
-	renderRegistry?: EditorRenderHost;
+	renderRegistry: EditorRenderHost;
 	onRenderStats?: (stats: RenderStats) => void;
-	renderStatsIntervalFrames?: number;
 }
 
 /** Initializes web-ui and takes ownership of the supplied sprite engine, including on startup failure. */
@@ -34,8 +33,8 @@ export default async function initializeWebUi(
 		const state = store.getState();
 		const initialFont = await loadInitialFontAtlas(state, options.defaultFont);
 		const palette = createPaletteController(store, engine);
-		const stats = createFrameStats(engine, options.onRenderStats, options.renderStatsIntervalFrames);
-		const renderRegistry = options.renderRegistry ?? createEditorRenderRegistry();
+		const stats = createFrameStats(engine, options.onRenderStats);
+		const { renderRegistry } = options;
 		const fonts = createFontAtlasController(store, events, options.loading, engine, initialFont, options.defaultFont);
 		const renderLayers = renderRegistry.attachRenderLayers({ gl: engine.gl, palette: palette.initial });
 		const camera = createCameraController(store, events, options.prefersReducedMotion);

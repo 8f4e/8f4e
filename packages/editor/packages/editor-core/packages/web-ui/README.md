@@ -95,18 +95,17 @@ or startup failure.
 - `events: EventDispatcher` - Announces layout grid size changes
 - `engine: SpriteEngine` - A Glugglugglug engine or an implementation of the sprite and render-hook API used by web-ui. Test renderers can provide no-op GPU operations, but `renderFrame` must still dispatch `preDraw` and `postDraw` hooks around sprite submission.
 - `memoryViews: MemoryViews` - Memory view interfaces for rendering code blocks
-- `options.renderRegistry` - Optional render registry supplied by the host
+- `options.renderRegistry` - Required render registry supplied by the host
 - `options.defaultFont` - Optional per-editor default (`ibmvga8x16` when omitted), used whenever project configuration has no font directive. Only the selected font is loaded at startup; the default still applies to later configuration changes.
 - `options.loading` - Required per-editor loading service supplied by editor-core; font changes contribute ID `font` with message `Loading font <name>...`
-- `options.onRenderStats` - Optional callback for sampled render statistics
-- `options.renderStatsIntervalFrames` - Optional frame interval for `onRenderStats` (defaults to 60)
+- `options.onRenderStats` - Optional callback for render statistics sampled every 60 frames
 
 **Returns:** An object with methods to control the renderer:
 
 - `resize(width, height)` - Resize the canvas
 - `renderFrame()` - Restore released GPU resources as needed and draw one frame from the supplied state
 - `releaseRenderingResources()` - Release reloadable GPU resources and the canvas drawing buffer
-- `resetRenderStats()` - Restart the elapsed-time and frame-count sample when the host resumes its loop
+- `resetRenderStats()` - Start a fresh 60-frame sample when the host resumes its loop so the pause does not affect the measured frame rate
 - `destroy()` - Unsubscribe from configuration and release renderer and plugin resources
 
 ### `RenderStats`
@@ -151,8 +150,8 @@ are added when preparing shared block positions, before visibility checks or any
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
 The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
 the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
-`registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, blockPosition, state)` and handles offscreen blocks
-in the same traversal using viewport coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
+`registerOffscreenCodeBlockDrawer(drawer)` callback receives `(draw, blockPosition, viewport)` and handles offscreen blocks
+in the same traversal using presented viewport coordinates. Later registrations overwrite it; disposal clears only the current callback and restores nothing.
 `canvasOverlays` controls these decorations. `@8f4e/editor-plugin-offscreen-block-arrows` owns arrow geometry and drawing.
 `@8f4e/editor-plugin-code-block-background` supplies base rectangles and corner markers, including selected colors,
 and is installed before code rendering.

@@ -633,10 +633,7 @@ describe('editor init', () => {
 		const { default: initView } = await import('@8f4e/web-ui');
 		const canvas = { width: 640, height: 480 } as HTMLCanvasElement;
 
-		await init(canvas, {
-			renderer,
-			renderStatsIntervalFrames: 12,
-		});
+		await init(canvas, { renderer });
 
 		const viewCall = vi.mocked(initView).mock.calls.at(-1)!;
 		const viewOptions = viewCall[4]!;
@@ -650,7 +647,6 @@ describe('editor init', () => {
 			uploadedInstanceBytes: 500,
 		});
 
-		expect(viewOptions.renderStatsIntervalFrames).toBe(12);
 		expect(store.set).toHaveBeenCalledWith('info.graphics', {
 			timeToRenderMs: 10,
 			fps: 50,

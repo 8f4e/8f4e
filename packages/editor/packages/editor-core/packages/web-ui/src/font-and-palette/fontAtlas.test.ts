@@ -165,6 +165,7 @@ describe('font atlas replacements', () => {
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 		await Promise.resolve();
 		expect(test.state.gridSizeReady).toBe(true);
+		expect(test.state.viewport).toMatchObject({ hGrid: 16, vGrid: 8 });
 		pending.resolve(createAtlas());
 		await pending.promise;
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('terminus8x16');
@@ -203,6 +204,7 @@ describe('font atlas replacements', () => {
 		loadFontAtlas.mockReturnValueOnce(pending.promise);
 		test.store.set('editorConfig.font', 'x11miscfixed6x10');
 		expect(test.state.gridSizeReady).toBe(false);
+		expect(test.state.viewport).toMatchObject({ hGrid: 16, vGrid: 8 });
 		pending.reject(error);
 		await pending.promise.catch(() => undefined);
 		expect(test.state.gridSizeReady).toBe(true);

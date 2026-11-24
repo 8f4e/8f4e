@@ -110,7 +110,6 @@ export interface EditorOptions {
 	plugins?: readonly EditorPlugin[];
 	featureFlags?: Partial<State['featureFlags']>;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
-	renderStatsIntervalFrames?: number;
 }
 
 interface CanvasSize {
@@ -221,7 +220,6 @@ export default async function init(
 			defaultFont: options.defaultFont,
 			prefersReducedMotion: () => reducedMotion?.matches ?? false,
 			renderRegistry,
-			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
 			onRenderStats: stats => {
 				store.set('info.graphics', toGraphicsInfoRecord(stats));
 			},

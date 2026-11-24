@@ -20,7 +20,11 @@ export interface CodeBlockDrawerContext {
 export type CodeBlockDrawer = (context: CodeBlockDrawerContext) => void;
 
 /** Draw one offscreen block's decoration using viewport coordinates and its frame-scoped position. */
-export type OffscreenCodeBlockDrawer = (draw: DrawContext, blockPosition: FrameBlockPosition, state: State) => void;
+export type OffscreenCodeBlockDrawer = (
+	draw: DrawContext,
+	blockPosition: FrameBlockPosition,
+	viewport: FrameContext['viewport']
+) => void;
 
 export interface CanvasDrawerContext extends FrameContext {
 	/** Drawing coordinates are relative to the viewport's top-left corner. */
@@ -58,7 +62,7 @@ export interface EditorRenderHost extends EditorRenderRegistry {
 	prepareCodeBlockOffsets: (
 		state: Parameters<CodeBlockPositionEffect>[0],
 		frameTime: number,
-		suppressOffsets?: boolean
+		suppressOffsets: boolean
 	) => ReturnType<CodeBlockPositionEffect>;
 	attachRenderLayers: ReturnType<typeof createRenderLayerRegistry>['attachRenderLayers'];
 	drawCodeBlock: CodeBlockDrawer;
@@ -103,7 +107,7 @@ export function createEditorRenderRegistry(): EditorRenderHost {
 				if (positionEffect === registration) positionEffect = undefined;
 			};
 		},
-		prepareCodeBlockOffsets: (state, frameTime, suppressOffsets = false) => {
+		prepareCodeBlockOffsets: (state, frameTime, suppressOffsets) => {
 			const offsets = positionEffect?.effect(state, frameTime, suppressOffsets);
 			return suppressOffsets ? undefined : offsets;
 		},
@@ -122,7 +126,7 @@ export function createEditorRenderRegistry(): EditorRenderHost {
 		registerContextMenuOverlay: contextMenuOverlays.register,
 		registerModalOverlay: modalOverlays.register,
 		drawCodeBlock: blockDrawers.draw,
-		drawOffscreenCodeBlock: (draw, blockPosition, state) => offscreenDrawer?.drawer(draw, blockPosition, state),
+		drawOffscreenCodeBlock: (draw, blockPosition, viewport) => offscreenDrawer?.drawer(draw, blockPosition, viewport),
 		drawCanvasBackground: canvasBackground.draw,
 		drawCanvasOverlays: canvasOverlays.draw,
 		drawContextMenuOverlays: contextMenuOverlays.draw,

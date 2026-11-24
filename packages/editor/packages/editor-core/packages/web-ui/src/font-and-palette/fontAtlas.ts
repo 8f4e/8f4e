@@ -1,11 +1,5 @@
 import { logError, markGridSizePending, setGridSize } from '@8f4e/editor-state';
-import type {
-	EditorLoadingRegistry,
-	EventDispatcher,
-	GridSize,
-	LoadingIndicatorHandle,
-	State,
-} from '@8f4e/editor-state-types';
+import type { EditorLoadingRegistry, EventDispatcher, LoadingIndicatorHandle, State } from '@8f4e/editor-state-types';
 import loadFontAtlas, { type Font, type FontAtlas } from '@8f4e/sprite-generator';
 import type { StateManager } from '@8f4e/state-manager';
 import { DrawContext } from '../sprites/drawContext';
@@ -38,13 +32,11 @@ export function createFontAtlasController(
 	let generation = 0;
 	let fontLoading: { font: Font; indicator: LoadingIndicatorHandle } | undefined;
 	let installedFont: Font;
-	let installedGrid: GridSize;
 	const install = (font: Font, atlas: FontAtlas): void => {
 		engine.setSpriteAtlas(atlas.image, atlas.grid);
 		draw.setCharacterWidth(atlas.grid.cellWidth);
 		installedFont = font;
-		installedGrid = { hGrid: atlas.grid.cellHeight, vGrid: atlas.grid.cellWidth };
-		setGridSize(state, events, installedGrid);
+		setGridSize(state, events, { hGrid: atlas.grid.cellHeight, vGrid: atlas.grid.cellWidth });
 	};
 	install(initial.font, initial.atlas);
 
@@ -58,7 +50,7 @@ export function createFontAtlasController(
 			if (!state.gridSizeReady) {
 				// Configuration can resolve during a source refresh. Let that refresh settle layout first.
 				await Promise.resolve();
-				if (!disposed && currentGeneration === generation) setGridSize(state, events, installedGrid);
+				if (!disposed && currentGeneration === generation) setGridSize(state, events, state.viewport);
 			}
 			return;
 		}
@@ -75,7 +67,7 @@ export function createFontAtlasController(
 			if (disposed || currentGeneration !== generation) return;
 			logError(state, `Failed to load font ${font}: ${String(error)}`);
 			indicator.fail();
-			if (!disposed && currentGeneration === generation) setGridSize(state, events, installedGrid);
+			if (!disposed && currentGeneration === generation) setGridSize(state, events, state.viewport);
 		} finally {
 			indicator.cancel();
 			if (fontLoading?.indicator === indicator) fontLoading = undefined;

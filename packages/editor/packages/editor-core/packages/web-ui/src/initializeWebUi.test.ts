@@ -161,6 +161,7 @@ describe('web-ui init', () => {
 		vi.mocked(loadFontAtlas).mockResolvedValueOnce(atlas);
 		const view = await init(store, createMockEventDispatcher(), createMemoryViews(), {
 			loading,
+			renderRegistry: createEditorRenderRegistry(),
 			defaultFont: 'pixelcode6x12',
 		});
 		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('pixelcode6x12');
@@ -270,17 +271,22 @@ describe('web-ui init', () => {
 		lastOverlay.mockClear();
 		view.renderFrame();
 
-		const frameState = mocks.drawCodeBlocks.mock.calls.at(-1)?.[1];
-		const blockPositions = mocks.drawCodeBlocks.mock.calls.at(-1)?.[4];
-
-		expect(frameState).toBe(state);
-		const frame = { draw: expect.anything(), state, viewport: state.viewport, memoryViews, blockPositions };
+		const [frame, registry] = mocks.drawCodeBlocks.mock.calls.at(-1)!;
+		expect(registry).toBe(renderRegistry);
+		expect(frame.state).toBe(state);
+		expect(frame).toEqual({
+			draw: expect.anything(),
+			state,
+			viewport: state.viewport,
+			memoryViews,
+			blockPositions: expect.anything(),
+		});
 		expect(background).toHaveBeenCalledWith(frame);
 		expect(background.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!);
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder.at(-1)!).toBeLessThan(overlay.mock.invocationCallOrder[0]);
 		expect(overlay).toHaveBeenCalledWith(frame);
 		for (const drawer of [background, overlay, lastOverlay, menu, modal]) {
-			expect(drawer.mock.calls[0][0].blockPositions).toBe(blockPositions);
+			expect(drawer.mock.calls[0][0]).toBe(frame);
 		}
 		expect(overlay.mock.invocationCallOrder[0]).toBeLessThan(lastOverlay.mock.invocationCallOrder[0]);
 		expect(lastOverlay.mock.invocationCallOrder[0]).toBeLessThan(menu.mock.invocationCallOrder[0]);
@@ -335,7 +341,7 @@ describe('web-ui init', () => {
 		expect(drawNextBefore.mock.invocationCallOrder[0]).toBeLessThan(mocks.drawCodeBlocks.mock.invocationCallOrder[0]);
 		expect(mocks.drawCodeBlocks.mock.invocationCallOrder[0]).toBeLessThan(drawAfter.mock.invocationCallOrder[0]);
 		expect(drawAfter.mock.invocationCallOrder[0]).toBeLessThan(drawTopLayer.mock.invocationCallOrder[0]);
-		const first = mocks.drawCodeBlocks.mock.calls[0][4];
+		const first = mocks.drawCodeBlocks.mock.calls[0][0].blockPositions;
 		const firstRecord = first.byCodeBlock.get(block);
 		expect(firstRecord).toMatchObject({ x: 32, y: 80 });
 		for (const layer of layers) {
@@ -345,7 +351,7 @@ describe('web-ui init', () => {
 
 		state.viewport.x = 16;
 		view.renderFrame();
-		const next = mocks.drawCodeBlocks.mock.calls[1][4];
+		const next = mocks.drawCodeBlocks.mock.calls[1][0].blockPositions;
 		expect(next).toBe(first);
 		expect(next.byCodeBlock.get(block)).toBe(firstRecord);
 		expect(firstRecord).toMatchObject({ x: 24, y: 80 });
@@ -379,7 +385,7 @@ describe('web-ui init', () => {
 
 		expect(effect).toHaveBeenCalledExactlyOnceWith(state, 1250, false);
 		expect(resolveOffset.mock.calls).toEqual([[block], [otherBlock]]);
-		const geometry = mocks.drawCodeBlocks.mock.calls[0][4];
+		const geometry = mocks.drawCodeBlocks.mock.calls[0][0].blockPositions;
 		const record = geometry.byCodeBlock.get(block);
 		expect(record).toMatchObject({ x: 38, y: 77 });
 		expect(geometry.byCodeBlock.get(otherBlock)).toMatchObject({ x: 792, y: 80 });
@@ -392,7 +398,7 @@ describe('web-ui init', () => {
 		view.renderFrame(1270);
 
 		expect(effect).toHaveBeenCalledOnce();
-		expect(mocks.drawCodeBlocks.mock.calls[1][4]).toBe(geometry);
+		expect(mocks.drawCodeBlocks.mock.calls[1][0].blockPositions).toBe(geometry);
 		expect(geometry.byCodeBlock.get(block)).toBe(record);
 		expect(record).toMatchObject({ x: 32, y: 80 });
 		view.destroy();
@@ -443,7 +449,10 @@ describe('web-ui init', () => {
 	it('releases rendering resources and restores the latest deferred size before drawing', async () => {
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
-		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, { loading });
+		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, {
+			loading,
+			renderRegistry: createEditorRenderRegistry(),
+		});
 
 		view.releaseRenderingResources();
 		view.releaseRenderingResources();
@@ -464,7 +473,10 @@ describe('web-ui init', () => {
 
 	it('retains the renderer’s initial drawing buffer size until the host supplies a size', async () => {
 		const state = createMockState({ viewport: { width: 0, height: 0 } });
-		const view = await init(createStateManager(state), createMockEventDispatcher(), createMemoryViews(), { loading });
+		const view = await init(createStateManager(state), createMockEventDispatcher(), createMemoryViews(), {
+			loading,
+			renderRegistry: createEditorRenderRegistry(),
+		});
 		view.releaseRenderingResources();
 		view.renderFrame();
 		expect(mocks.engine.resize.mock.calls).toEqual([
@@ -558,60 +570,74 @@ describe('web-ui init', () => {
 		const onRenderStats = vi.fn();
 		const view = await init(createStateManager(createMockState()), createMockEventDispatcher(), createMemoryViews(), {
 			loading,
+			renderRegistry: createEditorRenderRegistry(),
 			onRenderStats,
-			renderStatsIntervalFrames: 2,
 		});
 		try {
 			view.renderFrame();
 			now = 1000;
 			view.resetRenderStats();
 			expect(mocks.engine.renderFrame).toHaveBeenCalledOnce();
-			now = 1010;
+			for (let frame = 1; frame < 60; frame++) {
+				now += 10;
+				view.renderFrame();
+			}
+			expect(onRenderStats).not.toHaveBeenCalled();
+			now += 10;
 			view.renderFrame();
-			expect(onRenderStats).toHaveBeenCalledWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
+			expect(onRenderStats).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ fps: 100, frameBudgetMs: 10 }));
 		} finally {
 			view.destroy();
 			performanceNow.mockRestore();
 		}
 	});
 
-	it('emits render stats at the configured frame interval', async () => {
+	it('emits render stats every 60 frames', async () => {
 		let now = 0;
 		const performanceNow = vi.spyOn(performance, 'now').mockImplementation(() => now);
-		mocks.drawCodeBlocks.mockImplementationOnce(() => {
-			now += 10;
-		});
 		const state = createMockState();
 		const memoryViews = createMemoryViews();
 		const onRenderStats = vi.fn();
 
 		const view = await init(createStateManager(state), createMockEventDispatcher(), memoryViews, {
 			loading,
+			renderRegistry: createEditorRenderRegistry(),
 			onRenderStats,
-			renderStatsIntervalFrames: 2,
 		});
-		view.renderFrame();
-		expect(onRenderStats).not.toHaveBeenCalled();
+		try {
+			for (let frame = 1; frame < 60; frame++) {
+				now += 25;
+				view.renderFrame();
+			}
+			expect(onRenderStats).not.toHaveBeenCalled();
 
-		now = 40;
-		mocks.drawCodeBlocks.mockImplementationOnce(() => {
-			now += 10;
-		});
-		view.renderFrame();
-		expect(onRenderStats).toHaveBeenCalledTimes(1);
-		expect(onRenderStats).toHaveBeenCalledWith({
-			timeToRenderMs: 10,
-			fps: 40,
-			frameBudgetMs: 25,
-			headroomMs: 15,
-			fpsCapacity: 100,
-			spriteCount: 100,
-			uploadedInstanceBytes: 2000,
-		});
+			now += 15;
+			mocks.drawCodeBlocks.mockImplementationOnce(() => {
+				now += 10;
+			});
+			view.renderFrame();
+			expect(onRenderStats).toHaveBeenCalledExactlyOnceWith({
+				timeToRenderMs: 10,
+				fps: 40,
+				frameBudgetMs: 25,
+				headroomMs: 15,
+				fpsCapacity: 100,
+				spriteCount: 100,
+				uploadedInstanceBytes: 2000,
+			});
 
-		view.renderFrame();
-		expect(onRenderStats).toHaveBeenCalledTimes(1);
-		view.destroy();
-		performanceNow.mockRestore();
+			for (let frame = 1; frame < 60; frame++) {
+				now += 20;
+				view.renderFrame();
+			}
+			expect(onRenderStats).toHaveBeenCalledTimes(1);
+			now += 20;
+			view.renderFrame();
+			expect(onRenderStats).toHaveBeenCalledTimes(2);
+			expect(onRenderStats).toHaveBeenLastCalledWith(expect.objectContaining({ fps: 50, frameBudgetMs: 20 }));
+		} finally {
+			view.destroy();
+			performanceNow.mockRestore();
+		}
 	});
 });
