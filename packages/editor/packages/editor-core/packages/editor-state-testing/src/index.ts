@@ -25,10 +25,17 @@ type DeepPartial<T> = T extends (...args: never[]) => unknown
 			}
 		: T;
 
+type ProjectOverrides = Omit<Partial<State['project']>, 'rootLevel' | 'activeLevel'> &
+	(
+		| { rootLevel?: Partial<ProjectLevel>; activeLevel?: never }
+		| { rootLevel?: never; activeLevel: Partial<ProjectLevel> }
+		| { rootLevel: ProjectLevel; activeLevel: ProjectLevel }
+	);
+
 // EditorConfig already accepts partial JSON; expanding its recursive values adds no useful constraints.
 type StateOverrides = {
-	[K in keyof State]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
-};
+	[K in Exclude<keyof State, 'project'>]?: K extends 'editorConfig' ? State[K] : DeepPartial<State[K]>;
+} & { project?: ProjectOverrides };
 
 function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
@@ -135,7 +142,21 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const rootLevel: ProjectLevel = { entries: [], path: '', blocks: [] };
+	const { project: projectOverrides, ...stateOverrides } = overrides;
+	let rootLevel: ProjectLevel;
+	let activeLevel: ProjectLevel;
+	if (projectOverrides?.rootLevel && projectOverrides.activeLevel) {
+		({ rootLevel, activeLevel } = projectOverrides);
+	} else {
+		rootLevel = {
+			entries: [],
+			path: '',
+			blocks: [],
+			...(projectOverrides?.rootLevel ?? projectOverrides?.activeLevel),
+		};
+		activeLevel = rootLevel;
+	}
+	const { rootLevel: _root, activeLevel: _active, ...projectStateOverrides } = projectOverrides ?? {};
 
 	const defaults: State = {
 		compilerInputRevision: 0,
@@ -156,7 +177,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		callbacks: {},
 		project: {
 			rootLevel,
-			activeLevel: rootLevel,
+			activeLevel,
 			entryBounds: [],
 			nextCodeBlockCreationIndex: 0,
 		},
@@ -183,7 +204,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 		featureFlags: {
 			contextMenu: true,
-			moduleDragging: true,
+			blockSelectionAndDragging: true,
 			codeLineSelection: true,
 			viewportDragging: true,
 			canvasOverlays: true,
@@ -217,24 +238,14 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 	};
 
-	const state = mergeDeep<State>(defaults, overrides);
-	const rendering = overrides.project;
-	if (rendering?.activeLevel && !rendering.rootLevel) {
-		state.project.rootLevel = state.project.activeLevel;
-	}
-	const initialize = (level: ProjectLevel, path: string): ProjectLevel[] => {
+	const state = mergeDeep<State>(defaults, { ...stateOverrides, project: projectStateOverrides });
+	const initialize = (level: ProjectLevel, path: string): void => {
 		level.path = path;
-		return [
-			level,
-			...level.blocks.flatMap(block =>
-				block.childLevel ? initialize(block.childLevel, path ? `${path}/${block.name}` : block.name) : []
-			),
-		];
+		for (const block of level.blocks) {
+			if (block.childLevel) initialize(block.childLevel, path ? `${path}/${block.name}` : block.name);
+		}
 	};
-	const levels = initialize(state.project.rootLevel, '');
-	state.project.activeLevel = rendering?.activeLevel
-		? (levels.find(level => level.blocks === state.project.activeLevel.blocks) ?? state.project.activeLevel)
-		: state.project.rootLevel;
+	initialize(rootLevel, '');
 	return state;
 }
 

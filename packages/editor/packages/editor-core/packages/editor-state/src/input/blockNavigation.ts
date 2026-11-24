@@ -208,11 +208,12 @@ export function jumpToCodeBlock(
  * @param store - The editor state manager
  * @param events - The event dispatcher
  */
-export default function registerBlockNavigation(store: StateManager<State>, events: EventDispatcher): void {
+export default function registerBlockNavigation(store: StateManager<State>, events: EventDispatcher): () => void {
 	const onNavigateCodeBlock = (event: NavigateCodeBlockEvent) => {
 		navigateToCodeBlockInDirection(store, event.direction, events);
 	};
 
 	// Register the abstract navigation event handler
 	events.on('navigateCodeBlock', onNavigateCodeBlock);
+	return () => events.off('navigateCodeBlock', onNavigateCodeBlock);
 }

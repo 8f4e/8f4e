@@ -6,7 +6,7 @@ import { type Group, getGroup, getGroupBlocks } from './groups';
 export function registerGroupMenus({ store, menus }: EditorPluginContext): () => void {
 	const state = store.getState();
 	const registerEditingItem = (create: (block: EditorCodeBlock, group: Group) => ContextMenuItem | undefined) =>
-		menus.registerItem('moduleMenu', ({ codeBlock }) => {
+		menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
 			const group = getGroup(codeBlock.parsedDirectives);
 			return group && state.editorMode === 'edit' && !codeBlock.readOnly ? create(codeBlock, group) : undefined;
 		});
@@ -54,7 +54,7 @@ export function registerGroupMenus({ store, menus }: EditorPluginContext): () =>
 		payload: { codeBlock },
 		close: true,
 	}));
-	const unregisterCopy = menus.registerItem('moduleMenu', ({ codeBlock }) => {
+	const unregisterCopy = menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
 		if (!getGroup(codeBlock.parsedDirectives)) return;
 		return {
 			title: 'Copy group',

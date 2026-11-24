@@ -89,7 +89,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	};
 	const release = () => events.dispatch('codeBlockPointerUp');
 	const menuItems = async () => {
-		events.dispatch('openSubMenu', { menu: 'moduleMenu', payload: { codeBlock: block } });
+		events.dispatch('openSubMenu', { menu: 'codeBlockMenu', payload: { codeBlock: block } });
 		await Promise.resolve();
 		await Promise.resolve();
 		return state.contextMenu.items.filter(item => item.action === 'saveSliderValuesToCode');

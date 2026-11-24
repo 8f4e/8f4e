@@ -1,2 +1,2 @@
+export { codeBlockMenu } from './codeBlockMenu';
 export { mainMenu } from './mainMenu';
-export { moduleMenu } from './moduleMenu';

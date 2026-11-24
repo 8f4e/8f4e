@@ -20,8 +20,8 @@ export default function registerContextMenuHandlers(
 	const state = store.getState();
 	const unregisterMenus = [
 		registry.registerMenu('mainMenu', state => menus.mainMenu(state, registry.getItems('mainMenu', { state }))),
-		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: EditorCodeBlock }) =>
-			menus.moduleMenu(state, codeBlock, registry.getItems('moduleMenu', { state, codeBlock }))
+		registry.registerMenu('codeBlockMenu', (state, { codeBlock }: { codeBlock: EditorCodeBlock }) =>
+			menus.codeBlockMenu(state, codeBlock, registry.getItems('codeBlockMenu', { state, codeBlock }))
 		),
 	];
 	const updateMenu = async () => {
@@ -64,7 +64,7 @@ export default function registerContextMenuHandlers(
 			x: x + state.viewport.x,
 			y: y + state.viewport.y,
 			items: [],
-			menuStack: [codeBlock ? { menu: 'moduleMenu', payload: { codeBlock } } : { menu: 'mainMenu' }],
+			menuStack: [codeBlock ? { menu: 'codeBlockMenu', payload: { codeBlock } } : { menu: 'mainMenu' }],
 		});
 		await updateMenu();
 	};

@@ -17,7 +17,7 @@ export interface MenuRegistry extends EditorMenuRegistry {
 export default function createMenuRegistry(): MenuRegistry {
 	const registrations: { [Menu in EditorMenuItemSlot]: Set<{ provider: EditorMenuItemProvider<Menu> }> } = {
 		mainMenu: new Set(),
-		moduleMenu: new Set(),
+		codeBlockMenu: new Set(),
 	};
 	const generators = new Map<string, MenuGenerator>();
 	return {

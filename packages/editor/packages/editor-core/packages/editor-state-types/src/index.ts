@@ -105,8 +105,8 @@ export interface FeatureFlags {
 	/** Enable/disable right-click context menu functionality */
 	contextMenu: boolean;
 
-	/** Enable/disable dragging and repositioning of code block modules */
-	moduleDragging: boolean;
+	/** Enable default pointer selection and edit-mode dragging of code blocks. */
+	blockSelectionAndDragging: boolean;
 
 	/** Enable/disable selecting lines/caret positions; preserved across mode changes and project replacement. */
 	codeLineSelection: boolean;

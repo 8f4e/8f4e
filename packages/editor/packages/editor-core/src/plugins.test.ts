@@ -49,7 +49,7 @@ describe('editor plugins', () => {
 						expect(received).toBe(context);
 						received.store.subscribe('compilerInputRevision', onChange);
 						received.events.on('plugin-action', onEvent);
-						const unregisterMenu = received.menus.registerItem('moduleMenu', () => ({ title: 'Plugin action' }));
+						const unregisterMenu = received.menus.registerItem('codeBlockMenu', () => ({ title: 'Plugin action' }));
 						const finishLoading = received.loading.add({
 							id: 'plugin-resource',
 							message: 'Loading plugin resource...',

@@ -2,7 +2,7 @@ import type { ContextMenuItem, EditorCodeBlock, MenuGenerator, State } from '../
 
 interface EditorMenuItemContexts {
 	mainMenu: { state: State };
-	moduleMenu: {
+	codeBlockMenu: {
 		state: State;
 		/** The block the menu was opened for, independently of the current selection. */
 		codeBlock: EditorCodeBlock;

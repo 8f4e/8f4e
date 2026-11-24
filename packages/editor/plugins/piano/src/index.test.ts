@@ -85,7 +85,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	};
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
-		events.dispatch('openSubMenu', { menu: 'moduleMenu', payload: { codeBlock } });
+		events.dispatch('openSubMenu', { menu: 'codeBlockMenu', payload: { codeBlock } });
 		await Promise.resolve();
 		await Promise.resolve();
 		return state.contextMenu.items.filter(item => item.action === 'savePianoValuesToCode');

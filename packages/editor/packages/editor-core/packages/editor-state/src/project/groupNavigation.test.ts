@@ -13,7 +13,6 @@ describe('projectGroupNavigation', () => {
 		const state = createMockState({
 			project: {
 				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
-				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 			},
 			viewport: { x: 64, y: -96, width: 800, height: 600 },
 		});
@@ -241,7 +240,6 @@ entryEnd`),
 		const state = createMockState({
 			project: {
 				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
-				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 				selectedCodeBlock: groupBlock,
 			},
 			viewport: { x: 64, y: 96 },
@@ -282,14 +280,15 @@ entryEnd`),
 
 	it('returns to the immediate parent slice one level at a time', () => {
 		const deepestSlice = [createMockCodeBlock({ name: 'deepest' })];
-		const nestedGroup = createMockCodeBlock({ childLevel: { entries: [], path: '', blocks: deepestSlice } });
+		const deepestLevel = { entries: [], path: '', blocks: deepestSlice };
+		const nestedGroup = createMockCodeBlock({ childLevel: deepestLevel });
 		const firstLevelSlice = [nestedGroup];
 		const rootGroup = createMockCodeBlock({ childLevel: { entries: [], path: '', blocks: firstLevelSlice } });
 		const rootCodeBlocks = [rootGroup];
 		const state = createMockState({
 			project: {
 				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
-				activeLevel: { entries: [], path: '', blocks: deepestSlice },
+				activeLevel: deepestLevel,
 			},
 		});
 		const store = createStateManager(state);

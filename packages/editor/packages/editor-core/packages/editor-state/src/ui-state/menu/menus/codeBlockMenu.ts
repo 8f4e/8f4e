@@ -4,7 +4,7 @@ import { documentBlockInstructionByType } from '@8f4e/language-spec';
 const functionBlockType = documentBlockInstructionByType.function.type;
 const noteBlockType = documentBlockInstructionByType.note.type;
 
-export const moduleMenu = (
+export const codeBlockMenu = (
 	state: State,
 	codeBlock: EditorCodeBlock,
 	items: readonly ContextMenuItem[]
@@ -24,7 +24,7 @@ export const moduleMenu = (
 	const isDisabled = codeBlock.disabled;
 
 	return [
-		...(state.project.activeLevel.blocks !== state.project.rootLevel.blocks
+		...(state.project.activeLevel !== state.project.rootLevel
 			? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }]
 			: []),
 		...(isProjectGroup

@@ -1,5 +1,4 @@
 import type { CodeBlockLayoutContribution, EditorCodeBlock, State } from '@8f4e/editor-state-types';
-import type { BlockLayoutDraft } from './blockLayoutDraft';
 import buildDisplayModel from './buildDisplayModel';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
 import updateBlockGaps from './updateBlockGaps';
@@ -18,12 +17,8 @@ export function calculateBlockLayout(
 	block.displayModel = displayModel;
 	block.lineNumberColumnWidth = block.code.length.toString().length;
 	block.isCollapsed = displayModel.isCollapsed;
-	const draft: BlockLayoutDraft = {
-		displayModel,
-		verticalSpaceAfterSourceLine: [...contribution.verticalSpaceAfterSourceLine],
-	};
 	block.minGridWidth = contribution.minGridWidth;
-	updateBlockGaps(block, draft);
+	updateBlockGaps(block, contribution.verticalSpaceAfterSourceLine);
 	const { vGrid, hGrid } = state.viewport;
 	block.width = getCodeBlockGridWidth(block.code, block.tabStopsByLine, block.minGridWidth) * vGrid;
 	const gapRows = [...block.gaps.values()].reduce((total, gap) => total + gap.size, 0);

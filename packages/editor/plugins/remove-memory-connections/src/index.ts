@@ -15,7 +15,7 @@ export const removeMemoryConnectionsPlugin: EditorPlugin = {
 		};
 
 		events.on('removeConnections', onRemove);
-		const unregisterMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+		const unregisterMenu = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
 			return {
 				title: 'Remove connections',

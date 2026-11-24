@@ -10,12 +10,12 @@ describe('feature flags', () => {
 		expect(
 			validateFeatureFlags({
 				contextMenu: false,
-				moduleDragging: false,
+				blockSelectionAndDragging: false,
 			})
 		).toEqual({
 			...defaultFeatureFlags,
 			contextMenu: false,
-			moduleDragging: false,
+			blockSelectionAndDragging: false,
 		});
 	});
 });

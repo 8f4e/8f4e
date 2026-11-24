@@ -10,11 +10,11 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(moduleDragging = true) {
+function setup(blockSelectionAndDragging = true) {
 	const events = createEvents();
 	const store = initState(events, {
 		callbacks: {},
-		featureFlags: { moduleDragging },
+		featureFlags: { blockSelectionAndDragging },
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
@@ -43,21 +43,24 @@ function setup(moduleDragging = true) {
 	return { events, store, state, block, pointer };
 }
 
-it.each([true, false])('routes controls before block selection with moduleDragging=%s', moduleDragging => {
-	const test = setup(moduleDragging);
-	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
+it.each([true, false])(
+	'routes controls before block selection with blockSelectionAndDragging=%s',
+	blockSelectionAndDragging => {
+		const test = setup(blockSelectionAndDragging);
+		const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
+			expect(test.state.project.selectedCodeBlock).toBeUndefined();
+			expect(test.state.project.draggedCodeBlock).toBeUndefined();
+			event.stopPropagation = true;
+		});
+		test.events.on('codeBlockPointerDown', pressed, { capture: true });
+		test.events.dispatch('pointerdown', test.pointer);
+		expect(pressed).toHaveBeenCalledOnce();
+		expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
+		expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
+		expect(test.pointer.stopPropagation).toBe(true);
 		expect(test.state.project.selectedCodeBlock).toBeUndefined();
-		expect(test.state.project.draggedCodeBlock).toBeUndefined();
-		event.stopPropagation = true;
-	});
-	test.events.on('codeBlockPointerDown', pressed, { capture: true });
-	test.events.dispatch('pointerdown', test.pointer);
-	expect(pressed).toHaveBeenCalledOnce();
-	expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
-	expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
-	expect(test.pointer.stopPropagation).toBe(true);
-	expect(test.state.project.selectedCodeBlock).toBeUndefined();
-});
+	}
+);
 
 it('delivers ordinary block presses after default selection', () => {
 	const test = setup();

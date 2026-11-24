@@ -21,11 +21,14 @@ function projectSource(...blocks: string[]): string {
 const firstSource = moduleSource('first', 5, 5);
 const secondSource = moduleSource('second', 20, 10);
 
-function setup(source = projectSource(firstSource), { moduleDragging = true, mode = 'edit' } = {}) {
+function setup(source = projectSource(firstSource), { blockSelectionAndDragging = true, mode = 'edit' } = {}) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	// This dispatcher has no input layers, so isolate dragging from viewport panning.
-	const store = initState(events, { callbacks: {}, featureFlags: { moduleDragging, viewportDragging: false } });
+	const store = initState(events, {
+		callbacks: {},
+		featureFlags: { blockSelectionAndDragging, viewportDragging: false },
+	});
 	cleanups.push(store.dispose);
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: 800, canvasHeight: 600 });
@@ -288,9 +291,10 @@ describe('codeBlockDragger', () => {
 		expect(test.revision()).toEqual(before);
 	});
 
-	it('does not drag if moduleDragging is disabled', () => {
-		const test = setup(projectSource(firstSource), { moduleDragging: false });
+	it('does not select or drag if blockSelectionAndDragging is disabled', () => {
+		const test = setup(projectSource(firstSource), { blockSelectionAndDragging: false });
 		test.press(test.block('first'));
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 		expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	});
 

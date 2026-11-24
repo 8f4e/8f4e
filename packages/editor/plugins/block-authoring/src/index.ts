@@ -72,7 +72,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 				return { title, action: 'createCodeBlock', payload: { blockType: type }, close: true };
 			})
 		);
-		const removeDeleteItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+		const removeDeleteItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
 			const label = codeBlock.childLevel
 				? 'group'

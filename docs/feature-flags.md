@@ -12,7 +12,7 @@ including `codeLineSelection`.
 All flags default to `true` in the core and default editor:
 
 - `contextMenu` — Show right-click context menus.
-- `moduleDragging` — Allow repositioning blocks while in edit mode.
+- `blockSelectionAndDragging` — Allow default pointer selection of blocks and repositioning while in edit mode.
 - `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
 - `viewportDragging` — Allow panning the viewport.
 - `canvasOverlays` — Show plugin canvas overlays and offscreen block decorations, such as the keyboard mode hint and arrows.
@@ -29,7 +29,7 @@ import { mountDefaultEditor } from '@8f4e/editor-default';
 const editor = await mountDefaultEditor(canvas, {
   initialProjectUrl: '/projects/demo.8f4e',
   featureFlags: {
-    moduleDragging: false,
+    blockSelectionAndDragging: false,
     codeLineSelection: false,
   },
 });
@@ -57,7 +57,7 @@ const editor = await mountDefaultEditor(canvas, {
   includeKeyboardModeSwitching: false,
   featureFlags: {
     contextMenu: false,
-    moduleDragging: false,
+    blockSelectionAndDragging: false,
     codeLineSelection: false,
   },
 });

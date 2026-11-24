@@ -149,7 +149,7 @@ entryEnd`);
 		editor = await initEditor(canvas, {
 			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: project,
-			featureFlags: { moduleDragging: false },
+			featureFlags: { blockSelectionAndDragging: false },
 			plugins: [
 				contextMenuPlugin,
 				{

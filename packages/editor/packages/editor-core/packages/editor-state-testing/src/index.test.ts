@@ -1,3 +1,4 @@
+import type { ProjectLevel } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 
 import { createMockCodeBlock, createMockEventDispatcher, createMockState, createMockViewport } from './index';
@@ -94,33 +95,51 @@ describe('editor-state testing utilities', () => {
 		expect(other.project.activeLevel.blocks).toEqual([]);
 	});
 
-	it('uses a root-only block override as the active slice without copying it', () => {
+	it('uses a root-only block override as the active level', () => {
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({ project: { rootLevel: { entries: [], path: '', blocks: blocks } } });
 		expect(state.project.rootLevel.blocks).toBe(blocks);
-		expect(state.project.activeLevel.blocks).toBe(blocks);
+		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 	});
 
 	it('owns an active-only block override in the root tree', () => {
 		const blocks = [createMockCodeBlock()];
 		const state = createMockState({
-			project: { activeLevel: { entries: [], path: '', blocks: blocks } },
+			project: { activeLevel: { blocks } },
 		});
 		expect(state.project.rootLevel.blocks).toBe(blocks);
-		expect(state.project.activeLevel.blocks).toBe(blocks);
+		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 	});
 
-	it('preserves an explicitly selected nested slice and its project ownership', () => {
-		const nested = [createMockCodeBlock({ projectPath: 'group' })];
-		const root = [createMockCodeBlock({ name: 'group', childLevel: { entries: [], path: '', blocks: nested } })];
+	it('preserves explicitly selected levels by object identity', () => {
+		const nested = { entries: [], path: '', blocks: [createMockCodeBlock({ projectPath: 'group' })] };
+		const root = { entries: [], path: '', blocks: [createMockCodeBlock({ name: 'group', childLevel: nested })] };
 		const state = createMockState({
 			project: {
-				rootLevel: { entries: [], path: '', blocks: root },
-				activeLevel: { entries: [], path: '', blocks: nested },
+				rootLevel: root,
+				activeLevel: nested,
 			},
 		});
-		expect(state.project.rootLevel.blocks).toBe(root);
-		expect(state.project.activeLevel.blocks).toBe(root[0].childLevel?.blocks);
+		expect(state.project.rootLevel).toBe(root);
+		expect(state.project.activeLevel).toBe(nested);
+		expect(state.project.activeLevel).toBe(root.blocks[0].childLevel);
+	});
+
+	it('preserves selection between distinct levels even when their paths and block arrays match', () => {
+		const first: ProjectLevel = { entries: [], path: '', blocks: [] };
+		const second: ProjectLevel = { ...first };
+		const root = {
+			entries: [],
+			path: '',
+			blocks: [
+				createMockCodeBlock({ name: 'group', childLevel: first }),
+				createMockCodeBlock({ name: 'group', childLevel: second }),
+			],
+		};
+		const state = createMockState({ project: { rootLevel: root, activeLevel: second } });
+		expect(first.path).toBe(second.path);
+		expect(first.blocks).toBe(second.blocks);
+		expect(state.project.activeLevel).toBe(second);
 	});
 
 	it('retains callback and collection overrides while preserving unrelated nested defaults', async () => {

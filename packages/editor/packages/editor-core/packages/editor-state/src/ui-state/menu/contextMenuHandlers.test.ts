@@ -74,7 +74,7 @@ describe('contextMenu effect', () => {
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 		const items = createMenuRegistry();
-		items.registerItem('moduleMenu', ({ codeBlock }) => ({
+		items.registerItem('codeBlockMenu', ({ codeBlock }) => ({
 			title: `Inspect ${codeBlock.name}`,
 			action: 'inspect',
 			payload: { codeBlock },

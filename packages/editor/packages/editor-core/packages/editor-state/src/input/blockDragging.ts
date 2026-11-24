@@ -54,7 +54,7 @@ export default function registerBlockDragging(
 	function onPointerDown(event: InternalPointerEvent) {
 		const { x, y, altKey } = event;
 		finishDrag();
-		if (!state.featureFlags.moduleDragging || !canDrag()) {
+		if (!state.featureFlags.blockSelectionAndDragging || !canDrag()) {
 			return;
 		}
 

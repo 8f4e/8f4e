@@ -48,13 +48,7 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 		events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
 	);
 	const featureFlags = validateFeatureFlags(options.featureFlags);
-	type EffectCleanup = () => void;
-	const effectCleanups: EffectCleanup[] = [];
-	const registerEffect = (cleanup: void | EffectCleanup): void => {
-		if (cleanup !== undefined) {
-			effectCleanups.push(cleanup);
-		}
-	};
+	const cleanups: Array<() => void> = [];
 
 	// Create base state
 	const baseState = {
@@ -65,15 +59,15 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 	};
 
 	const store = createStateManager<State>(baseState);
-	effectCleanups.push(store.dispose);
+	cleanups.push(store.dispose);
 
-	registerEffect(registerEditorConfigSchemaContributionsValidator(store));
+	registerEditorConfigSchemaContributionsValidator(store);
 	registerExportFileNameEditorConfigValidator(store);
-	registerEffect(registerDialogHandlers(store, events));
+	cleanups.push(registerDialogHandlers(store, events));
 	// Menus must consume pointer events before code blocks and viewport interactions.
-	registerEffect(registerContextMenuHandlers(store, events, menus));
+	cleanups.push(registerContextMenuHandlers(store, events, menus));
 
-	registerEffect(registerEditorModeHandlers(store, events));
+	cleanups.push(registerEditorModeHandlers(store, events));
 	const state = store.getState();
 	const membership = createProjectMembership(state.project.rootLevel);
 	const coordinator = createLayoutCoordinator(state, events, layout, membership);
@@ -84,28 +78,28 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 		membership,
 		coordinator
 	);
-	registerEffect(registerPointerCaretSelection(store, events));
-	registerEffect(trackBlockLayout(store, events, coordinator));
+	cleanups.push(registerPointerCaretSelection(store, events));
+	cleanups.push(trackBlockLayout(store, events, coordinator));
 	const editingStore = { ...store, projectTransactions };
-	registerEffect(registerProjectLoadCommands(projectTransactions, events));
-	registerEffect(registerBlockDragging(editingStore, events));
-	registerEffect(registerPointerRouting(store, events));
-	registerEffect(registerBlockNavigation(store, events));
-	registerEffect(registerViewportHandlers(store, events));
-	registerEffect(registerBlockActionCommands(editingStore, events));
-	registerEffect(registerGroupNavigation(store, events));
-	registerEffect(trackEntryBounds(store, events));
-	registerEffect(registerUndoRedo(store, events, projectTransactions));
+	cleanups.push(registerProjectLoadCommands(projectTransactions, events));
+	cleanups.push(registerBlockDragging(editingStore, events));
+	cleanups.push(registerPointerRouting(store, events));
+	cleanups.push(registerBlockNavigation(store, events));
+	cleanups.push(registerViewportHandlers(store, events));
+	cleanups.push(registerBlockActionCommands(editingStore, events));
+	cleanups.push(registerGroupNavigation(store, events));
+	cleanups.push(trackEntryBounds(store, events));
+	cleanups.push(registerUndoRedo(store, events, projectTransactions));
 
 	const onConsoleLog = (event: unknown) => {
 		console.log(event);
 	};
 	events.on('consoleLog', onConsoleLog);
-	registerEffect(() => events.off('consoleLog', onConsoleLog));
+	cleanups.push(() => events.off('consoleLog', onConsoleLog));
 
 	const dispose = () => {
-		while (effectCleanups.length) {
-			effectCleanups.pop()!();
+		while (cleanups.length) {
+			cleanups.pop()!();
 		}
 	};
 	return {

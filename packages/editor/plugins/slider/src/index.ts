@@ -24,7 +24,7 @@ export function createSliderPlugin({
 				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);
-			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
+			const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 				if (state.editorMode !== 'edit' || codeBlock.readOnly || !slidersByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save slider values to code',

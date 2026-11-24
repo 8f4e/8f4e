@@ -1,22 +1,13 @@
-import type { EditorCodeBlock } from '@8f4e/editor-state-types';
-import type { BlockLayoutDraft } from './blockLayoutDraft';
+import type { EditorCodeBlock, VerticalSpaceAfterSourceLine } from '@8f4e/editor-state-types';
 
-function getDisplayRow(sourceLineIndex: number, blockLayout: BlockLayoutDraft): number | undefined {
-	return blockLayout.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex];
-}
+export default function updateBlockGaps(block: EditorCodeBlock, spaces: readonly VerticalSpaceAfterSourceLine[]): void {
+	block.gaps.clear();
 
-function addGap(editorBlock: EditorCodeBlock, displayRow: number, size: number): void {
-	const existing = editorBlock.gaps.get(displayRow);
-	editorBlock.gaps.set(displayRow, { size: (existing?.size ?? 0) + size });
-}
-
-export default function updateBlockGaps(editorBlock: EditorCodeBlock, blockLayout: BlockLayoutDraft) {
-	editorBlock.gaps.clear();
-
-	blockLayout.verticalSpaceAfterSourceLine.forEach(space => {
-		const displayRow = getDisplayRow(space.sourceLineIndex, blockLayout);
+	for (const space of spaces) {
+		const displayRow = block.displayModel.sourceLineIndexToDisplayRow[space.sourceLineIndex];
 		if (displayRow !== undefined) {
-			addGap(editorBlock, displayRow, space.heightInRows);
+			const existing = block.gaps.get(displayRow);
+			block.gaps.set(displayRow, { size: (existing?.size ?? 0) + space.heightInRows });
 		}
-	});
+	}
 }

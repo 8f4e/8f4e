@@ -102,7 +102,7 @@ Plugins that sample memory outside the renderer can use `createMemoryViewManager
 of the current compiler memory. Call `updateMemoryViews(memoryRef)` when obtaining the live memory handle; it replaces
 the views only when the underlying buffer changes.
 
-Register menu items with `menus.registerItem('moduleMenu', provider)`. Providers receive the current
+Register menu items with `menus.registerItem('codeBlockMenu', provider)`. Providers receive the current
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
 can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
@@ -122,7 +122,7 @@ array or a promise and receive current state whenever the menu opens or is revis
 `{ action: 'openSubMenu', payload: { menu: id, payload: yourData }, close: false }`. Core stores the request, supplies
 Back navigation, and handles decoration, sizing, positioning, and clicks. Menu IDs identify one generator per editor;
 use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
-The built-in block submenu also uses this request shape: `{ menu: 'moduleMenu', payload: { codeBlock } }`.
+The built-in block submenu also uses this request shape: `{ menu: 'codeBlockMenu', payload: { codeBlock } }`.
 
 Use explicit block actions through `events.dispatch`:
 

@@ -23,8 +23,9 @@ const state = createMockState({
 
 Nested object overrides preserve unrelated defaults. Arrays, maps, sets, typed arrays, and callbacks replace their
 defaults and retain the supplied identity; do not reuse mutable overrides across tests unless that sharing is intentional.
-For a root-only or current-only project override, both project references select the same level. To model a nested
-project, provide a root level and select its child level:
+For a root-only or active-only project override, both project references select the same level, with defaults for
+omitted level fields. To model a nested project, provide complete root and active levels by reference. The active
+level is the same object owned by the containing group, not a copy with the same blocks or path:
 
 ```typescript
 const nested = [createMockCodeBlock({ name: 'voice', projectPath: 'Audio' })];

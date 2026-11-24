@@ -6,7 +6,7 @@ export default function createScreenshotState(overrides: Partial<State> = {}): S
 	return createMockState({
 		featureFlags: {
 			contextMenu: true,
-			moduleDragging: false,
+			blockSelectionAndDragging: false,
 			codeLineSelection: true,
 			viewportDragging: false,
 			canvasOverlays: true,

@@ -2,7 +2,7 @@ import type { ContextMenuItem, State } from '@8f4e/editor-state-types';
 
 export const mainMenu = (state: State, contributions: ContextMenuItem[]): ContextMenuItem[] => {
 	const sections: ContextMenuItem[][] = [
-		state.project.activeLevel.blocks !== state.project.rootLevel.blocks
+		state.project.activeLevel !== state.project.rootLevel
 			? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }]
 			: [],
 		state.editorMode === 'edit' && state.featureFlags.projectCreation
