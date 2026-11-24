@@ -5,32 +5,39 @@ import {
 	prepareMemoryAccess,
 	prepareNumericRead,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	CodeBlockLayoutContext,
+	EditorLayoutRegistry,
+	State,
+} from '@8f4e/editor-state-types';
 import type { ScopeDirectiveReader } from '../helpers/data';
 import type { Scope } from '../types';
 import { createScopeHistory, resizeScopeHistory } from './history';
 
 const HEIGHT_IN_ROWS = 8;
 
-export function registerScopeLayout(
+export function registerScopePreparation(
 	layout: EditorLayoutRegistry,
 	scopesByBlock: WeakMap<CodeBlockGraphicData, Scope[]>,
 	readScopeDirectives: ScopeDirectiveReader
-): () => void {
+) {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const prepare = ({ codeBlock, state }: CodeBlockLayoutContext, reason: 'layout' | 'data') => {
 		const items = readScopeDirectives(codeBlock.parsedDirectives).scopes;
 		if (!items.length) {
 			scopesByBlock.delete(codeBlock);
-			contribution.remove(codeBlock);
+			if (reason === 'layout') contribution.remove(codeBlock);
 			return;
 		}
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(data => ({
-				sourceLineIndex: data.lineNumber,
-				heightInRows: HEIGHT_IN_ROWS,
-			})),
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(data => ({
+					sourceLineIndex: data.lineNumber,
+					heightInRows: HEIGHT_IN_ROWS,
+				})),
+			});
+		}
 		const previous = [...(scopesByBlock.get(codeBlock) ?? [])];
 		const scopes: Scope[] = [];
 		const memoryScope = getCodeBlockMemoryScope(codeBlock);
@@ -80,9 +87,16 @@ export function registerScopeLayout(
 		}
 		if (scopes.length) scopesByBlock.set(codeBlock, scopes);
 		else scopesByBlock.delete(codeBlock);
-	});
-	return () => {
-		unsubscribe();
-		contribution.dispose();
+	};
+	const unsubscribe = layout.subscribe(context => prepare(context, 'layout'));
+	return {
+		refresh: (state: State) => {
+			if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
+			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state }, 'data');
+		},
+		dispose: () => {
+			unsubscribe();
+			contribution.dispose();
+		},
 	};
 }

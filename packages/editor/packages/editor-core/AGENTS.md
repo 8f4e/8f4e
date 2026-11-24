@@ -42,6 +42,7 @@
   blocks settle. Initialize the mutation and rendering services independently; only the dragger owns drag state.
   Consumers refresh the listed blocks and use project identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
+  Compiler-dependent plugins observe metadata themselves rather than relying on layout recalculation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.
 
 ## Input and Drawing

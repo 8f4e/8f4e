@@ -23,7 +23,7 @@ export function createLooseWiresPlugin({ defaultSlack = DEFAULT_SLACK }: LooseWi
 	return {
 		id: 'loose-wires',
 		setup: ({ store, events, drawers }) => {
-			const connections = createWireConnections(store.getState(), events);
+			const connections = createWireConnections(store, events);
 			let slack: number;
 			const syncSlack = () => {
 				const config = store.getState().editorConfig.looseWires as { slack?: number } | undefined;

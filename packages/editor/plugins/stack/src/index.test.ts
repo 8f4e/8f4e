@@ -97,13 +97,16 @@ describe('stack plugin', () => {
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 	});
-	it('rebuilds after compiler results change and removes missing analysis', async () => {
+	it('removes missing analysis after compiler metadata changes without requiring layout', async () => {
 		const test = await setup(plugin, source);
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalled();
+		const onLayoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 		test.store.set('compiler.result.compiledModules', {});
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
 	});
 	it('honors the host motion preference', async () => {
 		vi.spyOn(performance, 'now').mockReturnValue(1100);

@@ -1,4 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
 	prepareAddressBinding,
@@ -10,13 +11,14 @@ import { createWaveDirectiveData } from '../helpers/data';
 import { createWaveformPeaks } from '../helpers/peaks';
 import type { Wave } from '../types';
 
-export function registerWaveLayout(
+export function registerWavePreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
 	wavesByBlock: WeakMap<CodeBlockGraphicData, Wave[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const heights = { wave: 2, wave2: 4, wave4: 8 };
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(
 			codeBlock.parsedDirectives,
 			Object.keys(heights).map(name => ({ name }))
@@ -31,12 +33,14 @@ export function registerWaveLayout(
 					]
 				: [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(item => ({
-				sourceLineIndex: item.data.lineNumber,
-				heightInRows: item.heightRows,
-			})),
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(item => ({
+					sourceLineIndex: item.data.lineNumber,
+					heightInRows: item.heightRows,
+				})),
+			});
+		}
 		const waves: Wave[] = [];
 		items.forEach(({ data, heightRows }) => {
 			const scope = getCodeBlockMemoryScope(codeBlock);

@@ -3,7 +3,8 @@
 Install `createLooseWiresPlugin()` from `@8f4e/editor-plugin-loose-wires` in place of the straight wire plugin. The gallery
 editor loads it after the first render. It resolves its own connections from compiler metadata and live memory and
 does not depend on the straight wire or connector sprite plugins. Endpoints follow the blocks' rendered positions,
-including when blocks are offscreen.
+including when blocks are offscreen. The connection tracker observes accepted compiler metadata changes separately
+from settled block layouts.
 
 The drawer batches one instance per wire. Its vertex shader calculates a downward sag from the horizontal span (capped
 at 96 canvas pixels) and generates short segments. Its fragment shader draws them on the pixel grid and skips shared

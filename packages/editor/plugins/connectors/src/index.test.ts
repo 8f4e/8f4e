@@ -1,4 +1,5 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
+import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
@@ -57,8 +58,8 @@ async function setup(text = source) {
 		drawers,
 	});
 	const state = store.getState();
-	state.compiler.result = { ...state.compiler.result, ...compiled };
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 
 	const connectorPositions = (codeBlock: CodeBlockGraphicData) => {
 		const drawFill = vi.fn();
@@ -98,6 +99,32 @@ describe('connectors plugin', () => {
 		cleanups.push(contribution.dispose);
 		contribution.update(sink, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 		expect(connectorPositions(sink)).toContainEqual({ x: 0, y: 4 * state.viewport.hGrid });
+	});
+
+	it('reads the relocated memory declaration after accepting compiler metadata', async () => {
+		const { store, state, drawers, memoryViews } = await setup();
+		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const original = state.compiler.result.memoryPlan.modules.source.memory.output;
+		const compiled = await compileProject(parseProjectSource(source), { startingMemoryAllocationUnitAddress: 16 });
+		const relocated = compiled.memoryPlan.modules.source.memory.output;
+		expect(relocated.allocationUnitAddress).not.toBe(original.allocationUnitAddress);
+		memoryViews.float32[original.allocationUnitAddress] = -1;
+		memoryViews.float32[relocated.allocationUnitAddress] = 1;
+
+		const markerColor = () => {
+			const drawSprite = vi.fn();
+			drawers.drawCodeBlock({
+				draw: { drawFill: vi.fn(), drawSprite } as unknown as DrawContext,
+				state,
+				codeBlock: block,
+				memoryViews,
+			});
+			return drawSprite.mock.calls.find(([, , glyph]) => glyph === 42)?.[3];
+		};
+
+		expect(markerColor()).toBe(PALETTE_INDICES.primaryDark3);
+		store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+		expect(markerColor()).toBe(PALETTE_INDICES.negativeBase);
 	});
 
 	it('follows moved and removed exposures before a new compiler result is accepted', async () => {

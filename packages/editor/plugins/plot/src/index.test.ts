@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
@@ -62,6 +63,26 @@ describe('plot plugin', () => {
 		const test = await setup(plotPlugin, exposedSource);
 		test.render();
 		expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeGreaterThan(1);
+	});
+	it('rebinds relocated samples without recalculating block layout', async () => {
+		const test = await setup(plotPlugin, source);
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+				startingMemoryAllocationUnitAddress: 16,
+			}
+		);
+		const samples = replacement.memoryPlan.modules.audio.memory.samples;
+		expect(samples.byteAddress).not.toBe(test.compiled.memoryPlan.modules.audio.memory.samples.byteAddress);
+		test.memoryViews.int8.fill(3, samples.byteAddress, samples.byteAddress + 4);
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		test.render();
+		const points = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
+		expect(points.map(call => call[1])).toEqual([0, 0, 0, 0]);
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 	it('removes stale data after source changes and restores it when memory becomes available', async () => {
 		const test = await setup(plotPlugin, source);

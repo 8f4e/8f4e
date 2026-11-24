@@ -52,12 +52,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -118,6 +114,31 @@ afterEach(() => {
 });
 
 describe('piano plugin', () => {
+	it('rebinds drawing and interaction after compilation relocates memory without changing layout', async () => {
+		const test = await setup();
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+				startingMemoryAllocationUnitAddress: 32,
+			}
+		);
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
+		const previous = test.compiled.memoryPlan.modules.controls.memory;
+		const memory = replacement.memoryPlan.modules.controls.memory;
+		expect(memory.notes.allocationUnitAddress).not.toBe(previous.notes.allocationUnitAddress);
+		expect(memory.count.allocationUnitAddress).not.toBe(previous.count.allocationUnitAddress);
+
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		expect(layoutsChanged).not.toHaveBeenCalled();
+		test.press(2);
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
+		expect(test.memoryViews.int32[previous.count.allocationUnitAddress]).toBe(0);
+		test.render();
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
+	});
 	it('updates notes and count through fixed references', async () => {
 		const test = await setup([
 			'module controls',

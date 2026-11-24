@@ -1,3 +1,4 @@
+import type { EditorPluginContext } from '@8f4e/editor-core';
 import type {
 	CodeBlockGraphicData,
 	CodeBlockLayoutsChangedEvent,
@@ -22,12 +23,14 @@ interface WireGeometry {
 }
 
 /** Track settled connection geometry for one renderer, independently of connector presentation. */
-export function createWireConnections(state: State, events: EventDispatcher) {
+export function createWireConnections(store: EditorPluginContext['store'], events: EventDispatcher) {
+	const state = store.getState();
 	const endpointsByBlock = new WeakMap<CodeBlockGraphicData, WireEndpoints>();
 	const outputsByByteAddress = new Map<number, WireOutput>();
 	const geometry = { endpointsByBlock, outputsByByteAddress };
 	const refresh = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
 		if (project !== state.codeBlockRendering.currentProject) return;
+		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		for (const block of codeBlocks) endpointsByBlock.set(block, deriveEndpoints(block, state));
 		outputsByByteAddress.clear();
 		for (const block of project.blocks) {
@@ -36,15 +39,20 @@ export function createWireConnections(state: State, events: EventDispatcher) {
 			}
 		}
 	};
-	const project = state.codeBlockRendering.currentProject;
-	refresh({ project, codeBlocks: project.blocks });
+	const refreshCurrentProject = () => {
+		const project = state.codeBlockRendering.currentProject;
+		refresh({ project, codeBlocks: project.blocks });
+	};
+	refreshCurrentProject();
 	events.on('codeBlockLayoutsChanged', refresh);
+	store.subscribe('compiler.result', refreshCurrentProject);
 	return {
 		/** Visit active connections, including offscreen endpoints, using current pointer values. */
 		visit: (renderGeometry: RenderGeometry, memory: Int32Array, visitor: WireConnectionVisitor) =>
 			visitConnections(state, renderGeometry, memory, geometry, visitor),
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', refresh);
+			store.unsubscribe('compiler.result', refreshCurrentProject);
 			outputsByByteAddress.clear();
 		},
 	};

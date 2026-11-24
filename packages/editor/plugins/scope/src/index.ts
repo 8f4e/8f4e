@@ -3,7 +3,7 @@ import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/e
 import drawScopes from './drawer/draw';
 import { createScopeDirectiveReader } from './helpers/data';
 import { registerScopeErrors } from './state/errors';
-import { registerScopeLayout } from './state/layout';
+import { registerScopePreparation } from './state/layout';
 import { createScopeSampler } from './state/sampling';
 import type { Scope } from './types';
 
@@ -17,7 +17,7 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 			const readScopeDirectives = createScopeDirectiveReader();
 			const sampler = createScopeSampler(getMemory);
 			const unregisterErrors = registerScopeErrors(store, readScopeDirectives);
-			const unregisterLayout = registerScopeLayout(layout, scopesByBlock, readScopeDirectives);
+			const preparation = registerScopePreparation(layout, scopesByBlock, readScopeDirectives);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock }) => {
 				const scopes = scopesByBlock.get(codeBlock);
 				if (scopes) drawScopes(draw, scopes);
@@ -38,9 +38,14 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 			const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
 				if (project === state.codeBlockRendering.currentProject) syncSampling();
 			};
+			const onCompilerResult = () => {
+				preparation.refresh(state);
+				syncSampling();
+			};
 			events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 			store.subscribe('codeBlockRendering.currentProject.blocks', syncSampling);
 			store.subscribe('compilerInputRevision', syncSampling);
+			store.subscribe('compiler.result', onCompilerResult);
 			store.subscribe('compiler.isCompiling', syncSampling);
 			syncSampling();
 
@@ -48,10 +53,11 @@ export function createScopePlugin({ getMemory }: { getMemory: () => WebAssembly.
 				events.off('codeBlockLayoutsChanged', onLayoutsChanged);
 				store.unsubscribe('codeBlockRendering.currentProject.blocks', syncSampling);
 				store.unsubscribe('compilerInputRevision', syncSampling);
+				store.unsubscribe('compiler.result', onCompilerResult);
 				store.unsubscribe('compiler.isCompiling', syncSampling);
 				sampler.dispose();
 				unregisterDrawer();
-				unregisterLayout();
+				preparation.dispose();
 				unregisterErrors();
 			};
 		},

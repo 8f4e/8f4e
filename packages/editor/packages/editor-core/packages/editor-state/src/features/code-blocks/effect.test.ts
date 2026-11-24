@@ -4,14 +4,14 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EMPTY_DEFAULT_PROJECT } from '~/features/project-loading/emptyDefaultProject';
-import initState, { setGridSize } from '~/index';
+import initState, { setGridSize, subscribeToBlockPreparation } from '~/index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup() {
+function setup(initializeGrid = true) {
 	const emitter = new EventEmitter();
 	const events: EventDispatcher = {
 		on: emitter.on.bind(emitter),
@@ -22,7 +22,7 @@ function setup() {
 	const state = store.getState();
 	cleanups.push(store.dispose);
 	events.dispatch('resize', { canvasWidth: 200, canvasHeight: 200 });
-	setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+	if (initializeGrid) setGridSize(state, events, { vGrid: 8, hGrid: 16 });
 	const load = (project: ProjectObjectModel) => events.dispatch('loadProject', { project });
 	const loadSource = (source: string) => load(parseProjectSource(`8f4e/v1\n${source}`));
 	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
@@ -239,22 +239,47 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 });
 
 describe('code block layout invalidation', () => {
-	it('refreshes layouts on accepted compiler metadata, not compilation progress', () => {
-		const { store, state, events, loadSource } = setup();
-		loadSource('entry main\nmodule main\nmoduleEnd\nentryEnd');
+	it('supports explicit data-dependent block preparation without recalculating layout', () => {
+		const { store, state, events, loadSource, block } = setup(false);
+		loadSource('entry main\ngroup child\nentry main\nmodule voice\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd');
+		const prepare = vi.fn();
+		const unsubscribe = subscribeToBlockPreparation(store, store.layout, 'compiler.result', prepare);
+		cleanups.push(unsubscribe);
 		const onLayoutsChanged = vi.fn();
 		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 
-		store.set('compiler.isCompiling', true);
-		store.set('compiler.isCompiling', false);
+		store.set('compiler.result', { ...state.compiler.result, inputRevision: state.compilerInputRevision });
+		expect(prepare).not.toHaveBeenCalled();
 		expect(onLayoutsChanged).not.toHaveBeenCalled();
 
+		setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('child'), state }, 'layout');
+		prepare.mockClear();
+		onLayoutsChanged.mockClear();
+
 		store.set('compiler.isCompiling', true);
-		store.set('compiler.result', { ...state.compiler.result, inputRevision: state.compilerInputRevision });
 		store.set('compiler.isCompiling', false);
-		expect(onLayoutsChanged).toHaveBeenCalledExactlyOnceWith({
-			project: state.codeBlockRendering.currentProject,
-			codeBlocks: state.codeBlockRendering.currentProject.blocks,
-		});
+		expect(prepare).not.toHaveBeenCalled();
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
+
+		store.set('compiler.result', { ...state.compiler.result });
+		expect(prepare.mock.calls).toEqual(
+			state.codeBlockRendering.currentProject.blocks.map(codeBlock => [{ codeBlock, state }, 'data'])
+		);
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
+
+		events.dispatch('openProjectGroup', { codeBlock: block('child') });
+		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('voice'), state }, 'layout');
+		prepare.mockClear();
+		onLayoutsChanged.mockClear();
+		store.set('compiler.result', { ...state.compiler.result });
+		expect(prepare).toHaveBeenCalledExactlyOnceWith({ codeBlock: block('voice'), state }, 'data');
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
+
+		unsubscribe();
+		prepare.mockClear();
+		store.set('compiler.result', { ...state.compiler.result });
+		events.dispatch('gridSizeChanged');
+		expect(prepare).not.toHaveBeenCalled();
 	});
 });

@@ -29,8 +29,9 @@ Sampling stops during recompilation, when a directive is removed or its project 
 Unresolvable or non-finite values are not appended. History is neither allocated in nor loaded from WASM memory.
 
 Layout and diagnostics share one interpretation of each block's cached directive records, refreshed when the source changes.
+Accepted compiler metadata refreshes the memory bindings and sampling state independently of geometry.
 The default, gallery, and landing editor compositions load the plugin on demand when a scope directive appears in
-the current project level. Removing the plugin releases its sampling timers, layout contribution, and drawer.
+the current project level. Removing the plugin releases its subscriptions, sampling timers, layout contribution, and drawer.
 
 ```sh
 npx nx run @8f4e/editor-plugin-scope:build

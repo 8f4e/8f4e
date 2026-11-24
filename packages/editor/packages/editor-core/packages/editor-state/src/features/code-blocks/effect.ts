@@ -89,7 +89,6 @@ export default function codeBlockRendering(
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 	events.on('gridSizeChanged', refreshCurrentProjectLayout);
-	store.subscribe('compiler.result', refreshCurrentProjectLayout);
 	store.subscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
@@ -97,7 +96,6 @@ export default function codeBlockRendering(
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
 		events.off('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 		events.off('gridSizeChanged', refreshCurrentProjectLayout);
-		store.unsubscribe('compiler.result', refreshCurrentProjectLayout);
 		store.unsubscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 		store.unsubscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 		store.unsubscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);

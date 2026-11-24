@@ -24,8 +24,8 @@ Fixed references work inline and by name: `@watch buffer` shows the fixed target
 shows its current value. `@watch *buffer[1]` reads the second target element. A reference has no slot for `&buffer`.
 For a fixed reference to a pointer slot, `@watch ref` shows the slot address, `@watch *ref` shows the pointer value,
 and `@watch **ref` follows the pointer to read the current typed value. The inline form `@watch **` follows the same rule.
-Fixed-reference accesses are prepared during layout and retained until layout or compilation changes; drawing reads
-their live values without repeating target lookup.
+Fixed-reference accesses are prepared on layout and accepted compiler metadata changes; drawing reads their live
+values without repeating target lookup.
 The plugin parses `0b`/`0x` display prefixes and retains the compiler parser's structured `end()` targets until layout.
 `@watch end(buffer)` shows the exclusive logical boundary, and `@watch end(*connection)` shows a fixed connection's
 target boundary. Module and indexed forms such as `end(source:)` and `end(source:0)` use the same selectors as the
@@ -35,7 +35,7 @@ Formatting choices remain private to watch.
 Dereferenced watches such as `; @watch *pointer` follow the current pointer target and its value on every rendered frame,
 without requiring a selection change. Use `; @watch **pointer` to follow both levels of a double pointer. Indexed
 and formatted forms such as `; @watch 0x*pointer[1]` update the same way.
-Named pointer declarations, element indices, and access options are prepared during layout. Drawing reads the live
+Named pointer declarations, element indices, and access options are prepared on layout and compiler metadata changes. Drawing reads the live
 pointer through shared numeric-read primitives, without parsing, resolving declarations, or constructing access
 objects. The shared layer selects storage and applies element offsets; watch retains radix and precision formatting.
 
@@ -45,7 +45,7 @@ of a known declaration. This live lookup is a watch feature. Compiler expression
 
 The browser host supplies `prefersReducedMotion: () => boolean` to the factory. The plugin reads it when drawing; it does not access browser globals.
 
-Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases compiler and layout subscriptions and the drawer. Omit the plugin to remove its behavior.
 The block drawer runs in registration order with other code-block drawers, including plugins installed lazily.
 
 ```sh

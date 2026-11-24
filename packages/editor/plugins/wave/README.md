@@ -24,8 +24,8 @@ const editor = await initEditor(canvas, { ...options, plugins: [wavePlugin] });
 ```
 
 Each installation keeps its wave data in a private `wavesByBlock` map.
-It contributes layout rows and callbacks through the generic directive API and draws through the code-block drawer
-hook. Disposal unregisters all three definitions and the drawer.
+It contributes layout rows through the layout service, subscribes to accepted compiler metadata and block layouts,
+and draws through the code-block drawer hook. Disposal releases its subscriptions, layout contributions, and drawer.
 
 Sample types come from the addressed declaration or pointer's pointee type. The drawer supports signed and unsigned
 8-bit and 16-bit integers, signed 32-bit integers, float32, and float64. Integer bounds follow their type; floating

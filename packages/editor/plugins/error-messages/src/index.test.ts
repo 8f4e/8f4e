@@ -12,11 +12,11 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(errors: Record<string, CodeError[]> = {}) {
+function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	if (initializeGrid) setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
@@ -57,6 +57,17 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 }
 
 describe('error messages plugin', () => {
+	it('prepares errors reported before the grid is available when layout initializes', () => {
+		const test = setup({}, false);
+		test.store.set('codeErrors.custom', [{ codeBlockId: 7, lineNumber: 2, message: 'Early error' }]);
+		expect(test.block.gaps.size).toBe(0);
+
+		setGridSize(test.state, test.events, TEST_GRID_SIZE);
+		expect(test.block.gaps.get(2)?.size).toBe(2);
+		test.render();
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Early error'), expect.any(Number));
+	});
+
 	it('reserves and draws only visible source rows while retaining the raw errors', () => {
 		const errors = [{ codeBlockId: 7, lineNumber: 2, message: 'Hidden error' }];
 		const test = setup({ custom: errors });

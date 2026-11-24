@@ -156,12 +156,6 @@ entryEnd`);
 					id: 'test-artifacts',
 					setup: services => {
 						context = services;
-						Object.assign(services.store.getState().compiler.result, {
-							memoryPlan: compiled.memoryPlan,
-							memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-							compiledModules: compiled.compiledModules,
-							compiledFunctions: compiled.compiledFunctions,
-						});
 						return () => {};
 					},
 				},
@@ -180,6 +174,7 @@ entryEnd`);
 		});
 		editor.pauseRendering();
 		const state = editor.state;
+		context.store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
 		await expect.poll(() => block.gaps.get(3)?.size).toBe(2);
 		await expect.poll(() => canvas.style.touchAction).toBe('none');

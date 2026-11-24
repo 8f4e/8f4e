@@ -50,12 +50,8 @@ async function setup(code = source, installed = true, name = 'audio') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
@@ -313,6 +309,8 @@ describe('wave plugin', () => {
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
 		const test = await setup();
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
 		const memory = { ...test.state.compiler.result.memoryPlan.modules.audio.memory };
 		memory.samples = {
 			...memory.samples,
@@ -329,6 +327,7 @@ describe('wave plugin', () => {
 		test.store.set('compiler.result.memoryPlan.modules.audio.memory', memory);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 
 	it.each(['; @wave missing 4', '; @wave &samples missingCount', '; @wave &samples 0', '; @wave *samples 4'])(
