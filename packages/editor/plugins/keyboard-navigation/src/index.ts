@@ -23,7 +23,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 				}
 				const state = store.getState();
 				const block = state.project.selectedCodeBlock;
-				if (state.editorMode !== 'view' || !state.featureFlags.codeLineSelection || !block) return;
+				if (state.editorMode !== 'view' || !block) return;
 				if (direction === 'left' || direction === 'right') return;
 				event.preventDefault();
 				const [row, col] = clampSourcePosition(

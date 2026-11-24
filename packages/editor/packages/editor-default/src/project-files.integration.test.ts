@@ -185,10 +185,10 @@ entryEnd`),
 		test.store.set('envConstantContributions.provider', ['const GENERATED 100']);
 		expect(await readValue()).toBe(100);
 	});
-	it.each(['loadProject', 'new'])('clears the association on %s', async action => {
+	it('clears the association when the project is replaced', async () => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
-		test.events.dispatch(action, { project: parseProjectSource(source) });
+		test.events.dispatch('loadProject', { project: parseProjectSource(source) });
 		await test.events.dispatchAsync('saveProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
 	});

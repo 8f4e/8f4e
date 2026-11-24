@@ -42,7 +42,6 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 	if (!block) return;
 	const direction = directions[key];
 	if (direction) {
-		if (!state.featureFlags.codeLineSelection) return;
 		event.preventDefault();
 		const [row, col] = moveCaret(block.code, block.tabStopsByLine, block.cursor.row, block.cursor.col, direction);
 		store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });

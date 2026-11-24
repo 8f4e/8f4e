@@ -30,7 +30,7 @@ export const codeRenderingPlugin: EditorPlugin = {
 				for (const { x, y, width, height, color } of rendering.highlights) draw.drawFill(x, y, color, width, height);
 			}
 			renderRegistry.drawCodeBlockTextBackgrounds(context);
-			if (state.featureFlags.codeLineSelection && state.project.selectedCodeBlock === codeBlock) {
+			if (state.project.selectedCodeBlock === codeBlock) {
 				draw.drawFill(0, codeBlock.cursor.y, PALETTE_INDICES.primarySoft, codeBlock.width, state.viewport.hGrid);
 			}
 			const rows = rendering.cells;

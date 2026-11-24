@@ -12,7 +12,7 @@ export default function registerViewportHandlers(store: StateManager<State>, eve
 	const state = store.getState();
 
 	function onPointerMove(event: InternalPointerEvent) {
-		if (event.buttons === 1 && state.featureFlags.viewportDragging) {
+		if (event.buttons === 1) {
 			updateViewport(state, state.viewport.x - event.movementX, state.viewport.y - event.movementY, events, 'pan');
 		}
 	}

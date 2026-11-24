@@ -151,12 +151,6 @@ describe('keyboard editing', () => {
 		test.key('ArrowDown');
 		expect(test.block.cursor.row).toBe(test.block.code.length - 1);
 	});
-	it('honors codeLineSelection for caret movement', () => {
-		const test = setup(plugin);
-		test.state.featureFlags.codeLineSelection = false;
-		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
-		expect(test.block.cursor.row).toBe(1);
-	});
 	it('ignores backspace at the start of a block', () => {
 		const test = setup(plugin);
 		test.block.cursor.row = 0;

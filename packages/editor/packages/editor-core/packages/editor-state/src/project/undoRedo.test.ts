@@ -13,7 +13,7 @@ import serializeToProject from './serialization/serializeToProject';
 function createHistoryEditor(project: ProjectObjectModel = EMPTY_DEFAULT_PROJECT) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: true } });
+	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
 	setGridSize(state, events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', { project });

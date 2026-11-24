@@ -8,10 +8,6 @@ import { getRawIndexForVisualColumn } from '../layout/text-geometry/tabLayout';
 export default function registerPointerCaretSelection(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
 	const onCodeBlockPointerDown = ({ relativeX = 0, relativeY = 0, codeBlock }: CodeBlockPointerDownEvent) => {
-		if (!state.featureFlags.codeLineSelection) {
-			return;
-		}
-
 		const displayModel = codeBlock.displayModel;
 		const displayRow = gridRowToDisplayRow(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
 		const row =

@@ -204,11 +204,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 		featureFlags: {
 			contextMenu: true,
-			blockSelectionAndDragging: true,
-			codeLineSelection: true,
-			viewportDragging: true,
 			canvasOverlays: true,
-			projectCreation: true,
 		},
 		editorMode: 'edit',
 		editorConfig: {},

@@ -122,13 +122,9 @@ describe('grouping plugin', () => {
 		expect(serializeToProject(test.state)).toEqual(before);
 	});
 
-	it('leaves dragging disabled when editing or module dragging is disabled', () => {
+	it('leaves dragging disabled in view mode', () => {
 		const test = setup({ mode: 'view' });
 		const before = serializeToProject(test.state);
-		test.drag(test.block('first'));
-		expect(serializeToProject(test.state)).toEqual(before);
-		test.store.set('editorMode', 'edit');
-		test.state.featureFlags.blockSelectionAndDragging = false;
 		test.drag(test.block('first'));
 		expect(serializeToProject(test.state)).toEqual(before);
 	});

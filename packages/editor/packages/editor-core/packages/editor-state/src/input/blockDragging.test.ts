@@ -1,7 +1,7 @@
-import { EventEmitter } from 'node:events';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it } from 'vitest';
+import { createFifoEventDispatcher } from '~/__tests__/helpers/fifoEventDispatcher';
 import initState, { markGridSizePending, setGridSize, updateViewport } from '~/index';
 import type { ResolveCodeBlockDragTargetsEvent } from './blockDragging';
 
@@ -21,14 +21,9 @@ function projectSource(...blocks: string[]): string {
 const firstSource = moduleSource('first', 5, 5);
 const secondSource = moduleSource('second', 20, 10);
 
-function setup(source = projectSource(firstSource), { blockSelectionAndDragging = true, mode = 'edit' } = {}) {
-	const emitter = new EventEmitter();
-	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	// This dispatcher has no input layers, so isolate dragging from viewport panning.
-	const store = initState(events, {
-		callbacks: {},
-		featureFlags: { blockSelectionAndDragging, viewportDragging: false },
-	});
+function setup(source = projectSource(firstSource), { mode = 'edit' } = {}) {
+	const events = createFifoEventDispatcher();
+	const store = initState(events, { callbacks: {} });
 	cleanups.push(store.dispose);
 	const state = store.getState();
 	events.dispatch('resize', { canvasWidth: 800, canvasHeight: 600 });
@@ -291,8 +286,9 @@ describe('codeBlockDragger', () => {
 		expect(test.revision()).toEqual(before);
 	});
 
-	it('does not select or drag if blockSelectionAndDragging is disabled', () => {
-		const test = setup(projectSource(firstSource), { blockSelectionAndDragging: false });
+	it('does not select or start dragging while a replacement grid is pending', () => {
+		const test = setup();
+		markGridSizePending(test.state);
 		test.press(test.block('first'));
 		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 		expect(test.state.project.draggedCodeBlock).toBeUndefined();

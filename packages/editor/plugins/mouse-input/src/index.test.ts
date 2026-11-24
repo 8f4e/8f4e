@@ -9,14 +9,14 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(captureWheel = true, viewportDragging = true) {
+function setup(captureWheel = true) {
 	const inputTarget = Object.assign(new EventTarget(), {
 		clientWidth: 640,
 		clientHeight: 480,
 		focus: vi.fn(),
 	}) as unknown as HTMLElement;
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });
+	const store = initState(events, { callbacks: {} });
 	const dispose = createMouseInputPlugin({ inputTarget, captureWheel }).setup({
 		store,
 		events,
@@ -40,7 +40,7 @@ function setup(captureWheel = true, viewportDragging = true) {
 		return event;
 	};
 	const wheel = (deltaX = 3, deltaY = 5) => mouse('wheel', { deltaX, deltaY });
-	return { store, events, inputTarget, mouse, wheel, dispose };
+	return { events, inputTarget, mouse, wheel, dispose };
 }
 
 describe('mouse input', () => {
@@ -91,15 +91,6 @@ describe('mouse input', () => {
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 		test.mouse('mousedown');
 		expect(test.events.dispatch).toHaveBeenCalledOnce();
-	});
-
-	it('honors viewport dragging changes without losing mouse input', () => {
-		const test = setup(true, false);
-		expect(test.wheel().defaultPrevented).toBe(false);
-		test.store.set('featureFlags.viewportDragging', true);
-		expect(test.wheel().defaultPrevented).toBe(true);
-		test.store.set('featureFlags.viewportDragging', false);
-		expect(test.wheel().defaultPrevented).toBe(false);
 	});
 
 	it('removes mouse and wheel listeners on disposal', () => {

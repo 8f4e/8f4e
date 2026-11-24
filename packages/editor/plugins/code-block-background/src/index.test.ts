@@ -66,7 +66,6 @@ it('keeps the selected header aligned with current dimensions and removes it on 
 	test.codeBlock.disabled = true;
 	test.state.viewport.vGrid = 8;
 	test.state.viewport.hGrid = 16;
-	test.state.featureFlags.codeLineSelection = false;
 	test.drawFill.mockClear();
 	test.drawGlyphs.mockClear();
 	test.render();

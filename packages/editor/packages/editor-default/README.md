@@ -110,7 +110,8 @@ The default composition constructs `@8f4e/editor-plugin-compiler` first and pass
 `@8f4e/editor-plugin-stack-producers` for highlighting the immediate producers of the selected instruction’s operands,
 `@8f4e/editor-plugin-tooltips` for selected-line documentation,
 stack analysis, and live memory values, `@8f4e/editor-plugin-screenshot` for PNG screenshots,
-`@8f4e/editor-plugin-project-open` for opening projects, `@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
+`@8f4e/editor-plugin-project-new` for blank-project creation, `@8f4e/editor-plugin-project-open` for opening projects,
+`@8f4e/editor-plugin-project-save` for Save and source export, and `@8f4e/editor-plugin-wasm-export` for WebAssembly export.
 
 `@8f4e/editor-plugin-loading-indicators` is installed eagerly before deferred loading and draws the unified
 `state.loadingIndicators` list at the bottom left. Producers supply IDs and custom messages, such as `Compiling...`.
@@ -190,7 +191,8 @@ Omitting either plugin also omits that feature. Neither requires a session or UR
 An explicit `initialProjectUrl` takes precedence on the first load. Without one, the editor restores the saved
 session. With neither, it starts with an empty project and does not fetch an example project registry. Browse examples in the
 [examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
-projects from disk and adding built-in modules. Set `showOpenMenuItem: false` to hide Open From Disk in embedded editors.
+projects from disk and adding built-in modules. In edit mode, the project-new plugin contributes New Project, which
+loads an empty project. Set `showOpenMenuItem: false` to hide Open From Disk in embedded editors.
 
 Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The default editor
 passes its discovered module loaders to `createExampleModulesPlugin({ sources })`. That plugin derives the catalog

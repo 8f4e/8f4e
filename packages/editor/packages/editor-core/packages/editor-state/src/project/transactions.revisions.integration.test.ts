@@ -1,7 +1,7 @@
-import { EventEmitter } from 'node:events';
-import type { EventDispatcher, InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createFifoEventDispatcher } from '~/__tests__/helpers/fifoEventDispatcher';
 import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '~/index';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 
@@ -13,13 +13,8 @@ afterEach(() => {
 const mainSource = 'entry main\nmodule main\npush 1\ndrop\nmoduleEnd\nentryEnd';
 
 function setup() {
-	const emitter = new EventEmitter();
-	const events: EventDispatcher = {
-		on: emitter.on.bind(emitter),
-		off: emitter.off.bind(emitter),
-		dispatch: emitter.emit.bind(emitter),
-	};
-	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging: false } });
+	const events = createFifoEventDispatcher();
+	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
 	const onInputChanged = vi.fn();
 	store.subscribe('compilerInputRevision', onInputChanged);

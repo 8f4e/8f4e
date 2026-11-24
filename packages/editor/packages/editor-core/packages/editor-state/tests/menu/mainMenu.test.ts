@@ -30,14 +30,10 @@ describe('menus - main menu', () => {
 		expect(menu.some(item => item.action === 'goToParentProjectGroup')).toBe(false);
 	});
 
-	it('starts with the new-project action when there are no navigation actions', () => {
-		const mockState = createMockState({
-			editorMode: 'edit',
-			project: { activeLevel: { entries: [], path: '', blocks: [] } },
-		});
+	it('returns contributed actions unchanged at the project root', () => {
+		const mockState = createMockState({ editorMode: 'edit' });
+		const contributions = [{ title: 'Inspect', action: 'inspect' }];
 
-		const menu = mainMenu(mockState, []);
-
-		expect(menu).toEqual([{ title: 'New Project', action: 'new', close: true }]);
+		expect(mainMenu(mockState, contributions)).toEqual(contributions);
 	});
 });

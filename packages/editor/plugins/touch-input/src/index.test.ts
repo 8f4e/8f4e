@@ -6,7 +6,7 @@ const point = (x: number, y: number) => [finger(x, y)];
 
 describe('touch viewport navigation', () => {
 	it('keeps vertical swipes native and preserves the vertical position in horizontal mode', () => {
-		const test = setup(true, 'horizontal');
+		const test = setup('horizontal');
 		expect(test.inputTarget.style.touchAction).toBe('pan-y');
 		test.state.viewport.y = 3;
 		test.touch('touchstart', [finger(100, 100)]);
@@ -21,7 +21,7 @@ describe('touch viewport navigation', () => {
 	});
 
 	it('keeps horizontal swipes native in vertical mode', () => {
-		const test = setup(true, 'vertical');
+		const test = setup('vertical');
 		expect(test.inputTarget.style.touchAction).toBe('pan-x');
 		test.state.viewport.x = 3;
 		test.touch('touchstart', [finger(100, 100)]);
@@ -97,21 +97,6 @@ describe('touch viewport navigation', () => {
 		expect(test.state.viewport).toMatchObject({ x: -30, y: -18 });
 	});
 
-	it('respects viewport dragging changes and restores browser touch behavior', () => {
-		const test = setup(false);
-		expect(test.inputTarget.style.touchAction).toBe('pan-y');
-		expect(test.touch('touchstart', point(100, 100)).defaultPrevented).toBe(false);
-		expect(test.touch('touchmove', point(140, 140)).defaultPrevented).toBe(false);
-		expect(test.changed).not.toHaveBeenCalled();
-		test.store.set('featureFlags.viewportDragging', true);
-		expect(test.inputTarget.style.touchAction).toBe('none');
-		test.touch('touchstart', point(100, 100));
-		test.store.set('featureFlags.viewportDragging', false);
-		expect(test.inputTarget.style.touchAction).toBe('pan-y');
-		test.touch('touchmove', point(140, 140));
-		expect(test.changed).not.toHaveBeenCalled();
-	});
-
 	it('drops an active gesture when replacing the project', () => {
 		const test = setup();
 		test.touch('touchstart', point(100, 100));
@@ -123,10 +108,9 @@ describe('touch viewport navigation', () => {
 
 	it('cleans up listeners, styles, and the active gesture when disposed', () => {
 		const test = setup();
+		expect(test.inputTarget.style.touchAction).toBe('none');
 		test.touch('touchstart', point(100, 100));
 		test.dispose();
-		test.store.set('featureFlags.viewportDragging', false);
-		test.store.set('featureFlags.viewportDragging', true);
 		expect(test.inputTarget.style.touchAction).toBe('pan-y');
 		test.touch('touchmove', point(140, 140));
 		expect(test.changed).not.toHaveBeenCalled();

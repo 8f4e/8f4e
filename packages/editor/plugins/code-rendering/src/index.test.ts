@@ -93,7 +93,7 @@ it('draws line selection after nested highlights and before source text', () => 
 	expect(test.drawFills).toHaveBeenLastCalledWith(0, 32, PALETTE_INDICES.primarySoft, test.block.width, 16);
 	expect(test.drawFills.mock.invocationCallOrder[0]).toBeLessThan(test.drawFills.mock.invocationCallOrder[1]);
 	expect(test.drawFills.mock.invocationCallOrder[1]).toBeLessThan(test.drawRows.mock.invocationCallOrder[0]);
-	test.state.featureFlags.codeLineSelection = false;
+	test.store.set('project.selectedCodeBlock', undefined);
 	test.render();
 	expect(test.drawFills).toHaveBeenCalledOnce();
 });

@@ -34,7 +34,7 @@ export function setup(
 	}) as unknown as HTMLElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: true } });
+	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {

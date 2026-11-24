@@ -1,6 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import { createProjectFileSession, type ProjectFileHandle } from '@8f4e/editor-file-session';
-import initState from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -186,7 +186,7 @@ describe('project Save plugin', () => {
 		const picked = deferred<typeof test.handle>();
 		test.browserWindow.showSaveFilePicker.mockReturnValueOnce(picked.promise);
 		const save = test.events.dispatchAsync('saveProject');
-		test.events.dispatch('new');
+		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 		picked.resolve(test.handle);
 		await save;
 		expect(test.handle.writable.close).toHaveBeenCalledOnce();

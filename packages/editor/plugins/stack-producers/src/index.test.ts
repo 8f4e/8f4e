@@ -130,13 +130,9 @@ it('clears outdated producer rows after edits, including when installed after an
 	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
 });
 
-it('suppresses highlights when line selection is disabled and unregisters its background drawer', async () => {
+it('unregisters its background drawer on disposal', async () => {
 	const test = await setup();
 	test.select(5);
-	expect(test.drawBackground()).toHaveLength(2);
-	test.store.set('featureFlags.codeLineSelection', false);
-	expect(test.drawBackground()).toEqual([]);
-	test.store.set('featureFlags.codeLineSelection', true);
 	expect(test.drawBackground()).toHaveLength(2);
 	test.disposeProducers();
 	expect(test.drawBackground()).toEqual([]);

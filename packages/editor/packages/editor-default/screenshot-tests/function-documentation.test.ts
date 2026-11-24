@@ -31,7 +31,6 @@ entryEnd`);
 	const editor = await initEditor(canvas, {
 		renderer: new Engine(canvas),
 		initialProject: project,
-		featureFlags: { codeLineSelection: true },
 		plugins: [
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,

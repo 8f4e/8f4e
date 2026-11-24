@@ -17,8 +17,7 @@ export function createMouseInputPlugin({
 }): EditorPlugin {
 	return {
 		id: 'mouse-input',
-		setup: ({ store, events }) => {
-			const state = store.getState();
+		setup: ({ events }) => {
 			let previousX = 0;
 			let previousY = 0;
 
@@ -53,7 +52,6 @@ export function createMouseInputPlugin({
 			}
 
 			function onWheelEvent(event: WheelEvent) {
-				if (!state.featureFlags.viewportDragging) return;
 				event.preventDefault();
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;

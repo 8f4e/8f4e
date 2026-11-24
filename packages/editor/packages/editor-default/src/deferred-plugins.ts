@@ -17,6 +17,12 @@ export function createDeferredEditorPlugin(
 	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
 	return createLazyPluginLoaderPlugin([
 		{
+			id: 'project-new',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-project-new').then(module => module.newProjectPlugin),
+		},
+		{
 			id: 'block-authoring',
 			scope: 'view',
 			matches: () => true,

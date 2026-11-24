@@ -290,41 +290,6 @@ describe('compilation scheduling and publication', () => {
 		});
 	});
 
-	it('includes stack analysis when code line selection is disabled', async () => {
-		mockState.featureFlags.codeLineSelection = false;
-		mockCompileCode.mockResolvedValue({
-			memoryRef: new WebAssembly.Memory({ initial: 1 }),
-			memoryPlan: { modules: {}, moduleList: [] },
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
-			codeBuffer: new Uint8Array([0x00]),
-			compiledModules: {},
-			compiledFunctions: {},
-			requiredMemoryBytes: 0,
-			allocatedMemoryBytes: 65536,
-			astCacheStats: { hits: 0, misses: 0 },
-			memoryAction: { action: 'reused' },
-		});
-
-		await triggerCompile();
-
-		expect(mockCompileCode).toHaveBeenCalledWith(
-			expect.objectContaining({
-				entries: [],
-				execution: expect.any(Array),
-				constants: expect.any(Array),
-				functions: expect.any(Array),
-			}),
-			{
-				startingMemoryAllocationUnitAddress: 0,
-				includeStackAnalysis: true,
-				enableAssertions: false,
-				enableMemoryGuards: true,
-			},
-			expect.any(Function)
-		);
-	});
-
 	it('contributes the compiler config schema', () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 

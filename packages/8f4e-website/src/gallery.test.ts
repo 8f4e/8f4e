@@ -343,13 +343,13 @@ test('keeps live editing and project export available in the gallery editor', as
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(640));
 	await vi.waitFor(() => expect(editor.state.compiler.result.compiledModules.galleryExample).toBeDefined());
 	expect(editor.state.editorMode).toBe('edit');
-	expect(editor.state.featureFlags.projectCreation).toBe(false);
 	const rect = canvas.getBoundingClientRect();
 	canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.x + 600, clientY: rect.y + 100, bubbles: true }));
 	await vi.waitFor(() =>
 		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 	);
 	const menu = editor.state.contextMenu.items;
+	expect(menu.some(item => item.title === 'New Project')).toBe(false);
 	for (const action of ['importProject', 'exportWasm', 'exportCanvasScreenshot', 'loadPluginsUsedByProject']) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}

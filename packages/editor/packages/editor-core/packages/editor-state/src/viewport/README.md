@@ -41,7 +41,7 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   changes. The optional source distinguishes manual panning (`pan`) from navigation to a block or home (`navigation`).
   Either takes precedence over a pending first visit.
 - `resize(state, width, height)` updates the canvas dimensions.
-- The viewport effect handles `pointermove` and `resize`. Movement respects `viewportDragging`. Manual panning
+- The viewport effect handles unconsumed `pointermove` and `resize` events. Manual panning
   leaves the viewport at its final pixel position without aligning it to the grid.
 - `centerViewportOnCodeBlock(viewport, block, options)` calculates a grid-aligned target with optional alignment.
   `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.

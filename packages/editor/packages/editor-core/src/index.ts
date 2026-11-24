@@ -6,6 +6,7 @@ import initState, {
 } from '@8f4e/editor-state';
 import type {
 	EditorConfigSchemaContributionRegistry,
+	FeatureFlagsConfig,
 	InfoRecord,
 	ProgramArtifacts,
 	State,
@@ -108,7 +109,7 @@ export interface EditorOptions {
 	defaultFont?: WebUiOptions['defaultFont'];
 	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
-	featureFlags?: Partial<State['featureFlags']>;
+	featureFlags?: FeatureFlagsConfig;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
 

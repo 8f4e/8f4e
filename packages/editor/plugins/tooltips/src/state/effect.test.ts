@@ -572,12 +572,9 @@ entryEnd`);
 		expect(tooltip.getState().text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
 	});
 
-	it('clears tooltip text when line selection is disabled', () => {
-		const selectedBlock = createMockCodeBlock();
+	it('clears tooltip text when the block is deselected', () => {
+		const selectedBlock = createMockCodeBlock({ code: ['drop'], cursor: { row: 0, col: 0, y: 0 } });
 		const state = createMockState({
-			featureFlags: {
-				codeLineSelection: false,
-			},
 			project: {
 				selectedCodeBlock: selectedBlock,
 			},
@@ -590,6 +587,8 @@ entryEnd`);
 			store.dispose();
 		});
 
+		expect(tooltip.getState().text).not.toEqual([]);
+		store.set('project.selectedCodeBlock', undefined);
 		expect(tooltip.getState().text).toEqual([]);
 		expect(tooltip.getState().highlights).toEqual([]);
 		expect(tooltip.getState().liveValues).toEqual([]);

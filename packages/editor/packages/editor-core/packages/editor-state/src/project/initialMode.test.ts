@@ -9,12 +9,11 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(codeLineSelection = false) {
+function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, {
 		callbacks: {},
-		featureFlags: { codeLineSelection },
 	});
 	cleanups.push(store.dispose);
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
@@ -30,7 +29,6 @@ describe('project initial mode', () => {
 		});
 		load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
 		expect(notifications).toEqual([['replace', mode]]);
-		expect(state.featureFlags.codeLineSelection).toBe(false);
 		expect(state.historyStack).toHaveLength(0);
 	});
 
@@ -44,7 +42,7 @@ describe('project initial mode', () => {
 			expect(state.editorMode).toBe('view');
 			expect(state.codeErrors['editor-directives']).toHaveLength(declaration ? 1 : 0);
 			events.dispatch('enterEditMode');
-			events.dispatch('new');
+			events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 			expect(serializeToProject(state)).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });
 			expect(state.editorMode).toBe('view');
 		}
@@ -56,17 +54,6 @@ describe('project initial mode', () => {
 			'8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\nentry main\nentryEnd\ngroupEnd\nentryEnd'
 		);
 		expect(state.editorMode).toBe('edit');
-	});
-
-	it.each([true, false])('preserves line selection (%s) across project replacements', codeLineSelection => {
-		const { state, events, load } = setup(codeLineSelection);
-		for (const mode of ['edit', 'view']) {
-			load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
-			expect(state.editorMode).toBe(mode);
-			expect(state.featureFlags.codeLineSelection).toBe(codeLineSelection);
-		}
-		events.dispatch('new');
-		expect(state.featureFlags.codeLineSelection).toBe(codeLineSelection);
 	});
 
 	it('keeps user mode changes through source edits, configuration updates, and undo/redo', () => {
