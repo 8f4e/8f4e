@@ -31,14 +31,14 @@ it('finishes world-space layout before notifying observers, including late contr
 		for (const block of codeBlocks) {
 			if (block.name !== 'world') continue;
 			notifications++;
-			expect(project).toBe(state.codeBlockRendering.currentProject);
+			expect(project).toBe(state.project.activeLevel);
 			expect(block.x).toBe(2 * state.viewport.vGrid);
 			expect(block.y).toBe(3 * state.viewport.hGrid);
 		}
 	});
 	state = test.state;
 	test.load('8f4e/v1\nnote world\n; @pos 2 3\ncontent\nnoteEnd');
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'world')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'world')!;
 	const contribution = test.store.layout.createContribution();
 	const unsubscribe = test.store.layout.subscribe(({ codeBlock }) => {
 		if (codeBlock === block) {
@@ -74,7 +74,7 @@ note sibling
 noteEnd
 groupEnd
 entryEnd`);
-	const root = test.state.codeBlockRendering.currentProject;
+	const root = test.state.project.activeLevel;
 	const rootBlock = root.blocks.find(block => block.name === 'root')!;
 	const group = root.blocks.find(block => block.childProject)!;
 	const child = group.childProject!;
@@ -83,7 +83,7 @@ entryEnd`);
 	updateViewport(test.state, 160, 320, test.events);
 	test.events.dispatch('goToRootProjectGroup');
 	const rootPosition = { x: rootBlock.x, y: rootBlock.y };
-	const entryBounds = test.state.codeBlockRendering.entryBounds;
+	const entryBounds = test.state.project.entryBounds;
 	const contribution = test.store.layout.createContribution();
 	cleanups.push(contribution.dispose);
 	completed.length = 0;
@@ -92,7 +92,7 @@ entryEnd`);
 	const { vGrid, hGrid } = test.state.viewport;
 	expect(nested).toMatchObject({ x: vGrid, y: 2 * hGrid, width: 48 * vGrid });
 	expect(rootBlock).toMatchObject(rootPosition);
-	expect(test.state.codeBlockRendering.entryBounds).toBe(entryBounds);
+	expect(test.state.project.entryBounds).toBe(entryBounds);
 	applyCodeBlockSourceEdits(test.store, [{ codeBlock: group, code: ['group renamed', 'groupEnd'] }]);
 	expect(child.path).toBe('renamed');
 	expect(nested.projectPath).toBe('renamed');
@@ -136,7 +136,7 @@ it('registers pasted nested blocks and drops ownership when their group is delet
 			},
 		],
 	});
-	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
 	const child = group.childProject!;
 	const nested = child.blocks.find(block => block.name === 'nested')!;
 	expect(child.blocks.map(block => block.name)).toEqual(['ordinary', 'nested']);
@@ -177,7 +177,7 @@ entryEnd`);
 	expect(test.state.editorConfig.test).toEqual({ root: 'enabled' });
 	expect(validate).toHaveBeenCalled();
 	validate.mockClear();
-	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	test.events.dispatch('goToRootProjectGroup');
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
@@ -209,7 +209,7 @@ it('announces an empty group when navigation replaces the visible project slice'
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
 	test.load('8f4e/v1\nentry main\ngroup empty\ngroupEnd\nentryEnd');
-	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.childProject)!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.childProject)!;
 	completed.length = 0;
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
 	expect(completed).toContainEqual({ project: group.childProject, codeBlocks: [] });
@@ -221,7 +221,7 @@ it('settles dependent contributions across groups before publishing separate com
 	test.load(
 		'8f4e/v1\nnote first\nroot content\nnoteEnd\nentry main\ngroup child\nnote second\nchild content\nnoteEnd\ngroupEnd\nentryEnd'
 	);
-	const root = test.state.codeBlockRendering.currentProject;
+	const root = test.state.project.activeLevel;
 	const first = root.blocks.find(block => block.name === 'first')!;
 	const child = root.blocks.find(block => block.childProject)!.childProject!;
 	const second = child.blocks[0];
@@ -248,7 +248,7 @@ it('keeps blocks in world coordinates when the viewport pans or resizes', () => 
 	const completed: CodeBlockLayoutsChangedEvent[] = [];
 	const test = setup(event => completed.push(event));
 	test.load('8f4e/v1\nnote world\n; @pos 2 3\ncontent\nnoteEnd');
-	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'world')!;
+	const block = test.state.project.activeLevel.blocks.find(block => block.name === 'world')!;
 	const { vGrid, hGrid } = test.state.viewport;
 	expect(block).toMatchObject({ x: 2 * vGrid, y: 3 * hGrid });
 	completed.length = 0;

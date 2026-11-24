@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { DrawContext } from '../drawContext';
 import type { CodeBlockPositionEffect, RenderedCodeBlock, RenderGeometry } from '../render-geometry';
 import { createRenderLayerRegistry, type RenderLayerFactory } from '../render-layers';
@@ -8,7 +8,7 @@ export interface CodeBlockDrawerContext {
 	/** Drawing coordinates are relative to the visible block's presented origin. */
 	draw: DrawContext;
 	state: State;
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 	memoryViews: MemoryViews;
 }
 

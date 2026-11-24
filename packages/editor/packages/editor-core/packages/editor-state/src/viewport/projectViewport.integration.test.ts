@@ -5,7 +5,7 @@ import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, expect, it, vi } from 'vitest';
 import initState, {
 	applyCodeBlockSourceEdits,
-	createEditorEditingHandle,
+	createEditorCommandApi,
 	getEditorBlockId,
 	markGridSizePending,
 	setGridSize,
@@ -30,7 +30,7 @@ function setup() {
 		events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\n${source}`) });
 	const resolver = vi.fn(({ project, position }: EditorLifecycleEvents['resolveInitialProjectViewport']) => {
 		expect(state.gridSizeReady).toBe(true);
-		expect(project).toBe(state.codeBlockRendering.currentProject);
+		expect(project).toBe(state.project.activeLevel);
 		const block = project.blocks.find(block => block.blockType === 'module' || block.blockType === 'note');
 		if (block) {
 			expect(block.width).toBeGreaterThan(0);
@@ -46,7 +46,7 @@ function setup() {
 		load,
 		resolver,
 		position: () => ({ x: state.viewport.x, y: state.viewport.y }),
-		block: (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!,
+		block: (name: string) => state.project.activeLevel.blocks.find(block => block.name === name)!,
 	};
 }
 
@@ -83,7 +83,7 @@ it('resolves first-visit placement after source and layout settle, before the gr
 	expect(notifications).toEqual(['layout', 'placement']);
 	expect(state.gridSizeReady).toBe(true);
 	expect(test.position()).toEqual({ x: 60, y: 240 });
-	expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(state.project.selectedCodeBlock).toBeUndefined();
 
 	markGridSizePending(state);
 	setGridSize(state, events, TEST_GRID_SIZE);
@@ -135,7 +135,7 @@ it('returns to the remembered parent only after project-change subscribers finis
 	setGridSize(state, events, TEST_GRID_SIZE);
 	test.load(groupProject);
 	events.dispatch('enterEditMode');
-	const { handle, navigation, dispose } = createEditorEditingHandle(store, events);
+	const { handle, navigation, dispose } = createEditorCommandApi(store, events);
 	cleanups.push(dispose);
 	const groupId = getEditorBlockId(test.block('audio'));
 	updateViewport(state, 12, -20, events, 'pan');
@@ -144,7 +144,7 @@ it('returns to the remembered parent only after project-change subscribers finis
 
 	const notifications: string[] = [];
 	store.subscribe('projectChange', () => {
-		expect(state.codeBlockRendering.currentProject.path).toBe('');
+		expect(state.project.activeLevel.path).toBe('');
 		expect(test.position()).toEqual({ x: 32, y: -16 });
 		notifications.push('projectChange');
 	});
@@ -222,7 +222,7 @@ it('does not remember an unplaced parent when entering a group before the first 
 	const { state, events } = test;
 	test.load(groupProject);
 	events.dispatch('openProjectGroup', { codeBlock: test.block('audio') });
-	expect(state.codeBlockRendering.rootProject.viewport).toBeUndefined();
+	expect(state.project.rootLevel.viewport).toBeUndefined();
 	setGridSize(state, events, TEST_GRID_SIZE);
 	expect(test.resolver).toHaveBeenCalledOnce();
 	expect(test.position()).toEqual({ x: 240, y: 640 });
@@ -238,7 +238,7 @@ it('preserves unplaced first visits across undo without remembering their tempor
 		{ codeBlock: test.block('sample'), code: ['note sample', '; @pos 30 40', 'noteEnd'] },
 	]);
 	test.events.dispatch('undo');
-	expect(test.state.codeBlockRendering.currentProject.viewport).toBeUndefined();
+	expect(test.state.project.activeLevel.viewport).toBeUndefined();
 	expect(test.resolver).not.toHaveBeenCalled();
 	setGridSize(test.state, test.events, TEST_GRID_SIZE);
 	expect(test.resolver).toHaveBeenCalledOnce();
@@ -249,7 +249,7 @@ it('keeps initial placement pending even when a checkpoint attempts to delete ge
 	const test = setup();
 	test.load('note sample\n; @pos 10 20\nnoteEnd');
 	test.events.dispatch('enterEditMode');
-	const { handle, dispose } = createEditorEditingHandle(test.store, test.events);
+	const { handle, dispose } = createEditorCommandApi(test.store, test.events);
 	cleanups.push(dispose);
 	const revision = handle.getRevision();
 	const env = test.block('env');
@@ -260,7 +260,7 @@ it('keeps initial placement pending even when a checkpoint attempts to delete ge
 
 	expect(test.block('env')).toBe(env);
 	expect(handle.getRevision()).toBe(revision);
-	expect(test.state.codeBlockRendering.currentProject.viewport).toBeUndefined();
+	expect(test.state.project.activeLevel.viewport).toBeUndefined();
 	expect(test.resolver).not.toHaveBeenCalled();
 	setGridSize(test.state, test.events, TEST_GRID_SIZE);
 	expect(test.resolver).toHaveBeenCalledOnce();

@@ -39,11 +39,9 @@ entryEnd`;
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
-		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'target')).toBe(true)
-		);
+		await vi.waitFor(() => expect(state.project.activeLevel.blocks.some(block => block.name === 'target')).toBe(true));
 		editor.pauseRendering();
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,
@@ -85,7 +83,7 @@ entryEnd`;
 		);
 		clickItem(state.contextMenu.items.findIndex(item => item.payload?.creationIndex === block.creationIndex));
 		expect(state.contextMenu.open).toBe(false);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.selectedCodeBlock).toBe(block);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

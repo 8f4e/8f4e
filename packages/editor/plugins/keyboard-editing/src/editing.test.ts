@@ -21,14 +21,14 @@ const plugin = ({ inputTarget }: { inputTarget: HTMLElement }) => ({
 describe('keyboard editing', () => {
 	it('keeps read-only source inspectable without accepting typing or paste', () => {
 		const test = setup(plugin);
-		const environment = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+		const environment = test.state.project.activeLevel.blocks.find(block => block.name === 'env')!;
 		const originalCode = environment.code;
 		const revision = test.state.projectChange.revision;
-		test.store.set('codeBlockRendering.selectedCodeBlock', environment);
-		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', { row: 0, col: 0, y: 0 });
+		test.store.set('project.selectedCodeBlock', environment);
+		test.store.set('project.selectedCodeBlock.cursor', { row: 0, col: 0, y: 0 });
 		expect(test.key('ArrowRight').defaultPrevented).toBe(true);
 		expect(environment.cursor).toMatchObject({ row: 0, col: 1 });
-		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', {
+		test.store.set('project.selectedCodeBlock.cursor', {
 			row: environment.code.length - 1,
 			col: environment.code.at(-1)!.length,
 			y: 0,
@@ -43,7 +43,7 @@ describe('keyboard editing', () => {
 
 	it('clamps the cursor after external source replacement and allows subsequent typing', () => {
 		const test = setup(plugin);
-		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', { row: 3, col: 9, y: 0 });
+		test.store.set('project.selectedCodeBlock.cursor', { row: 3, col: 9, y: 0 });
 		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: ['module main', 'x'] }]);
 		expect(test.block.cursor).toMatchObject({ row: 1, col: 1 });
 		test.key('a');
@@ -68,7 +68,7 @@ describe('keyboard editing', () => {
 	])('publishes complete cursor coordinates together for $input', ({ input, row, col }) => {
 		const test = setup(plugin);
 		const positions: { row: number; col: number }[] = [];
-		test.store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', () => {
+		test.store.subscribe('project.selectedCodeBlock.cursor', () => {
 			const { row, col } = test.block.cursor;
 			positions.push({ row, col });
 		});
@@ -169,18 +169,12 @@ describe('keyboard editing', () => {
 		const test = setup(plugin);
 		test.key('2');
 		test.key('z', { [modifier]: true });
-		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toContain(
-			'push 1'
-		);
+		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 1');
 		test.key('z', { [modifier]: true, shiftKey: true });
-		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toContain(
-			'push 12'
-		);
+		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 12');
 		test.key('z', { [modifier]: true });
 		test.key('y', { [modifier]: true });
-		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toContain(
-			'push 12'
-		);
+		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 12');
 	});
 	it('does not handle typing or history shortcuts in view mode', () => {
 		const test = setup(plugin, 'view');
@@ -217,24 +211,18 @@ describe('text pasting', () => {
 		const test = setup(plugin);
 		const original = [...test.block.code];
 		test.paste('module pasted\nmoduleEnd');
-		expect(
-			test.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
-		).toHaveLength(1);
+		expect(test.state.project.activeLevel.blocks.filter(block => block.blockType === 'module')).toHaveLength(1);
 		const updated = [...test.block.code];
 		test.events.dispatch('undo');
-		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toEqual(
-			original
-		);
+		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toEqual(original);
 		test.events.dispatch('redo');
-		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!.code).toEqual(
-			updated
-		);
+		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toEqual(updated);
 	});
 	it.each(['view mode', 'no selected block', 'empty text'])('leaves paste unhandled with %s', reason => {
 		const test = setup(plugin);
 		const original = [...test.block.code];
 		if (reason === 'view mode') test.store.set('editorMode', 'view');
-		if (reason === 'no selected block') test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		if (reason === 'no selected block') test.store.set('project.selectedCodeBlock', undefined);
 		const event = test.paste(reason === 'empty text' ? '' : 'text');
 		expect(event.defaultPrevented).toBe(false);
 		expect(test.block.code).toEqual(original);

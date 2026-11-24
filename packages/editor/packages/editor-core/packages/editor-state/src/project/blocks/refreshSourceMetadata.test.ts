@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { getProjectGroups } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it } from 'vitest';
 import initState, {
@@ -29,11 +29,11 @@ function setup(projectSource = source) {
 	load(projectSource);
 	events.dispatch('enterEditMode');
 	const state = store.getState();
-	const audio = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	const audio = () => state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 	return { store, state, events, load, audio };
 }
 
-function matched(block: CodeBlockGraphicData) {
+function matched(block: EditorCodeBlock) {
 	return matchEditorDirectives(block.parsedDirectives, [{ name: 'future' }]);
 }
 
@@ -41,12 +41,12 @@ it('keeps the template header when renaming an expanded group and updating child
 	const { store, state } = setup(
 		'8f4e/v1\ntemplate voice\nentry main\nmodule audio\nint gate 0\nmoduleEnd\nentryEnd\ntemplateEnd\nentry main\ngroup left use voice\ngroupEnd\nentryEnd'
 	);
-	const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'left')!;
+	const group = state.project.activeLevel.blocks.find(block => block.name === 'left')!;
 	applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group renamed use voice', ...group.code.slice(1)] }]);
 	expect(group.name).toBe('renamed');
 	expect(group.code[0]).toBe('group renamed use voice');
 	expect(group.childProject?.blocks.find(block => block.name === 'audio')?.projectPath).toBe('renamed');
-	expect(getProjectGroups(serializeProjectLevel(state.codeBlockRendering.rootProject))[0]).toMatchObject({
+	expect(getProjectGroups(serializeProjectLevel(state.project.rootLevel))[0]).toMatchObject({
 		name: 'renamed',
 		code: ['group renamed use voice', 'groupEnd'],
 	});
@@ -56,15 +56,15 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 	const { store, events, state } = setup(
 		'8f4e/v1\nentry main\ngroup parent\nentry main\ngroup voice\nentry main\nmodule oscillator\nint value 1\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd\ngroupEnd\nentryEnd'
 	);
-	const parent = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'parent')!;
+	const parent = state.project.activeLevel.blocks.find(block => block.name === 'parent')!;
 	events.dispatch('openProjectGroup', { codeBlock: parent });
-	const voice = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voice')!;
+	const voice = state.project.activeLevel.blocks.find(block => block.name === 'voice')!;
 	for (const code of [
 		['group voice', '; keep this row', 'group ghost', 'groupEnd'],
 		['', 'group voice use authored; comment', 'groupEnd', ''],
 	]) {
 		applyCodeBlockSourceEdits(store, [{ codeBlock: voice, code }]);
-		const [serializedParent] = getProjectGroups(serializeProjectLevel(state.codeBlockRendering.rootProject));
+		const [serializedParent] = getProjectGroups(serializeProjectLevel(state.project.rootLevel));
 		expect(getProjectGroups(serializedParent)[0]).toMatchObject({
 			name: 'voice',
 			id: voice.creationIndex,
@@ -80,11 +80,11 @@ describe('cached directive records', () => {
 	it('shares prepared tab geometry across cursor and layout changes and refreshes it before source layouts', () => {
 		const { store, events, audio } = setup('8f4e/v1\nentry main\nmodule audio\n; @tab 8\n\tvalue\nmoduleEnd\nentryEnd');
 		const block = audio();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		const tabStops = block.tabStopsByLine;
 		expect(tabStops).toEqual([[], [8], [8], [8]]);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock.cursor.col', 1);
 		events.dispatch('gridSizeChanged');
 		expect(block.tabStopsByLine).toBe(tabStops);
 		const received: number[][][] = [];
@@ -161,7 +161,7 @@ describe('cached directive records', () => {
 			})
 		);
 		const block = audio();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) },
@@ -180,7 +180,7 @@ describe('cached directive records', () => {
 		const { store, state, events, audio } = setup(
 			'8f4e/v1\nentry main\ngroup voices\nentry main\nmodule audio\nint gate 0 ; @future nested\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd'
 		);
-		const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'voices')!;
+		const group = state.project.activeLevel.blocks.find(block => block.name === 'voices')!;
 		events.dispatch('openProjectGroup', { codeBlock: group });
 		const block = audio();
 		expect(matched(block)[0].args).toEqual(['nested']);

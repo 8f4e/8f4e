@@ -1,18 +1,18 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import gapCalculator from './displayRowToGridRow';
+import displayRowToGridRow from './displayRowToGridRow';
 
-describe('gapCalculator', () => {
+describe('displayRowToGridRow', () => {
 	it('returns the same row when there are no preceding gaps', () => {
-		const gaps: CodeBlockGraphicData['gaps'] = new Map([[5, { size: 2 }]]);
-		expect(gapCalculator(3, gaps)).toBe(3);
+		const gaps: EditorCodeBlock['gaps'] = new Map([[5, { size: 2 }]]);
+		expect(displayRowToGridRow(3, gaps)).toBe(3);
 	});
 
 	it('adds the size of each gap that starts before the row', () => {
-		const gaps: CodeBlockGraphicData['gaps'] = new Map([
+		const gaps: EditorCodeBlock['gaps'] = new Map([
 			[1, { size: 2 }],
 			[4, { size: 1 }],
 		]);
-		expect(gapCalculator(5, gaps)).toBe(8);
+		expect(displayRowToGridRow(5, gaps)).toBe(8);
 	});
 });

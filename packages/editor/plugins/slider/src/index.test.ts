@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { gapCalculator, setGridSize } from '@8f4e/editor-state';
+import initState, { displayRowToGridRow, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -55,7 +55,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const initialRevision = state.compilerInputRevision;
 	const draw = createDrawContextMock();
 	const render = () => {
@@ -70,7 +70,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		const row = block.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex]!;
 		return {
 			x: block.x + x + position * width - state.viewport.x,
-			y: block.y + (gapCalculator(row, block.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
+			y: block.y + (displayRowToGridRow(row, block.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
 		};
 	};
 	const press = (position = 0.5, row = 2) =>
@@ -169,7 +169,7 @@ describe('slider plugin', () => {
 		expect(test.write).toHaveBeenLastCalledWith(target.allocationUnitAddress, 0.75, false);
 		await test.menuItems();
 		test.events.dispatch('saveSliderValuesToCode', { codeBlock: test.block });
-		const sourceBlock = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
+		const sourceBlock = test.state.project.activeLevel.blocks.find(block => block.name === 'source')!;
 		expect(sourceBlock.code).toContain('float gain 0.75');
 		expect(test.block.code).toContain('float& gain &source:gain');
 	});
@@ -193,7 +193,7 @@ describe('slider plugin', () => {
 			const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 			const blockPosition = { x: test.block.x, y: test.block.y };
 			test.events.dispatch('pointerdown', { ...test.point(0.25), buttons: 1, altKey: false, stopPropagation: false });
-			expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+			expect(test.state.project.draggedCodeBlock).toBeUndefined();
 			expect(test.move(0.75).stopPropagation).toBe(true);
 			expect(test.write).toHaveBeenLastCalledWith(
 				test.compiled.memoryPlan.modules.controls.memory.gain.allocationUnitAddress,
@@ -292,7 +292,7 @@ describe('slider plugin', () => {
 		expect(vi.mocked(test.draw.startGroup).mock.calls.map(call => call[1])).toEqual([48, 112]);
 		test.press(1, 4);
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 2, false);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: test.block, code: test.block.code.filter(line => !line.includes('@slider')) }],
 		});
 		test.render();
@@ -329,7 +329,7 @@ describe('slider plugin', () => {
 		});
 		const observed: string[][] = [];
 		test.store.subscribe('compilerInputRevision', () => observed.push([...test.block.code]));
-		test.state.codeBlockRendering.selectedCodeBlock = undefined;
+		test.state.project.selectedCodeBlock = undefined;
 		test.events.dispatch(item.action!, item.payload);
 		expect(test.block.code).toContain('float gain 0.7');
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
@@ -342,7 +342,7 @@ describe('slider plugin', () => {
 	it('uses the selected block for a save action without a target', async () => {
 		const test = await setup();
 		test.press(0.5);
-		test.state.codeBlockRendering.selectedCodeBlock = test.block;
+		test.state.project.selectedCodeBlock = test.block;
 		test.events.dispatch('saveSliderValuesToCode');
 		expect(test.block.code).toContain('float gain 0.5');
 	});
@@ -464,7 +464,7 @@ describe('slider plugin', () => {
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: test.block, code: [...test.block.code, '; edited after disposal'] }],
 		});
 		expect(test.block.gaps.size).toBe(0);

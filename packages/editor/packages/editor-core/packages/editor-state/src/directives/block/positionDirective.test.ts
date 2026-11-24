@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { parseBlockDirectives } from '../parseBlockDirectives';
-import parsePos from './positionDirective';
+import parsePositionDirective from './positionDirective';
 
-describe('parsePos', () => {
+describe('parsePositionDirective', () => {
 	function runParsePos(code: string[]) {
-		return parsePos(parseBlockDirectives(code));
+		return parsePositionDirective(parseBlockDirectives(code));
 	}
 
 	it('parses valid @pos directive with positive integers', () => {

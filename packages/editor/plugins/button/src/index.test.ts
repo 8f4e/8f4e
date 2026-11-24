@@ -53,7 +53,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
@@ -150,7 +150,7 @@ describe('button plugin', () => {
 
 	it('replaces button data after source edits and removes deleted directives', async () => {
 		const test = await setup();
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{
 					codeBlock: test.codeBlock,
@@ -162,7 +162,7 @@ describe('button plugin', () => {
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), -5, true);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
 			],

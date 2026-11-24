@@ -14,7 +14,7 @@ export function subscribeToBlockPreparation(
 	const refresh = () => {
 		const state = store.getState();
 		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
-		for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state }, 'data');
+		for (const codeBlock of state.project.activeLevel.blocks) prepare({ codeBlock, state }, 'data');
 	};
 	const unsubscribeLayout = layout.subscribe(context => prepare(context, 'layout'));
 	store.subscribe(selector, refresh);

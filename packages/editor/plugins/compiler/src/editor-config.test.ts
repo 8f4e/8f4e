@@ -119,7 +119,7 @@ describe('compiler configuration directives', () => {
 		});
 		worker.emitMessage(createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })));
 
-		const codeBlock = store.getState().codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
+		const codeBlock = store.getState().project.rootLevel.blocks.find(block => block.blockType === 'note')!;
 		const revision = store.getState().compilerInputRevision;
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] },
@@ -141,7 +141,7 @@ describe('compiler configuration directives', () => {
 		expect(state.codeErrors['editor-directives']).toHaveLength(1);
 		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
 		store.subscribe('compilerInputRevision', errorsAtRevision);
-		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
+		const codeBlock = state.project.rootLevel.blocks.find(block => block.blockType === 'note')!;
 		applyCodeBlockSourceEdits(store, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
 		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);
 	});

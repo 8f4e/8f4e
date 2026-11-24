@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits, setSkipExecution } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 
 const action = 'toggleModuleSkipExecutionDirective';
@@ -8,7 +8,7 @@ const action = 'toggleModuleSkipExecutionDirective';
 export const toggleSkipExecutionPlugin: EditorPlugin = {
 	id: 'toggle-skip-execution',
 	setup: ({ store, events, menus }) => {
-		const onToggle = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
+		const onToggle = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 			if (store.getState().editorMode !== 'edit') return;
 
 			const skipExecution = !codeBlock.code.some(line => isSkipExecutionDirective(line));

@@ -1,6 +1,6 @@
 import type {
 	ActivateContextMenuItemEvent,
-	CodeBlockGraphicData,
+	EditorCodeBlock,
 	EventDispatcher,
 	InternalPointerEvent,
 	MenuStackEntry,
@@ -20,7 +20,7 @@ export default function registerContextMenuHandlers(
 	const state = store.getState();
 	const unregisterMenus = [
 		registry.registerMenu('mainMenu', state => menus.mainMenu(state, registry.getItems('mainMenu', { state }))),
-		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: CodeBlockGraphicData }) =>
+		registry.registerMenu('moduleMenu', (state, { codeBlock }: { codeBlock: EditorCodeBlock }) =>
 			menus.moduleMenu(state, codeBlock, registry.getItems('moduleMenu', { state, codeBlock }))
 		),
 	];

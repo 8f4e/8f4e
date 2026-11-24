@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/__tests__/helpers/mockEditorState';
 import findClosestCodeBlockInDirection from './findClosestCodeBlockInDirection';
@@ -137,7 +137,7 @@ describe('findClosestCodeBlockInDirection', () => {
 
 		it('should handle empty list by returning selected block', () => {
 			const selected = createMockCodeBlock({ name: 'selected', x: 0, y: 0 });
-			const codeBlocks: CodeBlockGraphicData[] = [];
+			const codeBlocks: EditorCodeBlock[] = [];
 			codeBlocks.push(selected);
 
 			const result = findClosestCodeBlockInDirection(codeBlocks, selected, 'right');

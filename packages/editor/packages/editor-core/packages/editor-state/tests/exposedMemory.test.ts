@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import {
 	createChildProjectGroupPath,
 	getProjectGroups,
@@ -15,7 +15,7 @@ import resolveMemoryTarget from '~/memory/resolveMemoryTarget';
 
 const source = readFileSync(new URL('./fixtures/exposed-controls.8f4e', import.meta.url), 'utf8');
 
-function createBlocks(project: ProjectObjectModel, projectPath = ''): CodeBlockGraphicData[] {
+function createBlocks(project: ProjectObjectModel, projectPath = ''): EditorCodeBlock[] {
 	return [
 		...getProjectModules(project).map(block =>
 			createMockCodeBlock({ code: block.code, projectPath, blockType: 'module' })
@@ -46,10 +46,10 @@ async function setup() {
 	(instance.exports.initDefaults as CallableFunction)();
 	const int32 = new Int32Array(memory.buffer);
 	state.callbacks.getWordFromMemory = address => int32[address];
-	state.codeBlockRendering.rootProject.blocks = createBlocks(project);
-	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
-	const audio = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!;
-	const controls = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'controls')!;
+	state.project.rootLevel.blocks = createBlocks(project);
+	state.project.activeLevel.blocks = state.project.rootLevel.blocks;
+	const audio = state.project.rootLevel.blocks.find(block => block.name === 'audio')!;
+	const controls = state.project.rootLevel.blocks.find(block => block.name === 'controls')!;
 	return { state, audio, controls };
 }
 

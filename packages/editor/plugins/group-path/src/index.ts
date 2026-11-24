@@ -14,7 +14,7 @@ export function createGroupPathPlugin({ topRow = 0 }: { topRow?: number } = {}):
 			let rows: GlyphIds[] = [];
 			let columns = 0;
 			const refresh = () => {
-				const currentPath = state.codeBlockRendering.currentProject.path;
+				const currentPath = state.project.activeLevel.path;
 				if (currentPath === path) return;
 				path = currentPath;
 				rows = path
@@ -22,7 +22,7 @@ export function createGroupPathPlugin({ topRow = 0 }: { topRow?: number } = {}):
 					: [];
 				columns = rows.reduce((width, row, depth) => Math.max(width, depth * BRANCH.length + row.length + 2), 0);
 			};
-			store.subscribe('codeBlockRendering.currentProject.path', refresh);
+			store.subscribe('project.activeLevel.path', refresh);
 			// Renaming a group can update paths in place.
 			store.subscribe('projectChange', refresh);
 			refresh();
@@ -43,7 +43,7 @@ export function createGroupPathPlugin({ topRow = 0 }: { topRow?: number } = {}):
 				draw.endGroup();
 			});
 			return () => {
-				store.unsubscribe('codeBlockRendering.currentProject.path', refresh);
+				store.unsubscribe('project.activeLevel.path', refresh);
 				store.unsubscribe('projectChange', refresh);
 				removeDrawer();
 			};

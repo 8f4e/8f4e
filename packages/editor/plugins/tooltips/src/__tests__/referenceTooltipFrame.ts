@@ -48,7 +48,7 @@ entryEnd`);
 	});
 	const disposeFixture = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 		codeBlock.code.forEach((line, row) => {
-			const selected = state.codeBlockRendering.selectedCodeBlock === codeBlock && row === codeBlock.cursor.row;
+			const selected = state.project.selectedCodeBlock === codeBlock && row === codeBlock.cursor.row;
 			if (selected) {
 				draw.drawFill(
 					0,
@@ -81,10 +81,10 @@ entryEnd`);
 	events.dispatch('loadProject', { project });
 	store.set('editorMode', 'edit');
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inspect')!;
-	store.set('codeBlockRendering.selectedCodeBlock', block);
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'inspect')!;
+	store.set('project.selectedCodeBlock', block);
 	store.set(
-		'codeBlockRendering.selectedCodeBlock.cursor.row',
+		'project.selectedCodeBlock.cursor.row',
 		block.code.findIndex(line => line.startsWith(declaration))
 	);
 	state.viewport.x = 0;

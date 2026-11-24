@@ -6,12 +6,12 @@
 import type { MemoryAction as CompilerMemoryAction } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
-import type { ProjectEditOptions } from './features/code-blocks/projectEdits';
 import type { EditorProjectSnapshot } from './features/code-blocks/projectSnapshot';
+import type { ProjectEditOptions } from './features/code-blocks/projectTransactions';
 import type {
-	CodeBlockGraphicData,
-	CodeBlockRendering,
 	CodeBlockType,
+	EditorCodeBlock,
+	EditorProjectState,
 	EntryBounds,
 	MemoryIdentifier,
 	ParsedDirectiveRecord,
@@ -63,9 +63,7 @@ export type {
 	ActivateContextMenuItemEvent,
 	ActivateDialogButtonEvent,
 	AssertionResult,
-	CodeBlockGraphicData,
 	CodeBlockPointerDownEvent,
-	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
 	Compiler,
@@ -75,6 +73,8 @@ export type {
 	ContextMenuItem,
 	DialogButton,
 	DialogContent,
+	EditorCodeBlock,
+	EditorProjectState,
 	EntryBounds,
 	EventDispatcher,
 	EventDispatchOptions,
@@ -191,7 +191,7 @@ export interface State {
 	/** Monotonic change signal for persisted project content; selection, caret movement, and navigation do not advance it. */
 	projectChange: ProjectChange;
 	compiler: Compiler;
-	codeBlockRendering: CodeBlockRendering;
+	project: EditorProjectState;
 	contextMenu: ContextMenu;
 	/** Shared information records published by the editor and plugins. */
 	info: InfoState;
@@ -228,8 +228,8 @@ export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/layout';
 export type * from './features/code-blocks/navigation';
-export type * from './features/code-blocks/projectEdits';
 export type * from './features/code-blocks/projectSnapshot';
+export type * from './features/code-blocks/projectTransactions';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
 export type * from './features/editor-config/types';

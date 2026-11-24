@@ -40,11 +40,11 @@ describe('creationIndex', () => {
 			insert('first');
 			insert('second');
 			insert('third');
-			expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.creationIndex)).toEqual([0, 1, 2]);
-			deleteCodeBlocks(store, [mockState.codeBlockRendering.currentProject.blocks[1]]);
+			expect(mockState.project.activeLevel.blocks.map(block => block.creationIndex)).toEqual([0, 1, 2]);
+			deleteCodeBlocks(store, [mockState.project.activeLevel.blocks[1]]);
 			insert('fourth');
-			expect(mockState.codeBlockRendering.currentProject.blocks.map(block => block.creationIndex)).toEqual([0, 2, 3]);
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(4);
+			expect(mockState.project.activeLevel.blocks.map(block => block.creationIndex)).toEqual([0, 2, 3]);
+			expect(mockState.project.nextCodeBlockCreationIndex).toBe(4);
 		});
 	});
 
@@ -61,7 +61,7 @@ describe('creationIndex', () => {
 
 			emitter.emit('loadProject', { project: projectWithBlocks });
 
-			const codeBlocks = mockState.codeBlockRendering.currentProject.blocks;
+			const codeBlocks = mockState.project.activeLevel.blocks;
 			expect(codeBlocks).toHaveLength(4);
 
 			// Authored identities survive loading, and the generated environment receives a new one.
@@ -71,12 +71,12 @@ describe('creationIndex', () => {
 				['b', 1],
 				['c', 2],
 			]);
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(4);
+			expect(mockState.project.nextCodeBlockCreationIndex).toBe(4);
 		});
 
 		it('should reset creationIndex counter when loading a new project', () => {
 			// Set a high nextCodeBlockCreationIndex
-			mockState.codeBlockRendering.nextCodeBlockCreationIndex = 100;
+			mockState.project.nextCodeBlockCreationIndex = 100;
 
 			const project: ProjectObjectModel = {
 				...EMPTY_DEFAULT_PROJECT,
@@ -86,7 +86,7 @@ describe('creationIndex', () => {
 			emitter.emit('loadProject', { project });
 
 			// Counter should account for the authored module and generated environment.
-			expect(mockState.codeBlockRendering.nextCodeBlockCreationIndex).toBe(2);
+			expect(mockState.project.nextCodeBlockCreationIndex).toBe(2);
 		});
 	});
 

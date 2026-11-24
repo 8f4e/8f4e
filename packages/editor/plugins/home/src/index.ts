@@ -32,9 +32,9 @@ function findHome(project: ProjectLevel) {
 	}
 }
 
-function findDuplicateHomeErrors(rootProject: ProjectLevel): CodeError[] {
+function findDuplicateHomeErrors(rootLevel: ProjectLevel): CodeError[] {
 	const errors: CodeError[] = [];
-	for (const project of walkProjectLevels(rootProject)) {
+	for (const project of walkProjectLevels(rootLevel)) {
 		let seenHome = false;
 		// Diagnostic ownership must not follow the mutable draw order used by navigation.
 		for (const block of [...project.blocks].sort((a, b) => a.creationIndex - b.creationIndex)) {
@@ -58,7 +58,7 @@ export const homePlugin: EditorPlugin = {
 	setup: ({ store, events, menus }) => {
 		const state = store.getState();
 		const refreshErrors = () => {
-			const errors = findDuplicateHomeErrors(state.codeBlockRendering.rootProject);
+			const errors = findDuplicateHomeErrors(state.project.rootLevel);
 			const previous = state.codeErrors.home ?? [];
 			if (
 				errors.length !== previous.length ||
@@ -82,8 +82,8 @@ export const homePlugin: EditorPlugin = {
 			}
 		};
 		const onGoHome = () => {
-			const home = findHome(state.codeBlockRendering.currentProject);
-			if (home) store.set('codeBlockRendering.selectedCodeBlock', home.codeBlock);
+			const home = findHome(state.project.activeLevel);
+			if (home) store.set('project.selectedCodeBlock', home.codeBlock);
 			const { x, y } = home
 				? centerViewportOnCodeBlock(state.viewport, home.codeBlock, { alignment: home.alignment })
 				: { x: 0, y: 0 };

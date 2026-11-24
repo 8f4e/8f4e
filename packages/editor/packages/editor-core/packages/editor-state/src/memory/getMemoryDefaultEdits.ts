@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import {
 	ArgumentType,
 	arrayMemoryDeclarationInstructions,
@@ -66,22 +66,22 @@ export interface MemoryDefaultValue {
 }
 
 export interface MemoryDefaultEdit {
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 	code: string[];
 }
 
 /** Routes groups of resolved memory defaults to their source owners. Each group is saved together. */
 export function getMemoryDefaultEdits(state: State, groups: MemoryDefaultValue[][]): MemoryDefaultEdit[] {
-	const owners = new Map<string, CodeBlockGraphicData>();
-	const collectOwners = (blocks: CodeBlockGraphicData[]) => {
+	const owners = new Map<string, EditorCodeBlock>();
+	const collectOwners = (blocks: EditorCodeBlock[]) => {
 		for (const block of blocks) {
 			if (block.childProject !== undefined) collectOwners(block.childProject?.blocks);
 			else if (block.blockType === 'module') owners.set(getCodeBlockModuleId(block), block);
 		}
 	};
-	collectOwners(state.codeBlockRendering.rootProject.blocks);
+	collectOwners(state.project.rootLevel.blocks);
 
-	const updates = new Map<CodeBlockGraphicData, string[]>();
+	const updates = new Map<EditorCodeBlock, string[]>();
 	for (const group of groups) {
 		const edits = group.map(edit => {
 			const owner = owners.get(edit.moduleId);

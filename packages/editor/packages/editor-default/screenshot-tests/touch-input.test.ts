@@ -2,7 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
-import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import type {} from '@vitest/browser-playwright';
 import { expect, test, vi } from 'vitest';
@@ -54,7 +54,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		});
 		editor.pauseRendering();
 		const state = editor.state;
-		const targetBlock = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const targetBlock = () => state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const rect = canvas.getBoundingClientRect();
 		const frame = window.frameElement!.getBoundingClientRect();
 		const point = (x: number, y: number, id = 1) => ({
@@ -71,11 +71,11 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 			.poll(async () => {
 				const block = targetBlock();
 				await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
-				return state.codeBlockRendering.selectedCodeBlock?.name;
+				return state.project.selectedCodeBlock?.name;
 			})
 			.toBe('target');
 		await tap(400, 20);
-		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		await expect.poll(() => state.project.selectedCodeBlock).toBeUndefined();
 		const { x: blockX, y: blockY } = targetBlock();
 		const { x, y } = state.viewport;
 		for (const id of ['jump-to-error', 'coordinate-grid']) {
@@ -95,7 +95,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 			.toEqual({ x: x - 40, y: y - 32 });
 		const block = targetBlock();
 		expect({ x: block.x, y: block.y }).toEqual({ x: blockX, y: blockY });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		context.store.set('loadingIndicators', []);
 		// Capture the settled view, not a transient spring offset from the touch gesture.
 		const clock = vi.spyOn(performance, 'now').mockReturnValueOnce(performance.now() + 200);
@@ -103,7 +103,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		clock.mockRestore();
 		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/after-touch-pan.viewport.snap');
 		await tap(block.x - state.viewport.x + 8, block.y - state.viewport.y + 8);
-		await expect.poll(() => state.codeBlockRendering.selectedCodeBlock?.name).toBe('target');
+		await expect.poll(() => state.project.selectedCodeBlock?.name).toBe('target');
 		// Check source-line navigation and input layers through the real touch adapter.
 		context.store.set('codeErrors.fixture', [
 			{ codeBlockId: block.creationIndex, lineNumber: 2, message: 'Touch fixture error' },
@@ -112,7 +112,7 @@ test('coarse-pointer composition combines one-finger panning with mouse-compatib
 		const errorRow = block.displayModel.sourceLineIndexToDisplayRow[2]!;
 		expect(state.viewport.x).toBe(Math.round(block.x + block.width / 2 - 320));
 		expect(state.viewport.y).toBe(
-			Math.round(block.y + (gapCalculator(errorRow, block.gaps) + 0.5) * state.viewport.hGrid - 192)
+			Math.round(block.y + (displayRowToGridRow(errorRow, block.gaps) + 0.5) * state.viewport.hGrid - 192)
 		);
 		context.store.set('codeErrors.fixture', []);
 	} finally {
@@ -175,7 +175,7 @@ entryEnd`);
 		editor.pauseRendering();
 		const state = editor.state;
 		context.store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
 		await expect.poll(() => block.gaps.get(3)?.size).toBe(2);
 		await expect.poll(() => canvas.style.touchAction).toBe('none');
 		const rect = canvas.getBoundingClientRect();
@@ -187,7 +187,7 @@ entryEnd`);
 		});
 		const left = block.x + (block.lineNumberColumnWidth + 2) * state.viewport.vGrid - state.viewport.x;
 		const width = block.width - (block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
-		const y = block.y + (gapCalculator(3, block.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 8;
+		const y = block.y + (displayRowToGridRow(3, block.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 8;
 		const viewport = { x: state.viewport.x, y: state.viewport.y };
 		await input.send('Input.dispatchTouchEvent', {
 			type: 'touchStart',

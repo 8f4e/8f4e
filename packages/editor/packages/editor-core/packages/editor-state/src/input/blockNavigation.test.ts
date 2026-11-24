@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, NavigateCodeBlockEvent } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, NavigateCodeBlockEvent } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCodeBlock, createMockState } from '~/__tests__/helpers/mockEditorState';
@@ -10,11 +10,11 @@ describe('codeBlockNavigation', () => {
 	let state: ReturnType<typeof createMockState>;
 	let events: ReturnType<typeof createMockEventDispatcherWithVitest>;
 	let onNavigateCodeBlockHandler: (event: NavigateCodeBlockEvent) => void;
-	let selectedBlock: CodeBlockGraphicData;
-	let leftBlock: CodeBlockGraphicData;
-	let rightBlock: CodeBlockGraphicData;
-	let upBlock: CodeBlockGraphicData;
-	let downBlock: CodeBlockGraphicData;
+	let selectedBlock: EditorCodeBlock;
+	let leftBlock: EditorCodeBlock;
+	let rightBlock: EditorCodeBlock;
+	let upBlock: EditorCodeBlock;
+	let downBlock: EditorCodeBlock;
 
 	beforeEach(() => {
 		// Create mock code blocks using shared utility
@@ -46,9 +46,9 @@ describe('codeBlockNavigation', () => {
 
 		// Create mock state using shared utility
 		state = createMockState({
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
-				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
+				activeLevel: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 		});
 
@@ -74,9 +74,9 @@ describe('codeBlockNavigation', () => {
 		// Initialize the effect
 		registerBlockNavigation(createStateManager(state), events);
 
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		state.project.selectedCodeBlock = undefined;
 		onNavigateCodeBlockHandler({ direction: 'right' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(undefined);
+		expect(state.project.selectedCodeBlock).toBe(undefined);
 	});
 
 	it('should navigate left when navigateCodeBlock event with left direction is dispatched', () => {
@@ -84,7 +84,7 @@ describe('codeBlockNavigation', () => {
 		registerBlockNavigation(createStateManager(state), events);
 
 		onNavigateCodeBlockHandler({ direction: 'left' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(leftBlock);
+		expect(state.project.selectedCodeBlock).toBe(leftBlock);
 	});
 
 	it('should navigate right when navigateCodeBlock event with right direction is dispatched', () => {
@@ -92,7 +92,7 @@ describe('codeBlockNavigation', () => {
 		registerBlockNavigation(createStateManager(state), events);
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+		expect(state.project.selectedCodeBlock).toBe(rightBlock);
 	});
 
 	it('should align the target highlighted line during horizontal navigation', () => {
@@ -111,7 +111,7 @@ describe('codeBlockNavigation', () => {
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+		expect(state.project.selectedCodeBlock).toBe(rightBlock);
 		expect(rightBlock.cursor.row).toBe(2);
 		expect(rightBlock.cursor.col).toBe(3);
 		expect(rightBlock.cursor.y).toBe(2 * state.viewport.hGrid);
@@ -124,7 +124,7 @@ describe('codeBlockNavigation', () => {
 		selectedBlock.cursor.y = 0;
 
 		onNavigateCodeBlockHandler({ direction: 'up' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(upBlock);
+		expect(state.project.selectedCodeBlock).toBe(upBlock);
 	});
 
 	it('should navigate down when navigateCodeBlock event with down direction is dispatched', () => {
@@ -136,7 +136,7 @@ describe('codeBlockNavigation', () => {
 		selectedBlock.cursor.y = 3 * state.viewport.hGrid;
 
 		onNavigateCodeBlockHandler({ direction: 'down' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(downBlock);
+		expect(state.project.selectedCodeBlock).toBe(downBlock);
 	});
 
 	it('should move to the first line of the current block before navigating upward', () => {
@@ -149,7 +149,7 @@ describe('codeBlockNavigation', () => {
 		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up', events);
 
 		expect(result).toBe(true);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+		expect(state.project.selectedCodeBlock).toBe(selectedBlock);
 		expect(selectedBlock.cursor.row).toBe(0);
 		expect(selectedBlock.cursor.y).toBe(0);
 		expect(state.viewport.y).toBe(-176);
@@ -170,12 +170,12 @@ describe('codeBlockNavigation', () => {
 
 		const store = createStateManager(state);
 		const onSelectedRowChanged = vi.fn();
-		store.subscribe('codeBlockRendering.selectedCodeBlock.cursor.row', onSelectedRowChanged);
+		store.subscribe('project.selectedCodeBlock.cursor.row', onSelectedRowChanged);
 
 		const result = navigateToCodeBlockInDirection(store, 'up', events);
 
 		expect(result).toBe(true);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+		expect(state.project.selectedCodeBlock).toBe(selectedBlock);
 		expect(selectedBlock.cursor.row).toBe(0);
 		expect(onSelectedRowChanged).toHaveBeenCalledWith(0);
 	});
@@ -190,7 +190,7 @@ describe('codeBlockNavigation', () => {
 		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down', events);
 
 		expect(result).toBe(true);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+		expect(state.project.selectedCodeBlock).toBe(selectedBlock);
 		expect(selectedBlock.cursor.row).toBe(3);
 		expect(selectedBlock.cursor.y).toBe(3 * state.viewport.hGrid);
 		expect(state.viewport.y).toBe(-128);
@@ -218,7 +218,7 @@ describe('codeBlockNavigation', () => {
 		const result = navigateToCodeBlockInDirection(createStateManager(state), 'up', events);
 
 		expect(result).toBe(true);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(upBlock);
+		expect(state.project.selectedCodeBlock).toBe(upBlock);
 		expect(upBlock.cursor.row).toBe(2);
 		expect(upBlock.cursor.col).toBe(2);
 		expect(upBlock.cursor.y).toBe(2 * state.viewport.hGrid);
@@ -240,7 +240,7 @@ describe('codeBlockNavigation', () => {
 		const result = navigateToCodeBlockInDirection(createStateManager(state), 'down', events);
 
 		expect(result).toBe(true);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(downBlock);
+		expect(state.project.selectedCodeBlock).toBe(downBlock);
 		expect(downBlock.cursor.row).toBe(0);
 		expect(downBlock.cursor.col).toBe(1);
 		expect(downBlock.cursor.y).toBe(0);
@@ -263,9 +263,9 @@ describe('codeBlockNavigation', () => {
 	it.each(['view', 'edit'] as const)('commits the viewport once during navigation in %s mode', editorMode => {
 		state = createMockState({
 			editorMode,
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
-				currentProject: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
+				activeLevel: { entries: [], path: '', blocks: [selectedBlock, leftBlock, rightBlock, upBlock, downBlock] },
 			},
 			viewport: {
 				x: 0,
@@ -279,12 +279,12 @@ describe('codeBlockNavigation', () => {
 
 		const store = createStateManager(state);
 		const onSelectionChanged = vi.fn();
-		store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectionChanged);
+		store.subscribe('project.selectedCodeBlock', onSelectionChanged);
 		registerBlockNavigation(store, events);
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
 
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+		expect(state.project.selectedCodeBlock).toBe(rightBlock);
 		expect(onSelectionChanged).toHaveBeenCalledWith(rightBlock);
 		expect(state.viewport).toMatchObject({ x: 48, y: -96 });
 		expect(events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportChanged', {
@@ -301,10 +301,10 @@ describe('codeBlockNavigation', () => {
 		registerBlockNavigation(createStateManager(state), events);
 
 		// Remove all blocks except selected
-		state.codeBlockRendering.currentProject.blocks = [selectedBlock];
+		state.project.activeLevel.blocks = [selectedBlock];
 
 		onNavigateCodeBlockHandler({ direction: 'right' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+		expect(state.project.selectedCodeBlock).toBe(selectedBlock);
 		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
@@ -312,7 +312,7 @@ describe('codeBlockNavigation', () => {
 		it('should jump to code block by creationIndex', () => {
 			const result = jumpToCodeBlock(createStateManager(state), 2, events);
 			expect(result).toBe(true);
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(rightBlock);
+			expect(state.project.selectedCodeBlock).toBe(rightBlock);
 			expect(events.dispatch).toHaveBeenCalledExactlyOnceWith(
 				'viewportChanged',
 				expect.objectContaining({
@@ -327,7 +327,7 @@ describe('codeBlockNavigation', () => {
 			const result = jumpToCodeBlock(createStateManager(state), 999, events);
 			expect(result).toBe(false);
 			// selectedCodeBlock should remain unchanged
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(selectedBlock);
+			expect(state.project.selectedCodeBlock).toBe(selectedBlock);
 		});
 
 		it('should center viewport on the jumped-to code block', () => {

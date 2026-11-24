@@ -17,7 +17,7 @@ describe('tooltip layout', () => {
 	it('starts animation for a new selected line and preserves it across content refreshes', () => {
 		const selectedCodeBlock = createMockCodeBlock({ creationIndex: 4 });
 		const state = createMockState({
-			codeBlockRendering: { selectedCodeBlock },
+			project: { selectedCodeBlock },
 		});
 
 		let tooltip = createEmptyTooltipState();
@@ -35,7 +35,7 @@ describe('tooltip layout', () => {
 	it('restarts animation when content appears for the current target', () => {
 		const selectedCodeBlock = createMockCodeBlock({ creationIndex: 4 });
 		const state = createMockState({
-			codeBlockRendering: { selectedCodeBlock },
+			project: { selectedCodeBlock },
 		});
 
 		let tooltip = createEmptyTooltipState();

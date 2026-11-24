@@ -1,5 +1,5 @@
 import type {
-	CodeBlockGraphicData,
+	EditorCodeBlock,
 	EditorDirectiveDefinition,
 	EditorProjectSnapshot,
 	EventDispatcher,
@@ -7,26 +7,26 @@ import type {
 	ProjectEditOptions,
 	ProjectEditPlan,
 	ProjectEditResult,
-	ProjectEdits,
 	ProjectLevel,
 	ProjectSourceBlock,
+	ProjectTransactions,
 	State,
 } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath, type ProjectObjectModel } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
 import { isOrdinaryCommentLine } from '../directives/directiveRecords';
-import resolveEditorConfig from '../directives/global/resolveProjectDirectives';
+import resolveProjectDirectives from '../directives/global/resolveProjectDirectives';
 import type { LayoutCoordinator } from '../layout/blockLayoutCoordinator';
 import {
 	cancelPendingProjectViewport,
 	placeCurrentProjectViewport,
 	rememberCurrentProjectView,
 } from '../viewport/updateViewport';
-import { createCodeBlockGraphicData } from './blocks/createEditorCodeBlock';
+import { createEditorCodeBlock } from './blocks/createEditorCodeBlock';
 import getCodeBlockNameFromSource from './blocks/getCodeBlockNameFromSource';
 import {
-	prepareProjectSources,
-	refreshBlockSources,
+	prepareProjectSourceMetadata,
+	refreshEditedBlocksMetadata,
 	rememberEntry,
 	supportsExecutionEntry,
 } from './blocks/refreshSourceMetadata';
@@ -51,7 +51,7 @@ export class ProjectEditPlanError extends Error {
 }
 
 /** Internal mutation service; the plugin-facing contract exposes only live edits. */
-export interface ProjectEditService extends ProjectEdits {
+export interface ProjectTransactionService extends ProjectTransactions {
 	load(project: ProjectObjectModel): void;
 	capture(): EditorProjectSnapshot;
 	restore(snapshot: EditorProjectSnapshot): void;
@@ -64,8 +64,8 @@ interface SourceBefore {
 }
 
 interface Mutation {
-	before: Map<CodeBlockGraphicData, SourceBefore>;
-	insertedBlocks: CodeBlockGraphicData[];
+	before: Map<EditorCodeBlock, SourceBefore>;
+	insertedBlocks: EditorCodeBlock[];
 	collections: Set<ProjectLevel>;
 	placeProject?: ProjectLevel;
 }
@@ -83,7 +83,7 @@ function sourceAffectsCompilation(before: readonly string[], after: readonly str
 	);
 }
 
-function rememberSource(mutation: Mutation, block: CodeBlockGraphicData): void {
+function rememberSource(mutation: Mutation, block: EditorCodeBlock): void {
 	if (!mutation.before.has(block)) {
 		mutation.before.set(block, { code: block.code, entry: block.entry, lastUpdated: block.lastUpdated });
 	}
@@ -93,7 +93,7 @@ function rememberSource(mutation: Mutation, block: CodeBlockGraphicData): void {
 function survivingProject(
 	project: ProjectLevel,
 	current: ProjectLevel,
-	deletes: ReadonlySet<CodeBlockGraphicData>
+	deletes: ReadonlySet<EditorCodeBlock>
 ): ProjectLevel | undefined {
 	if (project === current) return project;
 	for (const block of project.blocks) {
@@ -108,16 +108,16 @@ function survivingProject(
  * synchronous environment contributions are collected before materializing generated source.
  * Layout and completion events consume the settled blocks, never command source derivation.
  */
-export function createProjectEditService(
+export function createProjectTransactionService(
 	store: StateManager<State>,
 	events: EventDispatcher,
 	directives: EditorDirectiveDefinition[],
 	membership: ProjectMembership,
 	coordinator: LayoutCoordinator
-): ProjectEditService {
+): ProjectTransactionService {
 	const state = store.getState();
-	const rendering = state.codeBlockRendering;
-	let environment: CodeBlockGraphicData | undefined;
+	const projectState = state.project;
+	let environment: EditorCodeBlock | undefined;
 	let active = false;
 	let configPending = false;
 	let environmentPending = false;
@@ -141,7 +141,7 @@ export function createProjectEditService(
 		return { changed, compilation };
 	};
 
-	const setSource = (mutation: Mutation, block: CodeBlockGraphicData, code: string[]): boolean => {
+	const setSource = (mutation: Mutation, block: EditorCodeBlock, code: string[]): boolean => {
 		if (sameSource(code, block.code)) return false;
 		rememberSource(mutation, block);
 		block.code = code;
@@ -152,7 +152,7 @@ export function createProjectEditService(
 	const materializeEnvironment = (mutation: Mutation) => {
 		if (!environment) return;
 		if (setSource(mutation, environment, generateEnvironmentSource(state.envConstantContributions))) {
-			refreshBlockSources([environment], directives, membership);
+			refreshEditedBlocksMetadata([environment], directives, membership);
 			coordinator.refreshBlocks([environment]);
 		}
 	};
@@ -162,7 +162,7 @@ export function createProjectEditService(
 		// schema changes repeat that phase; generated source cannot feed it back.
 		while (configPending) {
 			configPending = false;
-			resolveEditorConfig(store, environment);
+			resolveProjectDirectives(store, environment);
 		}
 		if (environmentPending) {
 			environmentPending = false;
@@ -177,7 +177,7 @@ export function createProjectEditService(
 		if (compilation || force) store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		store.set('projectChange', { revision: state.projectChange.revision + 1, ...change });
 		// Project-change subscribers may contribute synchronous layout before placement.
-		if (mutation.placeProject === rendering.currentProject) placeCurrentProjectViewport(state, events);
+		if (mutation.placeProject === projectState.activeLevel) placeCurrentProjectViewport(state, events);
 		return true;
 	};
 
@@ -187,8 +187,8 @@ export function createProjectEditService(
 			work(mutation);
 			settlePending(mutation);
 		});
-		if (mutation.collections.has(rendering.currentProject)) {
-			store.set('codeBlockRendering.currentProject.blocks', rendering.currentProject.blocks);
+		if (mutation.collections.has(projectState.activeLevel)) {
+			store.set('project.activeLevel.blocks', projectState.activeLevel.blocks);
 		}
 		// Synchronous observers of settled layouts/collections may update contributions.
 		while (configPending || environmentPending) coordinator.batch(() => settlePending(mutation));
@@ -205,7 +205,7 @@ export function createProjectEditService(
 			// never a nested publication that can interrupt history or persistence.
 			while (configPending || environmentPending) {
 				const followUp = settle(() => {
-					if (configPending) coordinator.refreshProject(rendering.currentProject);
+					if (configPending) coordinator.refreshProject(projectState.activeLevel);
 				});
 				publish(followUp, generatedChange);
 			}
@@ -220,14 +220,14 @@ export function createProjectEditService(
 		}
 	};
 
-	const createBlock = (source: ProjectSourceBlock, project: ProjectLevel): CodeBlockGraphicData => {
+	const createBlock = (source: ProjectSourceBlock, project: ProjectLevel): EditorCodeBlock => {
 		const code = [...source.code];
 		const name = getCodeBlockNameFromSource(code);
-		const block = createCodeBlockGraphicData({
+		const block = createEditorCodeBlock({
 			code,
 			name,
 			projectPath: project.path,
-			creationIndex: rendering.nextCodeBlockCreationIndex++,
+			creationIndex: projectState.nextCodeBlockCreationIndex++,
 			entry: source.entry,
 		});
 		if (source.childProject) {
@@ -277,11 +277,11 @@ export function createProjectEditService(
 		// The generated block exclusively owns the root constants env namespace.
 		// Authored attempts to create one are no-ops, like edits to the read-only owner.
 		const inserts = requestedInserts.filter(
-			({ project, source }) => project !== rendering.rootProject || !isEnvironmentSource([...source.code])
+			({ project, source }) => project !== projectState.rootLevel || !isEnvironmentSource([...source.code])
 		);
 		// Combine repeated updates before comparing actual candidate source, rather than
 		// publishing transient changes or invalidating unchanged block identities.
-		const candidates = new Map<CodeBlockGraphicData, { code?: string[]; entry?: string }>();
+		const candidates = new Map<EditorCodeBlock, { code?: string[]; entry?: string }>();
 		for (const { codeBlock, code, entry } of updates) {
 			const update = candidates.get(codeBlock) ?? {};
 			if (code !== undefined) update.code = [...code];
@@ -289,7 +289,7 @@ export function createProjectEditService(
 			candidates.set(codeBlock, update);
 		}
 		for (const [block, update] of candidates) {
-			if (update.code && membership.getOwner(block) === rendering.rootProject && isEnvironmentSource(update.code)) {
+			if (update.code && membership.getOwner(block) === projectState.rootLevel && isEnvironmentSource(update.code)) {
 				candidates.delete(block);
 				continue;
 			}
@@ -304,18 +304,18 @@ export function createProjectEditService(
 			mutation => {
 				if (history === 'checkpoint') events.dispatch('beforeProjectEdit');
 				const nextProject = deletes.size
-					? survivingProject(rendering.rootProject, rendering.currentProject, deletes)!
-					: rendering.currentProject;
-				const viewChanged = nextProject !== rendering.currentProject;
+					? survivingProject(projectState.rootLevel, projectState.activeLevel, deletes)!
+					: projectState.activeLevel;
+				const viewChanged = nextProject !== projectState.activeLevel;
 				if (viewChanged) {
 					rememberCurrentProjectView(state);
 					cancelPendingProjectViewport(state);
 				}
-				const editedBlocks: CodeBlockGraphicData[] = [];
+				const editedBlocks: EditorCodeBlock[] = [];
 				for (const [block, update] of candidates) {
 					if (update.code && setSource(mutation, block, update.code)) editedBlocks.push(block);
 				}
-				refreshBlockSources(editedBlocks, directives, membership);
+				refreshEditedBlocksMetadata(editedBlocks, directives, membership);
 				for (const [block, update] of candidates) {
 					// Requested entries apply to the final source type, not an intermediate
 					// incomplete draft or the type before the source edit.
@@ -331,7 +331,7 @@ export function createProjectEditService(
 					owner.blocks.splice(owner.blocks.indexOf(block), 1);
 					if (owner.selectedBlock === block) owner.selectedBlock = undefined;
 				}
-				const insertedByProject = new Map<ProjectLevel, CodeBlockGraphicData[]>();
+				const insertedByProject = new Map<ProjectLevel, EditorCodeBlock[]>();
 				for (const { project, source } of inserts) {
 					const block = createBlock(source, project);
 					project.blocks.push(block);
@@ -341,9 +341,9 @@ export function createProjectEditService(
 					added.push(block);
 					insertedByProject.set(project, added);
 				}
-				if (mutation.collections.size > 0) membership.reset(rendering.rootProject);
+				if (mutation.collections.size > 0) membership.reset(projectState.rootLevel);
 				for (const [project, blocks] of insertedByProject) {
-					prepareProjectSources(project, blocks, directives);
+					prepareProjectSourceMetadata(project, blocks, directives);
 					// A hidden project's usable positions are still derived from authored grid coordinates.
 					for (const block of blocks.flatMap(block => [
 						block,
@@ -353,12 +353,12 @@ export function createProjectEditService(
 						block.y = block.gridY * state.viewport.hGrid;
 					}
 				}
-				if (viewChanged || (rendering.selectedCodeBlock && deletes.has(rendering.selectedCodeBlock))) {
-					store.set('codeBlockRendering.selectedCodeBlock', undefined);
+				if (viewChanged || (projectState.selectedCodeBlock && deletes.has(projectState.selectedCodeBlock))) {
+					store.set('project.selectedCodeBlock', undefined);
 				}
 				if (viewChanged) {
-					store.set('codeBlockRendering.currentProject', nextProject);
-					store.set('codeBlockRendering.selectedCodeBlock', nextProject.selectedBlock);
+					store.set('project.activeLevel', nextProject);
+					store.set('project.selectedCodeBlock', nextProject.selectedBlock);
 					coordinator.refreshProject(nextProject);
 					mutation.placeProject = nextProject;
 				}
@@ -380,43 +380,43 @@ export function createProjectEditService(
 					snapshot,
 					directives,
 					state.viewport,
-					sameProject ? rendering : undefined
+					sameProject ? projectState : undefined
 				);
-				const { rootProject, currentProject, nextCodeBlockCreationIndex } = reconstructed;
+				const { rootLevel, activeLevel, nextCodeBlockCreationIndex } = reconstructed;
 				const wasEnvironmentSelected =
-					sameProject && environment && rendering.rootProject.selectedBlock === environment;
-				store.set('codeBlockRendering.selectedCodeBlock', undefined);
-				rendering.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
+					sameProject && environment && projectState.rootLevel.selectedBlock === environment;
+				store.set('project.selectedCodeBlock', undefined);
+				projectState.nextCodeBlockCreationIndex = nextCodeBlockCreationIndex;
 				if (!sameProject) {
-					environment = createCodeBlockGraphicData({
+					environment = createEditorCodeBlock({
 						name: 'env',
 						readOnly: true,
-						creationIndex: rendering.nextCodeBlockCreationIndex++,
+						creationIndex: projectState.nextCodeBlockCreationIndex++,
 					});
 				}
 				if (environment) {
 					// Generated source is not part of an authored snapshot; reuse its live
 					// identity across history, and keep it behind overlapping authored blocks.
-					rootProject.blocks.unshift(environment);
-					if (wasEnvironmentSelected) rootProject.selectedBlock = environment;
+					rootLevel.blocks.unshift(environment);
+					if (wasEnvironmentSelected) rootLevel.selectedBlock = environment;
 				}
-				membership.reset(rootProject);
+				membership.reset(rootLevel);
 				coordinator.clearPending();
-				store.set('codeBlockRendering.rootProject', rootProject);
-				store.set('codeBlockRendering.currentProject', currentProject);
-				store.set('codeBlockRendering.selectedCodeBlock', currentProject.selectedBlock);
+				store.set('project.rootLevel', rootLevel);
+				store.set('project.activeLevel', activeLevel);
+				store.set('project.selectedCodeBlock', activeLevel.selectedBlock);
 				configPending = true;
 				environmentPending = environment !== undefined;
 				settlePending(mutation);
 				if (kind === 'replace') store.set('editorMode', state.globalEditorDirectives.mode ?? 'view');
-				coordinator.refreshProject(currentProject);
-				mutation.placeProject = currentProject;
+				coordinator.refreshProject(activeLevel);
+				mutation.placeProject = activeLevel;
 			},
 			{ kind }
 		);
 	};
 	const load = (project: ProjectObjectModel): void => install('replace', snapshotFromProjectModel(project));
-	const capture = () => captureProjectSnapshot(rendering, environment);
+	const capture = () => captureProjectSnapshot(projectState, environment);
 	const restore = (snapshot: EditorProjectSnapshot): void => install('restore', snapshot);
 
 	const refreshConfig = () => {
@@ -426,7 +426,7 @@ export function createProjectEditService(
 		}
 		finishMutation(() => {
 			configPending = true;
-			coordinator.refreshProject(rendering.currentProject);
+			coordinator.refreshProject(projectState.activeLevel);
 		}, generatedChange);
 	};
 

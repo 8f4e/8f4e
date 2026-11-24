@@ -158,7 +158,7 @@ describe('watch plugin', () => {
 				],
 				{ mode }
 			);
-			const selected = test.state.codeBlockRendering.selectedCodeBlock;
+			const selected = test.state.project.selectedCodeBlock;
 			const revision = test.state.projectChange.revision;
 			const layoutChanged = vi.fn();
 			test.events.on('codeBlockLayoutsChanged', layoutChanged);
@@ -176,7 +176,7 @@ describe('watch plugin', () => {
 			expectValue('12');
 			test.run();
 			expectValue('13');
-			expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(selected);
+			expect(test.state.project.selectedCodeBlock).toBe(selected);
 			expect(test.state.projectChange.revision).toBe(revision);
 			expect(layoutChanged).not.toHaveBeenCalled();
 		}

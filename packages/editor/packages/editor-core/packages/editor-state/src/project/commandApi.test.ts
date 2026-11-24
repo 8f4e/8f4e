@@ -3,7 +3,7 @@ import { getProjectModules } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initState from '../index';
-import { createEditorEditingHandle, getEditorBlockId } from './commandApi';
+import { createEditorCommandApi, getEditorBlockId } from './commandApi';
 import serializeToProject from './serialization/serializeToProject';
 
 const cleanups: Array<() => void> = [];
@@ -16,8 +16,8 @@ function setup() {
 		project: parseProjectSource('8f4e/v1\nentry main\nmodule target\nint value 1\nmoduleEnd\nentryEnd'),
 	});
 	events.dispatch('enterEditMode');
-	const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'target')!;
-	const editing = createEditorEditingHandle(store, events);
+	const block = state.project.rootLevel.blocks.find(candidate => candidate.name === 'target')!;
+	const editing = createEditorCommandApi(store, events);
 	cleanups.push(() => {
 		editing.dispose();
 		store.dispose();

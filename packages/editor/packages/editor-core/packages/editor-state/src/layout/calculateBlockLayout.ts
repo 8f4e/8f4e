@@ -1,19 +1,19 @@
-import type { CodeBlockGraphicData, CodeBlockLayoutContribution, State } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutContribution, EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { BlockLayoutDraft } from './blockLayoutDraft';
 import buildDisplayModel from './buildDisplayModel';
 import getCodeBlockGridWidth from './getCodeBlockGridWidth';
-import gaps from './updateBlockGaps';
+import updateBlockGaps from './updateBlockGaps';
 import { updateCursorY } from './updateCursorY';
 
 /** Update block display geometry from the current source facts and selection. */
 export function calculateBlockLayout(
-	block: CodeBlockGraphicData,
+	block: EditorCodeBlock,
 	state: State,
 	contribution: CodeBlockLayoutContribution
 ): void {
 	const displayModel = buildDisplayModel(block.code, {
 		...block.directiveDisplayState,
-		isExpandedForEditing: block === state.codeBlockRendering.selectedCodeBlock,
+		isExpandedForEditing: block === state.project.selectedCodeBlock,
 	});
 	block.displayModel = displayModel;
 	block.lineNumberColumnWidth = block.code.length.toString().length;
@@ -23,7 +23,7 @@ export function calculateBlockLayout(
 		verticalSpaceAfterSourceLine: [...contribution.verticalSpaceAfterSourceLine],
 	};
 	block.minGridWidth = contribution.minGridWidth;
-	gaps(block, draft);
+	updateBlockGaps(block, draft);
 	const { vGrid, hGrid } = state.viewport;
 	block.width = getCodeBlockGridWidth(block.code, block.tabStopsByLine, block.minGridWidth) * vGrid;
 	const gapRows = [...block.gaps.values()].reduce((total, gap) => total + gap.size, 0);

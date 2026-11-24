@@ -2,7 +2,7 @@ import type { ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
 import { defaultFeatureFlags } from './featureFlags';
 
 export default function createDefaultEditorState() {
-	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
+	const rootLevel: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	return {
 		compilerInputRevision: 0,
@@ -20,9 +20,9 @@ export default function createDefaultEditorState() {
 				projectMemoryExposuresByGroupPath: {},
 			},
 		},
-		codeBlockRendering: {
-			rootProject,
-			currentProject: rootProject,
+		project: {
+			rootLevel,
+			activeLevel: rootLevel,
 			entryBounds: [],
 			nextCodeBlockCreationIndex: 0,
 		},

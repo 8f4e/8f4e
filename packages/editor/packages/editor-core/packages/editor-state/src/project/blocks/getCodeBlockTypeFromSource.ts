@@ -6,6 +6,6 @@ import { getDocumentProjectBlockType } from '@8f4e/project-preparser';
  * @param code - Code block represented as an array of lines.
  * @returns The inferred code block type.
  */
-export default function getBlockType(code: string[]): CodeBlockType {
+export default function getCodeBlockTypeFromSource(code: string[]): CodeBlockType {
 	return getDocumentProjectBlockType(code) as CodeBlockType;
 }

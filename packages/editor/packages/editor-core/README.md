@@ -223,7 +223,7 @@ consumers must not retain them or read them after the drawing pass. Keep present
 the rendered block objects for drawing attached decorations and cross-block connections. Use the frame's `viewport`
 for other world-to-canvas projections; `state.viewport` is the logical viewport used by editor input and layout.
 `@8f4e/editor-plugin-entry-outlines` draws borders and labels through this hook. Editor-state owns the padded
-world-space regions in `state.codeBlockRendering.entryBounds`, alongside entry definitions and block membership.
+world-space regions in `state.project.entryBounds`, alongside entry definitions and block membership.
 Module insertion selects the first containing entry, including its edges, or allocates a fresh entry outside all
 bounds. Bounds update after changes to world layout, projects, or grid dimensions. These semantics work without a drawing plugin.
 
@@ -296,7 +296,7 @@ removed; dispatch traverses those snapshots without sorting or filtering registr
 
 Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
 contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
-`createCodeErrorBlockLookup(rootProject)` indexes document identities and project scopes once for a batch of errors,
+`createCodeErrorBlockLookup(rootLevel)` indexes document identities and project scopes once for a batch of errors,
 retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
@@ -381,13 +381,13 @@ The public `editor.editing.getRevision()` token combines that revision with its 
 Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `store.projectEdits.apply({ updates, inserts, deletes })`. An update supplies
+Source-mutating plugin actions use `store.projectTransactions.apply({ updates, inserts, deletes })`. An update supplies
 `{ codeBlock, code }` with replacement source, an insertion supplies `{ project, source }` with source and optional
 entry/child-project data, and deletion supplies existing block handles. All three collections are optional and form
 one synchronous transaction. Existing blocks and project levels retain their identities. For simple source-only
 changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
 adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.
-Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
+Both `projectTransactions.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
 `debounced` (default) or `checkpoint`. Changes confined to the generated managed environment publish a `generated`
 change without affecting history; authored changes in the same transaction still follow the requested policy.
 

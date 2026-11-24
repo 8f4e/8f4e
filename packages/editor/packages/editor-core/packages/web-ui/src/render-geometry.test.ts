@@ -7,7 +7,7 @@ it('prepares the current project blocks in draw order, including offscreen block
 	const offscreen = createMockCodeBlock({ x: -512, y: 1200 });
 	const state = createMockState({
 		viewport: { x: 24, y: -32 },
-		codeBlockRendering: { currentProject: { blocks: [visible, offscreen] } },
+		project: { activeLevel: { blocks: [visible, offscreen] } },
 	});
 
 	const geometry = createRenderGeometry().prepare(state);
@@ -25,7 +25,7 @@ it('reuses the geometry, array, lookup map, and block records while preparing up
 	const block = createMockCodeBlock({ x: 40, y: 32 });
 	const state = createMockState({
 		viewport: { x: 8, y: 16 },
-		codeBlockRendering: { currentProject: { blocks: [block] } },
+		project: { activeLevel: { blocks: [block] } },
 	});
 
 	const storage = createRenderGeometry();
@@ -57,13 +57,13 @@ it('preserves the records for surviving blocks after an in-place reorder, additi
 	const third = createMockCodeBlock({ x: 30 });
 	const added = createMockCodeBlock({ x: 40 });
 	const state = createMockState({
-		codeBlockRendering: { currentProject: { blocks: [first, second, third] } },
+		project: { activeLevel: { blocks: [first, second, third] } },
 	});
 	const storage = createRenderGeometry();
 	const { blocks, blocksByCodeBlock } = storage.prepare(state);
 	const firstRecord = blocks[0];
 	const secondRecord = blocks[1];
-	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
+	const codeBlocks = state.project.activeLevel.blocks;
 	codeBlocks.splice(0, 3, second, added, first);
 
 	const geometry = storage.prepare(state);
@@ -88,17 +88,17 @@ it('preserves the records for surviving blocks after an in-place reorder, additi
 it('drops references to the old project when the active level changes or empties', () => {
 	const first = createMockCodeBlock({ x: 48 });
 	const second = createMockCodeBlock({ x: 96 });
-	const state = createMockState({ codeBlockRendering: { currentProject: { blocks: [first] } } });
+	const state = createMockState({ project: { activeLevel: { blocks: [first] } } });
 	const storage = createRenderGeometry();
 	const geometry = storage.prepare(state);
-	state.codeBlockRendering.currentProject = { entries: [], path: 'nested', blocks: [second] };
+	state.project.activeLevel = { entries: [], path: 'nested', blocks: [second] };
 	storage.prepare(state);
 	expect(geometry.blocks[0].codeBlock).toBe(second);
 	expect(geometry.blocksByCodeBlock.size).toBe(1);
 	expect(geometry.blocksByCodeBlock.has(first)).toBe(false);
 	expect(geometry.blocksByCodeBlock.get(second)).toBe(geometry.blocks[0]);
 
-	state.codeBlockRendering.currentProject.blocks.length = 0;
+	state.project.activeLevel.blocks.length = 0;
 	storage.prepare(state);
 	expect(geometry.blocks).toEqual([]);
 	expect(geometry.blocksByCodeBlock.size).toBe(0);
@@ -106,7 +106,7 @@ it('drops references to the old project when the active level changes or empties
 
 it('keeps geometry storage isolated between renderers', () => {
 	const block = createMockCodeBlock({ x: 40, y: 32 });
-	const state = createMockState({ codeBlockRendering: { currentProject: { blocks: [block] } } });
+	const state = createMockState({ project: { activeLevel: { blocks: [block] } } });
 	const first = createRenderGeometry();
 	const second = createRenderGeometry();
 	const firstGeometry = first.prepare(state);

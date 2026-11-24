@@ -62,12 +62,12 @@ functionEnd int`);
 	editor.pauseRendering();
 	try {
 		const { store, layout, events } = context;
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'example')!;
-		store.set('codeBlockRendering.currentProject.blocks', [block]);
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'example')!;
+		store.set('project.activeLevel.blocks', [block]);
 		store.set('compiler.result', { ...compiled, inputRevision: editor.state.compilerInputRevision });
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		const select = (instruction: string) =>
-			store.set('codeBlockRendering.selectedCodeBlock.cursor.row', block.code.indexOf(instruction));
+			store.set('project.selectedCodeBlock.cursor.row', block.code.indexOf(instruction));
 		select('call sum3');
 		const contribution = layout.createContribution();
 		try {

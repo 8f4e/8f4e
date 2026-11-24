@@ -26,7 +26,7 @@ function setup() {
 it('ignores deletion, source edits and position changes to the read-only environment', () => {
 	const { state, store, events, load } = setup();
 	load('constants env\n; @pos 7 9\nconstantsEnd');
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const environment = root.blocks[0];
 	const source = environment.code;
 	const timestamp = environment.lastUpdated;
@@ -35,15 +35,16 @@ it('ignores deletion, source edits and position changes to the read-only environ
 	const beforeCheckpoint = vi.fn();
 	events.on('beforeProjectEdit', beforeCheckpoint);
 
-	expect(store.projectEdits.apply({ deletes: [environment] }, { history: 'checkpoint' }).changed).toBe(false);
+	expect(store.projectTransactions.apply({ deletes: [environment] }, { history: 'checkpoint' }).changed).toBe(false);
 	expect(
-		store.projectEdits.apply(
+		store.projectTransactions.apply(
 			{ updates: [{ codeBlock: environment, code: ['constants renamed', 'constantsEnd'] }] },
 			{ history: 'checkpoint' }
 		).changed
 	).toBe(false);
 	expect(
-		store.projectEdits.apply({ updates: [{ codeBlock: environment, code: ['incomplete', '; @pos 3 4'] }] }).changed
+		store.projectTransactions.apply({ updates: [{ codeBlock: environment, code: ['incomplete', '; @pos 3 4'] }] })
+			.changed
 	).toBe(false);
 	expect(root.blocks).toContain(environment);
 	expect(environment).toMatchObject({ readOnly: true, name: 'env', gridX: 0, gridY: 0, x: 0, y: 0 });
@@ -59,17 +60,17 @@ it('ignores authored attempts to insert or rename a root constants env without i
 	const { state, store, events, load } = setup();
 	store.set('envConstantContributions.test', ['const GENERATED 1']);
 	load('constants keep\nconst KEEP 2\nconstantsEnd');
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const environment = root.blocks[0];
 	const authored = root.blocks.find(block => block.name === 'keep')!;
 	const copy = environment.code.map(line => (line.startsWith('; @pos') ? '; @pos -10 -10' : line));
 	const revision = state.projectChange.revision;
 	const compilerRevision = state.compilerInputRevision;
-	const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
+	const nextId = state.project.nextCodeBlockCreationIndex;
 	const beforeCheckpoint = vi.fn();
 	events.on('beforeProjectEdit', beforeCheckpoint);
 	expect(
-		store.projectEdits.apply(
+		store.projectTransactions.apply(
 			{ inserts: [{ project: root, source: { code: copy } }], updates: [{ codeBlock: authored, code: copy }] },
 			{ history: 'checkpoint' }
 		)
@@ -78,24 +79,24 @@ it('ignores authored attempts to insert or rename a root constants env without i
 	expect(root.blocks).toHaveLength(2);
 	expect(state.projectChange.revision).toBe(revision);
 	expect(state.compilerInputRevision).toBe(compilerRevision);
-	expect(state.codeBlockRendering.nextCodeBlockCreationIndex).toBe(nextId);
+	expect(state.project.nextCodeBlockCreationIndex).toBe(nextId);
 	expect(beforeCheckpoint).not.toHaveBeenCalled();
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	expect(environment.code).toContain('const GENERATED 3');
 	expect(serializeToProject(state).constants.filter(block => block.code[0] === 'constants env')).toHaveLength(1);
 	const generatedId = environment.creationIndex;
 	events.dispatch('loadProject', { project: serializeToProject(state) });
-	expect(state.codeBlockRendering.rootProject.blocks[0].creationIndex).toBe(generatedId);
+	expect(state.project.rootLevel.blocks[0].creationIndex).toBe(generatedId);
 });
 
 it('continues to allow constants env in child projects and ordinary authored names at the root', () => {
 	const { state, store, load } = setup();
 	load('entry main\ngroup child\ngroupEnd\nentryEnd');
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const child = root.blocks.find(block => block.name === 'child')!.childProject!;
 	const {
 		insertedBlocks: [nested, note, constants],
-	} = store.projectEdits.apply({
+	} = store.projectTransactions.apply({
 		inserts: [
 			{ project: child, source: { code: ['constants env', 'const NESTED 1', 'constantsEnd'] } },
 			{ project: root, source: { code: ['note env', 'noteEnd'] } },
@@ -106,7 +107,7 @@ it('continues to allow constants env in child projects and ordinary authored nam
 	expect(note).toMatchObject({ blockType: 'note', name: 'env' });
 	expect(constants).toMatchObject({ blockType: 'constants', name: 'environment' });
 	expect(
-		store.projectEdits.apply({
+		store.projectTransactions.apply({
 			updates: [
 				{ codeBlock: nested, code: ['constants env', 'const NESTED 2', 'constantsEnd'] },
 				{ codeBlock: note, code: ['note env', '; authored', 'noteEnd'] },
@@ -126,7 +127,7 @@ it.each(['', generatedHeader])('replaces a sole root env when opening (%j)', hea
 	const project = parseProjectSource(`8f4e/v1\nconstants env\n; @pos -5 9\n${header}const OLD 1\nconstantsEnd`);
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	events.dispatch('loadProject', { project });
-	const blocks = state.codeBlockRendering.rootProject.blocks;
+	const blocks = state.project.rootLevel.blocks;
 	expect(blocks).toHaveLength(1);
 	expect(blocks[0]).toMatchObject({ name: 'env', gridX: 0, gridY: 0, readOnly: true });
 	expect(blocks[0].code).toContain('const GENERATED 3');
@@ -162,7 +163,7 @@ entryEnd`);
 	const originalConstants = project.constants.map(block => ({ id: block.id, code: [...block.code] }));
 	store.set('envConstantContributions.test', ['const GENERATED 3']);
 	events.dispatch('loadProject', { project });
-	const blocks = state.codeBlockRendering.rootProject.blocks;
+	const blocks = state.project.rootLevel.blocks;
 	const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
 	expect(environments).toHaveLength(1);
 	const [generated] = environments;
@@ -191,11 +192,11 @@ it('derives the final generated source only once when authored config changes', 
 	});
 	load('note settings\n; @config test 10\nnoteEnd');
 	expect(derive).toHaveBeenCalledOnce();
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const environment = root.blocks.find(block => block.name === 'env')!;
 	const settings = root.blocks.find(block => block.name === 'settings')!;
 	derive.mockClear();
-	const result = store.projectEdits.apply({
+	const result = store.projectTransactions.apply({
 		updates: [{ codeBlock: settings, code: ['note settings', '; @config test 20', 'noteEnd'] }],
 	});
 	expect(result.changed).toBe(true);
@@ -207,15 +208,15 @@ it('derives the final generated source only once when authored config changes', 
 it('preserves authored entry tables when inserting, changing and removing execution blocks', () => {
 	const { state, store, load } = setup();
 	load('entry empty\nentryEnd\nentry main\nmodule demo\nmoduleEnd\nentryEnd');
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const existing = root.blocks.find(block => block.name === 'demo')!;
 	const {
 		insertedBlocks: [inserted],
-	} = store.projectEdits.apply({
+	} = store.projectTransactions.apply({
 		inserts: [{ project: root, source: { code: ['module inserted', 'moduleEnd'], entry: 'new' } }],
 	});
 	expect(root.entries).toEqual(['empty', 'main', 'new']);
-	store.projectEdits.apply({ updates: [{ codeBlock: existing, entry: 'other' }], deletes: [inserted] });
+	store.projectTransactions.apply({ updates: [{ codeBlock: existing, entry: 'other' }], deletes: [inserted] });
 	expect(root.entries).toEqual(['empty', 'main', 'new', 'other']);
 	expect(serializeToProject(state).entries).toEqual(root.entries);
 });
@@ -223,27 +224,27 @@ it('preserves authored entry tables when inserting, changing and removing execut
 it('checks attached project targets before any live source change or identity allocation', () => {
 	const { state, store, load } = setup();
 	load('note old\nnoteEnd');
-	const staleProject = state.codeBlockRendering.rootProject;
+	const staleProject = state.project.rootLevel;
 	const staleBlock = staleProject.blocks.find(block => block.name === 'old')!;
 	load('note keep\nnoteEnd\nentry main\ngroup child\nnote nested\nnoteEnd\ngroupEnd\nentryEnd');
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	const keep = root.blocks.find(block => block.name === 'keep')!;
 	const group = root.blocks.find(block => block.name === 'child')!;
 	const originalSource = keep.code;
 	const revision = state.projectChange.revision;
 	const compilerRevision = state.compilerInputRevision;
-	const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
+	const nextId = state.project.nextCodeBlockCreationIndex;
 	const update = { codeBlock: keep, code: ['note modified', 'noteEnd'] };
 	const newSource = { code: ['note added', 'noteEnd'] };
 
 	expect(() =>
-		store.projectEdits.apply({ updates: [update, { codeBlock: staleBlock, code: ['note stale'] }] })
+		store.projectTransactions.apply({ updates: [update, { codeBlock: staleBlock, code: ['note stale'] }] })
 	).toThrow();
 	expect(() =>
-		store.projectEdits.apply({ updates: [update], inserts: [{ project: staleProject, source: newSource }] })
+		store.projectTransactions.apply({ updates: [update], inserts: [{ project: staleProject, source: newSource }] })
 	).toThrow();
 	expect(() =>
-		store.projectEdits.apply({
+		store.projectTransactions.apply({
 			updates: [update],
 			deletes: [group],
 			inserts: [{ project: group.childProject!, source: newSource }],
@@ -251,7 +252,7 @@ it('checks attached project targets before any live source change or identity al
 	).toThrow();
 	expect(keep.code).toBe(originalSource);
 	expect(root.blocks).toContain(group);
-	expect(state.codeBlockRendering.nextCodeBlockCreationIndex).toBe(nextId);
+	expect(state.project.nextCodeBlockCreationIndex).toBe(nextId);
 	expect(state.projectChange.revision).toBe(revision);
 	expect(state.compilerInputRevision).toBe(compilerRevision);
 });

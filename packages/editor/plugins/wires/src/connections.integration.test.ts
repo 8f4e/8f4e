@@ -7,7 +7,7 @@ import initState, {
 	setGridSize,
 } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import type { RenderGeometry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createRenderGeometryFixture } from './__tests__/render-geometry-fixture';
@@ -60,7 +60,7 @@ async function setup(text = source, gridReady = true) {
 describe('wire connections', () => {
 	it('positions wire endpoints after another plugin adds rows', async () => {
 		const { state, store, readConnections } = await setup();
-		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 		const { hGrid, y } = state.viewport;
 		const contribution = store.layout.createContribution();
 		cleanups.push(contribution.dispose);
@@ -74,7 +74,7 @@ describe('wire connections', () => {
 		state.viewport.vGrid = 9;
 		state.viewport.hGrid = 17;
 		events.dispatch('gridSizeChanged');
-		const blocks = state.codeBlockRendering.currentProject.blocks;
+		const blocks = state.project.activeLevel.blocks;
 		const sourceBlock = blocks.find(block => block.name === 'source')!;
 		const sink = blocks.find(block => block.name === 'sink')!;
 		const { x, y } = state.viewport;
@@ -87,8 +87,8 @@ describe('wire connections', () => {
 		const { state, memoryViews, readConnections } = await setup();
 		const output = state.compiler.result.memoryPlan.modules.source.memory.output;
 		const input = state.compiler.result.memoryPlan.modules.sink.memory.input;
-		state.codeBlockRendering.currentProject.blocks[0].x = -10000;
-		state.codeBlockRendering.currentProject.blocks[1].x = 10000;
+		state.project.activeLevel.blocks[0].x = -10000;
+		state.project.activeLevel.blocks[1].x = 10000;
 		expect(readConnections()).toHaveLength(1);
 		memoryViews.int32[input.allocationUnitAddress] = 123456;
 		expect(readConnections()).toHaveLength(0);
@@ -98,8 +98,8 @@ describe('wire connections', () => {
 
 	it('uses the rendered origins for both endpoints, including offscreen blocks', async () => {
 		const { state, readConnections } = await setup();
-		const sourceBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
-		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const sourceBlock = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
+		const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 		sourceBlock.x = -10000;
 		const [original] = readConnections();
 		const renderGeometry = createRenderGeometryFixture(state);
@@ -134,8 +134,8 @@ module sink
 int** input &source:slot
 moduleEnd
 entryEnd`);
-		const sourceBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
-		const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+		const sourceBlock = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
+		const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 		const { vGrid, hGrid, x, y } = state.viewport;
 		const endpoints = readConnections();
 		expect(endpoints).toHaveLength(2);
@@ -169,13 +169,13 @@ moduleEnd`;
 			const { state, events, readConnections } = await setup(text);
 			if (scope === 'group') {
 				events.dispatch('openProjectGroup', {
-					codeBlock: state.codeBlockRendering.rootProject.blocks.find(block => block.childProject),
+					codeBlock: state.project.rootLevel.blocks.find(block => block.childProject),
 				});
 			}
 			events.dispatch('enterEditMode');
-			const sources = state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'source');
+			const sources = state.project.activeLevel.blocks.filter(block => block.name === 'source');
 			const [inactive, active] = sources;
-			const sink = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
+			const sink = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
 			const expectActiveWire = () => {
 				const endpoints = readConnections();
 				expect(endpoints).toHaveLength(1);
@@ -218,7 +218,7 @@ module sink
 float* input &source:output
 moduleEnd
 entryEnd`);
-		const active = state.codeBlockRendering.currentProject.blocks.find(
+		const active = state.project.activeLevel.blocks.find(
 			block => block.creationIndex === state.compiler.result.compiledModules.sink.ast.projectBlockId
 		)!;
 		const endpoints = readConnections();
@@ -229,7 +229,7 @@ entryEnd`);
 	it('removes obsolete outputs when blocks are deleted or the project is replaced', async () => {
 		const { state, store, events, readConnections } = await setup();
 		expect(readConnections()).toHaveLength(1);
-		deleteCodeBlocks(store, [state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!]);
+		deleteCodeBlocks(store, [state.project.activeLevel.blocks.find(block => block.name === 'source')!]);
 		expect(readConnections()).toHaveLength(0);
 		events.dispatch('loadProject', { project: parseProjectSource(source) });
 		expect(readConnections()).toHaveLength(1);
@@ -241,11 +241,11 @@ entryEnd`);
 		const test = await setup();
 		const { state, store, memoryViews, readConnections } = test;
 		const previousAddress = state.compiler.result.memoryPlan.modules.source.memory.output.byteAddress;
-		const block = state.codeBlockRendering.currentProject.blocks.find(item => item.name === 'source')!;
+		const block = state.project.activeLevel.blocks.find(item => item.name === 'source')!;
 		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: block, code: [...block.code.slice(0, 2), 'float _padding 0', ...block.code.slice(2)] },
 		]);
-		const result = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject));
+		const result = await compileProject(serializeProjectLevel(state.project.rootLevel));
 		store.set('compiler.result', { ...result, inputRevision: state.compilerInputRevision });
 		const { source: compiledSource, sink } = result.memoryPlan.modules;
 		const outputAddress = compiledSource.memory.output.byteAddress;
@@ -259,7 +259,7 @@ entryEnd`);
 
 	it('uses compiler metadata accepted before the grid is available once layout settles', async () => {
 		const { state, store, events, memoryViews, readConnections } = await setup(source, false);
-		const result = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject), {
+		const result = await compileProject(serializeProjectLevel(state.project.rootLevel), {
 			startingMemoryAllocationUnitAddress: 16,
 		});
 		store.set('compiler.result', { ...result, inputRevision: state.compilerInputRevision });
@@ -292,13 +292,13 @@ module outerSink
 float* input &patch:output
 moduleEnd
 entryEnd`);
-			const root = state.codeBlockRendering.currentProject.blocks;
+			const root = state.project.activeLevel.blocks;
 			const group = root.find(block => block.name === 'patch')!;
 			const outerSink = root.find(block => block.name === 'outerSink')!;
 			const nested = group.childProject!.blocks;
 			const innerSink = nested.find(block => block.name === 'innerSink')!;
 			const innerSource = nested.find(block => block.name === 'source')!;
-			const expectConnection = (input: CodeBlockGraphicData, output: CodeBlockGraphicData) => {
+			const expectConnection = (input: EditorCodeBlock, output: EditorCodeBlock) => {
 				// Each fixture declaration is on its block's second source row.
 				const { vGrid, hGrid, x, y } = state.viewport;
 				expect(readConnections().map(call => call.slice(0, 4))).toEqual([
@@ -334,7 +334,7 @@ float& input &patch:output
 moduleEnd
 entryEnd`);
 		const { state, readConnections } = test;
-		const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'patch')!;
+		const group = state.project.activeLevel.blocks.find(block => block.name === 'patch')!;
 		const outputY = () => readConnections().map(connection => connection[3] - group.y + state.viewport.y);
 		const { hGrid } = state.viewport;
 		expect(outputY()).toEqual([Math.round(1.5 * hGrid)]);

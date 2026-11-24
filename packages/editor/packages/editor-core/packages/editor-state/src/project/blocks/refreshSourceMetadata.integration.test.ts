@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type {
-	CodeBlockGraphicData,
 	CodeBlockLayoutsChangedEvent,
+	EditorCodeBlock,
 	EditorDirectiveDefinition,
 } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
@@ -24,7 +24,7 @@ it('settles source and configuration immediately, but publishes pixel layout onl
 	events.on('gridSizeChanged', () => {
 		// Core handles this notification before consumers and settles the affected geometry.
 		expect(state.gridSizeReady).toBe(false);
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
 		expect(block.x).toBe(4 * state.viewport.vGrid);
 		expect(block.y).toBe(5 * state.viewport.hGrid);
 		notifications.push('grid-changed');
@@ -39,20 +39,20 @@ module sample
 moduleEnd
 entryEnd`),
 		});
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
 		expect(state.viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
 		expect(state.gridSizeReady).toBe(false);
 		expect(state.editorConfig.test).toBe('enabled');
 		expect(state.compilerInputRevision).toBeGreaterThan(0);
 		expect(block).toMatchObject({ gridX: 4, gridY: 5, x: 0, y: 0, width: 0, height: 0 });
-		expect(state.codeBlockRendering.entryBounds).toEqual([]);
+		expect(state.project.entryBounds).toEqual([]);
 		expect(onLayout).not.toHaveBeenCalled();
 		expect(notifications).toEqual([]);
 
 		setGridSize(state, events, { vGrid: 6, hGrid: 12 });
 		expect(block).toMatchObject({ x: 24, y: 60, height: 48 });
 		expect(block.width).toBeGreaterThan(0);
-		expect(state.codeBlockRendering.entryBounds).toHaveLength(1);
+		expect(state.project.entryBounds).toHaveLength(1);
 		expect(onLayout).toHaveBeenCalled();
 		expect(notifications).toEqual(['layout', 'grid-changed']);
 		expect(state.gridSizeReady).toBe(true);
@@ -92,7 +92,7 @@ it('continues laying out source while a replacement grid is pending', () => {
 		events.dispatch('loadProject', {
 			project: parseProjectSource('8f4e/v1\nnote sample\n; @pos 4 5\nnoteEnd'),
 		});
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
 		expect(state.gridSizeReady).toBe(false);
 		expect(block).toMatchObject({ x: 24, y: 60, height: 36 });
 		expect(block.width).toBeGreaterThan(0);
@@ -136,7 +136,7 @@ it.each([
 			events.dispatch('loadProject', {
 				project: parseProjectSource(`8f4e/v1\nentry main\n${code(initiallyDisabled).join('\n')}\nentryEnd`),
 			});
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+			const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
 			expect(block.disabled).toBe(initiallyDisabled);
 			expect(state.gridSizeReady).toBe(false);
 			const previousRevision = state.compilerInputRevision;
@@ -191,7 +191,7 @@ module sibling
 moduleEnd
 entryEnd`),
 		});
-		const { blocks } = state.codeBlockRendering.currentProject;
+		const { blocks } = state.project.activeLevel;
 		const block = blocks.find(block => block.name === 'sample')!;
 		const sibling = blocks.find(block => block.name === 'sibling')!;
 		expect(apply).toHaveBeenCalledOnce();
@@ -224,12 +224,12 @@ entryEnd`),
 		expect(block.isCollapsed).toBe(true);
 
 		events.dispatch('enterEditMode');
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		expect(block.displayModel.lines.map(line => line.text)).toEqual(code);
 		expect(block.height).toBe(code.length * state.viewport.hGrid);
 		expect(block.isCollapsed).toBe(false);
 
-		store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		store.set('project.selectedCodeBlock', undefined);
 		expect(block.displayModel.lines.map(line => line.text)).toEqual([code[0], code[1], '...']);
 		expect(block.isCollapsed).toBe(true);
 
@@ -273,7 +273,7 @@ it('announces completed layouts after environment source preparation and contrib
 	const contribution = store.layout.createContribution();
 	const completedLayouts: boolean[] = [];
 	store.subscribe('codeErrors', () => {
-		for (const block of state.codeBlockRendering.currentProject.blocks) {
+		for (const block of state.project.activeLevel.blocks) {
 			if (block.name === 'imported') {
 				contribution.update(block, {
 					verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }],
@@ -301,9 +301,9 @@ noteEnd`),
 		});
 		expect(completedLayouts.length).toBeGreaterThan(0);
 		expect(completedLayouts).not.toContain(false);
-		const env = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+		const env = state.project.activeLevel.blocks.find(block => block.name === 'env')!;
 		expect(env.code).not.toContain('const SAVED_0 0');
-		expect(state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'imported')!.gaps.size).toBe(1);
+		expect(state.project.activeLevel.blocks.find(block => block.name === 'imported')!.gaps.size).toBe(1);
 	} finally {
 		contribution.dispose();
 		store.dispose();
@@ -325,11 +325,11 @@ Second block
 noteEnd`),
 	});
 	const state = store.getState();
-	const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'first')!;
-	const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'second')!;
+	const first = state.project.activeLevel.blocks.find(block => block.name === 'first')!;
+	const second = state.project.activeLevel.blocks.find(block => block.name === 'second')!;
 	const contribution = store.layout.createContribution();
 	const dependent = store.layout.createContribution();
-	const notifications: Array<readonly CodeBlockGraphicData[]> = [];
+	const notifications: Array<readonly EditorCodeBlock[]> = [];
 	let updateDependent = false;
 	const unsubscribe = store.layout.subscribe(({ codeBlock }) => {
 		if (updateDependent && codeBlock === first) {

@@ -16,12 +16,12 @@ import { removeDirective, upsertDirective } from '../editing/index';
  * @example
  * ```typescript
  * const code = ['module test', 'moduleEnd'];
- * const disabled = upsertDisabled(code, true);
+ * const disabled = setDisabledDirective(code, true);
  * // Result: ['module test', '; @disabled', 'moduleEnd']
- * const enabled = upsertDisabled(disabled, false);
+ * const enabled = setDisabledDirective(disabled, false);
  * // Result: ['module test', 'moduleEnd']
  * ```
  */
-export default function upsertDisabled(code: string[], disabled: boolean): string[] {
+export default function setDisabledDirective(code: string[], disabled: boolean): string[] {
 	return disabled ? upsertDirective(code, 'disabled') : removeDirective(code, 'disabled');
 }

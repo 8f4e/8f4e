@@ -1,14 +1,14 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, prepareBuffer } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createPlotDirectiveData } from '../helpers/data';
 import type { Plot } from '../types';
 
 export function registerPlotPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	plotsByBlock: WeakMap<CodeBlockGraphicData, Plot[]>
+	plotsByBlock: WeakMap<EditorCodeBlock, Plot[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const unsubscribe = subscribeToBlockPreparation(
@@ -36,7 +36,7 @@ export function registerPlotPreparation(
 
 				plotsByBlock.get(graphicData)!.push({
 					x: (graphicData.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 					width: graphicData.width - state.viewport.hGrid * 2,
 					height: state.viewport.hGrid * 8,
 					buffer,

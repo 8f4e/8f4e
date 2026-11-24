@@ -55,7 +55,7 @@ it.each([
 	expect(test.state.contextMenu.items[index].payload).toEqual({ blockType });
 	test.events.dispatch('activateContextMenuItem', { index, x: 96, y: 160 });
 	expect(dispatch).toHaveBeenCalledWith('insertCodeBlock', { x: 96, y: 160, code: [header, '', '', end] });
-	const block = test.state.codeBlockRendering.currentProject.blocks.at(-1)!;
+	const block = test.state.project.activeLevel.blocks.at(-1)!;
 	expect(block.blockType).toBe(blockType);
 	expect(block.projectPath).toBe('');
 	expect(test.state.contextMenu.open).toBe(false);
@@ -67,7 +67,7 @@ it('allows duplicate generated names without numbering them', () => {
 	const test = setup();
 	vi.spyOn(Math, 'random').mockReturnValue(0);
 	for (const x of [100, 200]) test.events.dispatch('createCodeBlock', { x, y: 200, blockType: 'module' });
-	const blocks = test.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module');
+	const blocks = test.state.project.activeLevel.blocks.filter(block => block.blockType === 'module');
 	expect(blocks.map(block => block.name)).toEqual(['quark', 'quark']);
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
 });
@@ -84,10 +84,10 @@ it('deletes the clicked block instead of the selected block and supports undo/re
 		},
 	});
 	test.events.dispatch('enterEditMode');
-	const blocks = () => test.state.codeBlockRendering.currentProject.blocks;
+	const blocks = () => test.state.project.activeLevel.blocks;
 	const target = blocks().find(block => block.name === 'target')!;
 	const other = blocks().find(block => block.name === 'other')!;
-	test.store.set('codeBlockRendering.selectedCodeBlock', other);
+	test.store.set('project.selectedCodeBlock', other);
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
 	const items = await test.openMenu(104, 168);
@@ -95,7 +95,7 @@ it('deletes the clicked block instead of the selected block and supports undo/re
 	expect(items[index].payload).toEqual({ codeBlock: target });
 	test.events.dispatch('activateContextMenuItem', { index, x: 104, y: 168 });
 	expect(blocks()).not.toContain(target);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(other);
+	expect(test.state.project.selectedCodeBlock).toBe(other);
 	expect(test.state.projectChange.revision).toBe(revision + 1);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 	test.events.dispatch('undo');
@@ -106,43 +106,43 @@ it('deletes the clicked block instead of the selected block and supports undo/re
 
 it('hides authoring menu items and ignores commands in view mode', async () => {
 	const test = setup();
-	const block = test.state.codeBlockRendering.currentProject.blocks[0];
+	const block = test.state.project.activeLevel.blocks[0];
 	test.events.dispatch('exitToViewMode');
 	const revision = test.state.projectChange.revision;
-	const count = test.state.codeBlockRendering.currentProject.blocks.length;
+	const count = test.state.project.activeLevel.blocks.length;
 	const main = await test.openMenu();
 	expect(main.some(item => item.action === 'createCodeBlock')).toBe(false);
 	const menu = await test.openMenu(8, 8);
 	expect(menu.some(item => item.action === 'deleteCodeBlock')).toBe(false);
 	test.events.dispatch('createCodeBlock', { x: 200, y: 200, blockType: 'note' });
 	test.events.dispatch('deleteCodeBlock', { codeBlock: block });
-	expect(test.state.codeBlockRendering.currentProject.blocks).toHaveLength(count);
+	expect(test.state.project.activeLevel.blocks).toHaveLength(count);
 	expect(test.state.projectChange.revision).toBe(revision);
 });
 
 it('does not offer or perform deletion on read-only blocks', async () => {
 	const test = setup();
-	const environment = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const environment = test.state.project.activeLevel.blocks.find(block => block.name === 'env')!;
 	const before = test.state.projectChange.revision;
 	const menu = await test.openMenu(8, 8);
 	expect(menu.some(item => item.action === 'deleteCodeBlock')).toBe(false);
 	test.events.dispatch('deleteCodeBlock', { codeBlock: environment });
-	expect(test.state.codeBlockRendering.currentProject.blocks).toContain(environment);
+	expect(test.state.project.activeLevel.blocks).toContain(environment);
 	expect(test.state.projectChange.revision).toBe(before);
 });
 
 it.each([false, true])('owns its menu and action registrations: installed=%s', async installed => {
 	const test = setup(installed);
 	if (installed) test.disposePlugin();
-	const block = test.state.codeBlockRendering.currentProject.blocks[0];
-	const count = test.state.codeBlockRendering.currentProject.blocks.length;
+	const block = test.state.project.activeLevel.blocks[0];
+	const count = test.state.project.activeLevel.blocks.length;
 	expect((await test.openMenu()).some(item => item.action === 'createCodeBlock')).toBe(false);
 	expect((await test.openMenu(8, 8)).some(item => item.action === 'deleteCodeBlock')).toBe(false);
 	test.events.dispatch('createCodeBlock', { x: 200, y: 200, blockType: 'note' });
 	test.events.dispatch('deleteCodeBlock', { codeBlock: block });
-	expect(test.state.codeBlockRendering.currentProject.blocks).toHaveLength(count);
+	expect(test.state.project.activeLevel.blocks).toHaveLength(count);
 	test.events.dispatch('insertCodeBlock', { x: 200, y: 200, code: ['note supplied', 'noteEnd'] });
-	expect(test.state.codeBlockRendering.currentProject.blocks.at(-1)!.name).toBe('supplied');
+	expect(test.state.project.activeLevel.blocks.at(-1)!.name).toBe('supplied');
 });
 
 it('keeps installations independent', () => {
@@ -150,6 +150,6 @@ it('keeps installations independent', () => {
 	const second = setup();
 	first.disposePlugin();
 	second.events.dispatch('createCodeBlock', { x: 200, y: 200, blockType: 'note' });
-	expect(second.state.codeBlockRendering.currentProject.blocks.at(-1)!.blockType).toBe('note');
-	expect(first.state.codeBlockRendering.currentProject.blocks).toHaveLength(1);
+	expect(second.state.project.activeLevel.blocks.at(-1)!.blockType).toBe('note');
+	expect(first.state.project.activeLevel.blocks).toHaveLength(1);
 });

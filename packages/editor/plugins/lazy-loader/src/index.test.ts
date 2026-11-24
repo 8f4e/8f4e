@@ -1,7 +1,7 @@
 import type { EditorPlugin, EditorPluginContext } from '@8f4e/editor-core';
 import {
 	applyCodeBlockSourceEdits,
-	createEditorEditingHandle,
+	createEditorCommandApi,
 	getEditorBlockId,
 	insertCodeBlocks,
 	matchEditorDirectives,
@@ -79,7 +79,7 @@ describe('lazy plugin loader', () => {
 	it('loads automatically after source edits without a manual menu action', async () => {
 		const { registration, plugin } = entry();
 		const editor = setup([registration], emptySource);
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 		applyCodeBlockSourceEdits(editor.store, [{ codeBlock: block, code: ['module audio', '; @custom', 'moduleEnd'] }]);
 		await vi.waitFor(() => expect(plugin.setup).toHaveBeenCalledOnce());
 		expect((await editor.openMenu()).some(candidate => candidate.action === 'loadPluginsUsedByProject')).toBe(false);
@@ -89,7 +89,7 @@ describe('lazy plugin loader', () => {
 		const typed = entry('view', 'typed');
 		const pasted = entry('view', 'pasted');
 		const editor = setup([typed.registration, pasted.registration], emptySource);
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 		editor.events.dispatch('enterEditMode');
 		applyCodeBlockSourceEdits(editor.store, [{ codeBlock: block, code: ['module audio', '; @typed', 'moduleEnd'] }]);
 		await vi.waitFor(() => expect(typed.plugin.setup).toHaveBeenCalledOnce());
@@ -108,8 +108,8 @@ describe('lazy plugin loader', () => {
 		const { registration, plugin } = entry();
 		const editor = setup([registration], emptySource);
 		editor.events.dispatch('enterEditMode');
-		const { handle } = createEditorEditingHandle(editor.store, editor.events);
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+		const { handle } = createEditorCommandApi(editor.store, editor.events);
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 		const update = (code: string[]) =>
 			handle.applyEdits({
 				expectedRevision: handle.getRevision(),
@@ -152,11 +152,11 @@ entryEnd`
 		expect(inner.registration.load).not.toHaveBeenCalled();
 		const revision = editor.state.projectChange.revision;
 		editor.events.dispatch('openProjectGroup', {
-			codeBlock: editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outer')!,
+			codeBlock: editor.state.project.activeLevel.blocks.find(block => block.name === 'outer')!,
 		});
 		await vi.waitFor(() => expect(outer.plugin.setup).toHaveBeenCalledOnce());
 		expect(inner.registration.load).not.toHaveBeenCalled();
-		const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inner')!;
+		const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'inner')!;
 		editor.events.dispatch('openProjectGroup', { codeBlock: group });
 		await vi.waitFor(() => expect(inner.plugin.setup).toHaveBeenCalledOnce());
 		editor.events.dispatch('goToParentProjectGroup');
@@ -190,19 +190,17 @@ groupEnd
 entryEnd`
 		);
 		await vi.waitFor(() => expect(plugin.setup).toHaveBeenCalledOnce());
-		expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(
-			editor.state.codeBlockRendering.rootProject.blocks
-		);
+		expect(editor.state.project.activeLevel.blocks).toBe(editor.state.project.rootLevel.blocks);
 	});
 
 	it('checks the settled view after API edits and loads newly needed plugins on return navigation', async () => {
 		const { registration, plugin } = entry();
 		const editor = setup([registration], emptySource.replace('entryEnd', 'group nested\ngroupEnd\nentryEnd'));
-		const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+		const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
 		editor.events.dispatch('openProjectGroup', { codeBlock: group });
 		await Promise.resolve();
 		editor.events.dispatch('enterEditMode');
-		const { handle } = createEditorEditingHandle(editor.store, editor.events);
+		const { handle } = createEditorCommandApi(editor.store, editor.events);
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
 			edits: [{ type: 'insert', code: ['module added', '; @custom', 'moduleEnd'], entry: 'main' }],
@@ -244,7 +242,7 @@ entryEnd`
 		});
 		const editor = setup([registration], matchingSource);
 		editor.load(matchingSource.replace('audio', 'replacement'));
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'replacement')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'replacement')!;
 		expect(block.gaps.size).toBe(0);
 		const revision = editor.state.projectChange.revision;
 		const compilerRevision = editor.state.compilerInputRevision;

@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
 /**
  * Represents a code block in the portable source batch.
@@ -12,7 +12,7 @@ export interface SerializedCodeBlock {
 	childProject?: { entries: string[]; blocks: SerializedCodeBlock[] };
 }
 
-function createSerializedCodeBlock(block: CodeBlockGraphicData, origin: { x: number; y: number }): SerializedCodeBlock {
+function createSerializedCodeBlock(block: EditorCodeBlock, origin: { x: number; y: number }): SerializedCodeBlock {
 	return {
 		code: [...block.code],
 		gridCoordinates: {
@@ -38,8 +38,8 @@ function createSerializedCodeBlock(block: CodeBlockGraphicData, origin: { x: num
  * @returns Detached block sources with their relative positions
  */
 export function serializeCodeBlocks(
-	codeBlocks: CodeBlockGraphicData[],
-	anchorBlock: CodeBlockGraphicData
+	codeBlocks: EditorCodeBlock[],
+	anchorBlock: EditorCodeBlock
 ): SerializedCodeBlock[] {
 	return codeBlocks.map(block => createSerializedCodeBlock(block, { x: anchorBlock.gridX, y: anchorBlock.gridY }));
 }

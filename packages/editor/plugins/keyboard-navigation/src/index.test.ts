@@ -7,7 +7,7 @@ describe('keyboard navigation', () => {
 		const test = setup(createKeyboardNavigationPlugin, 'view');
 		const revision = test.state.projectChange.revision;
 		const positions: { row: number; col: number }[] = [];
-		test.store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', () => {
+		test.store.subscribe('project.selectedCodeBlock.cursor', () => {
 			const { row, col } = test.block.cursor;
 			positions.push({ row, col });
 		});

@@ -1,17 +1,17 @@
-import type { CodeBlockGraphicData, Editor } from '@8f4e/editor-core';
+import type { Editor, EditorCodeBlock } from '@8f4e/editor-core';
 import { findParentProjectLevel } from '@8f4e/editor-state';
 
-export function getCurrentGroupBlock(state: Editor['state']): CodeBlockGraphicData | undefined {
-	const { rootProject, currentProject } = state.codeBlockRendering;
-	if (rootProject === currentProject) return undefined;
-	const parent = findParentProjectLevel(rootProject, currentProject);
-	const group = parent?.blocks.find(block => block.childProject === currentProject);
+export function getCurrentGroupBlock(state: Editor['state']): EditorCodeBlock | undefined {
+	const { rootLevel, activeLevel } = state.project;
+	if (rootLevel === activeLevel) return undefined;
+	const parent = findParentProjectLevel(rootLevel, activeLevel);
+	const group = parent?.blocks.find(block => block.childProject === activeLevel);
 	if (!group) throw new Error('The currently expanded group is unavailable');
 	return group;
 }
 
 export function getCurrentProjectPath(state: Editor['state']): string {
-	return state.codeBlockRendering.currentProject.path;
+	return state.project.activeLevel.path;
 }
 
 function groupCloserIndex(code: readonly string[]): number {
@@ -23,12 +23,12 @@ function groupCloserIndex(code: readonly string[]): number {
 /** Read one source level synchronously from the live editor, without recursive file export. */
 export function createSourceView(state: Editor['state']): string {
 	const group = getCurrentGroupBlock(state);
-	const directBlocks = state.codeBlockRendering.currentProject.blocks;
+	const directBlocks = state.project.activeLevel.blocks;
 	const ordered = [...directBlocks].sort(
 		(a, b) => a.gridX - b.gridX || a.gridY - b.gridY || a.creationIndex - b.creationIndex
 	);
 	const lines: string[] = [];
-	const append = (block: CodeBlockGraphicData) => {
+	const append = (block: EditorCodeBlock) => {
 		if (lines.length && lines.at(-1) !== '') lines.push('');
 		if (block.childProject === undefined) {
 			lines.push(...(block.code.length ? block.code : ['']));
@@ -45,7 +45,7 @@ export function createSourceView(state: Editor['state']): string {
 		lines.push(...group.code.slice(0, closer));
 	} else lines.push('8f4e/v1');
 
-	const executable = (block: CodeBlockGraphicData) => block.blockType === 'module' || block.childProject !== undefined;
+	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.childProject !== undefined;
 	for (const block of ordered.filter(block => !executable(block))) append(block);
 	let current: string | undefined;
 	const emitted = new Set<string>();
@@ -63,7 +63,7 @@ export function createSourceView(state: Editor['state']): string {
 		append(block);
 	}
 	close();
-	for (const entry of state.codeBlockRendering.currentProject.entries) {
+	for (const entry of state.project.activeLevel.entries) {
 		if (!emitted.has(entry)) lines.push('', `entry ${entry}`, 'entryEnd');
 	}
 	if (group) lines.push(...group.code.slice(closer));

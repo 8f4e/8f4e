@@ -1,6 +1,6 @@
 import type { EditorDirectiveDefinition } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import { createDirectiveRegistry, deriveDirectiveFacts, directiveDefinitions } from './blockDirectiveRegistry';
+import { createBlockDirectiveRegistry, deriveDirectiveFacts, directiveDefinitions } from './blockDirectiveRegistry';
 import { parseBlockDirectives } from './parseBlockDirectives';
 
 const contributedDirectives: EditorDirectiveDefinition[] = [
@@ -22,8 +22,8 @@ const definitions = [...directiveDefinitions, ...contributedDirectives];
 
 describe('directive registry', () => {
 	it('registers directive behavior per instance and removes it', () => {
-		const first = createDirectiveRegistry();
-		const second = createDirectiveRegistry();
+		const first = createBlockDirectiveRegistry();
+		const second = createBlockDirectiveRegistry();
 		const unregister = first.register({
 			name: 'customFlag',
 			apply: (_, draft) => {

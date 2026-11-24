@@ -8,7 +8,7 @@ import type {
 } from '@8f4e/editor-state-types';
 import createStateManager, { type StateManager } from '@8f4e/state-manager';
 import createDefaultEditorState from './defaultEditorState';
-import { createDirectiveRegistry } from './directives/blockDirectiveRegistry';
+import { createBlockDirectiveRegistry } from './directives/blockDirectiveRegistry';
 import { registerExportFileNameEditorConfigValidator } from './editor-config/exportFileName';
 import { registerEditorConfigSchemaContributionsValidator } from './editor-config/schemaContributionValidator';
 import { validateFeatureFlags } from './featureFlags';
@@ -24,7 +24,7 @@ import trackEntryBounds from './project/entries/trackEntryBounds';
 import registerGroupNavigation from './project/groupNavigation';
 import registerProjectLoadCommands from './project/loadCommands';
 import { createProjectMembership } from './project/membership';
-import { createProjectEditService, type ProjectEditService } from './project/transactions';
+import { createProjectTransactionService, type ProjectTransactionService } from './project/transactions';
 import registerUndoRedo from './project/undoRedo';
 import registerDialogHandlers from './ui-state/dialog/dialogHandlers';
 import { createLoadingRegistry } from './ui-state/loadingRegistry';
@@ -34,15 +34,15 @@ import registerViewportHandlers from './viewport/panAndResize';
 
 export type EditorStateStore = StateManager<State> & {
 	menus: EditorMenuRegistry;
-	directives: ReturnType<typeof createDirectiveRegistry>;
+	directives: ReturnType<typeof createBlockDirectiveRegistry>;
 	layout: EditorLayoutRegistry;
 	loading: EditorLoadingRegistry;
-	projectEdits: ProjectEditService;
+	projectTransactions: ProjectTransactionService;
 };
 
 export default function initializeEditorState(events: EventDispatcher, options: Options): EditorStateStore {
 	const menus = createMenuRegistry();
-	const directives = createDirectiveRegistry();
+	const directives = createBlockDirectiveRegistry();
 	const layout = createLayoutRegistry(codeBlock =>
 		events.dispatch('codeBlockLayoutContributionsChanged', { codeBlock })
 	);
@@ -74,12 +74,18 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 
 	registerEffect(registerEditorModeHandlers(store, events));
 	const state = store.getState();
-	const membership = createProjectMembership(state.codeBlockRendering.rootProject);
+	const membership = createProjectMembership(state.project.rootLevel);
 	const coordinator = createLayoutCoordinator(state, events, layout, membership);
-	const projectEdits = createProjectEditService(store, events, directives.definitions, membership, coordinator);
+	const projectTransactions = createProjectTransactionService(
+		store,
+		events,
+		directives.definitions,
+		membership,
+		coordinator
+	);
 	registerEffect(trackBlockLayout(store, events, coordinator));
-	const editingStore = { ...store, projectEdits };
-	registerEffect(registerProjectLoadCommands(projectEdits, events));
+	const editingStore = { ...store, projectTransactions };
+	registerEffect(registerProjectLoadCommands(projectTransactions, events));
 	registerEffect(registerBlockDragging(editingStore, events));
 	registerEffect(registerPointerRouting(store, events));
 	registerEffect(registerBlockNavigation(store, events));
@@ -87,7 +93,7 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 	registerEffect(registerBlockActionCommands(editingStore, events));
 	registerEffect(registerGroupNavigation(store, events));
 	registerEffect(trackEntryBounds(store, events));
-	registerEffect(registerUndoRedo(store, events, projectEdits));
+	registerEffect(registerUndoRedo(store, events, projectTransactions));
 
 	const onConsoleLog = (event: unknown) => {
 		console.log(event);

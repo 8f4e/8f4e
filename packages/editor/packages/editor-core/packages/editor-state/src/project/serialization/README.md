@@ -51,12 +51,12 @@ is registered independently of plugins so all export features can use the same c
 ## State Sources
 
 Serializes from:
-- `state.codeBlockRendering.rootProject.blocks` - Blocks owned by the recursive root project level
+- `state.project.rootLevel.blocks` - Blocks owned by the recursive root project level
 
 ## Integration Points
 
 - **Edit History**: Retains separate editor-owned source snapshots preserving draft metadata and block boundaries
-- **Project Loading**: Loaded serialized projects are translated into the editor's source tree by the project editing service
+- **Project Loading**: Loaded serialized projects are translated into the editor's source tree by the project transaction service
 
 ## Project Object Model
 
@@ -69,9 +69,9 @@ structure plus its name, entry, source, and exposures. See the language-spec `Pr
 complete contract.
 
 Collection membership defines block type. The adapter uses the editor's already-known block type and does not make the
-compiler rediscover it from source text. Project groups are rendered as ordinary `CodeBlockGraphicData` values whose
+compiler rediscover it from source text. Project groups are rendered as ordinary `EditorCodeBlock` values whose
 optional `childProject` field owns a child `ProjectLevel`. Export recursively traverses its `blocks` and preserves
-its `entries` from `rootProject`, regardless of which level `currentProject` references. Level paths and browser-memory viewport positions
+its `entries` from `rootLevel`, regardless of which level `activeLevel` references. Level paths and browser-memory viewport positions
 are runtime data and are excluded from project exports and session storage. A group's `code` retains all source lines
 owned by its visible wrapper, including comments and editor directives, while its nested blocks stay in the recursive
 collections. Compilation recursively composes those collections into one program.

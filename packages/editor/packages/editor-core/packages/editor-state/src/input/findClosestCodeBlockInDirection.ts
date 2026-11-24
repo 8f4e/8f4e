@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, Direction } from '@8f4e/editor-state-types';
+import type { Direction, EditorCodeBlock } from '@8f4e/editor-state-types';
 
 /**
  * Weight factor for alignment preference in distance calculation.
@@ -10,7 +10,7 @@ const ALIGNMENT_WEIGHT = 2.0;
 /**
  * Calculate the absolute position boundaries of a code block.
  */
-function getBlockBounds(block: CodeBlockGraphicData) {
+function getBlockBounds(block: EditorCodeBlock) {
 	const left = block.x;
 	const top = block.y;
 	const right = left + block.width;
@@ -76,11 +76,11 @@ function calculateSecondaryDistance(
 }
 
 function findClosestCodeBlockHorizontally(
-	candidates: CodeBlockGraphicData[],
-	selectedBlock: CodeBlockGraphicData,
+	candidates: EditorCodeBlock[],
+	selectedBlock: EditorCodeBlock,
 	selectedBounds: ReturnType<typeof getBlockBounds>,
 	direction: 'left' | 'right'
-): CodeBlockGraphicData {
+): EditorCodeBlock {
 	const absoluteCursorY = selectedBounds.top + selectedBlock.cursor.y;
 	let closestBlock = selectedBlock;
 	let minDistance = Infinity;
@@ -128,17 +128,17 @@ function findClosestCodeBlockHorizontally(
  * @example
  * ```typescript
  * const closestBlock = findClosestCodeBlockInDirection(
- *   codeBlockRendering.currentProject.blocks,
- *   codeBlockRendering.selectedCodeBlock,
+ *   project.activeLevel.blocks,
+ *   project.selectedCodeBlock,
  *   'right'
  * );
  * ```
  */
 export default function findClosestCodeBlockInDirection(
-	codeBlocks: CodeBlockGraphicData[],
-	selectedBlock: CodeBlockGraphicData,
+	codeBlocks: EditorCodeBlock[],
+	selectedBlock: EditorCodeBlock,
 	direction: Direction
-): CodeBlockGraphicData {
+): EditorCodeBlock {
 	const selectedBounds = getBlockBounds(selectedBlock);
 
 	const candidates = codeBlocks.filter(block => {

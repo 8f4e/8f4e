@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
 /**
  * Calculates the physical row index by adding the size of every gap that starts before the logical row.
@@ -10,7 +10,7 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
  * @param gaps Gap metadata keyed by logical row whose size indicates the number of additional rows inserted.
  * @returns The adjusted physical row that includes the cumulative gap offsets.
  */
-export default function gapCalculator(row: number, gaps: CodeBlockGraphicData['gaps']) {
+export default function displayRowToGridRow(row: number, gaps: EditorCodeBlock['gaps']) {
 	let physicalRowCounter = row;
 	for (const [gapStartLine, { size }] of gaps) {
 		if (row > gapStartLine) {

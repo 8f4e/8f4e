@@ -8,18 +8,18 @@ import {
 	updateDirectiveArgs,
 	upsertDirective,
 } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { isSkipExecutionDirective } from '@8f4e/tokenizer';
 import { getGroup, getGroupBlocks } from './groups';
 
-type BlockAction = { codeBlock: CodeBlockGraphicData };
+type BlockAction = { codeBlock: EditorCodeBlock };
 
 export function registerGroupActions(
 	{ store, events }: EditorPluginContext,
 	writeClipboardText: (text: string) => Promise<void>
 ): () => void {
 	const state = store.getState();
-	const members = (block: CodeBlockGraphicData) => getGroupBlocks(state, block);
+	const members = (block: EditorCodeBlock) => getGroupBlocks(state, block);
 
 	const onCopy = async ({ codeBlock }: BlockAction) => {
 		const blocks = members(codeBlock).sort((a, b) => a.creationIndex - b.creationIndex);
@@ -63,7 +63,7 @@ export function registerGroupActions(
 		const blocks = members(codeBlock).sort((a, b) => a.gridX - b.gridX);
 		if (blocks.length < 2) return;
 		const [first, ...remaining] = blocks;
-		const positions = new Map<CodeBlockGraphicData, number>();
+		const positions = new Map<EditorCodeBlock, number>();
 		let previous = first;
 		let previousX = first.gridX;
 		for (const block of remaining) {
@@ -72,7 +72,7 @@ export function registerGroupActions(
 			previous = block;
 			previousX = x;
 		}
-		const edits: { codeBlock: CodeBlockGraphicData; code: string[] }[] = [];
+		const edits: { codeBlock: EditorCodeBlock; code: string[] }[] = [];
 		for (const [block, x] of positions) {
 			if (block.gridX === x && block.gridY === first.gridY) continue;
 			edits.push({ codeBlock: block, code: upsertDirective(block.code, 'pos', [String(x), String(first.gridY)]) });

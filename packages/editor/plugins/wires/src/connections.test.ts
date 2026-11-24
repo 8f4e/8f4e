@@ -42,8 +42,8 @@ describe('visitConnections', () => {
 				vGrid: 10,
 				hGrid: 18,
 			},
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [inputBlock, outputBlock] },
+			project: {
+				activeLevel: { entries: [], path: '', blocks: [inputBlock, outputBlock] },
 				selectedCodeBlock: inputBlock,
 			},
 		});

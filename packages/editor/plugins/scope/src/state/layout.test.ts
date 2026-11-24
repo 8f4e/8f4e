@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { expect, it } from 'vitest';
 import { setup } from '../__tests__/setup';
 import { createScopeDirectiveReader } from '../helpers/data';
@@ -8,7 +8,7 @@ import { registerScopePreparation } from './layout';
 it('retains no scope layout data for blocks without scopes, including after removing the last directive', async () => {
 	const source = ['module audio', 'float level 0', 'moduleEnd'];
 	const test = await setup(source, { installed: false });
-	const scopesByBlock = new WeakMap<CodeBlockGraphicData, Scope[]>();
+	const scopesByBlock = new WeakMap<EditorCodeBlock, Scope[]>();
 	const preparation = registerScopePreparation(test.store.layout, scopesByBlock, createScopeDirectiveReader());
 
 	try {

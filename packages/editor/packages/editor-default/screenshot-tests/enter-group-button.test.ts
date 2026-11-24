@@ -98,7 +98,7 @@ test.each([
 		await vi.dynamicImportSettled();
 		const state = instance.state;
 		if (light) expect(state.editorConfig.color).toMatchObject({ surface: '#f4f0e7', ink: '#3e4a4b' });
-		const root = state.codeBlockRendering.currentProject;
+		const root = state.project.activeLevel;
 		const group = root.blocks.find(block => block.name === 'audio')!;
 		await expect.poll(() => group.gaps.get(0)?.size).toBe(2);
 		const revision = state.projectChange.revision;
@@ -109,7 +109,7 @@ test.each([
 		if (!touch) await expect(canvas).toMatchScreenshot(light ? 'enter-group-button-light' : 'enter-group-button');
 
 		const clickButton = async (name: string) => {
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+			const block = state.project.activeLevel.blocks.find(block => block.name === name)!;
 			const rect = canvas.getBoundingClientRect();
 			const frame = window.frameElement!.getBoundingClientRect();
 			const point = {
@@ -123,7 +123,7 @@ test.each([
 				});
 				await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 			} else {
-				const parent = state.codeBlockRendering.currentProject;
+				const parent = state.project.activeLevel;
 				await input.send('Input.dispatchMouseEvent', {
 					type: 'mousePressed',
 					...point,
@@ -132,7 +132,7 @@ test.each([
 					clickCount: 1,
 				});
 				try {
-					expect(state.codeBlockRendering.currentProject).toBe(parent);
+					expect(state.project.activeLevel).toBe(parent);
 					if (name === 'audio') {
 						instance.renderFrame();
 						await expect(canvas).toMatchScreenshot(
@@ -149,15 +149,15 @@ test.each([
 					});
 				}
 			}
-			await expect.poll(() => state.codeBlockRendering.currentProject).toBe(block.childProject);
+			await expect.poll(() => state.project.activeLevel).toBe(block.childProject);
 		};
 		await clickButton('audio');
 		await clickButton('voices');
-		expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'oscillator')).toBe(true);
+		expect(state.project.activeLevel.blocks.some(block => block.name === 'oscillator')).toBe(true);
 		expect(state.projectChange.revision).toBe(revision);
-		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(state.project.draggedCodeBlock).toBeUndefined();
 		instance.navigation.goToRoot();
-		expect(state.codeBlockRendering.currentProject).toBe(root);
+		expect(state.project.activeLevel).toBe(root);
 	} finally {
 		editor?.dispose();
 		canvas.remove();

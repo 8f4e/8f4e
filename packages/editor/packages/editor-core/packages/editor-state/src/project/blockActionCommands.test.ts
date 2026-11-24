@@ -17,8 +17,8 @@ function setup(sources: readonly ProjectSourceBlock[] = []) {
 	const state = store.getState();
 	setGridSize(state, events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
-	const { insertedBlocks } = store.projectEdits.apply({
-		inserts: sources.map(source => ({ project: state.codeBlockRendering.currentProject, source })),
+	const { insertedBlocks } = store.projectTransactions.apply({
+		inserts: sources.map(source => ({ project: state.project.activeLevel, source })),
 	});
 	const insert = (code: string[]) => events.dispatch('insertCodeBlock', { x: 100, y: 100, code });
 	return { state, events, store, blocks: insertedBlocks, insert };
@@ -28,7 +28,7 @@ describe('codeBlockActions - insertion', () => {
 	it.each(['module', 'function'])('inserts duplicate %s names without rewriting source references', blockType => {
 		const { state, insert } = setup([{ code: [`${blockType} same`, `${blockType}End`] }]);
 		insert([`${blockType} same`, 'push &same:value', `${blockType}End`]);
-		const block = state.codeBlockRendering.currentProject.blocks.at(-1)!;
+		const block = state.project.activeLevel.blocks.at(-1)!;
 		expect(block.name).toBe('same');
 		expect(block.code[0]).toBe(`${blockType} same`);
 		expect(block.code).toContain('push &same:value');
@@ -38,13 +38,13 @@ describe('codeBlockActions - insertion', () => {
 		const { state, events, insert } = setup();
 		events.dispatch('exitToViewMode');
 		insert(['module supplied', 'moduleEnd']);
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(0);
+		expect(state.project.activeLevel.blocks).toHaveLength(0);
 	});
 
 	it('creates a new empty module assigned to a fresh execution entry outside existing entries', () => {
 		const { state, insert } = setup();
 		insert(['module supplied', 'moduleEnd']);
-		const blocks = state.codeBlockRendering.currentProject.blocks;
+		const blocks = state.project.activeLevel.blocks;
 		expect(blocks).toHaveLength(1);
 		expect(blocks[0].entry).toBe('entry');
 		expect(blocks[0].code[0]).toBe('module supplied');
@@ -64,7 +64,7 @@ describe('codeBlockActions - insertion', () => {
 			}))
 		);
 		insert(['module supplied', 'moduleEnd']);
-		expect(state.codeBlockRendering.currentProject.blocks.at(-1)!.entry).toBe(expected);
+		expect(state.project.activeLevel.blocks.at(-1)!.entry).toBe(expected);
 	});
 });
 
@@ -107,7 +107,7 @@ describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
 			{ code: ['module top1', '; @alwaysOnTop', 'moduleEnd'] },
 		]);
 		insert(['module new', ...(alwaysOnTop ? ['; @alwaysOnTop'] : []), 'moduleEnd']);
-		const blocks = state.codeBlockRendering.currentProject.blocks;
+		const blocks = state.project.activeLevel.blocks;
 		expect(blocks.map(block => block.name)).toEqual(
 			alwaysOnTop ? ['normal1', 'top1', 'new'] : ['normal1', 'new', 'top1']
 		);

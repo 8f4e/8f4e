@@ -26,7 +26,7 @@ function setup() {
 	cleanups.push(store.dispose);
 	setGridSize(state, events, { vGrid: 8, hGrid: 16 });
 	events.dispatch('resize', { canvasWidth: 800, canvasHeight: 600 });
-	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const block = (name: string) => state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const load = (source = mainSource) => {
 		events.dispatch('loadProject', {
 			project: parseProjectSource(`8f4e/v1\nconstants env\n; @pos -100 -100\nconstantsEnd\n${source}`),
@@ -89,9 +89,9 @@ describe('project and compiler input revisions', () => {
 		events.dispatch('pointerdown', pointer({ y: 24 }));
 		events.dispatch('pointerup', pointer({ buttons: 0 }));
 		expect(main.cursor.row).toBe(1);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		events.dispatch('navigateCodeBlock', { direction: 'right' });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(target);
+		expect(state.project.selectedCodeBlock).toBe(target);
 		expectChanges(0);
 
 		applyCodeBlockSourceEdits(store, [{ codeBlock: target, code: ['module target', '; edited', 'moduleEnd'] }]);
@@ -142,7 +142,7 @@ describe('project and compiler input revisions', () => {
 			gridCoordinates: { x: 0, y: 0 },
 		}));
 		insertCodeBlocks(store, { x: 0, y: 0, blocks });
-		expect(state.codeBlockRendering.currentProject.blocks).toHaveLength(4);
+		expect(state.project.activeLevel.blocks).toHaveLength(4);
 		expectChanges(1);
 		insertCodeBlocks(store, { x: 0, y: 0, blocks: [] });
 		expectChanges(1);
@@ -163,19 +163,19 @@ describe('project and compiler input revisions', () => {
 		load('entry main\ngroup Audio\nentry main\nmodule child\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd');
 		events.dispatch('openProjectGroup', { codeBlock: block('Audio') });
 		const child = block('child');
-		store.set('codeBlockRendering.selectedCodeBlock', child);
+		store.set('project.selectedCodeBlock', child);
 		expectChanges(0);
 		applyCodeBlockSourceEdits(store, [{ codeBlock: child, code: ['module child', '; edited', 'moduleEnd'] }]);
 		expectChanges(1);
 		events.dispatch('goToParentProjectGroup');
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(state.codeBlockRendering.rootProject.blocks);
+		expect(state.project.activeLevel.blocks).toBe(state.project.rootLevel.blocks);
 		expectChanges(1);
 	});
 
 	it('announce project loading, undo, and redo without requiring a selected block', () => {
 		const { store, state, events, block, load, expectChanges } = setup();
 		load();
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expectChanges(0);
 		applyCodeBlockSourceEdits(store, [

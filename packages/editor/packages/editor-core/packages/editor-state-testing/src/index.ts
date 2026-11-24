@@ -1,5 +1,5 @@
 import type {
-	CodeBlockGraphicData,
+	EditorCodeBlock,
 	EventDispatcher,
 	GridSize,
 	ProjectLevel,
@@ -34,9 +34,7 @@ function createMockFunction<T extends (...args: unknown[]) => unknown>(): T {
 	return (() => {}) as T;
 }
 
-export function createMockCodeBlock(
-	options: Partial<CodeBlockGraphicData> & { cursorY?: number } = {}
-): CodeBlockGraphicData {
+export function createMockCodeBlock(options: Partial<EditorCodeBlock> & { cursorY?: number } = {}): EditorCodeBlock {
 	const { cursorY, ...overrides } = options;
 
 	const x = overrides.x ?? 0;
@@ -61,7 +59,7 @@ export function createMockCodeBlock(
 		isCollapsed: false,
 	};
 
-	const defaults: CodeBlockGraphicData = {
+	const defaults: EditorCodeBlock = {
 		x,
 		y,
 		gridX,
@@ -137,7 +135,7 @@ export function createMockEventDispatcher(): EventDispatcher {
 }
 
 export function createMockState(overrides: StateOverrides = {}): State {
-	const rootProject: ProjectLevel = { entries: [], path: '', blocks: [] };
+	const rootLevel: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	const defaults: State = {
 		compilerInputRevision: 0,
@@ -156,9 +154,9 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			},
 		},
 		callbacks: {},
-		codeBlockRendering: {
-			rootProject,
-			currentProject: rootProject,
+		project: {
+			rootLevel,
+			activeLevel: rootLevel,
 			entryBounds: [],
 			nextCodeBlockCreationIndex: 0,
 		},
@@ -220,9 +218,9 @@ export function createMockState(overrides: StateOverrides = {}): State {
 	};
 
 	const state = mergeDeep<State>(defaults, overrides);
-	const rendering = overrides.codeBlockRendering;
-	if (rendering?.currentProject && !rendering.rootProject) {
-		state.codeBlockRendering.rootProject = state.codeBlockRendering.currentProject;
+	const rendering = overrides.project;
+	if (rendering?.activeLevel && !rendering.rootLevel) {
+		state.project.rootLevel = state.project.activeLevel;
 	}
 	const initialize = (level: ProjectLevel, path: string): ProjectLevel[] => {
 		level.path = path;
@@ -233,11 +231,10 @@ export function createMockState(overrides: StateOverrides = {}): State {
 			),
 		];
 	};
-	const levels = initialize(state.codeBlockRendering.rootProject, '');
-	state.codeBlockRendering.currentProject = rendering?.currentProject
-		? (levels.find(level => level.blocks === state.codeBlockRendering.currentProject.blocks) ??
-			state.codeBlockRendering.currentProject)
-		: state.codeBlockRendering.rootProject;
+	const levels = initialize(state.project.rootLevel, '');
+	state.project.activeLevel = rendering?.activeLevel
+		? (levels.find(level => level.blocks === state.project.activeLevel.blocks) ?? state.project.activeLevel)
+		: state.project.rootLevel;
 	return state;
 }
 

@@ -11,7 +11,7 @@ const namedBlockStarts: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Returns the source-level block name from raw code when CodeBlockGraphicData.name is not available yet.
+ * Returns the source-level block name from raw code when EditorCodeBlock.name is not available yet.
  */
 export default function getCodeBlockNameFromSource(code: string[]): string {
 	for (const line of code) {

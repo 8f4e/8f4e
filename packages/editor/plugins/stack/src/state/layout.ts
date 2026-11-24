@@ -1,22 +1,19 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import {
-	gapCalculator,
+	displayRowToGridRow,
 	getCompiledFunctionForCodeBlock,
 	getCompiledModuleForCodeBlock,
 	getVisualLineWidth,
 	matchEditorDirectives,
 	subscribeToBlockPreparation,
 } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import { formatStack } from '../helpers/formatStack';
 import type { StackLabel } from '../types';
 
-function getStackAnalysisLines(
-	graphicData: CodeBlockGraphicData,
-	state: State
-): CompiledStackAnalysisLine[] | undefined {
+function getStackAnalysisLines(graphicData: EditorCodeBlock, state: State): CompiledStackAnalysisLine[] | undefined {
 	if (graphicData.blockType === 'function') {
 		return getCompiledFunctionForCodeBlock(graphicData, state)?.stackAnalysis;
 	}
@@ -46,7 +43,7 @@ function findStackAnalysisLine(
 export function registerStackPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	labelsByBlock: WeakMap<CodeBlockGraphicData, StackLabel[]>
+	labelsByBlock: WeakMap<EditorCodeBlock, StackLabel[]>
 ): () => void {
 	const unsubscribe = subscribeToBlockPreparation(
 		store,
@@ -82,7 +79,7 @@ export function registerStackPreparation(
 
 				labelsByBlock.get(graphicData)!.push({
 					x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
-					y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
+					y: displayRowToGridRow(displayRow, graphicData.gaps) * state.viewport.hGrid,
 					glyphs: textToGlyphIds(formatStack(stackAnalysisLine.stackAnalysis.stackAfter)),
 				});
 			});

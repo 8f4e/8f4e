@@ -10,7 +10,7 @@ import { connectorsPlugin } from '@8f4e/editor-plugin-connectors';
 import { coordinateGridPlugin } from '@8f4e/editor-plugin-coordinate-grid';
 import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { wiresPlugin } from '@8f4e/editor-plugin-wires';
-import { gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow } from '@8f4e/editor-state';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -110,7 +110,7 @@ function registerSourceText(context: EditorPluginContext) {
 		codeBlock.displayModel.lines.forEach((line, row) =>
 			draw.drawGlyphs(
 				(codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-				gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+				displayRowToGridRow(row, codeBlock.gaps) * state.viewport.hGrid,
 				glyphsByBlock.get(codeBlock)![row],
 				PALETTE_INDICES.inkBase
 			)
@@ -134,7 +134,7 @@ moduleEnd
 entryEnd`,
 		[wiresPlugin]
 	);
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	const outputBlock = blocks.find(block => block.name === 'oscillator')!;
 	const inputBlock = blocks.find(block => block.name === 'amplifier')!;
 	const { hGrid } = editor.state.viewport;
@@ -195,7 +195,7 @@ entryEnd`,
 	state.viewport.x = -64;
 	state.viewport.y = -32;
 	const initialViewportX = state.viewport.x;
-	const blocks = state.codeBlockRendering.currentProject.blocks;
+	const blocks = state.project.activeLevel.blocks;
 	const output = blocks.find(block => block.name === 'oscillator')!;
 	const replica = blocks.find(block => block.name === 'replicator')!;
 	const input = blocks.find(block => block.name === 'amplifier')!;
@@ -311,7 +311,7 @@ entryEnd`,
 
 test('renders a wire crossing the viewport when both connected blocks are offscreen', async () => {
 	const { editor, canvas, render } = await setup();
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	blocks.find(block => block.name === 'oscillator')!.x = -600;
 	blocks.find(block => block.name === 'amplifier')!.x = 1200;
 	blocks.find(block => block.name === 'speaker')!.x = -600;
@@ -379,7 +379,7 @@ entryEnd`);
 	render();
 	await expect(canvas).toMatchScreenshot('pointer-reference-second-buffer');
 
-	const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'storage')!;
+	const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'storage')!;
 	words[slot.allocationUnitAddress] = compiled.memoryPlan.modules['storage/samples'].memory.buffer.byteAddress;
 	editor.navigation.openGroup(getEditorBlockId(group));
 	render();
@@ -416,7 +416,7 @@ module speaker
 float* input &oscillator:output
 moduleEnd
 entryEnd`);
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	const oscillators = blocks.filter(block => block.name === 'oscillator');
 	const speaker = blocks.find(block => block.name === 'speaker')!;
 	for (const block of [...oscillators, speaker]) {
@@ -434,7 +434,7 @@ entryEnd`);
 		events.dispatch('pointerup');
 	}
 	// Keep the reference independent of the animated selection border.
-	editor.state.codeBlockRendering.selectedCodeBlock = undefined;
+	editor.state.project.selectedCodeBlock = undefined;
 	render();
 	await expect(canvas).toMatchScreenshot('module-overrides');
 });

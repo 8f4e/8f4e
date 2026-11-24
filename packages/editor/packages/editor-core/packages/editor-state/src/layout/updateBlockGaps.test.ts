@@ -1,9 +1,9 @@
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { describe, expect, it } from 'vitest';
 import type { BlockLayoutDraft } from './blockLayoutDraft';
-import gaps from './updateBlockGaps';
+import updateBlockGaps from './updateBlockGaps';
 
-describe('gaps', () => {
+describe('updateBlockGaps', () => {
 	it('inserts contributed gaps using display rows', async () => {
 		const blockLayout: BlockLayoutDraft = {
 			displayModel: {
@@ -19,11 +19,11 @@ describe('gaps', () => {
 			verticalSpaceAfterSourceLine: [],
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
-		const graphicData = createMockCodeBlock({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
+		const editorBlock = createMockCodeBlock({ code: ['module foo', '; layout space', 'push 1', 'moduleEnd'] });
 
-		gaps(graphicData, blockLayout);
+		updateBlockGaps(editorBlock, blockLayout);
 
-		expect(graphicData.gaps.get(1)).toEqual({ size: 8 });
+		expect(editorBlock.gaps.get(1)).toEqual({ size: 8 });
 	});
 
 	it('adds multiple vertical-space requests on the same display row', async () => {
@@ -42,11 +42,11 @@ describe('gaps', () => {
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 2 });
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 3 });
-		const graphicData = createMockCodeBlock({ code: ['module foo', 'int value', 'moduleEnd'] });
+		const editorBlock = createMockCodeBlock({ code: ['module foo', 'int value', 'moduleEnd'] });
 
-		gaps(graphicData, blockLayout);
+		updateBlockGaps(editorBlock, blockLayout);
 
-		expect(graphicData.gaps.get(1)).toEqual({ size: 5 });
+		expect(editorBlock.gaps.get(1)).toEqual({ size: 5 });
 	});
 
 	it('skips gaps for source lines hidden from the display model', async () => {
@@ -63,12 +63,12 @@ describe('gaps', () => {
 			verticalSpaceAfterSourceLine: [],
 		};
 		blockLayout.verticalSpaceAfterSourceLine.push({ sourceLineIndex: 1, heightInRows: 8 });
-		const graphicData = createMockCodeBlock({
+		const editorBlock = createMockCodeBlock({
 			code: ['module foo', '; layout space', 'push 1', 'moduleEnd'],
 		});
 
-		gaps(graphicData, blockLayout);
+		updateBlockGaps(editorBlock, blockLayout);
 
-		expect(graphicData.gaps.size).toBe(0);
+		expect(editorBlock.gaps.size).toBe(0);
 	});
 });

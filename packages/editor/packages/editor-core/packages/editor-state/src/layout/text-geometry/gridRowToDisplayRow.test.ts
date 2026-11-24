@@ -1,23 +1,23 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import reverseGapCalculator from './gridRowToDisplayRow';
+import gridRowToDisplayRow from './gridRowToDisplayRow';
 
-describe('reverseGapCalculator', () => {
+describe('gridRowToDisplayRow', () => {
 	it('returns the physical row when no gap applies', () => {
-		const gaps: CodeBlockGraphicData['gaps'] = new Map([[5, { size: 3 }]]);
-		expect(reverseGapCalculator(2, gaps)).toBe(2);
+		const gaps: EditorCodeBlock['gaps'] = new Map([[5, { size: 3 }]]);
+		expect(gridRowToDisplayRow(2, gaps)).toBe(2);
 	});
 
 	it('subtracts gap sizes that affect the row', () => {
-		const gaps: CodeBlockGraphicData['gaps'] = new Map([
+		const gaps: EditorCodeBlock['gaps'] = new Map([
 			[1, { size: 2 }],
 			[4, { size: 3 }],
 		]);
-		expect(reverseGapCalculator(10, gaps)).toBe(5);
+		expect(gridRowToDisplayRow(10, gaps)).toBe(5);
 	});
 
 	it('never returns a negative row', () => {
-		const gaps: CodeBlockGraphicData['gaps'] = new Map([[0, { size: 10 }]]);
-		expect(reverseGapCalculator(5, gaps)).toBe(0);
+		const gaps: EditorCodeBlock['gaps'] = new Map([[0, { size: 10 }]]);
+		expect(gridRowToDisplayRow(5, gaps)).toBe(0);
 	});
 });

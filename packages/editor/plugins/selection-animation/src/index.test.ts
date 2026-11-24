@@ -42,25 +42,25 @@ describe('selection animation plugin', () => {
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
 
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		render();
 		render(other);
 		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
 		drawGlyphs.mockClear();
-		state.codeBlockRendering.selectedCodeBlock = other;
+		state.project.selectedCodeBlock = other;
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
 		render(other);
 		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
 		drawGlyphs.mockClear();
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		state.project.selectedCodeBlock = undefined;
 		render();
 		render(other);
 		expect(drawGlyphs).not.toHaveBeenCalled();
 
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		dispose();
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
@@ -75,7 +75,7 @@ describe('selection animation plugin', () => {
 		block.height = options.height;
 		state.viewport.vGrid = options.vGrid;
 		state.viewport.hGrid = options.hGrid;
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		render();
 		const initial = [...drawGlyphs.mock.calls];

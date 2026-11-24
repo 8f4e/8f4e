@@ -1,6 +1,6 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
-type AlwaysOnTopPartitionableBlock = Pick<CodeBlockGraphicData, 'alwaysOnTop'>;
+type AlwaysOnTopPartitionableBlock = Pick<EditorCodeBlock, 'alwaysOnTop'>;
 
 /**
  * Stable-partitions code blocks into normal blocks first followed by always-on-top blocks.

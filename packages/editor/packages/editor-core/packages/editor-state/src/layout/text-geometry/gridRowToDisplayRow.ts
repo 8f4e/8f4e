@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
 /**
  * Converts a physical row index (which includes gap rows inserted for decorations) back into a logical row.
@@ -9,7 +9,7 @@ import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
  * @param gaps Gap metadata keyed by logical row identifying how many physical rows were inserted after it.
  * @returns A non-negative logical row with gap offsets removed.
  */
-export default function reverseGapCalculator(physicalRow: number, gaps: CodeBlockGraphicData['gaps']) {
+export default function gridRowToDisplayRow(physicalRow: number, gaps: EditorCodeBlock['gaps']) {
 	let startLineOffset = 0;
 	for (const [gapStartLine, { size }] of gaps) {
 		if (physicalRow > gapStartLine + startLineOffset) {

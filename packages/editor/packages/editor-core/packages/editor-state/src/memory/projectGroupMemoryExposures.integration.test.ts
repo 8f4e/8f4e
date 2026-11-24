@@ -4,7 +4,7 @@ import { ErrorCode, getProjectGroups } from '@8f4e/language-spec';
 import { expect, it } from 'vitest';
 import initState, {
 	applyCodeBlockSourceEdits,
-	createEditorEditingHandle,
+	createEditorCommandApi,
 	getEditorBlockId,
 	serializeToProject,
 } from '~/index';
@@ -44,7 +44,7 @@ function setup() {
 	const store = initState(events, { callbacks: {} });
 	events.dispatch('loadProject', { project: parseProjectSource(source) });
 	const state = store.getState();
-	const group = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'patch')!;
+	const group = () => state.project.rootLevel.blocks.find(block => block.name === 'patch')!;
 	const serialize = () => serializeToProject(state);
 	return { store, state, events, group, serialize };
 }
@@ -90,9 +90,9 @@ it('shares current source exposure metadata while leaving accepted targets in pl
 it('keeps settled exposure records current and preserves compiler diagnostics for unresolved targets', async () => {
 	const test = setup();
 	test.events.dispatch('enterEditMode');
-	const { handle, dispose } = createEditorEditingHandle(test.store, test.events);
+	const { handle, dispose } = createEditorCommandApi(test.store, test.events);
 	try {
-		const note = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'description')!;
+		const note = test.state.project.rootLevel.blocks.find(block => block.name === 'description')!;
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
 			edits: [{ type: 'update', blockId: getEditorBlockId(note), code: ['note description', 'Edited', 'noteEnd'] }],
@@ -123,7 +123,7 @@ it('keeps settled exposure records current and preserves compiler diagnostics fo
 it('preserves root references to a group through API edits, undo, and redo while it is open', async () => {
 	const test = setup();
 	test.events.dispatch('enterEditMode');
-	const { handle, navigation, dispose } = createEditorEditingHandle(test.store, test.events);
+	const { handle, navigation, dispose } = createEditorCommandApi(test.store, test.events);
 	try {
 		const readExposures = (project: ReturnType<typeof test.serialize>) =>
 			getProjectGroups(project).map(({ name, exposures }) => ({ name, exposures }));
@@ -133,9 +133,9 @@ it('preserves root references to a group through API edits, undo, and redo while
 			['sibling', 1],
 		]);
 		navigation.openGroup(getEditorBlockId(test.group()));
-		const currentProject = () => test.state.codeBlockRendering.currentProject;
+		const activeLevel = () => test.state.project.activeLevel;
 		const expectRestoredGroup = async (defaultValue: number) => {
-			expect(currentProject().path).toBe('patch');
+			expect(activeLevel().path).toBe('patch');
 			const project = test.serialize();
 			expect(readExposures(project)).toEqual(expectedExposures);
 			const compiled = await compileProject(project);
@@ -143,7 +143,7 @@ it('preserves root references to a group through API edits, undo, and redo while
 			expect(compiled.memoryDefaultsByModuleId['patch/source'][targetMemory.id].value).toBe(defaultValue);
 		};
 
-		const block = currentProject().blocks.find(block => block.name === 'source')!;
+		const block = activeLevel().blocks.find(block => block.name === 'source')!;
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
 			edits: [

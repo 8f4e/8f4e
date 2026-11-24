@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import {
 	ArgumentType,
 	isMemoryDeclarationLine,
@@ -21,7 +21,7 @@ function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
  */
 export default function getMemoryTargetAtSourceLine(
 	state: State,
-	codeBlock: CodeBlockGraphicData,
+	codeBlock: EditorCodeBlock,
 	sourceLineIndex: number
 ): { target: ResolvedMemoryTarget | undefined } | undefined {
 	if (codeBlock.blockType !== 'module') return;

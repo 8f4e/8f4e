@@ -67,8 +67,8 @@ describe('getCodeBlockGridWidth', () => {
 		).toBe(CODE_BLOCK_MIN_GRID_WIDTH);
 	});
 
-	it('matches codeBlockRendering width calculation logic', () => {
-		// This test verifies the exact formula used in codeBlockRendering
+	it('matches project width calculation logic', () => {
+		// This test verifies the exact formula used in project
 		const code = ['module delay', '', 'float[] buffer 44100', 'moduleEnd'];
 		// Lines: "0 module delay", "1 ", "2 float[] buffer 44100", "3 moduleEnd"
 		// Longest: "2 float[] buffer 44100" = 22 chars

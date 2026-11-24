@@ -25,7 +25,7 @@ const editingActions = [
 describe('grouping plugin', () => {
 	it('contributes actions for the clicked group, with current labels', async () => {
 		const test = setup();
-		test.state.codeBlockRendering.selectedCodeBlock = test.block('other');
+		test.state.project.selectedCodeBlock = test.block('other');
 		const items = await test.openMenu();
 		for (const action of [...editingActions, 'copyGroupBlocks']) {
 			expect(items.find(item => item.action === action)?.payload?.codeBlock).toBe(test.block('first'));
@@ -81,7 +81,7 @@ describe('grouping plugin', () => {
 		expect(second.x).toBe(originalSecondX);
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: first, code: upsertDirective(first.code, 'group', ['audio']) }],
 		});
 		test.drag(first);
@@ -173,20 +173,20 @@ describe('grouping plugin', () => {
 
 	it('deletes the whole group in place and clears references to deleted blocks', () => {
 		const test = setup();
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
+		const blocks = test.state.project.activeLevel.blocks;
 		const first = test.block('first');
 		const second = test.block('second');
 		test.startDrag(second);
-		test.store.set('codeBlockRendering.selectedCodeBlock', first);
-		expect(test.state.codeBlockRendering.draggedCodeBlock).toBe(second);
+		test.store.set('project.selectedCodeBlock', first);
+		expect(test.state.project.draggedCodeBlock).toBe(second);
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });
-		expect(test.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		expect(test.state.project.activeLevel.blocks).toBe(blocks);
 		expect(blocks.some(block => ['first', 'second'].includes(block.name))).toBe(false);
 		expect(test.block('other')).toBeDefined();
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.draggedCodeBlock).toBeUndefined();
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('deleteGroup', { codeBlock: first });

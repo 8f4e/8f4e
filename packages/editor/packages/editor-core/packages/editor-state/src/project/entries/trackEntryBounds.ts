@@ -7,17 +7,13 @@ export default function trackEntryBounds(store: StateManager<State>, events: Eve
 	const updateBounds = () => {
 		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		store.set(
-			'codeBlockRendering.entryBounds',
-			deriveEntryBounds(
-				state.codeBlockRendering.currentProject.blocks,
-				state.viewport.vGrid * 8,
-				state.viewport.hGrid * 4
-			)
+			'project.entryBounds',
+			deriveEntryBounds(state.project.activeLevel.blocks, state.viewport.vGrid * 8, state.viewport.hGrid * 4)
 		);
 	};
-	const selectors = ['codeBlockRendering.currentProject.blocks', 'projectChange'] as const;
+	const selectors = ['project.activeLevel.blocks', 'projectChange'] as const;
 	const onLayoutsChanged = ({ project }: CodeBlockLayoutsChangedEvent) => {
-		if (project === state.codeBlockRendering.currentProject) updateBounds();
+		if (project === state.project.activeLevel) updateBounds();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 	for (const selector of selectors) store.subscribe(selector, updateBounds);

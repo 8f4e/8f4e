@@ -8,6 +8,6 @@ import serializeProjectLevel from './serializeProjectLevel';
  * @returns Project object model ready for session persistence, compilation, or `.8f4e` conversion
  */
 export default function serializeToProject(state: State): ProjectObjectModel {
-	const { codeBlockRendering } = state;
-	return serializeProjectLevel(codeBlockRendering.rootProject);
+	const { project } = state;
+	return serializeProjectLevel(project.rootLevel);
 }

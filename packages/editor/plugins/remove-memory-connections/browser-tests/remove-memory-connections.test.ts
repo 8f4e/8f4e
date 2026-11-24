@@ -39,11 +39,9 @@ entryEnd`;
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
-		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'target')).toBe(true)
-		);
+		await vi.waitFor(() => expect(state.project.activeLevel.blocks.some(block => block.name === 'target')).toBe(true));
 		editor.pauseRendering();
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,

@@ -17,7 +17,7 @@ export const directiveDefinitions: EditorDirectiveDefinition[] = [
 	alwaysOnTopDirective,
 ];
 
-export function createDirectiveRegistry(): EditorDirectiveRegistry & { definitions: EditorDirectiveDefinition[] } {
+export function createBlockDirectiveRegistry(): EditorDirectiveRegistry & { definitions: EditorDirectiveDefinition[] } {
 	const definitions = [...directiveDefinitions];
 	return {
 		definitions,

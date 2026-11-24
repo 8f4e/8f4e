@@ -23,7 +23,7 @@ async function setup(blockType: 'module' | 'function') {
 	cleanups.push(store.dispose);
 	events.dispatch('loadProject', { project });
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
 	store.set('compiler.result', {
 		...compiled,
 		inputRevision: state.compilerInputRevision,
@@ -44,10 +44,10 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: [test.block.code[0], '; comment', '', ...test.block.code.slice(1)] },
 		]);
-		test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
-		test.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 5);
+		test.store.set('project.selectedCodeBlock', test.block);
+		test.store.set('project.selectedCodeBlock.cursor.row', 5);
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state)).toBeUndefined();
-		const compiled = await compileProject(serializeProjectLevel(test.state.codeBlockRendering.rootProject), {
+		const compiled = await compileProject(serializeProjectLevel(test.state.project.rootLevel), {
 			includeStackAnalysis: true,
 		});
 		test.store.set('compiler.result', { ...compiled, inputRevision: test.state.compilerInputRevision });

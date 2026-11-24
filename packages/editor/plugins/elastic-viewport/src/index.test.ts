@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { CodeBlockGraphicData, EditorPlugin } from '@8f4e/editor-core';
+import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
 import initState, { EMPTY_DEFAULT_PROJECT, updateViewport } from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockViewport } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
@@ -20,7 +20,7 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 	state.viewport = createMockViewport();
 	const small = createMockCodeBlock({ x: 300, y: 100, width: 80, height: 64 });
 	const large = createMockCodeBlock({ width: 384, height: 224, creationIndex: 1 });
-	state.codeBlockRendering.currentProject.blocks.push(small, large);
+	state.project.activeLevel.blocks.push(small, large);
 	const dispose = plugin.setup({
 		store,
 		events,
@@ -39,8 +39,8 @@ function setup(plugin: EditorPlugin = createElasticViewportPlugin({ prefersReduc
 	};
 	const manualPan = (dx: number, dy = 0) =>
 		updateViewport(state, state.viewport.x + dx, state.viewport.y + dy, events, 'pan');
-	const settle = (...codeBlocks: CodeBlockGraphicData[]) =>
-		events.dispatch('codeBlockLayoutsChanged', { project: state.codeBlockRendering.currentProject, codeBlocks });
+	const settle = (...codeBlocks: EditorCodeBlock[]) =>
+		events.dispatch('codeBlockLayoutsChanged', { project: state.project.activeLevel, codeBlocks });
 	return { state, events, emitter, small, large, dispose, frame, pan, manualPan, settle };
 }
 
@@ -118,7 +118,7 @@ describe('elastic viewport plugin', () => {
 			block(200, -height - 31, 5),
 			block(200, viewportHeight + 31, 6),
 		];
-		state.codeBlockRendering.currentProject.blocks.push(near, ...far);
+		state.project.activeLevel.blocks.push(near, ...far);
 		settle(near, ...far);
 		frame(0);
 		pan(panX);
@@ -131,7 +131,7 @@ describe('elastic viewport plugin', () => {
 		const sample = (manual: boolean) => {
 			const { state, frame, pan, manualPan, settle } = setup();
 			const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
-			state.codeBlockRendering.currentProject.blocks.push(block);
+			state.project.activeLevel.blocks.push(block);
 			settle(block);
 			frame(0);
 			(manual ? manualPan : pan)(12);
@@ -145,7 +145,7 @@ describe('elastic viewport plugin', () => {
 	it('discards held entries when a navigation frame suppresses offsets', () => {
 		const { state, frame, manualPan, settle } = setup();
 		const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
-		state.codeBlockRendering.currentProject.blocks.push(block);
+		state.project.activeLevel.blocks.push(block);
 		settle(block);
 		frame(0);
 		manualPan(12);
@@ -157,7 +157,7 @@ describe('elastic viewport plugin', () => {
 	it('preserves weight differences even when a sustained fast pan saturates the springs', () => {
 		const { state, small, frame, pan, settle } = setup();
 		const largest = createMockCodeBlock({ width: 640, height: 256, creationIndex: 3 });
-		state.codeBlockRendering.currentProject.blocks.push(largest);
+		state.project.activeLevel.blocks.push(largest);
 		settle(largest);
 		frame(0);
 		for (let i = 1; i < 18; i++) {
@@ -185,7 +185,7 @@ describe('elastic viewport plugin', () => {
 	it('gives equally sized blocks the same lag regardless of their identity', () => {
 		const { state, small, frame, pan, settle } = setup();
 		const twin = createMockCodeBlock({ width: small.width, height: small.height, creationIndex: 3 });
-		state.codeBlockRendering.currentProject.blocks.push(twin);
+		state.project.activeLevel.blocks.push(twin);
 		settle(twin);
 		frame(0);
 		pan(40, 20);
@@ -236,9 +236,9 @@ describe('elastic viewport plugin', () => {
 				],
 			},
 		});
-		const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+		const group = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 		events.dispatch('openProjectGroup', { codeBlock: group });
-		const child = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'child')!;
+		const child = state.project.activeLevel.blocks.find(block => block.name === 'child')!;
 		frame(0);
 		pan(40);
 		expect(frame(16)?.(child)).toEqual({ x: 9, y: 0 });
@@ -254,7 +254,7 @@ describe('elastic viewport plugin', () => {
 			let time = 32;
 			switch (reason) {
 				case 'project change':
-					state.codeBlockRendering.currentProject = { ...state.codeBlockRendering.currentProject };
+					state.project.activeLevel = { ...state.project.activeLevel };
 					pan(40);
 					break;
 				case 'font grid change':
@@ -299,7 +299,7 @@ describe('elastic viewport plugin', () => {
 			expect(frame(16)?.(small)).toBeDefined();
 
 			const suppress = (enabled: boolean) => {
-				if (reason === 'direct dragging') state.codeBlockRendering.draggedCodeBlock = enabled ? small : undefined;
+				if (reason === 'direct dragging') state.project.draggedCodeBlock = enabled ? small : undefined;
 				if (reason === 'reduced motion') reducedMotion = enabled;
 			};
 			suppress(true);
@@ -333,7 +333,7 @@ describe('elastic viewport plugin', () => {
 		const { state, frame, pan, settle } = setup(plugin);
 		const near = createMockCodeBlock({ x: 120 - 80 - 70, y: 100, width: 80, height: 64 });
 		const beyond = createMockCodeBlock({ x: near.x - 10, y: 100, width: 80, height: 64 });
-		state.codeBlockRendering.currentProject.blocks.push(near, beyond);
+		state.project.activeLevel.blocks.push(near, beyond);
 		settle(near, beyond);
 		frame(0);
 		pan(120);
@@ -370,7 +370,7 @@ describe('elastic viewport plugin', () => {
 			})
 		);
 		const block = createMockCodeBlock({ x: state.viewport.width + 4, y: 100, width: 80, height: 64 });
-		state.codeBlockRendering.currentProject.blocks.push(block);
+		state.project.activeLevel.blocks.push(block);
 		settle(block);
 		const visibleDepth = (time: number) =>
 			state.viewport.x + state.viewport.width - block.x - (frame(time)?.(block)?.x ?? 0);

@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import drawWatch from './drawer/draw';
 import { registerWatchPreparation } from './state/layout';
 import type { WatchValue } from './types';
@@ -8,7 +8,7 @@ export function createWatchPlugin({ prefersReducedMotion }: { prefersReducedMoti
 	return {
 		id: 'watch',
 		setup: ({ store, layout, drawers }) => {
-			const watchesByBlock = new WeakMap<CodeBlockGraphicData, WatchValue[]>();
+			const watchesByBlock = new WeakMap<EditorCodeBlock, WatchValue[]>();
 			const unregisterPreparation = registerWatchPreparation(store, layout, watchesByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock, memoryViews }) => {
 				drawWatch(

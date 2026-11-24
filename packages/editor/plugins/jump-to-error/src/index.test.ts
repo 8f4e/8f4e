@@ -28,7 +28,7 @@ function setup() {
 		},
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	const drawers = createEditorDrawerRegistry();
 
 	const dispose = createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay }).setup({
@@ -96,7 +96,7 @@ it('centers the error source line with reserved rows above it and preserves sour
 	const viewportChanged = vi.fn();
 	test.events.on('viewportChanged', viewportChanged);
 	expect(test.press().stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
+	expect(test.state.project.selectedCodeBlock).toBe(test.block);
 	expect(test.state.viewport.x).toBe(test.block.x + test.block.width / 2 - 320);
 	expect(test.state.viewport.y).toBe(test.block.y + 5.5 * test.state.viewport.hGrid - 192);
 	expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({
@@ -142,20 +142,20 @@ entryEnd
 groupEnd
 entryEnd`),
 	});
-	const root = test.state.codeBlockRendering.rootProject;
+	const root = test.state.project.rootLevel;
 	const audio = root.blocks.find(block => block.name === 'audio')!;
 	const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
 	const child = nested.childProject!.blocks[0];
 	test.store.set('codeErrors.custom', [{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' }]);
 	test.press();
-	expect(test.state.codeBlockRendering.currentProject).toBe(nested.childProject);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(child);
+	expect(test.state.project.activeLevel).toBe(nested.childProject);
+	expect(test.state.project.selectedCodeBlock).toBe(child);
 	test.store.set('codeErrors.custom', [
 		{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
 	]);
 	test.press();
-	expect(test.state.codeBlockRendering.currentProject).toBe(root);
-	expect(test.state.codeBlockRendering.selectedCodeBlock?.isProjectScope).toBe(true);
+	expect(test.state.project.activeLevel).toBe(root);
+	expect(test.state.project.selectedCodeBlock?.isProjectScope).toBe(true);
 });
 
 it('releases its drawer, subscriptions, and input handlers on disposal', () => {

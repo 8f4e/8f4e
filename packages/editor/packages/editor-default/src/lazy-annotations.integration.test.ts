@@ -82,12 +82,12 @@ entryEnd`);
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	await Promise.resolve();
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
-	const group = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+	const group = state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
 	events.dispatch('openProjectGroup', { codeBlock: group });
 	await vi.waitFor(() =>
 		expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual(['watch', 'stack'])
 	);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 	const draw = {
 		startGroup: () => {},
 		endGroup: () => {},

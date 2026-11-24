@@ -5,7 +5,7 @@ import { moduleMenu } from './moduleMenu';
 describe('module menu', () => {
 	it('places contributed items after enable/disable and before the remaining block actions', () => {
 		const codeBlock = createMockCodeBlock({ blockType: 'module', code: ['module test', 'moduleEnd'] });
-		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: codeBlock } });
+		const state = createMockState({ project: { selectedCodeBlock: codeBlock } });
 		const item = { title: 'Custom block action', action: 'customAction' };
 		const items = moduleMenu(state, codeBlock, [item]);
 		expect(items.indexOf(item)).toBe(items.findIndex(item => item.action === 'toggleCodeBlockDisabled') + 1);
@@ -33,7 +33,7 @@ describe('module menu', () => {
 			childProject: { entries: [], path: '', blocks: [] },
 		});
 		const state = createMockState({
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: codeBlock,
 			},
 		});
@@ -51,7 +51,7 @@ describe('module menu', () => {
 	it('does not add the project-group action to ordinary blocks', async () => {
 		const codeBlock = createMockCodeBlock();
 		const state = createMockState({
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: codeBlock,
 			},
 		});
@@ -66,9 +66,9 @@ describe('module menu', () => {
 		const nestedProjectCodeBlocks = [createMockCodeBlock()];
 		const codeBlock = nestedProjectCodeBlocks[0];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 				selectedCodeBlock: nestedProjectCodeBlocks[0],
 			},
 		});

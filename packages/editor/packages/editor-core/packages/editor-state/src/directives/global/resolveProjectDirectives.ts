@@ -1,11 +1,11 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { resolveEditorConfigEntries, validateEditorConfigEntries } from '../../editor-config/resolveConfigEntries';
 import compareCodeBlocksByPosition from '../../project/blocks/compareCodeBlocksByPosition';
 import deepEqual from '../../utils/deepEqual';
 import { resolveGlobalEditorDirectives } from './resolveGlobalEditorDirectives';
 
-function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlockGraphicData[] {
+function collectProjectCodeBlocks(codeBlocks: EditorCodeBlock[]): EditorCodeBlock[] {
 	return [...codeBlocks]
 		.sort(compareCodeBlocksByPosition)
 		.flatMap(block => [block, ...(block.childProject ? collectProjectCodeBlocks(block.childProject?.blocks) : [])]);
@@ -20,12 +20,12 @@ function collectProjectCodeBlocks(codeBlocks: CodeBlockGraphicData[]): CodeBlock
  *
  * Conflicting directive values are written to `state.codeErrors['editor-directives']`.
  */
-export default function resolveEditorConfig(
+export default function resolveProjectDirectives(
 	store: Pick<StateManager<State>, 'getState' | 'set'>,
-	environment: CodeBlockGraphicData | undefined
+	environment: EditorCodeBlock | undefined
 ): void {
 	const state = store.getState();
-	const root = state.codeBlockRendering.rootProject;
+	const root = state.project.rootLevel;
 	// The generated environment depends on resolved configuration, never the reverse.
 	const projectCodeBlocks = collectProjectCodeBlocks(root.blocks.filter(block => block !== environment));
 	const { resolved, errors } = resolveGlobalEditorDirectives(projectCodeBlocks);

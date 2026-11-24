@@ -71,8 +71,8 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 }
 
 function insertSource(store: ReturnType<typeof initState>, code: string[]) {
-	const project = store.getState().codeBlockRendering.currentProject;
-	return store.projectEdits.apply({ inserts: [{ project, source: { code } }] }).insertedBlocks[0];
+	const project = store.getState().project.activeLevel;
+	return store.projectTransactions.apply({ inserts: [{ project, source: { code } }] }).insertedBlocks[0];
 }
 
 describe('toggle skip execution plugin', () => {
@@ -176,7 +176,7 @@ describe('toggle skip execution plugin', () => {
 			const block = insertSource(store, ['module target', 'moduleEnd']);
 			const selected = insertSource(store, ['module other', '; @pos 40 0', 'moduleEnd']);
 			const state = store.getState();
-			store.set('codeBlockRendering.selectedCodeBlock', selected);
+			store.set('project.selectedCodeBlock', selected);
 			events.dispatch('contextmenu', { x: 16, y: 16 });
 			await Promise.resolve();
 			const index = state.contextMenu.items.findIndex(item => item.action === 'toggleModuleSkipExecutionDirective');

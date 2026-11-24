@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { drawPianoKeyboards } from './drawer/draw';
 import { getPianoDefaultEdits } from './helpers/saveDefaults';
 import { registerPianoInteraction } from './state/interaction';
@@ -18,7 +18,7 @@ export function createPianoPlugin({
 		id: 'piano',
 		setup: ({ store, events, menus, layout, drawers }) => {
 			const state = store.getState();
-			const keyboardsByBlock = new WeakMap<CodeBlockGraphicData, PianoKeyboard[]>();
+			const keyboardsByBlock = new WeakMap<EditorCodeBlock, PianoKeyboard[]>();
 			const unregisterPreparation = registerPianoPreparation(store, layout, keyboardsByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
@@ -34,11 +34,7 @@ export function createPianoPlugin({
 					disabled: !state.callbacks.getWordFromMemory,
 				};
 			});
-			const onSave = ({
-				codeBlock = state.codeBlockRendering.selectedCodeBlock,
-			}: {
-				codeBlock?: CodeBlockGraphicData;
-			} = {}) => {
+			const onSave = ({ codeBlock = state.project.selectedCodeBlock }: { codeBlock?: EditorCodeBlock } = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getPianoDefaultEdits(state, keyboardsByBlock.get(codeBlock) ?? []);
 				applyCodeBlockSourceEdits(store, edits);

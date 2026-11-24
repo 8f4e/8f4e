@@ -63,7 +63,7 @@ test('previews fonts through the default composition without changing saved sour
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('font-preview');
-		const block = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+		const block = editor.state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 		editor.editing.applyEdits({
 			expectedRevision: revision,
 			edits: [

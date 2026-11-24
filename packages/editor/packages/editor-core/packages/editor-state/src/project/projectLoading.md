@@ -1,7 +1,7 @@
 # Project Loading
 
 Core owns generic project replacement and New Project. Hosts and plugins dispatch `loadProject` with `{ project }`,
-where project is the compiler-owned `ProjectObjectModel`. The project editing service normalizes the generated
+where project is the compiler-owned `ProjectObjectModel`. The project transaction service normalizes the generated
 root `constants env`, installs the prepared tree and settles source and layout before announcing the replacement.
 Modules and groups occupy the same ordered
 `execution` sequence; group ids are retained as editor creation indices. Loading an unpositioned group preserves its

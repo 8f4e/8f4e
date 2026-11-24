@@ -66,7 +66,7 @@ test('shows the active group ancestry below the mode hint as the editor moves th
 		editor = instance;
 		instance.pauseRendering();
 		for (const name of ['audio', 'voices', 'envelope']) {
-			const group = instance.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+			const group = instance.state.project.activeLevel.blocks.find(block => block.name === name)!;
 			instance.navigation.openGroup(getEditorBlockId(group));
 		}
 		await vi.dynamicImportSettled();

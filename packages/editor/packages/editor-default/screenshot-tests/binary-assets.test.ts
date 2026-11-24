@@ -76,7 +76,7 @@ entryEnd`);
 		);
 		const target = compiled.memoryPlan.modules.player.memory.buffer;
 		expect([...memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
-		expect(editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')?.code).toContain(
+		expect(editor.state.project.rootLevel.blocks.find(block => block.name === 'env')?.code).toContain(
 			'const ASSET_SOUND_SIZE 6'
 		);
 		editor.renderFrame();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import getCodeBlockNameFromSource from '../../project/blocks/getCodeBlockNameFromSource';
-import getBlockType from '../../project/blocks/getCodeBlockTypeFromSource';
+import getCodeBlockTypeFromSource from '../../project/blocks/getCodeBlockTypeFromSource';
 import { parseBlockDirectives } from '../parseBlockDirectives';
 import { resolveGlobalEditorDirectives } from './resolveGlobalEditorDirectives';
 
@@ -9,7 +9,7 @@ function block(code: string[], creationIndex = 0) {
 		projectPath: '',
 		creationIndex,
 		name: getCodeBlockNameFromSource(code),
-		blockType: getBlockType(code),
+		blockType: getCodeBlockTypeFromSource(code),
 		parsedDirectives: parseBlockDirectives(code),
 	};
 }

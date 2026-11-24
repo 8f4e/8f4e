@@ -1,9 +1,9 @@
-import type { CodeBlockGraphicData, ProjectLevel } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, ProjectLevel } from '@8f4e/editor-state-types';
 import { walkProjectLevels } from './tree';
 
 /** Track attached blocks by object identity, independently of draw order and project paths. */
 export function createProjectMembership(root: ProjectLevel) {
-	let owners = new WeakMap<CodeBlockGraphicData, ProjectLevel>();
+	let owners = new WeakMap<EditorCodeBlock, ProjectLevel>();
 	let projects = new WeakSet<ProjectLevel>();
 
 	/** Rebuild ownership once after project structure changes. */
@@ -20,7 +20,7 @@ export function createProjectMembership(root: ProjectLevel) {
 
 	return {
 		reset,
-		getOwner: (block: CodeBlockGraphicData) => owners.get(block),
+		getOwner: (block: EditorCodeBlock) => owners.get(block),
 		hasProject: (project: ProjectLevel) => projects.has(project),
 	};
 }

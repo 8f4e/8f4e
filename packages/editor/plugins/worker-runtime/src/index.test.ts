@@ -62,7 +62,7 @@ function setup(config = ['enabled true'], ready = true) {
 		),
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'settings')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'settings')!;
 	return {
 		state,
 		store,

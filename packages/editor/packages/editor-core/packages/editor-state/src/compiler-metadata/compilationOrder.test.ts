@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, EditorConfigSchemaContributionRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorConfigSchemaContributionRegistry } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import initState, { serializeProjectLevel, setGridSize } from '../index';
@@ -46,7 +46,7 @@ function setup(source: string, editorConfigSchemaContributions?: EditorConfigSch
 	const state = store.getState();
 	const onInputChanged = vi.fn();
 	store.subscribe('compilerInputRevision', onInputChanged);
-	const beginDrag = (block: CodeBlockGraphicData) => {
+	const beginDrag = (block: EditorCodeBlock) => {
 		events.dispatch('pointerdown', {
 			x: block.x - state.viewport.x + 1,
 			y: block.y - state.viewport.y + 1,
@@ -63,7 +63,7 @@ function setup(source: string, editorConfigSchemaContributions?: EditorConfigSch
 		events.dispatch('pointermove', { movementX: x * state.viewport.vGrid, movementY: y * state.viewport.hGrid });
 	const drop = () => events.dispatch('pointerup');
 	const values = () =>
-		serializeProjectLevel(state.codeBlockRendering.currentProject)
+		serializeProjectLevel(state.project.activeLevel)
 			.constants.filter(block => block.code[0] === 'constants preset')
 			.map(block => block.code.find(line => line.startsWith('const VALUE ')));
 	return { state, store, events, beginDrag, move, drop, values, onInputChanged };
@@ -81,10 +81,10 @@ describe('compilation after spatial order changes', () => {
 		const test = setup(source);
 		if (nested) {
 			test.events.dispatch('openProjectGroup', {
-				codeBlock: test.state.codeBlockRendering.rootProject.blocks.find(block => block.childProject),
+				codeBlock: test.state.project.rootLevel.blocks.find(block => block.childProject),
 			});
 		}
-		const first = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'preset')!;
+		const first = test.state.project.activeLevel.blocks.find(block => block.name === 'preset')!;
 		const initialRevision = test.state.compilerInputRevision;
 		expect(test.values()).toEqual(['const VALUE 11', 'const VALUE 22']);
 		test.beginDrag(first);
@@ -106,7 +106,7 @@ describe('compilation after spatial order changes', () => {
 
 	it('announces saved position directives for repositioning and note-only order changes', () => {
 		const test = setup(`8f4e/v1\n${presets}`);
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
+		const blocks = test.state.project.activeLevel.blocks;
 		const first = blocks.find(block => block.name === 'preset')!;
 		test.beginDrag(first);
 		test.move(10);
@@ -133,7 +133,7 @@ note second
 noteEnd`,
 			{ compileSetting: { root: 'compileSetting', schema: { type: 'integer' } } }
 		);
-		const first = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'first')!;
+		const first = test.state.project.activeLevel.blocks.find(block => block.name === 'first')!;
 		expect(test.state.editorConfig.compileSetting).toBe(2);
 		test.beginDrag(first);
 		test.move(100);
@@ -153,22 +153,21 @@ ${blockType} second
 ; @pos 80 0
 ${blockType}End
 entryEnd`);
-		const first = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'first')!;
+		const first = test.state.project.activeLevel.blocks.find(block => block.name === 'first')!;
 		test.beginDrag(first);
 		test.move(100);
 		test.drop();
 		expect(test.onInputChanged).toHaveBeenCalledTimes(1);
-		expect(
-			serializeProjectLevel(test.state.codeBlockRendering.currentProject).execution.map(block => block.code[0])
-		).toEqual([`${blockType} second`, `${blockType} first`]);
+		expect(serializeProjectLevel(test.state.project.activeLevel).execution.map(block => block.code[0])).toEqual([
+			`${blockType} second`,
+			`${blockType} first`,
+		]);
 	});
 
 	it('announces a multi-block drag once after updating all positions', () => {
 		const third = 'constants preset\n; @pos 160 0\nconst VALUE 33\nconstantsEnd\n';
 		const test = setup(`8f4e/v1\n${presets.replace('entry main\n', `${third}entry main\n`)}`);
-		const [first, second] = test.state.codeBlockRendering.currentProject.blocks.filter(
-			block => block.name === 'preset'
-		);
+		const [first, second] = test.state.project.activeLevel.blocks.filter(block => block.name === 'preset');
 		test.events.on('resolveCodeBlockDragTargets', (request: ResolveCodeBlockDragTargetsEvent) => {
 			request.targets = [first, second];
 		});

@@ -62,7 +62,7 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	editor.pauseRendering();
 	try {
 		if (level === 'nested') {
-			const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
+			const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'checks')!;
 			editor.navigation.openGroup(getEditorBlockId(group));
 		}
 		editor.state.viewport.x = 0;

@@ -4,7 +4,7 @@ import type { RenderGeometry } from '@8f4e/web-ui';
 /** Supply unanimated viewport-relative positions to wire tests without a renderer. */
 export function createRenderGeometryFixture(state: State): RenderGeometry {
 	const { x, y } = state.viewport;
-	const blocks = state.codeBlockRendering.currentProject.blocks.map(codeBlock => ({
+	const blocks = state.project.activeLevel.blocks.map(codeBlock => ({
 		codeBlock,
 		x: codeBlock.x - x,
 		y: codeBlock.y - y,

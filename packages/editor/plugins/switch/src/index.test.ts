@@ -70,7 +70,7 @@ async function setup(code = source, installed = true) {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 	const draw = {
 		drawSprite: vi.fn(),
@@ -162,7 +162,7 @@ describe('switch plugin', () => {
 
 	it('replaces widgets after source edits and removes them when the directive is deleted', async () => {
 		const test = await setup();
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{
 					codeBlock: test.codeBlock,
@@ -172,7 +172,7 @@ describe('switch plugin', () => {
 		});
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 7, true);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [
 				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
 			],

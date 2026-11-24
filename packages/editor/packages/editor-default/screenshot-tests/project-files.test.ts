@@ -54,7 +54,7 @@ noteEnd`;
 			.poll(() => editor!.state.loadingIndicators.find(item => item.id === 'project-file')?.status)
 			.toBe('done');
 		expect(fileSession.handle).toBe(handle);
-		const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+		const blocks = editor.state.project.activeLevel.blocks;
 		const env = blocks.find(block => block.name === 'env')!;
 		expect(env.code).not.toContain('const SAVED_0 0');
 		expect(env.displayModel.lines.map(line => line.text)).toEqual(env.code);
@@ -116,10 +116,10 @@ noteEnd`;
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
 		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.code.includes('note patch'))).toBe(true)
+			expect(state.project.activeLevel.blocks.some(block => block.code.includes('note patch'))).toBe(true)
 		);
 		editor.pauseRendering();
-		const original = state.codeBlockRendering.rootProject;
+		const original = state.project.rootLevel;
 		const rect = canvas.getBoundingClientRect();
 		const menuPosition = { clientX: rect.left + 400, clientY: rect.top + 16, bubbles: true };
 		canvas.dispatchEvent(new MouseEvent('contextmenu', menuPosition));
@@ -129,7 +129,7 @@ noteEnd`;
 		const openY = menuPosition.clientY + (openIndex + 0.5) * state.viewport.hGrid;
 		canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: openX, clientY: openY, bubbles: true }));
 		canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: openX, clientY: openY, bubbles: true }));
-		await vi.waitFor(() => expect(state.codeBlockRendering.rootProject).not.toBe(original));
+		await vi.waitFor(() => expect(state.project.rootLevel).not.toBe(original));
 		expect(state.editorMode).toBe('view');
 		editor.state.editorMode = 'edit';
 		canvas.focus();

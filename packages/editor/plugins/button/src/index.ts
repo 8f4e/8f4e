@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { drawButtons } from './drawer/draw';
 import { registerButtonInteraction } from './state/interaction';
 import { registerButtonPreparation } from './state/layout';
@@ -14,7 +14,7 @@ export function createButtonPlugin({
 		id: 'button',
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
-			const buttonsByBlock = new WeakMap<CodeBlockGraphicData, ButtonWidget[]>();
+			const buttonsByBlock = new WeakMap<EditorCodeBlock, ButtonWidget[]>();
 			const unregisterPreparation = registerButtonPreparation(store, layout, buttonsByBlock);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawButtons(draw, state, buttonsByBlock.get(codeBlock) ?? [], memoryViews);

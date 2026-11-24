@@ -15,7 +15,7 @@ completed: null
 Selecting a code block can trigger session autosaving and add an undo-history entry even when project source is
 unchanged. The history update also clears the redo stack, so clicking a block after an undo can discard redo history.
 
-Both effects subscribe to `codeBlockRendering.selectedCodeBlock.code`. The state manager notifies child subscriptions
+Both effects subscribe to `project.selectedCodeBlock.code`. The state manager notifies child subscriptions
 when a parent path is assigned, including when the same selected block is assigned again. Mouse clicks and block
 navigation therefore reach these effects without an edit.
 

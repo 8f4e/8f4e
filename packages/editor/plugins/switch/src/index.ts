@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import { registerSwitchPreparation, type SwitchWidget } from './layout';
@@ -18,7 +18,7 @@ export function createSwitchPlugin({
 		id: 'switch',
 		setup: ({ store, events, layout, drawers }) => {
 			const state = store.getState();
-			const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
+			const widgets = new WeakMap<EditorCodeBlock, SwitchWidget[]>();
 			const unregisterPreparation = registerSwitchPreparation(store, layout, widgets);
 			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				for (const control of widgets.get(codeBlock) ?? []) {

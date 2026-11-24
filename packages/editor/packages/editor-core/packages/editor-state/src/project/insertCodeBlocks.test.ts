@@ -25,8 +25,8 @@ function setup(source: string, withGrid = true) {
 describe('insertCodeBlocks', () => {
 	it('preserves declaration names and references while positioning a batch with distinct identities', () => {
 		const { store, state } = setup('module same\nmoduleEnd');
-		const existing = [...state.codeBlockRendering.currentProject.blocks];
-		const nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
+		const existing = [...state.project.activeLevel.blocks];
+		const nextId = state.project.nextCodeBlockCreationIndex;
 		const inserted = insertCodeBlocks(store, {
 			x: 80,
 			y: 64,
@@ -35,7 +35,7 @@ describe('insertCodeBlocks', () => {
 				{ code: ['module same', 'push &same:value', 'moduleEnd'], gridCoordinates: { x: 4, y: -1 }, entry: 'audio' },
 			],
 		});
-		const blocks = state.codeBlockRendering.currentProject.blocks.filter(block => !existing.includes(block));
+		const blocks = state.project.activeLevel.blocks.filter(block => !existing.includes(block));
 		expect(inserted[0]).toBe(blocks[0]);
 		expect(inserted[1]).toBe(blocks[1]);
 		expect(blocks.map(block => block.name)).toEqual(['same', 'same']);
@@ -86,19 +86,23 @@ describe('insertCodeBlocks', () => {
 		});
 		const nested = owner.childProject!.blocks[1].childProject!;
 		const descendant = owner.childProject!.blocks[0];
-		const { changed, insertedBlocks } = store.projectEdits.apply({
+		const { changed, insertedBlocks } = store.projectTransactions.apply({
 			updates: [{ codeBlock: descendant, code: ['module changed', 'moduleEnd'] }],
 			inserts: [{ project: nested, source: { code: ['note added', 'noteEnd'] } }],
 		});
 		expect(changed).toBe(true);
 		expect(descendant.name).toBe('changed');
 		expect(nested.blocks).toEqual(insertedBlocks);
-		store.projectEdits.apply({ deletes: [owner] });
+		store.projectTransactions.apply({ deletes: [owner] });
 		expect(() =>
-			store.projectEdits.apply({ inserts: [{ project: nested, source: { code: ['note detached', 'noteEnd'] } }] })
+			store.projectTransactions.apply({
+				inserts: [{ project: nested, source: { code: ['note detached', 'noteEnd'] } }],
+			})
 		).toThrow(expect.objectContaining({ code: 'detached_project' }));
 		expect(() =>
-			store.projectEdits.apply({ updates: [{ codeBlock: insertedBlocks[0], code: ['note detached', 'noteEnd'] }] })
+			store.projectTransactions.apply({
+				updates: [{ codeBlock: insertedBlocks[0], code: ['note detached', 'noteEnd'] }],
+			})
 		).toThrow(expect.objectContaining({ code: 'detached_block' }));
 	});
 	it('does not convert pixel coordinates before a grid is installed', () => {

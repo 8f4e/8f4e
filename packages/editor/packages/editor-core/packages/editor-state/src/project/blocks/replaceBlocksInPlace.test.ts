@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/__tests__/helpers/mockEditorState';
-import replaceCodeBlocksInPlace from './replaceBlocksInPlace';
+import replaceBlocksInPlace from './replaceBlocksInPlace';
 
-describe('replaceCodeBlocksInPlace', () => {
+describe('replaceBlocksInPlace', () => {
 	it('preserves the project slice identity while replacing its contents', () => {
 		const originalBlock = createMockCodeBlock({ name: 'original' });
 		const replacementBlock = createMockCodeBlock({ name: 'replacement' });
 		const projectSlice = [originalBlock];
 		const renderedSlice = projectSlice;
 
-		replaceCodeBlocksInPlace(renderedSlice, [replacementBlock]);
+		replaceBlocksInPlace(renderedSlice, [replacementBlock]);
 
 		expect(renderedSlice).toBe(projectSlice);
 		expect(projectSlice).toEqual([replacementBlock]);

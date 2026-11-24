@@ -54,13 +54,13 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 	const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
 	try {
 		const state = editor.state;
-		const destination = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
+		const destination = state.project.activeLevel.blocks.find(block => block.name === 'destination')!;
 		const viewportChanged = vi.fn();
 		context.events.on('viewportChanged', viewportChanged);
 		jumpToCodeBlock(context.store, destination.creationIndex, context.events);
 		const { x, y } = state.viewport;
 		expect(x).toBeGreaterThan(0);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(destination);
+		expect(state.project.selectedCodeBlock).toBe(destination);
 		visible.length = 0;
 		editor.renderFrame();
 		expect(visible).toEqual(['env', 'start']);

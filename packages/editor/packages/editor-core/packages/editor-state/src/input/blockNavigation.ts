@@ -1,17 +1,17 @@
 import type { Direction, EventDispatcher, NavigateCodeBlockEvent, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import gapCalculator from '../layout/text-geometry/displayRowToGridRow';
-import reverseGapCalculator from '../layout/text-geometry/gridRowToDisplayRow';
+import displayRowToGridRow from '../layout/text-geometry/displayRowToGridRow';
+import gridRowToDisplayRow from '../layout/text-geometry/gridRowToDisplayRow';
 import centerViewportOnCodeBlockCursor from '../viewport/centerViewportOnCodeBlockCursor';
 import updateViewport from '../viewport/updateViewport';
 import findClosestCodeBlockInDirection from './findClosestCodeBlockInDirection';
 
-type CodeBlockCursor = NonNullable<State['codeBlockRendering']['selectedCodeBlock']>['cursor'];
+type CodeBlockCursor = NonNullable<State['project']['selectedCodeBlock']>['cursor'];
 type CodeBlockCursorUpdate = Partial<CodeBlockCursor> & Pick<CodeBlockCursor, 'row' | 'col'>;
 
 function setSelectedCodeBlockCursor(
 	store: StateManager<State>,
-	block: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
+	block: NonNullable<State['project']['selectedCodeBlock']>,
 	cursor: CodeBlockCursorUpdate
 ): void {
 	const nextCursor = {
@@ -19,13 +19,13 @@ function setSelectedCodeBlockCursor(
 		...cursor,
 	};
 
-	store.set('codeBlockRendering.selectedCodeBlock.cursor', nextCursor);
+	store.set('project.selectedCodeBlock.cursor', nextCursor);
 }
 
 function alignTargetBlockCursorForHorizontalNavigation(
 	store: StateManager<State>,
-	sourceBlock: State['codeBlockRendering']['selectedCodeBlock'],
-	targetBlock: State['codeBlockRendering']['selectedCodeBlock']
+	sourceBlock: State['project']['selectedCodeBlock'],
+	targetBlock: State['project']['selectedCodeBlock']
 ): void {
 	if (!sourceBlock || !targetBlock) {
 		return;
@@ -36,7 +36,7 @@ function alignTargetBlockCursorForHorizontalNavigation(
 	const targetRelativeCursorY = sourceAbsoluteCursorY - targetBlock.y;
 	const targetPhysicalRow = Math.max(Math.floor(targetRelativeCursorY / state.viewport.hGrid), 0);
 	const displayModel = targetBlock.displayModel;
-	const targetDisplayRow = reverseGapCalculator(targetPhysicalRow, targetBlock.gaps);
+	const targetDisplayRow = gridRowToDisplayRow(targetPhysicalRow, targetBlock.gaps);
 	const boundedDisplayRow = Math.min(
 		Math.max(targetDisplayRow, 0),
 		Math.max(displayModel.displayRowToSourceLineIndex.length - 1, 0)
@@ -46,13 +46,13 @@ function alignTargetBlockCursorForHorizontalNavigation(
 	setSelectedCodeBlockCursor(store, targetBlock, {
 		row: targetSourceLineIndex,
 		col: Math.min(sourceBlock.cursor.col, targetBlock.code[targetSourceLineIndex]?.length ?? 0),
-		y: gapCalculator(boundedDisplayRow, targetBlock.gaps) * state.viewport.hGrid,
+		y: displayRowToGridRow(boundedDisplayRow, targetBlock.gaps) * state.viewport.hGrid,
 	});
 }
 
 function setBlockCursorToDisplayRow(
 	store: StateManager<State>,
-	block: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
+	block: NonNullable<State['project']['selectedCodeBlock']>,
 	displayRow: number,
 	sourceCol?: number
 ): void {
@@ -65,21 +65,18 @@ function setBlockCursorToDisplayRow(
 	setSelectedCodeBlockCursor(store, block, {
 		row: targetSourceLineIndex,
 		col: Math.min(sourceCol ?? block.cursor.col, block.code[targetSourceLineIndex]?.length ?? 0),
-		y: gapCalculator(boundedDisplayRow, block.gaps) * state.viewport.hGrid,
+		y: displayRowToGridRow(boundedDisplayRow, block.gaps) * state.viewport.hGrid,
 	});
 }
 
-function getSelectedBlockDisplayRow(
-	state: State,
-	block: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>
-): number {
+function getSelectedBlockDisplayRow(state: State, block: NonNullable<State['project']['selectedCodeBlock']>): number {
 	const physicalRow = Math.max(Math.floor(block.cursor.y / state.viewport.hGrid), 0);
-	return reverseGapCalculator(physicalRow, block.gaps);
+	return gridRowToDisplayRow(physicalRow, block.gaps);
 }
 
 function moveSelectionToCurrentBlockVerticalEdge(
 	store: StateManager<State>,
-	block: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
+	block: NonNullable<State['project']['selectedCodeBlock']>,
 	direction: 'up' | 'down'
 ): boolean {
 	const state = store.getState();
@@ -98,8 +95,8 @@ function moveSelectionToCurrentBlockVerticalEdge(
 
 function alignTargetBlockCursorForVerticalNavigation(
 	store: StateManager<State>,
-	sourceBlock: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
-	targetBlock: NonNullable<State['codeBlockRendering']['selectedCodeBlock']>,
+	sourceBlock: NonNullable<State['project']['selectedCodeBlock']>,
+	targetBlock: NonNullable<State['project']['selectedCodeBlock']>,
 	direction: 'up' | 'down'
 ): void {
 	const displayModel = targetBlock.displayModel;
@@ -125,13 +122,13 @@ export function navigateToCodeBlockInDirection(
 ): boolean {
 	const state = store.getState();
 	// Only proceed if a code block is currently selected
-	if (!state.codeBlockRendering.selectedCodeBlock) {
+	if (!state.project.selectedCodeBlock) {
 		return false;
 	}
 
 	// Get the current viewport's code blocks
-	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
-	const currentBlock = state.codeBlockRendering.selectedCodeBlock;
+	const codeBlocks = state.project.activeLevel.blocks;
+	const currentBlock = state.project.selectedCodeBlock;
 
 	// Find the closest code block in the specified direction
 	if (
@@ -147,7 +144,7 @@ export function navigateToCodeBlockInDirection(
 
 	// If we found a different block, select it and center viewport on it
 	if (targetBlock !== currentBlock) {
-		store.set('codeBlockRendering.selectedCodeBlock', targetBlock);
+		store.set('project.selectedCodeBlock', targetBlock);
 
 		if (direction === 'left' || direction === 'right') {
 			alignTargetBlockCursorForHorizontalNavigation(store, currentBlock, targetBlock);
@@ -180,13 +177,13 @@ export function jumpToCodeBlock(
 	events: EventDispatcher
 ): boolean {
 	const state = store.getState();
-	const codeBlocks = state.codeBlockRendering.currentProject.blocks;
+	const codeBlocks = state.project.activeLevel.blocks;
 
 	const targetBlock = codeBlocks.find(block => block.creationIndex === creationIndex);
 
 	// If we found a block, select it and center viewport on it
 	if (targetBlock) {
-		store.set('codeBlockRendering.selectedCodeBlock', targetBlock);
+		store.set('project.selectedCodeBlock', targetBlock);
 		const { x, y } = centerViewportOnCodeBlockCursor(state.viewport, targetBlock);
 		updateViewport(state, x, y, events, 'navigation');
 		return true;

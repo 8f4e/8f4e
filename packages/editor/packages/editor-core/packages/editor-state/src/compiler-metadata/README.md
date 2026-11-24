@@ -14,9 +14,9 @@ Group operations and multi-block paste advance it once after updating their inpu
 project loads and is not stored in project files.
 
 Selection, caret movement, navigation, and layout changes without source edits leave the revision unchanged.
-The project editing service is the sole owner of revision publication; do not increment it from individual actions.
+The project transaction service is the sole owner of revision publication; do not increment it from individual actions.
 
-The project editing service settles source-derived state and synchronous generated source, advances the revision once
+The project transaction service settles source-derived state and synchronous generated source, advances the revision once
 for the final compiler-input diff, and publishes `state.projectChange` for completed project mutations. All directive edits (including favorites and
 configuration), line insertions/deletions (including comments and blank lines), and changes to instruction positions
 invalidate compilation. The only exemption is an in-place change to the text of existing ordinary comment-only lines,

@@ -1,7 +1,7 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { gapCalculator, getStackOperandProducerRows } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent, State } from '@8f4e/editor-state-types';
+import { displayRowToGridRow, getStackOperandProducerRows } from '@8f4e/editor-state';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
 const START = textToGlyphIds('┌');
@@ -9,14 +9,14 @@ const JUNCTION = textToGlyphIds('├');
 const VERTICAL = textToGlyphIds('│');
 const END = textToGlyphIds('└');
 
-function prepareConnection(block: CodeBlockGraphicData, state: State): Array<{ y: number; glyphs: GlyphIds }> {
+function prepareConnection(block: EditorCodeBlock, state: State): Array<{ y: number; glyphs: GlyphIds }> {
 	const displayRow = block.displayModel.sourceLineIndexToDisplayRow[block.cursor.row];
 	if (displayRow === undefined) return [];
 	const producers = new Set(getStackOperandProducerRows(block, state));
 	if (!producers.size) return [];
 
 	const startRow = Math.min(...producers);
-	const targetRow = gapCalculator(displayRow, block.gaps);
+	const targetRow = displayRowToGridRow(displayRow, block.gaps);
 	const rows = [];
 	for (let row = startRow; row <= targetRow; row++) {
 		let glyphs = VERTICAL;
@@ -33,14 +33,14 @@ export const stackConnectionsPlugin: EditorPlugin = {
 	id: 'stack-connections',
 	setup: ({ store, events, drawers }) => {
 		const state = store.getState();
-		let selectedBlock: CodeBlockGraphicData | undefined;
+		let selectedBlock: EditorCodeBlock | undefined;
 		let rows: ReturnType<typeof prepareConnection> = [];
 		const refresh = () => {
-			selectedBlock = state.codeBlockRendering.selectedCodeBlock;
+			selectedBlock = state.project.selectedCodeBlock;
 			rows = selectedBlock ? prepareConnection(selectedBlock, state) : [];
 		};
 		const selectors = [
-			'codeBlockRendering.selectedCodeBlock.cursor.row',
+			'project.selectedCodeBlock.cursor.row',
 			'compiler.result',
 			'compilerInputRevision',
 			'featureFlags.codeLineSelection',

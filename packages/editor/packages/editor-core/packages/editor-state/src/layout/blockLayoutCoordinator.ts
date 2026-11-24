@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EventDispatcher, ProjectLevel, State } from '@8f4e/editor-state-types';
 import type { ProjectMembership } from '../project/membership';
 import { calculateBlockLayout } from './calculateBlockLayout';
 import type { LayoutRegistry } from './layoutContributionRegistry';
@@ -10,14 +10,14 @@ export function createLayoutCoordinator(
 	layout: LayoutRegistry,
 	membership: Pick<ProjectMembership, 'getOwner'>
 ) {
-	const pending = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
+	const pending = new Map<ProjectLevel, Set<EditorCodeBlock>>();
 	let calculating = false;
 	let batching = 0;
 
 	const flush = (): void => {
 		if (calculating || batching || state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		calculating = true;
-		const completed = new Map<ProjectLevel, Set<CodeBlockGraphicData>>();
+		const completed = new Map<ProjectLevel, Set<EditorCodeBlock>>();
 		try {
 			while (pending.size) {
 				const [project, blocks] = pending.entries().next().value!;
@@ -41,7 +41,7 @@ export function createLayoutCoordinator(
 		}
 	};
 
-	const getPendingBlocks = (project: ProjectLevel): Set<CodeBlockGraphicData> => {
+	const getPendingBlocks = (project: ProjectLevel): Set<EditorCodeBlock> => {
 		let queued = pending.get(project);
 		if (!queued) {
 			queued = new Set();
@@ -50,7 +50,7 @@ export function createLayoutCoordinator(
 		return queued;
 	};
 
-	const refreshBlocks = (blocks: readonly CodeBlockGraphicData[]): void => {
+	const refreshBlocks = (blocks: readonly EditorCodeBlock[]): void => {
 		for (const block of blocks) {
 			const project = membership.getOwner(block);
 			if (project) getPendingBlocks(project).add(block);

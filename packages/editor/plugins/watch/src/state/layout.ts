@@ -1,12 +1,12 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
 import {
-	gapCalculator,
+	displayRowToGridRow,
 	getVisualLineWidth,
 	matchEditorDirectives,
 	subscribeToBlockPreparation,
 } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, getMemoryTargetAtSourceLine } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWatchDirectiveData } from '../helpers/data';
 import { prepareWatchDisplay } from '../helpers/prepareDisplay';
 import type { WatchValue } from '../types';
@@ -14,7 +14,7 @@ import type { WatchValue } from '../types';
 export function registerWatchPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	watchesByBlock: WeakMap<CodeBlockGraphicData, WatchValue[]>
+	watchesByBlock: WeakMap<EditorCodeBlock, WatchValue[]>
 ): () => void {
 	const unsubscribe = subscribeToBlockPreparation(
 		store,
@@ -43,7 +43,7 @@ export function registerWatchPreparation(
 
 				watchesByBlock.get(graphicData)!.push({
 					x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
-					y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
+					y: displayRowToGridRow(displayRow, graphicData.gaps) * state.viewport.hGrid,
 					display,
 					displayFormat: data.displayFormat,
 				});

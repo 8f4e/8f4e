@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { gapCalculator, setGridSize } from '@8f4e/editor-state';
+import initState, { displayRowToGridRow, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -55,7 +55,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	events.dispatch('loadProject', { project });
 	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch('enterEditMode');
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
@@ -66,7 +66,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 		const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex]!;
 		return {
 			x: codeBlock.x + key * 2 * state.viewport.vGrid - state.viewport.x + 1,
-			y: codeBlock.y + (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
+			y: codeBlock.y + (displayRowToGridRow(row, codeBlock.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
 		};
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
@@ -256,10 +256,10 @@ describe('piano plugin', () => {
 		const test = await setup();
 		const code = [...test.codeBlock.code];
 		code.splice(3, 0, '; note');
-		test.store.projectEdits.apply({ updates: [{ codeBlock: test.codeBlock, code }] });
+		test.store.projectTransactions.apply({ updates: [{ codeBlock: test.codeBlock, code }] });
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: test.codeBlock, code: test.codeBlock.code.filter(line => !line.includes('@piano')) }],
 		});
 		test.render();
@@ -308,7 +308,7 @@ describe('piano plugin', () => {
 	it('uses the selected block when saving without an explicit target', async () => {
 		const test = await setup();
 		test.press(0);
-		test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+		test.state.project.selectedCodeBlock = test.codeBlock;
 		test.events.dispatch('savePianoValuesToCode');
 		expect(test.codeBlock.code).toContain('int[] notes 4 48');
 	});
@@ -401,7 +401,7 @@ describe('piano plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.store.projectEdits.apply({
+		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
 		});
 		expect(test.codeBlock.gaps.size).toBe(0);

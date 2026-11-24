@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, ProjectLevel } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, ProjectLevel } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath, type ProjectGroupPath } from '@8f4e/language-spec';
 
 export function* walkProjectLevels(project: ProjectLevel): Generator<ProjectLevel> {
@@ -16,7 +16,7 @@ export function findParentProjectLevel(root: ProjectLevel, project: ProjectLevel
 	}
 }
 
-export function* walkProjectBlocks(project: ProjectLevel): Generator<CodeBlockGraphicData> {
+export function* walkProjectBlocks(project: ProjectLevel): Generator<EditorCodeBlock> {
 	for (const level of walkProjectLevels(project)) yield* level.blocks;
 }
 

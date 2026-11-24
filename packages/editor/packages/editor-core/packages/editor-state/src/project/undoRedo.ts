@@ -1,7 +1,7 @@
 import type { EditorProjectSnapshot, EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { sameProjectSnapshot } from './snapshots';
-import type { ProjectEditService } from './transactions';
+import type { ProjectTransactionService } from './transactions';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
@@ -9,10 +9,10 @@ const HISTORY_LIMIT = 10;
 export default function registerUndoRedo(
 	store: StateManager<State>,
 	events: EventDispatcher,
-	projectEdits: Pick<ProjectEditService, 'capture' | 'restore'>
+	projectTransactions: Pick<ProjectTransactionService, 'capture' | 'restore'>
 ): () => void {
 	const state = store.getState();
-	let present = projectEdits.capture();
+	let present = projectTransactions.capture();
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
 
@@ -32,7 +32,7 @@ export default function registerUndoRedo(
 		cancelPendingEdit();
 		if (!pending) return;
 
-		const current = projectEdits.capture();
+		const current = projectTransactions.capture();
 		if (sameProjectSnapshot(current, present)) return;
 		pushHistory(present);
 		present = current;
@@ -57,7 +57,7 @@ export default function registerUndoRedo(
 			pushHistory(present);
 			state.redoStack = [];
 		}
-		present = projectEdits.capture();
+		present = projectTransactions.capture();
 	}
 
 	function undo() {
@@ -67,7 +67,7 @@ export default function registerUndoRedo(
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		projectEdits.restore(previousState);
+		projectTransactions.restore(previousState);
 	}
 
 	function redo() {
@@ -76,7 +76,7 @@ export default function registerUndoRedo(
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		projectEdits.restore(nextState);
+		projectTransactions.restore(nextState);
 	}
 
 	store.subscribe('projectChange', onProjectChange);

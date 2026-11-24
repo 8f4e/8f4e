@@ -155,7 +155,7 @@ int code
 int pressed
 moduleEnd
 entryEnd`);
-		editor.store.projectEdits.load(project);
+		editor.store.projectTransactions.load(project);
 		expect(editor.store.getState().editorConfig.keyboard).toEqual({
 			keyCodeMemory: 'keys:code',
 			keyPressedMemory: 'keys:pressed',

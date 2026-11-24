@@ -31,7 +31,7 @@ describe('drawCodeBlocks', () => {
 		const offscreen = createMockCodeBlock({ creationIndex: 1, x: 10000 });
 		const state = createMockState({
 			viewport: { x: 8, y: -16 },
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [visible, offscreen] } },
+			project: { activeLevel: { entries: [], path: '', blocks: [visible, offscreen] } },
 		});
 		const renderGeometry = createRenderGeometry().prepare(state);
 		const draw = createDrawContext();
@@ -58,8 +58,8 @@ describe('drawCodeBlocks', () => {
 		const visible = createMockCodeBlock({ creationIndex: 1, x: 24, y: 32 });
 		const lastOffscreen = createMockCodeBlock({ creationIndex: 2, y: -1200 });
 		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [offscreen, visible, lastOffscreen] },
+			project: {
+				activeLevel: { entries: [], path: '', blocks: [offscreen, visible, lastOffscreen] },
 			},
 		});
 		const renderGeometry = createRenderGeometry().prepare(state);
@@ -88,7 +88,7 @@ describe('drawCodeBlocks', () => {
 		const logicalOffscreen = createMockCodeBlock({ x: 3000, y: 20 });
 		const logicalVisible = createMockCodeBlock({ x: 20, y: 30 });
 		const state = createMockState({
-			codeBlockRendering: { currentProject: { blocks: [logicalOffscreen, logicalVisible] } },
+			project: { activeLevel: { blocks: [logicalOffscreen, logicalVisible] } },
 		});
 		const blocks = [
 			{ codeBlock: logicalOffscreen, x: 5, y: 15 },

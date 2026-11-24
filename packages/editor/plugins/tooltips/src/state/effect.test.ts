@@ -61,10 +61,10 @@ describe.each(['module', 'function'] as const)('inline operand tooltips in a %s'
 		events.dispatch('loadProject', { project });
 		events.dispatch('enterEditMode');
 		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
-		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		const block = store.getState().project.activeLevel.blocks.find(block => block.name === 'sample')!;
+		store.set('project.selectedCodeBlock', block);
 		store.set(
-			'codeBlockRendering.selectedCodeBlock.cursor.row',
+			'project.selectedCodeBlock.cursor.row',
 			block.code.findIndex(line => line.startsWith('sub'))
 		);
 
@@ -118,12 +118,12 @@ functionEnd float`);
 		events.dispatch('enterEditMode');
 		const state = store.getState();
 		store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
-		const blocks = state.codeBlockRendering.currentProject.blocks;
+		const blocks = state.project.activeLevel.blocks;
 		const caller = blocks.find(block => block.name === 'caller')!;
 		const floatFunction = blocks.find(block => block.name === 'transform' && block.code.includes('param float'))!;
 		const select = (block: typeof caller, row: number) => {
-			store.set('codeBlockRendering.selectedCodeBlock', block);
-			store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+			store.set('project.selectedCodeBlock', block);
+			store.set('project.selectedCodeBlock.cursor.row', row);
 		};
 		select(caller, 1);
 		expect(tooltip.getState().text).toContain('Integer transformation.');
@@ -148,7 +148,7 @@ functionEnd float`);
 		]);
 		expect(tooltip.getState().text).not.toContain('Float transformation.');
 		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
-		const recompiled = await compileProject(serializeProjectLevel(state.codeBlockRendering.rootProject), {
+		const recompiled = await compileProject(serializeProjectLevel(state.project.rootLevel), {
 			cache: compiled.cache,
 			includeStackAnalysis: true,
 		});
@@ -177,9 +177,9 @@ entryEnd`);
 		events.dispatch('loadProject', { project });
 		events.dispatch('enterEditMode');
 		store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
-		const block = store.getState().codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		const block = store.getState().project.activeLevel.blocks.find(block => block.name === 'sample')!;
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		expect(tooltip.getState().text[0]).toBe('sub (T -- T)');
 		const editLine = (line: string) => {
 			const code = [...block.code];
@@ -233,7 +233,7 @@ entryEnd`);
 					},
 				},
 			},
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -327,7 +327,7 @@ entryEnd`);
 					},
 				},
 			},
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -426,7 +426,7 @@ entryEnd`);
 					},
 				},
 			},
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -469,7 +469,7 @@ entryEnd`);
 		expect(tooltip.getState().lineCount).toBe(tooltip.getState().text.length);
 		expect(tooltip.getState().widthChars).toBeGreaterThanOrEqual(19);
 
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 
 		expect(tooltip.getState().liveValues).toEqual([]);
 	});
@@ -484,7 +484,7 @@ entryEnd`);
 			},
 		});
 		const state = createMockState({
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -502,7 +502,7 @@ entryEnd`);
 			'type and pushes the result.',
 		]);
 
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 
 		expect(tooltip.getState().text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
 	});
@@ -526,7 +526,7 @@ entryEnd`);
 					},
 				},
 			},
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -540,7 +540,7 @@ entryEnd`);
 
 		expect(tooltip.getState().text).toEqual(['Starts a module block.', 'execution order: 2']);
 
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 
 		expect(tooltip.getState().text).not.toContain('execution order: 2');
 	});
@@ -555,7 +555,7 @@ entryEnd`);
 			},
 		});
 		const state = createMockState({
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -567,7 +567,7 @@ entryEnd`);
 			store.dispose();
 		});
 
-		store.set('codeBlockRendering.selectedCodeBlock.code', ['drop']);
+		store.set('project.selectedCodeBlock.code', ['drop']);
 
 		expect(tooltip.getState().text).toEqual(['drop (T -- )', 'Removes the top value from the', 'stack.']);
 	});
@@ -578,7 +578,7 @@ entryEnd`);
 			featureFlags: {
 				codeLineSelection: false,
 			},
-			codeBlockRendering: {
+			project: {
 				selectedCodeBlock: selectedBlock,
 			},
 		});
@@ -615,9 +615,9 @@ describe('tooltip lifecycle', () => {
 				project: parseProjectSource('8f4e/v1\nentry main\nmodule sample\npush 1\ndrop\nmoduleEnd\nentryEnd'),
 			});
 			events.dispatch('enterEditMode');
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
-			store.set('codeBlockRendering.selectedCodeBlock', block);
-			store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: 2, col: 0 });
+			const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
+			store.set('project.selectedCodeBlock', block);
+			store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row: 2, col: 0 });
 			await Promise.resolve();
 			expect(tooltip.getState().text[0]).toBe('drop (T -- )');
 			describeLine.mockClear();
@@ -629,7 +629,7 @@ describe('tooltip lifecycle', () => {
 			applyCodeBlockSourceEdits(store, [
 				{ codeBlock: block, code: ['module sample', 'push 1', '', 'drop', 'moduleEnd'] },
 			]);
-			store.set('codeBlockRendering.selectedCodeBlock.cursor', { ...block.cursor, row: 3, col: 0 });
+			store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row: 3, col: 0 });
 			expect(state.projectChange.revision).toBe(projectRevision + 1);
 			expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 			expect(describeLine).not.toHaveBeenCalled();
@@ -665,9 +665,9 @@ describe('tooltip lifecycle', () => {
 		events.dispatch('loadProject', {
 			project: parseProjectSource('8f4e/v1\nentry main\nmodule sample\npush 1\ndrop\nmoduleEnd\nentryEnd'),
 		});
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'sample')!;
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		const initial = tooltip.getState();
 		const projectRevision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
@@ -686,7 +686,7 @@ describe('tooltip lifecycle', () => {
 
 	it('refreshes after grid size changes and stops responding after disposal', async () => {
 		const block = createMockCodeBlock({ code: ['add', 'drop'] });
-		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
+		const state = createMockState({ project: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
 		const events = createEvents();
 		const tooltip = createTooltip(store, events);
@@ -701,11 +701,11 @@ describe('tooltip lifecycle', () => {
 		expect(tooltip.getState().layout.width).not.toBe(initial.layout.width);
 		expect(tooltip.getState().animation.startedAt).toBe(initial.animation.startedAt);
 		const disposed = tooltip.getState();
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		tooltip.dispose();
 		await Promise.resolve();
 		expect(tooltip.getState()).toBe(disposed);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
+		store.set('project.selectedCodeBlock.cursor.row', 0);
 		events.dispatch('gridSizeChanged');
 		await Promise.resolve();
 		expect(tooltip.getState()).toBe(disposed);
@@ -713,7 +713,7 @@ describe('tooltip lifecycle', () => {
 
 	it('refreshes compiler-derived content without moving the cursor', () => {
 		const block = createMockCodeBlock({ name: 'test', code: ['module test'] });
-		const state = createMockState({ codeBlockRendering: { selectedCodeBlock: block } });
+		const state = createMockState({ project: { selectedCodeBlock: block } });
 		const store = createStateManager(state);
 		const tooltip = createTooltip(store, createEvents());
 		cleanups.push(() => {
@@ -761,7 +761,7 @@ functionEnd int`;
 		});
 		const state = createMockState({
 			compiler: { result: createCompilerResult(first, 0) },
-			codeBlockRendering: { selectedCodeBlock: block },
+			project: { selectedCodeBlock: block },
 		});
 		const store = createStateManager(state);
 		const tooltip = createTooltip(store, createEvents());
@@ -775,10 +775,10 @@ functionEnd int`;
 			createCompilerResult(await compile(source.replaceAll('value', 'input')), state.compilerInputRevision)
 		);
 		expect(tooltip.getState().text.slice(0, 2).join(' ')).toBe('call identity (input: int -- int)');
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		expect(tooltip.getState().text[0]).toBe('drop (T -- )');
 		store.set('compiler.result', { ...state.compiler.result, compiledModules: {}, compiledFunctions: {} });
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().text[0]).toBe('call (args... -- returns...)');
 	});
 });
@@ -817,7 +817,7 @@ entryEnd`);
 		});
 		const state = createMockState({
 			compiler: { result: createCompilerResult(compiled, 0) },
-			codeBlockRendering: { selectedCodeBlock: inactive },
+			project: { selectedCodeBlock: inactive },
 		});
 		const store = createStateManager(state);
 		const tooltip = createTooltip(store, createEvents());
@@ -826,20 +826,20 @@ entryEnd`);
 			store.dispose();
 		});
 		expect(tooltip.getState().text.some(line => line.startsWith('after:'))).toBe(false);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().liveValues).toEqual([]);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
+		store.set('project.selectedCodeBlock.cursor.row', 0);
 		expect(tooltip.getState().text).not.toContain('execution order: 1');
 
-		store.set('codeBlockRendering.selectedCodeBlock', active);
+		store.set('project.selectedCodeBlock', active);
 		expect(tooltip.getState().text).toContain('after: [+int=2]');
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		expect(tooltip.getState().liveValues).toHaveLength(2);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 0);
+		store.set('project.selectedCodeBlock.cursor.row', 0);
 		expect(tooltip.getState().text).toContain('execution order: 1');
 
-		store.set('codeBlockRendering.selectedCodeBlock', inactive);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock', inactive);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		project.execution.reverse();
 		store.set('compiler.result', createCompilerResult(await compile(), state.compilerInputRevision));
 		expect(tooltip.getState().text).toContain('after: [+int=1]');

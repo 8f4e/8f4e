@@ -1,8 +1,8 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 
 /** One block's presented origin in viewport-relative pixels, independent of its logical position. Frame-scoped. */
 export interface RenderedCodeBlock {
-	readonly codeBlock: CodeBlockGraphicData;
+	readonly codeBlock: EditorCodeBlock;
 	readonly x: number;
 	readonly y: number;
 }
@@ -11,13 +11,11 @@ export interface RenderedCodeBlock {
 export interface RenderGeometry {
 	/** Blocks in drawing order. */
 	readonly blocks: readonly RenderedCodeBlock[];
-	readonly blocksByCodeBlock: ReadonlyMap<CodeBlockGraphicData, RenderedCodeBlock>;
+	readonly blocksByCodeBlock: ReadonlyMap<EditorCodeBlock, RenderedCodeBlock>;
 }
 
 /** Resolve a block's visual translation in viewport pixels, or leave its position unchanged. */
-export type CodeBlockOffsetResolver = (
-	codeBlock: CodeBlockGraphicData
-) => Readonly<{ x: number; y: number }> | undefined;
+export type CodeBlockOffsetResolver = (codeBlock: EditorCodeBlock) => Readonly<{ x: number; y: number }> | undefined;
 
 /** Prepare a frame's visual translations using the renderer's high-resolution timestamp in milliseconds. */
 export type CodeBlockPositionEffect = (
@@ -34,11 +32,11 @@ interface StoredBlockGeometry extends RenderedCodeBlock {
 /** Own one renderer's geometry storage and prepare it once before each frame's drawing passes. */
 export function createRenderGeometry() {
 	const blocks: StoredBlockGeometry[] = [];
-	const blocksByCodeBlock = new Map<CodeBlockGraphicData, StoredBlockGeometry>();
+	const blocksByCodeBlock = new Map<EditorCodeBlock, StoredBlockGeometry>();
 	const geometry: RenderGeometry = { blocks, blocksByCodeBlock };
 	return {
 		prepare(state: State, resolveOffset?: CodeBlockOffsetResolver, { x, y } = state.viewport): RenderGeometry {
-			const codeBlocks = state.codeBlockRendering.currentProject.blocks;
+			const codeBlocks = state.project.activeLevel.blocks;
 			let orderChanged = blocks.length !== codeBlocks.length;
 			for (let i = 0; i < codeBlocks.length; i++) {
 				const codeBlock = codeBlocks[i];

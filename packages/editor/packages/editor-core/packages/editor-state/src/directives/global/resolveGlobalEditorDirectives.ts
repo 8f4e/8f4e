@@ -1,6 +1,6 @@
 import type {
-	CodeBlockGraphicData,
 	CodeError,
+	EditorCodeBlock,
 	GlobalEditorDirectiveContext,
 	GlobalEditorDirectiveDefinition,
 	GlobalEditorDirectiveResolutionResult,
@@ -15,7 +15,7 @@ import modeDirective from './modeDirective';
 export const globalEditorDirectiveDefinitions: GlobalEditorDirectiveDefinition[] = [configDirective, modeDirective];
 
 export function resolveGlobalEditorDirectives(
-	codeBlocks: Pick<CodeBlockGraphicData, 'parsedDirectives' | 'projectPath' | 'creationIndex' | 'name' | 'blockType'>[],
+	codeBlocks: Pick<EditorCodeBlock, 'parsedDirectives' | 'projectPath' | 'creationIndex' | 'name' | 'blockType'>[],
 	definitions: GlobalEditorDirectiveDefinition[] = globalEditorDirectiveDefinitions
 ): GlobalEditorDirectiveResolutionResult {
 	const definitionMap = new Map(definitions.map(definition => [definition.name, definition]));

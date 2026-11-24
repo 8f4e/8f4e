@@ -1,7 +1,7 @@
-import type { CodeBlockGraphicData, EntryBounds } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EntryBounds } from '@8f4e/editor-state-types';
 
 export default function deriveEntryBounds(
-	blocks: readonly CodeBlockGraphicData[],
+	blocks: readonly EditorCodeBlock[],
 	paddingX: number,
 	paddingY: number
 ): EntryBounds[] {

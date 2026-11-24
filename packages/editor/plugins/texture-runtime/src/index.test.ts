@@ -115,11 +115,9 @@ async function setup({
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
 	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
-	const block = state.codeBlockRendering.currentProject.blocks.find(
-		block => block.name === 'screen' || block.name === 'visuals'
-	)!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
 	const frame = (
-		blocks: readonly RenderedCodeBlock[] = state.codeBlockRendering.currentProject.blocks.map(codeBlock => ({
+		blocks: readonly RenderedCodeBlock[] = state.project.activeLevel.blocks.map(codeBlock => ({
 			codeBlock,
 			x: codeBlock.x - state.viewport.x,
 			y: codeBlock.y - state.viewport.y,
@@ -174,7 +172,7 @@ async function setup({
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 		},
 		editConfig: (source: string) => {
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'config')!;
+			const block = state.project.activeLevel.blocks.find(block => block.name === 'config')!;
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }]);
 		},
 		release: async () =>
@@ -661,7 +659,7 @@ int8u* pixels &screen:rgba
 moduleEnd
 entryEnd`,
 	});
-	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'viewer')!;
+	const block = test.state.project.activeLevel.blocks.find(block => block.name === 'viewer')!;
 	expect(block.gaps.get(3)?.size).toBe(1);
 	const height = block.height;
 	test.frame();

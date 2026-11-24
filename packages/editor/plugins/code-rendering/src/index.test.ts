@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { createEditorDrawerRegistry, DrawContext } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { codeRenderingPlugin } from './index';
@@ -21,7 +21,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 		project: { ...EMPTY_DEFAULT_PROJECT, execution: [{ type: 'module', id: 0, entry: 'main', code }] },
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 	const drawers = createEditorDrawerRegistry();
 	const disposePlugin = codeRenderingPlugin.setup({
 		store,
@@ -48,7 +48,7 @@ function setup(code = ['module audio', 'int value 0', 'moduleEnd']) {
 		float32: new Float32Array(0),
 		float64: new Float64Array(0),
 	};
-	const render = (codeBlock: CodeBlockGraphicData = block) => {
+	const render = (codeBlock: EditorCodeBlock = block) => {
 		drawRows.mockClear();
 		drawFills.mockClear();
 		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
@@ -87,7 +87,7 @@ it('refreshes nested block highlights after edits, layout contributions, and gri
 
 it('draws line selection after nested highlights and before source text', () => {
 	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
-	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.store.set('project.selectedCodeBlock', test.block);
 	test.block.cursor.y = 32;
 	test.render();
 	expect(test.drawFills).toHaveBeenLastCalledWith(0, 32, PALETTE_INDICES.primarySoft, test.block.width, 16);
@@ -103,11 +103,11 @@ it('clips folded block highlights and restores them when selected for editing', 
 	test.render();
 	expect(test.block.displayModel.isCollapsed).toBe(true);
 	expect(test.drawFills.mock.calls[0]).toEqual([24, 32, PALETTE_INDICES.surfaceRaised1, test.block.width - 24, 32]);
-	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.store.set('project.selectedCodeBlock', test.block);
 	test.render();
 	expect(test.block.displayModel.isCollapsed).toBe(false);
 	expect(test.drawFills.mock.calls[0]?.[4]).toBe(48);
-	test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+	test.store.set('project.selectedCodeBlock', undefined);
 	test.render();
 	expect(test.drawFills.mock.calls[0]?.[4]).toBe(32);
 });
@@ -139,7 +139,7 @@ it('colors named note headers after loading a project', () => {
 	test.events.dispatch('loadProject', {
 		project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note named', 'Plain text', 'noteEnd'] }] },
 	});
-	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const block = test.state.project.activeLevel.blocks.find(block => block.blockType === 'note')!;
 	const rows = test.render(block);
 	const prefix = block.lineNumberColumnWidth + 1;
 	expect(rows[0][prefix]! >>> 16).toBe(PALETTE_INDICES.primaryBase);
@@ -188,13 +188,13 @@ it('retains prepared cells during info and dragging updates', () => {
 	const test = setup();
 	const before = test.render();
 	test.store.set('info.graphics', { fps: 60 });
-	test.store.set('codeBlockRendering.draggedCodeBlock', test.block);
+	test.store.set('project.draggedCodeBlock', test.block);
 	expect(test.render()[0]).toBe(before[0]);
 });
 
 it('refreshes only the completed blocks and retains prepared text for unrelated blocks', () => {
 	const test = setup();
-	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const env = test.state.project.activeLevel.blocks.find(block => block.name === 'env')!;
 	const envRows = test.render(env);
 	const before = test.render();
 	const contribution = test.store.layout.createContribution();
@@ -208,7 +208,7 @@ it('refreshes only the completed blocks and retains prepared text for unrelated 
 
 it('does not inspect a block whose source replacement has not completed', () => {
 	const test = setup();
-	const env = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const env = test.state.project.activeLevel.blocks.find(block => block.name === 'env')!;
 	const original = env.code;
 	const before = test.render(env);
 	// Another block can complete while generated source is being replaced in this block.
@@ -216,7 +216,7 @@ it('does not inspect a block whose source replacement has not completed', () => 
 	try {
 		expect(() =>
 			test.events.dispatch('codeBlockLayoutsChanged', {
-				project: test.state.codeBlockRendering.currentProject,
+				project: test.state.project.activeLevel,
 				codeBlocks: [test.block],
 			})
 		).not.toThrow();
@@ -258,10 +258,10 @@ it('refreshes visible text when entering and leaving project groups', () => {
 			],
 		},
 	});
-	const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	const group = test.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 	const before = test.render(group);
 	test.events.dispatch('openProjectGroup', { codeBlock: group });
-	const child = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'child')!;
+	const child = test.state.project.activeLevel.blocks.find(block => block.name === 'child')!;
 	expect(test.render(child)[2].at(-1)! & 0xffff).toBe('2'.charCodeAt(0));
 	expect(test.drawFills).toHaveBeenCalledOnce();
 	test.events.dispatch('goToParentProjectGroup');
@@ -286,7 +286,7 @@ it('isolates prepared text and highlights between editors and unregisters drawin
 
 it('draws contributed text backgrounds above nested shading and below selection and text', () => {
 	const test = setup(['module audio', 'if', 'push 1', 'ifEnd', 'moduleEnd']);
-	test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
+	test.store.set('project.selectedCodeBlock', test.block);
 	const unregister = test.drawers.registerCodeBlockTextBackgroundDrawer(({ draw, codeBlock }) => {
 		draw.drawFill(0, 32, PALETTE_INDICES.secondarySoft, codeBlock.width, 16);
 	});

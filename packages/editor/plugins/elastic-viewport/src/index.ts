@@ -1,7 +1,7 @@
 import type {
-	CodeBlockGraphicData,
 	CodeBlockOffsetResolver,
 	CodeBlockPositionEffect,
+	EditorCodeBlock,
 	EditorPlugin,
 	ProjectLevel,
 } from '@8f4e/editor-core';
@@ -47,7 +47,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 		spring: createViewportSpring(),
 		advance: createViewportSpringSolver(profile.frequency, maxOffsetPixels, springOptions),
 	}));
-	const blendsByBlock = new WeakMap<CodeBlockGraphicData, SpringBlend>();
+	const blendsByBlock = new WeakMap<EditorCodeBlock, SpringBlend>();
 	const entry = createEntryMotion(entryOptions, springOptions);
 	let previousProject: ProjectLevel | undefined;
 	let previousTime: number | undefined;
@@ -71,7 +71,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 		pendingCameraChange = source === 'pan' && pendingCameraChange !== 'jump' ? 'pan' : 'jump';
 	};
 
-	const prepareBlends = (blocks: readonly CodeBlockGraphicData[], cellArea: number) => {
+	const prepareBlends = (blocks: readonly EditorCodeBlock[], cellArea: number) => {
 		for (const block of blocks) {
 			const gridCells = (block.width * block.height) / cellArea;
 			if (blendsByBlock.get(block)?.gridCells === gridCells) continue;
@@ -111,8 +111,8 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 	};
 
 	const effect: CodeBlockPositionEffect = (state, frameTime, suppressOffsets) => {
-		const { viewport, codeBlockRendering } = state;
-		const { currentProject, draggedCodeBlock } = codeBlockRendering;
+		const { viewport, project } = state;
+		const { activeLevel, draggedCodeBlock } = project;
 		const previousX = viewportX;
 		const previousY = viewportY;
 		const elapsedMs = previousTime === undefined ? 0 : frameTime - previousTime;
@@ -126,7 +126,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 		const interactionSuppressed = prefersReducedMotion() || draggedCodeBlock !== undefined;
 		const reset =
 			previousTime === undefined ||
-			currentProject !== previousProject ||
+			activeLevel !== previousProject ||
 			viewport.vGrid !== vGrid ||
 			viewport.hGrid !== hGrid ||
 			elapsedMs < 0 ||
@@ -136,7 +136,7 @@ function createPositionEffect(options: ResolvedElasticViewportOptions) {
 			interactionSuppressed ||
 			wasInteractionSuppressed;
 
-		previousProject = currentProject;
+		previousProject = activeLevel;
 		previousTime = frameTime;
 		viewportX = viewport.x;
 		viewportY = viewport.y;
@@ -182,11 +182,11 @@ export function createElasticViewportPlugin(options: ElasticViewportPluginOption
 		setup: ({ store, events, drawers }) => {
 			const state = store.getState();
 			const { effect, prepareBlends, onViewportChanged } = createPositionEffect(tuning);
-			const refresh = ({ codeBlocks }: { codeBlocks: readonly CodeBlockGraphicData[] }) => {
+			const refresh = ({ codeBlocks }: { codeBlocks: readonly EditorCodeBlock[] }) => {
 				const { vGrid, hGrid } = state.viewport;
 				prepareBlends(codeBlocks, Math.max(1, vGrid * hGrid));
 			};
-			refresh({ codeBlocks: state.codeBlockRendering.currentProject.blocks });
+			refresh({ codeBlocks: state.project.activeLevel.blocks });
 			events.on('codeBlockLayoutsChanged', refresh);
 			events.on('viewportChanged', onViewportChanged);
 			const unregister = drawers.registerCodeBlockPositionEffect(effect);

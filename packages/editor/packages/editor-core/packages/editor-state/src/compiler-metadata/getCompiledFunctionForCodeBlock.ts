@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 
 export type CompiledFunction = NonNullable<NonNullable<State['compiler']['result']['compiledFunctions']>[string]>;
 type CompiledFunctionLookup = NonNullable<State['compiler']['result']['compiledFunctions']>;
@@ -32,12 +32,12 @@ export function getCompiledFunctionsByBlockId(
 }
 
 export function getCompiledFunctionForCodeBlock(
-	graphicData: CodeBlockGraphicData,
+	editorBlock: EditorCodeBlock,
 	state: State
 ): CompiledFunction | undefined {
-	if (graphicData.creationIndex === undefined) {
+	if (editorBlock.creationIndex === undefined) {
 		return undefined;
 	}
 
-	return getCompiledFunctionsByBlockId(state.compiler.result.compiledFunctions)?.get(graphicData.creationIndex);
+	return getCompiledFunctionsByBlockId(state.compiler.result.compiledFunctions)?.get(editorBlock.creationIndex);
 }

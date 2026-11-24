@@ -15,7 +15,7 @@ export default function createCaretPresentation({
 	const state = store.getState();
 	let x = 0;
 	const prepare = () => {
-		const block = state.codeBlockRendering.selectedCodeBlock;
+		const block = state.project.selectedCodeBlock;
 		if (!block) return;
 		const { row, col } = block.cursor;
 		const tabStops = block.tabStopsByLine[row] || [];
@@ -23,7 +23,7 @@ export default function createCaretPresentation({
 		x = (visualColumn + block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	};
 	const drawCaret: CodeBlockDrawer = ({ draw, codeBlock }) => {
-		if (state.editorMode !== 'edit' || state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
+		if (state.editorMode !== 'edit' || state.project.selectedCodeBlock !== codeBlock) return;
 		draw.drawGlyphs(
 			x,
 			codeBlock.cursor.y,
@@ -33,18 +33,17 @@ export default function createCaretPresentation({
 	};
 
 	const onLayoutsChanged = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.codeBlockRendering.currentProject) return;
-		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
-			prepare();
+		if (project !== state.project.activeLevel) return;
+		if (state.project.selectedCodeBlock && codeBlocks.includes(state.project.selectedCodeBlock)) prepare();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-	store.subscribe('codeBlockRendering.selectedCodeBlock', prepare);
+	store.subscribe('project.selectedCodeBlock', prepare);
 	prepare();
 	return {
 		drawCaret,
 		dispose: () => {
 			events.off('codeBlockLayoutsChanged', onLayoutsChanged);
-			store.unsubscribe('codeBlockRendering.selectedCodeBlock', prepare);
+			store.unsubscribe('project.selectedCodeBlock', prepare);
 		},
 	};
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/__tests__/helpers/mockEditorState';
 import { directiveDefinitions } from '../../directives/blockDirectiveRegistry';
-import { updateBlockSource } from './refreshSourceMetadata';
+import { refreshBlockSourceMetadata } from './refreshSourceMetadata';
 
 describe('source metadata project scope', () => {
 	it('recognizes a newly written root namespace pass', () => {
@@ -10,13 +10,13 @@ describe('source metadata project scope', () => {
 			projectPath: '',
 			blockType: 'unknown',
 		});
-		updateBlockSource(block, directiveDefinitions);
+		refreshBlockSourceMetadata(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(true);
 	});
 
 	it('keeps an existing project-scope block while it is temporarily empty', () => {
 		const block = createMockCodeBlock({ code: [''], projectPath: '', isProjectScope: true, blockType: 'unknown' });
-		updateBlockSource(block, directiveDefinitions);
+		refreshBlockSourceMetadata(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(true);
 	});
 
@@ -27,7 +27,7 @@ describe('source metadata project scope', () => {
 			isProjectScope: true,
 			blockType: 'unknown',
 		});
-		updateBlockSource(block, directiveDefinitions);
+		refreshBlockSourceMetadata(block, directiveDefinitions);
 		expect(block.isProjectScope).toBe(false);
 		expect(block.blockType).toBe('module');
 	});

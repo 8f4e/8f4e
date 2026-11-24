@@ -1,5 +1,5 @@
 import initState, {
-	createEditorEditingHandle,
+	createEditorCommandApi,
 	type EditorEditingHandle,
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
@@ -43,8 +43,8 @@ export {
 } from '@8f4e/editor-state';
 // Re-export types that consumers might need
 export type {
-	CodeBlockGraphicData,
 	CodeError,
+	EditorCodeBlock,
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
@@ -189,7 +189,7 @@ export default async function init(
 		});
 		cleanups.push(() => store.dispose());
 		registerWebUiConfig(store);
-		const editing = createEditorEditingHandle(store, events);
+		const editing = createEditorCommandApi(store, events);
 		cleanups.push(editing.dispose);
 		const drawers = createEditorDrawerRegistry();
 		cleanups.push(

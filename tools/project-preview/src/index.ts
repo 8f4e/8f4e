@@ -70,9 +70,9 @@ interface PreviewDialogButton {
 }
 
 interface PreviewState {
-	codeBlockRendering: {
-		currentProject: { blocks: PreviewCodeBlock[] };
-		rootProject: { blocks: PreviewCodeBlock[] };
+	project: {
+		activeLevel: { blocks: PreviewCodeBlock[] };
+		rootLevel: { blocks: PreviewCodeBlock[] };
 		selectedCodeBlock?: PreviewCodeBlock;
 	};
 	dialog: {
@@ -254,9 +254,7 @@ export async function generateProjectPreview({
 			await page.waitForFunction(
 				() => {
 					const state = (globalThis as unknown as PreviewWindow).state;
-					return Boolean(
-						state && state.projectChange.revision > 0 && state.codeBlockRendering.rootProject.blocks.length > 0
-					);
+					return Boolean(state && state.projectChange.revision > 0 && state.project.rootLevel.blocks.length > 0);
 				},
 				undefined,
 				{ timeout: timeoutMs }
@@ -325,7 +323,7 @@ export async function generateProjectPreview({
 		await page.evaluate(async previewPosition => {
 			const previewWindow = globalThis as unknown as PreviewWindow;
 			const state = previewWindow.state;
-			const blocks = state?.codeBlockRendering.rootProject.blocks;
+			const blocks = state?.project.rootLevel.blocks;
 			const targetBlock =
 				blocks?.find(block =>
 					block.parsedDirectives.some(
@@ -342,7 +340,7 @@ export async function generateProjectPreview({
 			state.viewport.x = targetBlock.x - previewPosition.x;
 			state.viewport.y = targetBlock.y - previewPosition.y;
 			state.featureFlags.canvasOverlays = false;
-			state.codeBlockRendering.selectedCodeBlock = undefined;
+			state.project.selectedCodeBlock = undefined;
 			state.dialogStack.length = 0;
 
 			await new Promise<void>(resolve => previewWindow.requestAnimationFrame(() => resolve()));

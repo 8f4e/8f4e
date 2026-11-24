@@ -2,10 +2,20 @@
 
 This package implements a platform-agnostic editor state machine. It owns the full application state shape and the logic that updates that state in response to internal events, without depending on platform specific APIs.
 
+## Source organization
+
+- [`project/`](src/project/README.md): project tree, source commands, transactions, history, and serialization.
+- [`layout/`](src/layout/README.md): block display rows, geometry, and plugin layout contributions.
+- [`directives/`](src/directives): block and project directives, parsing, and source editing.
+- [`compiler-metadata/`](src/compiler-metadata/README.md): compilation inputs and accepted compiler results.
+- [`memory/`](src/memory/README.md): compiler memory lookup, preparation, and reads.
+- `editor-config/`, `input/`, `viewport/`, `ui-state/`, and `diagnostics/`: their respective editor state and interactions.
+- `initializeEditorState.ts`: assembles and registers the state services and handlers.
+
 ## Execution entries
 
 Core owns entry definitions, module/project-group membership, and the padded world-space regions in
-`state.codeBlockRendering.entryBounds`. Each region contains `entryName`, `x`, `y`, `width`, and `height` for the
+`state.project.entryBounds`. Each region contains `entryName`, `x`, `y`, `width`, and `height` for the
 current project level. Hidden child-project geometry is excluded. Padding is eight horizontal and four vertical
 layout-grid cells; bounds refresh after layout, project, grid, and viewport changes.
 

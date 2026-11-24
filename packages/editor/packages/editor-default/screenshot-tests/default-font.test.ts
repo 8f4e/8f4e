@@ -45,7 +45,7 @@ test('uses PixelCode on coarse pointers and restores it after a project font ove
 		expect(editor.state.editorConfig.font).toBeUndefined();
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('mobile-pixelcode-default');
-		const block = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'mobile')!;
+		const block = editor.state.project.rootLevel.blocks.find(block => block.name === 'mobile')!;
 		const blockId = getEditorBlockId(block);
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
@@ -113,12 +113,12 @@ test('positions home using the installed mobile grid on the first frame and the 
 		});
 		editor.pauseRendering();
 		const state = editor.state;
-		const firstHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'mobileHome')!;
+		const firstHome = state.project.activeLevel.blocks.find(block => block.name === 'mobileHome')!;
 		const initialPosition = centerViewportOnCodeBlock(state.viewport, firstHome, { alignment: 'top' });
 		expect(firstFrame).toEqual({ ...initialPosition, vGrid: 6, hGrid: 12, gridSizeReady: true });
 		expect(placements).toEqual([{ name: 'mobileHome', vGrid: 6, hGrid: 12 }]);
 		expect(state.viewport).toMatchObject(initialPosition);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		await expect(canvas).toMatchScreenshot('mobile-home-position');
 
 		events.dispatch('loadProject', {
@@ -135,18 +135,16 @@ test('positions home using the installed mobile grid on the first frame and the 
 			{ name: 'mobileHome', vGrid: 6, hGrid: 12 },
 			{ name: 'nextHome', vGrid: 8, hGrid: 16 },
 		]);
-		const nextHome = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nextHome')!;
+		const nextHome = state.project.activeLevel.blocks.find(block => block.name === 'nextHome')!;
 		expect(state.viewport).toMatchObject(centerViewportOnCodeBlock(state.viewport, nextHome, { alignment: 'bottom' }));
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 
 		// Cancel a replacement while editing the new home's source. Placement must use the latest layout.
 		events.dispatch('loadProject', {
 			project: parseProjectSource('8f4e/v1\nnote cancelledFontHome\n; @mode edit\n; @home\n; @pos 10 10\nnoteEnd'),
 		});
 		expect(state.gridSizeReady).toBe(false);
-		const cancelledFontHome = state.codeBlockRendering.currentProject.blocks.find(
-			block => block.name === 'cancelledFontHome'
-		)!;
+		const cancelledFontHome = state.project.activeLevel.blocks.find(block => block.name === 'cancelledFontHome')!;
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
 			edits: [
@@ -168,9 +166,7 @@ test('positions home using the installed mobile grid on the first frame and the 
 		expect(state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
 		expect(placements.at(-1)).toEqual({ name: 'cancelledFontHome', vGrid: 8, hGrid: 16 });
 		expect(placements).toHaveLength(3);
-		const editedHome = state.codeBlockRendering.currentProject.blocks.find(
-			block => block.name === 'cancelledFontHome'
-		)!;
+		const editedHome = state.project.activeLevel.blocks.find(block => block.name === 'cancelledFontHome')!;
 		expect(state.viewport).toMatchObject(centerViewportOnCodeBlock(state.viewport, editedHome, { alignment: 'left' }));
 	} finally {
 		editor?.dispose();

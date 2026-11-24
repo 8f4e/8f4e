@@ -27,7 +27,7 @@ test('loads an initial project URL after generic editor startup', async () => {
 		});
 		await vi.waitFor(() =>
 			expect(
-				editor!.state.codeBlockRendering.currentProject.blocks.some(block =>
+				editor!.state.project.activeLevel.blocks.some(block =>
 					block.code.includes('Loaded from an explicit project URL.')
 				)
 			).toBe(true)

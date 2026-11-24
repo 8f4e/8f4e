@@ -1,14 +1,14 @@
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { EMPTY_DEFAULT_PROJECT } from './emptyDefaultProject';
-import type { ProjectEditService } from './transactions';
+import type { ProjectTransactionService } from './transactions';
 
 export default function registerProjectLoadCommands(
-	projectEdits: Pick<ProjectEditService, 'load'>,
+	projectTransactions: Pick<ProjectTransactionService, 'load'>,
 	events: EventDispatcher
 ): () => void {
 	const onLoad = ({ project }: { project: ProjectObjectModel }) => {
-		projectEdits.load(project);
+		projectTransactions.load(project);
 	};
 	const onNew = () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	events.on('loadProject', onLoad);

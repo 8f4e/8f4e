@@ -1,14 +1,14 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { gapCalculator, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createButtonDirectiveData } from '../helpers/data';
 import type { ButtonWidget } from '../types';
 
 export function registerButtonPreparation(
 	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>
+	buttonsByBlock: WeakMap<EditorCodeBlock, ButtonWidget[]>
 ): () => void {
 	const unsubscribe = subscribeToBlockPreparation(
 		store,
@@ -28,7 +28,7 @@ export function registerButtonPreparation(
 					width: state.viewport.vGrid * 4,
 					height: state.viewport.hGrid,
 					x: graphicData.width - 4 * state.viewport.vGrid,
-					y: gapCalculator(row, graphicData.gaps) * state.viewport.hGrid,
+					y: displayRowToGridRow(row, graphicData.gaps) * state.viewport.hGrid,
 					allocationUnitAddress: memory.allocationUnitAddress,
 					isInteger: memory.isInteger,
 					offValue: data.offValue,

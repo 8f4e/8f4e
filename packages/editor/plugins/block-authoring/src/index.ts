@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, EditorPlugin } from '@8f4e/editor-core';
+import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
 import { deleteCodeBlocks } from '@8f4e/editor-state';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 
@@ -62,7 +62,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			const name = blockType === 'note' ? '' : ` ${getRandomCodeBlockName()}`;
 			events.dispatch('insertCodeBlock', { x, y, code: [block.start + name, '', '', block.end] });
 		};
-		const onDelete = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
+		const onDelete = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
 			deleteCodeBlocks(store, [codeBlock]);
 		};

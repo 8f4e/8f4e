@@ -29,10 +29,10 @@ async function setup(source: string) {
 	store.set('editorMode', 'edit');
 	store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-	store.set('codeBlockRendering.selectedCodeBlock', block);
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
+	store.set('project.selectedCodeBlock', block);
 	store.set(
-		'codeBlockRendering.selectedCodeBlock.cursor.row',
+		'project.selectedCodeBlock.cursor.row',
 		block.code.findIndex(line => line.includes(' input'))
 	);
 	const buffer = new ArrayBuffer(65536);

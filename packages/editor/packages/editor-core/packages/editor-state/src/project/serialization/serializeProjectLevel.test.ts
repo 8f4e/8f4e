@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, ProjectLevel } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, ProjectLevel } from '@8f4e/editor-state-types';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from '~/__tests__/helpers/mockEditorState';
@@ -84,7 +84,7 @@ describe('serializeProjectLevel', () => {
 	});
 
 	it('sorts code blocks by grid position before mapping', () => {
-		const blocks: CodeBlockGraphicData[] = [
+		const blocks: EditorCodeBlock[] = [
 			createMockCodeBlock({ name: 'a', code: ['line 1'], gridX: 20, gridY: 0 }),
 			createMockCodeBlock({ name: 'b', code: ['line 2'], gridX: 0, gridY: 10 }),
 			createMockCodeBlock({ name: 'c', code: ['line 3'], gridX: 0, gridY: 0 }),
@@ -96,7 +96,7 @@ describe('serializeProjectLevel', () => {
 	});
 
 	it('stores explicit disabled state when a block is disabled', () => {
-		const blocks: CodeBlockGraphicData[] = [createMockCodeBlock({ name: 'disabled', code: ['code'], disabled: true })];
+		const blocks: EditorCodeBlock[] = [createMockCodeBlock({ name: 'disabled', code: ['code'], disabled: true })];
 
 		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
@@ -105,7 +105,7 @@ describe('serializeProjectLevel', () => {
 	});
 
 	it('does not include disabled field when block is not disabled', () => {
-		const blocks: CodeBlockGraphicData[] = [createMockCodeBlock({ name: 'enabled', code: ['code'], disabled: false })];
+		const blocks: EditorCodeBlock[] = [createMockCodeBlock({ name: 'enabled', code: ['code'], disabled: false })];
 
 		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
 
@@ -114,7 +114,7 @@ describe('serializeProjectLevel', () => {
 	});
 
 	it('includes all notes regardless of their names in the exported project', () => {
-		const blocks: CodeBlockGraphicData[] = [
+		const blocks: EditorCodeBlock[] = [
 			createMockCodeBlock({
 				name: 'local',
 				creationIndex: 0,
@@ -141,7 +141,7 @@ describe('serializeProjectLevel', () => {
 	});
 
 	it('stores module entries on module blocks', () => {
-		const blocks: CodeBlockGraphicData[] = [
+		const blocks: EditorCodeBlock[] = [
 			createMockCodeBlock({
 				name: 'main',
 				creationIndex: 1,
@@ -337,7 +337,7 @@ describe('serializeProjectLevel', () => {
 			childProject: { entries: ['main'], path: '', blocks: [second, first] },
 		});
 		const blocks = [second, group, first];
-		const reorder = (block: CodeBlockGraphicData): CodeBlockGraphicData =>
+		const reorder = (block: EditorCodeBlock): EditorCodeBlock =>
 			({
 				...Object.fromEntries(Object.entries(block).reverse()),
 				...(block.childProject === undefined
@@ -349,7 +349,7 @@ describe('serializeProjectLevel', () => {
 								blocks: [...block.childProject.blocks].reverse().map(reorder),
 							},
 						}),
-			}) as CodeBlockGraphicData;
+			}) as EditorCodeBlock;
 		const original = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
 		const reordered = serializeProjectLevel({
 			path: '',

@@ -3,7 +3,7 @@ import { getVisualLineWidth } from './text-geometry/tabLayout';
 
 /**
  * Computes the grid width required for a code block.
- * Matches the sizing logic used by codeBlockRendering effect.
+ * Matches the sizing logic used by project effect.
  *
  * @param code - Code block represented as an array of lines
  * @param tabStopsByLine - Prepared tab stops for each raw source line
@@ -18,7 +18,7 @@ export default function getCodeBlockGridWidth(
 	// Calculate line number column width
 	const lineNumberColumnWidth = code.length.toString().length;
 
-	// Prepare code with line numbers (matching codeBlockRendering logic)
+	// Prepare code with line numbers (matching project logic)
 	const codeWithLineNumbers = code.map((line, index) => {
 		const prefix = `${index}`.padStart(lineNumberColumnWidth, '0') + ' ';
 		return prefix.length + getVisualLineWidth(line, tabStopsByLine[index] || []);

@@ -14,9 +14,9 @@ describe('serializeToProject', () => {
 			}),
 		];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 			},
 			envConstantContributions: {},
 			viewport: {
@@ -43,9 +43,9 @@ describe('serializeToProject', () => {
 			}),
 		];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 			},
 		});
 
@@ -91,9 +91,9 @@ describe('serializeToProject', () => {
 			}),
 		];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 			},
 		});
 

@@ -1,6 +1,6 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
-type SpatialOrder = Pick<CodeBlockGraphicData, 'gridX' | 'gridY' | 'creationIndex'>;
+type SpatialOrder = Pick<EditorCodeBlock, 'gridX' | 'gridY' | 'creationIndex'>;
 
 /** Canonical project order: left to right, then top to bottom, then creation order. */
 export default function compareCodeBlocksByPosition(a: SpatialOrder, b: SpatialOrder): number {

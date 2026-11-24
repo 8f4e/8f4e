@@ -57,7 +57,7 @@ entryEnd`
 		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
 		if (!initialConfig) {
 			expect(editor.state.editorConfigSchemaContributions.keyboard).toBeUndefined();
-			const config = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+			const config = editor.state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 			editor.editing.applyEdits({
 				expectedRevision: editor.editing.getRevision(),
 				edits: [
@@ -116,7 +116,7 @@ entryEnd`,
 	);
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
 	vi.spyOn(performance, 'now').mockReturnValue(0);
-	const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+	const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
@@ -207,7 +207,7 @@ entryEnd`,
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
 	expect(fetchAsset).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.binaryAssets).toBeUndefined();
-	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.project.activeLevel.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -268,7 +268,7 @@ functionEnd`);
 	});
 	expect(requestAccess).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.midi).toBeUndefined();
-	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.project.activeLevel.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [

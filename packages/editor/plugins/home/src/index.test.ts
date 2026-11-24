@@ -43,16 +43,13 @@ function setup(withGrid = true) {
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
 	const load = (source: string) =>
 		events.dispatch('loadProject', { project: parseProjectSource(`8f4e/v1\n${source}`) });
-	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const block = (name: string) => state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const position = () => ({ x: state.viewport.x, y: state.viewport.y });
 	const expectedPosition = (name: string, alignment: ViewportBlockAlignment) =>
 		centerViewportOnCodeBlock(state.viewport, block(name), { alignment });
 	const gridPending = () => markGridSizePending(state);
 	const gridReady = (grid = { vGrid: 6, hGrid: 12 }) => setGridSize(state, events, grid);
-	const resolveInitial = (
-		project: ProjectLevel = state.codeBlockRendering.currentProject,
-		position = { x: 0, y: 0 }
-	) => {
+	const resolveInitial = (project: ProjectLevel = state.project.activeLevel, position = { x: 0, y: 0 }) => {
 		events.dispatch('resolveInitialProjectViewport', { project, position });
 		return position;
 	};
@@ -89,7 +86,7 @@ describe('home viewport navigation', () => {
 		const test = setup();
 		test.load(`note target\n; @pos 100 200\n; @home${args}\nnoteEnd`);
 		expect(test.position()).toEqual(test.expectedPosition('target', alignment));
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 	});
 
 	it('uses the first valid home block even if disabled, and its last valid alignment', () => {
@@ -116,7 +113,7 @@ noteEnd`);
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('goHome');
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('first'));
+		expect(test.state.project.selectedCodeBlock).toBe(test.block('first'));
 		expect(test.position()).toEqual(test.expectedPosition('first', 'left'));
 		expect(changed).toHaveBeenCalledExactlyOnceWith({
 			previousX: 128,
@@ -162,7 +159,7 @@ noteEnd`);
 			{ codeBlock: second, code: ['note second', '; @pos 200 300', '; @home top', 'noteEnd'] },
 		]);
 		test.events.dispatch('goHome');
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(second);
+		expect(test.state.project.selectedCodeBlock).toBe(second);
 		expect(test.position()).toEqual(test.expectedPosition('second', 'top'));
 	});
 
@@ -170,11 +167,11 @@ noteEnd`);
 		const test = setup();
 		test.load('note target\n; @pos 100 200\n; @home diagonal\nnoteEnd');
 		expect(test.resolveInitial(undefined, { x: 128, y: 256 })).toEqual({ x: 128, y: 256 });
-		test.store.set('codeBlockRendering.selectedCodeBlock', test.block('target'));
+		test.store.set('project.selectedCodeBlock', test.block('target'));
 		Object.assign(test.state.viewport, { x: 128, y: 256 });
 		test.events.dispatch('goHome');
 		expect(test.position()).toEqual({ x: 0, y: 0 });
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
+		expect(test.state.project.selectedCodeBlock).toBe(test.block('target'));
 	});
 
 	it('resolves home within the requested project level', () => {
@@ -194,15 +191,15 @@ entryEnd
 groupEnd
 entryEnd`);
 		const group = test.block('audio');
-		const rootProject = test.state.codeBlockRendering.rootProject;
+		const rootLevel = test.state.project.rootLevel;
 		const expectedRootPosition = test.expectedPosition('rootHome', 'left');
 		test.events.dispatch('openProjectGroup', { codeBlock: group });
 		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
-		expect(test.resolveInitial(rootProject)).toEqual(expectedRootPosition);
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.resolveInitial(rootLevel)).toEqual(expectedRootPosition);
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 		test.events.dispatch('goHome');
 		expect(test.position()).toEqual(test.expectedPosition('child', 'right'));
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('child'));
+		expect(test.state.project.selectedCodeBlock).toBe(test.block('child'));
 	});
 
 	it('contributes the main menu action only in edit mode, even without home blocks', () => {
@@ -222,7 +219,7 @@ entryEnd`);
 		Object.assign(test.state.viewport, { x: 128, y: 256 });
 		test.events.dispatch('goHome');
 		expect(test.position()).toEqual({ x: 128, y: 256 });
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 		expect(test.unregisterMenuItem).toHaveBeenCalledOnce();
 	});
 });
@@ -239,7 +236,7 @@ describe('home navigation while waiting for grid dimensions', () => {
 		test.gridReady();
 		expect(test.block('target')).toMatchObject({ x: 600, y: 2400 });
 		expect(test.position()).toEqual(test.expectedPosition('target', 'top'));
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
 		expect(resolveInitial).toHaveBeenCalledOnce();
 
 		const homePosition = test.position();
@@ -288,7 +285,7 @@ noteEnd`);
 		updateViewport(test.state, 32, 48, test.events, 'pan');
 		test.gridPending();
 		test.events.dispatch('goHome');
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block('target'));
+		expect(test.state.project.selectedCodeBlock).toBe(test.block('target'));
 		expect(test.block('target').isCollapsed).toBe(false);
 		expect(test.position()).toEqual(test.expectedPosition('target', 'bottom'));
 		const homePosition = test.position();
@@ -391,7 +388,7 @@ noteEnd`);
 		};
 		test.events.dispatch('pointerdown', pointer);
 		test.events.dispatch('pointerup', { ...pointer, buttons: 0 });
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
+		const blocks = test.state.project.activeLevel.blocks;
 		expect(blocks.indexOf(first)).toBeGreaterThan(blocks.indexOf(second));
 		expect(test.resolveInitial()).toEqual(test.expectedPosition('second', 'right'));
 
@@ -400,7 +397,7 @@ noteEnd`);
 		]);
 		expect(test.state.codeErrors.home).toBe(errors);
 		test.events.dispatch('goHome');
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(second);
+		expect(test.state.project.selectedCodeBlock).toBe(second);
 	});
 
 	it('refreshes duplicate errors after source edits and project replacement', () => {

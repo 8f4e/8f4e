@@ -35,7 +35,7 @@ describe('project URL loader plugin', () => {
 			{ id: 'project-url', message: 'Loading project...', status: 'loading' },
 		]);
 		await preparing;
-		expect(test.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'remote')).toBe(true);
+		expect(test.state.project.activeLevel.blocks.some(block => block.name === 'remote')).toBe(true);
 		expect(test.fetch).toHaveBeenCalledWith(url, { cache: 'no-store' });
 		expect(test.state.loadingIndicators).toMatchObject([{ id: 'project-url', status: 'done' }]);
 	});

@@ -47,7 +47,7 @@ test('creates and deletes a block through authoring contributions and menu prese
 			index: editor.state.contextMenu.items.findIndex(item => item.title === 'New Module'),
 			...position,
 		});
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'quark')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'quark')!;
 		expect(block.code).toEqual(['module quark', '; @pos 20 9', '', '', 'moduleEnd']);
 		const x = block.x + block.width - editor.state.viewport.vGrid;
 		const y = block.y + block.height - editor.state.viewport.hGrid;
@@ -62,7 +62,7 @@ test('creates and deletes a block through authoring contributions and menu prese
 			x,
 			y,
 		});
-		expect(editor.state.codeBlockRendering.currentProject.blocks).not.toContain(block);
+		expect(editor.state.project.activeLevel.blocks).not.toContain(block);
 	} finally {
 		random.mockRestore();
 		editor.dispose();

@@ -1,6 +1,6 @@
 import type { EditorDirectiveDefinition, ParsedDirectiveRecord } from '@8f4e/editor-state-types';
 
-export interface PosParseResult {
+export interface PositionDirectiveData {
 	x: number;
 	y: number;
 }
@@ -14,11 +14,11 @@ function parseStrictInteger(value: string): number | undefined {
 	return parsed;
 }
 
-const posDirectivePlugin: EditorDirectiveDefinition = {
+const positionDirectiveDefinition: EditorDirectiveDefinition = {
 	name: 'pos',
 };
 
-export function createPosDirectiveData(directive: ParsedDirectiveRecord): PosParseResult | undefined {
+export function parsePositionDirectiveRecord(directive: ParsedDirectiveRecord): PositionDirectiveData | undefined {
 	if (directive.args.length !== 2) {
 		return undefined;
 	}
@@ -54,16 +54,18 @@ export function createPosDirectiveData(directive: ParsedDirectiveRecord): PosPar
  *   'output out 1',
  *   'moduleEnd'
  * ];
- * const result = parsePos(parseBlockDirectives(code)); // { x: 10, y: 20 }
+ * const result = parsePositionDirective(parseBlockDirectives(code)); // { x: 10, y: 20 }
  * ```
  */
-export default function parsePos(parsedDirectives: ParsedDirectiveRecord[]): PosParseResult | undefined {
+export default function parsePositionDirective(
+	parsedDirectives: ParsedDirectiveRecord[]
+): PositionDirectiveData | undefined {
 	const directives = parsedDirectives.filter(
-		directive => directive.prefix === '@' && directive.name === posDirectivePlugin.name
+		directive => directive.prefix === '@' && directive.name === positionDirectiveDefinition.name
 	);
 	if (directives.length !== 1) {
 		return undefined;
 	}
 
-	return createPosDirectiveData(directives[0]);
+	return parsePositionDirectiveRecord(directives[0]);
 }

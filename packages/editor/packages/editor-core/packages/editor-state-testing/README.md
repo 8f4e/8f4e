@@ -16,7 +16,7 @@ import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing
 const blocks = [createMockCodeBlock({ code: ['module voice', 'moduleEnd'] })];
 const state = createMockState({
 	compiler: { isCompiling: true },
-	codeBlockRendering: { rootProject: { path: '', blocks, entries: [] } },
+	project: { rootLevel: { path: '', blocks, entries: [] } },
 	callbacks: {},
 });
 ```
@@ -31,7 +31,7 @@ const nested = [createMockCodeBlock({ name: 'voice', projectPath: 'Audio' })];
 const audio = { path: 'Audio', blocks: nested, entries: [] };
 const root = { path: '', blocks: [createMockCodeBlock({ name: 'Audio', childProject: audio })], entries: [] };
 const state = createMockState({
-	codeBlockRendering: { rootProject: root, currentProject: audio },
+	project: { rootLevel: root, activeLevel: audio },
 });
 ```
 

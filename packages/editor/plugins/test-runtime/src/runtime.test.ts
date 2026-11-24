@@ -102,7 +102,7 @@ describe('TestRuntime lifecycle', () => {
 			},
 		]);
 		const block = createMockCodeBlock({ creationIndex: 7, disabled: true });
-		state.codeBlockRendering.rootProject.blocks = [block];
+		state.project.rootLevel.blocks = [block];
 		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.codeErrors['test-runtime']).toEqual([]);
 		expect(state.assertionResults).toHaveLength(1);

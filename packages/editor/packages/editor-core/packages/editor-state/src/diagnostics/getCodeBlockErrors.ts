@@ -1,8 +1,8 @@
-import type { CodeBlockGraphicData, CodeError, ProjectLevel, State } from '@8f4e/editor-state-types';
+import type { CodeError, EditorCodeBlock, ProjectLevel, State } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import { walkProjectBlocks } from '../project/tree';
 
-function getProjectScopePath(codeBlock: CodeBlockGraphicData) {
+function getProjectScopePath(codeBlock: EditorCodeBlock) {
 	return codeBlock.isProjectScope
 		? codeBlock.projectPath
 		: codeBlock.childProject
@@ -10,7 +10,7 @@ function getProjectScopePath(codeBlock: CodeBlockGraphicData) {
 			: undefined;
 }
 
-export default function getCodeBlockErrors(state: State, codeBlock: CodeBlockGraphicData) {
+export default function getCodeBlockErrors(state: State, codeBlock: EditorCodeBlock) {
 	const projectScopePath = getProjectScopePath(codeBlock);
 	return Object.values(state.codeErrors)
 		.flat()
@@ -24,7 +24,7 @@ export default function getCodeBlockErrors(state: State, codeBlock: CodeBlockGra
 
 /** Index the current tree once, retaining the first block matching either identity or project scope. */
 export function createCodeErrorBlockLookup(project: ProjectLevel) {
-	type Entry = { codeBlock: CodeBlockGraphicData; order: number };
+	type Entry = { codeBlock: EditorCodeBlock; order: number };
 	const blocksById = new Map<number, Entry>();
 	const blocksByScope = new Map<string, Entry>();
 	let order = 0;
@@ -34,7 +34,7 @@ export function createCodeErrorBlockLookup(project: ProjectLevel) {
 		const scope = getProjectScopePath(codeBlock);
 		if (scope !== undefined && !blocksByScope.has(scope)) blocksByScope.set(scope, entry);
 	}
-	return (error: CodeError): CodeBlockGraphicData | undefined => {
+	return (error: CodeError): EditorCodeBlock | undefined => {
 		const document = error.codeBlockId === undefined ? undefined : blocksById.get(error.codeBlockId);
 		const scope = error.projectGroupPath === undefined ? undefined : blocksByScope.get(error.projectGroupPath);
 		if (!document) return scope?.codeBlock;

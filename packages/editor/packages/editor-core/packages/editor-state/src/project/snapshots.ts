@@ -1,9 +1,9 @@
 import type {
-	CodeBlockGraphicData,
-	CodeBlockRendering,
 	EditorBlockSnapshot,
+	EditorCodeBlock,
 	EditorLevelSnapshot,
 	EditorProjectSnapshot,
+	EditorProjectState,
 	ProjectLevel,
 } from '@8f4e/editor-state-types';
 import {
@@ -18,7 +18,7 @@ import getCodeBlockNameFromSource from './blocks/getCodeBlockNameFromSource';
 import { isEnvironmentSource } from './generatedEnvironment';
 import getHighestProjectBlockId from './serialization/getHighestProjectBlockId';
 
-function captureBlock(block: CodeBlockGraphicData): EditorBlockSnapshot {
+function captureBlock(block: EditorCodeBlock): EditorBlockSnapshot {
 	return {
 		creationIndex: block.creationIndex,
 		code: [...block.code],
@@ -30,7 +30,7 @@ function captureBlock(block: CodeBlockGraphicData): EditorBlockSnapshot {
 	};
 }
 
-function captureLevel(level: ProjectLevel, environment?: CodeBlockGraphicData): EditorLevelSnapshot {
+function captureLevel(level: ProjectLevel, environment?: EditorCodeBlock): EditorLevelSnapshot {
 	return {
 		path: level.path,
 		entries: [...level.entries],
@@ -43,18 +43,18 @@ function captureLevel(level: ProjectLevel, environment?: CodeBlockGraphicData): 
 
 /** Capture authored source and retained draft facts independently of generated source and view state. */
 export function captureProjectSnapshot(
-	rendering: CodeBlockRendering,
-	environment?: CodeBlockGraphicData
+	projectState: EditorProjectState,
+	environment?: EditorCodeBlock
 ): EditorProjectSnapshot {
 	return {
-		rootProject: captureLevel(rendering.rootProject, environment),
-		nextCodeBlockCreationIndex: rendering.nextCodeBlockCreationIndex,
+		rootLevel: captureLevel(projectState.rootLevel, environment),
+		nextCodeBlockCreationIndex: projectState.nextCodeBlockCreationIndex,
 	};
 }
 
 /** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
 export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
-	return JSON.stringify(a.rootProject) === JSON.stringify(b.rootProject);
+	return JSON.stringify(a.rootLevel) === JSON.stringify(b.rootLevel);
 }
 
 /** Translate a loaded compiler project into authored editor source, discarding the root env. */
@@ -98,6 +98,6 @@ export function snapshotFromProjectModel(project: ProjectObjectModel): EditorPro
 			],
 		};
 	};
-	const rootProject = createLevel(authoredProject, ROOT_PROJECT_GROUP_PATH, true);
-	return { rootProject, nextCodeBlockCreationIndex };
+	const rootLevel = createLevel(authoredProject, ROOT_PROJECT_GROUP_PATH, true);
+	return { rootLevel, nextCodeBlockCreationIndex };
 }

@@ -17,7 +17,7 @@ it('returns the created block after entry assignment, source preparation and lay
 			code: ['module added', '; @tab 40', '\tvalue', 'moduleEnd'],
 		})!;
 		const state = store.getState();
-		expect(state.codeBlockRendering.currentProject.blocks).toContain(block);
+		expect(state.project.activeLevel.blocks).toContain(block);
 		expect(block).toMatchObject({ entry: 'entry', gridX: 10, gridY: 4 });
 		expect(block.tabStopsByLine).toEqual([[], [], [40], [40], [40]]);
 		expect(block.width).toBe(51 * state.viewport.vGrid);

@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, ContextMenuItem, State } from '@8f4e/editor-state-types';
+import type { ContextMenuItem, EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 
 const functionBlockType = documentBlockInstructionByType.function.type;
@@ -6,7 +6,7 @@ const noteBlockType = documentBlockInstructionByType.note.type;
 
 export const moduleMenu = (
 	state: State,
-	codeBlock: CodeBlockGraphicData,
+	codeBlock: EditorCodeBlock,
 	items: readonly ContextMenuItem[]
 ): ContextMenuItem[] => {
 	const blockType = codeBlock.blockType;
@@ -24,7 +24,7 @@ export const moduleMenu = (
 	const isDisabled = codeBlock.disabled;
 
 	return [
-		...(state.codeBlockRendering.currentProject.blocks !== state.codeBlockRendering.rootProject.blocks
+		...(state.project.activeLevel.blocks !== state.project.rootLevel.blocks
 			? [{ title: 'Go back', action: 'goToParentProjectGroup', close: true }]
 			: []),
 		...(isProjectGroup

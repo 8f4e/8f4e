@@ -67,13 +67,11 @@ test('renders two phases of the selection animation', async () => {
 	});
 	editor.pauseRendering();
 	const state = editor.state;
-	const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+	const group = state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
 	editor.navigation.openGroup(getEditorBlockId(group));
 	state.viewport.x = 0;
 	state.viewport.y = 0;
-	state.codeBlockRendering.selectedCodeBlock = state.codeBlockRendering.currentProject.blocks.find(
-		block => block.name === 'selected'
-	);
+	state.project.selectedCodeBlock = state.project.activeLevel.blocks.find(block => block.name === 'selected');
 	const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 	try {
 		editor.renderFrame();

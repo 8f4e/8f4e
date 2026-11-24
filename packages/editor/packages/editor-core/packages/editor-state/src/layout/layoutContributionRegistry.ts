@@ -1,21 +1,21 @@
 import type {
-	CodeBlockGraphicData,
 	CodeBlockLayoutContext,
 	CodeBlockLayoutContribution,
+	EditorCodeBlock,
 	EditorLayoutRegistry,
 } from '@8f4e/editor-state-types';
 
 export interface LayoutRegistry extends EditorLayoutRegistry {
-	getContribution: (codeBlock: CodeBlockGraphicData) => CodeBlockLayoutContribution;
+	getContribution: (codeBlock: EditorCodeBlock) => CodeBlockLayoutContribution;
 	publish: (context: CodeBlockLayoutContext) => void;
 }
 
-export function createLayoutRegistry(onChange: (codeBlock?: CodeBlockGraphicData) => void): LayoutRegistry {
-	const contributions = new Set<WeakMap<CodeBlockGraphicData, CodeBlockLayoutContribution>>();
+export function createLayoutRegistry(onChange: (codeBlock?: EditorCodeBlock) => void): LayoutRegistry {
+	const contributions = new Set<WeakMap<EditorCodeBlock, CodeBlockLayoutContribution>>();
 	const listeners = new Set<(context: CodeBlockLayoutContext) => void>();
 	return {
 		createContribution: () => {
-			const values = new WeakMap<CodeBlockGraphicData, CodeBlockLayoutContribution>();
+			const values = new WeakMap<EditorCodeBlock, CodeBlockLayoutContribution>();
 			contributions.add(values);
 			return {
 				update: (codeBlock, value) => {

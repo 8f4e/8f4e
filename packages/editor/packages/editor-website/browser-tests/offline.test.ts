@@ -101,9 +101,7 @@ test('installs a complete offline cache and cold-starts with lazy plugins and a 
 	await expect
 		.poll(() =>
 			offlinePage.evaluate(
-				() =>
-					window.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'offlinePlot')?.gaps.get(3)
-						?.size
+				() => window.state.project.activeLevel.blocks.find(block => block.name === 'offlinePlot')?.gaps.get(3)?.size
 			)
 		)
 		.toBeGreaterThan(0);

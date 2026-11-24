@@ -4,7 +4,7 @@
  */
 
 import type { ProjectGroupPath } from '@8f4e/language-spec';
-import type { CodeBlockGraphicData } from '../features/code-blocks/types';
+import type { EditorCodeBlock } from '../features/code-blocks/types';
 import type { EditorEventArguments, EditorEventPayload } from './events';
 
 /**
@@ -88,7 +88,7 @@ export interface CodeBlockPointerDownEvent {
 	buttons: number;
 	relativeX: number;
 	relativeY: number;
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 	/** A control sets this when it takes ownership of the pointer. */
 	stopPropagation: boolean;
 }

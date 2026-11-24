@@ -1,10 +1,10 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { ProjectMemoryExposure, ResolvedProjectMemoryExposure } from '@8f4e/language-spec';
 import { tryParseProjectMemoryExposureLine } from '@8f4e/project-preparser';
 import getCodeBlockMemoryScope from './getCodeBlockMemoryScope';
 
 /** Collect complete exposure declarations during source preparation for layout and serialization. */
-export function updateProjectGroupMemoryExposureDeclarations(block: CodeBlockGraphicData): void {
+export function updateProjectGroupMemoryExposureDeclarations(block: EditorCodeBlock): void {
 	if (block.childProject === undefined) return;
 	block.projectMemoryExposures = block.code.flatMap((line, lineNumber): ProjectMemoryExposure[] => {
 		const exposure = tryParseProjectMemoryExposureLine(line);
@@ -14,7 +14,7 @@ export function updateProjectGroupMemoryExposureDeclarations(block: CodeBlockGra
 
 /** Use compiler-resolved targets and rows, following edits to the rows while recompilation is pending. */
 export function getProjectGroupMemoryExposures(
-	block: CodeBlockGraphicData,
+	block: EditorCodeBlock,
 	state: Pick<State, 'compiler'>
 ): readonly ResolvedProjectMemoryExposure[] {
 	const scope = getCodeBlockMemoryScope(block);

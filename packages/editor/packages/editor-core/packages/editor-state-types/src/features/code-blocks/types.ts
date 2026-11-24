@@ -56,7 +56,7 @@ export interface ParsedDirectiveRecord {
  * Runtime source and logical layout data for a code block.
  * World-space positions are used for layout and interaction; web-ui derives its own per-frame rendering geometry.
  */
-export interface CodeBlockGraphicData {
+export interface EditorCodeBlock {
 	width: number;
 	height: number;
 	code: string[];
@@ -153,19 +153,17 @@ export interface ProjectLevel {
 	/** Settled entry definitions local to this level, including empty entries and each execution block's assigned entry. */
 	entries: ProjectEntryName[];
 	path: ProjectGroupPath;
-	blocks: CodeBlockGraphicData[];
+	blocks: EditorCodeBlock[];
 	viewport?: Position;
-	selectedBlock?: CodeBlockGraphicData;
+	selectedBlock?: EditorCodeBlock;
 }
 
-/**
- * Code block rendering state for rendering code blocks and UI elements.
- */
-export type CodeBlockRendering = {
+/** Live project tree, active level, selection and logical block interaction state. */
+export type EditorProjectState = {
 	/** Recursive project-tree root. */
-	rootProject: ProjectLevel;
-	/** Direct reference to the project level currently rendered by the editor. */
-	currentProject: ProjectLevel;
+	rootLevel: ProjectLevel;
+	/** Direct reference to the project level currently open in the editor. */
+	activeLevel: ProjectLevel;
 	/** Padded bounds of entries containing modules or project groups in the current level. */
 	entryBounds: EntryBounds[];
 	/**
@@ -174,6 +172,6 @@ export type CodeBlockRendering = {
 	 * This is a runtime-only value and is NOT persisted.
 	 */
 	nextCodeBlockCreationIndex: number;
-	draggedCodeBlock?: CodeBlockGraphicData;
-	selectedCodeBlock?: CodeBlockGraphicData;
+	draggedCodeBlock?: EditorCodeBlock;
+	selectedCodeBlock?: EditorCodeBlock;
 };

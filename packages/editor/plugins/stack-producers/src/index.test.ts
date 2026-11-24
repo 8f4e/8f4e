@@ -25,7 +25,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', { project });
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'test')!;
 	store.set('compiler.result', {
 		...compiled,
 		inputRevision: state.compilerInputRevision,
@@ -53,8 +53,8 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 		return draw.drawFill.mock.calls;
 	};
 	const select = (row: number) => {
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', row);
 	};
 	cleanups.push(() => {
 		disposeProducers();
@@ -85,7 +85,7 @@ it.each(['module', 'function'])(
 		expect(test.drawBackground().map(([, y]) => y)).toEqual([16, 32]);
 		test.select(1);
 		expect(test.drawBackground()).toEqual([]);
-		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		test.store.set('project.selectedCodeBlock', undefined);
 		expect(test.drawBackground()).toEqual([]);
 	}
 );

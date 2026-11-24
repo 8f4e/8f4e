@@ -7,9 +7,9 @@ describe('menus - main menu', () => {
 		const rootCodeBlocks = [];
 		const nestedProjectCodeBlocks = [];
 		const mockState = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: nestedProjectCodeBlocks },
 			},
 		});
 
@@ -33,7 +33,7 @@ describe('menus - main menu', () => {
 	it('starts with the new-project action when there are no navigation actions', () => {
 		const mockState = createMockState({
 			editorMode: 'edit',
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [] } },
+			project: { activeLevel: { entries: [], path: '', blocks: [] } },
 		});
 
 		const menu = mainMenu(mockState, []);

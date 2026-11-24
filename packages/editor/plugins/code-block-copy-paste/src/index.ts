@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { insertCodeBlocks, type SerializedCodeBlock, serializeCodeBlocks } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
 function parseBlockSources(text: string): SerializedCodeBlock[] | undefined {
 	try {
@@ -22,7 +22,7 @@ export function createCodeBlockCopyPastePlugin({
 		id: 'code-block-copy-paste',
 		setup: ({ store, events, menus }) => {
 			const state = store.getState();
-			const onCopy = async ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
+			const onCopy = async ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 				const text = codeBlock.childProject
 					? JSON.stringify(serializeCodeBlocks([codeBlock], codeBlock))
 					: codeBlock.code.join('\n');

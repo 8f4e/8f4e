@@ -46,8 +46,8 @@ entryEnd`),
 		editor.state.editorMode = 'edit';
 		editor.pauseRendering();
 		const state = editor.state;
-		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
-		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
+		const first = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
+		const second = state.project.activeLevel.blocks.find(block => block.name === 'destination')!;
 		const pointer = (type: string, x: number, y: number, movementX = 0) => {
 			events.dispatch(type, {
 				x,

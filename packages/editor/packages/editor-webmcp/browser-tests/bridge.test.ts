@@ -83,7 +83,7 @@ test('ships documentation and examples through the built bridge without changing
 	const editor = await view.mounted();
 	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
 	const revision = editor.editing.getRevision();
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	const help = (await call('get_help')) as string;
 	expect(help).toContain('stack-based programming language');
 	const docs = (await call('search_docs', { query: '@pos' })) as { results: Array<{ topic: string }> };
@@ -109,7 +109,7 @@ test('ships documentation and examples through the built bridge without changing
 	expect(code).toMatch(/^module lowPassFilter\n/);
 	expect(code).not.toContain('@public');
 	expect(await call('get_example', { kind: 'project', path: 'audio/reverb' })).toContain('groupEnd');
-	expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+	expect(editor.state.project.activeLevel.blocks).toBe(blocks);
 	expect(editor.editing.getRevision()).toBe(revision);
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code }] })).toMatchObject({
 		error: { code: 'source_required' },
@@ -150,8 +150,8 @@ test('navigates the editor and returns only the currently expanded source string
 	expect(root).toContain('group audio');
 	expect(root).not.toContain('int value 2');
 	expect(await call('expand_group', { name: 'audio' })).toMatchObject({ projectPath: 'audio' });
-	expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(
-		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!.childProject?.blocks
+	expect(editor.state.project.activeLevel.blocks).toBe(
+		editor.state.project.rootLevel.blocks.find(block => block.name === 'audio')!.childProject?.blocks
 	);
 	const expanded = await call('get_project');
 	expect(expanded).toContain('int value 2');
@@ -165,18 +165,16 @@ test('navigates the editor and returns only the currently expanded source string
 			code: 'module oscillator\nint value 3\nmoduleEnd',
 		})
 	).toBe('Block updated.');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'oscillator')!.code
-	).toContain('int value 3');
-	expect(editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'oscillator')!.code).toContain(
+	expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'oscillator')!.code).toContain(
+		'int value 3'
+	);
+	expect(editor.state.project.rootLevel.blocks.find(block => block.name === 'oscillator')!.code).toContain(
 		'int value 1'
 	);
 	await call('expand_group', { name: 'voices' });
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio/voices' });
 	expect(await call('get_project')).toContain('module deepSecret');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'deepSecret')
-	).toBeDefined();
+	expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'deepSecret')).toBeDefined();
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toMatchObject({
 		error: { code: 'block_not_found' },
 	});
@@ -194,7 +192,7 @@ test('inserts into the active pasted group even when its source path matches the
 	const editor = await view.mounted();
 	const canvas = view.panel().querySelector('canvas')!;
 	const { state } = editor;
-	const groups = () => state.codeBlockRendering.rootProject.blocks.filter(block => block.name === 'audio');
+	const groups = () => state.project.rootLevel.blocks.filter(block => block.name === 'audio');
 	const [original] = groups();
 	vi.spyOn(navigator.clipboard, 'readText').mockResolvedValue(
 		JSON.stringify(serializeCodeBlocks([original], original))
@@ -225,7 +223,7 @@ test('inserts into the active pasted group even when its source path matches the
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: noteCode }] })).toBe('Edits applied.');
 	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childProject!;
 	const assertInsertion = (inserted: boolean) => {
-		expect(state.codeBlockRendering.currentProject).toBe(child(copy.creationIndex));
+		expect(state.project.activeLevel).toBe(child(copy.creationIndex));
 		expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(inserted);
 		expect(child(original.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(false);
 	};
@@ -355,7 +353,7 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	expect(await call('redo')).toBe('Redo complete.');
 	const externalEdit = (value: number) => {
 		const revision = editor.editing.getRevision();
-		const target = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'counter')!;
+		const target = editor.state.project.activeLevel.blocks.find(block => block.name === 'counter')!;
 		editor.editing.applyEdits({
 			expectedRevision: revision,
 			edits: [
@@ -425,7 +423,7 @@ test('exposes source strings through site tools and saves undoable named edits',
 	).toBe('Edits applied.');
 	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 17');
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-bridged')).toContain('int value 17');
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	expect(blocks.find(block => block.name === 'counter')!).toMatchObject({
 		gridX: 0,
 		gridY: 14,

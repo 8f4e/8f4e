@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine, CompilerASTLine } from '@8f4e/language-spec';
 import { getCompiledFunctionForCodeBlock } from './getCompiledFunctionForCodeBlock';
 import { getCompiledModuleForCodeBlock } from './getCompiledModuleForCodeBlock';
@@ -10,7 +10,7 @@ export interface CurrentCompiledLine {
 
 /** Returns the owning source block's authoritative line metadata when its compiler input revision is current. */
 export function getCurrentCompiledLineForCodeBlock(
-	block: CodeBlockGraphicData,
+	block: EditorCodeBlock,
 	state: State,
 	sourceLineNumber = block.cursor.row
 ): CurrentCompiledLine | undefined {

@@ -1,23 +1,23 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { getStackOperandProducerRows } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock } from '@8f4e/editor-state-types';
 
 /** Highlights the source instructions that immediately produced the selected instruction's stack operands. */
 export const stackProducersPlugin: EditorPlugin = {
 	id: 'stack-producers',
 	setup: ({ store, events, drawers }) => {
 		const state = store.getState();
-		let selectedBlock: CodeBlockGraphicData | undefined;
+		let selectedBlock: EditorCodeBlock | undefined;
 		let rows: number[] = [];
 		const refresh = () => {
-			selectedBlock = state.codeBlockRendering.selectedCodeBlock;
+			selectedBlock = state.project.selectedCodeBlock;
 			rows = selectedBlock
 				? getStackOperandProducerRows(selectedBlock, state).map(row => row * state.viewport.hGrid)
 				: [];
 		};
 		const selectors = [
-			'codeBlockRendering.selectedCodeBlock',
+			'project.selectedCodeBlock',
 			'compiler.result',
 			'compilerInputRevision',
 			'featureFlags.codeLineSelection',

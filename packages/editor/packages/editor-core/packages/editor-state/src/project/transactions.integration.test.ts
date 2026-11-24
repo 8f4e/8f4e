@@ -19,8 +19,7 @@ function setup(source: string, { grid = false } = {}) {
 	disposers.push(store.dispose);
 	if (grid) setGridSize(state, events, { vGrid: 6, hGrid: 12 });
 	const load = () => events.dispatch('loadProject', { project: parseProjectSource(source) });
-	const block = (name: string) =>
-		state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === name)!;
+	const block = (name: string) => state.project.rootLevel.blocks.find(candidate => candidate.name === name)!;
 	const projectChanged = vi.fn(() => serializeToProject(state));
 	const compilerChanged = vi.fn(() => serializeToProject(state));
 	store.subscribe('projectChange', projectChanged);
@@ -49,7 +48,7 @@ noteEnd`);
 		const environment = block('env');
 		const previousProjectRevision = state.projectChange.revision;
 		const previousCompilerRevision = state.compilerInputRevision;
-		const result = store.projectEdits.apply({
+		const result = store.projectTransactions.apply({
 			updates: [{ codeBlock: settings, code: ['note settings', '; @config test 20', 'noteEnd'] }],
 		});
 		expect(result.changed).toBe(true);
@@ -89,12 +88,12 @@ noteEnd`);
 		compilerChanged.mockClear();
 		projectChanged.mockClear();
 		expect(
-			store.projectEdits.apply({
+			store.projectTransactions.apply({
 				updates: [{ codeBlock: env, code: ['constants env', 'const USER 123', 'constantsEnd'] }],
 			}).changed
 		).toBe(false);
 		expect(
-			store.projectEdits.apply({
+			store.projectTransactions.apply({
 				updates: [
 					{ codeBlock: sample, code: ['note sample', '; @custom', 'changed', 'noteEnd'] },
 					{ codeBlock: sample, code: [...previousCode] },
@@ -118,13 +117,13 @@ noteEnd`);
 		test.load();
 		const keep = block('keep');
 		const remove = block('remove');
-		const root = state.codeBlockRendering.rootProject;
+		const root = state.project.rootLevel;
 		const blocks = root.blocks;
-		store.set('codeBlockRendering.selectedCodeBlock', keep);
+		store.set('project.selectedCodeBlock', keep);
 		projectChanged.mockClear();
 		compilerChanged.mockClear();
 		const incompleteSource = ['module invalid', 'unrecognizedInstruction 1'];
-		const result = store.projectEdits.apply({
+		const result = store.projectTransactions.apply({
 			updates: [{ codeBlock: keep, code: incompleteSource }],
 			inserts: [{ project: root, source: { code: ['note inserted', '; @pos 8 9', 'noteEnd'] } }],
 			deletes: [remove],
@@ -134,7 +133,7 @@ noteEnd`);
 		expect(blocks).toContain(keep);
 		expect(blocks).not.toContain(remove);
 		expect(keep.code).toEqual(incompleteSource);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(keep);
+		expect(state.project.selectedCodeBlock).toBe(keep);
 		expect(result.insertedBlocks).toHaveLength(1);
 		expect(result.insertedBlocks[0]).toMatchObject({ name: 'inserted', gridX: 8, gridY: 9, x: 48, y: 108 });
 		expect(blocks).toContain(result.insertedBlocks[0]);
@@ -148,13 +147,13 @@ noteEnd`);
 		);
 		const { store, state, block } = test;
 		test.load();
-		const root = state.codeBlockRendering.rootProject;
+		const root = state.project.rootLevel;
 		const group = block('child');
 		const child = group.childProject!;
 		const existing = child.blocks[0];
 		const {
 			insertedBlocks: [rootInsert, childInsert],
-		} = store.projectEdits.apply({
+		} = store.projectTransactions.apply({
 			deletes: [block('remove')],
 			inserts: [
 				{ project: root, source: { code: ['note rootAdded', 'noteEnd'] } },
@@ -164,7 +163,7 @@ noteEnd`);
 		expect(root.blocks).toContain(rootInsert);
 		expect(child.blocks).toEqual([existing, childInsert]);
 		expect(
-			store.projectEdits.apply({
+			store.projectTransactions.apply({
 				updates: [
 					{ codeBlock: existing, code: ['note existing', 'noteEnd'] },
 					{ codeBlock: childInsert, code: ['note childUpdated', 'noteEnd'] },
@@ -173,9 +172,9 @@ noteEnd`);
 		).toBe(true);
 		expect(existing.name).toBe('existing');
 		expect(childInsert.name).toBe('childUpdated');
-		store.projectEdits.apply({ deletes: [group] });
+		store.projectTransactions.apply({ deletes: [group] });
 		expect(() =>
-			store.projectEdits.apply({ updates: [{ codeBlock: existing, code: ['note detached', 'noteEnd'] }] })
+			store.projectTransactions.apply({ updates: [{ codeBlock: existing, code: ['note detached', 'noteEnd'] }] })
 		).toThrow();
 	});
 
@@ -192,7 +191,8 @@ noteEnd`);
 		compilerChanged.mockClear();
 
 		expect(
-			store.projectEdits.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, { history: 'checkpoint' }).changed
+			store.projectTransactions.apply({ updates: [{ codeBlock: sample, entry: 'unused' }] }, { history: 'checkpoint' })
+				.changed
 		).toBe(false);
 		expect(sample.entry).toBeUndefined();
 		expect(serializeToProject(state)).toEqual(before);
@@ -200,12 +200,12 @@ noteEnd`);
 		expect(projectChanged).not.toHaveBeenCalled();
 		expect(compilerChanged).not.toHaveBeenCalled();
 
-		store.projectEdits.apply({ updates: [{ codeBlock: target, code: ['module target'], entry: 'unused' }] });
+		store.projectTransactions.apply({ updates: [{ codeBlock: target, code: ['module target'], entry: 'unused' }] });
 		expect(target.blockType).toBe('unknown');
 		expect(target.entry).toBe('alternate');
-		store.projectEdits.apply({ updates: [{ codeBlock: target, code: ['module target', 'moduleEnd'] }] });
+		store.projectTransactions.apply({ updates: [{ codeBlock: target, code: ['module target', 'moduleEnd'] }] });
 		expect(target.entry).toBe('alternate');
-		expect(state.codeBlockRendering.rootProject.entries).toEqual(['alternate']);
+		expect(state.project.rootLevel.entries).toEqual(['alternate']);
 	});
 
 	it('treats generated environment source as downstream of global configuration', () => {

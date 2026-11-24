@@ -1,6 +1,6 @@
 # Entry outlines
 
-`entryOutlinesPlugin` draws borders and labels for `state.codeBlockRendering.entryBounds` below code blocks through
+`entryOutlinesPlugin` draws borders and labels for `state.project.entryBounds` below code blocks through
 `registerCanvasBackgroundDrawer`. It translates world coordinates into the rendered viewport and owns border
 thickness, label offsets, and palette selection. Every frame reads the current core bounds directly.
 

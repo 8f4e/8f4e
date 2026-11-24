@@ -45,7 +45,7 @@ export { default as findClosestCodeBlockInDirection } from './input/findClosestC
 export { default as getCodeBlockGridWidth } from './layout/getCodeBlockGridWidth';
 export { subscribeToBlockPreparation } from './layout/subscribeToBlockPreparation';
 export { clampSourcePosition } from './layout/text-geometry/clampSourcePosition';
-export { default as gapCalculator } from './layout/text-geometry/displayRowToGridRow';
+export { default as displayRowToGridRow } from './layout/text-geometry/displayRowToGridRow';
 export {
 	getRawIndexForVisualColumn,
 	getTabAdvance,
@@ -55,7 +55,7 @@ export {
 } from './layout/text-geometry/tabLayout';
 export { default as wrapText } from './layout/text-geometry/wrapText';
 export { default as getCodeBlockNameFromSource } from './project/blocks/getCodeBlockNameFromSource';
-export { default as getBlockType } from './project/blocks/getCodeBlockTypeFromSource';
+export { default as getCodeBlockTypeFromSource } from './project/blocks/getCodeBlockTypeFromSource';
 export { default as setSkipExecution } from './project/blocks/setSkipExecution';
 export type {
 	EditorEdit,
@@ -63,7 +63,7 @@ export type {
 	EditorEditResult,
 	EditorNavigationHandle,
 } from './project/commandApi';
-export { createEditorEditingHandle, EditorEditingError, getEditorBlockId } from './project/commandApi';
+export { createEditorCommandApi, EditorEditingError, getEditorBlockId } from './project/commandApi';
 export { deleteCodeBlocks } from './project/deleteCodeBlocks';
 export { EMPTY_DEFAULT_PROJECT } from './project/emptyDefaultProject';
 export { insertCodeBlock } from './project/insertCodeBlock';

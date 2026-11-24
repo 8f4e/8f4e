@@ -19,10 +19,10 @@ import { upsertDirective } from '../editing/index';
  * @example
  * ```typescript
  * const code = ['module test', 'moduleEnd'];
- * const updated = upsertPos(code, 10, 20);
+ * const updated = upsertPositionDirective(code, 10, 20);
  * // Result: ['module test', '; @pos 10 20', 'moduleEnd']
  * ```
  */
-export default function upsertPos(code: string[], gridX: number, gridY: number): string[] {
+export default function upsertPositionDirective(code: string[], gridX: number, gridY: number): string[] {
 	return upsertDirective(code, 'pos', [String(gridX), String(gridY)]);
 }

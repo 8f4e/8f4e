@@ -73,7 +73,7 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 		dispose();
 		store.dispose();
 	});
-	store.projectEdits.load(project);
+	store.projectTransactions.load(project);
 	return {
 		store,
 		dispose,

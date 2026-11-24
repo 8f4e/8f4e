@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, expect, it, vi } from 'vitest';
-import initState, { createEditorEditingHandle, getEditorBlockId, serializeToProject } from '~/index';
+import initState, { createEditorCommandApi, getEditorBlockId, serializeToProject } from '~/index';
 
 const disposers: Array<() => void> = [];
 afterEach(() => {
@@ -13,7 +13,7 @@ function setup() {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	const state = store.getState();
-	const { handle: editing, dispose } = createEditorEditingHandle(store, events);
+	const { handle: editing, dispose } = createEditorCommandApi(store, events);
 	disposers.push(store.dispose, dispose);
 	events.dispatch('loadProject', {
 		project: parseProjectSource(
@@ -21,7 +21,7 @@ function setup() {
 		),
 	});
 	events.dispatch('enterEditMode');
-	const group = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'child')!;
+	const group = state.project.rootLevel.blocks.find(block => block.name === 'child')!;
 	const member = group.childProject!.blocks[0];
 	const beforeEdit = vi.fn();
 	const compilationChanged = vi.fn();
@@ -74,10 +74,13 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 		);
 	} else {
 		expect(() =>
-			store.projectEdits.apply({ updates: [{ codeBlock: member, code }], deletes: [group] }, { history: 'checkpoint' })
+			store.projectTransactions.apply(
+				{ updates: [{ codeBlock: member, code }], deletes: [group] },
+				{ history: 'checkpoint' }
+			)
 		).toThrow(expect.objectContaining({ code: 'deleted_block', message: 'Cannot update a block being deleted' }));
 		expect(() =>
-			store.projectEdits.apply(
+			store.projectTransactions.apply(
 				{ inserts: [{ project: group.childProject!, source: { code: insertedCode } }], deletes: [group] },
 				{ history: 'checkpoint' }
 			)
@@ -102,9 +105,11 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 			],
 		});
 	} else {
-		expect(store.projectEdits.apply({ deletes: [member, group, group] }, { history: 'checkpoint' }).changed).toBe(true);
+		expect(
+			store.projectTransactions.apply({ deletes: [member, group, group] }, { history: 'checkpoint' }).changed
+		).toBe(true);
 	}
-	expect(state.codeBlockRendering.rootProject.blocks).not.toContain(group);
+	expect(state.project.rootLevel.blocks).not.toContain(group);
 	expect(state.projectChange.revision).toBe(revision + 1);
 	expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	expect(state.historyStack).toHaveLength(1);

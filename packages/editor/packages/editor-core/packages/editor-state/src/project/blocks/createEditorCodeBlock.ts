@@ -1,10 +1,10 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 import buildDisplayModel from '../../layout/buildDisplayModel';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
 
 /** Create a block before its source facts and pixel layout have settled. */
-export function createCodeBlockGraphicData(overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
+export function createEditorCodeBlock(overrides: Partial<EditorCodeBlock> = {}): EditorCodeBlock {
 	const x = overrides.x ?? 0;
 	const y = overrides.y ?? 0;
 	const width = overrides.width ?? 0;
@@ -22,7 +22,7 @@ export function createCodeBlockGraphicData(overrides: Partial<CodeBlockGraphicDa
 		y: 0,
 	};
 
-	const defaults: CodeBlockGraphicData = {
+	const defaults: EditorCodeBlock = {
 		x,
 		y,
 		gridX,

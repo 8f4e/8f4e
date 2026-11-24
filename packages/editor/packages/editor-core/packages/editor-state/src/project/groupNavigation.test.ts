@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { CodeBlockGraphicData, EditorLifecycleEvents } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLifecycleEvents } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance, vi } from 'vitest';
@@ -9,11 +9,11 @@ import initState, { insertCodeBlocks, serializeCodeBlocks, setGridSize, updateVi
 import registerGroupNavigation from './groupNavigation';
 
 describe('projectGroupNavigation', () => {
-	function setupNavigation(rootCodeBlocks: CodeBlockGraphicData[]) {
+	function setupNavigation(rootCodeBlocks: EditorCodeBlock[]) {
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 			},
 			viewport: { x: 64, y: -96, width: 800, height: 600 },
 		});
@@ -32,24 +32,24 @@ describe('projectGroupNavigation', () => {
 		const child = createMockCodeBlock({ name: 'oscillator' });
 		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [child] } });
 		const { state, dispatch } = setupNavigation([group]);
-		state.codeBlockRendering.selectedCodeBlock = group;
+		state.project.selectedCodeBlock = group;
 		const revision = state.projectChange.revision;
 
 		dispatch('openProjectGroup', { codeBlock: group });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		state.codeBlockRendering.selectedCodeBlock = child;
+		expect(state.project.selectedCodeBlock).toBeUndefined();
+		state.project.selectedCodeBlock = child;
 		dispatch('goToParentProjectGroup');
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(group);
+		expect(state.project.selectedCodeBlock).toBe(group);
 
 		dispatch('openProjectGroup', { codeBlock: group });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(child);
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		expect(state.project.selectedCodeBlock).toBe(child);
+		state.project.selectedCodeBlock = undefined;
 		dispatch('goToParentProjectGroup');
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		state.project.selectedCodeBlock = undefined;
 		dispatch('openProjectGroup', { codeBlock: group });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		dispatch('goToParentProjectGroup');
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		expect(state.projectChange.revision).toBe(revision);
 	});
 
@@ -57,14 +57,14 @@ describe('projectGroupNavigation', () => {
 		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: 'Audio', blocks: [] } });
 		const removed = createMockCodeBlock({ name: 'removed' });
 		const { state, dispatch } = setupNavigation([group, removed]);
-		state.codeBlockRendering.selectedCodeBlock = removed;
+		state.project.selectedCodeBlock = removed;
 		dispatch('openProjectGroup', { codeBlock: group });
-		state.codeBlockRendering.rootProject.blocks.pop();
+		state.project.rootLevel.blocks.pop();
 
 		dispatch('goToParentProjectGroup');
 
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(state.codeBlockRendering.rootProject.selectedBlock).toBeUndefined();
+		expect(state.project.selectedCodeBlock).toBeUndefined();
+		expect(state.project.rootLevel.selectedBlock).toBeUndefined();
 	});
 
 	it('restores the latest viewport of the parent and revisited group instead of resolving initial placement', () => {
@@ -107,19 +107,19 @@ describe('projectGroupNavigation', () => {
 		});
 		const { state, dispatch } = setupNavigation([group]);
 
-		state.codeBlockRendering.selectedCodeBlock = group;
+		state.project.selectedCodeBlock = group;
 		dispatch('openProjectGroup', { codeBlock: group });
 		Object.assign(state.viewport, { x: 128, y: 256 });
-		state.codeBlockRendering.selectedCodeBlock = nestedGroup;
+		state.project.selectedCodeBlock = nestedGroup;
 		dispatch('openProjectGroup', { codeBlock: nestedGroup });
 		Object.assign(state.viewport, { x: 512, y: -640 });
 		dispatch('goToRootProjectGroup');
 		expect(state.viewport).toMatchObject({ x: 64, y: -96 });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(group);
+		expect(state.project.selectedCodeBlock).toBe(group);
 
 		dispatch('openProjectGroup', { codeBlock: group });
 		expect(state.viewport).toMatchObject({ x: 128, y: 256 });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(nestedGroup);
+		expect(state.project.selectedCodeBlock).toBe(nestedGroup);
 		dispatch('openProjectGroup', { codeBlock: nestedGroup });
 		expect(state.viewport).toMatchObject({ x: 512, y: -640 });
 		dispatch('goToParentProjectGroup');
@@ -153,8 +153,8 @@ groupEnd
 entryEnd`),
 			});
 			events.dispatch('enterEditMode');
-			const { rootProject } = state.codeBlockRendering;
-			const original = rootProject.blocks.find(block => block.name === 'audio')!;
+			const { rootLevel } = state.project;
+			const original = rootLevel.blocks.find(block => block.name === 'audio')!;
 			const [copy] = insertCodeBlocks(store, {
 				x: 160,
 				y: 128,
@@ -168,35 +168,35 @@ entryEnd`),
 			const revision = state.projectChange.revision;
 			const compilerRevision = state.compilerInputRevision;
 
-			store.set('codeBlockRendering.selectedCodeBlock', original);
+			store.set('project.selectedCodeBlock', original);
 			events.dispatch('openProjectGroup', { codeBlock: original });
 			updateViewport(state, 64, 80, events);
-			store.set('codeBlockRendering.selectedCodeBlock', originalChild);
+			store.set('project.selectedCodeBlock', originalChild);
 			events.dispatch('goToRootProjectGroup');
 
-			store.set('codeBlockRendering.selectedCodeBlock', copy);
+			store.set('project.selectedCodeBlock', copy);
 			events.dispatch('openProjectGroup', { codeBlock: copy });
 			updateViewport(state, 160, 192, events);
-			store.set('codeBlockRendering.selectedCodeBlock', copiedChild);
+			store.set('project.selectedCodeBlock', copiedChild);
 			events.dispatch('openProjectGroup', { codeBlock: copiedChild });
 			updateViewport(state, 320, 256, events);
-			store.set('codeBlockRendering.selectedCodeBlock', copiedInner);
+			store.set('project.selectedCodeBlock', copiedInner);
 
 			events.dispatch('goToParentProjectGroup');
-			expect(state.codeBlockRendering.currentProject).toBe(copy.childProject);
+			expect(state.project.activeLevel).toBe(copy.childProject);
 			expect(state.viewport).toMatchObject({ x: 160, y: 192 });
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copiedChild);
+			expect(state.project.selectedCodeBlock).toBe(copiedChild);
 
 			events.dispatch('openProjectGroup', { codeBlock: copiedChild });
 			expect(state.viewport).toMatchObject({ x: 320, y: 256 });
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copiedInner);
+			expect(state.project.selectedCodeBlock).toBe(copiedInner);
 			events.dispatch('goToRootProjectGroup');
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copy);
+			expect(state.project.selectedCodeBlock).toBe(copy);
 
 			events.dispatch('openProjectGroup', { codeBlock: original });
-			expect(state.codeBlockRendering.currentProject).toBe(original.childProject);
+			expect(state.project.activeLevel).toBe(original.childProject);
 			expect(state.viewport).toMatchObject({ x: 64, y: 80 });
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(originalChild);
+			expect(state.project.selectedCodeBlock).toBe(originalChild);
 			expect(state.projectChange.revision).toBe(revision);
 			expect(state.compilerInputRevision).toBe(compilerRevision);
 		} finally {
@@ -222,13 +222,13 @@ entryEnd`),
 	it('leaves the viewport and selection unchanged when already at the root', () => {
 		const block = createMockCodeBlock();
 		const { state, events, dispatch } = setupNavigation([block]);
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 
 		dispatch('goToRootProjectGroup');
 		dispatch('goToParentProjectGroup');
 
 		expect(state.viewport).toMatchObject({ x: 64, y: -96 });
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.selectedCodeBlock).toBe(block);
 		expect(events.dispatch).not.toHaveBeenCalled();
 	});
 
@@ -239,9 +239,9 @@ entryEnd`),
 		});
 		const rootCodeBlocks = [groupBlock];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: rootCodeBlocks },
 				selectedCodeBlock: groupBlock,
 			},
 			viewport: { x: 64, y: 96 },
@@ -255,9 +255,9 @@ entryEnd`),
 		)?.[1];
 		openGroup({ codeBlock: groupBlock });
 
-		expect(state.codeBlockRendering.rootProject.blocks).toBe(rootCodeBlocks);
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(nestedProjectCodeBlocks);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(state.project.rootLevel.blocks).toBe(rootCodeBlocks);
+		expect(state.project.activeLevel.blocks).toBe(nestedProjectCodeBlocks);
+		expect(state.project.selectedCodeBlock).toBeUndefined();
 		expect(state.viewport.x).toBe(0);
 		expect(state.viewport.y).toBe(0);
 	});
@@ -277,7 +277,7 @@ entryEnd`),
 		)?.[1];
 		openGroup({ codeBlock: groupBlock });
 
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(nestedProjectCodeBlocks);
+		expect(state.project.activeLevel.blocks).toBe(nestedProjectCodeBlocks);
 	});
 
 	it('returns to the immediate parent slice one level at a time', () => {
@@ -287,9 +287,9 @@ entryEnd`),
 		const rootGroup = createMockCodeBlock({ childProject: { entries: [], path: '', blocks: firstLevelSlice } });
 		const rootCodeBlocks = [rootGroup];
 		const state = createMockState({
-			codeBlockRendering: {
-				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
-				currentProject: { entries: [], path: '', blocks: deepestSlice },
+			project: {
+				rootLevel: { entries: [], path: '', blocks: rootCodeBlocks },
+				activeLevel: { entries: [], path: '', blocks: deepestSlice },
 			},
 		});
 		const store = createStateManager(state);
@@ -301,16 +301,16 @@ entryEnd`),
 		)?.[1];
 		goBack();
 
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(firstLevelSlice);
+		expect(state.project.activeLevel.blocks).toBe(firstLevelSlice);
 
 		goBack();
 
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(rootCodeBlocks);
+		expect(state.project.activeLevel.blocks).toBe(rootCodeBlocks);
 	});
 
 	it('keeps the root slice active when there is no parent', () => {
 		const state = createMockState();
-		const rootCodeBlocks = state.codeBlockRendering.rootProject.blocks;
+		const rootCodeBlocks = state.project.rootLevel.blocks;
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
@@ -320,12 +320,12 @@ entryEnd`),
 		)?.[1];
 		goBack();
 
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(rootCodeBlocks);
+		expect(state.project.activeLevel.blocks).toBe(rootCodeBlocks);
 	});
 
 	it('ignores ordinary code blocks when opening a group', () => {
 		const state = createMockState();
-		const originalSlice = state.codeBlockRendering.currentProject.blocks;
+		const originalSlice = state.project.activeLevel.blocks;
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();
 
@@ -335,6 +335,6 @@ entryEnd`),
 		)?.[1];
 		openGroup({ codeBlock: createMockCodeBlock() });
 
-		expect(state.codeBlockRendering.currentProject.blocks).toBe(originalSlice);
+		expect(state.project.activeLevel.blocks).toBe(originalSlice);
 	});
 });

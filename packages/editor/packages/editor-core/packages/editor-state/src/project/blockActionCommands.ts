@@ -1,11 +1,11 @@
-import type { CodeBlockGraphicData, EventDispatcher, ProjectEdits, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EventDispatcher, ProjectTransactions, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
-import upsertDisabled from '../directives/block/setDisabledDirective';
+import setDisabledDirective from '../directives/block/setDisabledDirective';
 import { insertCodeBlock } from './insertCodeBlock';
 import { applyCodeBlockSourceEdits } from './replaceBlockSources';
 
 export default function registerBlockActionCommands(
-	store: StateManager<State> & { projectEdits: ProjectEdits },
+	store: StateManager<State> & { projectTransactions: ProjectTransactions },
 	events: EventDispatcher
 ): () => void {
 	const state = store.getState();
@@ -13,14 +13,14 @@ export default function registerBlockActionCommands(
 		insertCodeBlock(store, { x, y, code });
 	}
 
-	function onToggleCodeBlockDisabled({ codeBlock }: { codeBlock: CodeBlockGraphicData }): void {
+	function onToggleCodeBlockDisabled({ codeBlock }: { codeBlock: EditorCodeBlock }): void {
 		if (state.editorMode !== 'edit' || codeBlock.readOnly) {
 			return;
 		}
 
 		// Toggle disabled state by upserting/removing @disabled directive
 		const newDisabledState = !codeBlock.disabled;
-		const code = upsertDisabled(codeBlock.code, newDisabledState);
+		const code = setDisabledDirective(codeBlock.code, newDisabledState);
 		applyCodeBlockSourceEdits(store, [{ codeBlock, code }]);
 	}
 

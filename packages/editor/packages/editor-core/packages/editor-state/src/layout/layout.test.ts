@@ -21,14 +21,14 @@ function setup() {
 	});
 	events.dispatch('enterEditMode');
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 	return { store, state, block, events, layout: store.layout };
 }
 
 describe('independent layout contributions', () => {
 	it('navigates an expanded hidden block using its settled rows and contributed gaps', () => {
 		const { store, state, block, layout, events } = setup();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: block,
@@ -37,7 +37,7 @@ describe('independent layout contributions', () => {
 		]);
 		const contribution = layout.createContribution();
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		const displayModel = block.displayModel;
 		events.dispatch('navigateCodeBlock', { direction: 'down' });
 		expect(block.cursor.row).toBe(3);
@@ -51,7 +51,7 @@ describe('independent layout contributions', () => {
 
 	it('moves the cursor through settled display gaps without rebuilding layout or publishing layout events', () => {
 		const { store, state, block, layout, events } = setup();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		const contribution = layout.createContribution();
 		contribution.update(block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 1, heightInRows: 2 }] });
 		const onLayout = vi.fn();
@@ -63,8 +63,8 @@ describe('independent layout contributions', () => {
 		const height = block.height;
 		const revision = state.compilerInputRevision;
 
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 1);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock.cursor.col', 1);
 		expect(block.cursor).toEqual({ row: 2, col: 1, y: 4 * state.viewport.hGrid });
 		events.dispatch('codeBlockPointerDown', {
 			codeBlock: block,
@@ -101,7 +101,7 @@ describe('independent layout contributions', () => {
 
 	it('recalculates added, updated, removed, and disposed requests without source edits or compilation', () => {
 		const { store, state, block, layout } = setup();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		const source = serializeToProject(state);
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
@@ -126,7 +126,7 @@ describe('independent layout contributions', () => {
 		expect(block.height).toBe(height);
 		expect(block.width).toBe(width);
 		expect(serializeToProject(state)).toEqual(source);
-		expect(state.codeBlockRendering.selectedCodeBlock).toBe(block);
+		expect(state.project.selectedCodeBlock).toBe(block);
 		expect(block.lastUpdated).toBe(lastUpdated);
 		expect(state.projectChange.revision).toBe(revision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);

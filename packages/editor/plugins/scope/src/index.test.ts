@@ -143,7 +143,7 @@ describe('scope plugin', () => {
 			'; @scope level 10',
 			'moduleEnd',
 		]);
-		const other = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'other')!;
+		const other = test.state.project.activeLevel.blocks.find(block => block.name === 'other')!;
 		const height = test.state.viewport.hGrid * 8;
 		vi.advanceTimersByTime(100);
 		expect(test.getMemory).toHaveBeenCalledTimes(1);
@@ -385,7 +385,7 @@ describe('scope plugin', () => {
 				'groupEnd',
 				'entryEnd',
 			]);
-			const group = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+			const group = test.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
 			const voice = group.childProject!.blocks.find(block => block.name === 'voice')!;
 			const sync = vi.mocked(sampler.mock.results[0].value.sync);
 			const contribution = test.store.layout.createContribution();

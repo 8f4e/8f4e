@@ -1,8 +1,8 @@
-import type { CodeBlockGraphicData, CodeBlockPointerDownEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import type { LayoutCoordinator } from './blockLayoutCoordinator';
 import { clampSourcePosition } from './text-geometry/clampSourcePosition';
-import reverseGapCalculator from './text-geometry/gridRowToDisplayRow';
+import gridRowToDisplayRow from './text-geometry/gridRowToDisplayRow';
 import { getRawIndexForVisualColumn } from './text-geometry/tabLayout';
 import { updateCursorY } from './updateCursorY';
 
@@ -20,7 +20,7 @@ export default function trackBlockLayout(
 		}
 
 		const displayModel = codeBlock.displayModel;
-		const displayRow = reverseGapCalculator(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
+		const displayRow = gridRowToDisplayRow(Math.floor(relativeY / state.viewport.hGrid), codeBlock.gaps);
 		const row =
 			displayModel.displayRowToSourceLineIndex[
 				Math.min(displayRow, displayModel.displayRowToSourceLineIndex.length - 1)
@@ -33,11 +33,11 @@ export default function trackBlockLayout(
 			tabStopsByLine[Math.min(row, codeBlock.code.length - 1)] || []
 		);
 		const [boundedRow, boundedCol] = clampSourcePosition(codeBlock.code, row, col);
-		if (codeBlock !== state.codeBlockRendering.selectedCodeBlock) {
+		if (codeBlock !== state.project.selectedCodeBlock) {
 			return;
 		}
 
-		store.set('codeBlockRendering.selectedCodeBlock.cursor', {
+		store.set('project.selectedCodeBlock.cursor', {
 			...codeBlock.cursor,
 			row: boundedRow,
 			col: boundedCol,
@@ -45,14 +45,14 @@ export default function trackBlockLayout(
 	};
 
 	const refreshCurrentProjectLayout = () => {
-		coordinator.refreshProject(state.codeBlockRendering.currentProject);
+		coordinator.refreshProject(state.project.activeLevel);
 	};
 
-	// Membership and source preparation belong exclusively to the project-edit service.
+	// Membership and source preparation belong exclusively to the project transaction service.
 	// Selecting an already-owned level simply refreshes its visible geometry.
-	let previousProject = state.codeBlockRendering.currentProject;
+	let previousProject = state.project.activeLevel;
 	const onCurrentProjectChanged = () => {
-		const project = state.codeBlockRendering.currentProject;
+		const project = state.project.activeLevel;
 		if (project !== previousProject) {
 			previousProject = project;
 			refreshCurrentProjectLayout();
@@ -60,27 +60,25 @@ export default function trackBlockLayout(
 	};
 
 	const updateSelectedCodeBlock = () => {
-		const block = state.codeBlockRendering.selectedCodeBlock;
+		const block = state.project.selectedCodeBlock;
 		if (block) updateCursorY(block, state.viewport.hGrid);
 	};
 
 	const updateHideSelectionTransition = (
-		previousBlock: CodeBlockGraphicData | undefined,
-		nextBlock: CodeBlockGraphicData | undefined
+		previousBlock: EditorCodeBlock | undefined,
+		nextBlock: EditorCodeBlock | undefined
 	) => {
-		refreshBlockLayouts(
-			[previousBlock, nextBlock].filter((block): block is CodeBlockGraphicData => block !== undefined)
-		);
+		refreshBlockLayouts([previousBlock, nextBlock].filter((block): block is EditorCodeBlock => block !== undefined));
 	};
 
-	let previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
+	let previousSelectedCodeBlock = state.project.selectedCodeBlock;
 	const onSelectedCodeBlockChanged = () => {
-		if (previousSelectedCodeBlock === state.codeBlockRendering.selectedCodeBlock) return;
-		updateHideSelectionTransition(previousSelectedCodeBlock, state.codeBlockRendering.selectedCodeBlock);
-		previousSelectedCodeBlock = state.codeBlockRendering.selectedCodeBlock;
+		if (previousSelectedCodeBlock === state.project.selectedCodeBlock) return;
+		updateHideSelectionTransition(previousSelectedCodeBlock, state.project.selectedCodeBlock);
+		previousSelectedCodeBlock = state.project.selectedCodeBlock;
 	};
 
-	const onLayoutContributionsChanged = ({ codeBlock }: { codeBlock?: CodeBlockGraphicData }) => {
+	const onLayoutContributionsChanged = ({ codeBlock }: { codeBlock?: EditorCodeBlock }) => {
 		if (codeBlock) {
 			refreshBlockLayouts([codeBlock]);
 		} else refreshCurrentProjectLayout();
@@ -89,15 +87,15 @@ export default function trackBlockLayout(
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
 	events.on('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 	events.on('gridSizeChanged', refreshCurrentProjectLayout);
-	store.subscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
-	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
-	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
+	store.subscribe('project.activeLevel', onCurrentProjectChanged);
+	store.subscribe('project.selectedCodeBlock', onSelectedCodeBlockChanged);
+	store.subscribe('project.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
 		events.off('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 		events.off('gridSizeChanged', refreshCurrentProjectLayout);
-		store.unsubscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
-		store.unsubscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
-		store.unsubscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
+		store.unsubscribe('project.activeLevel', onCurrentProjectChanged);
+		store.unsubscribe('project.selectedCodeBlock', onSelectedCodeBlockChanged);
+		store.unsubscribe('project.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 	};
 }

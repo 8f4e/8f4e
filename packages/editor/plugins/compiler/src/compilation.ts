@@ -80,7 +80,7 @@ export default function installCompilation(
 		setCompilerInfo({ isCompiling: true });
 
 		try {
-			const project = serializeProjectLevel(state.codeBlockRendering.rootProject);
+			const project = serializeProjectLevel(state.project.rootLevel);
 			const compilerOptions = {
 				startingMemoryAllocationUnitAddress: 0,
 				includeStackAnalysis: true,

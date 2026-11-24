@@ -1,10 +1,5 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import type {
-	CodeBlockGraphicData,
-	CodeBlockLayoutsChangedEvent,
-	EventDispatcher,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockLayoutsChangedEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import type { RenderGeometry } from '@8f4e/web-ui';
 import { deriveEndpoints, type WireEndpoints, type WireOutput } from './deriveEndpoints';
 
@@ -18,18 +13,18 @@ export type WireConnectionVisitor = (
 ) => void;
 
 interface WireGeometry {
-	endpointsByBlock: WeakMap<CodeBlockGraphicData, WireEndpoints>;
+	endpointsByBlock: WeakMap<EditorCodeBlock, WireEndpoints>;
 	outputsByByteAddress: ReadonlyMap<number, WireOutput>;
 }
 
 /** Track settled connection geometry for one renderer, independently of connector presentation. */
 export function createWireConnections(store: EditorPluginContext['store'], events: EventDispatcher) {
 	const state = store.getState();
-	const endpointsByBlock = new WeakMap<CodeBlockGraphicData, WireEndpoints>();
+	const endpointsByBlock = new WeakMap<EditorCodeBlock, WireEndpoints>();
 	const outputsByByteAddress = new Map<number, WireOutput>();
 	const geometry = { endpointsByBlock, outputsByByteAddress };
 	const refresh = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.codeBlockRendering.currentProject) return;
+		if (project !== state.project.activeLevel) return;
 		if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
 		for (const block of codeBlocks) endpointsByBlock.set(block, deriveEndpoints(block, state));
 		outputsByByteAddress.clear();
@@ -40,7 +35,7 @@ export function createWireConnections(store: EditorPluginContext['store'], event
 		}
 	};
 	const refreshCurrentProject = () => {
-		const project = state.codeBlockRendering.currentProject;
+		const project = state.project.activeLevel;
 		refresh({ project, codeBlocks: project.blocks });
 	};
 	refreshCurrentProject();
@@ -66,7 +61,7 @@ export function visitConnections(
 	visit: WireConnectionVisitor
 ): void {
 	for (const { codeBlock, x, y } of renderGeometry.blocks) {
-		const isSelected = codeBlock === state.codeBlockRendering.selectedCodeBlock;
+		const isSelected = codeBlock === state.project.selectedCodeBlock;
 
 		if (!codeBlock.name) {
 			continue;

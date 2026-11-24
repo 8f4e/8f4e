@@ -69,7 +69,7 @@ describe('contextMenu effect', () => {
 	it('rebuilds contributed items when opening and revisiting the block submenu', async () => {
 		const codeBlock = createMockCodeBlock({ name: 'first' });
 		const state = createMockState({
-			codeBlockRendering: { currentProject: { entries: [], path: '', blocks: [codeBlock] } },
+			project: { activeLevel: { entries: [], path: '', blocks: [codeBlock] } },
 		});
 		const store = createStateManager(state);
 		const events = createMockEventDispatcherWithVitest();

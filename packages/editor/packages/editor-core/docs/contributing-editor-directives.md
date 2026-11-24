@@ -137,7 +137,7 @@ code = updateDirectiveArgs(code, 'group', ([groupName]) =>
 Apply replacement source through the public state helper once the action has checked edit mode:
 
 ```ts
-store.projectEdits.apply({ updates: [{ codeBlock, code }] });
+store.projectTransactions.apply({ updates: [{ codeBlock, code }] });
 ```
 
 Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change.
@@ -229,7 +229,7 @@ Use the directive's definition file to contribute block-level metadata such as:
 - `alwaysOnTop`
 - display transforms such as `@hide`
 
-If a directive changes how code should be displayed, that should be modeled as a directive-owned contribution to the display model, not as a renderer hack in `codeBlockRendering`.
+If a directive changes how code should be displayed, that should be modeled as a directive-owned contribution to the display model, not as a renderer hack in `project`.
 
 ## Layout Contributions and Subscriptions
 

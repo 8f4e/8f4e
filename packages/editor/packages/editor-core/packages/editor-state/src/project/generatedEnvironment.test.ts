@@ -19,7 +19,7 @@ function setup() {
 	const state = store.getState();
 	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
 	const env = () =>
-		state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env' && block.blockType === 'constants')!;
+		state.project.rootLevel.blocks.find(block => block.name === 'env' && block.blockType === 'constants')!;
 	return { store, state, events, load, env };
 }
 
@@ -31,7 +31,7 @@ describe('auto-managed root environment source', () => {
 		disposers.push(store.directives.register({ name: 'sample', apply }));
 		const onRootProject = vi.fn();
 		const onCompilerInput = vi.fn(() => serializeToProject(state));
-		store.subscribe('codeBlockRendering.rootProject', onRootProject);
+		store.subscribe('project.rootLevel', onRootProject);
 		store.subscribe('compilerInputRevision', onCompilerInput);
 
 		load(`8f4e/v1
@@ -55,8 +55,7 @@ entryEnd`);
 		expect(env().code).toContain('; Auto-generated environment constants');
 		expect(env().code).toContain('; @pos 0 0');
 		expect(onCompilerInput.mock.results[0].value.constants[0].code).toEqual(env().code);
-		const nested = state.codeBlockRendering.rootProject.blocks.find(block => block.childProject)!.childProject!
-			.blocks[0];
+		const nested = state.project.rootLevel.blocks.find(block => block.childProject)!.childProject!.blocks[0];
 		expect(env().creationIndex).toBeGreaterThan(nested.creationIndex);
 	});
 
@@ -167,7 +166,7 @@ entryEnd
 groupEnd
 entryEnd`);
 		const rootEnvironment = env();
-		const group = state.codeBlockRendering.rootProject.blocks.find(block => block.childProject)!;
+		const group = state.project.rootLevel.blocks.find(block => block.childProject)!;
 		const authored = group.childProject!.blocks;
 		const previousCode = authored.map(block => [...block.code]);
 		const revision = state.projectChange.revision;
@@ -176,7 +175,7 @@ entryEnd`);
 		events.on('codeBlockLayoutsChanged', onLayoutChanged);
 
 		events.dispatch('openProjectGroup', { codeBlock: group });
-		expect(state.codeBlockRendering.currentProject).toBe(group.childProject);
+		expect(state.project.activeLevel).toBe(group.childProject);
 		expect(authored.map(block => block.code)).toEqual(previousCode);
 		expect(state.projectChange.revision).toBe(revision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
@@ -187,7 +186,7 @@ entryEnd`);
 		expect(rootEnvironment.code).toContain('const PROVIDED 77');
 		expect(rootEnvironment.code).toContain('; @pos 0 0');
 		expect(onLayoutChanged).toHaveBeenCalledWith({
-			project: state.codeBlockRendering.rootProject,
+			project: state.project.rootLevel,
 			codeBlocks: [rootEnvironment],
 		});
 		expect(state.projectChange.revision).toBe(revision + 1);
@@ -223,8 +222,8 @@ entryEnd`);
 		const { store, state, events, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd\nentry main\nmodule authored\nmoduleEnd\nentryEnd');
 		const environment = env();
-		const authored = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'authored')!;
-		store.projectEdits.apply(
+		const authored = () => state.project.rootLevel.blocks.find(block => block.name === 'authored')!;
+		store.projectTransactions.apply(
 			{ updates: [{ codeBlock: authored(), code: ['module authored', 'push 1', 'moduleEnd'] }] },
 			{ history: 'checkpoint' }
 		);

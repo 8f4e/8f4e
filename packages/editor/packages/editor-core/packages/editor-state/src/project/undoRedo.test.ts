@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, ProjectChange, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import initState, { setGridSize } from '~/index';
@@ -33,8 +33,8 @@ describe('history tracking effect', () => {
 	it('restores undo and redo snapshots within the current project', () => {
 		const { state, store, events } = createHistoryEditor();
 		const original = serializeToProject(state);
-		store.projectEdits.apply(
-			{ inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }] },
+		store.projectTransactions.apply(
+			{ inserts: [{ project: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }] },
 			{ history: 'checkpoint' }
 		);
 		const edited = serializeToProject(state);
@@ -52,9 +52,9 @@ describe('history tracking effect', () => {
 			...EMPTY_DEFAULT_PROJECT,
 			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', 'moduleEnd'] }],
 		});
-		const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'test')!;
+		const block = state.project.rootLevel.blocks.find(candidate => candidate.name === 'test')!;
 
-		store.projectEdits.apply({ updates: [{ codeBlock: block, code: ['module test', 'push 1', 'moduleEnd'] }] });
+		store.projectTransactions.apply({ updates: [{ codeBlock: block, code: ['module test', 'push 1', 'moduleEnd'] }] });
 		store.dispose();
 		await vi.advanceTimersByTimeAsync(1000);
 
@@ -66,7 +66,7 @@ describe('history tracking with real project mutations', () => {
 	let state: State;
 	let store: ReturnType<typeof createHistoryEditor>['store'];
 	let events: ReturnType<typeof createHistoryEditor>['events'];
-	let block: CodeBlockGraphicData;
+	let block: EditorCodeBlock;
 	let baselineRevision: number;
 
 	function dispatch(name: string, payload: unknown = {}): void {
@@ -74,14 +74,14 @@ describe('history tracking with real project mutations', () => {
 	}
 
 	function replaceLine(row: number, line: string) {
-		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
+		const codeBlock = state.project.selectedCodeBlock!;
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) },
 		]);
 	}
 
 	function currentModule() {
-		return state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'module')!;
+		return state.project.activeLevel.blocks.find(block => block.blockType === 'module')!;
 	}
 
 	function selectedBlockCode(): string[] {
@@ -89,9 +89,7 @@ describe('history tracking with real project mutations', () => {
 	}
 
 	function environment() {
-		return state.codeBlockRendering.rootProject.blocks.find(
-			block => block.name === 'env' && block.blockType === 'constants'
-		)!;
+		return state.project.rootLevel.blocks.find(block => block.name === 'env' && block.blockType === 'constants')!;
 	}
 
 	beforeEach(() => {
@@ -101,7 +99,7 @@ describe('history tracking with real project mutations', () => {
 			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module main', 'push 1', 'drop', 'moduleEnd'] }],
 		}));
 		block = currentModule();
-		store.set('codeBlockRendering.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: 6, y: 16 };
 		baselineRevision = state.projectChange.revision;
 	});
@@ -137,9 +135,9 @@ describe('history tracking with real project mutations', () => {
 
 		// Re-selecting the same block was the original bug trigger: it used to
 		// schedule a history snapshot that wiped the redo stack after 1s.
-		store.set('codeBlockRendering.selectedCodeBlock', currentModule());
-		store.set('codeBlockRendering.selectedCodeBlock.code', currentModule().code);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock', currentModule());
+		store.set('project.selectedCodeBlock.code', currentModule().code);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
 		await vi.advanceTimersByTimeAsync(2000);
 
 		expect(state.historyStack).toHaveLength(0);
@@ -156,7 +154,7 @@ describe('history tracking with real project mutations', () => {
 		expect(state.redoStack).toHaveLength(1);
 
 		const restored = currentModule();
-		state.codeBlockRendering.selectedCodeBlock = restored;
+		state.project.selectedCodeBlock = restored;
 		restored.cursor = { row: 1, col: 6, y: 16 };
 		replaceLine(1, 'push 13');
 
@@ -168,7 +166,7 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('preserves authored history and redo across idle generated changes', async () => {
-		const capture = vi.spyOn(store.projectEdits, 'capture');
+		const capture = vi.spyOn(store.projectTransactions, 'capture');
 		store.set('envConstantContributions.test', ['const GENERATED 42']);
 		expect(state.projectChange).toEqual({
 			revision: baselineRevision + 1,
@@ -200,7 +198,7 @@ describe('history tracking with real project mutations', () => {
 			[{ codeBlock: block, code: ['module main', 'push 1', 'drop', '; @config test 42', 'moduleEnd'] }],
 			{ history: 'checkpoint' }
 		);
-		const capture = vi.spyOn(store.projectEdits, 'capture');
+		const capture = vi.spyOn(store.projectTransactions, 'capture');
 		const revision = state.projectChange.revision;
 		store.subscribe('editorConfig.test', value => {
 			store.set('envConstantContributions.test', [`const GENERATED ${value}`]);
@@ -221,7 +219,7 @@ describe('history tracking with real project mutations', () => {
 		events.on('beforeProjectEdit', beforeProjectEdit);
 		const generatedChange = state.projectChange;
 		expect(
-			store.projectEdits.apply(
+			store.projectTransactions.apply(
 				{ updates: [{ codeBlock: environment(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
 				{ history: 'checkpoint' }
 			).changed
@@ -231,7 +229,7 @@ describe('history tracking with real project mutations', () => {
 		expect(state.historyStack).toHaveLength(0);
 		await vi.advanceTimersByTimeAsync(400);
 		expect(state.historyStack).toHaveLength(1);
-		expect(state.historyStack[0].rootProject.blocks.map(block => block.code[0])).not.toContain('constants env');
+		expect(state.historyStack[0].rootLevel.blocks.map(block => block.code[0])).not.toContain('constants env');
 		dispatch('undo');
 		expect(selectedBlockCode()[1]).toBe('push 1');
 		expect(environment().code).toContain('; @pos 0 0');
@@ -256,7 +254,7 @@ describe('history tracking with real project mutations', () => {
 		store.subscribe('editorConfig.test', value => {
 			store.set('envConstantContributions.test', value === undefined ? [] : [`const GENERATED ${value}`]);
 		});
-		store.projectEdits.apply(
+		store.projectTransactions.apply(
 			{
 				updates: [
 					{ codeBlock: block, code: ['module main', 'push 12', 'drop', '; @config test 42', 'moduleEnd'] },
@@ -286,7 +284,7 @@ describe('history tracking with real project mutations', () => {
 	] as const)(
 		'publishes an authored %s before generated changes requested by a %s observer',
 		(history, notification) => {
-			const capture = vi.spyOn(store.projectEdits, 'capture');
+			const capture = vi.spyOn(store.projectTransactions, 'capture');
 			const contribute = () => {
 				store.unsubscribe(notification, contribute);
 				store.set('envConstantContributions.test', ['const GENERATED 42']);
@@ -322,12 +320,12 @@ describe('history tracking with real project mutations', () => {
 		expect(block.code[1]).toBe('push 12');
 		expect(state.historyStack).toHaveLength(1);
 		expect(
-			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === block.creationIndex)!.code
+			state.historyStack[0].rootLevel.blocks.find(candidate => candidate.creationIndex === block.creationIndex)!.code
 		).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
 	});
 
 	it('creates no history entry when an edit returns to the committed content (case e)', async () => {
-		expect(state.codeBlockRendering.rootProject.entries).toEqual(['main']);
+		expect(state.project.rootLevel.entries).toEqual(['main']);
 		replaceLine(1, 'push 12');
 		replaceLine(1, 'push 1');
 		await vi.advanceTimersByTimeAsync(2000);
@@ -354,13 +352,13 @@ describe('history tracking with real project mutations', () => {
 
 		// The next edit is measured against the loaded project as its baseline.
 		const loaded = currentModule();
-		state.codeBlockRendering.selectedCodeBlock = loaded;
+		state.project.selectedCodeBlock = loaded;
 		loaded.cursor = { row: 0, col: 11, y: 0 };
 		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
 		expect(
-			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === loaded.creationIndex)!.code
+			state.historyStack[0].rootLevel.blocks.find(candidate => candidate.creationIndex === loaded.creationIndex)!.code
 		).toEqual(['module other', 'moduleEnd']);
 	});
 
@@ -382,10 +380,10 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('does not create a snapshot for allocation without a net content change', async () => {
-		const { insertedBlocks } = store.projectEdits.apply({
-			inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }],
+		const { insertedBlocks } = store.projectTransactions.apply({
+			inserts: [{ project: state.project.rootLevel, source: { code: ['note test', 'noteEnd'] } }],
 		});
-		store.projectEdits.apply({ deletes: insertedBlocks });
+		store.projectTransactions.apply({ deletes: insertedBlocks });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(0);
 	});
@@ -417,10 +415,10 @@ describe('history tracking with real project mutations', () => {
 	});
 
 	it('records nothing for selection, caret movement, or repeated selection alone', async () => {
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', 2);
+		store.set('project.selectedCodeBlock.cursor.row', 1);
 		await vi.advanceTimersByTimeAsync(3000);
 
 		expect(state.projectChange.revision).toBe(baselineRevision);

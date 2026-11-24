@@ -47,16 +47,16 @@ export default function updateViewport(
 
 /** Save a departing view without turning a deferred first visit's placeholder into a remembered position. */
 export function rememberCurrentProjectView(state: State): void {
-	const { currentProject, selectedCodeBlock } = state.codeBlockRendering;
-	if (pendingProjectViewport.get(state) !== currentProject) {
-		currentProject.viewport = { x: state.viewport.x, y: state.viewport.y };
+	const { activeLevel, selectedCodeBlock } = state.project;
+	if (pendingProjectViewport.get(state) !== activeLevel) {
+		activeLevel.viewport = { x: state.viewport.x, y: state.viewport.y };
 	}
-	currentProject.selectedBlock = selectedCodeBlock;
+	activeLevel.selectedBlock = selectedCodeBlock;
 }
 
 /** Once source has settled, restore memory immediately or defer first-visit placement until the grid is ready. */
 export function placeCurrentProjectViewport(state: State, events: EventDispatcher): void {
-	const project = state.codeBlockRendering.currentProject;
+	const project = state.project.activeLevel;
 	cancelPendingProjectViewport(state);
 	if (!project.viewport && !state.gridSizeReady) {
 		pendingProjectViewport.set(state, project);
@@ -71,6 +71,6 @@ export function placeCurrentProjectViewport(state: State, events: EventDispatche
 export function resolvePendingProjectViewport(state: State, events: EventDispatcher): void {
 	if (!state.gridSizeReady) return;
 	const pending = pendingProjectViewport.get(state);
-	if (pending && pending === state.codeBlockRendering.currentProject) placeCurrentProjectViewport(state, events);
+	if (pending && pending === state.project.activeLevel) placeCurrentProjectViewport(state, events);
 	else cancelPendingProjectViewport(state);
 }

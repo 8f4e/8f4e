@@ -1,6 +1,6 @@
-import type { CodeBlockGraphicData, EditorDirectiveDefinition, ProjectLevel } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorDirectiveDefinition, ProjectLevel } from '@8f4e/editor-state-types';
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
-import parsePos from '../../directives/block/positionDirective';
+import parsePositionDirective from '../../directives/block/positionDirective';
 import { deriveDirectiveFacts } from '../../directives/blockDirectiveRegistry';
 import { parseBlockDirectives } from '../../directives/parseBlockDirectives';
 import { clampSourcePosition } from '../../layout/text-geometry/clampSourcePosition';
@@ -9,8 +9,8 @@ import { updateProjectGroupMemoryExposureDeclarations } from '../../memory/proje
 import type { ProjectMembership } from '../membership';
 import { updateProjectLevelPath } from '../tree';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
-import getBlockType from './getCodeBlockTypeFromSource';
-import replaceCodeBlocksInPlace from './replaceBlocksInPlace';
+import getCodeBlockTypeFromSource from './getCodeBlockTypeFromSource';
+import replaceBlocksInPlace from './replaceBlocksInPlace';
 import { partitionCodeBlocksByAlwaysOnTop } from './zOrder';
 
 function isProjectScopeSourceLine(line: string): boolean {
@@ -25,19 +25,19 @@ function isProjectScopeSourceLine(line: string): boolean {
 }
 
 /** Modules and structural project-group blocks can own execution entries. */
-export function supportsExecutionEntry(block: Pick<CodeBlockGraphicData, 'blockType' | 'childProject'>): boolean {
+export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType' | 'childProject'>): boolean {
 	return block.blockType === 'module' || block.childProject !== undefined;
 }
 
 /** Keep the editor's entry table authoritative, including empty previously declared entries. */
-export function rememberEntry(project: ProjectLevel, block: CodeBlockGraphicData): void {
+export function rememberEntry(project: ProjectLevel, block: EditorCodeBlock): void {
 	if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
 		project.entries.push(block.entry);
 	}
 }
 
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
-export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
+export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: EditorDirectiveDefinition[]): void {
 	const [row, col] = clampSourcePosition(block.code, block.cursor.row, block.cursor.col);
 	block.cursor.row = row;
 	block.cursor.col = col;
@@ -53,12 +53,12 @@ export function updateBlockSource(block: CodeBlockGraphicData, directives: Edito
 	if (block.childProject !== undefined && block.name !== previousName) {
 		updateProjectLevelPath(block.childProject, createChildProjectGroupPath(block.projectPath, block.name));
 	}
-	const position = parsePos(block.parsedDirectives);
+	const position = parsePositionDirective(block.parsedDirectives);
 	if (position) {
 		block.gridX = position.x;
 		block.gridY = position.y;
 	}
-	block.blockType = getBlockType(block.code);
+	block.blockType = getCodeBlockTypeFromSource(block.code);
 	const hasProjectScopeInstruction = block.code.some(line => /^\s*pass(?:\s|$)/.test(line));
 	block.isProjectScope =
 		block.projectPath === '' &&
@@ -77,32 +77,32 @@ export function updateBlockSource(block: CodeBlockGraphicData, directives: Edito
 
 function partitionProjectBlocks(project: ProjectLevel): void {
 	const sorted = partitionCodeBlocksByAlwaysOnTop(project.blocks);
-	if (sorted.some((block, index) => block !== project.blocks[index])) replaceCodeBlocksInPlace(project.blocks, sorted);
+	if (sorted.some((block, index) => block !== project.blocks[index])) replaceBlocksInPlace(project.blocks, sorted);
 }
 
 /** Prepare newly attached source trees, including source-owned stacking in each level. */
-export function prepareProjectSources(
+export function prepareProjectSourceMetadata(
 	project: ProjectLevel,
-	blocks: readonly CodeBlockGraphicData[],
+	blocks: readonly EditorCodeBlock[],
 	directives: EditorDirectiveDefinition[]
 ): void {
 	for (const block of blocks) {
-		updateBlockSource(block, directives);
+		refreshBlockSourceMetadata(block, directives);
 		rememberEntry(project, block);
-		if (block.childProject) prepareProjectSources(block.childProject, block.childProject.blocks, directives);
+		if (block.childProject) prepareProjectSourceMetadata(block.childProject, block.childProject.blocks, directives);
 	}
 	partitionProjectBlocks(project);
 }
 
 /** Refresh edited blocks without reapplying directives from unchanged child projects. */
-export function refreshBlockSources(
-	blocks: readonly CodeBlockGraphicData[],
+export function refreshEditedBlocksMetadata(
+	blocks: readonly EditorCodeBlock[],
 	directives: EditorDirectiveDefinition[],
 	membership: Pick<ProjectMembership, 'getOwner'>
 ): void {
 	const projects = new Set<ProjectLevel>();
 	for (const block of blocks) {
-		updateBlockSource(block, directives);
+		refreshBlockSourceMetadata(block, directives);
 		const owner = membership.getOwner(block);
 		if (owner) projects.add(owner);
 	}
