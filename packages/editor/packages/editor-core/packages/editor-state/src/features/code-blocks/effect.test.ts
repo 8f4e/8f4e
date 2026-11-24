@@ -239,22 +239,6 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 });
 
 describe('code block layout invalidation', () => {
-	it('does not invalidate layouts for compilation progress or results', () => {
-		const { store, state, events, loadSource } = setup();
-		loadSource('entry main\nmodule main\nmoduleEnd\nentryEnd');
-		const onLayoutsChanged = vi.fn();
-		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
-
-		store.set('compiler.isCompiling', true);
-		store.set('compiler.isCompiling', false);
-		expect(onLayoutsChanged).not.toHaveBeenCalled();
-
-		store.set('compiler.isCompiling', true);
-		store.set('compiler.result', { ...state.compiler.result, inputRevision: state.compilerInputRevision });
-		store.set('compiler.isCompiling', false);
-		expect(onLayoutsChanged).not.toHaveBeenCalled();
-	});
-
 	it('supports explicit data-dependent block preparation without recalculating layout', () => {
 		const { store, state, events, loadSource, block } = setup(false);
 		loadSource('entry main\ngroup child\nentry main\nmodule voice\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd');
@@ -269,22 +253,27 @@ describe('code block layout invalidation', () => {
 		expect(onLayoutsChanged).not.toHaveBeenCalled();
 
 		setGridSize(state, events, { vGrid: 8, hGrid: 16 });
-		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('child'), state });
+		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('child'), state }, 'layout');
 		prepare.mockClear();
 		onLayoutsChanged.mockClear();
 
+		store.set('compiler.isCompiling', true);
+		store.set('compiler.isCompiling', false);
+		expect(prepare).not.toHaveBeenCalled();
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
+
 		store.set('compiler.result', { ...state.compiler.result });
-		expect(prepare.mock.calls.map(([context]) => context.codeBlock)).toEqual(
-			state.codeBlockRendering.currentProject.blocks
+		expect(prepare.mock.calls).toEqual(
+			state.codeBlockRendering.currentProject.blocks.map(codeBlock => [{ codeBlock, state }, 'data'])
 		);
 		expect(onLayoutsChanged).not.toHaveBeenCalled();
 
 		events.dispatch('openProjectGroup', { codeBlock: block('child') });
-		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('voice'), state });
+		expect(prepare).toHaveBeenCalledWith({ codeBlock: block('voice'), state }, 'layout');
 		prepare.mockClear();
 		onLayoutsChanged.mockClear();
 		store.set('compiler.result', { ...state.compiler.result });
-		expect(prepare).toHaveBeenCalledExactlyOnceWith({ codeBlock: block('voice'), state });
+		expect(prepare).toHaveBeenCalledExactlyOnceWith({ codeBlock: block('voice'), state }, 'data');
 		expect(onLayoutsChanged).not.toHaveBeenCalled();
 
 		unsubscribe();

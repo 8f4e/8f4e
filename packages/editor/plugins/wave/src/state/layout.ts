@@ -18,7 +18,7 @@ export function registerWavePreparation(
 ): () => void {
 	const contribution = layout.createContribution();
 	const heights = { wave: 2, wave2: 4, wave4: 8 };
-	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(
 			codeBlock.parsedDirectives,
 			Object.keys(heights).map(name => ({ name }))
@@ -33,12 +33,14 @@ export function registerWavePreparation(
 					]
 				: [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(item => ({
-				sourceLineIndex: item.data.lineNumber,
-				heightInRows: item.heightRows,
-			})),
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(item => ({
+					sourceLineIndex: item.data.lineNumber,
+					heightInRows: item.heightRows,
+				})),
+			});
+		}
 		const waves: Wave[] = [];
 		items.forEach(({ data, heightRows }) => {
 			const scope = getCodeBlockMemoryScope(codeBlock);

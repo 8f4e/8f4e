@@ -23,19 +23,21 @@ export function registerScopePreparation(
 	readScopeDirectives: ScopeDirectiveReader
 ) {
 	const contribution = layout.createContribution();
-	const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
+	const prepare = ({ codeBlock, state }: CodeBlockLayoutContext, reason: 'layout' | 'data') => {
 		const items = readScopeDirectives(codeBlock.parsedDirectives).scopes;
 		if (!items.length) {
 			scopesByBlock.delete(codeBlock);
-			contribution.remove(codeBlock);
+			if (reason === 'layout') contribution.remove(codeBlock);
 			return;
 		}
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(data => ({
-				sourceLineIndex: data.lineNumber,
-				heightInRows: HEIGHT_IN_ROWS,
-			})),
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(data => ({
+					sourceLineIndex: data.lineNumber,
+					heightInRows: HEIGHT_IN_ROWS,
+				})),
+			});
+		}
 		const previous = [...(scopesByBlock.get(codeBlock) ?? [])];
 		const scopes: Scope[] = [];
 		const memoryScope = getCodeBlockMemoryScope(codeBlock);
@@ -86,11 +88,11 @@ export function registerScopePreparation(
 		if (scopes.length) scopesByBlock.set(codeBlock, scopes);
 		else scopesByBlock.delete(codeBlock);
 	};
-	const unsubscribe = layout.subscribe(prepare);
+	const unsubscribe = layout.subscribe(context => prepare(context, 'layout'));
 	return {
 		refresh: (state: State) => {
 			if (state.viewport.vGrid <= 0 || state.viewport.hGrid <= 0) return;
-			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state });
+			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state }, 'data');
 		},
 		dispose: () => {
 			unsubscribe();

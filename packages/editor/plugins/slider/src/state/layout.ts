@@ -51,14 +51,16 @@ export function registerSliderPreparation(
 	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'slider' }]).flatMap(directive => {
 			const data = createSliderDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 2 })),
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 2 })),
+			});
+		}
 		const widgets: Slider[] = [];
 		slidersByBlock.set(codeBlock, widgets);
 		for (const data of items) resolveSliderLayout(data, codeBlock, state, widgets);

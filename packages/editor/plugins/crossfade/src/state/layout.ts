@@ -15,14 +15,16 @@ export function registerCrossfadePreparation(
 		store,
 		layout,
 		'compiler.result',
-		({ codeBlock: graphicData, state }) => {
+		({ codeBlock: graphicData, state }, reason) => {
 			const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'crossfade' }]).flatMap(directive => {
 				const data = createCrossfadeDirectiveData(directive.args, directive.sourceLineIndex);
 				return data ? [data] : [];
 			});
-			contribution.update(graphicData, {
-				verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 2 })),
-			});
+			if (reason === 'layout') {
+				contribution.update(graphicData, {
+					verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 2 })),
+				});
+			}
 			crossfadesByBlock.set(graphicData, []);
 			items.forEach(data => {
 				const scope = getCodeBlockMemoryScope(graphicData);

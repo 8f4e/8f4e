@@ -165,7 +165,9 @@ again when core calculates their layout, including source, grid size, selection 
 It returns an unsubscribe function. Plugin preparation that depends on other data observes that data directly.
 `subscribeToBlockPreparation(store, layout, 'compiler.result', prepare)` from `@8f4e/editor-state` is an opt-in
 convenience for preparing block-local data from layout and an explicit state selector; data changes prepare the
-current view without invalidating its geometry.
+current view without automatically invalidating its geometry. Its callback receives a reason (`layout` or `data`);
+source-owned space requests belong to the layout path, while requests derived from the observed data can update
+their contributions when that data changes.
 Each block retains `tabStopsByLine`, derived from its cached directive records when source changes. Caret movement,
 pointer placement, sizing and presentation reuse those tab stops. Block navigation also uses the settled display model.
 Caret movement updates its vertical position using the settled display rows and gaps; it does not refresh layout or

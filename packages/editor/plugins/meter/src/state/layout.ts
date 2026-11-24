@@ -24,7 +24,7 @@ export function registerMeterPreparation(
 		store,
 		layout,
 		'compiler.result',
-		({ codeBlock: graphicData, state }) => {
+		({ codeBlock: graphicData, state }, reason) => {
 			const scope = getCodeBlockMemoryScope(graphicData);
 			const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'meter' }]).flatMap(directive => {
 				const data = createMeterDirectiveData(directive.args, directive.sourceLineIndex);
@@ -38,9 +38,14 @@ export function registerMeterPreparation(
 				const read = access && (prepareAddressedRead(access) ?? prepareNumericRead(access));
 				return [{ data, read }];
 			});
-			contribution.update(graphicData, {
-				verticalSpaceAfterSourceLine: items.map(({ data }) => ({ sourceLineIndex: data.lineNumber, heightInRows: 1 })),
-			});
+			if (reason === 'layout') {
+				contribution.update(graphicData, {
+					verticalSpaceAfterSourceLine: items.map(({ data }) => ({
+						sourceLineIndex: data.lineNumber,
+						heightInRows: 1,
+					})),
+				});
+			}
 			metersByBlock.set(graphicData, []);
 			items.forEach(({ data, read }) => {
 				if (!read) return;

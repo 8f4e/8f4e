@@ -120,6 +120,39 @@ afterEach(() => {
 });
 
 describe('slider plugin', () => {
+	it('refreshes memory bindings after compilation without resubmitting source-owned layout contributions', async () => {
+		const test = await setup(source, false);
+		const createContribution = vi.spyOn(test.store.layout, 'createContribution');
+		cleanups.push(
+			createSliderPlugin({ writeMemory: test.write }).setup({
+				store: test.store,
+				events: test.events,
+				menus: test.store.menus,
+				directives: test.store.directives,
+				layout: test.store.layout,
+				loading: test.store.loading,
+				drawers: test.drawers,
+			})
+		);
+		expect(createContribution).toHaveBeenCalledOnce();
+		const update = vi.spyOn(createContribution.mock.results[0].value, 'update');
+		setGridSize(test.state, test.events, { ...TEST_GRID_SIZE, vGrid: TEST_GRID_SIZE.vGrid + 2 });
+		expect(update).toHaveBeenCalledWith(test.block, {
+			verticalSpaceAfterSourceLine: [{ sourceLineIndex: 2, heightInRows: 2 }],
+		});
+		update.mockClear();
+
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{ cache: test.compiled.cache, startingMemoryAllocationUnitAddress: 32 }
+		);
+		const address = replacement.memoryPlan.modules.controls.memory.gain.allocationUnitAddress;
+		expect(address).not.toBe(test.compiled.memoryPlan.modules.controls.memory.gain.allocationUnitAddress);
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		expect(update).not.toHaveBeenCalled();
+		test.press(0.75);
+		expect(test.write).toHaveBeenLastCalledWith(address, 0.75, false);
+	});
 	it('writes fixed references to the backing module and saves its defaults', async () => {
 		const test = await setup([
 			'module source',

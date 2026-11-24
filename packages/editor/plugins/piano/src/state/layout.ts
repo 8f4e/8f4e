@@ -121,15 +121,17 @@ export function registerPianoPreparation(
 	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'piano' }]).flatMap(directive => {
 			const data = createPianoDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 6 })),
-			minGridWidth: items.length ? PIANO_KEYBOARD_MIN_GRID_WIDTH : undefined,
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 6 })),
+				minGridWidth: items.length ? PIANO_KEYBOARD_MIN_GRID_WIDTH : undefined,
+			});
+		}
 		const widgets: PianoKeyboard[] = [];
 		keyboardsByBlock.set(codeBlock, widgets);
 		for (const data of items) resolvePianoLayout(data, codeBlock, state, widgets);

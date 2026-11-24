@@ -15,14 +15,16 @@ export function registerBarsPreparation(
 		store,
 		layout,
 		'compiler.result',
-		({ codeBlock: graphicData, state }) => {
+		({ codeBlock: graphicData, state }, reason) => {
 			const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'bars' }]).flatMap(directive => {
 				const data = createBarsDirectiveData(directive.args, directive.sourceLineIndex);
 				return data ? [data] : [];
 			});
-			contribution.update(graphicData, {
-				verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 8 })),
-			});
+			if (reason === 'layout') {
+				contribution.update(graphicData, {
+					verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.lineNumber, heightInRows: 8 })),
+				});
+			}
 			barsByBlock.set(graphicData, []);
 			items.forEach(data => {
 				const scope = getCodeBlockMemoryScope(graphicData);
