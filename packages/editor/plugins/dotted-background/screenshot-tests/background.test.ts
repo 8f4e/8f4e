@@ -1,5 +1,4 @@
 import { PALETTE_INDICES, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import loadFontAtlas, { type FontAtlas } from '@8f4e/sprite-generator';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import BackgroundRenderer from '../src/backgroundRenderer';
@@ -53,9 +52,8 @@ function createScene() {
 	engine.hooks.preDraw.push(() => background.draw(viewport));
 	let bytes: Uint8Array;
 	return {
-		install(data: FontAtlas, colors = toPaletteBytes(resolvePalette())) {
+		setPalette(colors = toPaletteBytes(resolvePalette())) {
 			bytes = colors;
-			engine.setSpriteAtlas(data.image, data.grid);
 			engine.setPalette(bytes);
 			background.setPalette(bytes);
 		},
@@ -127,23 +125,22 @@ test.each([
 	[2, 7, 0, 3, 1],
 	[21, 6, 9, 2, 2],
 	[33, 61, 12, 26, 8],
-])('draws centered alternating dots in a %i×%i pixel grid cell', async (vGrid, hGrid, x, y, size) => {
+])('draws centered alternating dots in a %i×%i pixel grid cell', (vGrid, hGrid, x, y, size) => {
 	const scene = createScene();
 	try {
-		scene.install(await loadFontAtlas(), palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]));
+		scene.setPalette(palette([17, 31, 47, 128], [211, 41, 3, 128], [7, 137, 239, 64]));
 		scene.check(129, 97, { vGrid, hGrid, dot: { x, y, size } });
 	} finally {
 		scene.destroy();
 	}
 });
 
-test('pans dots with the viewport origin without losing color parity or pixel precision', async () => {
+test('pans dots with the viewport origin without losing color parity or pixel precision', () => {
 	const scene = createScene();
 	try {
-		const font = await loadFontAtlas();
-		scene.install(font, palette([17, 31, 47, 255], [211, 41, 3, 255], [7, 137, 239, 255]));
+		scene.setPalette(palette([17, 31, 47, 255], [211, 41, 3, 255], [7, 137, 239, 255]));
 		scene.check(33, 35, defaultGrid, { x: 3, y: 5 });
-		scene.check(33, 35, defaultGrid, { x: font.grid.cellWidth, y: 0 });
+		scene.check(33, 35, defaultGrid, { x: defaultGrid.vGrid, y: 0 });
 		scene.check(33, 35, defaultGrid, { x: -3, y: -5 });
 		scene.check(33, 35, defaultGrid, { x: 2 ** 30 + 5, y: -(2 ** 30) - 7 });
 		scene.check(33, 35);
@@ -168,10 +165,10 @@ test.each([
 		width: 3840,
 		height: 2160,
 	},
-])('composites the $name background over transparent and opaque content', async ({ config, width, height }) => {
+])('composites the $name background over transparent and opaque content', ({ config, width, height }) => {
 	const scene = createScene();
 	try {
-		scene.install(await loadFontAtlas(), toPaletteBytes(resolvePalette(config)));
+		scene.setPalette(toPaletteBytes(resolvePalette(config)));
 		scene.check(width, height);
 	} finally {
 		scene.destroy();
@@ -185,27 +182,27 @@ const transparencyCases: Array<[string, number[], number[], number[]]> = [
 	['odd dots only', [0, 0, 0, 0], [0, 0, 0, 0], [10, 20, 30, 128]],
 ];
 
-test.each(transparencyCases)('handles a background with %s', async (_name, base, even, odd) => {
+test.each(transparencyCases)('handles a background with %s', (_name, base, even, odd) => {
 	const scene = createScene();
 	try {
-		scene.install(await loadFontAtlas(), palette(base, even, odd));
+		scene.setPalette(palette(base, even, odd));
 		scene.check(33, 35);
 	} finally {
 		scene.destroy();
 	}
 });
 
-test('updates grid, palette, and viewport and survives rendering-memory restoration', async () => {
+test('updates grid, palette, and viewport independently and survives rendering-memory restoration', () => {
 	const scene = createScene();
 	try {
-		scene.install(await loadFontAtlas());
+		scene.setPalette();
 		scene.check(129, 97);
-		scene.install(await loadFontAtlas('spleen5x8'), toPaletteBytes(resolvePalette({ canvas: '#182030' })));
+		scene.check(321, 197, smallGrid);
+		scene.setPalette(toPaletteBytes(resolvePalette({ canvas: '#182030' })));
 		scene.check(321, 197, smallGrid);
 		scene.check(33, 35, smallGrid, { x: -3, y: 9 });
 		scene.restore();
 		scene.check(211, 143, smallGrid);
-		// A new grid needs neither an atlas change nor explicit font notification.
 		scene.check(211, 143, { vGrid: 21, hGrid: 6, dot: { x: 9, y: 2, size: 2 } });
 	} finally {
 		scene.destroy();

@@ -70,7 +70,7 @@ function palette(base: number[], even: number[], odd: number[]): Uint8Array {
 const grid = { vGrid: 8, hGrid: 16 };
 
 describe('procedural background', () => {
-	it('draws one triangle and follows grid and drawing-buffer size changes', () => {
+	it('draws one triangle, updating dot bounds only when the grid changes', () => {
 		const { context, gl } = createGl();
 		const background = new BackgroundRenderer(context);
 		background.setPalette(palette([20, 30, 40, 102], [99, 99, 99, 255], [58, 58, 58, 255]));
@@ -83,9 +83,17 @@ describe('procedural background', () => {
 		expect(gl.blendFunc).toHaveBeenCalledWith(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 		gl.drawingBufferWidth = 800;
 		gl.drawingBufferHeight = 601;
-		background.draw({ x: 0, y: 0, vGrid: 5, hGrid: 8 });
+		background.draw({ x: 9, y: 3, ...grid });
 		expect(gl.viewport).toHaveBeenLastCalledWith(0, 0, 800, 601);
+		expect(gl.uniform2f).toHaveBeenCalledWith({ name: 'u_patternOffset' }, 9 / 16, 3 / 16);
+		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 800 / 16, 601 / 16);
+		expect(gl.uniform4f).toHaveBeenCalledOnce();
+		background.draw({ x: 0, y: 0, vGrid: 5, hGrid: 16 });
+		expect(gl.uniform4f).toHaveBeenCalledTimes(2);
+		expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 7 / 16, 3 / 5, 8 / 16);
+		background.draw({ x: 0, y: 0, vGrid: 5, hGrid: 8 });
 		expect(gl.uniform2f).toHaveBeenLastCalledWith({ name: 'u_patternScale' }, 80, 601 / 8);
+		expect(gl.uniform4f).toHaveBeenCalledTimes(3);
 		expect(gl.uniform4f).toHaveBeenLastCalledWith({ name: 'u_dotBounds' }, 2 / 5, 3 / 8, 3 / 5, 4 / 8);
 		background.destroy();
 	});

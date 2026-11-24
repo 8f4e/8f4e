@@ -14,7 +14,7 @@ const frame = {
 	state,
 	viewport: state.viewport,
 	memoryViews: {} as MemoryViews,
-	blockPositions: createFrameBlockPositions().prepare(state),
+	blockPositions: createFrameBlockPositions().prepare(state.project.activeLevel.blocks, state.viewport),
 };
 const createLayer = () => ({
 	draw: vi.fn(),

@@ -33,7 +33,7 @@ describe('drawCodeBlocks', () => {
 			viewport: { x: 8, y: -16 },
 			project: { activeLevel: { entries: [], path: '', blocks: [visible, offscreen] } },
 		});
-		const blockPositions = createFrameBlockPositions().prepare(state);
+		const blockPositions = createFrameBlockPositions().prepare(state.project.activeLevel.blocks, state.viewport);
 		const draw = createDrawContext();
 		const memoryViews = createMemoryViews();
 		const renderRegistry = createEditorRenderRegistry();
@@ -62,7 +62,7 @@ describe('drawCodeBlocks', () => {
 				activeLevel: { entries: [], path: '', blocks: [offscreen, visible, lastOffscreen] },
 			},
 		});
-		const blockPositions = createFrameBlockPositions().prepare(state);
+		const blockPositions = createFrameBlockPositions().prepare(state.project.activeLevel.blocks, state.viewport);
 		const draw = createDrawContext();
 		const renderRegistry = createEditorRenderRegistry();
 		const calls: string[] = [];

@@ -13,6 +13,8 @@ export default class BackgroundRenderer {
 	private readonly dotBoundsLocation: WebGLUniformLocation;
 	private readonly colorLocations: WebGLUniformLocation[];
 	private readonly colors = [new Float32Array(4), new Float32Array(4), new Float32Array(4)];
+	private uploadedVGrid?: number;
+	private uploadedHGrid?: number;
 	private visible = false;
 	private destroyed = false;
 
@@ -57,15 +59,19 @@ export default class BackgroundRenderer {
 		if (!this.visible) return;
 		const gl = this.gl;
 		const patternWidth = vGrid * 2;
-		const size = Math.max(1, Math.round(Math.min(vGrid, hGrid) / 4));
-		const dotX = Math.floor((vGrid - size) / 2);
-		const dotY = Math.floor((hGrid - size) / 2);
 		// Establish the WebGL state this pass needs independently of other layers.
 		prepareRenderPass(gl, this.program, this.vertexArray);
 		// Wrap before uploading so large world coordinates retain pixel precision and column parity.
 		gl.uniform2f(this.patternOffsetLocation, (x % patternWidth) / patternWidth, (y % hGrid) / hGrid);
 		gl.uniform2f(this.patternScaleLocation, gl.drawingBufferWidth / patternWidth, gl.drawingBufferHeight / hGrid);
-		gl.uniform4f(this.dotBoundsLocation, dotX / vGrid, dotY / hGrid, (dotX + size) / vGrid, (dotY + size) / hGrid);
+		if (vGrid !== this.uploadedVGrid || hGrid !== this.uploadedHGrid) {
+			const size = Math.max(1, Math.round(Math.min(vGrid, hGrid) / 4));
+			const dotX = Math.floor((vGrid - size) / 2);
+			const dotY = Math.floor((hGrid - size) / 2);
+			gl.uniform4f(this.dotBoundsLocation, dotX / vGrid, dotY / hGrid, (dotX + size) / vGrid, (dotY + size) / hGrid);
+			this.uploadedVGrid = vGrid;
+			this.uploadedHGrid = hGrid;
+		}
 		for (let index = 0; index < this.colors.length; index++)
 			gl.uniform4fv(this.colorLocations[index], this.colors[index]);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);

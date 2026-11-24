@@ -35,8 +35,13 @@ export function createFrameBlockPositions() {
 	const byCodeBlock = new Map<EditorCodeBlock, StoredBlockPosition>();
 	const positions: FrameBlockPositions = { ordered, byCodeBlock };
 	return {
-		prepare(state: State, resolveOffset?: CodeBlockOffsetResolver, { x, y } = state.viewport): FrameBlockPositions {
-			const codeBlocks = state.project.activeLevel.blocks;
+		/** Project logical block positions through the presented viewport, not the committed camera. */
+		prepare(
+			codeBlocks: readonly EditorCodeBlock[],
+			viewport: Readonly<Pick<State['viewport'], 'x' | 'y'>>,
+			resolveOffset?: CodeBlockOffsetResolver
+		): FrameBlockPositions {
+			const { x, y } = viewport;
 			let orderChanged = ordered.length !== codeBlocks.length;
 			for (let i = 0; i < codeBlocks.length; i++) {
 				const codeBlock = codeBlocks[i];
