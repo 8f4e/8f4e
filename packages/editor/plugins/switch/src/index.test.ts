@@ -220,15 +220,15 @@ describe('switch plugin', () => {
 		expect(test.memoryViews.int32[test.address]).toBe(0);
 	});
 
-	it('rebinds after runtime memory metadata changes and drops unresolved widgets', async () => {
+	it('rebinds after compiler memory metadata changes and drops unresolved widgets', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.controls.memory };
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', { ...memory });
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address + 4, 1, true);
 		delete memory.gate;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', memory);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

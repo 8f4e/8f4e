@@ -12,9 +12,8 @@ persistence. It contains a monotonic `revision`, a `kind` describing the operati
 | Kind | Operation | History behavior |
 | --- | --- | --- |
 | `edit`, `history: 'debounced'` | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second |
-| `edit`, `history: 'skip'` | Skipped authored mutation | Preserve redo and any pending history timer and before-state; rebase an idle baseline |
-| `edit`, `history: 'skip'`, `generatedOnly: true` | Only generated source changed | Leave history and its baseline entirely untouched |
 | `edit`, `history: 'checkpoint'` | Validated API edit batch | Record one immediate undo step after committing pending human edits |
+| `generated` | Only generated source changed | Leave history and its baseline entirely untouched |
 | `restore` | Undo or redo snapshot | Rebase the current snapshot and retain the remaining stacks |
 | `replace` | Opening or creating a project | Cancel pending edits and clear both stacks |
 
@@ -22,14 +21,10 @@ The project editing service owns mutation publication after source, generated so
 Mixed and multi-block transactions announce once; no-op transactions do not announce.
 Selection, caret movement, and navigation leave the record unchanged.
 
-Source edit callers can choose `{ history: 'skip' }` to avoid an independent undo step. While no authored edit is
-pending, the completed skipped state becomes the next edit's baseline. While an authored edit is pending, its original
-before-state and timer remain intact; generic skipped source can be captured together with the pending edit. Skipping does
-not promise that an arbitrary source change survives restoring an older snapshot. Managed environment changes are
-automatically skipped when they are the only change, with `generatedOnly: true` indicating that the authored snapshot
-does not need recapturing. Generated source is excluded from authored snapshots even when it settles in the same
-batch as a recorded edit. Skipped edits still publish revisions, settle layout and compile as needed, and participate
-in persistence.
+Source edit callers choose debounced history or an immediate checkpoint. Managed environment changes alone publish
+the `generated` kind, leaving the history baseline, pending typing timer, and redo stack unchanged. Generated source
+is excluded from authored snapshots even when it settles in the same batch as a recorded edit. Generated changes
+still publish revisions, settle layout and compile as needed, and participate in persistence.
 
 The editing handle creates its opaque revision token from its instance identity and this shared revision. It keeps
 no separate content fingerprint or revision subscriptions. A load invalidates old tokens even when the newly opened

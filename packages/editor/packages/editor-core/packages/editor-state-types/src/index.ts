@@ -155,9 +155,8 @@ export interface Options {
 
 /** The operation published after project changes settle, without its assigned revision. */
 export type ProjectChangeDetails =
-	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']>; generatedOnly?: never }
-	| { kind: 'edit'; history: 'skip'; generatedOnly: true }
-	| { kind: 'restore' | 'replace' };
+	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']> }
+	| { kind: 'generated' | 'restore' | 'replace' };
 
 /** One completed persisted-content operation, shared by API concurrency, history, and persistence. */
 export type ProjectChange = { revision: number } & ProjectChangeDetails;

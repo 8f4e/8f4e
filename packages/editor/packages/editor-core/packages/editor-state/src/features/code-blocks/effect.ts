@@ -87,19 +87,17 @@ export default function codeBlockRendering(
 	};
 
 	events.on('codeBlockPointerDown', onCodeBlockPointerDown);
-	events.on('memoryValuesChanged', refreshCurrentProjectLayout);
 	events.on('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 	events.on('gridSizeChanged', refreshCurrentProjectLayout);
-	store.subscribe('compiler.isCompiling', refreshCurrentProjectLayout);
+	store.subscribe('compiler.result', refreshCurrentProjectLayout);
 	store.subscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 	store.subscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);
 	return () => {
 		events.off('codeBlockPointerDown', onCodeBlockPointerDown);
-		events.off('memoryValuesChanged', refreshCurrentProjectLayout);
 		events.off('codeBlockLayoutContributionsChanged', onLayoutContributionsChanged);
 		events.off('gridSizeChanged', refreshCurrentProjectLayout);
-		store.unsubscribe('compiler.isCompiling', refreshCurrentProjectLayout);
+		store.unsubscribe('compiler.result', refreshCurrentProjectLayout);
 		store.unsubscribe('codeBlockRendering.currentProject', onCurrentProjectChanged);
 		store.unsubscribe('codeBlockRendering.selectedCodeBlock', onSelectedCodeBlockChanged);
 		store.unsubscribe('codeBlockRendering.selectedCodeBlock.cursor', updateSelectedCodeBlock);

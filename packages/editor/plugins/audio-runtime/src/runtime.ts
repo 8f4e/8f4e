@@ -289,7 +289,6 @@ export function startAudioRuntime(
 						if (data.requestId !== initializationId) return;
 						finishProgram('done');
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });
-						events.dispatch('memoryValuesChanged');
 						break;
 					case 'runtimeValues':
 						store.set('info.audioRuntime', { ...state.info.audioRuntime, ...data.payload });

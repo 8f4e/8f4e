@@ -83,11 +83,11 @@ describe('independent layout contributions', () => {
 	});
 
 	it('keeps info updates independent of block layout and compiler inputs', () => {
-		const { store, state, layout, events } = setup();
+		const { store, state, layout } = setup();
 		const onLayout = vi.fn();
-		const onCompilationInputChanged = vi.fn();
+		const onCompilerInput = vi.fn();
 		const unsubscribe = layout.subscribe(onLayout);
-		events.on('compilationInputChanged', onCompilationInputChanged);
+		store.subscribe('compilerInputRevision', onCompilerInput);
 		onLayout.mockClear();
 
 		store.set('info.graphics', { fps: 60 });
@@ -95,7 +95,7 @@ describe('independent layout contributions', () => {
 
 		expect(state.info.graphics).toEqual({ fps: 30, timeToRenderMs: 12 });
 		expect(onLayout).not.toHaveBeenCalled();
-		expect(onCompilationInputChanged).not.toHaveBeenCalled();
+		expect(onCompilerInput).not.toHaveBeenCalled();
 		unsubscribe();
 	});
 

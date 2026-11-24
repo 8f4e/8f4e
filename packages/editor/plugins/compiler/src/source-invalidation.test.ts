@@ -76,10 +76,10 @@ describe('source edit compilation invalidation', () => {
 			after: ['; @unknown', '; - second'],
 		},
 	])('revises and schedules compilation after $name', async ({ before, after }) => {
-		const { store, events, worker, state, block } = await setup(before);
+		const { store, worker, state, block } = await setup(before);
 		const revision = state.compilerInputRevision;
 		const onInputChanged = vi.fn();
-		events.on('compilationInputChanged', onInputChanged);
+		store.subscribe('compilerInputRevision', onInputChanged);
 		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module test', ...after, 'moduleEnd'] }]);
 		expect(state.compilerInputRevision).toBe(revision + 1);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
@@ -90,12 +90,12 @@ describe('source edit compilation invalidation', () => {
 	});
 
 	it('publishes in-place ordinary comment edits without revising or scheduling compilation', async () => {
-		const { store, events, worker, state, block } = await setup(['; explanation', 'push 1', '  ; another comment']);
+		const { store, worker, state, block } = await setup(['; explanation', 'push 1', '  ; another comment']);
 		const revision = state.compilerInputRevision;
 		const projectRevision = state.projectChange.revision;
 		const onInputChanged = vi.fn();
 		const onProjectChange = vi.fn();
-		events.on('compilationInputChanged', onInputChanged);
+		store.subscribe('compilerInputRevision', onInputChanged);
 		store.subscribe('projectChange', onProjectChange);
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: ['module test', '; updated explanation', 'push 1', '; updated comment', 'moduleEnd'] },

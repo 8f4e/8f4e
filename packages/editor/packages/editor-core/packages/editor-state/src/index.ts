@@ -26,7 +26,6 @@ import { createLoadingRegistry } from './features/loading-indicators';
 import contextMenu from './features/menu/effect';
 import createMenuRegistry from './features/menu/registry';
 import pointerInput from './features/pointer-input/effect';
-import publishCompilationInputChanges from './features/program-compiler/inputChanges';
 import { createProjectEditService, type ProjectEditService } from './features/project-edits/service';
 import projectLoading from './features/project-loading/effect';
 import viewport from './features/viewport/effect';
@@ -92,7 +91,6 @@ export default function init(events: EventDispatcher, options: Options): EditorS
 	registerEffect(contextMenu(store, events, menus));
 
 	registerEffect(editorMode(store, events));
-	registerEffect(publishCompilationInputChanges(store, events));
 	const state = store.getState();
 	const membership = createProjectMembership(state.codeBlockRendering.rootProject);
 	const coordinator = createLayoutCoordinator(state, events, layout, membership);

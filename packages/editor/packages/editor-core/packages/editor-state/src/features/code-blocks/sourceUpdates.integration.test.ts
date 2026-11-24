@@ -140,7 +140,7 @@ it.each([
 			expect(block.disabled).toBe(initiallyDisabled);
 			expect(state.gridSizeReady).toBe(false);
 			const previousRevision = state.compilerInputRevision;
-			events.on('compilationInputChanged', () => changed(snapshot()));
+			store.subscribe('compilerInputRevision', () => changed(snapshot()));
 
 			const nextCode = code(!initiallyDisabled);
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: nextCode }]);

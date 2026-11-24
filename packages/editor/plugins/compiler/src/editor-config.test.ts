@@ -131,7 +131,7 @@ describe('compiler configuration directives', () => {
 	});
 
 	it('announces a config edit once after its diagnostics settle', () => {
-		const { store, events, load } = setup();
+		const { store, load } = setup();
 		load(
 			undefined,
 			'; @config compiler.functionInlining.enabled false',
@@ -140,7 +140,7 @@ describe('compiler configuration directives', () => {
 		const state = store.getState();
 		expect(state.codeErrors['editor-directives']).toHaveLength(1);
 		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
-		events.on('compilationInputChanged', errorsAtRevision);
+		store.subscribe('compilerInputRevision', errorsAtRevision);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
 		applyCodeBlockSourceEdits(store, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
 		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);

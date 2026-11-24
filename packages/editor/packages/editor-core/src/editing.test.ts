@@ -26,8 +26,8 @@ function setup(
 ) {
 	const events = initEvents();
 	const compilationChanged = vi.fn();
-	events.on('compilationInputChanged', compilationChanged);
 	const store = initState(events, { callbacks: {} });
+	store.subscribe('compilerInputRevision', compilationChanged);
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
 	const editing = createEditorEditingHandle(store, events);
@@ -533,7 +533,7 @@ describe('public editor editing handle', () => {
 	});
 
 	it('applies a mixed edit plan as one checkpoint without replacing existing block handles', () => {
-		const { editing, state, compilationChanged, events } = setup({
+		const { editing, state, compilationChanged, store } = setup({
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			execution: [
 				{ type: 'module', id: 0, entry: 'main', code: ['module original', 'moduleEnd'] },
@@ -545,7 +545,7 @@ describe('public editor editing handle', () => {
 		const removed = project.blocks.find(block => block.name === 'removed')!;
 		const prior = serializeToProject(state);
 		const changes: ProjectObjectModel[] = [];
-		events.on('compilationInputChanged', () => changes.push(serializeToProject(state)));
+		store.subscribe('compilerInputRevision', () => changes.push(serializeToProject(state)));
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 		const result = editing.applyEdits({

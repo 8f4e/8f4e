@@ -25,14 +25,14 @@ function setup() {
 
 describe('auto-managed root environment source', () => {
 	it('normalizes a project without env once before publishing source and compiler inputs', () => {
-		const { store, state, events, load, env } = setup();
+		const { store, state, load, env } = setup();
 		store.set('envConstantContributions.provider', ['const PROVIDED 50']);
 		const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>();
 		disposers.push(store.directives.register({ name: 'sample', apply }));
 		const onRootProject = vi.fn();
 		const onCompilerInput = vi.fn(() => serializeToProject(state));
 		store.subscribe('codeBlockRendering.rootProject', onRootProject);
-		events.on('compilationInputChanged', onCompilerInput);
+		store.subscribe('compilerInputRevision', onCompilerInput);
 
 		load(`8f4e/v1
 entry main
@@ -75,7 +75,7 @@ moduleEnd
 entryEnd`);
 		const previousCode = [...project.constants[0].code];
 		const onCompilerInput = vi.fn();
-		events.on('compilationInputChanged', onCompilerInput);
+		store.subscribe('compilerInputRevision', onCompilerInput);
 
 		events.dispatch('loadProject', { project });
 

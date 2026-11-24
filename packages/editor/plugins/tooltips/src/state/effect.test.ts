@@ -680,8 +680,6 @@ describe('tooltip lifecycle', () => {
 		expect(state.projectChange.revision).toBe(projectRevision);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
 
-		events.dispatch('memoryValuesChanged');
-		expect(tooltip.getState()).toBe(updated);
 		contribution.remove(block);
 		expect(tooltip.getState().layout.y).toBe(initial.layout.y);
 	});

@@ -45,7 +45,7 @@ function setup(source: string, editorConfigSchemaContributions?: EditorConfigSch
 	events.dispatch('enterEditMode');
 	const state = store.getState();
 	const onInputChanged = vi.fn();
-	events.on('compilationInputChanged', onInputChanged);
+	store.subscribe('compilerInputRevision', onInputChanged);
 	const beginDrag = (block: CodeBlockGraphicData) => {
 		events.dispatch('pointerdown', {
 			x: block.x - state.viewport.x + 1,
@@ -66,7 +66,7 @@ function setup(source: string, editorConfigSchemaContributions?: EditorConfigSch
 		serializeProjectLevel(state.codeBlockRendering.currentProject)
 			.constants.filter(block => block.code[0] === 'constants preset')
 			.map(block => block.code.find(line => line.startsWith('const VALUE ')));
-	return { state, events, beginDrag, move, drop, values, onInputChanged };
+	return { state, store, events, beginDrag, move, drop, values, onInputChanged };
 }
 
 describe('compilation after spatial order changes', () => {
@@ -173,7 +173,7 @@ entryEnd`);
 			request.targets = [first, second];
 		});
 		const orders: Array<Array<string | undefined>> = [];
-		test.events.on('compilationInputChanged', () => orders.push(test.values()));
+		test.store.subscribe('compilerInputRevision', () => orders.push(test.values()));
 		test.beginDrag(first);
 		test.move(300);
 		test.drop();

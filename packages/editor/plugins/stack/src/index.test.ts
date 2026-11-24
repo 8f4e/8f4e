@@ -81,7 +81,6 @@ describe('stack plugin', () => {
 			...test.state.compiler.result,
 			compiledFunctions: recompiled.compiledFunctions,
 		});
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 			expect.any(Number),
@@ -91,12 +90,10 @@ describe('stack plugin', () => {
 		);
 
 		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: {} });
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 
 		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: undefined });
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 	});
@@ -105,7 +102,6 @@ describe('stack plugin', () => {
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalled();
 		test.store.set('compiler.result.compiledModules', {});
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 	});

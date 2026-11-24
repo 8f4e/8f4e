@@ -146,7 +146,7 @@ describe('block deletion', () => {
 		expect(onProjectChange).toHaveBeenCalledTimes(1);
 	});
 
-	it('keeps references to surviving blocks and ignores repeated deletion', () => {
+	it('keeps selection on surviving blocks, cancels dragging, and ignores repeated deletion', () => {
 		const { store, state, first, second, press } = setup();
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
@@ -154,7 +154,7 @@ describe('block deletion', () => {
 		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		expect(deleteCodeBlocks(store, [first])).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(second);
-		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
+		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		expect(deleteCodeBlocks(store, [first])).toBe(false);
 		expect(deleteCodeBlocks(store, [])).toBe(false);
 		expect(state.projectChange.revision).toBe(revision + 1);

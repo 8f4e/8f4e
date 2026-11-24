@@ -237,3 +237,24 @@ describe('code block rendering @alwaysOnTop live edits', () => {
 		expect(codeBlocks.map(block => block.name)).toEqual(['env', 'normalA', 'normalB', 'topB', 'topA']);
 	});
 });
+
+describe('code block layout invalidation', () => {
+	it('refreshes layouts on accepted compiler metadata, not compilation progress', () => {
+		const { store, state, events, loadSource } = setup();
+		loadSource('entry main\nmodule main\nmoduleEnd\nentryEnd');
+		const onLayoutsChanged = vi.fn();
+		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
+
+		store.set('compiler.isCompiling', true);
+		store.set('compiler.isCompiling', false);
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
+
+		store.set('compiler.isCompiling', true);
+		store.set('compiler.result', { ...state.compiler.result, inputRevision: state.compilerInputRevision });
+		store.set('compiler.isCompiling', false);
+		expect(onLayoutsChanged).toHaveBeenCalledExactlyOnceWith({
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: state.codeBlockRendering.currentProject.blocks,
+		});
+	});
+});

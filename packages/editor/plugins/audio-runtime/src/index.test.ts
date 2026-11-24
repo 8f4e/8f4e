@@ -273,7 +273,6 @@ describe('AudioWorklet context lifetime', () => {
 		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
 
 		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-		expect(editor.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		expect(editor.store.getState().info.audioRuntime).toEqual({ audioBufferSize: 128, sampleRate: 48000 });
 	});
 
