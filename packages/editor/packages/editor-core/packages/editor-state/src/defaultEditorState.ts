@@ -1,7 +1,6 @@
-import type { ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
-import { defaultFeatureFlags } from './featureFlags';
+import type { FeatureFlagsConfig, ProjectChange, ProjectLevel } from '@8f4e/editor-state-types';
 
-export default function createDefaultEditorState() {
+export default function createDefaultEditorState(featureFlags: FeatureFlagsConfig = {}) {
 	const rootLevel: ProjectLevel = { entries: [], path: '', blocks: [] };
 
 	return {
@@ -47,7 +46,11 @@ export default function createDefaultEditorState() {
 				memoryReinitialized: false,
 			},
 		},
-		featureFlags: defaultFeatureFlags,
+		featureFlags: {
+			contextMenu: true,
+			canvasOverlays: true,
+			...featureFlags,
+		},
 		editorMode: 'view' as const,
 		editorConfig: {},
 		appearance: {},

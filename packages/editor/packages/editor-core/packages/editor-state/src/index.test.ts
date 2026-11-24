@@ -21,6 +21,23 @@ describe('editor state lifecycle', () => {
 		store.dispose();
 	});
 
+	it('initializes feature flags with per-editor defaults and host overrides', () => {
+		const first = initState(createMockEventDispatcherWithVitest(), { callbacks: {} });
+		const second = initState(createMockEventDispatcherWithVitest(), {
+			callbacks: {},
+			featureFlags: { contextMenu: false },
+		});
+		try {
+			expect(first.getState().featureFlags).toEqual({ contextMenu: true, canvasOverlays: true });
+			expect(second.getState().featureFlags).toEqual({ contextMenu: false, canvasOverlays: true });
+			second.set('featureFlags.canvasOverlays', false);
+			expect(first.getState().featureFlags).toEqual({ contextMenu: true, canvasOverlays: true });
+		} finally {
+			first.dispose();
+			second.dispose();
+		}
+	});
+
 	it('can install a known grid after initialization', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
