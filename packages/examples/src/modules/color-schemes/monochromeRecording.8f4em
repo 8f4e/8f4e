@@ -1,0 +1,20 @@
+8f4e/v1
+
+note monochromeRecordingColors
+; @public
+; A high-contrast grayscale palette for recording 8f4e videos.
+; Code, wires, plots, and meter ranges differ in brightness.
+; @config color.canvas #010101
+; @config color.surface #0b0b0b
+; @config color.ink #aaaaaa
+; @config color.muted #666666
+; @config color.primary #ffffff
+; @config color.secondary #d4d4d4
+; @config color.tertiary #7b7b7b
+; @config color.highlight #ffffff
+; @config color.detail #d0d0d0
+; @config color.stroke #8f8f8f
+; @config color.positive #a0a0a0
+; @config color.warning #cccccc
+; @config color.negative #fafafa
+noteEnd

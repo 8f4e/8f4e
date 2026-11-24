@@ -48,6 +48,14 @@ color and opacity; `color.canvas transparent` preserves the host background behi
 The former `color.text.*`, `color.fill.*`, and `color.icons.*` paths are removed. Features and plugins do not register
 additional configurable palette colors.
 
+### Monochrome recording preset
+
+In edit mode, choose **Add Built-in Block → Color Schemes → Monochrome Recording**. In a recording copy of a project,
+remove any existing `color.*` directives so only the new color note sets the palette. Leave other configuration in place.
+The preset uses nearly black surfaces and distinct gray levels for instructions, numbers, code, comments, wires, plots,
+and meter ranges, so fine details do not rely on differences in hue to stay visible in a video. The canvas is `#010101`
+instead of pure black to avoid the brighter grid accents generated for black canvases.
+
 ## Predefined Shades and Opacity
 
 Every base provides `Dark4`, `Dark3`, `Dark2`, `Dark1`, `Base`, `Light1`, `Light2`, `Light3`, and `Light4`.
