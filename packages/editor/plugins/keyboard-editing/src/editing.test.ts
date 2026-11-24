@@ -19,6 +19,48 @@ const plugin = ({ inputTarget }: { inputTarget: HTMLElement }) => ({
 });
 
 describe('keyboard editing', () => {
+	it('keeps read-only source inspectable without accepting typing or paste', () => {
+		const test = setup(plugin);
+		const environment = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+		const originalCode = environment.code;
+		const revision = test.state.projectChange.revision;
+		test.store.set('codeBlockRendering.selectedCodeBlock', environment);
+		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', { row: 0, col: 0, y: 0 });
+		expect(test.key('ArrowRight').defaultPrevented).toBe(true);
+		expect(environment.cursor).toMatchObject({ row: 0, col: 1 });
+		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', {
+			row: environment.code.length - 1,
+			col: environment.code.at(-1)!.length,
+			y: 0,
+		});
+		const cursor = { ...environment.cursor };
+		for (const key of ['Enter', 'x', 'Backspace', 'Tab']) test.key(key);
+		test.paste('\ntext');
+		expect(environment.cursor).toEqual(cursor);
+		expect(environment.code).toBe(originalCode);
+		expect(test.state.projectChange.revision).toBe(revision);
+	});
+
+	it('clamps the cursor after external source replacement and allows subsequent typing', () => {
+		const test = setup(plugin);
+		test.store.set('codeBlockRendering.selectedCodeBlock.cursor', { row: 3, col: 9, y: 0 });
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: ['module main', 'x'] }]);
+		expect(test.block.cursor).toMatchObject({ row: 1, col: 1 });
+		test.key('a');
+		expect(test.block.code).toEqual(['module main', 'xa']);
+		expect(test.block.cursor).toMatchObject({ row: 1, col: 2 });
+	});
+
+	it('allows edits after an empty source update', () => {
+		const test = setup(plugin);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: [] }]);
+		expect(test.block.cursor).toMatchObject({ row: 0, col: 0 });
+		test.key('ArrowDown');
+		test.key('a');
+		expect(test.block.code).toEqual(['a']);
+		expect(test.block.cursor).toMatchObject({ row: 0, col: 1 });
+	});
+
 	it.each([
 		{ input: 'ArrowDown', row: 2, col: 4 },
 		{ input: 'Enter', row: 2, col: 0 },
@@ -51,7 +93,7 @@ describe('keyboard editing', () => {
 	});
 	it('skips compilation for ordinary comment text but invalidates it when Enter adds a line', () => {
 		const test = setup(plugin);
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: ['module main', '; explanation', 'push 1', 'drop', 'moduleEnd'] },
 		]);
 		test.block.cursor.row = 1;
@@ -73,7 +115,7 @@ describe('keyboard editing', () => {
 	});
 	it('moves the caret using visual tab columns without publishing a source change', () => {
 		const test = setup(plugin);
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: ['module main', '; @tab 8', '\tx', '123456789', 'moduleEnd'] },
 		]);
 		test.block.cursor.row = 2;

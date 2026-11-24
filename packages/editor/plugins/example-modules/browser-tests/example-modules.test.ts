@@ -1,5 +1,5 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createExampleModulesPlugin } from '../src/index';
@@ -11,7 +11,6 @@ test('navigates contributed categories, supports Back, and inserts public blocks
 	canvas.style.width = '1024px';
 	canvas.style.height = '640px';
 	document.body.appendChild(canvas);
-	const source = '8f4e/v1\nconstants env\n; @pos 160 100\nconstantsEnd';
 	const sources = new Map([
 		[
 			'audio/effects/gain',
@@ -49,7 +48,7 @@ functionEnd float`,
 	try {
 		editor = await initEditor(canvas, {
 			renderer: new Engine(canvas),
-			initialProject: parseProjectSource(source),
+			initialProject: EMPTY_DEFAULT_PROJECT,
 			plugins: [
 				{
 					...featurePlugin,
@@ -79,13 +78,14 @@ functionEnd float`,
 				canvasHeight: canvas.height,
 			});
 		};
+		const position = { x: 80, y: 240 };
 		const click = async (title: string) => {
 			await vi.waitFor(() => expect(state.contextMenu.items.some(item => item.title?.includes(title))).toBe(true));
 			const menu = state.contextMenu;
 			const index = menu.items.findIndex(item => item.title?.includes(title));
-			events.dispatch('activateContextMenuItem', { index, x: 80, y: 32 });
+			events.dispatch('activateContextMenuItem', { index, ...position });
 		};
-		pointer('contextmenu', 80, 32);
+		pointer('contextmenu', position.x, position.y);
 		await click('Add Built-in Block');
 		await click('Audio');
 		await click('Effects');

@@ -1,7 +1,7 @@
 import type { CodeBlockGraphicData, Editor } from '@8f4e/editor-core';
 import { findParentProjectLevel } from '@8f4e/editor-state';
 
-function currentGroup(state: Editor['state']): CodeBlockGraphicData | undefined {
+export function getCurrentGroupBlock(state: Editor['state']): CodeBlockGraphicData | undefined {
 	const { rootProject, currentProject } = state.codeBlockRendering;
 	if (rootProject === currentProject) return undefined;
 	const parent = findParentProjectLevel(rootProject, currentProject);
@@ -22,7 +22,7 @@ function groupCloserIndex(code: readonly string[]): number {
 
 /** Read one source level synchronously from the live editor, without recursive file export. */
 export function createSourceView(state: Editor['state']): string {
-	const group = currentGroup(state);
+	const group = getCurrentGroupBlock(state);
 	const directBlocks = state.codeBlockRendering.currentProject.blocks;
 	const ordered = [...directBlocks].sort(
 		(a, b) => a.gridX - b.gridX || a.gridY - b.gridY || a.creationIndex - b.creationIndex

@@ -33,7 +33,6 @@ async function setup(code = source, installed = true, name = 'audio') {
 		callbacks: {},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? wavePlugin.setup({
@@ -56,7 +55,8 @@ async function setup(code = source, installed = true, name = 'audio') {
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
@@ -272,13 +272,22 @@ describe('wave plugin', () => {
 
 	it('replaces waves and layout gaps after source edits', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @wave4 &samples count(samples)';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @wave4 &samples count(samples)' : line)),
+				},
+			],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 128);
-		test.codeBlock.code[2] = '; no wave';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no wave' : line)) },
+			],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
@@ -344,7 +353,9 @@ describe('wave plugin', () => {
 	it('unregisters all definitions and the drawer on disposal', async () => {
 		const test = await setup();
 		test.dispose();
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();

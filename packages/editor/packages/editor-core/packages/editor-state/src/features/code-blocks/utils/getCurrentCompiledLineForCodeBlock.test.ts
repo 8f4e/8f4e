@@ -21,7 +21,7 @@ async function setup(blockType: 'module' | 'function') {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	cleanups.push(store.dispose);
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sample')!;
 	store.set('compiler.result', {
@@ -41,7 +41,7 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 
 	it('uses newly compiled source positions after comment lines are inserted', async () => {
 		const test = await setup(blockType);
-		applyCodeBlockSourceEdits(test, [
+		applyCodeBlockSourceEdits(test.store, [
 			{ codeBlock: test.block, code: [test.block.code[0], '; comment', '', ...test.block.code.slice(1)] },
 		]);
 		test.store.set('codeBlockRendering.selectedCodeBlock', test.block);
@@ -61,7 +61,7 @@ describe.each(['module', 'function'] as const)('current compiled lines in a %s',
 		const test = await setup(blockType);
 		const code = [...test.block.code];
 		code[3] = 'mul';
-		applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code }]);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code }]);
 		expect(getCurrentCompiledLineForCodeBlock(test.block, test.state, 3)).toBeUndefined();
 	});
 

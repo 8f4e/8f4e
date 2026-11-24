@@ -47,7 +47,9 @@ Code blocks are categorized by type, which determines compilation and rendering 
 - **`note`** - Editor-only notes
 - **`unknown`** - Unclassified blocks (fallback)
 
-Block types are automatically detected and updated based on code content.
+Block types are automatically detected and updated based on code content without replacing the block. An incomplete
+declaration retains its last execution entry; a completed non-execution block clears it. Converting that block back to
+a module uses an explicitly assigned entry or `main`. Empty authored entry sections remain part of the project.
 
 ## Subfeatures
 
@@ -62,14 +64,18 @@ New block templates, random names, Delete, and their menu contributions belong t
 Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
 
 Source changes use `sourceUpdates.ts` to parse directives and retain their block flags and display facts, update
-block type and valid grid coordinates, and settle stacking. The block effect coordinates environment source
-normalization, global configuration resolution and layout refresh. Source facts and compiler inputs settle without
+block type and valid grid coordinates, and settle stacking. The project editing service owns synchronous mutation
+transactions and coordinates source normalization, global configuration, generated environment source and layout.
+Source facts and compiler inputs settle without
 pixel geometry. Layout builds display rows from the retained facts and current selection without rerunning directive
 handlers. An incomplete or invalid position directive retains the existing block position. Interactive and programmatic
 edits use this same path; ordinary layout invalidations do not reparse source. Project membership tracks each block's owning
 `ProjectLevel`, independently of source preparation and layout calculations. Ownership is registered on project
 loading and block-collection changes. Navigating between existing levels refreshes layout without changing source
 or global configuration. Renaming a group retains its runtime identity while updating its source path.
+Editor-state initialization constructs membership, the layout coordinator and the project editing service separately;
+the rendering effect consumes the coordinator for layout and selection without owning source mutation. The dragger owns
+its transient gesture state and cancels or prunes prepared targets when the active project collection changes.
 
 The coordinator queues changed blocks by owning group, settles nested plugin contributions, and projects grid
 positions to world pixels before publishing completion for each affected group. Pixel layout waits for the first
@@ -83,8 +89,8 @@ completion notification.
 
 - `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
-- `codeBlockSourcesChanged({ codeBlocks })`: refresh source metadata, configuration, and layouts for an edited batch
-  before publishing compiler/project revisions, independently of user selection
+- `state.projectChange`: reports completed project mutations after metadata, configuration, generated source and
+  available layout settle
 - `codeBlockLayoutContributionsChanged({ codeBlock? })`: internal invalidation; rederives a changed block in its owning
   group, or the current group when no block is supplied
 - `codeBlockLayoutsChanged({ project, codeBlocks })`: identifies one owning group and its completed source/display rows,

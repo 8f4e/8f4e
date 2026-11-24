@@ -92,7 +92,7 @@ describe('compiler configuration directives', () => {
 	});
 
 	it('passes project optimization options to the worker and restores defaults when removed', async () => {
-		const { store, events, worker, load } = setup();
+		const { store, worker, load } = setup();
 		load(
 			'0',
 			'; @config compiler.functionInlining.enabled false',
@@ -121,7 +121,7 @@ describe('compiler configuration directives', () => {
 
 		const codeBlock = store.getState().codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
 		const revision = store.getState().compilerInputRevision;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] },
 		]);
 		expect(store.getState().compilerInputRevision).toBe(revision + 1);
@@ -142,7 +142,7 @@ describe('compiler configuration directives', () => {
 		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
 		events.on('compilationInputChanged', errorsAtRevision);
 		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
 		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);
 	});
 

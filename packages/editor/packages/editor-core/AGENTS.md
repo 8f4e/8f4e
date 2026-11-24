@@ -22,20 +22,25 @@
 
 ## Editing and Layout
 
-- Use the shared source update path in `features/code-blocks/sourceUpdates.ts` to settle derived state. Route
-  removals through `deleteCodeBlocks`. Source-edit batches emit `codeBlockSourcesChanged` before revisions advance.
-- Keep edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate edits before applying a batch
-  as one undo step. Use existing state and block handles for reads and targeting. Keep adapter projections outside
-  core and derive positions from source directives.
+- Route project mutations through the synchronous project editing service. It uses the shared source update path
+  to settle facts, configuration, generated environment source and any available layout, then notifies consumers.
+  Authored updates and deletions of read-only blocks have no effect; only their owner materializes generated source.
+- Keep public edits on `Editor.editing` and view navigation on `Editor.navigation`. Validate command preconditions
+  before applying a public batch as one undo step; the compiler validates source syntax and semantics. Internal
+  callers obey the typed mutation contract. Use existing block handles for reads and targeting. Keep adapter
+  projections outside core and derive positions from source directives.
 - Publish `state.projectChange` once after a completed edit, history action or project replacement, after derived
   state settles. Navigation and no-ops leave the revision alone. Share this revision across history, editing and
   persistence, with a separate compiler-input revision. Editing works without the history effect installed.
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
-  Keep remembered viewport and selection in memory. Use canonical detached project snapshots from
-  `pureHelpers/projectSerialization`. Project-save owns the text file format.
+  Keep remembered viewport and selection in memory. The editor source snapshot owns history, including retained
+  draft facts. Reconcile remembered views by owning block identity within each parent, not compiler-facing paths;
+  `pureHelpers/projectSerialization` projects settled source into compiler/file data. Project-save
+  owns the text file format.
 - Project membership tracks ownership per project level independently of source preparation and layout. The layout
   coordinator uses that membership to publish `codeBlockLayoutsChanged { project, codeBlocks }` after the affected
-  blocks settle. Consumers refresh the listed blocks and use project identity for view checks.
+  blocks settle. Initialize the mutation and rendering services independently; only the dragger owns drag state.
+  Consumers refresh the listed blocks and use project identity for view checks.
 - Changes to plugin layout contributions rederive affected layouts independently of source edits and compilation.
   Infer lifecycle payloads from `EditorLifecycleEvents`.
 

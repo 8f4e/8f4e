@@ -193,6 +193,7 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		},
 		editorMode: 'edit',
 		editorConfig: {},
+		appearance: {},
 		editorConfigValidators: {},
 		editorConfigSchemaContributions: {},
 		historyStack: [],

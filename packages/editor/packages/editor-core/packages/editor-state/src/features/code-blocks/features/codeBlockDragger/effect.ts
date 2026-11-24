@@ -1,4 +1,10 @@
-import type { CodeBlockGraphicData, EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	EventDispatcher,
+	InternalPointerEvent,
+	ProjectEdits,
+	State,
+} from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import { bringCodeBlockToFrontWithinPartition } from '../../partitionCodeBlocksByAlwaysOnTop';
 import replaceCodeBlocksInPlace from '../../replaceCodeBlocksInPlace';
@@ -13,82 +19,110 @@ export interface ResolveCodeBlockDragTargetsEvent {
 	targets: CodeBlockGraphicData[];
 }
 
-export default function codeBlockDragger(store: StateManager<State>, events: EventDispatcher): () => void {
+export default function codeBlockDragger(
+	store: StateManager<State> & { projectEdits: ProjectEdits },
+	events: EventDispatcher
+): () => void {
 	const state = store.getState();
-	// dragSet holds the blocks being dragged together. It's computed fresh on each pointerdown
-	// and cleared on pointerup, so concurrent drags are not a concern (only one drag at a time).
+	// Resolve targets on pointerdown and keep them current when the visible collection changes.
+	// Pointer moves only visit the prepared targets, not the entire project.
 	let dragSet: CodeBlockGraphicData[] = [];
 	let didDrag = false;
 
+	function discardPreview(block: CodeBlockGraphicData) {
+		block.x = block.gridX * state.viewport.vGrid;
+		block.y = block.gridY * state.viewport.hGrid;
+	}
+
+	function finishDrag() {
+		if (didDrag) {
+			for (const block of dragSet) discardPreview(block);
+		}
+		state.codeBlockRendering.draggedCodeBlock = undefined;
+		dragSet = [];
+		didDrag = false;
+	}
+
+	function canDrag() {
+		return state.gridSizeReady && state.viewport.vGrid > 0 && state.viewport.hGrid > 0;
+	}
+
+	function refreshDragTargets() {
+		if (dragSet.length === 0) return;
+		const { currentProject, draggedCodeBlock } = state.codeBlockRendering;
+		const members = new Set(currentProject.blocks);
+		if (!draggedCodeBlock || !members.has(draggedCodeBlock)) {
+			finishDrag();
+			return;
+		}
+		dragSet = dragSet.filter(block => {
+			if (members.has(block)) return true;
+			if (didDrag) discardPreview(block);
+			return false;
+		});
+		if (dragSet.length === 0) finishDrag();
+	}
+
+	function canContinueDrag() {
+		return canDrag() && state.codeBlockRendering.draggedCodeBlock && dragSet.length > 0;
+	}
+
 	function onPointerDown(event: InternalPointerEvent) {
 		const { x, y, altKey } = event;
-		if (!state.featureFlags.moduleDragging) {
+		finishDrag();
+		if (!state.featureFlags.moduleDragging || !canDrag()) {
 			return;
 		}
 
-		state.codeBlockRendering.draggedCodeBlock = findCodeBlockAtViewportCoordinates(state, x, y);
-		const draggedCodeBlock = state.codeBlockRendering.draggedCodeBlock;
-
-		if (!draggedCodeBlock) {
-			store.set('codeBlockRendering.selectedCodeBlock', undefined);
-			dragSet = [];
-			didDrag = false;
-			return;
+		const clickedBlock = findCodeBlockAtViewportCoordinates(state, x, y);
+		store.set('codeBlockRendering.selectedCodeBlock', clickedBlock);
+		if (!clickedBlock || clickedBlock.readOnly) return;
+		if (state.editorMode === 'edit') {
+			state.codeBlockRendering.draggedCodeBlock = clickedBlock;
+			const dragTargets: ResolveCodeBlockDragTargetsEvent = {
+				codeBlock: clickedBlock,
+				altKey,
+				targets: [clickedBlock],
+			};
+			events.dispatch('resolveCodeBlockDragTargets', dragTargets);
+			dragSet = dragTargets.targets.filter(block => !block.readOnly);
+			if (dragSet.length === 0) finishDrag();
+			else refreshDragTargets();
 		}
-		store.set('codeBlockRendering.selectedCodeBlock', state.codeBlockRendering.draggedCodeBlock);
-		didDrag = false;
-
-		const dragTargets: ResolveCodeBlockDragTargetsEvent = {
-			codeBlock: draggedCodeBlock,
-			altKey,
-			targets: [draggedCodeBlock],
-		};
-		events.dispatch('resolveCodeBlockDragTargets', dragTargets);
-		dragSet = dragTargets.targets;
 
 		// Bring dragged module forward within its z-order partition.
 		// Normal blocks move to the end of the normal segment (before always-on-top blocks).
 		// Always-on-top blocks move to the end of the always-on-top segment (end of array).
 		replaceCodeBlocksInPlace(
 			state.codeBlockRendering.currentProject.blocks,
-			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, draggedCodeBlock)
+			bringCodeBlockToFrontWithinPartition(state.codeBlockRendering.currentProject.blocks, clickedBlock)
 		);
-
-		if (state.editorMode !== 'edit') {
-			state.codeBlockRendering.draggedCodeBlock = undefined;
-			dragSet = [];
-			didDrag = false;
-		}
 	}
 
 	function onPointerMove(event: InternalPointerEvent) {
 		const { movementX, movementY } = event;
-		if (state.codeBlockRendering.draggedCodeBlock && dragSet.length > 0) {
-			if (movementX !== 0 || movementY !== 0) {
-				didDrag = true;
-			}
-
-			// Apply movement to all blocks in drag set
-			for (const block of dragSet) {
-				block.x += movementX;
-				block.y += movementY;
-			}
-			event.stopPropagation = true;
+		if (!canContinueDrag()) {
+			finishDrag();
+			return;
 		}
+		if (movementX !== 0 || movementY !== 0) {
+			didDrag = true;
+		}
+
+		for (const block of dragSet) {
+			block.x += movementX;
+			block.y += movementY;
+		}
+		event.stopPropagation = true;
 	}
 
 	function onPointerUp() {
-		if (!state.codeBlockRendering.draggedCodeBlock || dragSet.length === 0) {
-			return;
-		}
-
-		if (!didDrag) {
-			state.codeBlockRendering.draggedCodeBlock = undefined;
-			dragSet = [];
-			return;
-		}
-
 		const primaryBlock = state.codeBlockRendering.draggedCodeBlock;
+		if (!didDrag || !canContinueDrag() || !primaryBlock) {
+			finishDrag();
+			return;
+		}
+
 		const vGrid = state.viewport.vGrid;
 		const hGrid = state.viewport.hGrid;
 
@@ -106,27 +140,27 @@ export default function codeBlockDragger(store: StateManager<State>, events: Eve
 		for (const block of dragSet) {
 			const gridX = Math.round((block.x + deltaX) / vGrid);
 			const gridY = Math.round((block.y + deltaY) / hGrid);
-			block.x = gridX * vGrid;
-			block.y = gridY * hGrid;
-			block.gridX = gridX;
-			block.gridY = gridY;
 			edits.push({ codeBlock: block, code: upsertPos(block.code, gridX, gridY) });
 		}
 
-		applyCodeBlockSourceEdits({ store, events }, edits);
-
-		state.codeBlockRendering.draggedCodeBlock = undefined;
-		dragSet = [];
-		didDrag = false;
+		// Discard the transient preview. Source settlement projects changed positions;
+		// a no-op keeps the previous position without requesting layout or publishing a revision.
+		finishDrag();
+		applyCodeBlockSourceEdits(store, edits);
 	}
 
 	events.on('pointerdown', onPointerDown);
 	events.on('pointermove', onPointerMove);
 	events.on('pointerup', onPointerUp);
+	events.on('gridSizeChanged', finishDrag);
+	store.subscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
 
 	return () => {
+		finishDrag();
 		events.off('pointerdown', onPointerDown);
 		events.off('pointermove', onPointerMove);
 		events.off('pointerup', onPointerUp);
+		events.off('gridSizeChanged', finishDrag);
+		store.unsubscribe('codeBlockRendering.currentProject.blocks', refreshDragTargets);
 	};
 }

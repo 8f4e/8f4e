@@ -58,7 +58,7 @@ it('shares current source exposure metadata while leaving accepted targets in pl
 		expect(getProjectGroupMemoryExposures(test.group(), test.state)[0]).toBe(accepted);
 
 		const code = ['group patch', '; changed position and target', 'expose output &source:second', 'groupEnd'];
-		applyCodeBlockSourceEdits(test, [{ codeBlock: test.group(), code }]);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.group(), code }]);
 		expect(getProjectGroupMemoryExposures(test.group(), test.state)[0]).toMatchObject({
 			lineNumber: 2,
 			targetMemory: accepted.targetMemory,
@@ -74,7 +74,9 @@ it('shares current source exposure metadata while leaving accepted targets in pl
 		exposures[0].targetMemoryName = 'detached';
 		expect(getProjectGroups(test.serialize())[0].exposures[0].targetMemoryName).toBe('second');
 
-		applyCodeBlockSourceEdits(test, [{ codeBlock: test.group(), code: ['group patch', 'expose output', 'groupEnd'] }]);
+		applyCodeBlockSourceEdits(test.store, [
+			{ codeBlock: test.group(), code: ['group patch', 'expose output', 'groupEnd'] },
+		]);
 		expect(getProjectGroups(test.serialize())[0]).toMatchObject({
 			code: ['group patch', 'expose output', 'groupEnd'],
 			exposures: [],
@@ -85,7 +87,7 @@ it('shares current source exposure metadata while leaving accepted targets in pl
 	}
 });
 
-it('keeps draft exposure records current and preserves compiler diagnostics for unresolved targets', async () => {
+it('keeps settled exposure records current and preserves compiler diagnostics for unresolved targets', async () => {
 	const test = setup();
 	test.events.dispatch('enterEditMode');
 	const { handle, dispose } = createEditorEditingHandle(test.store, test.events);
@@ -95,18 +97,18 @@ it('keeps draft exposure records current and preserves compiler diagnostics for 
 			expectedRevision: handle.getRevision(),
 			edits: [{ type: 'update', blockId: getEditorBlockId(note), code: ['note description', 'Edited', 'noteEnd'] }],
 		});
-		expect(getProjectGroups(test.state.initialProjectState!)[0].exposures[0].targetMemoryName).toBe('first');
+		expect(getProjectGroups(test.serialize())[0].exposures[0].targetMemoryName).toBe('first');
 
 		const code = ['group patch', '', 'expose output &source:missing', 'groupEnd'];
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
 			edits: [{ type: 'update', blockId: getEditorBlockId(test.group()), code }],
 		});
-		const draft = test.state.initialProjectState!;
-		expect(getProjectGroups(draft)[0].exposures).toEqual([
+		const project = test.serialize();
+		expect(getProjectGroups(project)[0].exposures).toEqual([
 			{ name: 'output', targetModuleName: 'source', targetMemoryName: 'missing', lineNumber: 2 },
 		]);
-		await expect(compileProject(draft)).rejects.toMatchObject({
+		await expect(compileProject(project)).rejects.toMatchObject({
 			diagnostic: {
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				location: { kind: 'scope', projectGroupPath: 'patch', lineNumber: 2 },

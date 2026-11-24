@@ -1,6 +1,9 @@
+import { EventEmitter } from 'node:events';
 import type { CodeBlockGraphicData, EditorLifecycleEvents } from '@8f4e/editor-state-types';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import createStateManager from '@8f4e/state-manager';
 import { describe, expect, it, type MockInstance, vi } from 'vitest';
+import initState, { insertCodeBlocks, serializeCodeBlocks, setGridSize, updateViewport } from '~/index';
 import { createMockCodeBlock, createMockState } from '~/pureHelpers/testingUtils/testUtils';
 import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
 import projectGroupNavigation from './effect';
@@ -123,6 +126,84 @@ describe('projectGroupNavigation', () => {
 		expect(state.viewport).toMatchObject({ x: 128, y: 256 });
 	});
 
+	it('returns to the correct branch and remembers its view after copying a group with nested groups', () => {
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		const store = initState(events, { callbacks: {} });
+		const state = store.getState();
+		try {
+			setGridSize(state, events, { vGrid: 8, hGrid: 16 });
+			events.dispatch('loadProject', {
+				project: parseProjectSource(`8f4e/v1
+entry main
+group audio
+entry main
+group voices
+entry main
+module oscillator
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd`),
+			});
+			events.dispatch('enterEditMode');
+			const { rootProject } = state.codeBlockRendering;
+			const original = rootProject.blocks.find(block => block.name === 'audio')!;
+			const [copy] = insertCodeBlocks(store, {
+				x: 160,
+				y: 128,
+				blocks: serializeCodeBlocks([original], original),
+			});
+			const originalChild = original.childProject!.blocks.find(block => block.name === 'voices')!;
+			const copiedChild = copy.childProject!.blocks.find(block => block.name === 'voices')!;
+			const copiedInner = copiedChild.childProject!.blocks.find(block => block.name === 'oscillator')!;
+			expect(original.childProject!.path).toBe(copy.childProject!.path);
+			expect(originalChild.childProject!.path).toBe(copiedChild.childProject!.path);
+			const revision = state.projectChange.revision;
+			const compilerRevision = state.compilerInputRevision;
+
+			store.set('codeBlockRendering.selectedCodeBlock', original);
+			events.dispatch('openProjectGroup', { codeBlock: original });
+			updateViewport(state, 64, 80, events);
+			store.set('codeBlockRendering.selectedCodeBlock', originalChild);
+			events.dispatch('goToRootProjectGroup');
+
+			store.set('codeBlockRendering.selectedCodeBlock', copy);
+			events.dispatch('openProjectGroup', { codeBlock: copy });
+			updateViewport(state, 160, 192, events);
+			store.set('codeBlockRendering.selectedCodeBlock', copiedChild);
+			events.dispatch('openProjectGroup', { codeBlock: copiedChild });
+			updateViewport(state, 320, 256, events);
+			store.set('codeBlockRendering.selectedCodeBlock', copiedInner);
+
+			events.dispatch('goToParentProjectGroup');
+			expect(state.codeBlockRendering.currentProject).toBe(copy.childProject);
+			expect(state.viewport).toMatchObject({ x: 160, y: 192 });
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copiedChild);
+
+			events.dispatch('openProjectGroup', { codeBlock: copiedChild });
+			expect(state.viewport).toMatchObject({ x: 320, y: 256 });
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copiedInner);
+			events.dispatch('goToRootProjectGroup');
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(copy);
+
+			events.dispatch('openProjectGroup', { codeBlock: original });
+			expect(state.codeBlockRendering.currentProject).toBe(original.childProject);
+			expect(state.viewport).toMatchObject({ x: 64, y: 80 });
+			expect(state.codeBlockRendering.selectedCodeBlock).toBe(originalChild);
+			expect(state.projectChange.revision).toBe(revision);
+			expect(state.compilerInputRevision).toBe(compilerRevision);
+		} finally {
+			store.dispose();
+		}
+	});
+
 	it('uses contributed placement on the first visit to a group', () => {
 		const group = createMockCodeBlock({ name: 'Audio', childProject: { entries: [], path: '', blocks: [] } });
 		const { state, events, dispatch } = setupNavigation([group]);
@@ -162,7 +243,6 @@ describe('projectGroupNavigation', () => {
 				rootProject: { entries: [], path: '', blocks: rootCodeBlocks },
 				currentProject: { entries: [], path: '', blocks: rootCodeBlocks },
 				selectedCodeBlock: groupBlock,
-				draggedCodeBlock: groupBlock,
 			},
 			viewport: { x: 64, y: 96 },
 		});
@@ -178,7 +258,6 @@ describe('projectGroupNavigation', () => {
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(rootCodeBlocks);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(nestedProjectCodeBlocks);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 		expect(state.viewport.x).toBe(0);
 		expect(state.viewport.y).toBe(0);
 	});

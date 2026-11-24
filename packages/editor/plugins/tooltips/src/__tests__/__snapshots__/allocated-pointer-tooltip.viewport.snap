@@ -1,10 +1,10 @@
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
+ constants env                                                                                      
+ ; @pos 0 0                                                                                         
+ ; Auto-generated environment constants                                                             
+ ; Changes will be overwritten                                                                      
                                                    module inspect                                   
                                                    ; @pos 50 4                                      
-                                                   float& input &source:output                      
+ constantsEnd                                      float& input &source:output                      
                      float* ( -- )                 float* pointer &source:output                    
                      Declares memory storage for   moduleEnd                                        
                      values used by the module.                                                     

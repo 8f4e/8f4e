@@ -1,5 +1,5 @@
 import { type CodeBlockGraphicData, type Editor, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
-import { createSourceView, getCurrentProjectPath } from './source-view.js';
+import { createSourceView, getCurrentGroupBlock, getCurrentProjectPath } from './source-view.js';
 import {
 	emptyInput,
 	objectArguments,
@@ -64,6 +64,8 @@ export function createEditorTools(
 	};
 	const readEdits = (input: unknown): EditorEdit[] => {
 		if (!Array.isArray(input) || input.length === 0) throw new Error('Provide at least one edit');
+		const group = getCurrentGroupBlock(state);
+		const insertTarget = group ? { groupBlockId: getEditorBlockId(group) } : {};
 		return input.map(value => {
 			const operation = objectArguments(value, editProperties).operation;
 			if (operation !== 'insert' && operation !== 'update' && operation !== 'delete')
@@ -77,7 +79,7 @@ export function createEditorTools(
 				...('entry' in args ? { entry: args.entry as string } : {}),
 			};
 			return operation === 'insert'
-				? { type: 'insert', projectPath: getCurrentProjectPath(state), ...source }
+				? { type: 'insert', ...insertTarget, ...source }
 				: { type: 'update', blockId: getEditorBlockId(target!), ...source };
 		});
 	};

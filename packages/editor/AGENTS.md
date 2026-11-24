@@ -28,8 +28,9 @@
   `memoryValuesChanged` to refresh externally changed memory.
 - Use generic schema, error and environment constant contributions. Use `loading.add` for operations that
   surface loading status. Producers report outcomes and cancel superseded or disposed work.
-- Batch source changes with `applyCodeBlockSourceEdits`. Pass replacement source; the helper determines
-  compilation invalidation and publishes the change. Only in-place ordinary comment text edits skip compilation.
+- Batch project mutations with `store.projectEdits.apply`; use `applyCodeBlockSourceEdits` and the positioned
+  insertion helpers for simple actions. Pass replacement source rather than editing live source or membership
+  directly. The transaction determines compilation invalidation and publishes the completed change.
 
 ## Composition and Validation
 

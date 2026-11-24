@@ -19,6 +19,14 @@ describe('module menu', () => {
 		expect(moduleMenu(state, codeBlock, [item])).toContain(item);
 	});
 
+	it('offers inspection but not enable/disable for read-only blocks', () => {
+		const codeBlock = createMockCodeBlock({ readOnly: true });
+		const state = createMockState({ editorMode: 'edit' });
+		const items = moduleMenu(state, codeBlock, []);
+		expect(items.some(candidate => candidate.action === 'toggleCodeBlockDisabled')).toBe(false);
+		expect(items.some(candidate => candidate.action === 'consoleLog')).toBe(true);
+	});
+
 	it('adds an open action for project-group blocks', async () => {
 		const codeBlock = createMockCodeBlock({
 			name: 'Audio',

@@ -59,10 +59,10 @@ it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode',
 	await test.openMenu();
 	const index = test.state.contextMenu.items.findIndex(item => item.action === 'importProject');
 	expect(index).toBeGreaterThanOrEqual(0);
-	const original = test.state.initialProjectState;
+	const original = test.state.codeBlockRendering.rootProject;
 	await test.events.dispatchAsync('activateContextMenuItem', { index, x: 800, y: 400 });
 	await vi.waitFor(() => expect(test.fileSession.handle).toBe(test.handle));
-	expect(test.state.initialProjectState).not.toBe(original);
+	expect(test.state.codeBlockRendering.rootProject).not.toBe(original);
 	expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
 		'int value 1'
 	);
@@ -83,7 +83,7 @@ it.each(['getFile', 'parse', 'cancel'])(
 	async failure => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
-		const original = test.state.initialProjectState;
+		const original = test.state.codeBlockRendering.rootProject;
 		if (failure === 'cancel')
 			test.browserWindow.showOpenFilePicker.mockRejectedValueOnce(new DOMException('Cancelled', 'AbortError'));
 		else {
@@ -94,7 +94,7 @@ it.each(['getFile', 'parse', 'cancel'])(
 			test.browserWindow.showOpenFilePicker.mockResolvedValueOnce([{ getFile }]);
 		}
 		await test.events.dispatchAsync('importProject');
-		expect(test.state.initialProjectState).toBe(original);
+		expect(test.state.codeBlockRendering.rootProject).toBe(original);
 		expect(test.fileSession.handle).toBe(test.handle);
 		if (failure === 'cancel') expect(test.state.console.logs).toEqual([]);
 		else expect(test.state.console.logs.at(-1)?.message).toContain('Failed to open project');
@@ -104,7 +104,7 @@ it.each(['getFile', 'parse', 'cancel'])(
 it.each(['change', 'cancel'])('handles file input %s when the picker is unavailable', async action => {
 	const test = setup();
 	await test.events.dispatchAsync('importProject');
-	const original = test.state.initialProjectState;
+	const original = test.state.codeBlockRendering.rootProject;
 	Reflect.deleteProperty(test.browserWindow, 'showOpenFilePicker');
 	const pending = test.events.dispatchAsync('importProject');
 	expect(test.document.createElement).toHaveBeenCalledWith('input');
@@ -113,8 +113,8 @@ it.each(['change', 'cancel'])('handles file input %s when the picker is unavaila
 	test.input.dispatchEvent(new Event(action));
 	await pending;
 	expect(test.fileSession.handle).toBe(action === 'change' ? undefined : test.handle);
-	if (action === 'change') expect(test.state.initialProjectState).not.toBe(original);
-	else expect(test.state.initialProjectState).toBe(original);
+	if (action === 'change') expect(test.state.codeBlockRendering.rootProject).not.toBe(original);
+	else expect(test.state.codeBlockRendering.rootProject).toBe(original);
 });
 
 it('ignores an open that finishes after disposal', async () => {
@@ -127,7 +127,7 @@ it('ignores an open that finishes after disposal', async () => {
 		})
 	);
 	test.handle.getFile.mockResolvedValueOnce(file);
-	const original = test.state.initialProjectState;
+	const original = test.state.codeBlockRendering.rootProject;
 	const pending = test.events.dispatchAsync('importProject');
 	await vi.waitFor(() =>
 		expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
@@ -139,7 +139,7 @@ it('ignores an open that finishes after disposal', async () => {
 	finish(source);
 	await pending;
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-	expect(test.state.initialProjectState).toBe(original);
+	expect(test.state.codeBlockRendering.rootProject).toBe(original);
 	expect(test.fileSession.handle).toBeUndefined();
 });
 

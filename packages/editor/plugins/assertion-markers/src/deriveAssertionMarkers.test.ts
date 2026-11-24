@@ -59,7 +59,7 @@ describe('assertion marker derivation', () => {
 		block.projectPath = '';
 		const compiled = await compileProject(
 			serializeToProject(
-				createMockState({ codeBlockRendering: { rootProject: { entries: [], path: '', blocks: [block] } } })
+				createMockState({ codeBlockRendering: { rootProject: { entries: ['test'], path: '', blocks: [block] } } })
 			),
 			{
 				enableAssertions: true,

@@ -29,10 +29,8 @@ describe('auto-managed root environment source', () => {
 		store.set('envConstantContributions.provider', ['const PROVIDED 50']);
 		const apply = vi.fn<NonNullable<EditorDirectiveDefinition['apply']>>();
 		disposers.push(store.directives.register({ name: 'sample', apply }));
-		const onInitialProject = vi.fn();
 		const onRootProject = vi.fn();
 		const onCompilerInput = vi.fn(() => serializeToProject(state));
-		store.subscribe('initialProjectState', onInitialProject);
 		store.subscribe('codeBlockRendering.rootProject', onRootProject);
 		events.on('compilationInputChanged', onCompilerInput);
 
@@ -48,12 +46,11 @@ groupEnd
 entryEnd`);
 
 		expect(apply).toHaveBeenCalledOnce();
-		expect(onInitialProject).toHaveBeenCalledOnce();
 		expect(onRootProject).toHaveBeenCalledOnce();
 		expect(onCompilerInput).toHaveBeenCalledOnce();
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expect(state.compilerInputRevision).toBe(1);
-		expect(state.initialProjectState!.constants[0]).toMatchObject({ code: env().code, id: env().creationIndex });
+		expect(serializeToProject(state).constants[0]).toMatchObject({ code: env().code, id: env().creationIndex });
 		expect(env().code).toContain('const PROVIDED 50');
 		expect(env().code).toContain('; Auto-generated environment constants');
 		expect(env().code).toContain('; @pos 0 0');
@@ -63,7 +60,7 @@ entryEnd`);
 		expect(env().creationIndex).toBeGreaterThan(nested.creationIndex);
 	});
 
-	it('preserves the ID and saved position of an existing env while discarding obsolete generated content', () => {
+	it('replaces the saved env with a read-only block at the origin and fresh generated content', () => {
 		const { store, state, events, env } = setup();
 		store.set('envConstantContributions.provider', ['const PROVIDED 123']);
 		const project = parseProjectSource(`8f4e/v1
@@ -84,14 +81,16 @@ entryEnd`);
 
 		expect(project.constants[0].code).toEqual(previousCode);
 		expect(project.constants[0].disabled).toBe(true);
-		expect(state.initialProjectState!.constants).toHaveLength(1);
-		expect(state.initialProjectState!.constants[0]).toMatchObject({ id: project.constants[0].id, code: env().code });
-		expect(state.initialProjectState!.constants[0]).not.toHaveProperty('disabled');
-		expect(env()).toMatchObject({ creationIndex: project.constants[0].id, gridX: 12, gridY: -7 });
+		const source = serializeToProject(state);
+		expect(source.constants).toHaveLength(1);
+		expect(source.constants[0]).toMatchObject({ id: env().creationIndex, code: env().code });
+		expect(source.constants[0]).not.toHaveProperty('disabled');
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().creationIndex).toBeGreaterThan(getProjectModules(source)[0].id);
 		expect(env().disabled).toBe(false);
 		expect(env().code).toContain('const PROVIDED 123');
 		expect(env().code).not.toContain('const OBSOLETE 1');
-		expect(getProjectModules(state.initialProjectState!)[0].code[0]).toBe('module demo');
+		expect(getProjectModules(source)[0].code[0]).toBe('module demo');
 		expect(onCompilerInput).toHaveBeenCalledOnce();
 	});
 
@@ -140,7 +139,7 @@ entryEnd`);
 		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
 		expect(env().code).not.toContain('const FIRST 1');
 		expect(env().code).not.toContain('const SECOND 2');
-		expect(env().code).toContain('; @pos 7 9');
+		expect(env().code).toContain('; @pos 0 0');
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 		store.set('envConstantContributions', { provider: ['const PROVIDED 77'] });
@@ -186,7 +185,7 @@ entryEnd`);
 		store.set('envConstantContributions.provider', ['const PROVIDED 77']);
 		expect(authored.map(block => block.code)).toEqual(previousCode);
 		expect(rootEnvironment.code).toContain('const PROVIDED 77');
-		expect(rootEnvironment.code).toContain('; @pos 7 9');
+		expect(rootEnvironment.code).toContain('; @pos 0 0');
 		expect(onLayoutChanged).toHaveBeenCalledWith({
 			project: state.codeBlockRendering.rootProject,
 			codeBlocks: [rootEnvironment],
@@ -200,34 +199,48 @@ entryEnd`);
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
-	it('overwrites manual generated-source edits in the original source batch and accepts position changes', () => {
-		const { store, state, events, load, env } = setup();
+	it('ignores attempted generated-source edits without publishing a project change', () => {
+		const { store, state, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
 		const onChanged = vi.fn();
-		events.on('codeBlockSourcesChanged', onChanged);
+		store.subscribe('projectChange', onChanged);
 		const revision = state.projectChange.revision;
 		const compilerRevision = state.compilerInputRevision;
 
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: env(), code: ['constants env', '; @pos 12 15', 'const USER 5', 'constantsEnd'] },
 		]);
 
 		expect(env().code).not.toContain('const USER 5');
-		expect(env().code).toContain('; @pos 12 15');
-		expect(env()).toMatchObject({ gridX: 12, gridY: 15 });
-		expect(onChanged).toHaveBeenCalledOnce();
-		expect(state.projectChange.revision).toBe(revision + 1);
-		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(env().code).toContain('; @pos 0 0');
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(onChanged).not.toHaveBeenCalled();
+		expect(state.projectChange.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
 	});
 
-	it('keeps the previous valid env position during same-project restoration with invalid source', () => {
-		const { state, events, load, env } = setup();
-		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd');
-		const project = serializeToProject(state);
-		project.constants[0].code = ['constants env', '; @pos incomplete', 'constantsEnd'];
-		const id = env().creationIndex;
-		events.dispatch('applyProjectEdit', { project });
-		expect(env()).toMatchObject({ creationIndex: id, gridX: 7, gridY: 9 });
-		expect(env().code).toContain('; @pos 7 9');
+	it('retains the read-only environment and its current contributions during undo and redo', () => {
+		const { store, state, events, load, env } = setup();
+		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd\nentry main\nmodule authored\nmoduleEnd\nentryEnd');
+		const environment = env();
+		const authored = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'authored')!;
+		store.projectEdits.apply(
+			{ updates: [{ codeBlock: authored(), code: ['module authored', 'push 1', 'moduleEnd'] }] },
+			{ history: 'checkpoint' }
+		);
+		store.set('envConstantContributions.provider', ['const PROVIDED 7']);
+		expect(state.historyStack).toHaveLength(1);
+		events.dispatch('undo');
+		expect(authored().code).toEqual(['module authored', 'moduleEnd']);
+		expect(env()).toBe(environment);
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().code).toContain('; @pos 0 0');
+		expect(env().code).toContain('const PROVIDED 7');
+		events.dispatch('redo');
+		expect(authored().code).toContain('push 1');
+		expect(env()).toBe(environment);
+		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(env().code).toContain('; @pos 0 0');
+		expect(env().code).toContain('const PROVIDED 7');
 	});
 });

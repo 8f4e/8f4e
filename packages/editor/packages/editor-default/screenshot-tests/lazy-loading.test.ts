@@ -89,7 +89,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
 			if (trigger === 'source edit') {
 				expect(load).not.toHaveBeenCalled();
-				applyCodeBlockSourceEdits(context, [{ codeBlock: block, code: project.execution[0].code }]);
+				applyCodeBlockSourceEdits(context.store, [{ codeBlock: block, code: project.execution[0].code }]);
 			}
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 			expect(load).toHaveBeenCalledOnce();

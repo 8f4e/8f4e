@@ -62,6 +62,22 @@ describe('one-level 8f4e source views', () => {
 		expect(nested).not.toContain('module oscillator');
 	});
 
+	it('reads the expanded nested group from its actual owner when sibling group paths match', () => {
+		const { state } = fixture();
+		const copy = fixture();
+		copy.audio.creationIndex = 5;
+		copy.audio.childProject!.blocks[0].creationIndex = 6;
+		copy.voices.creationIndex = 7;
+		copy.voices.childProject!.blocks[0].creationIndex = 8;
+		copy.voices.code = ['group voices', '; copied voice settings', 'groupEnd'];
+		state.codeBlockRendering.rootProject.blocks.push(copy.audio);
+		state.codeBlockRendering.currentProject = copy.voices.childProject!;
+		const view = createSourceView(state);
+		expect(view).toContain('; copied voice settings');
+		expect(view).toContain('module deepSecret');
+		expect(view).not.toContain('; voice settings');
+	});
+
 	it('retains empty named entries and unfinished group shells', () => {
 		const { state, audio } = fixture();
 		audio.code = ['group audio', '; unfinished settings'];

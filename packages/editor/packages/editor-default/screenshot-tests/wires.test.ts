@@ -178,12 +178,12 @@ constants env
 constantsEnd
 entry main
 module oscillator
-; @pos 10 3
+; @pos 10 8
 float output 0.5
 moduleEnd
 
 module replicator
-; @pos 10 12
+; @pos 10 14
 float output 0.5
 moduleEnd
 module amplifier

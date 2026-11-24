@@ -22,9 +22,6 @@ export async function withReferenceTooltipFrame(
 	assertFrame: () => Promise<void>
 ): Promise<void> {
 	const project = parseProjectSource(`8f4e/v1
-constants env
-; @pos 150 100
-constantsEnd
 entry main
 module source
 ; @pos 50 15
@@ -81,8 +78,8 @@ entryEnd`);
 	const state = store.getState();
 	state.viewport.width = referenceTooltipViewport.width;
 	state.viewport.height = referenceTooltipViewport.height;
+	events.dispatch('loadProject', { project });
 	store.set('editorMode', 'edit');
-	store.set('initialProjectState', project);
 	store.set('compiler.result', createCompilerResult(compiled, state.compilerInputRevision));
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'inspect')!;
 	store.set('codeBlockRendering.selectedCodeBlock', block);

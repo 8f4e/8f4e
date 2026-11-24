@@ -143,7 +143,7 @@ it.each([
 			events.on('compilationInputChanged', () => changed(snapshot()));
 
 			const nextCode = code(!initiallyDisabled);
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: nextCode }]);
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: nextCode }]);
 			expect(changed).toHaveBeenCalledOnce();
 			expect(block.disabled).toBe(!initiallyDisabled);
 			expect(state.gridSizeReady).toBe(false);
@@ -201,7 +201,7 @@ entryEnd`),
 		apply.mockClear();
 
 		const code = ['module sample', '; @customFacts', '; hidden content', 'moduleEnd'];
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 		expect(apply).toHaveBeenCalledOnce();
 		expect(state.gridSizeReady).toBe(false);
 		expect(block).toMatchObject({
@@ -252,7 +252,7 @@ entryEnd`),
 			'; edited hidden content',
 			'moduleEnd',
 		];
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: updatedCode }]);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: updatedCode }]);
 		expect(apply).toHaveBeenCalledOnce();
 		expect(block.directiveDisplayState).toEqual({ hideAfterSourceLineIndex: 2 });
 		expect(block.displayModel.lines.map(line => line.text)).toEqual([...updatedCode.slice(0, 3), '...']);

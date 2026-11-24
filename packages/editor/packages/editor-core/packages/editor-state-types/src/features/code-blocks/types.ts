@@ -60,6 +60,8 @@ export interface CodeBlockGraphicData {
 	width: number;
 	height: number;
 	code: string[];
+	/** Editor-owned source that can be inspected but not edited, moved, or deleted. */
+	readonly readOnly?: boolean;
 	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
 	tabStopsByLine: number[][];
 	/** True for the root project's directly owned project-scope source. */
@@ -110,6 +112,7 @@ export interface CodeBlockGraphicData {
 	/**
 	 * Execution entry name used by module and project-group blocks in the compiler export pipeline.
 	 * This is separate from the visual `; @group` directive.
+	 * Incomplete source may retain its last entry until it becomes a non-execution block.
 	 */
 	entry?: string;
 	/** Canonical path of the project group that owns this block. */
@@ -147,7 +150,7 @@ export interface EntryBounds {
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
-	/** Entry definitions local to this level, including empty entries. */
+	/** Settled entry definitions local to this level, including empty entries and each execution block's assigned entry. */
 	entries: ProjectEntryName[];
 	path: ProjectGroupPath;
 	blocks: CodeBlockGraphicData[];

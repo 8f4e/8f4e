@@ -120,6 +120,17 @@ it('hides authoring menu items and ignores commands in view mode', async () => {
 	expect(test.state.projectChange.revision).toBe(revision);
 });
 
+it('does not offer or perform deletion on read-only blocks', async () => {
+	const test = setup();
+	const environment = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'env')!;
+	const before = test.state.projectChange.revision;
+	const menu = await test.openMenu(8, 8);
+	expect(menu.some(item => item.action === 'deleteCodeBlock')).toBe(false);
+	test.events.dispatch('deleteCodeBlock', { codeBlock: environment });
+	expect(test.state.codeBlockRendering.currentProject.blocks).toContain(environment);
+	expect(test.state.projectChange.revision).toBe(before);
+});
+
 it.each([false, true])('owns its menu and action registrations: installed=%s', async installed => {
 	const test = setup(installed);
 	if (installed) test.disposePlugin();

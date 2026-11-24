@@ -1,26 +1,31 @@
-import createStateManager from '@8f4e/state-manager';
+import { EventEmitter } from 'node:events';
 import { describe, expect, it, vi } from 'vitest';
-import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from '~/pureHelpers/testingUtils/vitestTestUtils';
-import projectLoading from '../effect';
+import initState, { serializeToProject } from '../../../index';
 import { EMPTY_DEFAULT_PROJECT } from '../emptyDefaultProject';
 
 describe('project loading', () => {
 	it('loads explicit content and starts a new empty project through the same action', () => {
-		const state = createMockState();
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-		projectLoading(store, events);
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
+		const store = initState(events, { callbacks: {} });
+		const state = store.getState();
+		const onLoad = vi.fn();
+		events.on('loadProject', onLoad);
 		const project = { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code: ['note test', 'noteEnd'] }] };
-		const load = vi.mocked(events.on).mock.calls.find(([name]) => name === 'loadProject')![1];
-		load({ project });
-		expect(state.initialProjectState).toMatchObject({
+		events.dispatch('loadProject', { project });
+		expect(serializeToProject(state)).toMatchObject({
 			...project,
 			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
 		});
 		expect(project.constants).toEqual([]);
-		vi.mocked(events.on).mock.calls.find(([name]) => name === 'new')![1](undefined);
-		expect(events.dispatch).toHaveBeenCalledWith('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+		onLoad.mockClear();
+		events.dispatch('new');
+		expect(onLoad).toHaveBeenCalledWith({ project: EMPTY_DEFAULT_PROJECT });
+		expect(serializeToProject(state).notes).toEqual([]);
 		store.dispose();
 	});
 });

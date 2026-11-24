@@ -1,12 +1,20 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
+import type { EventDispatcher } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
-import type { StateManager } from '@8f4e/state-manager';
-import { restoreProject } from '../project-changes';
+import type { ProjectEditService } from '../project-edits/service';
 import { EMPTY_DEFAULT_PROJECT } from './emptyDefaultProject';
 
-export default function projectLoading(store: StateManager<State>, events: EventDispatcher): void {
-	events.on('loadProject', ({ project }: { project: ProjectObjectModel }) => {
-		restoreProject(store, events, project, 'replace');
-	});
-	events.on('new', () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT }));
+export default function projectLoading(
+	projectEdits: Pick<ProjectEditService, 'load'>,
+	events: EventDispatcher
+): () => void {
+	const onLoad = ({ project }: { project: ProjectObjectModel }) => {
+		projectEdits.load(project);
+	};
+	const onNew = () => events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+	events.on('loadProject', onLoad);
+	events.on('new', onNew);
+	return () => {
+		events.off('loadProject', onLoad);
+		events.off('new', onNew);
+	};
 }

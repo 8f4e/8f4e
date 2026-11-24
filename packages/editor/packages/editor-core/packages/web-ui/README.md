@@ -52,6 +52,10 @@ Registers schema-backed validators for `; @config font <name>` and `; @config co
 configuration registry. Editor-core calls this before installing plugins and loading the initial project.
 Editor-state parses and resolves configuration generically; web-ui owns supported fonts, color validation, and defaults.
 
+`getAppearanceFont(state, defaultFont)` selects the transient `state.appearance.fontOverride`, the authored
+`state.editorConfig.font`, or the default font, in that order. Plugins can set or clear the override without changing
+project configuration. Web-ui subscribes to both font settings and loads an atlas for the selected font.
+
 ### `init(store, events, renderer, memoryViews, options)`
 
 Initializes the web UI after project source and configuration have settled, without drawing or scheduling frames.

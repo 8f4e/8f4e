@@ -45,7 +45,8 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.
 - Directional navigation and jumping to a block commit the destination immediately. Any visual
   transition belongs to web-ui, not editor-state.
-- Each project level remembers its viewport in browser memory. Group navigation places the destination immediately;
+- Each project level remembers its viewport in browser memory. Group navigation follows actual owning blocks rather than
+  name-based compiler paths and places the destination immediately;
   project restoration requests placement once after synchronous project-change subscribers settle. Remembered positions
   take precedence; first-visit placement waits while the selected grid is pending. Once layout has settled, core dispatches
   `resolveInitialProjectViewport { project, position }`, allowing plugins to replace the default origin synchronously.

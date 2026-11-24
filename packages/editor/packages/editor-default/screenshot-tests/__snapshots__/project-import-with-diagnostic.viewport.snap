@@ -1,10 +1,10 @@
-                                                                                                
-                                                                                                
-                                                                                                
-     0 note imported                                                                            
-     1 ; @pos 4 3                                                                               
-     2 ; @config audioRuntime.enabled true                                                      
-     Error:                                                                                     
+ 0 constants env                                                                                
+ 1 ; @pos 0 0                                                                                   
+ 2 ; Auto-generated environment constants                                                       
+ 3 ; 0hnotesimported overwritten                                                                
+ 4   1 ; @pos 4 3                                                                               
+ 5   2 ; @config audioRuntime.enabled true                                                      
+ 6 c Error:                                                                                     
      @config: unknown config path                                                               
      'audioRuntime.enabled'                                                                     
      3 Imported project                                                                         

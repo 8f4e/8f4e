@@ -1,4 +1,4 @@
-import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock, setGridSize } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT, jumpToCodeBlock, serializeToProject, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProgramArtifacts, WebUiRenderer } from './index';
@@ -381,7 +381,7 @@ describe('editor init', () => {
 		await vi.waitFor(() => expect(initView).toHaveBeenCalledOnce());
 		expect(projectInstalled).toHaveBeenCalledOnce();
 		const loadedState = vi.mocked(initView).mock.calls[0][0].getState();
-		expect(loadedState.initialProjectState!.notes).toEqual(project.notes);
+		expect(serializeToProject(loadedState).notes).toEqual(project.notes);
 		expect(loadedState.editorConfig.font).toBe('spleen5x8');
 		expect(loadedState.compilerInputRevision).toBeGreaterThan(0);
 		expect(loadedState.gridSizeReady).toBe(false);

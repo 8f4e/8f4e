@@ -80,7 +80,7 @@ it('refreshes nested block highlights after edits, layout contributions, and gri
 	test.events.dispatch('gridSizeChanged');
 	test.render();
 	expect(test.drawFills).toHaveBeenCalledExactlyOnceWith(30, 80, PALETTE_INDICES.surfaceRaised1, 370, 20);
-	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: ['module audio', 'push 1', 'moduleEnd'] }]);
+	applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: ['module audio', 'push 1', 'moduleEnd'] }]);
 	test.render();
 	expect(test.drawFills).not.toHaveBeenCalled();
 });
@@ -117,7 +117,7 @@ it('suppresses disabled highlights and restores them after enabling the block', 
 	const test = setup(code);
 	test.render();
 	expect(test.drawFills).not.toHaveBeenCalled();
-	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: code.filter(line => line !== '; @disabled') }]);
+	applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: code.filter(line => line !== '; @disabled') }]);
 	test.render();
 	expect(test.drawFills).toHaveBeenCalledOnce();
 });
@@ -155,7 +155,9 @@ it('refreshes text and reserved rows after source edits and late layout contribu
 	const before = test.render();
 	expect(before).toHaveLength(5);
 	expect(before.slice(2, 4)).toEqual([[], []]);
-	applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: ['module audio', 'int value 1', 'moduleEnd'] }]);
+	applyCodeBlockSourceEdits(test.store, [
+		{ codeBlock: test.block, code: ['module audio', 'int value 1', 'moduleEnd'] },
+	]);
 	const after = test.render();
 	expect(after).toHaveLength(5);
 	expect(after[1].at(-1)! & 0xffff).toBe('1'.charCodeAt(0));
@@ -226,7 +228,7 @@ it('does not inspect a block whose source replacement has not completed', () => 
 
 it('refreshes disabled colors and folded placeholder rows from completed layouts', () => {
 	const test = setup();
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block, code: ['module audio', '; @disabled', '; @hide', 'int value 1', 'moduleEnd'] },
 	]);
 	const rows = test.render();

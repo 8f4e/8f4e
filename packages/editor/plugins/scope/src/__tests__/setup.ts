@@ -102,7 +102,7 @@ export async function setup(
 	};
 	const traces = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.onDarkAccent);
 	const backgrounds = () => vi.mocked(draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.darkSurface);
-	const update = (code: string[]) => applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }]);
+	const update = (code: string[]) => applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 	return {
 		store,
 		state,

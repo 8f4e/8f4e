@@ -18,7 +18,6 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 300 100', 'constantsEnd'] }],
 			notes: [
 				{ id: 1, code: ['note start', '; @pos 4 4', 'noteEnd'] },
 				{ id: 2, code: ['note middle', '; @pos 80 4', 'noteEnd'] },
@@ -64,7 +63,7 @@ test('draws blocks entering the viewport during navigation and culls blocks leav
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(destination);
 		visible.length = 0;
 		editor.renderFrame();
-		expect(visible).toEqual(['start']);
+		expect(visible).toEqual(['env', 'start']);
 		expect(presented).toEqual({ x: 0, y: 0 });
 		const pointer = {
 			x: destination.x - x + 4,

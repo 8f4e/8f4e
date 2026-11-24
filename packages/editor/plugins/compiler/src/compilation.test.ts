@@ -88,6 +88,7 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it.each([false, true])('enables assertions for a test module with disabled=%s', async disabled => {
+		mockState.codeBlockRendering.rootProject.entries.push('test');
 		mockState.codeBlockRendering.rootProject.blocks.push(
 			createMockCodeBlock({
 				blockType: 'module',
@@ -112,6 +113,7 @@ describe('compilation scheduling and publication', () => {
 	] as const)(
 		'uses the root entry %s rather than local entry %s to enable assertions',
 		async (parentEntry, localEntry, enabled) => {
+			mockState.codeBlockRendering.rootProject.entries.push(parentEntry);
 			mockState.codeBlockRendering.rootProject.blocks.push(
 				createMockCodeBlock({
 					name: 'nested',

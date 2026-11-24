@@ -13,18 +13,21 @@ export function createProjectMembership(root: ProjectLevel) {
 		projects.delete(project);
 	};
 
-	/** Return newly attached blocks, or undefined if membership is unchanged (including reordering). */
-	const syncProject = (project: ProjectLevel): CodeBlockGraphicData[] | undefined => {
+	/** Synchronize a changed collection without re-registering unchanged descendant projects. */
+	const syncProject = (project: ProjectLevel): void => {
 		const registered = projects.get(project);
-		if (registered?.size === project.blocks.length && project.blocks.every(block => registered.has(block))) return;
-		const added = project.blocks.filter(block => !registered?.has(block));
-		unregisterProject(project);
-		projects.set(project, new Set(project.blocks));
-		for (const block of project.blocks) {
+		const current = new Set(project.blocks);
+		for (const block of registered ?? []) {
+			if (current.has(block)) continue;
+			owners.delete(block);
+			if (block.childProject) unregisterProject(block.childProject);
+		}
+		for (const block of current) {
+			if (registered?.has(block)) continue;
 			owners.set(block, project);
 			if (block.childProject) syncProject(block.childProject);
 		}
-		return added;
+		projects.set(project, current);
 	};
 
 	const reset = (root: ProjectLevel): void => {
@@ -39,6 +42,7 @@ export function createProjectMembership(root: ProjectLevel) {
 		reset,
 		syncProject,
 		getOwner: (block: CodeBlockGraphicData) => owners.get(block),
+		hasProject: (project: ProjectLevel) => projects.has(project),
 	};
 }
 

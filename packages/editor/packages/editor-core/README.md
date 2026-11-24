@@ -299,10 +299,11 @@ Plugins may synchronously replace `targets`; core then moves and snaps those blo
 Block copy/paste belongs to `@8f4e/editor-plugin-code-block-copy-paste`. Its factory receives browser read/write functions; core has no clipboard callbacks or copy/paste actions. Grouping receives its own writer for Copy Group. Keyboard-editing separately handles native text pastes at the caret.
 
 `insertCodeBlock(store, { x, y, code })` inserts one source block with automatic entry assignment and returns its
-handle after source preparation and layout settle. In view mode it returns `undefined`.
+handle after source preparation and layout settle, or `undefined` if no block is inserted.
 `insertCodeBlocks(store, { x, y, blocks })` inserts a source batch at a viewport position, preserving relative positions,
-source names, references, group membership, and nested entry tables. It returns the created blocks in input order,
-or an empty array in view mode. Only `@pos` is rewritten for placement. Callers can use the returned blocks' settled
+source names, references, group membership, and nested entry tables. It returns only the created blocks in input order.
+Both insertion helpers ignore writes in view mode or attempts to create the reserved root `constants env` block.
+Only `@pos` is rewritten for placement. Callers can use the returned blocks' settled
 geometry to position subsequent insertions. `serializeCodeBlocks(blocks, anchor)` returns detached `SerializedCodeBlock`
 sources with relative coordinates and recursively owned project slices. These helpers contain no browser or clipboard
 format handling.
@@ -346,10 +347,13 @@ memory copies, download-indicator lifecycle, and generated asset-size constants.
 runtime memory bytes; the shared plugin context carries no browser resources or binary asset fields.
 
 Plugins can contribute source to the generated root-project `env` constants block with
-`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines before
-restoring a project and recompiles when generated source changes. Contributions update the root block regardless of
-which project group is visible. Each plugin removes its own contribution key when disposed. The registry contains
-source lines only; feature metadata stays private to its owner.
+`store.set('envConstantContributions.myPlugin', ['const MY_VALUE 42'])`. Core combines contributed lines after
+resolving authored project configuration and recompiles when generated source changes. Contributions update the root
+block regardless of which project group is visible. Every project open discards all root `constants env` blocks and
+creates one read-only generated block at `(0, 0)`. It can be selected but cannot be edited, dragged or deleted.
+Only that block receives contributions. Authored attempts to insert or rename a root block to `constants env` are ignored.
+Other types named `env` and nested environment blocks remain ordinary authored source. Each plugin removes its own contribution key
+when disposed. The registry contains source lines only; feature metadata stays private to its owner.
 
 `@8f4e/editor-state` exports shared source-edit, directive-argument, row-layout, text-wrapping, stack-value formatting,
 tab-aware text measurement, module identity, and compiled-function lookup helpers. Its `/memory` entry
@@ -367,32 +371,52 @@ throughout nested groups. Their fixed field order and grid/creation ordering sup
 ## Project changes
 
 API revisions, history, and session persistence share `state.projectChange`, a record containing a monotonic
-`revision` and an operation `kind`. The public `editor.editing.getRevision()` token combines that revision with its
-editor-handle identity. Reading a revision does not serialize the project. Loads invalidate existing tokens even
+`revision` and an operation `kind` (`edit`, `replace` or `restore`). Edit changes also carry a history policy.
+The public `editor.editing.getRevision()` token combines that revision with its editor-handle identity.
+Reading a revision does not serialize the project. Loads invalidate existing tokens even
 when the new source is identical, and undo/redo advance the revision when restoring earlier content.
 
-Source-mutating plugin actions use `applyCodeBlockSourceEdits({ store, events }, edits)` from
-`@8f4e/editor-state`. Each edit supplies `{ codeBlock, code }` with the replacement source array. The helper skips
-unchanged source, emits `codeBlockSourcesChanged { codeBlocks }` for the changed batch, and publishes one project change
-after core has refreshed its derived metadata and layout. Source changes do not modify the selected block. The helper
-also advances compiler inputs once for directive edits, line insertions/deletions, reordered instructions, and other
-source changes. Only changes confined to existing ordinary comment text at the same line positions skip compilation.
-`deleteCodeBlocks(store, blocks)` removes blocks from the visible project slice in place, clears references to
-deleted blocks, and publishes one project and compiler-input change. Both helpers return whether anything changed.
-Callers own edit-mode checks and source transformations; they do not separately publish the same operation.
-Selection, navigation, and no-op actions do not publish. History batches ordinary edits and gives validated API
-batches an immediate undo step; persistence saves each completed change.
+Source-mutating plugin actions use `store.projectEdits.apply({ updates, inserts, deletes })`. An update supplies
+`{ codeBlock, code }` with replacement source, an insertion supplies `{ project, source }` with source and optional
+entry/child-project data, and deletion supplies existing block handles. All three collections are optional and form
+one synchronous transaction. Existing blocks and project levels retain their identities. For simple source-only
+changes, `applyCodeBlockSourceEdits(store, edits)` is a convenience adapter; `insertCodeBlock` and `insertCodeBlocks`
+adapt viewport coordinates to authored positions, and `deleteCodeBlocks(store, blocks)` adapts a deletion batch.
+Both `projectEdits.apply(plan, options)` and `applyCodeBlockSourceEdits(store, edits, options)` accept a history policy:
+`debounced` (default), `checkpoint`, or `skip`. Skipped edits publish revisions without making a separate undo step,
+discarding redo, or flushing pending typing. Generated managed-environment-only changes automatically skip history;
+authored changes in the same transaction still follow the requested policy.
 
-API editing drafts refresh source-owned metadata through the same directive registry as live source edits before
-serialization. The project-operations effect applies validated drafts independently of history. It emits
-`beforeProjectEdit` for a changed draft, allowing history to commit pending typing, then publishes the completed
-checkpoint. Unchanged drafts leave pending history and revisions untouched.
+The service prepares source metadata, settles configuration and
+synchronous generated source, refreshes available layout, and publishes the final change. Only actual changes to
+the settled source, entries or membership advance revisions. Changes confined to existing ordinary comment text at
+the same line positions leave compiler inputs unchanged. Source mutations and derived environment changes belonging
+to one transaction publish once through `projectChange`. New contributions made during completion notifications settle
+in a follow-up transaction; callers cannot start new source edits inside another transaction.
+Repeated updates are folded to their final intent and duplicate or ancestor-covered deletions are normalized once;
+updates or insertions targeting deleted levels are rejected before modifying any live source. Updates and deletions
+targeting read-only blocks are ignored, as are insertions and final source updates attempting to create another root `constants env`.
 
-Core project-loading, API operations, and history helpers publish `checkpoint`, `restore`, or `replace` changes after
-snapshot restoration and generated constants have settled. Consumers can read `editor.state` and use the editing handle for
-validated writes. Core mutation paths outside these helpers call `publishProjectChange(store)` after their completed
-operation; direct state writes alone do not announce a revision. `compilerInputRevision` remains a separate signal
-for compilation inputs.
+Callers own edit-mode checks and source transformations; they must not mutate published source or project membership
+directly, or separately publish the operation. Asynchronous work completes before a transaction starts; transactions
+never wait on a grid, font, compiler, or runtime. Global configuration comes from authored source, not the generated
+root `env` block, so environment contributions cannot feed back into their own configuration inputs.
+
+The public editing API checks revision and command preconditions before using the same service with checkpoint
+history policy. It does not validate the program; invalid and incomplete source is legitimate editor content. Real
+checkpoints emit `beforeProjectEdit` before changing authored source, allowing history to commit pending typing. Unchanged
+batches leave pending history, compiler inputs and revisions untouched. Selection and view navigation do not publish.
+Public insert commands target the root by default, or the child project of `groupBlockId` (the existing block handle
+returned by `getEditorBlockId`). They do not identify projects by name-based paths.
+
+Project loading translates compiler/file data into editor source; undo/redo restore detached authored editor snapshots that
+retain block identities, boundaries and draft entry/position metadata. The managed root environment is excluded from history;
+restoration reuses the read-only block and regenerates its body from current contributions. Both use the same reconstruction,
+settlement and publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
+inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
+Navigation follows attached project levels, and history restoration reconciles remembered views by the owning blocks' identities
+within each parent level. Renaming a group or temporarily using duplicate names therefore does not transfer its view to another
+group. Name-based project paths remain unchanged for compilation and file data.
 
 ## Project loading
 
@@ -419,8 +443,8 @@ Configure editor settings with `; @config <path> <value>`.
 
 - Web-ui contributes the schemas and validation for `font` and color overrides. Editor-state handles their
   `@config` directives through the same generic configuration registry used by plugins.
-- `resolveEditorConfig(store)` re-resolves source configuration without changing source or project revisions.
-  Plugins can use it to restore source settings after removing a temporary override and its subscriptions.
+- Resolved `editorConfig` contains authored settings. Temporary font selections belong to
+  `state.appearance.fontOverride`; web-ui selects the override without changing or re-resolving project configuration.
 - Runtime plugins own their independent `audioRuntime.enabled`, `workerRuntime.enabled`, `testRuntime.enabled`, and `textureRuntime.enabled` settings.
 - Extensions can contribute schema-backed config roots; runtime packages use this for paths like `; @config audioRuntime.sampleRate 48000` and `; @config audioRuntime.audioOutBufferLAddress audioout:buffer`.
 - `; @config export.fileName <value>` controls the base file name used by editor export actions.
@@ -457,8 +481,8 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 ```
 
 The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default and gallery desktop editors, the independent
-font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change source or saved
-files; loading a project restores its configured font.
+font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change the resolved
+source configuration or saved files; loading a project clears the preview after its source configuration settles.
 Web-ui emits `fontChanged` with `{ font }` after installing a different font atlas and settling its grid. The
 font-preview plugin uses this notification to show the new font's name, credits and all 256 characters in a 16×16 grid
 for three seconds. The panel scales down to fit smaller viewports.

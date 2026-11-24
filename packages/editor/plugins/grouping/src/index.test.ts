@@ -81,8 +81,9 @@ describe('grouping plugin', () => {
 		expect(second.x).toBe(originalSecondX);
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
-		first.code = upsertDirective(first.code, 'group', ['audio']);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [first] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: first, code: upsertDirective(first.code, 'group', ['audio']) }],
+		});
 		test.drag(first);
 		expect(second.x).toBe(originalSecondX + test.state.viewport.vGrid);
 	});
@@ -174,8 +175,10 @@ describe('grouping plugin', () => {
 		const test = setup();
 		const blocks = test.state.codeBlockRendering.currentProject.blocks;
 		const first = test.block('first');
-		test.state.codeBlockRendering.selectedCodeBlock = first;
-		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
+		const second = test.block('second');
+		test.startDrag(second);
+		test.store.set('codeBlockRendering.selectedCodeBlock', first);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });

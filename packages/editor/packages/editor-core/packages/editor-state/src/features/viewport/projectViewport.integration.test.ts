@@ -95,7 +95,7 @@ it('only resolves the current project, using source edits made while placement w
 	const test = setup();
 	test.load('note replaced\n; @pos 1 2\nnoteEnd');
 	test.load('note current\n; @pos 3 4\nnoteEnd');
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block('current'), code: ['note current', '; @pos 10 20', 'noteEnd'] },
 	]);
 	expect(test.resolver).not.toHaveBeenCalled();
@@ -234,7 +234,7 @@ it('does not remember an unplaced parent when entering a group before the first 
 it('preserves unplaced first visits across undo without remembering their temporary origin', () => {
 	const test = setup();
 	test.load('note sample\n; @pos 10 20\nnoteEnd');
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block('sample'), code: ['note sample', '; @pos 30 40', 'noteEnd'] },
 	]);
 	test.events.dispatch('undo');
@@ -245,18 +245,21 @@ it('preserves unplaced first visits across undo without remembering their tempor
 	expect(test.position()).toEqual({ x: 80, y: 320 });
 });
 
-it('does not remember the temporary origin across a checkpoint that regenerates environment source', () => {
+it('keeps initial placement pending even when a checkpoint attempts to delete generated environment source', () => {
 	const test = setup();
 	test.load('note sample\n; @pos 10 20\nnoteEnd');
 	test.events.dispatch('enterEditMode');
 	const { handle, dispose } = createEditorEditingHandle(test.store, test.events);
 	cleanups.push(dispose);
+	const revision = handle.getRevision();
+	const env = test.block('env');
 	handle.applyEdits({
-		expectedRevision: handle.getRevision(),
-		edits: [{ type: 'delete', blockId: getEditorBlockId(test.block('env')) }],
+		expectedRevision: revision,
+		edits: [{ type: 'delete', blockId: getEditorBlockId(env) }],
 	});
 
-	expect(test.block('env')).toBeDefined();
+	expect(test.block('env')).toBe(env);
+	expect(handle.getRevision()).toBe(revision);
 	expect(test.state.codeBlockRendering.currentProject.viewport).toBeUndefined();
 	expect(test.resolver).not.toHaveBeenCalled();
 	setGridSize(test.state, test.events, TEST_GRID_SIZE);

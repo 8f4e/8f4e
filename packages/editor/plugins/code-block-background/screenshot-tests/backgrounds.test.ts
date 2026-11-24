@@ -1,4 +1,4 @@
-import initEditor from '@8f4e/editor-core';
+import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
@@ -15,11 +15,31 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
 			execution: [
-				{ type: 'module', id: 1, entry: 'main', code: ['module normal', '; @pos 3 3', 'int value 1', 'moduleEnd'] },
-				{ type: 'module', id: 2, entry: 'main', code: ['module disabled', '; @pos 45 3', '; @disabled', 'moduleEnd'] },
-				{ type: 'module', id: 3, entry: 'main', code: ['module dragged', '; @pos 3 13', 'int value 2', 'moduleEnd'] },
+				{
+					...EMPTY_DEFAULT_PROJECT,
+					type: 'group',
+					id: 0,
+					entry: 'main',
+					name: 'fixture',
+					code: ['group fixture', 'groupEnd'],
+					exposures: [],
+					execution: [
+						{ type: 'module', id: 1, entry: 'main', code: ['module normal', '; @pos 3 3', 'int value 1', 'moduleEnd'] },
+						{
+							type: 'module',
+							id: 2,
+							entry: 'main',
+							code: ['module disabled', '; @pos 45 3', '; @disabled', 'moduleEnd'],
+						},
+						{
+							type: 'module',
+							id: 3,
+							entry: 'main',
+							code: ['module dragged', '; @pos 3 13', 'int value 2', 'moduleEnd'],
+						},
+					],
+				},
 			],
 		},
 		plugins: [
@@ -54,6 +74,8 @@ test('draws normal, disabled, dragged, and selected block backgrounds below regi
 	});
 	editor.pauseRendering();
 	try {
+		const group = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		editor.navigation.openGroup(getEditorBlockId(group));
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
 		editor.state.codeBlockRendering.draggedCodeBlock = editor.state.codeBlockRendering.currentProject.blocks.find(

@@ -1,8 +1,10 @@
-import { parseProjectSource } from '@8f4e/compiler';
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createProjectFileSession } from '@8f4e/editor-file-session';
+import { createCodeBlockCopyPastePlugin } from '@8f4e/editor-plugin-code-block-copy-paste';
 import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
 import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
-import initState from '@8f4e/editor-state';
+import initState, { serializeToProject, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorDrawerRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/file-events';
@@ -42,10 +44,17 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 	const document = { defaultView: browserWindow };
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
 	const fileSession = createProjectFileSession();
+	let clipboard = '';
 	const plugins = [
 		fileSession.plugin,
 		createProjectOpenPlugin({ document: inputTarget.ownerDocument, fileSession }),
 		createProjectSavePlugin({ inputTarget, fileSession }),
+		createCodeBlockCopyPastePlugin({
+			readClipboardText: async () => clipboard,
+			writeClipboardText: async text => {
+				clipboard = text;
+			},
+		}),
 	];
 	const pluginCleanups = plugins.map(plugin =>
 		plugin.setup({
@@ -78,7 +87,7 @@ function setup({ mode = 'edit' }: { mode?: 'edit' | 'view' } = {}) {
 		return event;
 	};
 	const openMenu = () => events.dispatchAsync('contextmenu', { x: 800, y: 400 });
-	return { events, state, handle, browserWindow, keydown, openMenu, disposePlugin };
+	return { events, store, state, handle, browserWindow, keydown, openMenu, disposePlugin };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -137,6 +146,47 @@ entryEnd`),
 		await test.events.dispatchAsync('importProject');
 		expect(test.state.editorConfig.export?.fileName).toBe('right');
 	});
+	it('keeps generated runtime values consistent across copy, paste, save and open', async () => {
+		const test = setup();
+		setGridSize(test.state, test.events, TEST_GRID_SIZE);
+		test.store.set('envConstantContributions.provider', ['const GENERATED 42']);
+		test.events.dispatch('loadProject', {
+			project: parseProjectSource(
+				'8f4e/v1\nentry main\nmodule test\nuse env\nint value GENERATED\nmoduleEnd\nentryEnd'
+			),
+		});
+		test.events.dispatch('enterEditMode');
+		const readValue = async () => {
+			const compiled = await compileProject(serializeToProject(test.state));
+			const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+			const { instance } = await WebAssembly.instantiate(compiled.codeBuffer, { host: { memory } });
+			(instance.exports.initDefaults as CallableFunction)();
+			return new DataView(memory.buffer).getInt32(compiled.memoryPlan.modules.test.memory.value.byteAddress, true);
+		};
+		expect(await readValue()).toBe(42);
+		const environment = test.state.codeBlockRendering.rootProject.blocks.find(
+			block => block.readOnly && block.name === 'env'
+		)!;
+		await test.events.dispatchAsync('copyCodeBlock', { codeBlock: environment });
+		// Pasting after the generated block in source order used to shadow later contributions.
+		await test.events.dispatchAsync('pasteCodeBlocks', { x: 400, y: 300 });
+		test.store.set('envConstantContributions.provider', ['const GENERATED 99']);
+		expect(await readValue()).toBe(99);
+		await test.events.dispatchAsync('saveProject');
+		const savedSource = await test.handle.writable.write.mock.calls[0][0].text();
+		expect(parseProjectSource(savedSource).constants).toHaveLength(1);
+		expect(savedSource).toContain('const GENERATED 99');
+		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'duplicate-env.8f4e'));
+		await test.events.dispatchAsync('importProject');
+		const blocks = test.state.codeBlockRendering.rootProject.blocks;
+		const environments = blocks.filter(block => block.name === 'env' && block.blockType === 'constants');
+		expect(environments).toHaveLength(1);
+		const [generated] = environments;
+		expect(generated).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
+		expect(await readValue()).toBe(99);
+		test.store.set('envConstantContributions.provider', ['const GENERATED 100']);
+		expect(await readValue()).toBe(100);
+	});
 	it.each(['loadProject', 'new'])('clears the association on %s', async action => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
@@ -147,7 +197,11 @@ entryEnd`),
 	it('keeps the opened destination across undo and redo', async () => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
-		test.state.historyStack.push(parseProjectSource(source.replace('value 1', 'value 2')));
+		test.events.dispatch('enterEditMode');
+		const block = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'test')!;
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: block, code: ['module test', 'int value 2', 'moduleEnd'] }],
+		});
 		test.events.dispatch('undo');
 		test.events.dispatch('redo');
 		await test.events.dispatchAsync('saveProject');
@@ -187,13 +241,13 @@ entryEnd`),
 		test.browserWindow.showOpenFilePicker.mockReturnValueOnce(opened.promise);
 		const save = test.events.dispatchAsync('saveProject');
 		const open = test.events.dispatchAsync('importProject');
-		const original = test.state.initialProjectState;
+		const original = test.state.codeBlockRendering.rootProject;
 		test.disposePlugin();
 		picked.resolve(test.handle);
 		opened.resolve([test.handle]);
 		await Promise.all([save, open]);
 		expect(test.handle.writable.close).toHaveBeenCalledOnce();
-		expect(test.state.initialProjectState).toBe(original);
+		expect(test.state.codeBlockRendering.rootProject).toBe(original);
 	});
 	it('keeps file destinations and shortcuts isolated between editors', async () => {
 		const first = setup();

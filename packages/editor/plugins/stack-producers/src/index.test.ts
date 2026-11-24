@@ -23,7 +23,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
 	const state = store.getState();
 	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
 	store.set('compiler.result', {
@@ -112,7 +112,7 @@ it('clears outdated producer rows after edits, including when installed after an
 	const test = await setup();
 	test.select(5);
 	expect(test.drawBackground()).toHaveLength(2);
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block, code: [...test.block.code.slice(0, 1), '; inserted', ...test.block.code.slice(1)] },
 	]);
 	expect(test.drawBackground()).toEqual([]);

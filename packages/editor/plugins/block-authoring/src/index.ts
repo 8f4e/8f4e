@@ -63,7 +63,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			events.dispatch('insertCodeBlock', { x, y, code: [block.start + name, '', '', block.end] });
 		};
 		const onDelete = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-			if (store.getState().editorMode !== 'edit') return;
+			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
 			deleteCodeBlocks(store, [codeBlock]);
 		};
 		const removeNewItems = newBlocks.map(({ type, title }) =>
@@ -73,7 +73,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			})
 		);
 		const removeDeleteItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (state.editorMode !== 'edit') return;
+			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
 			const label = codeBlock.childProject
 				? 'group'
 				: codeBlock.blockType === 'function'

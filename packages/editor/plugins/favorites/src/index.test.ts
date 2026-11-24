@@ -109,8 +109,14 @@ describe('favorites plugin', () => {
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(test.state.historyStack).toHaveLength(2);
-		expect(test.state.historyStack[0].execution[0].code).not.toContain('; @favorite');
-		expect(test.state.historyStack[1].execution[0].code).toContain('; @favorite');
+		expect(
+			test.state.historyStack[0].rootProject.blocks.find(block => block.creationIndex === test.block.creationIndex)!
+				.code
+		).not.toContain('; @favorite');
+		expect(
+			test.state.historyStack[1].rootProject.blocks.find(block => block.creationIndex === test.block.creationIndex)!
+				.code
+		).toContain('; @favorite');
 		test.events.dispatch('undo');
 		expect(test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!.code).toContain(
 			'; @favorite'
@@ -164,6 +170,18 @@ describe('favorites plugin', () => {
 		expect(test.block.code).toEqual(code);
 	});
 
+	it('preserves a read-only source favorite without offering to edit it', async () => {
+		const test = setup(['module target', '; @pos 40 20', 'moduleEnd']);
+		const environment = test.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
+		const revision = test.state.projectChange.revision;
+		test.events.dispatch('contextmenu', { x: 8, y: 8 });
+		await Promise.resolve();
+		expect(test.state.contextMenu.items.some(item => item.action === 'toggleFavoriteDirective')).toBe(false);
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: environment });
+		expect(environment.code).toContain('; @favorite');
+		expect(test.state.projectChange.revision).toBe(revision);
+	});
+
 	it.each([false, true])('has no menu or handler when omitted or disposed: installed=%s', async installed => {
 		const test = setup(['module target', '; @favorite', 'moduleEnd'], installed);
 		const code = [...test.block.code];
@@ -199,12 +217,12 @@ describe('favorites plugin', () => {
 		await Promise.resolve();
 		const items = test.state.contextMenu.items.filter(item => item.action === 'jumpToFavoriteCodeBlock');
 		expect(items).toMatchObject([
-			{ title: expect.stringContaining('constants env') },
 			{ title: expect.stringContaining('module target') },
 			{ title: expect.stringContaining('module second') },
+			{ title: expect.stringContaining('constants env') },
 		]);
 		expect(items.map(item => item.payload?.creationIndex)).toEqual(
-			['env', 'target', 'second'].map(
+			['target', 'second', 'env'].map(
 				name => test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!.creationIndex
 			)
 		);

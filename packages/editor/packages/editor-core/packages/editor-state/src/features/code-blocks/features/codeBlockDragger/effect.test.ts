@@ -1,537 +1,328 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { EventDispatcher, InternalPointerEvent, State } from '@8f4e/editor-state-types';
-import createStateManager from '@8f4e/state-manager';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EventEmitter } from 'node:events';
+import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import { parseProjectSource } from '@8f4e/project-preparser';
+import { afterEach, describe, expect, it } from 'vitest';
+import initState, { markGridSizePending, setGridSize, updateViewport } from '~/index';
+import type { ResolveCodeBlockDragTargetsEvent } from './effect';
 
-import codeBlockDragger from './effect';
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+
+function moduleSource(name: string, x: number, y: number, ...directives: string[]): string {
+	return [`module ${name}`, `; @pos ${x} ${y}`, ...directives, 'moduleEnd'].join('\n');
+}
+
+function projectSource(...blocks: string[]): string {
+	return ['8f4e/v1', 'entry main', ...blocks, 'entryEnd'].join('\n');
+}
+
+const firstSource = moduleSource('first', 5, 5);
+const secondSource = moduleSource('second', 20, 10);
+
+function setup(source = projectSource(firstSource), { moduleDragging = true, mode = 'edit' } = {}) {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	// This dispatcher has no input layers, so isolate dragging from viewport panning.
+	const store = initState(events, { callbacks: {}, featureFlags: { moduleDragging, viewportDragging: false } });
+	cleanups.push(store.dispose);
+	const state = store.getState();
+	events.dispatch('resize', { canvasWidth: 800, canvasHeight: 600 });
+	setGridSize(state, events, { vGrid: 10, hGrid: 20 });
+	const load = (source: string) => {
+		events.dispatch('loadProject', { project: parseProjectSource(source) });
+		events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
+	};
+	load(source);
+	const block = (name: string) => state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	const visibleNames = () => state.codeBlockRendering.currentProject.blocks.map(block => block.name);
+	const pointer = (x: number, y: number, altKey = false) => ({
+		x,
+		y,
+		movementX: 0,
+		movementY: 0,
+		buttons: 1,
+		stopPropagation: false,
+		canvasWidth: 800,
+		canvasHeight: 600,
+		altKey,
+	});
+	const press = (target: CodeBlockGraphicData, altKey = false) => {
+		const event = pointer(target.x - state.viewport.x + 1, target.y - state.viewport.y + 1, altKey);
+		events.dispatch('pointerdown', event);
+		return event;
+	};
+	const move = (movementX: number, movementY: number) => {
+		const event = { ...pointer(0, 0), movementX, movementY };
+		events.dispatch('pointermove', event);
+		return event;
+	};
+	const release = () => events.dispatch('pointerup');
+	const selectTargets = (...targets: CodeBlockGraphicData[]) => {
+		events.on('resolveCodeBlockDragTargets', (request: ResolveCodeBlockDragTargetsEvent) => {
+			request.targets = targets;
+		});
+	};
+	const revision = () => [state.projectChange.revision, state.compilerInputRevision];
+	return { store, state, events, load, block, visibleNames, pointer, press, move, release, selectTargets, revision };
+}
 
 describe('codeBlockDragger', () => {
-	let state: State;
-	let store: ReturnType<typeof createStateManager<State>>;
-	let events: EventDispatcher;
-	let pointerdownHandlers: Array<(event: InternalPointerEvent) => void>;
-	let pointermoveHandlers: Array<(event: InternalPointerEvent) => void>;
-	let pointerupHandlers: Array<() => void>;
-
-	beforeEach(() => {
-		// Initialize state
-		state = createMockState({
-			editorMode: 'edit',
-			featureFlags: {
-				moduleDragging: true,
-			},
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [] },
-				draggedCodeBlock: undefined,
-				selectedCodeBlock: undefined,
-				nextCodeBlockCreationIndex: 0,
-			},
-			contextMenu: {
-				items: [],
-				open: false,
-				x: 0,
-				y: 0,
-				menuStack: [],
-			},
-			viewport: {
-				x: 0,
-				y: 0,
-				vGrid: 10,
-				hGrid: 20,
-				width: 800,
-				height: 600,
-				gridCoordinates: { x: 0, y: 0 },
-			},
-		});
-
-		store = createStateManager(state);
-
-		pointerdownHandlers = [];
-		pointermoveHandlers = [];
-		pointerupHandlers = [];
-
-		events = {
-			on: vi.fn((eventName: string, callback: (event: InternalPointerEvent | void) => void) => {
-				if (eventName === 'pointerdown') pointerdownHandlers.push(callback as (event: InternalPointerEvent) => void);
-				if (eventName === 'pointermove') pointermoveHandlers.push(callback as (event: InternalPointerEvent) => void);
-				if (eventName === 'pointerup') pointerupHandlers.push(callback as () => void);
-			}),
-			off: vi.fn(),
-			dispatch: vi.fn(),
-		};
+	it.each([
+		{ x: 0, y: 0 },
+		{ x: 3, y: 5 },
+	])('drags the clicked block and snaps it to the world grid at viewport ($x, $y)', ({ x, y }) => {
+		const test = setup();
+		const block = test.block('first');
+		updateViewport(test.state, x, y, test.events);
+		test.press(block);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBe(block);
+		const move = test.move(10, 10);
+		expect(move.stopPropagation).toBe(true);
+		expect(block).toMatchObject({ x: 60, y: 110 });
+		test.release();
+		expect(block).toMatchObject({ x: 60, y: 120, gridX: 6, gridY: 6 });
+		expect(block.code).toContain('; @pos 6 6');
+		expect(test.state.viewport).toMatchObject({ x, y });
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
 	});
 
-	describe('single block drag', () => {
-		it.each([
-			{ x: 0, y: 0 },
-			{ x: 3, y: 5 },
-		])('drags the clicked block and snaps it to the world grid at viewport ($x, $y)', ({ x, y }) => {
-			state.viewport.x = x;
-			state.viewport.y = y;
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-
-			codeBlockDragger(store, events);
-
-			// Mousedown without Alt key
-			pointerdownHandlers[0]({
-				x: 50 - x,
-				y: 100 - y,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			expect(state.codeBlockRendering.draggedCodeBlock).toBe(block1);
-
-			// Mousemove
-			pointermoveHandlers[0]({
-				x: 60 - x,
-				y: 110 - y,
-				movementX: 10,
-				movementY: 10,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			expect(block1.x).toBe(60);
-			expect(block1.y).toBe(110);
-
-			// Mouseup
-			pointerupHandlers[0]();
-
-			expect(block1.gridX).toBe(6); // Math.round(60 / 10)
-			expect(block1.gridY).toBe(6); // Math.round(110 / 20)
-			expect(block1.x).toBe(60); // 6 * 10
-			expect(block1.y).toBe(120); // 6 * 20
-			expect(block1.code).toContain('; @pos 6 6');
-			expect(state.viewport).toMatchObject({ x, y });
-			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		});
+	it('discards the drag preview without publishing if the block snaps to its saved position', () => {
+		const test = setup();
+		const block = test.block('first');
+		const before = test.revision();
+		const { lastUpdated, code } = block;
+		test.press(block);
+		test.move(2, 2);
+		expect(block).toMatchObject({ x: 52, y: 102, gridX: 5, gridY: 5 });
+		test.release();
+		expect(block).toMatchObject({ x: 50, y: 100, gridX: 5, gridY: 5, lastUpdated });
+		expect(block.code).toBe(code);
+		expect(test.revision()).toEqual(before);
 	});
 
 	it('moves plugin-selected targets and persists their positions with one change', () => {
-		const first = createMockCodeBlock({
-			code: ['module first', 'moduleEnd'],
-			gridX: 5,
-			gridY: 5,
-			x: 50,
-			y: 100,
-		});
-		const second = createMockCodeBlock({
-			code: ['module second', 'moduleEnd'],
-			gridX: 20,
-			gridY: 10,
-			x: 200,
-			y: 200,
-		});
-		state.codeBlockRendering.currentProject.blocks = [first, second];
-		vi.mocked(events.dispatch).mockImplementation((name, payload) => {
-			if (name !== 'resolveCodeBlockDragTargets') return;
-			const request = payload as import('./effect').ResolveCodeBlockDragTargetsEvent;
+		const test = setup(projectSource(firstSource, secondSource));
+		const first = test.block('first');
+		const second = test.block('second');
+		const before = test.revision();
+		test.events.on('resolveCodeBlockDragTargets', (request: ResolveCodeBlockDragTargetsEvent) => {
 			expect(request).toEqual({ codeBlock: first, altKey: true, targets: [first] });
 			request.targets = [first, second];
 		});
-		codeBlockDragger(store, events);
-		const pointer = {
-			x: 50,
-			y: 100,
-			altKey: true,
-			buttons: 1,
-			movementX: 0,
-			movementY: 0,
-			stopPropagation: false,
-			canvasWidth: 800,
-			canvasHeight: 600,
-		};
-		pointerdownHandlers[0](pointer);
-		pointermoveHandlers[0]({ ...pointer, movementX: 10, movementY: 20 });
-		pointerupHandlers[0]();
+		test.press(first, true);
+		test.move(10, 20);
+		test.release();
 		expect(first.code).toContain('; @pos 6 6');
 		expect(second.code).toContain('; @pos 21 11');
-		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(1);
+		expect(test.revision()).toEqual(before.map(value => value + 1));
 	});
 
-	describe('stopPropagation behavior', () => {
-		it('should set stopPropagation to true while dragging', () => {
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-
-			codeBlockDragger(store, events);
-
-			// Mousedown
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			// Mousemove
-			const moveEvent = {
-				x: 60,
-				y: 110,
-				movementX: 10,
-				movementY: 10,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			};
-			pointermoveHandlers[0](moveEvent);
-
-			expect(moveEvent.stopPropagation).toBe(true);
-		});
+	it('selects read-only blocks without starting a drag', () => {
+		const test = setup();
+		const environment = test.block('env');
+		const before = test.revision();
+		test.press(environment);
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(environment);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.visibleNames()).toEqual(['env', 'first']);
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
+		expect(environment).toMatchObject({ readOnly: true, gridX: 0, gridY: 0, x: 0, y: 0 });
+		expect(environment.code).toContain('; @pos 0 0');
+		expect(test.revision()).toEqual(before);
 	});
 
-	describe('feature flag', () => {
-		it('should not drag if moduleDragging feature is disabled', () => {
-			state.featureFlags.moduleDragging = false;
-
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-
-			codeBlockDragger(store, events);
-
-			// Mousedown
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		});
-
-		it('selects without dragging when editing is disabled', () => {
-			state.editorMode = 'view';
-
-			const blockBehind = createMockCodeBlock({
-				code: ['module behind', 'moduleEnd'],
-				gridX: 20,
-				gridY: 20,
-				x: 200,
-				y: 200,
-				creationIndex: 1,
-				blockType: 'module',
-			});
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1, blockBehind];
-
-			codeBlockDragger(store, events);
-
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			pointermoveHandlers[0]({
-				x: 60,
-				y: 110,
-				movementX: 10,
-				movementY: 10,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-			pointerupHandlers[0]();
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(block1);
-			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-			expect(block1.x).toBe(50);
-			expect(block1.y).toBe(100);
-			expect(state.codeBlockRendering.currentProject.blocks).toEqual([blockBehind, block1]);
-		});
+	it('excludes read-only blocks from plugin-selected drag targets', () => {
+		const test = setup();
+		const first = test.block('first');
+		const environment = test.block('env');
+		test.selectTargets(first, environment);
+		test.press(first);
+		test.move(10, 20);
+		expect(environment).toMatchObject({ x: 0, y: 0 });
+		test.release();
+		expect(first.code).toContain('; @pos 6 6');
+		expect(environment).toMatchObject({ gridX: 0, gridY: 0, x: 0, y: 0 });
+		expect(environment.code).toContain('; @pos 0 0');
 	});
 
-	describe('selected code block', () => {
-		it('should set selected code block on pointerdown', () => {
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-
-			codeBlockDragger(store, events);
-
-			// Mousedown
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBe(block1);
-		});
-
-		it('should not update block position metadata on click without drag', () => {
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				lastUpdated: 1234,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-			const originalCode = [...block1.code];
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-
-			codeBlockDragger(store, events);
-
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			pointerupHandlers[0]();
-
-			expect(block1.lastUpdated).toBe(1234);
-			expect(block1.code).toEqual(originalCode);
-			expect(block1.gridX).toBe(5);
-			expect(block1.gridY).toBe(5);
-			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		});
-
-		it('should clear selected code block when mousedown is on empty space', () => {
-			const block1 = createMockCodeBlock({
-				code: ['module test1', 'moduleEnd'],
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				creationIndex: 0,
-				blockType: 'module',
-			});
-
-			state.codeBlockRendering.currentProject.blocks = [block1];
-			state.codeBlockRendering.selectedCodeBlock = block1;
-
-			codeBlockDragger(store, events);
-
-			// Mousedown outside any block
-			pointerdownHandlers[0]({
-				x: 400,
-				y: 400,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
-
-			expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-		});
+	it('commits only surviving targets when a secondary block is deleted during a drag', () => {
+		const test = setup(projectSource(firstSource, secondSource));
+		const first = test.block('first');
+		const second = test.block('second');
+		const before = test.revision();
+		test.selectTargets(first, second);
+		test.press(first);
+		test.move(10, 20);
+		expect(second).toMatchObject({ x: 210, y: 220 });
+		test.store.projectEdits.apply({ deletes: [second] });
+		// The detached target's preview is discarded immediately; collection settlement recomputes layout.
+		expect(second).toMatchObject({ x: 200, y: 200 });
+		test.move(10, 20);
+		expect(second).toMatchObject({ x: 200, y: 200 });
+		test.release();
+		expect(test.visibleNames()).toEqual(['env', 'first']);
+		expect(first.code).toContain('; @pos 6 6');
+		expect(second.code).toContain('; @pos 20 10');
+		expect(test.revision()).toEqual(before.map(value => value + 2));
 	});
 
-	describe('alwaysOnTop z-order partitioning', () => {
-		it('brings a normal block forward without crossing into the always-on-top partition', () => {
-			const normal1 = createMockCodeBlock({
-				code: ['module normal1', 'moduleEnd'],
-				name: 'normal1',
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 0,
-				blockType: 'module',
-				alwaysOnTop: false,
-			});
-			const normal2 = createMockCodeBlock({
-				code: ['module normal2', 'moduleEnd'],
-				name: 'normal2',
-				gridX: 25,
-				gridY: 5,
-				x: 250,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 1,
-				blockType: 'module',
-				alwaysOnTop: false,
-			});
-			const top1 = createMockCodeBlock({
-				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
-				name: 'top1',
-				gridX: 45,
-				gridY: 5,
-				x: 450,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 2,
-				blockType: 'module',
-				alwaysOnTop: true,
-			});
+	it('cancels the entire drag when its primary block is deleted', () => {
+		const test = setup(projectSource(firstSource, secondSource));
+		const first = test.block('first');
+		const second = test.block('second');
+		const before = test.revision();
+		test.selectTargets(first, second);
+		test.press(first);
+		test.move(10, 20);
+		expect(first).toMatchObject({ x: 60, y: 120 });
+		expect(second).toMatchObject({ x: 210, y: 220 });
+		test.store.projectEdits.apply({ deletes: [first] });
+		expect(first).toMatchObject({ x: 50, y: 100 });
+		expect(second).toMatchObject({ x: 200, y: 200 });
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
+		expect(test.visibleNames()).toEqual(['env', 'second']);
+		expect(second).toMatchObject({ x: 200, y: 200, gridX: 20, gridY: 10 });
+		expect(second.code).toContain('; @pos 20 10');
+		expect(test.revision()).toEqual(before.map(value => value + 1));
+	});
 
-			state.codeBlockRendering.currentProject.blocks = [normal1, normal2, top1];
+	it('cancels the drag when navigation changes the visible level', () => {
+		const test = setup(
+			projectSource(
+				firstSource,
+				'group nested\n; @pos 45 5\nentry main',
+				moduleSource('child', 8, 4),
+				'entryEnd\ngroupEnd'
+			)
+		);
+		const first = test.block('first');
+		const owner = test.block('nested');
+		const before = test.revision();
+		test.press(first);
+		test.move(10, 20);
+		expect(first).toMatchObject({ x: 60, y: 120 });
+		test.events.dispatch('openProjectGroup', { codeBlock: owner });
+		expect(test.state.codeBlockRendering.currentProject).toBe(owner.childProject);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(first).toMatchObject({ x: 50, y: 100 });
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
 
-			codeBlockDragger(store, events);
+		const child = test.block('child');
+		test.press(child);
+		test.move(10, 20);
+		expect(child).toMatchObject({ x: 90, y: 100 });
+		test.events.dispatch('goToParentProjectGroup');
+		expect(test.state.codeBlockRendering.currentProject).toBe(test.state.codeBlockRendering.rootProject);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(child).toMatchObject({ x: 80, y: 80 });
+		expect(test.move(10, 20).stopPropagation).toBe(false);
+		test.release();
+		expect(first.code).toContain('; @pos 5 5');
+		expect(child.code).toContain('; @pos 8 4');
+		expect(test.revision()).toEqual(before);
+	});
 
-			pointerdownHandlers[0]({
-				x: 50,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
+	it.each(['replace', 'undo'] as const)(
+		'cancels the drag on %s even when the restored block has the same name',
+		kind => {
+			const test = setup();
+			const first = test.block('first');
+			const code = ['module first', '; @pos 8 8', 'moduleEnd'];
+			test.store.projectEdits.apply({ updates: [{ codeBlock: first, code }] }, { history: 'checkpoint' });
+			const before = test.revision();
+			test.press(first);
+			test.move(10, 20);
+			expect(first).toMatchObject({ x: 90, y: 180 });
+			if (kind === 'undo') test.events.dispatch('undo');
+			else test.load(projectSource(firstSource));
+			const restored = test.block('first');
+			expect(restored).not.toBe(first);
+			expect(first).toMatchObject({ x: 80, y: 160 });
+			expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+			expect(test.move(10, 20).stopPropagation).toBe(false);
+			test.release();
+			expect(restored).toMatchObject({ x: 50, y: 100, gridX: 5, gridY: 5 });
+			expect(restored.code).toContain('; @pos 5 5');
+			expect(test.revision()).toEqual(before.map(value => value + 1));
+		}
+	);
 
-			expect(state.codeBlockRendering.currentProject.blocks).toEqual([normal2, normal1, top1]);
-		});
+	it('cancels and discards the drag preview when a replacement grid is pending', () => {
+		const test = setup();
+		const block = test.block('first');
+		const before = test.revision();
+		const { lastUpdated } = block;
+		test.press(block);
+		test.move(10, 20);
+		expect(block).toMatchObject({ x: 60, y: 120 });
+		markGridSizePending(test.state);
+		test.release();
+		expect(block).toMatchObject({ x: 50, y: 100, gridX: 5, gridY: 5, lastUpdated });
+		expect(block.code).toContain('; @pos 5 5');
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.revision()).toEqual(before);
+	});
 
-		it('brings an always-on-top block forward within the always-on-top partition', () => {
-			const normal1 = createMockCodeBlock({
-				code: ['module normal1', 'moduleEnd'],
-				name: 'normal1',
-				gridX: 5,
-				gridY: 5,
-				x: 50,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 0,
-				blockType: 'module',
-				alwaysOnTop: false,
-			});
-			const top1 = createMockCodeBlock({
-				code: ['module top1', '; @alwaysOnTop', 'moduleEnd'],
-				name: 'top1',
-				gridX: 25,
-				gridY: 5,
-				x: 250,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 1,
-				blockType: 'module',
-				alwaysOnTop: true,
-			});
-			const top2 = createMockCodeBlock({
-				code: ['module top2', '; @alwaysOnTop', 'moduleEnd'],
-				name: 'top2',
-				gridX: 45,
-				gridY: 5,
-				x: 450,
-				y: 100,
-				width: 100,
-				height: 100,
-				creationIndex: 2,
-				blockType: 'module',
-				alwaysOnTop: true,
-			});
+	it('does not drag if moduleDragging is disabled', () => {
+		const test = setup(projectSource(firstSource), { moduleDragging: false });
+		test.press(test.block('first'));
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	});
 
-			state.codeBlockRendering.currentProject.blocks = [normal1, top1, top2];
+	it('selects without dragging when editing is disabled', () => {
+		const test = setup(projectSource(firstSource, secondSource), { mode: 'view' });
+		const first = test.block('first');
+		test.press(first);
+		test.move(10, 10);
+		test.release();
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(first);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(first).toMatchObject({ x: 50, y: 100 });
+		expect(test.visibleNames()).toEqual(['env', 'second', 'first']);
+	});
 
-			codeBlockDragger(store, events);
+	it('selects the block without changing its source or position on click without drag', () => {
+		const test = setup();
+		const first = test.block('first');
+		const { lastUpdated, code } = first;
+		test.press(first);
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(first);
+		test.release();
+		expect(first).toMatchObject({ gridX: 5, gridY: 5, lastUpdated });
+		expect(first.code).toBe(code);
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	});
 
-			pointerdownHandlers[0]({
-				x: 250,
-				y: 100,
-				movementX: 0,
-				movementY: 0,
-				buttons: 1,
-				stopPropagation: false,
-				canvasWidth: 800,
-				canvasHeight: 600,
-				altKey: false,
-			});
+	it('clears selection when pointerdown is on empty space', () => {
+		const test = setup();
+		test.press(test.block('first'));
+		test.release();
+		test.events.dispatch('pointerdown', test.pointer(400, 400));
+		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	});
 
-			expect(state.codeBlockRendering.currentProject.blocks).toEqual([normal1, top2, top1]);
-		});
+	it('brings a normal block forward without crossing the always-on-top partition', () => {
+		const test = setup(projectSource(firstSource, secondSource, moduleSource('top', 45, 5, '; @alwaysOnTop')));
+		test.press(test.block('first'));
+		expect(test.visibleNames()).toEqual(['env', 'second', 'first', 'top']);
+	});
+
+	it('brings an always-on-top block forward within its partition', () => {
+		const test = setup(
+			projectSource(
+				firstSource,
+				moduleSource('top1', 25, 5, '; @alwaysOnTop'),
+				moduleSource('top2', 45, 5, '; @alwaysOnTop')
+			)
+		);
+		test.press(test.block('top1'));
+		expect(test.visibleNames()).toEqual(['env', 'first', 'top2', 'top1']);
 	});
 });

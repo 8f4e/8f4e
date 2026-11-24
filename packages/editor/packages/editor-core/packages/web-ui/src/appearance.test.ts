@@ -50,6 +50,43 @@ describe('appearance subscriptions', () => {
 		expect(test.events.dispatch).not.toHaveBeenCalled();
 	});
 
+	it('loads the temporary font independently of authored configuration and restores the latest authored font', async () => {
+		const test = setup();
+		const preview = deferred<FontAtlas>();
+		const restored = deferred<FontAtlas>();
+		loadFontAtlas.mockReturnValueOnce(preview.promise).mockReturnValueOnce(restored.promise);
+		test.store.set('appearance.fontOverride', 'x11miscfixed6x10');
+		test.store.set('editorConfig.font', 'terminus10x18');
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('x11miscfixed6x10');
+		const previewAtlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
+		preview.resolve(previewAtlas);
+		await preview.promise;
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(previewAtlas, 'x11miscfixed6x10');
+		expect(test.state.editorConfig.font).toBe('terminus10x18');
+
+		test.store.set('appearance.fontOverride', undefined);
+		expect(loadFontAtlas.mock.calls).toEqual([['x11miscfixed6x10'], ['terminus10x18']]);
+		const restoredAtlas = { grid: { cellWidth: 10, cellHeight: 18 } } as FontAtlas;
+		restored.resolve(restoredAtlas);
+		await restored.promise;
+		expect(test.applyFont).toHaveBeenLastCalledWith(restoredAtlas, 'terminus10x18');
+		expect(test.state.viewport).toMatchObject({ vGrid: 10, hGrid: 18 });
+	});
+
+	it('does not restart a pending preview that becomes the authored font', async () => {
+		const test = setup();
+		const preview = deferred<FontAtlas>();
+		loadFontAtlas.mockReturnValueOnce(preview.promise);
+		test.store.set('appearance.fontOverride', 'x11miscfixed6x10');
+		test.store.set('editorConfig.font', 'x11miscfixed6x10');
+		test.store.set('appearance.fontOverride', undefined);
+		expect(loadFontAtlas).toHaveBeenCalledExactlyOnceWith('x11miscfixed6x10');
+		const atlas = { grid: { cellWidth: 6, cellHeight: 10 } } as FontAtlas;
+		preview.resolve(atlas);
+		await preview.promise;
+		expect(test.applyFont).toHaveBeenCalledExactlyOnceWith(atlas, 'x11miscfixed6x10');
+	});
+
 	it('installs only the newest font without changing the independently updated palette', async () => {
 		const test = setup();
 		const older = deferred<FontAtlas>();

@@ -33,7 +33,7 @@ it('refreshes entry bounds after layout, grid, and completed project changes', (
 		]);
 		test.block.x = 400;
 		test.block.entry = 'changed';
-		test.store.set('projectChange', { revision: 1, kind: 'edit' });
+		test.store.set('projectChange', { revision: 1, kind: 'edit', history: 'debounced' });
 		expect(test.state.codeBlockRendering.entryBounds[0]).toMatchObject({ entryName: 'changed', x: 368 });
 	} finally {
 		test.dispose();
@@ -80,7 +80,7 @@ it('stops reacting to store and geometry notifications after disposal', () => {
 		const previous = test.state.codeBlockRendering.entryBounds;
 		test.dispose();
 		test.block.x = 500;
-		test.store.set('projectChange', { revision: 1, kind: 'edit' });
+		test.store.set('projectChange', { revision: 1, kind: 'edit', history: 'debounced' });
 		test.store.set('codeBlockRendering.currentProject.blocks', []);
 		test.events.dispatch('codeBlockLayoutsChanged', {
 			project: test.state.codeBlockRendering.currentProject,

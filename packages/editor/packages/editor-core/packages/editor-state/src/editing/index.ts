@@ -1,10 +1,17 @@
-import type { CodeBlockGraphicData, EditorDirectiveDefinition, EventDispatcher, State } from '@8f4e/editor-state-types';
+import type {
+	CodeBlockGraphicData,
+	EventDispatcher,
+	ProjectEditPlan,
+	ProjectEdits,
+	State,
+} from '@8f4e/editor-state-types';
+import { projectInstructions } from '@8f4e/language-spec';
 import type { StateManager } from '@8f4e/state-manager';
-import { updateBlockSource } from '../features/code-blocks/sourceUpdates';
-import { createCodeBlockGraphicData } from '../features/code-blocks/utils/createCodeBlockGraphicData';
+import { instructionParser, isProjectGapLine } from '@8f4e/tokenizer';
+import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
-import serializeProjectLevel from '../pureHelpers/projectSerialization/serializeProjectLevel';
-import { copyProjectLevel, findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
+import { ProjectEditPlanError } from '../features/project-edits/service';
+import { walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
@@ -14,9 +21,9 @@ export const getEditorBlockId = (block: CodeBlockGraphicData): string =>
 	JSON.stringify([block.projectPath, block.creationIndex]);
 let nextEditorInstance = 0;
 
-type EditingStore = StateManager<State> & { directives: { definitions: EditorDirectiveDefinition[] } };
+type EditingStore = Pick<StateManager<State>, 'getState'> & { projectEdits: ProjectEdits };
 
-/** Public commands reuse project restoration, without dispatching an unrelated loadProject. */
+/** Resolve public revision-checked commands into one project mutation, without replacing the live tree. */
 export function createEditorEditingHandle(store: EditingStore, events: EventDispatcher) {
 	const state = store.getState();
 	const instance = `${++nextEditorInstance}-${Math.random().toString(36).slice(2)}`;
@@ -43,9 +50,9 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 				revision()
 			);
 	};
-	const invalid = (message: string): never => {
+	function invalid(message: string): never {
 		throw new EditorEditingError('invalid_edit', message, revision());
-	};
+	}
 	const validateCode = (code: string[]) => {
 		if (
 			!Array.isArray(code) ||
@@ -59,6 +66,12 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 		if (entry !== undefined && (typeof entry !== 'string' || !/^\S+$/.test(entry)))
 			invalid('entry must be a nonempty name');
 	};
+	const isGroupSource = (code: string[]) => {
+		const opener = code.find(line => !isProjectGapLine(line))?.match(instructionParser)?.[1];
+		return opener === projectInstructions.group.opener;
+	};
+	// Entry membership is command metadata, distinct from validation of the source itself.
+	const acceptsEntry = (code: string[]) => getBlockType(code) === 'module';
 	const handle: EditorEditingHandle = {
 		getRevision() {
 			assertAlive();
@@ -67,59 +80,64 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
 			if (!Array.isArray(edits) || edits.length === 0) invalid('Provide at least one edit');
-			const draft = copyProjectLevel(state.codeBlockRendering.rootProject);
-			let nextId = state.codeBlockRendering.nextCodeBlockCreationIndex;
-			const createdBlockIds: string[] = [];
+			const root = state.codeBlockRendering.rootProject;
+			const targets = new Map([...walkProjectBlocks(root)].map(block => [getEditorBlockId(block), block]));
+			const inserts: NonNullable<ProjectEditPlan['inserts']>[number][] = [];
+			const updates: NonNullable<ProjectEditPlan['updates']>[number][] = [];
+			const deletes: CodeBlockGraphicData[] = [];
 			for (const edit of edits as readonly EditorEdit[]) {
 				if (!edit || typeof edit !== 'object') invalid('Invalid edit');
 				if (edit.type === 'insert') {
 					validateCode(edit.code);
-					if (edit.code.some(line => /^\s*group(?:\s|$)/.test(line)))
+					if (isGroupSource(edit.code))
 						invalid('Create project groups through project loading; inserts add ordinary code blocks');
 					validateEntry(edit.entry);
-					const path = edit.projectPath ?? '';
-					const slice = findProjectLevel(draft, path);
-					if (!slice) invalid('Unknown projectPath');
-					const code = [...edit.code];
-					const block = createCodeBlockGraphicData({
-						creationIndex: nextId++,
-						code,
-						projectPath: path,
-					});
-					updateBlockSource(block, store.directives.definitions);
-					if (edit.entry !== undefined && block.blockType !== 'module') invalid('Only module inserts accept an entry');
-					if (block.blockType === 'module') block.entry = edit.entry ?? 'main';
-					slice!.blocks.push(block);
-					createdBlockIds.push(getEditorBlockId(block));
+					let project = root;
+					if (edit.groupBlockId !== undefined) {
+						const group = targets.get(edit.groupBlockId);
+						if (!group)
+							throw new EditorEditingError(
+								'block_not_found',
+								'Read the project for a current groupBlockId',
+								revision()
+							);
+						if (!group.childProject) invalid('The insertion target is not a project group');
+						project = group.childProject;
+					}
+					if (edit.entry !== undefined && !acceptsEntry(edit.code)) invalid('Only module inserts accept an entry');
+					inserts.push({ project, source: { code: edit.code, entry: edit.entry } });
 					continue;
 				}
 				if (!['update', 'delete'].includes(edit.type)) invalid('Unknown edit type');
-				const target = [...walkProjectBlocks(draft)].find(block => getEditorBlockId(block) === edit.blockId);
+				const target = targets.get(edit.blockId);
 				if (!target)
 					throw new EditorEditingError('block_not_found', 'Read the project for a current blockId', revision());
 				if (edit.type === 'delete') {
-					const slice = findProjectLevel(draft, target.projectPath)!;
-					slice.blocks.splice(slice.blocks.indexOf(target), 1);
+					deletes.push(target);
 				} else if (edit.type === 'update') {
 					validateCode(edit.code);
-					if (!target.childProject && edit.code.some(line => /^\s*group(?:\s|$)/.test(line)))
+					if (!target.childProject && isGroupSource(edit.code))
 						invalid('Converting a code block into a project group is not supported');
 					validateEntry(edit.entry);
 					if (target.childProject && getCodeBlockNameFromSource(edit.code) !== target.name) {
 						invalid('Keep the project group name when updating its source; edit child blocks through their handles');
 					}
-					if (target.code.length !== edit.code.length || target.code.some((line, index) => line !== edit.code[index])) {
-						target.code = [...edit.code];
-						updateBlockSource(target, store.directives.definitions);
-					}
-					if (edit.entry !== undefined && target.blockType !== 'module' && !target.childProject)
+					if (edit.entry !== undefined && !target.childProject && !acceptsEntry(edit.code))
 						invalid('Only modules and project groups accept an entry');
-					if (target.blockType === 'module') target.entry = edit.entry ?? target.entry ?? 'main';
-					else if (target.childProject && edit.entry !== undefined) target.entry = edit.entry;
+					updates.push({
+						codeBlock: target,
+						code: edit.code,
+						entry: edit.entry,
+					});
 				}
 			}
-			events.dispatch('applyProjectEdit', { project: serializeProjectLevel(draft) });
-			return { revision: revision(), createdBlockIds };
+			try {
+				const { insertedBlocks } = store.projectEdits.apply({ updates, inserts, deletes }, { history: 'checkpoint' });
+				return { revision: revision(), createdBlockIds: insertedBlocks.map(getEditorBlockId) };
+			} catch (error) {
+				if (error instanceof ProjectEditPlanError) invalid(error.message);
+				throw error;
+			}
 		},
 		undo({ expectedRevision }) {
 			checkWrite(expectedRevision);

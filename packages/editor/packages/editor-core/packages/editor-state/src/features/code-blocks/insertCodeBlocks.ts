@@ -1,59 +1,30 @@
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath, type ProjectGroupPath } from '@8f4e/language-spec';
+import type { CodeBlockGraphicData, ProjectEdits, ProjectSourceBlock, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 import type { SerializedCodeBlock } from '../../pureHelpers/codeBlockSerialization';
-import incrementCompilerInputRevision from '../program-compiler/incrementCompilerInputRevision';
-import { publishProjectChange } from '../project-changes';
 import upsertPos from './features/directives/pos/upsert';
-import getBlockType from './utils/codeParsers/getBlockType';
-import { createCodeBlockGraphicData } from './utils/createCodeBlockGraphicData';
-import getCodeBlockNameFromSource from './utils/getCodeBlockNameFromSource';
 
-function createInsertedCodeBlock(
-	state: State,
+function placeSourceBlock(
 	sourceBlock: SerializedCodeBlock,
-	code: string[],
-	gridX: number,
-	gridY: number,
-	projectPath: ProjectGroupPath
-): CodeBlockGraphicData {
-	const creationIndex = state.codeBlockRendering.nextCodeBlockCreationIndex;
-	state.codeBlockRendering.nextCodeBlockCreationIndex += 1;
-	const name = getCodeBlockNameFromSource(code);
-	const blockType = getBlockType(code);
-	const codeBlock = createCodeBlockGraphicData({
-		code,
-		name,
-		projectPath,
-		gridX,
-		gridY,
-		x: gridX * state.viewport.vGrid,
-		y: gridY * state.viewport.hGrid,
-		creationIndex,
-		blockType,
-		entry: sourceBlock.entry ?? (blockType === 'module' || sourceBlock.childProject ? 'main' : undefined),
-	});
-
-	if (sourceBlock.childProject !== undefined) {
-		const childProjectPath = createChildProjectGroupPath(projectPath, name);
-		codeBlock.childProject = {
-			path: childProjectPath,
-			entries: [...sourceBlock.childProject.entries],
-			blocks: sourceBlock.childProject.blocks.map(child => {
-				const childGridX = child.gridCoordinates.x;
-				const childGridY = child.gridCoordinates.y;
-				const childCode = upsertPos([...child.code], childGridX, childGridY);
-				return createInsertedCodeBlock(state, child, childCode, childGridX, childGridY, childProjectPath);
-			}),
-		};
-	}
-
-	return codeBlock;
+	anchorGridX: number,
+	anchorGridY: number
+): ProjectSourceBlock {
+	return {
+		code: upsertPos(
+			sourceBlock.code,
+			anchorGridX + sourceBlock.gridCoordinates.x,
+			anchorGridY + sourceBlock.gridCoordinates.y
+		),
+		entry: sourceBlock.entry,
+		childProject: sourceBlock.childProject && {
+			entries: sourceBlock.childProject.entries,
+			blocks: sourceBlock.childProject.blocks.map(child => placeSourceBlock(child, 0, 0)),
+		},
+	};
 }
 
-/** Insert a source batch and return its blocks in input order after source and layout settle. */
+/** Insert a source batch at a viewport pixel position, requiring an installed grid. Returns only the created blocks. */
 export function insertCodeBlocks(
-	store: Pick<StateManager<State>, 'getState' | 'set'>,
+	store: Pick<StateManager<State>, 'getState'> & { projectEdits: ProjectEdits },
 	{
 		x,
 		y,
@@ -66,36 +37,17 @@ export function insertCodeBlocks(
 ): CodeBlockGraphicData[] {
 	const state = store.getState();
 
-	if (state.editorMode !== 'edit') {
+	const { vGrid, hGrid } = state.viewport;
+	if (state.editorMode !== 'edit' || vGrid <= 0 || hGrid <= 0) {
 		return [];
 	}
-	const projectPath = state.codeBlockRendering.currentProject.path;
+	const project = state.codeBlockRendering.currentProject;
 
 	// Place the source batch relative to the requested viewport position.
-	const anchorGridX = Math.round((state.viewport.x + x) / state.viewport.vGrid);
-	const anchorGridY = Math.round((state.viewport.y + y) / state.viewport.hGrid);
+	const anchorGridX = Math.round((state.viewport.x + x) / vGrid);
+	const anchorGridY = Math.round((state.viewport.y + y) / hGrid);
 
-	const newBlocks: CodeBlockGraphicData[] = [];
-
-	for (const sourceBlock of blocks) {
-		// Calculate absolute grid position
-		const gridX = anchorGridX + sourceBlock.gridCoordinates.x;
-		const gridY = anchorGridY + sourceBlock.gridCoordinates.y;
-
-		const code = upsertPos([...sourceBlock.code], gridX, gridY);
-
-		const codeBlock = createInsertedCodeBlock(state, sourceBlock, code, gridX, gridY, projectPath);
-
-		// Preserve creation order across the inserted batch and its nested projects.
-		state.codeBlockRendering.currentProject.blocks.push(codeBlock);
-		newBlocks.push(codeBlock);
-	}
-
-	// Trigger source preparation and layout for the new blocks.
-	store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
-	if (newBlocks.length > 0) {
-		incrementCompilerInputRevision(store);
-		publishProjectChange(store);
-	}
-	return newBlocks;
+	return store.projectEdits.apply({
+		inserts: blocks.map(sourceBlock => ({ project, source: placeSourceBlock(sourceBlock, anchorGridX, anchorGridY) })),
+	}).insertedBlocks;
 }

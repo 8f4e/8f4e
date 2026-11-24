@@ -8,32 +8,16 @@ export function* walkProjectLevels(project: ProjectLevel): Generator<ProjectLeve
 	}
 }
 
-export function findProjectLevel(root: ProjectLevel, path: ProjectGroupPath): ProjectLevel | undefined {
-	for (const level of walkProjectLevels(root)) {
-		if (level.path === path) return level;
-	}
-}
-
+/** Find the level containing the block that owns this project, independent of source paths. */
 export function findParentProjectLevel(root: ProjectLevel, project: ProjectLevel): ProjectLevel | undefined {
 	if (project === root) return;
-	return findProjectLevel(root, project.path.slice(0, Math.max(0, project.path.lastIndexOf('/'))));
+	for (const level of walkProjectLevels(root)) {
+		if (level.blocks.some(block => block.childProject === project)) return level;
+	}
 }
 
 export function* walkProjectBlocks(project: ProjectLevel): Generator<CodeBlockGraphicData> {
 	for (const level of walkProjectLevels(project)) yield* level.blocks;
-}
-
-/** Detached source-edit draft; runtime views and selections stay on the live project tree. */
-export function copyProjectLevel(project: ProjectLevel): ProjectLevel {
-	return {
-		path: project.path,
-		entries: [...project.entries],
-		blocks: project.blocks.map(block => ({
-			...block,
-			code: [...block.code],
-			...(block.childProject ? { childProject: copyProjectLevel(block.childProject) } : {}),
-		})),
-	};
 }
 
 /** Refresh ownership paths after renaming a project group. */

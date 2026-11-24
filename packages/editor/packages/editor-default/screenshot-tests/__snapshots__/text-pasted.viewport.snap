@@ -1,14 +1,11 @@
- 0, 0                                                                           
-                                                                                
-                                                                                
-    +0 note target                 +    +0 module same                 +        
-     1 ; @mode edit                      1 ; @pos 40 3                          
-     2 ; @pos 4 3                        2 ; @group audio                       
-     3 >Text pasted at the caret_       +3 moduleEnd                   +        
-    +4 noteEnd                     +                                            
-                                                                                
-                                                                                
-                                                                                
++0 constants env                           +                                    
+ 1 ; @pos 0 0                                                                   
+ 2 ; Auto-generated environment constants                                       
+ 3 ;+0 note target                 +    +0 module same                 +        
+ 4   1 ; @mode edit                      1 ; @pos 40 3                          
+ 5 ; 2 ; @pos 4 3                        2 ; @group audio                       
+ 6   3 >Text pasted at the caret_       +3 moduleEnd                   +        
++7 c+4 noteEnd                     +       +                                    
                                                                                 
                                                                                 
                                                                                 
@@ -21,4 +18,7 @@
                                                                                 
                                                                                 
                                                                                 
-                                                            ?                   
+                                                                                
+                                                                                
+                                                                                
+                                                                                

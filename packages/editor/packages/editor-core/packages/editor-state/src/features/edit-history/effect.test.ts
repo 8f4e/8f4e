@@ -1,19 +1,25 @@
-import type { EventDispatcher, State } from '@8f4e/editor-state-types';
-import { getProjectModules } from '@8f4e/language-spec';
-import createStateManager from '@8f4e/state-manager';
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeBlockGraphicData, ProjectChange, State } from '@8f4e/editor-state-types';
+import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from '../../pureHelpers/testingUtils/vitestTestUtils';
+import initState, { setGridSize } from '~/index';
+import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
 import { deleteCodeBlocks } from '../code-blocks/deleteCodeBlocks';
-import rendering from '../code-blocks/effect';
-import codeBlockDragger from '../code-blocks/features/codeBlockDragger/effect';
-import { directiveDefinitions } from '../code-blocks/features/directives/registry';
 import { insertCodeBlocks } from '../code-blocks/insertCodeBlocks';
-import { createLayoutRegistry } from '../code-blocks/layout/registry';
 import { applyCodeBlockSourceEdits } from '../code-blocks/sourceEdits';
-import projectImport from '../project-loading/effect';
 import { EMPTY_DEFAULT_PROJECT } from '../project-loading/emptyDefaultProject';
-import historyTracking from './effect';
+
+function createHistoryEditor(project: ProjectObjectModel = EMPTY_DEFAULT_PROJECT) {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: true } });
+	const state = store.getState();
+	setGridSize(state, events, TEST_GRID_SIZE);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
+	return { store, events, state };
+}
 
 describe('history tracking effect', () => {
 	beforeEach(() => {
@@ -25,37 +31,31 @@ describe('history tracking effect', () => {
 	});
 
 	it('restores undo and redo snapshots within the current project', () => {
-		const state = createMockState({ featureFlags: { historyTracking: true } });
-		state.historyStack.push(EMPTY_DEFAULT_PROJECT);
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-		const dispose = historyTracking(store, events);
-		vi.mocked(events.on).mock.calls.find(([name]) => name === 'undo')![1](undefined);
-		expect(state.initialProjectState).toMatchObject({
-			...EMPTY_DEFAULT_PROJECT,
-			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
-		});
+		const { state, store, events } = createHistoryEditor();
+		const original = serializeToProject(state);
+		store.projectEdits.apply(
+			{ inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }] },
+			{ history: 'checkpoint' }
+		);
+		const edited = serializeToProject(state);
+		events.dispatch('undo');
+		expect(serializeToProject(state)).toEqual(original);
 		expect(state.redoStack).toHaveLength(1);
-		const redoSnapshot = state.redoStack[0];
-		vi.mocked(events.on).mock.calls.find(([name]) => name === 'redo')![1](undefined);
-		expect(state.initialProjectState).toMatchObject({
-			...redoSnapshot,
-			constants: [expect.objectContaining({ code: expect.arrayContaining(['constants env']) })],
-		});
+		events.dispatch('redo');
+		expect(serializeToProject(state)).toEqual(edited);
 		expect(state.historyStack).toHaveLength(1);
-		dispose?.();
+		store.dispose();
 	});
 
 	it('cancels a pending history snapshot when disposed', async () => {
-		const state = createMockState({
-			featureFlags: { historyTracking: true },
+		const { state, store } = createHistoryEditor({
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', 'moduleEnd'] }],
 		});
-		const store = createStateManager(state);
-		const events = createMockEventDispatcherWithVitest();
-		const dispose = historyTracking(store, events);
+		const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'test')!;
 
-		store.set('projectChange', { revision: 1, kind: 'edit' });
-		dispose?.();
+		store.projectEdits.apply({ updates: [{ codeBlock: block, code: ['module test', 'push 1', 'moduleEnd'] }] });
+		store.dispose();
 		await vi.advanceTimersByTimeAsync(1000);
 
 		expect(state.historyStack).toEqual([]);
@@ -64,19 +64,18 @@ describe('history tracking effect', () => {
 
 describe('history tracking with real project mutations', () => {
 	let state: State;
-	let store: ReturnType<typeof createStateManager<State>>;
-	let events: EventDispatcher;
-	let block: ReturnType<typeof createMockCodeBlock>;
+	let store: ReturnType<typeof createHistoryEditor>['store'];
+	let events: ReturnType<typeof createHistoryEditor>['events'];
+	let block: CodeBlockGraphicData;
+	let baselineRevision: number;
 
 	function dispatch(name: string, payload: unknown = {}): void {
-		for (const [eventName, handler] of vi.mocked(events.on).mock.calls) {
-			if (eventName === name) handler(payload);
-		}
+		events.dispatch(name, payload);
 	}
 
 	function replaceLine(row: number, line: string) {
 		const codeBlock = state.codeBlockRendering.selectedCodeBlock!;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock, code: codeBlock.code.map((text, index) => (index === row ? line : text)) },
 		]);
 	}
@@ -89,30 +88,22 @@ describe('history tracking with real project mutations', () => {
 		return currentModule().code;
 	}
 
+	function environment() {
+		return state.codeBlockRendering.rootProject.blocks.find(
+			block => block.name === 'env' && block.blockType === 'constants'
+		)!;
+	}
+
 	beforeEach(() => {
 		vi.useFakeTimers();
-		state = createMockState({ featureFlags: { historyTracking: true } });
-		store = createStateManager(state);
-		events = createMockEventDispatcherWithVitest();
-		events.dispatch = vi.fn(dispatch);
-		block = createMockCodeBlock({
-			name: 'main',
-			code: ['module main', 'push 1', 'drop', 'moduleEnd'],
-			blockType: 'module',
-			entry: 'main',
-			cursor: { row: 1, col: 6, y: 16 },
-		});
-		state.codeBlockRendering.rootProject.blocks.push(block);
-		state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
-		state.codeBlockRendering.selectedCodeBlock = block;
-		projectImport(store, events);
-		rendering(
-			store,
-			events,
-			directiveDefinitions,
-			createLayoutRegistry(() => {})
-		);
-		historyTracking(store, events);
+		({ state, store, events } = createHistoryEditor({
+			...EMPTY_DEFAULT_PROJECT,
+			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module main', 'push 1', 'drop', 'moduleEnd'] }],
+		}));
+		block = currentModule();
+		store.set('codeBlockRendering.selectedCodeBlock', block);
+		block.cursor = { row: 1, col: 6, y: 16 };
+		baselineRevision = state.projectChange.revision;
 	});
 
 	afterEach(() => {
@@ -176,6 +167,201 @@ describe('history tracking with real project mutations', () => {
 		expect(selectedBlockCode()[1]).toBe('push 13');
 	});
 
+	it('skips a source edit without clearing redo or suppressing source and layout settlement', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(1000);
+		dispatch('undo');
+		const restored = currentModule();
+		const previousRevision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		const redo = state.redoStack[0];
+		const projectChanged = vi.fn();
+		store.subscribe('projectChange', projectChanged);
+
+		expect(
+			applyCodeBlockSourceEdits(
+				store,
+				[
+					{
+						codeBlock: restored,
+						code: ['module main', '; @pos 4 5', 'push 2', 'drop', 'moduleEnd'],
+					},
+				],
+				{ history: 'skip' }
+			)
+		).toBe(true);
+		expect(restored).toMatchObject({ gridX: 4, gridY: 5, x: 4 * TEST_GRID_SIZE.vGrid, y: 5 * TEST_GRID_SIZE.hGrid });
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
+		expect(state.projectChange).toEqual({ revision: previousRevision + 1, kind: 'edit', history: 'skip' });
+		expect(projectChanged).toHaveBeenCalledOnce();
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(state.historyStack).toHaveLength(0);
+		expect(state.redoStack).toEqual([redo]);
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+	});
+
+	it('only captures idle skipped authored changes, retaining the baseline across generated changes', async () => {
+		const capture = vi.spyOn(store.projectEdits, 'capture');
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		expect(state.projectChange).toEqual({
+			revision: baselineRevision + 1,
+			kind: 'edit',
+			history: 'skip',
+			generatedOnly: true,
+		});
+		expect(environment().code).toContain('const GENERATED 42');
+		expect(capture).not.toHaveBeenCalled();
+
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 2', 'drop', 'moduleEnd'] }], {
+			history: 'skip',
+		});
+		expect(capture).toHaveBeenCalledOnce();
+		store.set('envConstantContributions.test', ['const GENERATED 43']);
+		expect(capture).toHaveBeenCalledOnce();
+
+		replaceLine(1, 'push 3');
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(state.historyStack).toHaveLength(1);
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 2');
+		expect(environment().code).toContain('const GENERATED 43');
+	});
+
+	it('does not capture authored history when a newly available schema generates environment source', () => {
+		applyCodeBlockSourceEdits(
+			store,
+			[{ codeBlock: block, code: ['module main', 'push 1', 'drop', '; @config test 42', 'moduleEnd'] }],
+			{ history: 'checkpoint' }
+		);
+		const capture = vi.spyOn(store.projectEdits, 'capture');
+		const revision = state.projectChange.revision;
+		store.subscribe('editorConfig.test', value => {
+			store.set('envConstantContributions.test', [`const GENERATED ${value}`]);
+		});
+		store.set('editorConfigSchemaContributions.test', { root: 'test', schema: { type: 'integer' } });
+		expect(state.projectChange).toEqual({ revision: revision + 1, kind: 'edit', history: 'skip', generatedOnly: true });
+		expect(environment().code).toContain('const GENERATED 42');
+		expect(capture).not.toHaveBeenCalled();
+		expect(state.historyStack).toHaveLength(1);
+	});
+
+	it('does not postpone or discard a pending authored edit when ordinary source is skipped', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(600);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 123', 'drop', 'moduleEnd'] }], {
+			history: 'skip',
+		});
+		expect(state.historyStack).toHaveLength(0);
+		await vi.advanceTimersByTimeAsync(400);
+		expect(state.historyStack).toHaveLength(1);
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+	});
+
+	it('keeps a pending typing step open across contribution refresh and a read-only checkpoint request', async () => {
+		replaceLine(1, 'push 12');
+		await vi.advanceTimersByTimeAsync(600);
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		expect(state.projectChange).toMatchObject({ kind: 'edit', history: 'skip', generatedOnly: true });
+		const beforeProjectEdit = vi.fn();
+		events.on('beforeProjectEdit', beforeProjectEdit);
+		const generatedChange = state.projectChange;
+		expect(
+			store.projectEdits.apply(
+				{ updates: [{ codeBlock: environment(), code: ['constants env', '; @pos 3 4', 'constantsEnd'] }] },
+				{ history: 'checkpoint' }
+			).changed
+		).toBe(false);
+		expect(state.projectChange).toBe(generatedChange);
+		expect(beforeProjectEdit).not.toHaveBeenCalled();
+		expect(state.historyStack).toHaveLength(0);
+		await vi.advanceTimersByTimeAsync(400);
+		expect(state.historyStack).toHaveLength(1);
+		expect(state.historyStack[0].rootProject.blocks.map(block => block.code[0])).not.toContain('constants env');
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).toContain('const GENERATED 42');
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).toContain('const GENERATED 42');
+	});
+
+	it('does not create history when an authored typing burst is reverted even if env was regenerated', async () => {
+		replaceLine(1, 'push 12');
+		store.set('envConstantContributions.test', ['const GENERATED 42']);
+		replaceLine(1, 'push 1');
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(state.historyStack).toHaveLength(0);
+		expect(environment().code).toContain('const GENERATED 42');
+	});
+
+	it('records a single authored checkpoint for a mixed authored and managed-environment batch', () => {
+		store.set('editorConfigSchemaContributions.test', { root: 'test', schema: { type: 'integer' } });
+		store.subscribe('editorConfig.test', value => {
+			store.set('envConstantContributions.test', value === undefined ? [] : [`const GENERATED ${value}`]);
+		});
+		store.projectEdits.apply(
+			{
+				updates: [
+					{ codeBlock: block, code: ['module main', 'push 12', 'drop', '; @config test 42', 'moduleEnd'] },
+					{ codeBlock: environment(), code: ['constants env', '; @pos 6 7', 'constantsEnd'] },
+				],
+			},
+			{ history: 'checkpoint' }
+		);
+		expect(state.projectChange).toEqual({ revision: baselineRevision + 1, kind: 'edit', history: 'checkpoint' });
+		expect(state.historyStack).toHaveLength(1);
+		expect(environment().code).toContain('const GENERATED 42');
+		dispatch('undo');
+		expect(selectedBlockCode()[1]).toBe('push 1');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).not.toContain('const GENERATED 42');
+		dispatch('redo');
+		expect(selectedBlockCode()[1]).toBe('push 12');
+		expect(environment().code).toContain('; @pos 0 0');
+		expect(environment().code).toContain('const GENERATED 42');
+	});
+
+	it.each([
+		['debounced', 'compilationInputChanged'],
+		['checkpoint', 'compilationInputChanged'],
+		['debounced', 'projectChange'],
+		['checkpoint', 'projectChange'],
+	] as const)(
+		'publishes an authored %s before generated changes requested by a %s observer',
+		(history, notification) => {
+			const capture = vi.spyOn(store.projectEdits, 'capture');
+			const contribute = () => {
+				if (notification === 'compilationInputChanged') events.off(notification, contribute);
+				else store.unsubscribe(notification, contribute);
+				store.set('envConstantContributions.test', ['const GENERATED 42']);
+			};
+			if (notification === 'compilationInputChanged') events.on(notification, contribute);
+			else store.subscribe(notification, contribute);
+			const changes: ProjectChange[] = [];
+			store.subscribe('projectChange', change => changes.push(change));
+
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module main', 'push 12', 'drop', 'moduleEnd'] }], {
+				history,
+			});
+
+			expect(changes).toEqual([
+				{ revision: baselineRevision + 1, kind: 'edit', history },
+				{ revision: baselineRevision + 2, kind: 'edit', history: 'skip', generatedOnly: true },
+			]);
+			expect(capture).toHaveBeenCalledTimes(history === 'checkpoint' ? 1 : 0);
+			dispatch('undo');
+			expect(selectedBlockCode()[1]).toBe('push 1');
+			expect(environment().code).toContain('const GENERATED 42');
+			dispatch('redo');
+			expect(selectedBlockCode()[1]).toBe('push 12');
+			expect(environment().code).toContain('const GENERATED 42');
+		}
+	);
+
 	it('creates exactly one undo step for a burst of source edits (case d)', async () => {
 		replaceLine(1, 'push 12');
 		replaceLine(1, 'push 123');
@@ -184,10 +370,13 @@ describe('history tracking with real project mutations', () => {
 
 		expect(block.code[1]).toBe('push 12');
 		expect(state.historyStack).toHaveLength(1);
-		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
+		expect(
+			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === block.creationIndex)!.code
+		).toEqual(['module main', 'push 1', 'drop', 'moduleEnd']);
 	});
 
 	it('creates no history entry when an edit returns to the committed content (case e)', async () => {
+		expect(state.codeBlockRendering.rootProject.entries).toEqual(['main']);
 		replaceLine(1, 'push 12');
 		replaceLine(1, 'push 1');
 		await vi.advanceTimersByTimeAsync(2000);
@@ -198,7 +387,7 @@ describe('history tracking with real project mutations', () => {
 
 	it('cancels pending work and resets the baseline when another project loads (case f)', async () => {
 		replaceLine(1, 'push 12');
-		expect(state.projectChange.revision).toBe(1);
+		expect(state.projectChange.revision).toBe(baselineRevision + 1);
 
 		const otherProject = {
 			...EMPTY_DEFAULT_PROJECT,
@@ -219,7 +408,9 @@ describe('history tracking with real project mutations', () => {
 		replaceLine(0, 'module other;');
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(state.historyStack).toHaveLength(1);
-		expect(getProjectModules(state.historyStack[0])[0].code).toEqual(['module other', 'moduleEnd']);
+		expect(
+			state.historyStack[0].rootProject.blocks.find(candidate => candidate.creationIndex === loaded.creationIndex)!.code
+		).toEqual(['module other', 'moduleEnd']);
 	});
 
 	it('records exactly one entry for inserting a block batch, and none for an empty batch', async () => {
@@ -239,6 +430,15 @@ describe('history tracking with real project mutations', () => {
 		expect(state.historyStack).toHaveLength(1);
 	});
 
+	it('does not create a snapshot for allocation without a net content change', async () => {
+		const { insertedBlocks } = store.projectEdits.apply({
+			inserts: [{ project: state.codeBlockRendering.rootProject, source: { code: ['note test', 'noteEnd'] } }],
+		});
+		store.projectEdits.apply({ deletes: insertedBlocks });
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(state.historyStack).toHaveLength(0);
+	});
+
 	it('records one entry for a programmatic position commit from dragging', async () => {
 		dispatch('loadProject', {
 			project: {
@@ -250,8 +450,6 @@ describe('history tracking with real project mutations', () => {
 		});
 		const loaded = currentModule();
 		store.set('editorMode', 'edit');
-		codeBlockDragger(store, events);
-		store.set('codeBlockRendering.currentProject.blocks', state.codeBlockRendering.currentProject.blocks);
 		const compilerRevisionAfterLoad = state.compilerInputRevision;
 
 		dispatch('pointerdown', { x: 32, y: 8 });
@@ -274,17 +472,16 @@ describe('history tracking with real project mutations', () => {
 		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 1);
 		await vi.advanceTimersByTimeAsync(3000);
 
-		expect(state.projectChange.revision).toBe(0);
+		expect(state.projectChange.revision).toBe(baselineRevision);
 		expect(state.historyStack).toEqual([]);
 		expect(state.redoStack).toEqual([]);
 	});
 
-	it('records nothing when deleting a block that is not in the project', async () => {
-		const stranger = createMockCodeBlock({ code: ['module stranger', 'moduleEnd'], blockType: 'module' });
-		deleteCodeBlocks(store, [stranger]);
+	it('records nothing for an empty deletion batch', async () => {
+		deleteCodeBlocks(store, []);
 		await vi.advanceTimersByTimeAsync(2000);
 
-		expect(state.projectChange.revision).toBe(0);
+		expect(state.projectChange.revision).toBe(baselineRevision);
 		expect(state.historyStack).toEqual([]);
 	});
 });

@@ -13,12 +13,12 @@ export const toggleSkipExecutionPlugin: EditorPlugin = {
 
 			const skipExecution = !codeBlock.code.some(line => isSkipExecutionDirective(line));
 			const result = setSkipExecution(codeBlock.code, skipExecution);
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: result.code }]);
+			applyCodeBlockSourceEdits(store, [{ codeBlock, code: result.code }]);
 		};
 
 		events.on(action, onToggle);
 		const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (state.editorMode !== 'edit' || codeBlock.blockType !== 'module') return;
+			if (state.editorMode !== 'edit' || codeBlock.readOnly || codeBlock.blockType !== 'module') return;
 			const skipped = codeBlock.code.some(line => isSkipExecutionDirective(line));
 			return {
 				title: skipped ? 'Unskip module' : 'Skip module',

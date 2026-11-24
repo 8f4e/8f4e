@@ -50,6 +50,7 @@ export default function createDefaultState() {
 		featureFlags: defaultFeatureFlags,
 		editorMode: 'view' as const,
 		editorConfig: {},
+		appearance: {},
 		editorConfigValidators: {},
 		editorConfigSchemaContributions: {},
 		historyStack: [],

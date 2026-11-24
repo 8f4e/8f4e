@@ -1,61 +1,41 @@
 import { EventEmitter } from 'node:events';
 import { getProjectModules } from '@8f4e/language-spec';
-import createStateManager from '@8f4e/state-manager';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createEditorEditingHandle, getEditorBlockId } from '../../editing';
-import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
-import { createMockCodeBlock, createMockState } from '../../pureHelpers/testingUtils/testUtils';
-import rendering from '../code-blocks/effect';
-import { createDirectiveRegistry } from '../code-blocks/features/directives/registry';
-import { createLayoutRegistry } from '../code-blocks/layout/registry';
-import projectOperations from './effect';
+import initState from '../index';
+import serializeToProject from '../pureHelpers/projectSerialization/serializeToProject';
+import { createEditorEditingHandle, getEditorBlockId } from './index';
 
 const cleanups: Array<() => void> = [];
 function setup() {
-	const block = createMockCodeBlock({
-		blockType: 'module',
-		entry: 'main',
-		code: ['module target', 'int value 1', 'moduleEnd'],
-	});
-	const blocks = [block];
-	const state = createMockState({
-		editorMode: 'edit',
-		featureFlags: { historyTracking: true },
-		codeBlockRendering: {
-			rootProject: { entries: [], path: '', blocks: blocks },
-			currentProject: { entries: [], path: '', blocks: blocks },
-		},
-	});
-	const directives = createDirectiveRegistry();
-	const store = { ...createStateManager(state), directives };
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	rendering(
-		store,
-		events,
-		directives.definitions,
-		createLayoutRegistry(() => {})
-	);
-	const disposeOperations = projectOperations(store, events);
+	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: false } });
+	const state = store.getState();
+	events.dispatch('loadProject', {
+		project: parseProjectSource('8f4e/v1\nentry main\nmodule target\nint value 1\nmoduleEnd\nentryEnd'),
+	});
+	events.dispatch('enterEditMode');
+	const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'target')!;
 	const editing = createEditorEditingHandle(store, events);
 	cleanups.push(() => {
 		editing.dispose();
-		disposeOperations();
 		store.dispose();
 	});
-	return { state, block, events, editing: editing.handle, disposeOperations };
+	return { state, block, events, editing: editing.handle };
 }
 
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-describe('project operations', () => {
-	it('applies a validated API batch with no history effect installed', () => {
+describe('public editor operations without history', () => {
+	it('applies a validated API batch with history tracking disabled', () => {
 		const test = setup();
 		const beforeEdit = vi.fn(() => serializeToProject(test.state));
 		test.events.on('beforeProjectEdit', beforeEdit);
 		const beforeRevision = test.editing.getRevision();
+		const projectRevision = test.state.projectChange.revision;
 		const result = test.editing.applyEdits({
 			expectedRevision: beforeRevision,
 			edits: [
@@ -70,27 +50,22 @@ describe('project operations', () => {
 		expect(serializeToProject(test.state).notes).toHaveLength(1);
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);
-		expect(test.state.projectChange).toEqual({ revision: 1, kind: 'checkpoint' });
+		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'checkpoint' });
 		expect(test.state.historyStack).toHaveLength(0);
 	});
 
-	it('skips unchanged API drafts before notifying history or publishing a change', () => {
+	it('skips unchanged API edits before notifying history or publishing a change', () => {
 		const test = setup();
 		const beforeEdit = vi.fn();
 		test.events.on('beforeProjectEdit', beforeEdit);
 		const revision = test.editing.getRevision();
+		const projectRevision = test.state.projectChange.revision;
 		const result = test.editing.applyEdits({
 			expectedRevision: revision,
 			edits: [{ type: 'update', blockId: getEditorBlockId(test.block), code: [...test.block.code] }],
 		});
 		expect(beforeEdit).not.toHaveBeenCalled();
-		expect(test.state.projectChange.revision).toBe(0);
+		expect(test.state.projectChange.revision).toBe(projectRevision);
 		expect(result.revision).toBe(revision);
-	});
-
-	it('unregisters its operation handler when disposed', () => {
-		const test = setup();
-		test.disposeOperations();
-		expect(test.events.dispatch('applyProjectEdit', { project: serializeToProject(test.state) })).toBe(false);
 	});
 });

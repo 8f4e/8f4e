@@ -1,17 +1,19 @@
-import type { EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
-import type { ProjectObjectModel } from '@8f4e/language-spec';
+import type { EditorProjectSnapshot, EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
 
-import serializeToProject from '../../pureHelpers/projectSerialization/serializeToProject';
-import { restoreProject } from '../project-changes';
+import type { ProjectEditService } from '../project-edits/service';
+import { sameProjectSnapshot } from '../project-edits/snapshot';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
 
-export default function historyTracking(store: StateManager<State>, events: EventDispatcher): () => void {
+export default function historyTracking(
+	store: StateManager<State>,
+	events: EventDispatcher,
+	projectEdits: Pick<ProjectEditService, 'capture' | 'restore'>
+): () => void {
 	const state = store.getState();
-	// Serialization returns detached snapshots that history can retain directly.
-	let present = serializeToProject(state);
+	let present = projectEdits.capture();
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
 
@@ -21,7 +23,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		editPending = false;
 	}
 
-	function pushHistory(project: ProjectObjectModel) {
+	function pushHistory(project: EditorProjectSnapshot) {
 		if (state.historyStack.length >= HISTORY_LIMIT) state.historyStack.shift();
 		state.historyStack.push(project);
 	}
@@ -31,14 +33,20 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		cancelPendingEdit();
 		if (!pending) return;
 
-		const current = serializeToProject(state);
-		if (JSON.stringify(current) === JSON.stringify(present)) return;
+		const current = projectEdits.capture();
+		if (sameProjectSnapshot(current, present)) return;
 		pushHistory(present);
 		present = current;
 	}
 
-	function onProjectChange({ kind }: ProjectChange) {
-		if (kind === 'edit' && state.featureFlags.historyTracking) {
+	function onProjectChange(change: ProjectChange) {
+		if (change.kind === 'edit' && change.history === 'skip') {
+			// Do not turn a skipped operation into a separate checkpoint, discard redo, or
+			// replace a pending authored before-state. Generated source is outside the snapshot.
+			if (!change.generatedOnly && !editPending) present = projectEdits.capture();
+			return;
+		}
+		if (change.kind === 'edit' && change.history === 'debounced' && state.featureFlags.historyTracking) {
 			state.redoStack = [];
 			editPending = true;
 			if (saveTimeout) clearTimeout(saveTimeout);
@@ -47,14 +55,14 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		}
 
 		cancelPendingEdit();
-		if (kind === 'replace') {
+		if (change.kind === 'replace') {
 			state.historyStack = [];
 			state.redoStack = [];
-		} else if (kind === 'checkpoint' && state.featureFlags.historyTracking) {
+		} else if (change.kind === 'edit' && change.history === 'checkpoint' && state.featureFlags.historyTracking) {
 			pushHistory(present);
 			state.redoStack = [];
 		}
-		present = serializeToProject(state);
+		present = projectEdits.capture();
 	}
 
 	function undo() {
@@ -64,7 +72,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		if (!previousState) return;
 		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
 		state.redoStack.push(present);
-		restoreProject(store, events, previousState, 'restore');
+		projectEdits.restore(previousState);
 	}
 
 	function redo() {
@@ -73,7 +81,7 @@ export default function historyTracking(store: StateManager<State>, events: Even
 		const nextState = state.redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
-		restoreProject(store, events, nextState, 'restore');
+		projectEdits.restore(nextState);
 	}
 
 	store.subscribe('projectChange', onProjectChange);

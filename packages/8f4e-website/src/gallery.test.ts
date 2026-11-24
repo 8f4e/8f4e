@@ -113,7 +113,9 @@ test('keeps the loading canvas while mounting waits for the project and reveals 
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
+	expect(
+		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code
+	).toContain('module galleryExample ; @mode edit');
 });
 
 test('keeps the loading status visible until the editor has mounted', async () => {
@@ -153,17 +155,14 @@ test.each([
 		slack === undefined ? '' : `\nnote wireConfig\n; @pos 180 60\n; @config looseWires.slack ${slack}\nnoteEnd`;
 	const view = setup({
 		wires: async () =>
-			new Response(`8f4e/v1
-constants env
-; @pos 180 60
-constantsEnd${config}
+			new Response(`8f4e/v1${config}
 entry main
 module osc
-; @pos 4 5
+; @pos 4 9
 float out 0.5
 moduleEnd
 module amp
-; @pos 48 5
+; @pos 48 9
 float* in &osc:out
 moduleEnd
 entryEnd`),
@@ -236,6 +235,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	await expect.poll(() => editor.state.viewport.width).toBe(640);
 	const sources = editor.state.codeBlockRendering.rootProject.blocks.map(block => [...block.code]);
 	const revision = editor.editing.getRevision();
+	const sourceFont = editor.state.editorConfig.font;
 	const key = (key: string) => {
 		const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
 		canvas.dispatchEvent(event);
@@ -243,10 +243,12 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	};
 	expect(key('F8').defaultPrevented).toBe(true);
 	await expect.poll(() => editor.state.viewport.hGrid).toBe(12);
-	expect(editor.state.editorConfig.font).toBe('spleen6x12');
+	expect(editor.state.appearance.fontOverride).toBe('spleen6x12');
+	expect(editor.state.editorConfig.font).toBe(sourceFont);
 	expect(key('F9').defaultPrevented).toBe(true);
 	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
-	expect(editor.state.editorConfig.font).toBe('ibmvga8x16');
+	expect(editor.state.appearance.fontOverride).toBe('ibmvga8x16');
+	expect(editor.state.editorConfig.font).toBe(sourceFont);
 	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
 	editor.state.loadingIndicators = [];
 	editor.resize(640, 400);
@@ -254,6 +256,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	expect(editor.state.codeBlockRendering.rootProject.blocks.map(block => block.code)).toEqual(sources);
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
+	expect(editor.state.appearance.fontOverride).toBeUndefined();
 	expect(key('F9').defaultPrevented).toBe(false);
 });
 
@@ -797,5 +800,7 @@ test('loads an example without a generated preview and omits its image', async (
 	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
 	expect(view.gallery.querySelector('.example-preview')).toBeNull();
 	expect(view.gallery.querySelector('.example-title')?.textContent).toBe('unpreviewed');
-	expect(editor.state.initialProjectState?.execution[0].code.join('\n')).toContain('module galleryExample');
+	expect(
+		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'galleryExample')?.code.join('\n')
+	).toContain('module galleryExample');
 });

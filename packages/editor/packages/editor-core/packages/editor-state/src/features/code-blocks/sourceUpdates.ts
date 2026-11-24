@@ -2,6 +2,7 @@ import type { CodeBlockGraphicData, EditorDirectiveDefinition, ProjectLevel } fr
 import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import { updateProjectGroupMemoryExposureDeclarations } from '../../pureHelpers/projectGroupMemoryExposures';
 import { updateProjectLevelPath } from '../../pureHelpers/projectTree';
+import { clampSourcePosition } from '../text-geometry/clampSourcePosition';
 import { getTabStopsByLine } from '../text-geometry/tabLayout';
 import parsePos from './features/directives/pos/data';
 import { deriveDirectiveFacts } from './features/directives/registry';
@@ -23,8 +24,23 @@ function isProjectScopeSourceLine(line: string): boolean {
 	);
 }
 
+/** Modules and structural project-group blocks can own execution entries. */
+export function supportsExecutionEntry(block: Pick<CodeBlockGraphicData, 'blockType' | 'childProject'>): boolean {
+	return block.blockType === 'module' || block.childProject !== undefined;
+}
+
+/** Keep the editor's entry table authoritative, including empty previously declared entries. */
+export function rememberEntry(project: ProjectLevel, block: CodeBlockGraphicData): void {
+	if (supportsExecutionEntry(block) && block.entry !== undefined && !project.entries.includes(block.entry)) {
+		project.entries.push(block.entry);
+	}
+}
+
 /** Refresh source-owned metadata without clearing the last valid position during incomplete edits. */
 export function updateBlockSource(block: CodeBlockGraphicData, directives: EditorDirectiveDefinition[]): void {
+	const [row, col] = clampSourcePosition(block.code, block.cursor.row, block.cursor.col);
+	block.cursor.row = row;
+	block.cursor.col = col;
 	block.parsedDirectives = parseBlockDirectives(block.code);
 	const { blockState, displayState } = deriveDirectiveFacts(block.code, block.parsedDirectives, directives);
 	block.disabled = blockState.disabled;
@@ -50,6 +66,13 @@ export function updateBlockSource(block: CodeBlockGraphicData, directives: Edito
 		block.blockType === 'unknown' &&
 		block.code.every(isProjectScopeSourceLine) &&
 		(hasProjectScopeInstruction || block.isProjectScope === true);
+	// Unknown source may be an incomplete module rather than a conversion. Keep its
+	// last entry until the user finishes declaring a non-execution block.
+	if (supportsExecutionEntry(block)) {
+		block.entry ??= 'main';
+	} else if (block.isProjectScope || block.blockType !== 'unknown') {
+		block.entry = undefined;
+	}
 }
 
 function partitionProjectBlocks(project: ProjectLevel): void {
@@ -65,6 +88,7 @@ export function prepareProjectSources(
 ): void {
 	for (const block of blocks) {
 		updateBlockSource(block, directives);
+		rememberEntry(project, block);
 		if (block.childProject) prepareProjectSources(block.childProject, block.childProject.blocks, directives);
 	}
 	partitionProjectBlocks(project);

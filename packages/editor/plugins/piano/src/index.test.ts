@@ -35,7 +35,6 @@ async function setup(code = source, installed = true, name = 'controls') {
 		},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	events.dispatch('enterEditMode');
 	const drawers = createEditorDrawerRegistry();
 	const dispose = installed
 		? createPianoPlugin({ writeMemory: write }).setup({
@@ -58,7 +57,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 	state.compiler.result.compiledModules = compiled.compiledModules;
 	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
 	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
+	events.dispatch('loadProject', { project });
+	events.dispatch('enterEditMode');
 	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
@@ -233,12 +233,14 @@ describe('piano plugin', () => {
 	});
 	it('updates source positions and clears data and minimum width when a directive is removed', async () => {
 		const test = await setup();
-		test.codeBlock.code.splice(3, 0, '; note');
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		const code = [...test.codeBlock.code];
+		code.splice(3, 0, '; note');
+		test.store.projectEdits.apply({ updates: [{ codeBlock: test.codeBlock, code }] });
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
-		test.codeBlock.code = test.codeBlock.code.filter(line => !line.includes('@piano'));
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: test.codeBlock, code: test.codeBlock.code.filter(line => !line.includes('@piano')) }],
+		});
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
@@ -378,7 +380,9 @@ describe('piano plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectEdits.apply({
+			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
+		});
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
 	});

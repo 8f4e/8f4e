@@ -1,24 +1,59 @@
 import { EventEmitter } from 'node:events';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { EditorLifecycleEvents, State } from '@8f4e/editor-state-types';
-import createStateManager from '@8f4e/state-manager';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeBlockGraphicData, EditorLifecycleEvents } from '@8f4e/editor-state-types';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import initState, { setGridSize } from '../../index';
 import { deleteCodeBlocks } from './deleteCodeBlocks';
 import { applyCodeBlockSourceEdits } from './sourceEdits';
 
 const cleanups: Array<() => void> = [];
-function setup() {
-	const first = createMockCodeBlock({ code: ['module first', 'moduleEnd'], lastUpdated: 1 });
-	const second = createMockCodeBlock({ code: ['module second', 'moduleEnd'], lastUpdated: 1 });
-	const untouched = createMockCodeBlock({ code: ['module untouched', 'moduleEnd'], lastUpdated: 1 });
-	const state = createMockState();
-	state.codeBlockRendering.rootProject.blocks.push(first, second, untouched);
-	state.codeBlockRendering.currentProject.blocks = state.codeBlockRendering.rootProject.blocks;
-	const store = createStateManager<State>(state);
+function setup(nested = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, { callbacks: {} });
+	const state = store.getState();
+	setGridSize(state, events, TEST_GRID_SIZE);
+	const modules = ['first', 'second', 'untouched'].flatMap((name, index) => [
+		`module ${name}`,
+		`; @pos ${10 + index * 40} 10`,
+		'moduleEnd',
+	]);
+	const project = parseProjectSource(
+		[
+			'8f4e/v1',
+			'entry main',
+			...(nested ? ['group owner', 'entry main'] : []),
+			...modules,
+			...(nested ? ['entryEnd', 'groupEnd'] : []),
+			'entryEnd',
+		].join('\n')
+	);
+	events.dispatch('loadProject', { project });
+	if (nested)
+		events.dispatch('openProjectGroup', {
+			codeBlock: state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'owner')!,
+		});
+	events.dispatch('enterEditMode');
+	const blocks = state.codeBlockRendering.currentProject.blocks;
+	const [first, second, untouched] = ['first', 'second', 'untouched'].map(
+		name => blocks.find(block => block.name === name)!
+	);
+	for (const block of [first, second, untouched]) block.lastUpdated = 1;
+	const press = (block: CodeBlockGraphicData) =>
+		events.dispatch('pointerdown', {
+			x: block.x - state.viewport.x + 1,
+			y: block.y - state.viewport.y + 1,
+			movementX: 0,
+			movementY: 0,
+			buttons: 1,
+			altKey: false,
+			canvasWidth: 800,
+			canvasHeight: 600,
+			stopPropagation: false,
+		});
 	cleanups.push(store.dispose);
-	return { store, events, state, first, second, untouched };
+	return { store, events, state, first, second, untouched, press };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -27,6 +62,8 @@ afterEach(() => {
 describe('block source edits', () => {
 	it('refreshes changed blocks before publishing the whole batch', () => {
 		const { store, events, state, first, second, untouched } = setup();
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
 		state.codeBlockRendering.selectedCodeBlock = untouched;
 		const firstCode = ['module first', 'int value 1', 'moduleEnd'];
 		const secondCode = ['module second', 'int value 2', 'moduleEnd'];
@@ -38,18 +75,18 @@ describe('block source edits', () => {
 		});
 		const onProjectChange = vi.fn(() => {
 			expect(refreshed).toEqual([first, second]);
-			expect(state.compilerInputRevision).toBe(1);
+			expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		});
-		const onSourcesChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockSourcesChanged']) => {
+		const onLayoutsChanged = vi.fn(({ codeBlocks }: EditorLifecycleEvents['codeBlockLayoutsChanged']) => {
 			refreshed.push(...codeBlocks);
 			expect(first.code).toEqual(firstCode);
 			expect(second.code).toEqual(secondCode);
 		});
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
+		events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 		store.subscribe('compilerInputRevision', onCompilerChange);
 		store.subscribe('projectChange', onProjectChange);
 		expect(
-			applyCodeBlockSourceEdits({ store, events }, [
+			applyCodeBlockSourceEdits(store, [
 				{ codeBlock: first, code: firstCode },
 				{ codeBlock: untouched, code: [...untouchedCode] },
 				{ codeBlock: second, code: secondCode },
@@ -59,61 +96,68 @@ describe('block source edits', () => {
 		expect(second.lastUpdated).toBeGreaterThan(1);
 		expect(untouched.lastUpdated).toBe(1);
 		expect(untouched.code).toBe(untouchedCode);
-		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [first, second] });
+		expect(onLayoutsChanged).toHaveBeenCalledExactlyOnceWith({
+			project: state.codeBlockRendering.currentProject,
+			codeBlocks: [first, second],
+		});
 		expect(onCompilerChange).toHaveBeenCalledTimes(1);
 		expect(onProjectChange).toHaveBeenCalledTimes(1);
-		expect(state.projectChange.revision).toBe(1);
+		expect(state.projectChange.revision).toBe(revision + 1);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(untouched);
 	});
 
 	it('does not refresh or publish empty and unchanged batches', () => {
 		const { store, events, state, first } = setup();
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
 		const onRefresh = vi.fn();
-		events.on('codeBlockSourcesChanged', onRefresh);
-		expect(applyCodeBlockSourceEdits({ store, events }, [])).toBe(false);
-		expect(applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: first, code: [...first.code] }])).toBe(false);
+		events.on('codeBlockLayoutsChanged', onRefresh);
+		expect(applyCodeBlockSourceEdits(store, [])).toBe(false);
+		expect(applyCodeBlockSourceEdits(store, [{ codeBlock: first, code: [...first.code] }])).toBe(false);
 		expect(first.lastUpdated).toBe(1);
 		expect(onRefresh).not.toHaveBeenCalled();
-		expect(state.projectChange.revision).toBe(0);
-		expect(state.compilerInputRevision).toBe(0);
+		expect(state.projectChange.revision).toBe(revision);
+		expect(state.compilerInputRevision).toBe(compilerRevision);
 	});
 });
 
 describe('block deletion', () => {
 	it('removes a batch from the visible nested slice in place and clears deleted references before publishing', () => {
-		const { store, state, first, second, untouched } = setup();
-		const nested = [first, second, untouched];
-		const owner = createMockCodeBlock({ name: 'owner', childProject: { entries: [], path: '', blocks: nested } });
+		const { store, state, first, second, untouched, press } = setup(true);
+		const nested = state.codeBlockRendering.currentProject.blocks;
 		const root = state.codeBlockRendering.rootProject.blocks;
-		root.splice(0, root.length, owner);
-		state.codeBlockRendering.currentProject = owner.childProject!;
-		state.codeBlockRendering.selectedCodeBlock = first;
-		state.codeBlockRendering.draggedCodeBlock = second;
+		const owner = root.find(block => block.name === 'owner')!;
+		const compilerRevision = state.compilerInputRevision;
+		press(second);
+		store.set('codeBlockRendering.selectedCodeBlock', first);
+		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		const onProjectChange = vi.fn(() => {
 			expect(nested).toEqual([untouched]);
 			expect(state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
 			expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
-			expect(state.compilerInputRevision).toBe(1);
+			expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		});
 		store.subscribe('projectChange', onProjectChange);
 		expect(deleteCodeBlocks(store, [first, second])).toBe(true);
 		expect(owner.childProject?.blocks).toBe(nested);
 		expect(state.codeBlockRendering.currentProject.blocks).toBe(nested);
 		expect(state.codeBlockRendering.rootProject.blocks).toBe(root);
-		expect(root).toEqual([owner]);
+		expect(root).toContain(owner);
 		expect(onProjectChange).toHaveBeenCalledTimes(1);
 	});
 
 	it('keeps references to surviving blocks and ignores repeated deletion', () => {
-		const { store, state, first, second } = setup();
-		state.codeBlockRendering.selectedCodeBlock = second;
-		state.codeBlockRendering.draggedCodeBlock = second;
+		const { store, state, first, second, press } = setup();
+		const revision = state.projectChange.revision;
+		const compilerRevision = state.compilerInputRevision;
+		press(second);
+		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		expect(deleteCodeBlocks(store, [first])).toBe(true);
 		expect(state.codeBlockRendering.selectedCodeBlock).toBe(second);
 		expect(state.codeBlockRendering.draggedCodeBlock).toBe(second);
 		expect(deleteCodeBlocks(store, [first])).toBe(false);
 		expect(deleteCodeBlocks(store, [])).toBe(false);
-		expect(state.projectChange.revision).toBe(1);
-		expect(state.compilerInputRevision).toBe(1);
+		expect(state.projectChange.revision).toBe(revision + 1);
+		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 });

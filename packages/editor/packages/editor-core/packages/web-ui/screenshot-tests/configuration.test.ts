@@ -73,7 +73,7 @@ test('applies project appearance settings and restores defaults after project re
 		renderer.renderFrame();
 		await expect(canvas).toMatchScreenshot('configured-appearance');
 		const settings = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
-		applyCodeBlockSourceEdits({ store, events }, [
+		applyCodeBlockSourceEdits(store, [
 			{
 				codeBlock: settings,
 				code: settings.code.map(line =>

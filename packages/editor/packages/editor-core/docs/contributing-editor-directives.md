@@ -138,9 +138,7 @@ code = updateDirectiveArgs(code, 'group', ([groupName]) =>
 Apply replacement source through the public state helper once the action has checked edit mode:
 
 ```ts
-import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-
-applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }]);
+store.projectEdits.apply({ updates: [{ codeBlock, code }] });
 ```
 
 Pass all changed owners in one batch. The helper refreshes blocks and publishes one completed project change.

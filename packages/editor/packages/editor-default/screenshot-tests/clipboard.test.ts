@@ -33,7 +33,6 @@ async function setup() {
 		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
 			notes: [{ id: 1, code: ['note target', '; @mode edit', '; @pos 4 3', '', 'noteEnd'] }],
 			execution: [
 				{ type: 'module', id: 2, entry: 'main', code: ['module same', '; @pos 40 3', '; @group audio', 'moduleEnd'] },
@@ -94,11 +93,14 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 test('the block paste menu changes placement while preserving duplicate names, groups and references', async () => {
 	const { canvas, state } = await setup();
 	const source = ['module same', '; @pos 1 2', '; @group audio', 'push &same:value', 'moduleEnd'];
+	const menuPosition = { x: 400, y: 16 };
 	await navigator.clipboard.writeText(source.join('\n'));
 	await expect
 		.poll(async () => {
 			const rect = canvas.getBoundingClientRect();
-			canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.left + 24, clientY: rect.top + 16 }));
+			canvas.dispatchEvent(
+				new MouseEvent('contextmenu', { clientX: rect.left + menuPosition.x, clientY: rect.top + menuPosition.y })
+			);
 			await Promise.resolve();
 			return state.contextMenu.items.some(item => item.action === 'pasteCodeBlocks');
 		})
@@ -106,8 +108,8 @@ test('the block paste menu changes placement while preserving duplicate names, g
 	const menu = state.contextMenu;
 	const index = menu.items.findIndex(item => item.action === 'pasteCodeBlocks');
 	const pastePosition = {
-		x: 32,
-		y: 24 + index * state.viewport.hGrid,
+		x: menuPosition.x + 8,
+		y: menuPosition.y + (index + 0.5) * state.viewport.hGrid,
 	};
 	const pos = `; @pos ${Math.round((state.viewport.x + pastePosition.x) / state.viewport.vGrid)} ${Math.round((state.viewport.y + pastePosition.y) / state.viewport.hGrid)}`;
 	await userEvent.click(canvas, { position: pastePosition });

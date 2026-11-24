@@ -16,7 +16,6 @@ export default function projectGroupNavigation(store: StateManager<State>, event
 		if (project === current) return;
 		rememberCurrentProjectView(state);
 		store.set('codeBlockRendering.selectedCodeBlock', undefined);
-		state.codeBlockRendering.draggedCodeBlock = undefined;
 		store.set('codeBlockRendering.currentProject', project);
 		if (project.selectedBlock && !project.blocks.includes(project.selectedBlock)) project.selectedBlock = undefined;
 		store.set('codeBlockRendering.selectedCodeBlock', project.selectedBlock);

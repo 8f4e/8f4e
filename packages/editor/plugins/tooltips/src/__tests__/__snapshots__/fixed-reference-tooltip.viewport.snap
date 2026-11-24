@@ -1,10 +1,10 @@
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
+ constants env                                                                                      
+ ; @pos 0 0                                                                                         
+ ; Auto-generated environment constants                                                             
+ ; Changes will be overwritten                                                                      
                                                    module inspect                                   
                                                    ; @pos 50 4                                      
-                    float& ( -- )                  float& input &source:output                      
+ constantsEnd       float& ( -- )                  float& input &source:output                      
                     Binds a typed, fixed memory    float* pointer &source:output                    
                     reference without allocating   moduleEnd                                        
                     storage.                                                                        

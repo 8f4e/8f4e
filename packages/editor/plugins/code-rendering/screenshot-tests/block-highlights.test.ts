@@ -1,4 +1,4 @@
-import initEditor from '@8f4e/editor-core';
+import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
@@ -14,45 +14,57 @@ test('renders nested block highlights below selection and text with disabled and
 		plugins: [codeRenderingPlugin],
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 4, code: ['constants env', '; @pos 120 100', 'constantsEnd'] }],
 			execution: [
 				{
-					type: 'module',
+					...EMPTY_DEFAULT_PROJECT,
+					type: 'group',
+					id: 4,
 					entry: 'main',
-					id: 0,
-					code: [
-						'module nested',
-						'; @pos 4 3',
-						'if',
-						'push 1',
-						'loop',
-						'block',
-						'push 2',
-						'blockEnd',
-						'loopEnd',
-						'else',
-						'push 3',
-						'ifEnd',
-						'moduleEnd',
+					name: 'fixture',
+					code: ['group fixture', 'groupEnd'],
+					exposures: [],
+					execution: [
+						{
+							type: 'module',
+							entry: 'main',
+							id: 0,
+							code: [
+								'module nested',
+								'; @pos 4 3',
+								'if',
+								'push 1',
+								'loop',
+								'block',
+								'push 2',
+								'blockEnd',
+								'loopEnd',
+								'else',
+								'push 3',
+								'ifEnd',
+								'moduleEnd',
+							],
+						},
+						{
+							type: 'module',
+							entry: 'main',
+							id: 1,
+							code: ['module disabled', '; @pos 44 3', '; @disabled', 'if', 'push 1', 'ifEnd', 'moduleEnd'],
+						},
+						{
+							type: 'module',
+							entry: 'main',
+							id: 2,
+							code: ['module folded', '; @pos 44 15', 'if', 'push 1', '; @hide', 'push 2', 'ifEnd', 'moduleEnd'],
+						},
 					],
-				},
-				{
-					type: 'module',
-					entry: 'main',
-					id: 1,
-					code: ['module disabled', '; @pos 44 3', '; @disabled', 'if', 'push 1', 'ifEnd', 'moduleEnd'],
-				},
-				{
-					type: 'module',
-					entry: 'main',
-					id: 2,
-					code: ['module folded', '; @pos 44 15', 'if', 'push 1', '; @hide', 'push 2', 'ifEnd', 'moduleEnd'],
 				},
 			],
 		},
 	});
 	editor.pauseRendering();
 	try {
+		const group = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'fixture')!;
+		editor.navigation.openGroup(getEditorBlockId(group));
 		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
 		editor.state.codeBlockRendering.selectedCodeBlock = block;
 		block.cursor.row = 6;

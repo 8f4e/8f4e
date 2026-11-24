@@ -1,5 +1,11 @@
 export type EditorEdit =
-	| { type: 'insert'; code: string[]; projectPath?: string; entry?: string }
+	| {
+			type: 'insert';
+			code: string[];
+			/** Owning group handle from getEditorBlockId; omit to insert at the root. */
+			groupBlockId?: string;
+			entry?: string;
+	  }
 	| { type: 'update'; blockId: string; code: string[]; entry?: string }
 	| { type: 'delete'; blockId: string };
 

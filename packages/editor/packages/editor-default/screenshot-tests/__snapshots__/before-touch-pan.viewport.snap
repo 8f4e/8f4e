@@ -1,11 +1,11 @@
- 0, 0                                                                           
-                                                                                
-                                                                                
-                                                                                
-                                                                                
-                                                                                
-                                                                                
-          +0 note target                 +                                      
++0 constants env                           +                                    
+ 1 ; @pos 0 0                                                                   
+ 2 ; Auto-generated environment constants                                       
+ 3 ; Changes will be overwritten                                                
+ 4                                                                              
+ 5 ; @favorite                                                                  
+ 6                                                                              
++7 constan+0 note target                 + +                                    
            1 ; @pos 10 7                                                        
            2 Drag with one finger                                               
            3 Tap to select this block                                           
@@ -21,4 +21,4 @@
                                                                                 
                                                                                 
                                                                                 
-                                                            ?                   
+                                                                                

@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { resolveEditorConfig } from '@8f4e/editor-state';
 import { DEFAULT_FONT, FONT_NAMES, type Font } from '@8f4e/sprite-generator';
+import { getAppearanceFont } from '@8f4e/web-ui';
 import { installFontNotice } from './notice';
 
 /** Preview fonts without modifying project source or history. */
@@ -15,37 +15,33 @@ export function createFontPreviewPlugin({
 	return {
 		id: 'font-preview',
 		setup: context => {
-			const { store, events } = context;
+			const { store } = context;
 			const state = store.getState();
 			const disposeNotice = installFontNotice(context);
-			let previewFont: Font | undefined;
-			const retainPreview = () => {
-				if (previewFont !== undefined && state.editorConfig.font !== previewFont) {
-					store.set('editorConfig.font', previewFont);
-				}
-			};
 			const resetPreview = () => {
-				previewFont = undefined;
+				if (state.appearance.fontOverride !== undefined) store.set('appearance.fontOverride', undefined);
+			};
+			const onProjectChange = () => {
+				if (state.projectChange.kind === 'replace') resetPreview();
 			};
 			const onKeydown = (event: KeyboardEvent) => {
 				if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
 				const direction = event.key === 'F8' ? -1 : event.key === 'F9' ? 1 : 0;
 				if (!direction) return;
 				event.preventDefault();
-				const currentFont = (state.editorConfig.font as Font | undefined) ?? defaultFont;
-				previewFont = FONT_NAMES[(FONT_NAMES.indexOf(currentFont) + direction + FONT_NAMES.length) % FONT_NAMES.length];
-				store.set('editorConfig.font', previewFont);
+				const currentFont = getAppearanceFont(state, defaultFont);
+				const previewFont =
+					FONT_NAMES[(FONT_NAMES.indexOf(currentFont) + direction + FONT_NAMES.length) % FONT_NAMES.length];
+				store.set('appearance.fontOverride', previewFont);
 			};
-			store.subscribe('editorConfig.font', retainPreview);
-			// Clear before project-loading listeners resolve the replacement project's configuration.
-			events.on('loadProject', resetPreview, { capture: true });
+			// Use the settled replacement's font, not the outgoing project's configuration.
+			store.subscribe('projectChange', onProjectChange);
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => {
 				disposeNotice();
 				inputTarget.removeEventListener('keydown', onKeydown);
-				events.off('loadProject', resetPreview);
-				store.unsubscribe('editorConfig.font', retainPreview);
-				if (previewFont !== undefined) resolveEditorConfig(store);
+				store.unsubscribe('projectChange', onProjectChange);
+				resetPreview();
 			};
 		},
 	};
