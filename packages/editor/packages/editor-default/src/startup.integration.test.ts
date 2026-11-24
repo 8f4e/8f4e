@@ -38,7 +38,6 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 			storage: storage as Storage,
 			storageKey: 'session',
 			initialProjectUrl: 'https://example.com/project.8f4e',
-			showOpenMenuItem: false,
 			renderFrame: () => {},
 			writeMemory: () => {},
 			getMemory: () => null,

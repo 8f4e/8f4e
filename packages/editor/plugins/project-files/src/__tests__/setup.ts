@@ -1,6 +1,6 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import initState from '@8f4e/editor-state';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createProjectFilesPlugin } from '../index';
@@ -28,7 +28,7 @@ export function setup({
 	createPlugin = inputTarget => createProjectFilesPlugin({ inputTarget }),
 }: {
 	mode?: 'edit' | 'view';
-	createPlugin?: (inputTarget: HTMLElement) => EditorPlugin | undefined;
+	createPlugin?: (inputTarget: HTMLElement) => EditorPlugin;
 } = {}) {
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
@@ -47,7 +47,7 @@ export function setup({
 		body: { appendChild: vi.fn() },
 	};
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
-	let pluginCleanup = createPlugin(inputTarget)?.setup({
+	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup({
 		store,
 		events,
 		menus: store.menus,
@@ -84,7 +84,20 @@ export function setup({
 		return event;
 	};
 	const openMenu = () => events.dispatchAsync('contextmenu', { x: 800, y: 400 });
-	return { events, state, handle, browserWindow, document, input, link, setCode, keydown, openMenu, disposePlugin };
+	return {
+		events,
+		store,
+		state,
+		handle,
+		browserWindow,
+		document,
+		input,
+		link,
+		setCode,
+		keydown,
+		openMenu,
+		disposePlugin,
+	};
 }
 
 afterEach(() => {

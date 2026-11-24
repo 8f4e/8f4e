@@ -1,20 +1,14 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin, LoadingIndicatorHandle } from '@8f4e/editor-core';
 import { logError } from '@8f4e/editor-state';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { type ProjectFileHandle, pickProjectFile, writeProjectFile } from './browser-files';
 import { registerExportActions } from './export-actions';
 import { openProjectFile } from './open-project-file';
 import { createProjectSourceFile, type ProjectSourceFile } from './project-source-file';
 
 /** Open and save projects with a file association private to this editor installation. */
-export function createProjectFilesPlugin({
-	inputTarget,
-	showOpenMenuItem = true,
-}: {
-	inputTarget: HTMLElement;
-	showOpenMenuItem?: boolean;
-}): EditorPlugin {
+export function createProjectFilesPlugin({ inputTarget }: { inputTarget: HTMLElement }): EditorPlugin {
 	return {
 		id: 'project-files',
 		setup: context => {
@@ -31,9 +25,11 @@ export function createProjectFilesPlugin({
 				generation++;
 				pendingDestination = undefined;
 			};
-			const unregisterOpen = menus.registerItem('mainMenu', () =>
-				showOpenMenuItem ? { title: 'Open From Disk', action: 'importProject', close: true } : undefined
-			);
+			const unregisterOpen = menus.registerItem('mainMenu', () => ({
+				title: 'Open From Disk',
+				action: 'importProject',
+				close: true,
+			}));
 			const onImport = async () => {
 				if (disposed) return;
 				let indicator: LoadingIndicatorHandle | undefined;

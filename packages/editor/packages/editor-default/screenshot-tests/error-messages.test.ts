@@ -29,7 +29,6 @@ entryEnd`;
 		initialProjectUrl: `data:text/plain,${encodeURIComponent(source)}`,
 		storage: { getItem: () => null, setItem: () => {} } as unknown as Storage,
 		includeKeyboardModeSwitching: false,
-		showOpenMenuItem: false,
 	});
 	editor.pauseRendering();
 	try {

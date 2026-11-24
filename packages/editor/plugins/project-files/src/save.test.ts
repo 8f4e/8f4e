@@ -1,7 +1,7 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { describe, expect, it, vi } from 'vitest';
 import { createHandle, setup } from './__tests__/setup';
 
@@ -23,6 +23,18 @@ describe('project file saving', () => {
 		await test.events.dispatchAsync('exportProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledTimes(2);
 		expect(await test.handle.writable.write.mock.calls[1][0].text()).toContain('int value 1');
+	});
+	it('adopts the exported destination for later saves', async () => {
+		const test = setup();
+		await test.events.dispatchAsync('importProject');
+		const second = createHandle();
+		test.browserWindow.showSaveFilePicker.mockResolvedValueOnce(second);
+		await test.events.dispatchAsync('exportProject');
+		await test.events.dispatchAsync('saveProject');
+		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
+		expect(second.requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
+		expect(second.writable.write).toHaveBeenCalledTimes(2);
+		expect(test.handle.writable.write).not.toHaveBeenCalled();
 	});
 	it.each([
 		{ mode: 'edit', modifier: 'ctrlKey' },
@@ -72,6 +84,17 @@ describe('project file saving', () => {
 		await test.events.dispatchAsync('saveProject');
 		expect(test.handle.writable.write).toHaveBeenCalledOnce();
 	});
+	it('retains the previous destination when Export is cancelled', async () => {
+		const test = setup();
+		await test.events.dispatchAsync('importProject');
+		test.browserWindow.showSaveFilePicker.mockRejectedValueOnce(new DOMException('Cancelled', 'AbortError'));
+		await test.events.dispatchAsync('exportProject');
+		await test.events.dispatchAsync('saveProject');
+		expect(test.state.console.logs).toEqual([]);
+		expect(test.handle.requestPermission).toHaveBeenCalledOnce();
+		expect(test.handle.writable.write).toHaveBeenCalledOnce();
+		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
+	});
 	it('coalesces pickers and serializes overlapping saves in command order', async () => {
 		const test = setup();
 		const picked = deferred<typeof test.handle>();
@@ -114,6 +137,49 @@ describe('project file saving', () => {
 		await test.events.dispatchAsync('saveProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledTimes(2);
 	});
+	it('retains the opened file across edits and history, but clears it on project replacement', async () => {
+		const test = setup();
+		await test.events.dispatchAsync('importProject');
+		test.events.dispatch('enterEditMode');
+		const block = test.state.project.rootLevel.blocks.find(block => block.name === 'test')!;
+		test.store.projectTransactions.apply({
+			updates: [{ codeBlock: block, code: ['module test', 'int value 2', 'moduleEnd'] }],
+		});
+		test.events.dispatch('undo');
+		test.events.dispatch('redo');
+		await test.events.dispatchAsync('saveProject');
+		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
+		expect(await test.handle.writable.write.mock.calls[0][0].text()).toContain('int value 2');
+		const second = createHandle();
+		test.browserWindow.showSaveFilePicker.mockResolvedValueOnce(second);
+		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+		await test.events.dispatchAsync('saveProject');
+		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
+		expect(second.writable.close).toHaveBeenCalledOnce();
+		expect(test.handle.writable.close).toHaveBeenCalledOnce();
+	});
+	it('finishes an accepted save after disposal', async () => {
+		const test = setup();
+		const picked = deferred<typeof test.handle>();
+		test.browserWindow.showSaveFilePicker.mockReturnValueOnce(picked.promise);
+		const save = test.events.dispatchAsync('saveProject');
+		test.disposePlugin();
+		picked.resolve(test.handle);
+		await save;
+		expect(test.handle.writable.close).toHaveBeenCalledOnce();
+	});
+	it('keeps file destinations and shortcuts isolated between editors', async () => {
+		const first = setup();
+		const second = setup();
+		await first.events.dispatchAsync('importProject');
+		await second.events.dispatchAsync('saveProject');
+		expect(first.handle.writable.write).not.toHaveBeenCalled();
+		expect(second.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
+		first.disposePlugin();
+		expect(second.keydown('s', { metaKey: true }).defaultPrevented).toBe(true);
+		await vi.waitFor(() => expect(second.handle.writable.close).toHaveBeenCalledTimes(2));
+		expect(second.browserWindow.showSaveFilePicker).toHaveBeenCalledOnce();
+	});
 	it('downloads every save when the save picker is unavailable', async () => {
 		const test = setup();
 		Reflect.deleteProperty(test.browserWindow, 'showSaveFilePicker');
@@ -147,6 +213,28 @@ describe('project file saving', () => {
 		expect(getProjectModules(project)[0].code).toContain('int value 1');
 		expect(getProjectModules(getProjectGroups(project)[0])[0].code).toEqual(nested.code);
 	});
+	it('preserves spatial configuration precedence through saving and reopening', async () => {
+		const test = setup();
+		test.events.dispatch('loadProject', {
+			project: parseProjectSource(`8f4e/v1
+note right
+; @pos 20 0
+; @config export.fileName right
+noteEnd
+entry main
+module left
+; @pos -20 0
+; @config export.fileName left
+moduleEnd
+entryEnd`),
+		});
+		expect(test.state.editorConfig.export?.fileName).toBe('right');
+		await test.events.dispatchAsync('saveProject');
+		const savedSource = await test.handle.writable.write.mock.calls[0][0].text();
+		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'right.8f4e'));
+		await test.events.dispatchAsync('importProject');
+		expect(test.state.editorConfig.export?.fileName).toBe('right');
+	});
 	it.each(['saveProject', 'exportProject'])('reports incomplete source before %s opens a picker', async action => {
 		const test = setup();
 		test.state.project.rootLevel.blocks.find(block => block.name === 'test')!.code = ['module unfinished'];
@@ -156,13 +244,16 @@ describe('project file saving', () => {
 	});
 });
 
-it('removes its menu, commands, and shortcut on disposal', async () => {
+it('removes its menus, commands, and shortcut on disposal', async () => {
 	const test = setup();
 	test.disposePlugin();
 	await test.openMenu();
 	expect(test.state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(false);
+	expect(test.state.contextMenu.items.some(item => item.action === 'importProject')).toBe(false);
 	expect(test.keydown('s', { ctrlKey: true }).defaultPrevented).toBe(false);
+	await test.events.dispatchAsync('importProject');
 	await test.events.dispatchAsync('saveProject');
 	await test.events.dispatchAsync('exportProject');
+	expect(test.browserWindow.showOpenFilePicker).not.toHaveBeenCalled();
 	expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 });

@@ -21,7 +21,6 @@ async function setup() {
 		canvas,
 		storage: { getItem: () => null, setItem: () => {} } as Storage,
 		storageKey: 'clipboard-test',
-		showOpenMenuItem: false,
 		includeKeyboardModeSwitching: false,
 		renderFrame: () => editor.renderFrame(),
 		getMemory: () => null,

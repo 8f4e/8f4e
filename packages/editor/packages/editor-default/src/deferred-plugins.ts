@@ -138,7 +138,7 @@ export function createDeferredEditorPlugin(
 			matches: () => true,
 			load: () =>
 				import('@8f4e/editor-plugin-project-files').then(module =>
-					module.createProjectFilesPlugin({ inputTarget: canvas, showOpenMenuItem: options.showOpenMenuItem })
+					module.createProjectFilesPlugin({ inputTarget: canvas })
 				),
 		},
 		{

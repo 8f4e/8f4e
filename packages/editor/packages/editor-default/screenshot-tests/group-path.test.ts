@@ -42,7 +42,6 @@ test('shows the active group ancestry below the mode hint as the editor moves th
 			canvas,
 			storage: { getItem: () => null, setItem: () => {} } as Storage,
 			storageKey: 'group-path-test',
-			showOpenMenuItem: false,
 			renderFrame: () => editor!.renderFrame(),
 			getMemory: () => null,
 			writeMemory: () => {},

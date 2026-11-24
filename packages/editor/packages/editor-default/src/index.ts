@@ -23,7 +23,6 @@ export function createDefaultEditorPlugins(options: {
 	storageKey: string;
 	initialProjectUrl?: string;
 	renderFrame: () => void;
-	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
@@ -76,8 +75,6 @@ export interface DefaultEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Show Open From Disk in the project-files plugin menu. */
-	showOpenMenuItem?: boolean;
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
 	storage?: Storage;
@@ -97,7 +94,6 @@ export async function mountDefaultEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		showOpenMenuItem = true,
 		includeKeyboardModeSwitching,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
@@ -116,7 +112,6 @@ export async function mountDefaultEditor(
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
 					renderFrame: () => editor.renderFrame(),
-					showOpenMenuItem,
 					captureWheel,
 					touchNavigation,
 					pwaUpdates,

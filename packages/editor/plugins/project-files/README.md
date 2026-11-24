@@ -12,8 +12,7 @@ const plugins = [createProjectFilesPlugin({ inputTarget: canvas })];
 ```
 
 The default editor installs this plugin after core's first render. It owns Open From Disk (`importProject`),
-Save (`saveProject`, Cmd/Ctrl+S) and Export Project (`exportProject`, or Save As). The optional
-`showOpenMenuItem: false` hides Open From Disk without removing its action.
+Save (`saveProject`, Cmd/Ctrl+S) and Export Project (`exportProject`, or Save As).
 
 Open reads and parses the selected file before dispatching `loadProject` and associating the file handle.
 The first Save without an association chooses a destination. Later saves reuse the associated handle, requesting

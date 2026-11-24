@@ -14,10 +14,6 @@
     "./types": {
       "types": "./dist/types.d.ts",
       "default": "./dist/types.js"
-    },
-    "./execute-tests": {
-      "types": "./dist/executeTests.d.ts",
-      "default": "./dist/executeTests.js"
     }
   },
   "sideEffects": false,

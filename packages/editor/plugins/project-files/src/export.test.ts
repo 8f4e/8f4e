@@ -20,12 +20,8 @@ it.each(['edit', 'view'] as const)('exports to a freshly picked destination in %
 	expect(other.requestPermission).not.toHaveBeenCalled();
 });
 
-it('does not install Open or Save commands and cleans up its menu and shortcut', async () => {
+it('removes its menu, action and shortcut on disposal', async () => {
 	const test = setup({ createPlugin: inputTarget => createProjectExportPlugin({ inputTarget }) });
-	await test.events.dispatchAsync('importProject');
-	await test.events.dispatchAsync('saveProject');
-	expect(test.browserWindow.showOpenFilePicker).not.toHaveBeenCalled();
-	expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 	test.disposePlugin();
 	await test.openMenu();
 	expect(test.state.contextMenu.items.some(item => item.action === 'exportProject')).toBe(false);

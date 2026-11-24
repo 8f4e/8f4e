@@ -123,7 +123,7 @@ This overlay does not block input.
 
 `@8f4e/editor-plugin-selection-animation` is available separately. Its entry is commented out in the default and gallery compositions; the landing composition omits it.
 
-`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, showOpenMenuItem, renderFrame, getMemory, getCodeBuffer, writeMemory })`
+`createDefaultEditorPlugins({ canvas, storage, storageKey, initialProjectUrl, renderFrame, getMemory, getCodeBuffer, writeMemory })`
 synchronously constructs the startup plugin set with resources for one editor. The deferred project-files plugin
 receives the canvas and owns the current file association, Open/Save/Export actions and Cmd/Ctrl+S. It clears the
 association on project replacement. WebAssembly export receives a document and a live compiler-byte getter.
@@ -192,7 +192,7 @@ An explicit `initialProjectUrl` takes precedence on the first load. Without one,
 session. With neither, it starts with an empty project and does not fetch an example project registry. Browse examples in the
 [examples gallery](https://8f4e.com/examples/); its links open projects by URL. The editor's menu supports opening
 projects from disk and adding built-in modules. In edit mode, the project-new plugin contributes New Project, which
-loads an empty project. Set `showOpenMenuItem: false` to hide Open From Disk in embedded editors.
+loads an empty project.
 
 Built-in modules and standard-library includes ship as lazy source chunks with the host's build. The default editor
 passes its discovered module loaders to `createExampleModulesPlugin({ sources })`. That plugin derives the catalog

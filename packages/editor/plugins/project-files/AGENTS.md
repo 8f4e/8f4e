@@ -9,5 +9,5 @@
   entry point has no remembered destination or project loading subscription.
 - Begin pickers and permission requests in the user gesture. Full-plugin writes run in command order; accepted
   writes may finish after replacement without changing the replacement project's file association.
-- Use the canonical project model from editor-state and delegate block validation and template extraction to
+- Use the canonical project model from editor-state and delegate parsing, block validation and template extraction to
   project-preparser.

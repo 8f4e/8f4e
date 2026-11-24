@@ -151,7 +151,6 @@ describe('default editor plugins', () => {
 		expect(options.canvas).toBe(canvas);
 		expect(createProjectFilesPlugin).toHaveBeenCalledWith({
 			inputTarget: canvas,
-			showOpenMenuItem: true,
 		});
 		expect(createWasmExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, getCodeBuffer });
 		expect(renderFrame).not.toHaveBeenCalled();
@@ -199,17 +198,11 @@ describe('default editor plugins', () => {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
-			showOpenMenuItem: false,
 		});
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl,
 			failureMode: 'empty-project',
-		});
-		await loadDeferredPlugins();
-		expect(createProjectFilesPlugin).toHaveBeenCalledWith({
-			inputTarget: canvas,
-			showOpenMenuItem: false,
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage,

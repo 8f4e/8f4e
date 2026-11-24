@@ -1,6 +1,6 @@
-import { parseProjectSource } from '@8f4e/compiler';
 import type { ProjectGroupObjectModel, ProjectObjectModel } from '@8f4e/language-spec';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { parseProjectSource } from '@8f4e/project-preparser';
 import { describe, expect, it } from 'vitest';
 import { serializeProjectTo8f4e } from './serializeTo8f4e';
 

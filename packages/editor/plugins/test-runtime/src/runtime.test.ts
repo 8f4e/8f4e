@@ -1,8 +1,7 @@
-import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { executeTests } from '@8f4e/runtime-test-runner/execute-tests';
 import type { TestRunResult, TestRuntimeProgram } from '@8f4e/runtime-test-runner/types';
 import createStateManager from '@8f4e/state-manager';
+import type { TestAssertionResult } from '@8f4e/test-runner';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createTestRuntimePlugin } from './index';
 
@@ -122,42 +121,59 @@ describe('TestRuntime lifecycle', () => {
 		expect(state.codeErrors.other).toBe(otherErrors);
 	});
 
-	it('publishes expected and received values from executed Wasm assertions to the editor', async () => {
+	it('publishes expected and received values from worker assertion results to the editor', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const compiled = await compileProject(
-			parseProjectSource(`8f4e/v1
-entry test
-module checks
-push 10
-assertEqual 9
-push 0
-assert
-push 1
-assert
-moduleEnd
-entryEnd`),
-			{ enableAssertions: true }
-		);
-		const program = {
-			codeBuffer: compiled.codeBuffer,
-			assertionSites: compiled.assertionSites!,
-			memory: new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true }),
+		const blockSite = {
+			projectBlockId: 7,
+			projectGroupPath: '',
+			codeBlockType: 'module' as const,
+			codeBlockId: 'checks',
 		};
-		const { state, dispose } = setup(program);
-		FakeWorker.instances[0].emit(await executeTests(program));
+		const assertions: TestAssertionResult[] = [
+			{
+				site: { ...blockSite, siteId: 0, instruction: 'assertEqual', lineNumber: 2 },
+				passed: false,
+				expected: 9,
+				received: 10,
+				assertIndex: 0,
+			},
+			{
+				site: { ...blockSite, siteId: 1, instruction: 'assert', lineNumber: 4 },
+				passed: false,
+				condition: 0,
+				assertIndex: 1,
+			},
+			{
+				site: { ...blockSite, siteId: 2, instruction: 'assert', lineNumber: 6 },
+				passed: true,
+				condition: 1,
+				assertIndex: 2,
+			},
+		];
+		const assertionSites = assertions.map(assertion => assertion.site);
+		const { state, dispose } = setup({ ...createProgram(), assertionSites });
+		state.project.rootLevel.blocks = [
+			createMockCodeBlock({
+				creationIndex: 7,
+				name: 'checks',
+				blockType: 'module',
+				code: ['module checks', 'push 10', 'assertEqual 9', 'push 0', 'assert', 'push 1', 'assert', 'moduleEnd'],
+			}),
+		];
+		FakeWorker.instances[0].emit({ status: 'failed', assertions, failures: [assertions[0], assertions[1]] });
 		expect(state.assertionResults).toEqual([
-			{ site: compiled.assertionSites![0], passed: false },
-			{ site: compiled.assertionSites![1], passed: false },
-			{ site: compiled.assertionSites![2], passed: true },
+			{ site: assertionSites[0], passed: false },
+			{ site: assertionSites[1], passed: false },
+			{ site: assertionSites[2], passed: true },
 		]);
 		expect(state.codeErrors['test-runtime']).toEqual([
 			{
-				codeBlockId: compiled.assertionSites![0].projectBlockId,
+				codeBlockId: 7,
 				lineNumber: 2,
 				message: 'Assertion failed: expected 9, received 10',
 			},
 			{
-				codeBlockId: compiled.assertionSites![1].projectBlockId,
+				codeBlockId: 7,
 				lineNumber: 4,
 				message: 'Assertion failed: expected nonzero, received 0',
 			},

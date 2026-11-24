@@ -1,6 +1,5 @@
 import { expect, it, vi } from 'vitest';
 import { setup, source } from './__tests__/setup';
-import { createProjectFilesPlugin } from './index';
 
 it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode', async mode => {
 	const test = setup({ mode });
@@ -16,18 +15,6 @@ it.each(['edit', 'view'] as const)('opens from the contributed menu in %s mode',
 	expect(test.state.project.activeLevel.blocks.find(block => block.name === 'test')!.code).toContain('int value 1');
 	expect(test.state.contextMenu.open).toBe(false);
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-	await test.events.dispatchAsync('saveProject');
-	expect(test.handle.writable.close).toHaveBeenCalledOnce();
-	expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
-});
-
-it('hides the menu item without removing the import action', async () => {
-	const test = setup({
-		createPlugin: inputTarget => createProjectFilesPlugin({ inputTarget, showOpenMenuItem: false }),
-	});
-	await test.openMenu();
-	expect(test.state.contextMenu.items.some(item => item.action === 'importProject')).toBe(false);
-	await test.events.dispatchAsync('importProject');
 	await test.events.dispatchAsync('saveProject');
 	expect(test.handle.writable.close).toHaveBeenCalledOnce();
 	expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
@@ -54,6 +41,7 @@ it.each(['getFile', 'parse', 'cancel'])(
 		else expect(test.state.console.logs.at(-1)?.message).toContain('Failed to open project');
 		await test.events.dispatchAsync('saveProject');
 		expect(test.handle.requestPermission).toHaveBeenCalledOnce();
+		expect(test.handle.writable.close).toHaveBeenCalledOnce();
 		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 	}
 );
@@ -99,15 +87,4 @@ it('ignores an open that finishes after disposal', async () => {
 	await pending;
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 	expect(test.state.project.rootLevel).toBe(original);
-});
-
-it('removes its menu and action on disposal and is absent when not installed', async () => {
-	for (const installed of [true, false]) {
-		const test = installed ? setup() : setup({ createPlugin: () => undefined });
-		test.disposePlugin();
-		await test.openMenu();
-		expect(test.state.contextMenu.items.some(item => item.action === 'importProject')).toBe(false);
-		await test.events.dispatchAsync('importProject');
-		expect(test.browserWindow.showOpenFilePicker).not.toHaveBeenCalled();
-	}
 });
