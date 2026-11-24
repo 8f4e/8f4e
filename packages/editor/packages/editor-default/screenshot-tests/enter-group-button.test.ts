@@ -72,7 +72,6 @@ test.each([
 			canvas,
 			storage: { getItem: () => null, setItem: () => {} } as Storage,
 			storageKey: 'enter-group-button-test',
-			showOpenMenuItem: false,
 			renderFrame: () => editor!.renderFrame(),
 			getMemory: () => null,
 			writeMemory: () => {},

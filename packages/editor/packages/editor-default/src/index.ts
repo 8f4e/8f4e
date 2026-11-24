@@ -1,5 +1,4 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
-import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
@@ -24,7 +23,6 @@ export function createDefaultEditorPlugins(options: {
 	storageKey: string;
 	initialProjectUrl?: string;
 	renderFrame: () => void;
-	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
@@ -35,11 +33,9 @@ export function createDefaultEditorPlugins(options: {
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
 }): NonNullable<EditorOptions['plugins']> {
-	const fileSession = createProjectFileSession();
 	const motionPreference = options.canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
-		fileSession.plugin,
 		homePlugin,
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
@@ -58,7 +54,7 @@ export function createDefaultEditorPlugins(options: {
 		createDeferredPluginLoaderPlugin({
 			load: () =>
 				import('./deferred-plugins').then(module =>
-					module.createDeferredEditorPlugin({ ...options, fileSession, prefersReducedMotion })
+					module.createDeferredEditorPlugin({ ...options, prefersReducedMotion })
 				),
 		}),
 	];
@@ -79,8 +75,6 @@ export interface DefaultEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Show Open From Disk in the project-open plugin menu. */
-	showOpenMenuItem?: boolean;
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
 	storage?: Storage;
@@ -100,7 +94,6 @@ export async function mountDefaultEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		showOpenMenuItem = true,
 		includeKeyboardModeSwitching,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
@@ -119,7 +112,6 @@ export async function mountDefaultEditor(
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
 					renderFrame: () => editor.renderFrame(),
-					showOpenMenuItem,
 					captureWheel,
 					touchNavigation,
 					pwaUpdates,

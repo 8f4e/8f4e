@@ -22,7 +22,6 @@ test('previews fonts through the default composition without changing saved sour
 			canvas,
 			storage: { getItem: () => null, setItem: () => {} } as Storage,
 			storageKey: 'font-preview-test',
-			showOpenMenuItem: false,
 			renderFrame: () => editor!.renderFrame(),
 			getMemory: () => null,
 			writeMemory: () => {},

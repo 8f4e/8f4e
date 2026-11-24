@@ -1,5 +1,4 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
-import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
@@ -47,13 +46,11 @@ export async function mountGalleryEditor(
 	}: GalleryEditorMountOptions = {}
 ): Promise<GalleryEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
-	const fileSession = createProjectFileSession();
 	const motionPreference = canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
-			fileSession.plugin,
 			homePlugin,
 			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
@@ -69,7 +66,6 @@ export async function mountGalleryEditor(
 						module.createDeferredEditorPlugin({
 							canvas,
 							compiler,
-							fileSession,
 							prefersReducedMotion,
 							sharedAudioContext,
 							includeKeyboardModeSwitching,

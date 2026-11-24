@@ -330,9 +330,9 @@ interaction and drawer. Watch and stack own separate inline value overlays; thei
 `prefersReducedMotion` function from the host. None of these features adds fields to core code-block state.
 The screenshot plugin owns the main-menu action, temporary overlay visibility, PNG encoding, and browser file saving.
 The project-new plugin owns New Project and uses the generic project-loading operation.
-The project-open plugin owns Open From Disk and receives the editor's document. The project-save plugin owns
-Save/Export, its menu and shortcut, serialization, and browser writes; its factory receives the input element.
-Both receive one file session holding the current handle and its reset lifecycle. The WebAssembly-export plugin receives a document and compiler
+The project-files plugin owns Open From Disk, Save/Export, serialization, browser writes, and the private
+file association. Its export-only entry point provides one-shot source export without an association.
+Both factories receive the input element. The WebAssembly-export plugin receives a document and compiler
 byte getter, and owns WASM Blob creation and browser file writing.
 The execution-toggle plugin owns the Skip/Unskip menu item and its action. The tooltips plugin owns selected-line documentation, stack analysis, live memory values,
 layout, animation, and overlay drawing, with its state private to each installation. Nested block shading remains
@@ -376,7 +376,7 @@ Plugins use these public exports rather than importing core files.
 `logError` records failures in the editor console. These helpers and filename configuration remain available
 independently of the export and persistence plugins.
 Project-model serialization lives under `project/serialization`; filename configuration belongs to
-`editor-config`. The project-save plugin owns its private `.8f4e` text formatter.
+`editor-config`. The project-files package owns its private `.8f4e` text formatter.
 `serializeToProject(state)` and `serializeProjectLevel(level)` return detached models with independent source arrays
 throughout nested groups. Their fixed field order and grid/creation ordering support direct JSON comparison of canonical models.
 
@@ -435,7 +435,7 @@ Hosts can provide a compiler-owned `ProjectObjectModel` through `initialProject`
 `{ project }` later. Core loads initial content after sizing the viewport. Project preparation through
 `prepareInitialProject` completes before the renderer loads the selected font, settles layout and first-visit placement,
 and draws the first frame. The `ready` event follows that frame.
-New Project and Open From Disk belong to the project-new and project-open plugins, respectively. Core has no
+New Project and Open From Disk belong to the project-new and project-files plugins, respectively. Core has no
 file callbacks or file-association flags; undo/redo
 restore snapshots directly within the current project.
 

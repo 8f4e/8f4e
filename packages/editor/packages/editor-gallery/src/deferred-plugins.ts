@@ -1,5 +1,4 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import type { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
@@ -9,7 +8,6 @@ import { createLazyPluginRegistry } from './lazy-plugins';
 export function createDeferredEditorPlugin({
 	canvas,
 	compiler,
-	fileSession,
 	prefersReducedMotion,
 	sharedAudioContext,
 	includeKeyboardModeSwitching = true,
@@ -19,7 +17,6 @@ export function createDeferredEditorPlugin({
 }: {
 	canvas: HTMLCanvasElement;
 	compiler: ReturnType<typeof createCompilerPlugin>;
-	fileSession: ProjectFileSession;
 	prefersReducedMotion: () => boolean;
 	sharedAudioContext?: AudioContext;
 	includeKeyboardModeSwitching?: boolean;
@@ -135,12 +132,12 @@ export function createDeferredEditorPlugin({
 			load: () => import('@8f4e/editor-plugin-tooltips').then(module => module.tooltipsPlugin),
 		},
 		{
-			id: 'project-save',
+			id: 'project-export',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
-				import('@8f4e/editor-plugin-project-save').then(module =>
-					module.createProjectSavePlugin({ inputTarget: canvas, fileSession })
+				import('@8f4e/editor-plugin-project-files/export').then(module =>
+					module.createProjectExportPlugin({ inputTarget: canvas })
 				),
 		},
 		{

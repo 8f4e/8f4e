@@ -58,7 +58,6 @@ it('starts without storage and waits for core initialization before resolving th
 	expect(options.plugins!.map(plugin => plugin.id)).not.toContain('stack');
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
-		'project-file-session',
 		'home',
 		'dotted-background',
 		'code-block-background',
@@ -87,6 +86,7 @@ it('starts without storage and waits for core initialization before resolving th
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('touch-input');
 	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('keyboard-memory');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).not.toContain('project-new');
+	expect(deferredPlugins.map(plugin => plugin.id)).not.toContain('project-files');
 	expect([...(options.plugins ?? []), ...deferredPlugins].map(plugin => plugin.id)).toEqual(
 		expect.arrayContaining([
 			'code-block-background',
@@ -110,6 +110,7 @@ it('starts without storage and waits for core initialization before resolving th
 			'group-path',
 			'keyboard-editing',
 			'font-preview',
+			'project-export',
 		])
 	);
 	expect(mounted).not.toHaveBeenCalled();

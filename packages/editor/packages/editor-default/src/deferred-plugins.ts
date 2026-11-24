@@ -1,5 +1,4 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { ProjectFileSession } from '@8f4e/editor-file-session';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { createDefaultEditorPlugins } from './index';
@@ -7,11 +6,10 @@ import { createLazyPluginRegistry } from './lazy-plugins';
 
 export function createDeferredEditorPlugin(
 	options: Parameters<typeof createDefaultEditorPlugins>[0] & {
-		fileSession: ProjectFileSession;
 		prefersReducedMotion: () => boolean;
 	}
 ): EditorPlugin {
-	const { canvas, fileSession, includeKeyboardModeSwitching = true } = options;
+	const { canvas, includeKeyboardModeSwitching = true } = options;
 	const browserWindow = canvas.ownerDocument.defaultView!;
 	const hasCoarsePointer = browserWindow.matchMedia('(pointer: coarse)').matches;
 	const hasModeHint = !hasCoarsePointer && includeKeyboardModeSwitching;
@@ -135,12 +133,12 @@ export function createDeferredEditorPlugin(
 			load: () => import('@8f4e/editor-plugin-tooltips').then(module => module.tooltipsPlugin),
 		},
 		{
-			id: 'project-save',
+			id: 'project-files',
 			scope: 'view',
 			matches: () => true,
 			load: () =>
-				import('@8f4e/editor-plugin-project-save').then(module =>
-					module.createProjectSavePlugin({ inputTarget: canvas, fileSession })
+				import('@8f4e/editor-plugin-project-files').then(module =>
+					module.createProjectFilesPlugin({ inputTarget: canvas })
 				),
 		},
 		{
@@ -263,19 +261,6 @@ export function createDeferredEditorPlugin(
 			matches: () => true,
 			load: () =>
 				import('@8f4e/editor-plugin-remove-memory-connections').then(module => module.removeMemoryConnectionsPlugin),
-		},
-		{
-			id: 'project-open',
-			scope: 'view',
-			matches: () => true,
-			load: () =>
-				import('@8f4e/editor-plugin-project-open').then(module =>
-					module.createProjectOpenPlugin({
-						document: canvas.ownerDocument,
-						fileSession,
-						showOpenMenuItem: options.showOpenMenuItem,
-					})
-				),
 		},
 		{
 			id: 'wasm-export',

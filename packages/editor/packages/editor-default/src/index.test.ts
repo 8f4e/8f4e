@@ -5,8 +5,7 @@ import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules'
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
-import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
-import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
@@ -40,11 +39,8 @@ vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
 }));
-vi.mock('@8f4e/editor-plugin-project-save', () => ({
-	createProjectSavePlugin: vi.fn(() => ({ id: 'project-save', setup: () => () => {} })),
-}));
-vi.mock('@8f4e/editor-plugin-project-open', () => ({
-	createProjectOpenPlugin: vi.fn(() => ({ id: 'project-open', setup: () => () => {} })),
+vi.mock('@8f4e/editor-plugin-project-files', () => ({
+	createProjectFilesPlugin: vi.fn(() => ({ id: 'project-files', setup: () => () => {} })),
 }));
 vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
@@ -85,7 +81,6 @@ describe('default editor plugins', () => {
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
-			'project-file-session',
 			'home',
 			'project-url-loader',
 			'session-persistence',
@@ -134,7 +129,7 @@ describe('default editor plugins', () => {
 				'stack-producers',
 				'tooltips',
 				'favorites',
-				'project-file-session',
+				'project-files',
 			])
 		);
 		expect(pluginIds).not.toContain('watch');
@@ -154,14 +149,9 @@ describe('default editor plugins', () => {
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
-		const { fileSession } = vi.mocked(createProjectOpenPlugin).mock.calls[0][0];
-		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
-			document: canvas.ownerDocument,
-			fileSession,
-			showOpenMenuItem: true,
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({
+			inputTarget: canvas,
 		});
-		expect(createProjectSavePlugin).toHaveBeenCalledWith({ inputTarget: canvas, fileSession });
-		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].plugins).toContain(fileSession.plugin);
 		expect(createWasmExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, getCodeBuffer });
 		expect(renderFrame).not.toHaveBeenCalled();
 		options.renderFrame();
@@ -208,18 +198,11 @@ describe('default editor plugins', () => {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
-			showOpenMenuItem: false,
 		});
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl,
 			failureMode: 'empty-project',
-		});
-		await loadDeferredPlugins();
-		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
-			document: canvas.ownerDocument,
-			fileSession: expect.anything(),
-			showOpenMenuItem: false,
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage,
@@ -287,8 +270,7 @@ describe('default editor plugins', () => {
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
-		expect(createProjectOpenPlugin).not.toHaveBeenCalled();
-		expect(createProjectSavePlugin).not.toHaveBeenCalled();
+		expect(createProjectFilesPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();
 		withoutPlugins.dispose();
 	});

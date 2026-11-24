@@ -26,7 +26,6 @@
   "dependencies": {
     "glugglugglug": "*",
     "@8f4e/editor-core": "*",
-    "@8f4e/editor-file-session": "*",
     "@8f4e/editor-plugin-assertion-markers": "*",
     "@8f4e/editor-plugin-audio-runtime": "*",
     "@8f4e/editor-plugin-bars": "*",
@@ -66,9 +65,8 @@
     "@8f4e/editor-plugin-offscreen-block-arrows": "*",
     "@8f4e/editor-plugin-piano": "*",
     "@8f4e/editor-plugin-plot": "*",
+    "@8f4e/editor-plugin-project-files": "*",
     "@8f4e/editor-plugin-project-new": "*",
-    "@8f4e/editor-plugin-project-open": "*",
-    "@8f4e/editor-plugin-project-save": "*",
     "@8f4e/editor-plugin-project-url-loader": "*",
     "@8f4e/editor-plugin-pwa-updates": "*",
     "@8f4e/editor-plugin-remove-memory-connections": "*",

@@ -35,9 +35,9 @@ of live-object property order or code-block array order.
 
 ### `.8f4e` Project Export
 
-`serializeToProject(state)` collects the root code-block tree. The [project-save plugin](../../../../../../../plugins/project-save/README.md) owns the
-private text formatter, Save/Export actions, keyboard shortcut, permissions, and browser writes. Open reads and parses
-files; a shared per-editor file session holds the current handle and clears it on project replacement.
+`serializeToProject(state)` collects the root code-block tree. The [project-files plugin](../../../../../../../plugins/project-files/README.md) owns the
+private text formatter, Open/Save/Export actions, keyboard shortcut, permissions, and browser writes. Its full file
+plugin owns the current handle and clears it on project replacement; its export-only plugin keeps no association.
 
 The [session persistence plugin](../../../../../../../plugins/session-persistence/README.md) saves the detached project model as JSON independently of file exports.
 WebAssembly export belongs to `@8f4e/editor-plugin-wasm-export` and uses compiled bytes rather than source serialization.
@@ -86,7 +86,7 @@ group's source or layout being refreshed in the active view.
 ## References
 
 - [`serializeToProject.ts`](./serializeToProject.ts) - Session JSON structure serialization
-- [Project Save plugin](../../../../../../../plugins/project-save/README.md) - `.8f4e` source formatting and writing
+- [Project Files plugin](../../../../../../../plugins/project-files/README.md) - `.8f4e` source formatting and writing
 - [Project import](../projectLoading.md)
 
 ## Notes & Limitations

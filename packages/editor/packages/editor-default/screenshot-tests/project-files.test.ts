@@ -1,12 +1,10 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
-import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { errorMessagesPlugin } from '@8f4e/editor-plugin-error-messages';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
-import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
-import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
@@ -30,14 +28,12 @@ noteEnd`;
 	let editor: Editor | undefined;
 	let context!: EditorPluginContext;
 	try {
-		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
 			renderer: createAsciiCanvasRenderer(canvas),
 			plugins: [
-				fileSession.plugin,
 				codeRenderingPlugin,
 				errorMessagesPlugin,
-				createProjectOpenPlugin({ document, fileSession }),
+				createProjectFilesPlugin({ inputTarget: canvas }),
 				{
 					id: 'test-context',
 					setup: services => {
@@ -52,7 +48,6 @@ noteEnd`;
 		await expect
 			.poll(() => editor!.state.loadingIndicators.find(item => item.id === 'project-file')?.status)
 			.toBe('done');
-		expect(fileSession.handle).toBe(handle);
 		const blocks = editor.state.project.activeLevel.blocks;
 		const env = blocks.find(block => block.name === 'env')!;
 		expect(env.code).not.toContain('const SAVED_0 0');
@@ -99,16 +94,13 @@ noteEnd`;
 	vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([handle]));
 	let editor: Editor | undefined;
 	try {
-		const fileSession = createProjectFileSession();
 		editor = await initEditor(canvas, {
 			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: parseProjectSource(source),
 			plugins: [
 				contextMenuPlugin,
 				createMouseInputPlugin({ inputTarget: canvas }),
-				fileSession.plugin,
-				createProjectOpenPlugin({ document, fileSession }),
-				createProjectSavePlugin({ inputTarget: canvas, fileSession }),
+				createProjectFilesPlugin({ inputTarget: canvas }),
 			],
 		});
 		editor.state.editorMode = 'edit';
