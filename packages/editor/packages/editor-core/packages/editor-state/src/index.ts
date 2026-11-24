@@ -183,12 +183,7 @@ export { default as getCodeBlockModuleId } from './pureHelpers/getCodeBlockModul
 export { default as getExportBaseName } from './pureHelpers/getExportBaseName';
 export { default as serializeProjectLevel } from './pureHelpers/projectSerialization/serializeProjectLevel';
 export { default as serializeToProject } from './pureHelpers/projectSerialization/serializeToProject';
-export {
-	findParentProjectLevel,
-	findProjectLevel,
-	walkProjectBlocks,
-	walkProjectLevels,
-} from './pureHelpers/projectTree';
+export { findParentProjectLevel, walkProjectBlocks, walkProjectLevels } from './pureHelpers/projectTree';
 export {
 	isMemoryAddress,
 	isMemoryId,

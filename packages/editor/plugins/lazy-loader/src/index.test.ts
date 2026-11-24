@@ -205,7 +205,7 @@ entryEnd`
 		const { handle } = createEditorEditingHandle(editor.store, editor.events);
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
-			edits: [{ type: 'insert', code: ['module added', '; @custom', 'moduleEnd'], entry: 'main', projectPath: '' }],
+			edits: [{ type: 'insert', code: ['module added', '; @custom', 'moduleEnd'], entry: 'main' }],
 		});
 		await Promise.resolve();
 		expect(registration.load).not.toHaveBeenCalled();

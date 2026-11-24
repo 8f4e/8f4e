@@ -406,6 +406,8 @@ The public editing API checks revision and command preconditions before using th
 history policy. It does not validate the program; invalid and incomplete source is legitimate editor content. Real
 checkpoints emit `beforeProjectEdit` before changing authored source, allowing history to commit pending typing. Unchanged
 batches leave pending history, compiler inputs and revisions untouched. Selection and view navigation do not publish.
+Public insert commands target the root by default, or the child project of `groupBlockId` (the existing block handle
+returned by `getEditorBlockId`). They do not identify projects by name-based paths.
 
 Project loading translates compiler/file data into editor source; undo/redo restore detached authored editor snapshots that
 retain block identities, boundaries and draft entry/position metadata. The managed root environment is excluded from history;
@@ -414,7 +416,7 @@ settlement and publication boundary, with `replace` and `restore` kinds. `compil
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
 Navigation follows attached project levels, and history restoration reconciles remembered views by the owning blocks' identities
 within each parent level. Renaming a group or temporarily using duplicate names therefore does not transfer its view to another
-group. Name-based project paths remain unchanged for compilation, file data and source addressing.
+group. Name-based project paths remain unchanged for compilation and file data.
 
 ## Project loading
 

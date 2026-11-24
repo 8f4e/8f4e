@@ -325,7 +325,7 @@ describe('single-editor WebMCP bridge', () => {
 		expect(view.editing.applyEdits).toHaveBeenCalledWith({
 			expectedRevision: 'editor-one:1',
 			edits: [
-				{ type: 'insert', projectPath: '', code: ['note colors', '', 'hello', 'noteEnd', ''] },
+				{ type: 'insert', code: ['note colors', '', 'hello', 'noteEnd', ''] },
 				{
 					type: 'update',
 					blockId: '["",7]',
@@ -450,7 +450,7 @@ describe('single-editor WebMCP bridge', () => {
 			expectedRevision: 'editor-one:8',
 			edits: [
 				{ type: 'delete', blockId: '["audio",2]' },
-				{ type: 'insert', projectPath: 'audio', code: ['note colors', 'noteEnd'] },
+				{ type: 'insert', groupBlockId: '["",3]', code: ['note colors', 'noteEnd'] },
 			],
 		});
 		const argsFor = (tool: string, name: string) => ({
@@ -492,6 +492,7 @@ describe('single-editor WebMCP bridge', () => {
 			[{ operation: 'insert', code: update.code, x: 1 }],
 			[{ operation: 'insert', code: update.code, y: 2 }],
 			[{ operation: 'insert', code: update.code, projectPath: '' }],
+			[{ operation: 'insert', code: update.code, groupBlockId: '["",3]' }],
 			[{ operation: 'update', type: 'module', name: 'counter', code: ['old array format'] }],
 			[{ operation: 'delete', blockId: '["",7]' }],
 			[{ operation: 'move', type: 'module', name: 'counter', x: 1, y: 2 }],

@@ -8,12 +8,6 @@ export function* walkProjectLevels(project: ProjectLevel): Generator<ProjectLeve
 	}
 }
 
-export function findProjectLevel(root: ProjectLevel, path: ProjectGroupPath): ProjectLevel | undefined {
-	for (const level of walkProjectLevels(root)) {
-		if (level.path === path) return level;
-	}
-}
-
 /** Find the level containing the block that owns this project, independent of source paths. */
 export function findParentProjectLevel(root: ProjectLevel, project: ProjectLevel): ProjectLevel | undefined {
 	if (project === root) return;

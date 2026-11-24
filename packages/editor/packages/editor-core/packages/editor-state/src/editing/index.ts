@@ -11,7 +11,7 @@ import { instructionParser, isProjectGapLine } from '@8f4e/tokenizer';
 import getBlockType from '../features/code-blocks/utils/codeParsers/getBlockType';
 import getCodeBlockNameFromSource from '../features/code-blocks/utils/getCodeBlockNameFromSource';
 import { ProjectEditPlanError } from '../features/project-edits/service';
-import { findProjectLevel, walkProjectBlocks } from '../pureHelpers/projectTree';
+import { walkProjectBlocks } from '../pureHelpers/projectTree';
 import { type EditorEdit, EditorEditingError, type EditorEditingHandle, type EditorNavigationHandle } from './types';
 
 export * from './types';
@@ -92,8 +92,18 @@ export function createEditorEditingHandle(store: EditingStore, events: EventDisp
 					if (isGroupSource(edit.code))
 						invalid('Create project groups through project loading; inserts add ordinary code blocks');
 					validateEntry(edit.entry);
-					const project = findProjectLevel(root, edit.projectPath ?? '');
-					if (!project) invalid('Unknown projectPath');
+					let project = root;
+					if (edit.groupBlockId !== undefined) {
+						const group = targets.get(edit.groupBlockId);
+						if (!group)
+							throw new EditorEditingError(
+								'block_not_found',
+								'Read the project for a current groupBlockId',
+								revision()
+							);
+						if (!group.childProject) invalid('The insertion target is not a project group');
+						project = group.childProject;
+					}
 					if (edit.entry !== undefined && !acceptsEntry(edit.code)) invalid('Only module inserts accept an entry');
 					inserts.push({ project, source: { code: edit.code, entry: edit.entry } });
 					continue;

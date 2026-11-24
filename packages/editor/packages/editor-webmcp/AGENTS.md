@@ -5,7 +5,8 @@
 - Read current state through the public editor. Delegate writes and history to `editor.editing` and navigation to
   `editor.navigation`. Keep tool-specific projections outside core.
 - Scope project and block operations to the current project level. Resolve source type/name selectors to editor
-  handles internally and express placement through source `@pos` directives.
+  handles internally, target insertions by the active level's owning group handle (or root), and express placement
+  through source `@pos` directives. Name-based paths describe source locations; they do not identify edit targets.
 - Record the source revision baseline in the bridge after successful source reads and writes. Require a fresh
   source read if the baseline is missing or stale, and pass the matching revision to the editing API. Reference,
   metadata, diagnostics and navigation operations leave the source baseline alone.

@@ -721,6 +721,31 @@ describe('public editor editing handle', () => {
 		expect(compilationChanged).not.toHaveBeenCalled();
 	});
 
+	it('rejects a batch with a missing or non-group insertion owner before committing any operations', () => {
+		const { editing, state, compilationChanged } = setup();
+		const target = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'original')!;
+		const revision = editing.getRevision();
+		const before = serializeToProject(state);
+		for (const { groupBlockId, code } of [
+			{ groupBlockId: 'missing', code: 'block_not_found' },
+			{ groupBlockId: getEditorBlockId(target), code: 'invalid_edit' },
+		]) {
+			expect(() =>
+				editing.applyEdits({
+					expectedRevision: revision,
+					edits: [
+						{ type: 'insert', code: ['note root', 'noteEnd'] },
+						{ type: 'insert', groupBlockId, code: ['note misplaced', 'noteEnd'] },
+					],
+				})
+			).toThrow(expect.objectContaining({ code, revision }));
+			expect(editing.getRevision()).toBe(revision);
+			expect(serializeToProject(state)).toEqual(before);
+			expect(state.historyStack).toHaveLength(0);
+			expect(compilationChanged).not.toHaveBeenCalled();
+		}
+	});
+
 	it('rejects stale revisions after human source edits, layout edits, project replacement, and from another editor', () => {
 		const { editing, store, state, events } = setup();
 		const revision = editing.getRevision();
@@ -783,7 +808,7 @@ describe('public editor editing handle', () => {
 					blockId: getEditorBlockId(inner),
 					code: ['module updatedInner', '; @home left', 'moduleEnd'],
 				},
-				{ type: 'insert', projectPath: inner.projectPath, entry: 'local', code: ['module added', 'moduleEnd'] },
+				{ type: 'insert', groupBlockId: getEditorBlockId(group), entry: 'local', code: ['module added', 'moduleEnd'] },
 			],
 		});
 		expect(state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'outer')!.code[0]).toBe(
@@ -877,6 +902,28 @@ describe('public editor editing handle', () => {
 		const recreatedCopy = owner(copy.creationIndex).childProject!;
 		expect(recreatedCopy.viewport).toBeUndefined();
 		expect(recreatedCopy.selectedBlock).toBeUndefined();
+	});
+
+	it('inserts into a copied group by owning block handle while omitted ownership targets the root', () => {
+		const { editing, navigation, state, store, group: original } = setupGroup('voice');
+		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
+		expect(original.childProject!.path).toBe(copy.childProject!.path);
+		navigation.openGroup(getEditorBlockId(copy));
+		const result = editing.applyEdits({
+			expectedRevision: editing.getRevision(),
+			edits: [
+				{ type: 'insert', groupBlockId: getEditorBlockId(copy), code: ['note nested', 'noteEnd'] },
+				{ type: 'insert', code: ['note root', 'noteEnd'] },
+			],
+		});
+		expect(state.codeBlockRendering.currentProject).toBe(copy.childProject);
+		expect(original.childProject!.blocks.map(block => block.name)).toEqual(['sample']);
+		expect(copy.childProject!.blocks.map(block => block.name)).toEqual(['sample', 'nested']);
+		const nestedNote = copy.childProject!.blocks.find(block => block.name === 'nested')!;
+		const rootNote = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'root')!;
+		expect(nestedNote.projectPath).toBe(original.childProject!.path);
+		expect(rootNote.projectPath).toBe('');
+		expect(result.createdBlockIds).toEqual([getEditorBlockId(nestedNote), getEditorBlockId(rootNote)]);
 	});
 
 	it('keeps the same owning group view when a rename is undone and redone', () => {

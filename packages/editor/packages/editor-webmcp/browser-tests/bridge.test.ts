@@ -1,10 +1,10 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
-import { serializeToProject } from '@8f4e/editor-state';
+import { serializeCodeBlocks, serializeToProject } from '@8f4e/editor-state';
 import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
 import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
 import { afterEach, expect, test, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 const source = '8f4e/v1\nentry main\nmodule counter ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -184,6 +184,57 @@ test('navigates the editor and returns only the currently expanded source string
 	expect(await call('get_project')).toContain('int value 3');
 	await call('go_to_root');
 	expect(await call('get_project')).toBe(root);
+});
+
+test('inserts into the active pasted group even when its source path matches the original', async () => {
+	const tools = siteTools();
+	const grouped =
+		'8f4e/v1\nentry main\nmodule counter ; @mode edit\n; @pos 70 20\nint value 1\nmoduleEnd\ngroup audio\n; @pos 6 14\nentry main\nmodule oscillator\nint value 2\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd';
+	const view = setup({ pastedGroup: async () => new Response(grouped) });
+	const editor = await view.mounted();
+	const canvas = view.panel().querySelector('canvas')!;
+	const { state } = editor;
+	const groups = () => state.codeBlockRendering.rootProject.blocks.filter(block => block.name === 'audio');
+	const [original] = groups();
+	vi.spyOn(navigator.clipboard, 'readText').mockResolvedValue(
+		JSON.stringify(serializeCodeBlocks([original], original))
+	);
+	const menuPosition = { x: 400, y: 16 };
+	await expect
+		.poll(async () => {
+			const rect = canvas.getBoundingClientRect();
+			canvas.dispatchEvent(
+				new MouseEvent('contextmenu', { clientX: rect.left + menuPosition.x, clientY: rect.top + menuPosition.y })
+			);
+			await Promise.resolve();
+			return state.contextMenu.items.some(item => item.action === 'pasteCodeBlocks');
+		})
+		.toBe(true);
+	const pasteIndex = state.contextMenu.items.findIndex(item => item.action === 'pasteCodeBlocks');
+	await userEvent.click(canvas, {
+		position: { x: menuPosition.x + 8, y: menuPosition.y + (pasteIndex + 0.5) * state.viewport.hGrid },
+	});
+	await expect.poll(() => groups().length).toBe(2);
+	const copy = groups().find(block => block !== original)!;
+	expect(original.childProject!.path).toBe(copy.childProject!.path);
+	editor.navigation.openGroup(getEditorBlockId(copy));
+	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
+	expect(await call('get_project')).toContain('int value 2');
+	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
+	const noteCode = 'note copiedNote\nInserted in the copy\nnoteEnd';
+	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: noteCode }] })).toBe('Edits applied.');
+	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childProject!;
+	const assertInsertion = (inserted: boolean) => {
+		expect(state.codeBlockRendering.currentProject).toBe(child(copy.creationIndex));
+		expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(inserted);
+		expect(child(original.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(false);
+	};
+	assertInsertion(true);
+	expect(await call('get_project')).toContain(noteCode);
+	await call('undo');
+	assertInsertion(false);
+	await call('redo');
+	assertInsertion(true);
 });
 
 test('targets named notes and modules through the same selectors without exposing identifiers', async () => {

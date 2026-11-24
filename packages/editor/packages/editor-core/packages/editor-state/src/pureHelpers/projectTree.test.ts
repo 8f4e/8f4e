@@ -1,6 +1,6 @@
 import type { ProjectLevel } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
-import { findParentProjectLevel, findProjectLevel, updateProjectLevelPath } from './projectTree';
+import { findParentProjectLevel, updateProjectLevelPath } from './projectTree';
 import { createMockCodeBlock } from './testingUtils/testUtils';
 
 function fixture() {
@@ -19,12 +19,9 @@ function fixture() {
 }
 
 describe('project tree', () => {
-	it('finds explicit levels and their immediate parents, including empty groups', () => {
+	it('finds immediate parents, including empty groups', () => {
 		const { root, audio, child } = fixture();
 		child.blocks.length = 0;
-		expect(findProjectLevel(root, '')).toBe(root);
-		expect(findProjectLevel(root, 'Audio/Voices')).toBe(child);
-		expect(findProjectLevel(root, 'missing')).toBeUndefined();
 		expect(findParentProjectLevel(root, child)).toBe(audio);
 		expect(findParentProjectLevel(root, audio)).toBe(root);
 		expect(findParentProjectLevel(root, root)).toBeUndefined();
@@ -34,7 +31,7 @@ describe('project tree', () => {
 		const { root, audio, child } = fixture();
 		const second = fixture();
 		root.blocks.push(second.root.blocks[0]);
-		expect(findProjectLevel(root, second.child.path)).toBe(child);
+		expect(second.child.path).toBe(child.path);
 		expect(findParentProjectLevel(root, child)).toBe(audio);
 		expect(findParentProjectLevel(root, second.child)).toBe(second.audio);
 		expect(findParentProjectLevel(root, { ...second.child })).toBeUndefined();

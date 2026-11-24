@@ -61,7 +61,7 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 			editing.applyEdits({
 				expectedRevision,
 				edits: [
-					{ type: 'insert', projectPath: group.childProject!.path, code: insertedCode },
+					{ type: 'insert', groupBlockId: groupId, code: insertedCode },
 					{ type: 'delete', blockId: groupId },
 				],
 			})
