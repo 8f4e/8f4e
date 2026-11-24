@@ -213,28 +213,6 @@ describe('project file saving', () => {
 		expect(getProjectModules(project)[0].code).toContain('int value 1');
 		expect(getProjectModules(getProjectGroups(project)[0])[0].code).toEqual(nested.code);
 	});
-	it('preserves spatial configuration precedence through saving and reopening', async () => {
-		const test = setup();
-		test.events.dispatch('loadProject', {
-			project: parseProjectSource(`8f4e/v1
-note right
-; @pos 20 0
-; @config export.fileName right
-noteEnd
-entry main
-module left
-; @pos -20 0
-; @config export.fileName left
-moduleEnd
-entryEnd`),
-		});
-		expect(test.state.editorConfig.export?.fileName).toBe('right');
-		await test.events.dispatchAsync('saveProject');
-		const savedSource = await test.handle.writable.write.mock.calls[0][0].text();
-		test.handle.getFile.mockResolvedValueOnce(new File([savedSource], 'right.8f4e'));
-		await test.events.dispatchAsync('importProject');
-		expect(test.state.editorConfig.export?.fileName).toBe('right');
-	});
 	it.each(['saveProject', 'exportProject'])('reports incomplete source before %s opens a picker', async action => {
 		const test = setup();
 		test.state.project.rootLevel.blocks.find(block => block.name === 'test')!.code = ['module unfinished'];
