@@ -120,7 +120,7 @@ it('keeps settled exposure records current and preserves compiler diagnostics fo
 	}
 });
 
-it('preserves root references to a group through API edits, undo, and redo while it is open', async () => {
+it('preserves root references to a group through API edits and snapshot restoration while it is open', async () => {
 	const test = setup();
 	test.events.dispatch('enterEditMode');
 	const { handle, navigation, dispose } = createEditorCommandApi(test.store, test.events);
@@ -143,6 +143,7 @@ it('preserves root references to a group through API edits, undo, and redo while
 			expect(compiled.memoryDefaultsByModuleId['patch/source'][targetMemory.id].value).toBe(defaultValue);
 		};
 
+		const original = test.store.projectTransactions.capture();
 		const block = activeLevel().blocks.find(block => block.name === 'source')!;
 		handle.applyEdits({
 			expectedRevision: handle.getRevision(),
@@ -152,10 +153,11 @@ it('preserves root references to a group through API edits, undo, and redo while
 		});
 		await expectRestoredGroup(3);
 
-		handle.undo({ expectedRevision: handle.getRevision() });
+		const edited = test.store.projectTransactions.capture();
+		test.store.projectTransactions.restore(original);
 		await expectRestoredGroup(1);
 
-		handle.redo({ expectedRevision: handle.getRevision() });
+		test.store.projectTransactions.restore(edited);
 		await expectRestoredGroup(3);
 	} finally {
 		dispose();

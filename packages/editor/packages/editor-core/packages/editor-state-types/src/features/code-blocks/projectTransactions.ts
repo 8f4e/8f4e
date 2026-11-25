@@ -1,3 +1,4 @@
+import type { EditorProjectSnapshot } from './projectSnapshot';
 import type { EditorCodeBlock, ProjectLevel } from './types';
 
 /** Source for an inserted block, independent of its eventual pixel layout. Positions belong in source directives. */
@@ -37,4 +38,8 @@ export interface ProjectEditOptions {
 /** Synchronous project mutation and settlement. Callers own edit-mode policy; the compiler validates the source. */
 export interface ProjectTransactions {
 	apply(plan: ProjectEditPlan, options?: ProjectEditOptions): ProjectEditResult;
+	/** Capture detached authored source and retained draft facts, without generated source or view state. */
+	capture(): EditorProjectSnapshot;
+	/** Restore a snapshot of this project through the ordinary mutation and settlement path. */
+	restore(snapshot: EditorProjectSnapshot): void;
 }

@@ -52,11 +52,6 @@ export function captureProjectSnapshot(
 	};
 }
 
-/** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
-export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
-	return JSON.stringify(a.rootLevel) === JSON.stringify(b.rootLevel);
-}
-
 /** Translate a loaded compiler project into authored editor source, discarding the root env. */
 export function snapshotFromProjectModel(project: ProjectObjectModel): EditorProjectSnapshot {
 	const authoredProject = {

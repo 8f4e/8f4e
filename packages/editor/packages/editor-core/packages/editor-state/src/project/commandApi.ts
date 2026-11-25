@@ -82,6 +82,12 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 			assertAlive();
 			return revision();
 		},
+		getHistoryAvailability() {
+			assertAlive();
+			const availability = { canUndo: false, canRedo: false };
+			events.dispatch('resolveHistoryAvailability', availability);
+			return availability;
+		},
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
 			if (!Array.isArray(edits) || edits.length === 0) invalid('Provide at least one edit');

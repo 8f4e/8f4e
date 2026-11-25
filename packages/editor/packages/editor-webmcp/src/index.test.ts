@@ -36,6 +36,7 @@ function setup() {
 	};
 	const editing: EditorEditingHandle = {
 		getRevision: vi.fn(() => currentRevision),
+		getHistoryAvailability: vi.fn(() => ({ canUndo: false, canRedo: false })),
 		applyEdits: vi.fn(() => ({ ...advance(), createdBlockIds: ['private-created-handle'] })),
 		undo: vi.fn(advance),
 		redo: vi.fn(advance),
@@ -92,6 +93,19 @@ describe('single-editor WebMCP bridge', () => {
 			expect(await call('get_project_metadata')).toMatchObject({ editable: false });
 			view.state.editorMode = 'edit';
 			expect(await call('get_project_metadata')).toMatchObject({ editable: true });
+		} finally {
+			bridge.dispose();
+		}
+	});
+
+	it('reads current undo/redo availability through the editing handle', async () => {
+		const view = setup();
+		const { bridge, call } = await connect(view);
+		try {
+			vi.mocked(view.editing.getHistoryAvailability).mockReturnValue({ canUndo: true, canRedo: false });
+			expect(await call('get_project_metadata')).toMatchObject({ canUndo: true, canRedo: false });
+			vi.mocked(view.editing.getHistoryAvailability).mockReturnValue({ canUndo: false, canRedo: true });
+			expect(await call('get_project_metadata')).toMatchObject({ canUndo: false, canRedo: true });
 		} finally {
 			bridge.dispose();
 		}
@@ -168,7 +182,7 @@ describe('single-editor WebMCP bridge', () => {
 			expect(await call(name, args)).not.toHaveProperty('error');
 		}
 		expect(view.state.project.rootLevel.blocks).toEqual(before);
-		expect(view.state.historyStack).toHaveLength(0);
+		expect(view.editing.getHistoryAvailability).not.toHaveBeenCalled();
 		expect(view.editing.getRevision).not.toHaveBeenCalled();
 		expect(view.navigation.openGroup).not.toHaveBeenCalled();
 		expect(await call('undo')).toMatchObject({ error: { code: 'source_required' } });

@@ -6,7 +6,6 @@
 import type { MemoryAction as CompilerMemoryAction } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
-import type { EditorProjectSnapshot } from './features/code-blocks/projectSnapshot';
 import type { ProjectEditOptions } from './features/code-blocks/projectTransactions';
 import type {
 	CodeBlockType,
@@ -188,8 +187,6 @@ export interface State {
 	appearance: { fontOverride?: string };
 	editorConfigValidators: EditorConfigValidatorRegistry;
 	editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry;
-	historyStack: EditorProjectSnapshot[];
-	redoStack: EditorProjectSnapshot[];
 	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */

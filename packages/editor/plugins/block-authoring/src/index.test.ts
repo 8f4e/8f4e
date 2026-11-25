@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -16,20 +17,20 @@ function setup(installed = true) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const disposePlugin = installed
-		? blockAuthoringPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: () => {};
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	const disposePlugin = installed ? blockAuthoringPlugin.setup(context) : () => {};
 	events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });
 	events.dispatch('enterEditMode');
-	cleanups.push(store.dispose, disposePlugin);
+	cleanups.push(store.dispose, disposeHistory, disposePlugin);
 	const state = store.getState();
 	const openMenu = async (x = 700, y = 400) => {
 		events.dispatch('contextmenu', { x, y });

@@ -33,7 +33,12 @@ function setup(storage = createStorage(), restoreOnStartup = true, storageKey = 
 		test.events.dispatch('enterEditMode');
 		test.events.dispatch('prepareInitialProject');
 	};
-	return { ...test, storage, boot };
+	const history = () => {
+		const availability = { canUndo: false, canRedo: false };
+		test.events.dispatch('resolveHistoryAvailability', availability);
+		return availability;
+	};
+	return { ...test, storage, boot, history };
 }
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
@@ -125,7 +130,7 @@ describe('session persistence plugin', () => {
 			edits: [{ type: 'update', blockId: getEditorBlockId(block), code: [...block.code] }],
 		});
 		expect(test.storage.setItem).not.toHaveBeenCalled();
-		expect(test.state.historyStack).toHaveLength(0);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: false });
 		expect(result.revision).toBe(revision);
 	});
 
@@ -149,7 +154,7 @@ describe('session persistence plugin', () => {
 			],
 		});
 		editing.undo({ expectedRevision: editing.getRevision() });
-		expect(test.state.redoStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: true });
 		const before = editing.getRevision();
 		const compilerRevision = test.state.compilerInputRevision;
 		test.storage.setItem.mockClear();
@@ -169,8 +174,7 @@ describe('session persistence plugin', () => {
 		expect(editing.getRevision()).not.toBe(before);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		await vi.advanceTimersByTimeAsync(2000);
-		expect(test.state.historyStack).toHaveLength(0);
-		expect(test.state.redoStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: true });
 		const saved = () => JSON.parse(test.storage.getItem('session')!);
 		expect(saved().constants[0].code).toContain('const GENERATED 42');
 		expect(saved().constants[0].code).toContain('; @pos 0 0');
@@ -202,7 +206,7 @@ describe('session persistence plugin', () => {
 		applyCodeBlockSourceEdits(test.store, [{ codeBlock: restored, code: [...restored.code] }]);
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
-		expect(test.state.redoStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: true });
 		test.events.dispatch('redo');
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('int value 12');
 	});
@@ -229,18 +233,17 @@ describe('session persistence plugin', () => {
 		});
 		expect(changes).toEqual([{ revision: startRevision + 1, kind: 'edit', history: 'checkpoint' }]);
 		expect(applied.revision).toBe(editing.handle.getRevision());
-		expect(test.state.historyStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: true, canRedo: false });
 		expect(test.storage.setItem).toHaveBeenCalledOnce();
 		expect(JSON.parse(test.storage.getItem('session')!).notes).toHaveLength(1);
 
 		const undone = editing.handle.undo({ expectedRevision: applied.revision });
 		expect(undone.revision).not.toBe(applied.revision);
-		expect(test.state.redoStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: true });
 		expect(JSON.parse(test.storage.getItem('session')!).notes).toHaveLength(0);
 		const redone = editing.handle.redo({ expectedRevision: undone.revision });
 		expect(redone.revision).not.toBe(applied.revision);
-		expect(test.state.historyStack).toHaveLength(1);
-		expect(test.state.redoStack).toHaveLength(0);
+		expect(test.history()).toEqual({ canUndo: true, canRedo: false });
 		expect(JSON.parse(test.storage.getItem('session')!).notes).toHaveLength(1);
 		expect(test.storage.setItem).toHaveBeenCalledTimes(3);
 		expect(changes.map(change => change.kind)).toEqual(['edit', 'restore', 'restore']);
@@ -249,8 +252,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('loadProject', { project: JSON.parse(test.storage.getItem('session')!) });
 		test.events.dispatch('enterEditMode');
 		expect(editing.handle.getRevision()).not.toBe(redone.revision);
-		expect(test.state.historyStack).toHaveLength(0);
-		expect(test.state.redoStack).toHaveLength(0);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: false });
 		expect(changes).toHaveLength(4);
 		expect(changes[3]).toEqual({ revision: startRevision + 4, kind: 'replace' });
 		expect(test.storage.setItem).toHaveBeenCalledTimes(4);
@@ -279,7 +281,7 @@ describe('session persistence plugin', () => {
 			'; Auto-generated environment constants'
 		);
 		expect(JSON.parse(test.storage.getItem('session')!).constants[0].code).not.toContain('const OBSOLETE 1');
-		expect(test.state.historyStack).toHaveLength(0);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: false });
 	});
 
 	it('shares position edits across consumers and keeps compiler-only requests separate', async () => {
@@ -317,7 +319,7 @@ describe('session persistence plugin', () => {
 			'moduleEnd',
 		]);
 		await vi.advanceTimersByTimeAsync(1000);
-		expect(test.state.historyStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: true, canRedo: false });
 		test.events.dispatch('undo');
 		expect(getProjectModules(JSON.parse(test.storage.getItem('session')!))[0].code).toContain('; @pos 4 3');
 
@@ -327,7 +329,7 @@ describe('session persistence plugin', () => {
 		test.store.set('compilerInputRevision', test.state.compilerInputRevision + 1);
 		expect(editing.handle.getRevision()).toBe(afterUndo);
 		expect(test.storage.setItem).not.toHaveBeenCalled();
-		expect(test.state.redoStack).toHaveLength(1);
+		expect(test.history()).toEqual({ canUndo: false, canRedo: true });
 	});
 
 	it('saves the root project while navigating a nested project slice', () => {

@@ -4,7 +4,7 @@ This package implements a platform-agnostic editor state machine. It owns the fu
 
 ## Source organization
 
-- [`project/`](src/project/README.md): project tree, source commands, transactions, history, and serialization.
+- [`project/`](src/project/README.md): project tree, source commands, transactions, snapshot capture and restoration, and serialization.
 - [`layout/`](src/layout/README.md): block display rows, geometry, and plugin layout contributions.
 - [`directives/`](src/directives): block and project directives, parsing, and source editing.
 - [`compiler-metadata/`](src/compiler-metadata/README.md): compilation inputs and accepted compiler results.

@@ -274,9 +274,11 @@ describe('grouping plugin', () => {
 			test.events.dispatch(action, { codeBlock: test.block('first'), makeNonstick: true });
 			const after = serializeToProject(test.state);
 			await vi.advanceTimersByTimeAsync(1000);
-			expect(test.state.historyStack).toHaveLength(1);
 			test.events.dispatch('undo');
 			expect(serializeToProject(test.state)).toEqual(before);
+			const revision = test.state.projectChange.revision;
+			test.events.dispatch('undo');
+			expect(test.state.projectChange.revision).toBe(revision);
 			test.events.dispatch('redo');
 			expect(serializeToProject(test.state)).toEqual(after);
 		}

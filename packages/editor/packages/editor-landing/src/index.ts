@@ -7,6 +7,7 @@ import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 
 export type LandingEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
@@ -38,6 +39,7 @@ export async function mountLandingEditor(
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			undoRedoPlugin,
 			homePlugin,
 			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,

@@ -211,8 +211,6 @@ export function createMockState(overrides: StateOverrides = {}): State {
 		appearance: {},
 		editorConfigValidators: {},
 		editorConfigSchemaContributions: {},
-		historyStack: [],
-		redoStack: [],
 		envConstantContributions: {},
 		codeErrors: {},
 		loadingIndicators: [],

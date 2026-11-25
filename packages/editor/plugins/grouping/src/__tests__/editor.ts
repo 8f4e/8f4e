@@ -1,4 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
@@ -36,17 +37,17 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const disposePlugin = installed
-		? createGroupingPlugin({ writeClipboardText }).setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: () => {};
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	const disposePlugin = installed ? createGroupingPlugin({ writeClipboardText }).setup(context) : () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
@@ -87,6 +88,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		disposePlugin,
 		dispose: () => {
 			disposePlugin();
+			disposeHistory();
 			store.dispose();
 		},
 	};

@@ -167,20 +167,22 @@ describe('project and compiler input revisions', () => {
 		expectChanges(1);
 	});
 
-	it('announce project loading, undo, and redo without requiring a selected block', () => {
-		const { store, state, events, block, load, expectChanges } = setup();
+	it('announce project loading and snapshot restoration without requiring a selected block', () => {
+		const { store, state, block, load, expectChanges } = setup();
 		load();
 		expect(state.project.selectedCodeBlock).toBeUndefined();
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expectChanges(0);
+		const original = store.projectTransactions.capture();
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block('main'), code: ['module main', 'push 2', 'drop', 'moduleEnd'] },
 		]);
 		expectChanges(1);
-		events.dispatch('undo');
+		const edited = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
 		expect(block('main').code).toContain('push 1');
 		expectChanges(2);
-		events.dispatch('redo');
+		store.projectTransactions.restore(edited);
 		expect(block('main').code).toContain('push 2');
 		expectChanges(3);
 	});

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -48,7 +49,7 @@ export function setup(
 	store.set('project.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, y: 0 };
 	const renderRegistry = createEditorRenderRegistry();
-	const disposePlugin = createPlugin({ inputTarget }).setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -56,8 +57,10 @@ export function setup(
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry,
-	});
-	cleanups.push(store.dispose, disposePlugin);
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	const disposePlugin = createPlugin({ inputTarget }).setup(context);
+	cleanups.push(store.dispose, disposeHistory, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {
 		const event = new TestKeyboardEvent('keydown', { key, ...options });
 		inputTarget.dispatchEvent(event);

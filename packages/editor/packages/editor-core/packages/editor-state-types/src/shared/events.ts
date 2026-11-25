@@ -3,6 +3,12 @@ import type { EditorCodeBlock, ProjectLevel } from '../features/code-blocks/type
 import type { ProgramArtifacts } from '../features/program-compiler/types';
 import type { Position } from './types';
 
+/** Availability of the optional project history actions. */
+export interface EditorHistoryAvailability {
+	canUndo: boolean;
+	canRedo: boolean;
+}
+
 /** Core lifecycle notifications. Plugin action names remain open and infer payloads from their handlers. */
 export interface EditorLifecycleEvents {
 	/** Prepare initial project source before the font atlas or grid becomes available. Handlers must not await rendering or geometry. */
@@ -11,6 +17,8 @@ export interface EditorLifecycleEvents {
 	ready: void;
 	dispose: void;
 	beforeProjectEdit: void;
+	/** Synchronous query populated by the installed undo/redo provider. Defaults to no available actions. */
+	resolveHistoryAvailability: EditorHistoryAvailability;
 	compilationSucceeded: ProgramArtifacts;
 	codeBlockLayoutContributionsChanged: { codeBlock?: EditorCodeBlock };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;

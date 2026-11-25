@@ -1,3 +1,5 @@
+import type { EditorHistoryAvailability } from '@8f4e/editor-state-types';
+
 export type EditorEdit =
 	| {
 			type: 'insert';
@@ -17,6 +19,8 @@ export interface EditorEditResult {
 export interface EditorEditingHandle {
 	/** Opaque project token for validating writes after reading editor.state. */
 	getRevision(): string;
+	/** Read available history actions without editing or committing pending changes. */
+	getHistoryAvailability(): EditorHistoryAvailability;
 	applyEdits(request: { expectedRevision: string; edits: readonly EditorEdit[] }): EditorEditResult;
 	undo(request: { expectedRevision: string }): { revision: string };
 	redo(request: { expectedRevision: string }): { revision: string };

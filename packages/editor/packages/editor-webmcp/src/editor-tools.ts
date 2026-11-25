@@ -123,8 +123,7 @@ export function createEditorTools(
 					revision: editing.getRevision(),
 					projectPath: getCurrentProjectPath(state),
 					editable: state.editorMode === 'edit',
-					canUndo: state.historyStack.length > 0,
-					canRedo: state.redoStack.length > 0,
+					...editing.getHistoryAvailability(),
 				};
 			},
 		},

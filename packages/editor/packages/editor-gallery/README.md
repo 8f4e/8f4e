@@ -28,7 +28,7 @@ The composition installs the compiler first, with lazy standard-library include 
 loading, project source export, keyboard input, assertion markers, watch and stack annotations, immediate stack
 producer highlights, and tooltips. Stack Connections draws links beside the selected code block from each operand
 producer to the highlighted instruction.
-Compiler coordination, URL loading, home navigation, the dotted canvas background, block backgrounds,
+Compiler coordination, undo/redo history, URL loading, home navigation, the dotted canvas background, block backgrounds,
 code rendering, and loading indicators are eager.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented

@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { getProjectModules } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import initState from '../index';
+import initState, { applyCodeBlockSourceEdits } from '../index';
 import { createEditorCommandApi, getEditorBlockId } from './commandApi';
 import serializeToProject from './serialization/serializeToProject';
 
@@ -22,7 +22,7 @@ function setup() {
 		editing.dispose();
 		store.dispose();
 	});
-	return { state, block, events, editing: editing.handle };
+	return { store, state, block, events, editing: editing.handle };
 }
 
 afterEach(() => {
@@ -51,7 +51,11 @@ describe('public editor operations', () => {
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'checkpoint' });
-		expect(test.state.historyStack).toHaveLength(1);
+		// Core publishes the checkpoint even without a history plugin; commands have no history to restore.
+		expect(test.editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
+		expect(test.editing.undo({ expectedRevision: result.revision })).toEqual({ revision: result.revision });
+		expect(test.editing.redo({ expectedRevision: result.revision })).toEqual({ revision: result.revision });
+		expect(getProjectModules(serializeToProject(test.state))[0].code).toContain('int value 2');
 	});
 
 	it('skips unchanged API edits before notifying history or publishing a change', () => {
@@ -67,5 +71,23 @@ describe('public editor operations', () => {
 		expect(beforeEdit).not.toHaveBeenCalled();
 		expect(test.state.projectChange.revision).toBe(projectRevision);
 		expect(result.revision).toBe(revision);
+	});
+
+	it('does not capture history or schedule a history timer for ordinary edits without a plugin', async () => {
+		vi.useFakeTimers();
+		try {
+			const { store, block, editing } = setup();
+			const capture = vi.spyOn(store.projectTransactions, 'capture');
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module target', 'int value 2', 'moduleEnd'] }]);
+			const revision = editing.getRevision();
+			expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
+			expect(vi.getTimerCount()).toBe(0);
+			await vi.advanceTimersByTimeAsync(1000);
+			expect(capture).not.toHaveBeenCalled();
+			expect(editing.getRevision()).toBe(revision);
+			expect(block.code).toContain('int value 2');
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

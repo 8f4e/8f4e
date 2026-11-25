@@ -29,7 +29,6 @@ describe('project initial mode', () => {
 		});
 		load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
 		expect(notifications).toEqual([['replace', mode]]);
-		expect(state.historyStack).toHaveLength(0);
 	});
 
 	it.each(['', '; @mode other', '; @mode edit\n; @mode view'])(
@@ -56,7 +55,7 @@ describe('project initial mode', () => {
 		expect(state.editorMode).toBe('edit');
 	});
 
-	it('keeps user mode changes through source edits, configuration updates, and undo/redo', () => {
+	it('keeps user mode changes through source edits, configuration updates, and snapshot restoration', () => {
 		const { state, store, events, load } = setup();
 		load('8f4e/v1\nnote mode\n; @mode edit\nnoteEnd');
 		const revision = state.projectChange.revision;
@@ -64,15 +63,17 @@ describe('project initial mode', () => {
 		expect(state.editorMode).toBe('view');
 		expect(state.projectChange.revision).toBe(revision);
 		const block = state.project.rootLevel.blocks.find(block => block.blockType === 'note')!;
+		const original = store.projectTransactions.capture();
 		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }]);
 		store.set('editorConfigSchemaContributions', {});
 		expect(state.globalEditorDirectives.mode).toBe('view');
 		expect(state.editorMode).toBe('view');
-		events.dispatch('undo');
+		const edited = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
 		expect(state.globalEditorDirectives.mode).toBe('edit');
 		expect(state.editorMode).toBe('view');
 		events.dispatch('enterEditMode');
-		events.dispatch('redo');
+		store.projectTransactions.restore(edited);
 		expect(state.globalEditorDirectives.mode).toBe('view');
 		expect(state.editorMode).toBe('edit');
 	});

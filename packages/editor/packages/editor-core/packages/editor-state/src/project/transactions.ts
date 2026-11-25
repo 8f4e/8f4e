@@ -50,11 +50,9 @@ export class ProjectEditPlanError extends Error {
 	}
 }
 
-/** Internal mutation service; the plugin-facing contract exposes only live edits. */
+/** Internal mutation service; replacing the project remains a core lifecycle operation. */
 export interface ProjectTransactionService extends ProjectTransactions {
 	load(project: ProjectObjectModel): void;
-	capture(): EditorProjectSnapshot;
-	restore(snapshot: EditorProjectSnapshot): void;
 }
 
 interface SourceBefore {

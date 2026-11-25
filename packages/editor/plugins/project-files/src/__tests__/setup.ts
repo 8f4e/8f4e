@@ -1,4 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState from '@8f4e/editor-state';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -47,7 +48,7 @@ export function setup({
 		body: { appendChild: vi.fn() },
 	};
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
-	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -55,13 +56,16 @@ export function setup({
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
-	});
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup(context);
 	const disposePlugin = () => {
 		pluginCleanup?.();
 		pluginCleanup = undefined;
 	};
 	cleanups.push(() => {
 		disposePlugin();
+		disposeHistory();
 		store.dispose();
 	});
 	events.dispatch('loadProject', { project: parseProjectSource(source) });

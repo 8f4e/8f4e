@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -10,7 +11,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
-	const disposePlugin = plugin.setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -18,7 +19,9 @@ export function setupPlugin(plugin: EditorPlugin) {
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
-	});
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	const disposePlugin = plugin.setup(context);
 	return {
 		store,
 		state: store.getState(),
@@ -26,6 +29,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 		disposePlugin,
 		dispose: () => {
 			disposePlugin();
+			disposeHistory();
 			store.dispose();
 		},
 	};

@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import type { EditorPluginContext } from '@8f4e/editor-core';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
@@ -44,8 +45,9 @@ export function setup(plugins: readonly LazyEditorPlugin[], initialSource?: stri
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
+	const disposeHistory = undoRedoPlugin.setup(context);
 	const dispose = createLazyPluginLoaderPlugin(plugins).setup(context);
-	cleanups.push(dispose);
+	cleanups.push(disposeHistory, dispose);
 	const state = store.getState();
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: 10000, y: 10000 });

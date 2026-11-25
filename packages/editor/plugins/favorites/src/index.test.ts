@@ -1,4 +1,5 @@
 import { parseProjectSource } from '@8f4e/compiler';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -15,23 +16,24 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 		callbacks: {},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	let pluginCleanup = installed
-		? favoritesPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: undefined;
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposeHistory = undoRedoPlugin.setup(context);
+	let pluginCleanup = installed ? favoritesPlugin.setup(context) : undefined;
 	const disposePlugin = () => {
 		pluginCleanup?.();
 		pluginCleanup = undefined;
 	};
 	cleanups.push(() => {
 		disposePlugin();
+		disposeHistory();
 		store.dispose();
 	});
 	const inEntry = /^(module|group)\s/.test(code[0]);
@@ -108,19 +110,15 @@ describe('favorites plugin', () => {
 		await vi.advanceTimersByTimeAsync(1000);
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		await vi.advanceTimersByTimeAsync(1000);
-		expect(test.state.historyStack).toHaveLength(2);
-		expect(
-			test.state.historyStack[0].rootLevel.blocks.find(block => block.creationIndex === test.block.creationIndex)!.code
-		).not.toContain('; @favorite');
-		expect(
-			test.state.historyStack[1].rootLevel.blocks.find(block => block.creationIndex === test.block.creationIndex)!.code
-		).toContain('; @favorite');
 		test.events.dispatch('undo');
 		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).toContain('; @favorite');
 		test.events.dispatch('undo');
 		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).not.toContain(
 			'; @favorite'
 		);
+		const revision = test.state.projectChange.revision;
+		test.events.dispatch('undo');
+		expect(test.state.projectChange.revision).toBe(revision);
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {

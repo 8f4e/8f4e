@@ -8,6 +8,7 @@ import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loade
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
@@ -51,6 +52,7 @@ export async function mountGalleryEditor(
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			undoRedoPlugin,
 			homePlugin,
 			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
