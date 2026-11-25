@@ -5,7 +5,7 @@ import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { contextMenuPlugin } from '@8f4e/editor-plugin-context-menu';
 import { logBlockInfoPlugin } from '@8f4e/editor-plugin-log-block-info';
 import { toggleDisabledPlugin } from '@8f4e/editor-plugin-toggle-disabled';
-import { Engine } from 'glugglugglug';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
 
 test('composes enable/disable and console inspection with the block menu', async () => {
@@ -15,7 +15,7 @@ test('composes enable/disable and console inspection with the block menu', async
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
-		renderer: new Engine(canvas),
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: parseProjectSource(
 			'8f4e/v1\nentry main\nmodule target\n; @pos 12 10\nint value 1\nmoduleEnd\nentryEnd'
 		),
@@ -58,7 +58,7 @@ test('composes enable/disable and console inspection with the block menu', async
 			'Log module info to console',
 		]);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('block-menu-actions');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/block-menu-actions.viewport.snap');
 		activate('Disable module');
 		expect(block.disabled).toBe(true);
 		await openMenu('Enable module');
