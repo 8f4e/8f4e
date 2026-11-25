@@ -1,8 +1,18 @@
 # Undo and Redo Plugin
 
-Install `undoRedoPlugin` from `@8f4e/editor-plugin-undo-redo` to enable project history. The default, gallery and landing
+Use `createUndoRedoPlugin()` from `@8f4e/editor-plugin-undo-redo` to enable project history. The default, gallery and landing
 editor compositions install it before initial source loading; core editors can omit it. The plugin owns its stacks and
 debounce timer and depends on core's synchronous project transaction service, not the renderer or keyboard input.
+
+For a custom composition, add the returned `plugin` to core's plugin list. To expose revision-checked history commands
+to the host, call `createHandle(editor.editing)` on the same factory result after mounting:
+
+```ts
+const undoRedo = createUndoRedoPlugin();
+// Include undoRedo.plugin in the editor's plugin list.
+const history = undoRedo.createHandle(editor.editing);
+history.undo({ expectedRevision: editor.editing.getRevision() });
+```
 
 Undo and redo retain detached authored editor source snapshots, including block boundaries, identities, entries, and last
 valid grid positions even during incomplete edits. These are not compiler/file projections; the managed root environment,
@@ -50,8 +60,9 @@ the project transaction service for a live mutation batch with checkpoint histor
 to commit pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification.
 The generated environment is read-only at a fixed origin, so attempted source edits do not commit pending typing.
 API edits preserve live block identity and work independently of whether the history plugin is installed.
-`editor.editing.getHistoryAvailability()` queries the plugin for available undo and redo actions without committing pending
-edits. Without the plugin it returns `false` for both actions, and revision-checked undo/redo commands are no-ops.
+`history.getAvailability()` queries available undo and redo actions without committing pending edits.
+`history.undo({ expectedRevision })` and `history.redo({ expectedRevision })` use core's generic edit guard and
+return the new or unchanged editing revision. Without the plugin there is no history handle.
 
 Project loading translates the compiler/file projection into an editor source tree. History restores its own editor
 snapshot directly through the same project transaction service. It captures the current view before same-project

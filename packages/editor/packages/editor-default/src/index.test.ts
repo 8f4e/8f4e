@@ -9,6 +9,7 @@ import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
+import { createUndoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { createWasmExportPlugin } from '@8f4e/editor-plugin-wasm-export';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountDefaultEditor } from './index';
@@ -20,6 +21,12 @@ const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-undo-redo', () => ({
+	createUndoRedoPlugin: vi.fn(() => ({
+		plugin: { id: 'undo-redo', setup: vi.fn() },
+		createHandle: vi.fn(() => ({ getAvailability: vi.fn(), undo: vi.fn(), redo: vi.fn() })),
+	})),
+}));
 vi.mock('glugglugglug', () => ({ Engine: class {} }));
 vi.mock('@8f4e/editor-plugin-elastic-viewport', { spy: true });
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
@@ -74,11 +81,16 @@ describe('default editor plugins', () => {
 
 	it('composes the standard plugins and injects the mounted canvas and render callback', async () => {
 		const renderFrame = vi.fn();
-		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame } as Editor);
+		const editing = { getRevision: vi.fn(), assertCanEdit: vi.fn(), applyEdits: vi.fn() };
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn(), renderFrame, editing } as Editor);
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const editor = await mountDefaultEditor(canvas, { storage: {} as Storage, captureWheel: false });
 		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBeUndefined();
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
+		const undoRedo = vi.mocked(createUndoRedoPlugin).mock.results[0].value;
+		expect(initialPlugins[1]).toBe(undoRedo.plugin);
+		expect(undoRedo.createHandle).toHaveBeenCalledWith(editing);
+		expect(editor.history).toBe(vi.mocked(undoRedo.createHandle).mock.results[0].value);
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
 			'undo-redo',
@@ -266,6 +278,9 @@ describe('default editor plugins', () => {
 			plugins: [],
 		});
 		expect(vi.mocked(initEditor).mock.calls.at(-1)?.[1].plugins).toEqual([expect.objectContaining({ id: 'compiler' })]);
+		expect(editor.history).toBeUndefined();
+		expect(withoutPlugins.history).toBeUndefined();
+		expect(createUndoRedoPlugin).not.toHaveBeenCalled();
 		expect(createSessionPersistencePlugin).not.toHaveBeenCalled();
 		expect(createProjectUrlLoaderPlugin).not.toHaveBeenCalled();
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();

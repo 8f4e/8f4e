@@ -23,7 +23,6 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-undo-redo": "*",
     "@8f4e/config": "*",
     "vitest": "4.1.12",
     "@types/node": "24.13.2",

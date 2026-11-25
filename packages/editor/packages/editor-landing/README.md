@@ -37,6 +37,7 @@ rendering controls, compiler diagnostics, and disposal follow the
 [gallery editor's lifecycle](../editor-gallery/README.md).
 
 The compiler, undo/redo history, URL loader, home navigation, the dotted canvas background, block backgrounds, and code rendering load eagerly.
+The mount exposes the undo/redo plugin's command handle as `editor.history`.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` even without a context menu.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
 viewport's origin and cell dimensions, plus the active palette.

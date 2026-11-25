@@ -1,5 +1,4 @@
 import { EventEmitter } from 'node:events';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -26,11 +25,10 @@ function setup(installed = true) {
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
-	const disposeHistory = undoRedoPlugin.setup(context);
 	const disposePlugin = installed ? blockAuthoringPlugin.setup(context) : () => {};
 	events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });
 	events.dispatch('enterEditMode');
-	cleanups.push(store.dispose, disposeHistory, disposePlugin);
+	cleanups.push(store.dispose, disposePlugin);
 	const state = store.getState();
 	const openMenu = async (x = 700, y = 400) => {
 		events.dispatch('contextmenu', { x, y });
@@ -73,7 +71,7 @@ it('allows duplicate generated names without numbering them', () => {
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
 });
 
-it('deletes the clicked block instead of the selected block and supports undo/redo', async () => {
+it('deletes the clicked block instead of the selected block', async () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {
 		project: {
@@ -99,10 +97,6 @@ it('deletes the clicked block instead of the selected block and supports undo/re
 	expect(test.state.project.selectedCodeBlock).toBe(other);
 	expect(test.state.projectChange.revision).toBe(revision + 1);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
-	test.events.dispatch('undo');
-	expect(blocks().some(block => block.name === 'target')).toBe(true);
-	test.events.dispatch('redo');
-	expect(blocks().some(block => block.name === 'target')).toBe(false);
 });
 
 it('hides authoring menu items and ignores commands in view mode', async () => {

@@ -1,15 +1,17 @@
-import type { EditorPlugin, EditorPluginContext } from '@8f4e/editor-core';
-import type { EditorHistoryAvailability, EditorProjectSnapshot, ProjectChange } from '@8f4e/editor-state-types';
+import type { EditorEditingHandle, EditorPlugin, EditorPluginContext } from '@8f4e/editor-core';
+import { sameProjectSnapshot } from '@8f4e/editor-state';
+import type { EditorProjectSnapshot, ProjectChange } from '@8f4e/editor-state-types';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
 
-/** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
-function sameSource(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
-	return JSON.stringify(a.rootLevel) === JSON.stringify(b.rootLevel);
+export interface EditorHistoryHandle {
+	getAvailability(): { canUndo: boolean; canRedo: boolean };
+	undo(request: { expectedRevision: string }): { revision: string };
+	redo(request: { expectedRevision: string }): { revision: string };
 }
 
-function setup({ store, events }: EditorPluginContext): () => void {
+function setup({ store, events }: EditorPluginContext) {
 	const { projectTransactions } = store;
 	const undoStack: EditorProjectSnapshot[] = [];
 	const redoStack: EditorProjectSnapshot[] = [];
@@ -34,7 +36,7 @@ function setup({ store, events }: EditorPluginContext): () => void {
 		if (!pending) return;
 
 		const current = projectTransactions.capture();
-		if (sameSource(current, present)) return;
+		if (sameProjectSnapshot(current, present)) return;
 		pushHistory(present);
 		present = current;
 	}
@@ -78,18 +80,19 @@ function setup({ store, events }: EditorPluginContext): () => void {
 		projectTransactions.restore(nextState);
 	}
 
-	function resolveHistoryAvailability(availability: EditorHistoryAvailability) {
-		availability.canUndo = undoStack.length > 0 || (editPending && !sameSource(projectTransactions.capture(), present));
-		availability.canRedo = redoStack.length > 0;
+	function getAvailability() {
+		return {
+			canUndo: undoStack.length > 0 || (editPending && !sameProjectSnapshot(projectTransactions.capture(), present)),
+			canRedo: redoStack.length > 0,
+		};
 	}
 
 	store.subscribe('projectChange', onProjectChange);
 	events.on('undo', undo);
 	events.on('redo', redo);
 	events.on('beforeProjectEdit', commitPendingEdit);
-	events.on('resolveHistoryAvailability', resolveHistoryAvailability);
 
-	return () => {
+	function dispose() {
 		cancelPendingEdit();
 		undoStack.length = 0;
 		redoStack.length = 0;
@@ -97,9 +100,47 @@ function setup({ store, events }: EditorPluginContext): () => void {
 		events.off('undo', undo);
 		events.off('redo', redo);
 		events.off('beforeProjectEdit', commitPendingEdit);
-		events.off('resolveHistoryAvailability', resolveHistoryAvailability);
-	};
+	}
+	return { undo, redo, getAvailability, dispose };
 }
 
-/** Retain authored project history independently for each editor installation. */
-export const undoRedoPlugin: EditorPlugin = { id: 'undo-redo', setup };
+/** Create one history installation and its optional public command handle. */
+export function createUndoRedoPlugin() {
+	let installed: ReturnType<typeof setup> | undefined;
+	const plugin: EditorPlugin = {
+		id: 'undo-redo',
+		setup(context) {
+			if (installed) throw new Error('History plugin already installed');
+			const history = setup(context);
+			installed = history;
+			return () => {
+				if (installed !== history) return;
+				history.dispose();
+				installed = undefined;
+			};
+		},
+	};
+	function createHandle(editing: EditorEditingHandle): EditorHistoryHandle {
+		const history = installed;
+		if (!history) throw new Error('History plugin is not installed');
+		const assertInstalled = () => {
+			if (installed !== history) throw new Error('History plugin has been disposed');
+		};
+		const run = (action: 'undo' | 'redo', expectedRevision: string) => {
+			editing.assertCanEdit(expectedRevision);
+			assertInstalled();
+			history[action]();
+			return { revision: editing.getRevision() };
+		};
+		return {
+			getAvailability() {
+				editing.getRevision();
+				assertInstalled();
+				return history.getAvailability();
+			},
+			undo: ({ expectedRevision }) => run('undo', expectedRevision),
+			redo: ({ expectedRevision }) => run('redo', expectedRevision),
+		};
+	}
+	return { plugin, createHandle };
+}

@@ -13,7 +13,7 @@ import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { undoRedoPlugin } from './index';
+import { createUndoRedoPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -30,7 +30,8 @@ function setup(
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const compilationChanged = vi.fn();
 	const store = initState(events, { callbacks: {} });
-	const disposeHistory = undoRedoPlugin.setup({
+	const undoRedo = createUndoRedoPlugin();
+	const disposeHistory = undoRedo.plugin.setup({
 		store,
 		events,
 		menus: store.menus,
@@ -58,8 +59,9 @@ function setup(
 		store,
 		events,
 		editing: editing.handle,
+		history: undoRedo.createHandle(editing.handle),
 		navigation: editing.navigation,
-		dispose: editing.dispose,
+		disposeHistory,
 		compilationChanged,
 	};
 }
@@ -83,9 +85,9 @@ function setupGroup(name: string) {
 	return { ...test, group: test.state.project.rootLevel.blocks.find(block => block.name === name)! };
 }
 
-describe('undo and redo through the public editor editing handle', () => {
+describe('undo and redo through the plugin history handle', () => {
 	it("restores a draft module's historical execution entry across undo and redo", () => {
-		const { editing, state } = setup({
+		const { editing, history, state } = setup({
 			...EMPTY_DEFAULT_PROJECT,
 			entries: ['main', 'alternate'],
 			execution: [{ type: 'module', id: 0, entry: 'alternate', code: ['module test', 'moduleEnd'] }],
@@ -101,18 +103,18 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(serializeToProject(state).unknown[0]).not.toHaveProperty('entry');
 		update(['module test', 'moduleEnd'], 'main');
 		expect(current().entry).toBe('main');
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(current()).toMatchObject({ blockType: 'unknown', entry: 'alternate' });
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(current().entry).toBe('main');
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		update(['module test', 'moduleEnd']);
 		expect(current()).toMatchObject({ blockType: 'module', entry: 'alternate' });
 		expect(serializeToProject(state).execution[0].entry).toBe('alternate');
 	});
 
 	it('restores the historical retained grid position of incomplete position directives', () => {
-		const { editing, state } = setup({
+		const { editing, history, state } = setup({
 			...EMPTY_DEFAULT_PROJECT,
 			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', '; @pos 10 20', 'moduleEnd'] }],
 		});
@@ -126,16 +128,16 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
 		update('; @pos 30 40');
 		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(current()).toMatchObject({ code: ['module test', '; @pos incomplete', 'moduleEnd'], gridX: 10, gridY: 20 });
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
 	});
 
 	it('preserves separately editable root project-scope blocks and their identities across history', () => {
-		const { editing, state } = setup();
+		const { editing, history, state } = setup();
 		const scope = () => state.project.rootLevel.blocks.filter(block => block.isProjectScope);
 		const result = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
@@ -151,21 +153,21 @@ describe('undo and redo through the public editor editing handle', () => {
 			expectedRevision: editing.getRevision(),
 			edits: [{ type: 'update', blockId: firstId, code: ['pass changed'] }],
 		});
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(scope().map(block => [getEditorBlockId(block), block.code])).toEqual([
 			[firstId, ['pass env']],
 			[secondId, ['pass other']],
 		]);
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(scope()).toHaveLength(0);
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(scope().map(block => block.code)).toEqual([['pass changed'], ['pass other']]);
 	});
 
 	it('ignores final root env declarations while applying ordinary edits in the same API batch', () => {
-		const { editing, state } = setup();
+		const { editing, history, state } = setup();
 		const block = state.project.rootLevel.blocks.find(block => block.name === 'original')!;
 		const blockId = getEditorBlockId(block);
 		const envCode = ['constants env', 'const GENERATED 42', 'constantsEnd'];
@@ -192,9 +194,9 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(ordinary.createdBlockIds).toHaveLength(1);
 		expect(block.code).toEqual(['module changed', 'moduleEnd']);
 		expect(serializeToProject(state).constants).toHaveLength(1);
-		editing.undo({ expectedRevision: ordinary.revision });
+		history.undo({ expectedRevision: ordinary.revision });
 		expect(serializeToProject(state).notes).toHaveLength(0);
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(serializeToProject(state).notes).toHaveLength(1);
 		expect(serializeToProject(state).constants).toHaveLength(1);
 	});
@@ -244,7 +246,7 @@ describe('undo and redo through the public editor editing handle', () => {
 				module(7, 'rootB'),
 			],
 		};
-		const { editing, events, state } = setup(project);
+		const { editing, history, events, state } = setup(project);
 		const before = serializeToProject(state);
 		expect(before.execution).toEqual(project.execution);
 		const rootB = state.project.rootLevel.blocks.find(block => block.name === 'rootB')!;
@@ -254,9 +256,9 @@ describe('undo and redo through the public editor editing handle', () => {
 		});
 		const edited = serializeToProject(state);
 		expect(edited.execution.map(block => block.code[0])).toEqual(['module rootA', 'group synth', 'module rootB']);
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(serializeToProject(state)).toEqual(before);
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(serializeToProject(state)).toEqual(edited);
 		events.dispatch('loadProject', { project: edited });
 		expect(serializeToProject(state)).toEqual(edited);
@@ -280,7 +282,7 @@ describe('undo and redo through the public editor editing handle', () => {
 				},
 			],
 		};
-		const { state, events, editing } = setup(project);
+		const { state, events, editing, history } = setup(project);
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'worker')!;
 		const work = group.childLevel!.blocks[0];
 		const check = () => {
@@ -295,16 +297,16 @@ describe('undo and redo through the public editor editing handle', () => {
 			edits: [{ type: 'update', blockId: getEditorBlockId(work), code: ['module renamed', 'moduleEnd'] }],
 		});
 		check();
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		check();
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		const saved = check();
 		events.dispatch('loadProject', { project: saved });
 		check();
 	});
 
 	it('uses state reads and one undo step for a coordinated edit batch', () => {
-		const { editing, state, events, compilationChanged } = setup();
+		const { editing, history, state, events, compilationChanged } = setup();
 		const target = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 		const targetId = getEditorBlockId(target);
 		const load = vi.fn();
@@ -334,17 +336,17 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(state.viewport).toMatchObject({ x: 124, y: 256 });
 		expect(compilationChanged).toHaveBeenCalled();
 		expect(load).not.toHaveBeenCalled();
-		const undo = editing.undo({ expectedRevision: result.revision });
+		const undo = history.undo({ expectedRevision: result.revision });
 		expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 1');
 		expect(state.project.activeLevel.blocks.filter(block => block.blockType === 'note')).toHaveLength(0);
-		editing.redo({ expectedRevision: undo.revision });
+		history.redo({ expectedRevision: undo.revision });
 		expect(serializeToProject(state)).toEqual(changedProject);
 	});
 
 	it.each(['disabled', 'customDisabled'])(
 		'keeps @%s flags consistent through public edits and skips unchanged batches',
 		directive => {
-			const { editing, state, store, events, compilationChanged } = setup();
+			const { editing, history, state, store, events, compilationChanged } = setup();
 			const onCustomDirective = vi.fn();
 			cleanups.push(
 				store.directives.register({
@@ -405,15 +407,15 @@ describe('undo and redo through the public editor editing handle', () => {
 				});
 				expectCompilerInput(code, disabled);
 			}
-			editing.undo({ expectedRevision: editing.getRevision() });
+			history.undo({ expectedRevision: editing.getRevision() });
 			expectCompilerInput(enabledCode, false);
-			editing.redo({ expectedRevision: editing.getRevision() });
+			history.redo({ expectedRevision: editing.getRevision() });
 			expectCompilerInput(disabledCode, true);
 		}
 	);
 
 	it('updates valid positions and retains the last position when @pos is removed, including undo and redo', () => {
-		const { editing, state } = setup();
+		const { editing, history, state } = setup();
 		const code = ['module placed', '; @pos -12 34', 'moduleEnd'];
 		const inserted = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
@@ -434,14 +436,14 @@ describe('undo and redo through the public editor editing handle', () => {
 			edits: [{ type: 'update', blockId: inserted.createdBlockIds[0], code: withoutPos }],
 		});
 		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
-		const undone = editing.undo({ expectedRevision: removed.revision });
+		const undone = history.undo({ expectedRevision: removed.revision });
 		expect(findPlaced()).toMatchObject({ code: updatedCode, gridX: 56, gridY: -78 });
-		editing.redo({ expectedRevision: undone.revision });
+		history.redo({ expectedRevision: undone.revision });
 		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
 	});
 
 	it('applies a mixed edit plan as one checkpoint without replacing existing block handles', () => {
-		const { editing, state, compilationChanged, store } = setup({
+		const { editing, history, state, compilationChanged, store } = setup({
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			execution: [
 				{ type: 'module', id: 0, entry: 'main', code: ['module original', 'moduleEnd'] },
@@ -477,7 +479,7 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(compilationChanged).toHaveBeenCalledOnce();
 		expect(changes).toEqual([serializeToProject(state)]);
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(serializeToProject(state)).toEqual(prior);
 	});
 
@@ -500,7 +502,7 @@ describe('undo and redo through the public editor editing handle', () => {
 				entries: ['local', 'localEmpty'],
 			},
 		];
-		const { editing, navigation, events, state, store } = setup(project);
+		const { editing, history, navigation, events, state, store } = setup(project);
 		Object.assign(state.viewport, { x: 64, y: 96 });
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'voice')!;
 		store.set('project.selectedCodeBlock', group);
@@ -526,11 +528,11 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(state.project.selectedCodeBlock?.name).toBe('updatedInner');
 		expect(state.project.selectedCodeBlock).toBe(inner);
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(state.project.activeLevel.path).toBe('voice');
 		expect(state.project.selectedCodeBlock?.name).toBe('inner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(state.project.selectedCodeBlock?.name).toBe('updatedInner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		navigation.goToRoot();
@@ -553,7 +555,7 @@ describe('undo and redo through the public editor editing handle', () => {
 	});
 
 	it('keeps independent views for duplicate sibling groups copied through the editor', () => {
-		const { editing, navigation, state, store, group: original } = setupGroup('voice');
+		const { editing, history, navigation, state, store, group: original } = setupGroup('voice');
 		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
 		const owner = (id: number) => state.project.rootLevel.blocks.find(block => block.creationIndex === id)!;
 		expect(original.childLevel!.path).toBe(copy.childLevel!.path);
@@ -582,9 +584,9 @@ describe('undo and redo through the public editor editing handle', () => {
 			expect(originalLevel.blocks[0].name).toBe('sample');
 			expect(originalLevel.viewport).toMatchObject({ x: 64, y: 96 });
 		};
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expectRestoredCopy('sample');
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expectRestoredCopy('changed');
 		navigation.goToRoot();
 		expect(state.project.selectedCodeBlock).toBe(owner(copy.creationIndex));
@@ -593,12 +595,12 @@ describe('undo and redo through the public editor editing handle', () => {
 		expect(state.project.selectedCodeBlock).toBe(owner(original.creationIndex).childLevel!.blocks[0]);
 		navigation.goToRoot();
 		navigation.openGroup(getEditorBlockId(owner(copy.creationIndex)));
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expectRestoredCopy('sample');
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 		expect(state.project.rootLevel.blocks.some(block => block.creationIndex === copy.creationIndex)).toBe(false);
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 		const recreatedCopy = owner(copy.creationIndex).childLevel!;
 		expect(recreatedCopy.viewport).toBeUndefined();
@@ -606,7 +608,7 @@ describe('undo and redo through the public editor editing handle', () => {
 	});
 
 	it('keeps the same owning group view when a rename is undone and redone', () => {
-		const { editing, navigation, state, store, group } = setupGroup('voices');
+		const { editing, history, navigation, state, store, group } = setupGroup('voices');
 		store.set('project.selectedCodeBlock', group);
 		applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group ensemble', 'groupEnd'] }], {
 			history: 'checkpoint',
@@ -623,16 +625,16 @@ describe('undo and redo through the public editor editing handle', () => {
 			expect(state.project.selectedCodeBlock).toBe(owner.childLevel!.blocks[0]);
 			expect(state.viewport).toMatchObject({ x: 123, y: 456 });
 		};
-		editing.undo({ expectedRevision: editing.getRevision() });
+		history.undo({ expectedRevision: editing.getRevision() });
 		expectRenamedView('voices');
-		editing.redo({ expectedRevision: editing.getRevision() });
+		history.redo({ expectedRevision: editing.getRevision() });
 		expectRenamedView('ensemble');
 	});
 
 	it('keeps pending source edits and an API batch as separate undo steps without delayed duplicates', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store } = setup();
+			const { editing, history, state, store } = setup();
 			const block = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 			store.set('project.selectedCodeBlock', block);
 			block.cursor.row = 1;
@@ -651,15 +653,15 @@ describe('undo and redo through the public editor editing handle', () => {
 				],
 			});
 			await vi.advanceTimersByTimeAsync(2000);
-			editing.undo({ expectedRevision: editing.getRevision() });
+			history.undo({ expectedRevision: editing.getRevision() });
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 12');
-			editing.undo({ expectedRevision: editing.getRevision() });
+			history.undo({ expectedRevision: editing.getRevision() });
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 1');
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: true });
-			editing.redo({ expectedRevision: editing.getRevision() });
-			editing.redo({ expectedRevision: editing.getRevision() });
+			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: true });
+			history.redo({ expectedRevision: editing.getRevision() });
+			history.redo({ expectedRevision: editing.getRevision() });
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 3');
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: true, canRedo: false });
+			expect(history.getAvailability()).toEqual({ canUndo: true, canRedo: false });
 		} finally {
 			vi.useRealTimers();
 		}
@@ -668,7 +670,7 @@ describe('undo and redo through the public editor editing handle', () => {
 	it('keeps pending typing separate from ignored env edits and preserves current generated source on restore', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store, events } = setup();
+			const { editing, history, state, store, events } = setup();
 			const authored = () => state.project.rootLevel.blocks.find(block => block.name === 'original')!;
 			const environment = () => state.project.rootLevel.blocks.find(block => block.name === 'env')!;
 			const beforeProjectEdit = vi.fn();
@@ -691,12 +693,12 @@ describe('undo and redo through the public editor editing handle', () => {
 			expect(beforeProjectEdit).not.toHaveBeenCalled();
 			// The original typing timer was not canceled or postponed by generated updates or ignored edits.
 			await vi.advanceTimersByTimeAsync(500);
-			editing.undo({ expectedRevision: editing.getRevision() });
+			history.undo({ expectedRevision: editing.getRevision() });
 			expect(authored().code).toContain('int value 1');
 			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 1');
 			store.set('envConstantContributions.test', ['const GENERATED 2']);
-			editing.redo({ expectedRevision: editing.getRevision() });
+			history.redo({ expectedRevision: editing.getRevision() });
 			expect(authored().code).toContain('int value 12');
 			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 2');
@@ -705,40 +707,44 @@ describe('undo and redo through the public editor editing handle', () => {
 		}
 	});
 
-	it('reports read-only and disposed handles, and does not retain history from a replaced project', () => {
-		const { editing, store, state, events, dispose } = setup();
+	it('does not retain history from a replaced project', () => {
+		const { editing, history, state, events } = setup();
 		const revision = editing.getRevision();
-		store.set('editorMode', 'view');
-		expect(() => editing.undo({ expectedRevision: revision })).toThrow('view mode');
-		store.set('editorMode', 'edit');
 		const target = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 		editing.applyEdits({
 			expectedRevision: revision,
 			edits: [{ type: 'delete', blockId: getEditorBlockId(target) }],
 		});
 		events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });
-		expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
-		dispose();
-		expect(() => editing.getRevision()).toThrow('disposed');
+		expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
+	});
+
+	it('invalidates the history handle when its plugin is disposed', () => {
+		const { editing, history, disposeHistory } = setup();
+		const revision = editing.getRevision();
+		disposeHistory();
+		expect(() => history.getAvailability()).toThrow('History plugin has been disposed');
+		expect(() => history.undo({ expectedRevision: revision })).toThrow('History plugin has been disposed');
+		expect(editing.getRevision()).toBe(revision);
 	});
 
 	it('reports pending undo availability without committing the typing debounce or editing the project', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, state, store } = setup();
+			const { editing, history, state, store } = setup();
 			const block = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 			const original = [...block.code];
 			const changed = ['module original', 'int value 2', 'moduleEnd'];
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
+			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: changed }]);
 			const revision = editing.getRevision();
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: true, canRedo: false });
+			expect(history.getAvailability()).toEqual({ canUndo: true, canRedo: false });
 			expect(editing.getRevision()).toBe(revision);
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: original }]);
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
+			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
 			await vi.advanceTimersByTimeAsync(1000);
 			const restoredRevision = editing.getRevision();
-			expect(editing.undo({ expectedRevision: restoredRevision })).toEqual({ revision: restoredRevision });
+			expect(history.undo({ expectedRevision: restoredRevision })).toEqual({ revision: restoredRevision });
 		} finally {
 			vi.useRealTimers();
 		}

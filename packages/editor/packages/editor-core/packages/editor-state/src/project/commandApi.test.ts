@@ -51,11 +51,7 @@ describe('public editor operations', () => {
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'checkpoint' });
-		// Core publishes the checkpoint even without a history plugin; commands have no history to restore.
-		expect(test.editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
-		expect(test.editing.undo({ expectedRevision: result.revision })).toEqual({ revision: result.revision });
-		expect(test.editing.redo({ expectedRevision: result.revision })).toEqual({ revision: result.revision });
-		expect(getProjectModules(serializeToProject(test.state))[0].code).toContain('int value 2');
+		expect(() => test.editing.assertCanEdit(result.revision)).not.toThrow();
 	});
 
 	it('skips unchanged API edits before notifying history or publishing a change', () => {
@@ -80,7 +76,6 @@ describe('public editor operations', () => {
 			const capture = vi.spyOn(store.projectTransactions, 'capture');
 			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module target', 'int value 2', 'moduleEnd'] }]);
 			const revision = editing.getRevision();
-			expect(editing.getHistoryAvailability()).toEqual({ canUndo: false, canRedo: false });
 			expect(vi.getTimerCount()).toBe(0);
 			await vi.advanceTimersByTimeAsync(1000);
 			expect(capture).not.toHaveBeenCalled();
@@ -89,5 +84,18 @@ describe('public editor operations', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+
+	it('validates external edits against revision, mode and editor lifetime', () => {
+		const { editing, store, events } = setup();
+		const revision = editing.getRevision();
+		expect(() => editing.assertCanEdit('stale')).toThrow(expect.objectContaining({ code: 'stale_revision', revision }));
+		store.set('editorMode', 'view');
+		expect(() => editing.assertCanEdit(revision)).toThrow(expect.objectContaining({ code: 'read_only', revision }));
+		store.set('editorMode', 'edit');
+		expect(() => editing.assertCanEdit(revision)).not.toThrow();
+		events.dispatch('dispose');
+		expect(() => editing.getRevision()).toThrow(expect.objectContaining({ code: 'disposed' }));
+		expect(() => editing.assertCanEdit(revision)).toThrow(expect.objectContaining({ code: 'disposed' }));
 	});
 });

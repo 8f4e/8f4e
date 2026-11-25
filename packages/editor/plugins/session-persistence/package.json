@@ -21,7 +21,6 @@
     "@8f4e/language-spec": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-undo-redo": "*",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",

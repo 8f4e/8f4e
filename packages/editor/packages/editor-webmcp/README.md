@@ -10,6 +10,7 @@ const editor = await mountDefaultEditor(canvas);
 const bridge = createEditorWebMcp({
 	document: canvas.ownerDocument,
 	editor,
+	history: editor.history,
 	getCompilerDiagnostics: editor.getCompilerDiagnostics,
 });
 await bridge.ready;
@@ -20,6 +21,9 @@ editor.dispose();
 ```
 
 The editor website installs the bridge for its editor. The example and compiler test galleries install it after the selected project loads, dispose it before switching projects, and create a new bridge for the replacement editor. The homepage's independent preview editors are not bridged.
+
+Hosts with a history plugin pass its command handle explicitly. Without a history handle, the bridge registers no
+undo or redo tools and project metadata reports both actions unavailable.
 
 ## Browser support and lifecycle
 
@@ -109,7 +113,7 @@ Group blocks can be moved, deleted, or have their source updated while retaining
 
 ## Public editor API
 
-Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. The editor exposes validated `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })` commands. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. Insert into a group with `groupBlockId` set to its owning block handle, or omit it to insert at the root. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The bridge resolves type/name selectors and the insertion owner within the current live project level; source paths in metadata remain name-based.
+Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. Core exposes validated `applyEdits({ expectedRevision, edits })` commands. The supplied history handle exposes `undo({ expectedRevision })`, `redo({ expectedRevision })`, and `getAvailability()`. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. Insert into a group with `groupBlockId` set to its owning block handle, or omit it to insert at the root. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The bridge resolves type/name selectors and the insertion owner within the current live project level; source paths in metadata remain name-based.
 
 `applyEdits` returns `{ revision, createdBlockIds }`. `undo` and `redo` return `{ revision }`.
 

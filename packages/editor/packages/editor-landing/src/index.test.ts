@@ -1,11 +1,18 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
+import { createUndoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { createViewportMouseInputPlugin } from '@8f4e/editor-plugin-viewport-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountLandingEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('@8f4e/editor-plugin-undo-redo', () => ({
+	createUndoRedoPlugin: vi.fn(() => ({
+		plugin: { id: 'undo-redo', setup: vi.fn() },
+		createHandle: vi.fn(() => ({ getAvailability: vi.fn(), undo: vi.fn(), redo: vi.fn() })),
+	})),
+}));
 vi.mock('glugglugglug', () => ({ Engine: class {} }));
 vi.mock('@8f4e/editor-plugin-viewport-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
@@ -90,11 +97,15 @@ it('starts without storage and waits for core initialization before resolving th
 		'keyboard-editing',
 	]);
 	expect(mounted).not.toHaveBeenCalled();
-	const coreEditor = { dispose: vi.fn() } as unknown as Editor;
+	const coreEditor = { dispose: vi.fn(), editing: {} } as unknown as Editor;
 	finish(coreEditor);
 	const editor = await mounting;
 	expect(editor).toBe(coreEditor);
 	expect(editor.getCompilerDiagnostics).toBe(compiler.getDiagnostics);
+	const undoRedo = vi.mocked(createUndoRedoPlugin).mock.results[0].value;
+	expect(options.plugins![1]).toBe(undoRedo.plugin);
+	expect(undoRedo.createHandle).toHaveBeenCalledWith(coreEditor.editing);
+	expect(editor.history).toBe(vi.mocked(undoRedo.createHandle).mock.results[0].value);
 	expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
 	editor.dispose();
 });

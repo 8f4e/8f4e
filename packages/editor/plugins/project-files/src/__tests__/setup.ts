@@ -1,5 +1,4 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState from '@8f4e/editor-state';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -57,7 +56,6 @@ export function setup({
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
-	const disposeHistory = undoRedoPlugin.setup(context);
 	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup(context);
 	const disposePlugin = () => {
 		pluginCleanup?.();
@@ -65,7 +63,6 @@ export function setup({
 	};
 	cleanups.push(() => {
 		disposePlugin();
-		disposeHistory();
 		store.dispose();
 	});
 	events.dispatch('loadProject', { project: parseProjectSource(source) });

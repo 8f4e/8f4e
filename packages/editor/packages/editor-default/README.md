@@ -97,7 +97,7 @@ If an initial URL request or parse fails, the default composition's URL loader l
 status, and installs an empty project so the user can continue authoring. Custom plugin compositions provide their own
 project loading and error handling.
 
-The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The `undo-redo` plugin is installed eagerly in the default feature set; custom plugin arrays must include it explicitly to enable history. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
+The default composition constructs `@8f4e/editor-plugin-compiler` first and passes its artifact getters and memory writer to dependent plugins and runtimes. Its plugin is installed first. The `undo-redo` plugin is installed eagerly in the default feature set and exposes its command handle as `editor.history`. Custom plugin arrays replace this feature set; hosts can install their own history plugin and create its handle explicitly. The feature set includes `@8f4e/editor-plugin-toggle-skip-execution` for the module menu's Skip/Unskip action,
 `@8f4e/editor-plugin-favorites` for favorite directives, editing, and navigation,
 `@8f4e/editor-plugin-home` for initial viewport placement and the Go @home menu action,
 `@8f4e/editor-plugin-grouping` for visual `@group` membership, dragging, copying, and group menus,
@@ -129,7 +129,8 @@ receives the canvas and owns the current file association, Open/Save/Export acti
 association on project replacement. WebAssembly export receives a document and a live compiler-byte getter.
 File handling stays outside core.
 When initializing core directly with these plugins, pass the same `defaultFont` to this factory and core so the
-font-preview plugin cycles from the rendered default.
+font-preview plugin cycles from the rendered default. Pass a `createUndoRedoPlugin()` result as `undoRedo` to retain
+access to its history handle after mounting.
 
 Compiler coordination, source loading/session restoration, home navigation, the dotted canvas
 background, block backgrounds, code rendering, and loading indicators are eager. Home navigation interprets `; @home` when a project or group is

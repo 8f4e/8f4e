@@ -27,7 +27,6 @@
     "@8f4e/project-preparser": "*"
   },
   "devDependencies": {
-    "@8f4e/editor-plugin-undo-redo": "*",
     "@8f4e/config": "*",
     "vitest": "4.1.12",
     "@8f4e/editor-state-testing": "*",

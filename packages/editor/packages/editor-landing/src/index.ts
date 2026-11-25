@@ -7,10 +7,13 @@ import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
+import { createUndoRedoPlugin, type EditorHistoryHandle } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 
-export type LandingEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
+export type LandingEditorInstance = Editor & {
+	getCompilerDiagnostics: () => CompilerDiagnostics | null;
+	history: EditorHistoryHandle;
+};
 
 export interface LandingEditorMountOptions {
 	/** Capture wheel gestures for viewport panning. Disable this in scrolling pages. */
@@ -36,10 +39,11 @@ export async function mountLandingEditor(
 	}: LandingEditorMountOptions = {}
 ): Promise<LandingEditorInstance> {
 	const compiler = createCompilerPlugin();
+	const undoRedo = createUndoRedoPlugin();
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
-			undoRedoPlugin,
+			undoRedo.plugin,
 			homePlugin,
 			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
@@ -64,5 +68,8 @@ export async function mountLandingEditor(
 		featureFlags: { ...featureFlags, contextMenu: false },
 		renderer: new Engine(canvas),
 	});
-	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+	return Object.assign(editor, {
+		getCompilerDiagnostics: compiler.getDiagnostics,
+		history: undoRedo.createHandle(editor.editing),
+	});
 }

@@ -9,13 +9,16 @@ import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indic
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
+import { createUndoRedoPlugin, type EditorHistoryHandle } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
 
-export type DefaultEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
+export type DefaultEditorInstance = Editor & {
+	getCompilerDiagnostics: () => CompilerDiagnostics | null;
+	history?: EditorHistoryHandle;
+};
 
 export function createDefaultEditorPlugins(options: {
 	canvas: HTMLCanvasElement;
@@ -33,11 +36,12 @@ export function createDefaultEditorPlugins(options: {
 	getCodeBuffer: () => Uint8Array;
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
+	undoRedo?: ReturnType<typeof createUndoRedoPlugin>;
 }): NonNullable<EditorOptions['plugins']> {
 	const motionPreference = options.canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
-		undoRedoPlugin,
+		(options.undoRedo ?? createUndoRedoPlugin()).plugin,
 		homePlugin,
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
@@ -102,6 +106,7 @@ export async function mountDefaultEditor(
 	}: DefaultEditorMountOptions = {}
 ): Promise<DefaultEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
+	const undoRedo = plugins === undefined ? createUndoRedoPlugin() : undefined;
 	let editor: Editor;
 	editor = await initEditor(canvas, {
 		plugins: [
@@ -123,6 +128,7 @@ export async function mountDefaultEditor(
 					getCodeBuffer: compiler.getCodeBuffer,
 					getAssertionSites: compiler.getAssertionSites,
 					sharedAudioContext,
+					undoRedo,
 				})),
 		],
 		defaultFont,
@@ -130,5 +136,8 @@ export async function mountDefaultEditor(
 		renderer: new Engine(canvas),
 	});
 
-	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
+	return Object.assign(editor, {
+		getCompilerDiagnostics: compiler.getDiagnostics,
+		history: undoRedo?.createHandle(editor.editing),
+	});
 }

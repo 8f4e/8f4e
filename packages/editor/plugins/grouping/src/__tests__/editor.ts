@@ -1,5 +1,4 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
@@ -46,7 +45,6 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
-	const disposeHistory = undoRedoPlugin.setup(context);
 	const disposePlugin = installed ? createGroupingPlugin({ writeClipboardText }).setup(context) : () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
@@ -88,7 +86,6 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		disposePlugin,
 		dispose: () => {
 			disposePlugin();
-			disposeHistory();
 			store.dispose();
 		},
 	};

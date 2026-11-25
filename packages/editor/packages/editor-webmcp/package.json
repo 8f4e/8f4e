@@ -16,6 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@8f4e/editor-core": "*",
+    "@8f4e/editor-plugin-undo-redo": "*",
     "@8f4e/language-spec": "*"
   },
   "devDependencies": {

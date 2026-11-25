@@ -44,7 +44,12 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 					.every(indicator => indicator.status === 'done')
 			).toBe(true)
 		);
-		const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
+		const bridge = createEditorWebMcp({
+			document,
+			editor,
+			history: editor.history,
+			getCompilerDiagnostics: editor.getCompilerDiagnostics,
+		});
 		cleanups.push(() => bridge.dispose());
 		await bridge.ready;
 		return editor;
@@ -299,7 +304,7 @@ test('patches one source span in the current group with persistence and one-step
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-patched')).toContain('float alpha 0.1');
 	const project = serializeToProject(editor.state);
-	const history = editor.editing.getHistoryAvailability();
+	const history = editor.history!.getAvailability();
 	for (const [oldText, error] of [
 		['float alpha 0.04', 'match_not_found'],
 		['push alpha', 'ambiguous_match'],
@@ -308,7 +313,7 @@ test('patches one source span in the current group with persistence and one-step
 			await call('patch_block', { type: 'module', name: 'oscillator', newText: 'float alpha 0.2', oldText })
 		).toMatchObject({ error: { code: error } });
 	expect(serializeToProject(editor.state)).toEqual(project);
-	expect(editor.editing.getHistoryAvailability()).toEqual(history);
+	expect(editor.history!.getAvailability()).toEqual(history);
 	await vi.waitFor(async () =>
 		expect(await call('get_compiler_diagnostics')).toMatchObject({
 			diagnostics: { status: 'ready', compilationErrors: [] },
@@ -367,7 +372,7 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	};
 	externalEdit(4);
 	const externalProject = serializeToProject(editor.state);
-	const externalHistory = editor.editing.getHistoryAvailability();
+	const externalHistory = editor.history!.getAvailability();
 	for (const [tool, args] of [
 		['update_block', { type: 'module', name: 'counter', code: source }],
 		['patch_block', { type: 'module', name: 'counter', oldText: 'int value 4', newText: 'int value 5' }],
@@ -387,7 +392,7 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	await call('get_project', { name: 'root' });
 	expect(await patchValue(4, 5)).toMatchObject({ error: { code: 'stale_revision' } });
 	expect(serializeToProject(editor.state)).toEqual(externalProject);
-	expect(editor.editing.getHistoryAvailability()).toEqual(externalHistory);
+	expect(editor.history!.getAvailability()).toEqual(externalHistory);
 	expect(await call('get_block', { type: 'module', name: 'counter' })).toContain('int value 4');
 	expect(await patchValue(4, 5)).toBe('Block patched.');
 	externalEdit(6);

@@ -1,4 +1,5 @@
 import { type Editor, type EditorCodeBlock, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
+import type { EditorHistoryHandle } from '@8f4e/editor-plugin-undo-redo';
 import { createSourceView, getCurrentGroupBlock, getCurrentProjectPath } from './source-view.js';
 import {
 	emptyInput,
@@ -44,7 +45,8 @@ const blockType = (block: EditorCodeBlock) =>
 	block.childLevel !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
 export function createEditorTools(
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>,
-	getCompilerDiagnostics?: () => unknown
+	getCompilerDiagnostics?: () => unknown,
+	history?: EditorHistoryHandle
 ): ToolDefinition[] {
 	const { editing, navigation, state } = editor;
 	let observedRevision: string | undefined;
@@ -123,7 +125,7 @@ export function createEditorTools(
 					revision: editing.getRevision(),
 					projectPath: getCurrentProjectPath(state),
 					editable: state.editorMode === 'edit',
-					...editing.getHistoryAvailability(),
+					...(history?.getAvailability() ?? { canUndo: false, canRedo: false }),
 				};
 			},
 		},
@@ -176,7 +178,7 @@ export function createEditorTools(
 			name: 'update_block',
 			title: 'Update an 8f4e block',
 			description:
-				'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires a prior source fetch and creates one undo step. External changes block writes until source is fetched again; consecutive bridge edits work without re-fetching.' +
+				'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires a prior source fetch. With history enabled, creates one undo step. External changes block writes until source is fetched again; consecutive bridge edits work without re-fetching.' +
 				helpHint,
 			inputSchema: objectInput({ type: blockTypeInput, name: { type: 'string' }, code }, ['type', 'name', 'code']),
 			readOnly: false,
@@ -194,7 +196,7 @@ export function createEditorTools(
 			name: 'patch_block',
 			title: 'Patch an 8f4e block',
 			description:
-				'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires a prior source fetch and creates one undo step. External changes require source to be fetched again; successful bridge edits advance the baseline automatically.' +
+				'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires a prior source fetch. With history enabled, creates one undo step. External changes require source to be fetched again; successful bridge edits advance the baseline automatically.' +
 				helpHint,
 			inputSchema: objectInput(
 				{
@@ -267,7 +269,7 @@ export function createEditorTools(
 			name: 'apply_edits',
 			title: 'Edit the open 8f4e project',
 			description:
-				'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.' +
+				'Apply one atomic batch within the currently expanded group or root, undoable when history is enabled. Insert/update code is a complete source string. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.' +
 				helpHint,
 			inputSchema: editsInput,
 			readOnly: false,
@@ -277,23 +279,26 @@ export function createEditorTools(
 				return applyEdits(revision, readEdits(args.edits), 'Edits applied.');
 			},
 		},
-		...(['undo', 'redo'] as const).map(action => ({
-			name: action,
-			title: `${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
-			description:
-				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again.` +
-				helpHint,
-			inputSchema: emptyInput,
-			readOnly: false,
-			run: () => {
-				const revision = editing.getRevision();
-				checkRevision(revision);
-				const result = editing[action]({ expectedRevision: revision });
-				observedRevision = result.revision;
-				return action === 'undo' ? 'Undo complete.' : 'Redo complete.';
-			},
-		})),
 	];
+	if (history)
+		tools.push(
+			...(['undo', 'redo'] as const).map(action => ({
+				name: action,
+				title: `${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
+				description:
+					`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again.` +
+					helpHint,
+				inputSchema: emptyInput,
+				readOnly: false,
+				run: () => {
+					const revision = editing.getRevision();
+					checkRevision(revision);
+					const result = history[action]({ expectedRevision: revision });
+					observedRevision = result.revision;
+					return action === 'undo' ? 'Undo complete.' : 'Redo complete.';
+				},
+			}))
+		);
 	if (getCompilerDiagnostics)
 		tools.push({
 			name: 'get_compiler_diagnostics',

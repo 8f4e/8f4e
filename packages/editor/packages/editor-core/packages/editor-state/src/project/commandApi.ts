@@ -82,12 +82,7 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 			assertAlive();
 			return revision();
 		},
-		getHistoryAvailability() {
-			assertAlive();
-			const availability = { canUndo: false, canRedo: false };
-			events.dispatch('resolveHistoryAvailability', availability);
-			return availability;
-		},
+		assertCanEdit: checkWrite,
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
 			if (!Array.isArray(edits) || edits.length === 0) invalid('Provide at least one edit');
@@ -152,16 +147,6 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 				if (error instanceof ProjectEditPlanError) invalid(error.message);
 				throw error;
 			}
-		},
-		undo({ expectedRevision }) {
-			checkWrite(expectedRevision);
-			events.dispatch('undo');
-			return { revision: revision() };
-		},
-		redo({ expectedRevision }) {
-			checkWrite(expectedRevision);
-			events.dispatch('redo');
-			return { revision: revision() };
 		},
 	};
 	const navigation: EditorNavigationHandle = {

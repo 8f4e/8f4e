@@ -1,5 +1,4 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, { setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
@@ -25,7 +24,6 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
-	const disposeHistory = undoRedoPlugin.setup(context);
 	let pluginCleanup = installed ? favoritesPlugin.setup(context) : undefined;
 	const disposePlugin = () => {
 		pluginCleanup?.();
@@ -33,7 +31,6 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 	};
 	cleanups.push(() => {
 		disposePlugin();
-		disposeHistory();
 		store.dispose();
 	});
 	const inEntry = /^(module|group)\s/.test(code[0]);
@@ -103,22 +100,15 @@ describe('favorites plugin', () => {
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
-	it('keeps favorite snapshots independent of later in-place source edits', async () => {
-		vi.useFakeTimers();
+	it('replaces source when toggling a favorite without mutating the previous source', () => {
 		const test = setup();
+		const initial = test.block.code;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		await vi.advanceTimersByTimeAsync(1000);
+		const favorited = test.block.code;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		await vi.advanceTimersByTimeAsync(1000);
-		test.events.dispatch('undo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).toContain('; @favorite');
-		test.events.dispatch('undo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).not.toContain(
-			'; @favorite'
-		);
-		const revision = test.state.projectChange.revision;
-		test.events.dispatch('undo');
-		expect(test.state.projectChange.revision).toBe(revision);
+		expect(initial).not.toContain('; @favorite');
+		expect(favorited).toContain('; @favorite');
+		expect(test.block.code).toEqual(initial);
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {

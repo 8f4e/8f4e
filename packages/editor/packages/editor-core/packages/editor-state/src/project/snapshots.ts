@@ -52,6 +52,11 @@ export function captureProjectSnapshot(
 	};
 }
 
+/** Compare authored snapshots; allocation alone does not change the project source. */
+export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
+	return JSON.stringify(a.rootLevel) === JSON.stringify(b.rootLevel);
+}
+
 /** Translate a loaded compiler project into authored editor source, discarding the root env. */
 export function snapshotFromProjectModel(project: ProjectObjectModel): EditorProjectSnapshot {
 	const authoredProject = {

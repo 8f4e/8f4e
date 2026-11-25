@@ -266,21 +266,19 @@ describe('grouping plugin', () => {
 	});
 
 	it.each(['deleteGroup', 'setGroupNonstick', 'ungroupByName', 'alignGroupBlocksInRow'])(
-		'records one undo step for the entire operation and restores membership on redo: %s',
-		async action => {
-			vi.useFakeTimers();
+		'publishes one project change for the entire operation: %s',
+		action => {
 			const test = setup();
 			const before = serializeToProject(test.state);
-			test.events.dispatch(action, { codeBlock: test.block('first'), makeNonstick: true });
-			const after = serializeToProject(test.state);
-			await vi.advanceTimersByTimeAsync(1000);
-			test.events.dispatch('undo');
-			expect(serializeToProject(test.state)).toEqual(before);
 			const revision = test.state.projectChange.revision;
-			test.events.dispatch('undo');
-			expect(test.state.projectChange.revision).toBe(revision);
-			test.events.dispatch('redo');
-			expect(serializeToProject(test.state)).toEqual(after);
+			const compilerRevision = test.state.compilerInputRevision;
+			const onChange = vi.fn();
+			test.store.subscribe('projectChange', onChange);
+			test.events.dispatch(action, { codeBlock: test.block('first'), makeNonstick: true });
+			expect(serializeToProject(test.state)).not.toEqual(before);
+			expect(onChange).toHaveBeenCalledOnce();
+			expect(test.state.projectChange.revision).toBe(revision + 1);
+			expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		}
 	);
 });

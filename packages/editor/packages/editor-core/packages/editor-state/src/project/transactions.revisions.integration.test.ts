@@ -2,7 +2,13 @@ import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFifoEventDispatcher } from '~/__tests__/helpers/fifoEventDispatcher';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '~/index';
+import initState, {
+	applyCodeBlockSourceEdits,
+	deleteCodeBlocks,
+	insertCodeBlocks,
+	sameProjectSnapshot,
+	setGridSize,
+} from '~/index';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 
 const cleanups: Array<() => void> = [];
@@ -185,5 +191,19 @@ describe('project and compiler input revisions', () => {
 		store.projectTransactions.restore(edited);
 		expect(block('main').code).toContain('push 2');
 		expectChanges(3);
+	});
+
+	it('compares authored snapshots without treating allocation as a source difference', () => {
+		const { store, state, load } = setup();
+		load();
+		const original = store.projectTransactions.capture();
+		const { insertedBlocks } = store.projectTransactions.apply({
+			inserts: [{ targetLevel: state.project.rootLevel, source: { code: ['note temporary', 'noteEnd'] } }],
+		});
+		expect(sameProjectSnapshot(original, store.projectTransactions.capture())).toBe(false);
+		deleteCodeBlocks(store, insertedBlocks);
+		const current = store.projectTransactions.capture();
+		expect(current.nextCodeBlockCreationIndex).toBeGreaterThan(original.nextCodeBlockCreationIndex);
+		expect(sameProjectSnapshot(original, current)).toBe(true);
 	});
 });

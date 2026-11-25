@@ -53,6 +53,7 @@ export function mountGalleryEditorSession({
 			bridge = createEditorWebMcp({
 				document,
 				editor: mountedEditor,
+				history: mountedEditor.history,
 				getCompilerDiagnostics: mountedEditor.getCompilerDiagnostics,
 			});
 			await bridge.ready;

@@ -415,7 +415,9 @@ never wait on a grid, font, compiler, or runtime. Global configuration comes fro
 root `env` block, so environment contributions cannot feed back into their own configuration inputs.
 
 The public editing API checks revision and command preconditions before using the same service with checkpoint
-history policy. It does not validate the program; invalid and incomplete source is legitimate editor content. Real
+history policy. Plugins providing external edit commands can call `editor.editing.assertCanEdit(expectedRevision)`
+to apply the same editor-lifetime, revision, and edit-mode checks before mutating source. The API does not validate
+the program; invalid and incomplete source is legitimate editor content. Real
 checkpoints emit `beforeProjectEdit` before changing authored source, allowing history to commit pending typing. Unchanged
 batches leave pending history, compiler inputs and revisions untouched. Selection and view navigation do not publish.
 Public insert commands target the root by default, or the child project of `groupBlockId` (the existing block handle
@@ -426,10 +428,10 @@ retain block identities, boundaries and draft entry/position metadata. The manag
 restoration reuses the read-only block and regenerates its body from current contributions. Both use the same reconstruction,
 settlement and publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
-The history plugin uses `store.projectTransactions.capture()` and `restore(snapshot)`. Install `undoRedoPlugin` before
-initial project loading to record history; editors without it still apply and publish edits normally. In that case
-`editor.editing.undo()` and `redo()` are no-ops after revision validation, and `getHistoryAvailability()` reports both
-actions unavailable.
+The transaction service exposes `store.projectTransactions.capture()` and `restore(snapshot)`.
+`sameProjectSnapshot(a, b)` from editor-state compares authored snapshot contents independently of the allocation
+counter. The optional [undo/redo plugin](../../plugins/undo-redo/README.md) uses these services and owns its public
+history commands. Core editors without it still apply and publish edits normally.
 Navigation follows attached project levels, and history restoration reconciles remembered views by the owning blocks' identities
 within each parent level. Renaming a group or temporarily using duplicate names therefore does not transfer its view to another
 group. Name-based project paths remain unchanged for compilation and file data.

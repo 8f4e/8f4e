@@ -1,4 +1,5 @@
 import type { Editor } from '@8f4e/editor-core';
+import type { EditorHistoryHandle } from '@8f4e/editor-plugin-undo-redo';
 import { createEditorTools } from './editor-tools.js';
 import { referenceTools } from './reference-tools.js';
 import { createWebMcpTool, type WebMcpModelContext } from './tool.js';
@@ -14,10 +15,12 @@ const activeDocuments = new WeakSet<Document>();
 export function createEditorWebMcp({
 	document,
 	editor,
+	history,
 	getCompilerDiagnostics,
 }: {
 	document: Document;
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>;
+	history?: EditorHistoryHandle;
 	getCompilerDiagnostics?: () => unknown;
 }): EditorWebMcpBridge {
 	if (!editor?.editing || !editor.navigation)
@@ -34,7 +37,7 @@ export function createEditorWebMcp({
 		controller.abort();
 		activeDocuments.delete(document);
 	};
-	const tools = [...referenceTools, ...createEditorTools(editor, getCompilerDiagnostics)].map(definition =>
+	const tools = [...referenceTools, ...createEditorTools(editor, getCompilerDiagnostics, history)].map(definition =>
 		createWebMcpTool(definition, () => disposed)
 	);
 	const ready = (async () => {
