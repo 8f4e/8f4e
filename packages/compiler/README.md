@@ -75,8 +75,9 @@ more detail.
 
 Expected source failures throw `CompilerError` from `@8f4e/compiler-diagnostics`. Its `diagnostic` contains a
 `kind: 'source'`, the `syntax`, `semantic` or `include` domain, a code, message and required location. Locations
-identify a document row, project block row, project scope row, included symbol and include declaration, or a named
-project exposure. Source rows are zero-based within the identified source.
+identify a document row, project block row, included symbol and include declaration, or a named entry in a project
+scope. An entry-table diagnostic identifies its entry name and scope without a code-block row. Source rows are
+zero-based within the identified source.
 
 Worker and host boundaries use `serializeDiagnostic(error, stage)` from that package. It preserves complete source
 diagnostics and reports unexpected exceptions as `kind: 'internal'`, retaining their stage and stack without
@@ -113,6 +114,7 @@ The composer walks `execution` in order and builds a dispatcher plan for every l
 child's `main`, when present, is called from the node's parent entry; the child's `init`, when present, is called from
 the parent's `init`. Other child entries run only through explicit local calls. Missing `main` is valid and contributes
 no automatic work. Root entries are host exports; child entries have scoped identities. Empty entries remain valid.
+The root name `initDefaults` is reserved for the generated memory initializer; child entries may use that name.
 
 For example, with `voiceA` and `voiceB` in `synth`'s `main`, `rootA`, `synth`, `rootB` executes as
 `rootA -> synth/voiceA -> synth/voiceB -> rootB`. Functions and constants remain hoisted, and memory

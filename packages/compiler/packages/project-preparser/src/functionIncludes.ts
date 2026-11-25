@@ -1,9 +1,9 @@
 import { includeErrorAt, syntaxErrorAt, withAsyncCompilerStage } from '@8f4e/compiler-diagnostics';
 import type {
-	DiagnosticLocation,
 	DiagnosticSource,
 	ExportLine,
 	IncludedFunctionBindings,
+	LineDiagnosticLocation,
 	ProjectBlock,
 	ProjectIncludeResolver,
 	SourceMetadata,
@@ -202,7 +202,7 @@ function expandIncludeFunctions(
 
 function collectIncludeDeclarations(
 	lines: readonly string[],
-	locate: (lineNumber: number) => DiagnosticLocation
+	locate: (lineNumber: number) => LineDiagnosticLocation
 ): IncludeDeclaration[] {
 	const includeIds: IncludeDeclaration[] = [];
 
@@ -298,7 +298,7 @@ function bindIncludeSelection(
 	{ publicNames }: LoadedInclude,
 	{ includeId, exportedName, localName }: IncludeDeclaration,
 	bindings: IncludeBindings,
-	location: DiagnosticLocation
+	location: LineDiagnosticLocation
 ) {
 	if (exportedName !== undefined && !publicNames.has(exportedName)) {
 		throw includeErrorAt(
@@ -332,7 +332,7 @@ export async function resolveProjectIncludesAsync(
 	async function load(
 		includeId: string,
 		site: IncludeSite,
-		location: DiagnosticLocation,
+		location: LineDiagnosticLocation,
 		ancestors: readonly string[]
 	): Promise<LoadedInclude> {
 		const chain = [...ancestors, includeId];

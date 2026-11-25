@@ -14,7 +14,13 @@ import type {
 	WasmIRFunction,
 	WasmIRInstruction,
 } from '@8f4e/language-spec';
-import { assertionFunctionId, BlockType, createFunctionId, DEFAULT_HOST_IMPORT_MODULE_NAME } from '@8f4e/language-spec';
+import {
+	assertionFunctionId,
+	BlockType,
+	createFunctionId,
+	DEFAULT_HOST_IMPORT_MODULE_NAME,
+	INIT_DEFAULTS_EXPORT_NAME,
+} from '@8f4e/language-spec';
 import type {
 	FunctionSemanticReferences,
 	ModuleSemanticReferences,
@@ -60,7 +66,7 @@ function moduleCycleFunctionId(moduleId: string): string {
 	return `\0cycle:${moduleId}`;
 }
 
-const initDefaultsId = '\0initDefaults';
+const initDefaultsId = `\0${INIT_DEFAULTS_EXPORT_NAME}`;
 const voidSignature = { params: [], results: [] };
 
 interface LowerModuleInput {
@@ -105,7 +111,7 @@ export function lowerToWasmIR({
 		});
 	}
 	functions.set(initDefaultsId, { signature: voidSignature, body: { locals: [], instructions: initialize } });
-	exports.set('initDefaults', initDefaultsId);
+	exports.set(INIT_DEFAULTS_EXPORT_NAME, initDefaultsId);
 
 	for (const entry of entries) {
 		const id = createFunctionId(entry.id, []);

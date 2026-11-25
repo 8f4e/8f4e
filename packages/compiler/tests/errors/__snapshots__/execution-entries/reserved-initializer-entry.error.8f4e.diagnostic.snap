@@ -1,0 +1,13 @@
+{
+  "code": 85,
+  "domain": "semantic",
+  "instruction": "entry",
+  "kind": "source",
+  "location": {
+    "entryName": "initDefaults",
+    "kind": "project-entry",
+    "projectGroupPath": "",
+  },
+  "message": "Root entry name "initDefaults" is reserved for a compiler-generated export. (85)",
+  "symbol": "initDefaults",
+}

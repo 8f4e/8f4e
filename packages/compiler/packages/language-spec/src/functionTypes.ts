@@ -107,6 +107,9 @@ export function stackItemMatchesFunctionValueType(stackItem: StackItem, type: Fu
 /** Default WebAssembly import module namespace for 8f4e host-provided imports. */
 export const DEFAULT_HOST_IMPORT_MODULE_NAME = 'host';
 
+/** WebAssembly export of the compiler-generated memory initializer. */
+export const INIT_DEFAULTS_EXPORT_NAME = 'initDefaults';
+
 /** A named parameter in declaration order. */
 export interface FunctionParameter {
 	name: string;

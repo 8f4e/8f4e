@@ -61,9 +61,13 @@ export const ErrorCode = {
 	DUPLICATE_TEMPLATE: 82,
 	RECURSIVE_TEMPLATE: 83,
 	END_QUERY_REQUIRES_FIXED_REFERENCE: 84,
+	RESERVED_ROOT_ENTRY_NAME: 85,
 } as const;
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+/** Semantic error codes that are located at a source row. */
+export type LineErrorCodeValue = Exclude<ErrorCodeValue, typeof ErrorCode.RESERVED_ROOT_ENTRY_NAME>;
 
 /** Include resolution failures, distinguished by the diagnostic's include domain. */
 export const IncludeErrorCode = {

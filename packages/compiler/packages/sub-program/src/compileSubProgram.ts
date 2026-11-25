@@ -1,4 +1,4 @@
-import { getError, withCompilerStage } from '@8f4e/compiler-diagnostics';
+import { getError, reservedRootEntryError, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import { resolveConstants } from '@8f4e/constant-resolver';
 import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
@@ -6,13 +6,14 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompileResult,
+	ComposedEntry,
 	FunctionMetadata,
 	FunctionMetadataLookup,
 	FunctionRegistry,
 	MemoryLayoutPlan,
 	ProjectMemoryExposuresByGroupPath,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode, INIT_DEFAULTS_EXPORT_NAME } from '@8f4e/language-spec';
 import { resolveMemoryDefaults } from '@8f4e/memory-default-resolver';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
 import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
@@ -28,8 +29,21 @@ import { registerFunctions } from './semantic/buildNamespace';
 
 const DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS = 1;
 
-/** Built-in WebAssembly export names that user functions are not allowed to reuse. */
-const RESERVED_EXPORT_NAMES = ['initDefaults'];
+/** Built-in WebAssembly export names that project entries and user functions cannot reuse. */
+const RESERVED_EXPORT_NAMES: readonly string[] = [INIT_DEFAULTS_EXPORT_NAME];
+
+/** Validates exported entries and collects the names unavailable to exported user functions. */
+function collectReservedExportNames(entries: readonly ComposedEntry[]): string[] {
+	const names = [...RESERVED_EXPORT_NAMES];
+	for (const { exportName } of entries) {
+		if (exportName === undefined) continue;
+		if (RESERVED_EXPORT_NAMES.includes(exportName)) {
+			throw reservedRootEntryError(exportName);
+		}
+		names.push(exportName);
+	}
+	return names;
+}
 
 function resolveProjectMemoryExposures(
 	program: ComposedProgram,
@@ -97,15 +111,13 @@ function mergeFunctionRegistries(...registries: FunctionRegistry[]): FunctionReg
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompileResult {
 	const { entries, cache } = program;
+	const reservedExportNames = withCompilerStage('entry export validation', () => collectReservedExportNames(entries));
 	const entryNames = entries.map(entry => entry.id);
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = withCompilerStage('function registration', () =>
 		registerFunctions(program.ast.functions, {
 			reservedFunctionIds: entryNames,
-			reservedExportNames: [
-				...RESERVED_EXPORT_NAMES,
-				...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
-			],
+			reservedExportNames,
 		})
 	);
 	const subProgramAst = { ...program.ast, functions: registration.declarations.map(({ ast }) => ast) };

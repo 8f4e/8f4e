@@ -2,7 +2,7 @@ import { CompilerError, getError, syntaxErrorAt } from '@8f4e/compiler-diagnosti
 import type {
 	ArrayMemoryDeclarationLine,
 	CompilerASTLine,
-	ErrorCodeValue,
+	LineErrorCodeValue,
 	MemoryDeclarationLine,
 	MemoryDefault,
 	MemoryDefaults,
@@ -34,7 +34,7 @@ interface ScalarDefaultResolution {
 const MAX_SPLIT_BYTE_WIDTH = 4;
 
 function resolverError(
-	compilerErrorCode: ErrorCodeValue,
+	compilerErrorCode: LineErrorCodeValue,
 	line: CompilerASTLine,
 	message: string,
 	details?: MemoryDefaultResolverErrorDetails
