@@ -705,7 +705,7 @@ When a code block contains this directive, it is excluded from compilation and r
 **Behavior:**
 
 - **Project Load**: Disabled state is parsed from `@disabled` directive. Blocks without the directive are enabled by default.
-- **Context Menu**: Use "Disable <blockLabel>" or "Enable <blockLabel>" menu items to toggle the directive.
+- **Context Menu**: In the default editor, use "Disable <blockLabel>" or "Enable <blockLabel>" to toggle the directive. These menu items are provided by the optional toggle-disabled plugin.
 - **Compilation**: Disabled blocks are filtered out before compilation, so they don't affect the compiled program.
 - **Rendering**: Disabled blocks appear with a transparent/dimmed background in the editor.
 

@@ -1,5 +1,5 @@
 import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
-import { deleteCodeBlocks } from '@8f4e/editor-state';
+import { deleteCodeBlocks, insertCodeBlock } from '@8f4e/editor-state';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 
 const newBlocks = [
@@ -60,7 +60,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			if (store.getState().editorMode !== 'edit') return;
 			const block = documentBlockInstructionByType[blockType];
 			const name = blockType === 'note' ? '' : ` ${getRandomCodeBlockName()}`;
-			events.dispatch('insertCodeBlock', { x, y, code: [block.start + name, '', '', block.end] });
+			insertCodeBlock(store, { x, y, code: [block.start + name, '', '', block.end] });
 		};
 		const onDelete = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
@@ -76,11 +76,9 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
 			const label = codeBlock.childLevel
 				? 'group'
-				: codeBlock.blockType === 'function'
-					? 'function'
-					: codeBlock.blockType === 'note'
-						? 'note'
-						: 'module';
+				: codeBlock.isProjectScope
+					? 'project source block'
+					: codeBlock.blockType;
 			return { title: `Delete ${label}`, action: 'deleteCodeBlock', payload: { codeBlock }, close: true };
 		});
 		events.on('createCodeBlock', onCreate);

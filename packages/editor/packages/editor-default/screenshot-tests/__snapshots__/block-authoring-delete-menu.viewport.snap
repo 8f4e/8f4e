@@ -11,9 +11,9 @@
                      1 ; @pos 20 9                                                                  
                      2                                                                              
                      3                                                                              
-                    +4 moduleEnd                   .............. Disable module                    
-                                                   ............... Delete module                    
-                                                   .. Log module info to console                    
+                    +4 moduleEnd                   ..... Delete module                              
+                                                                                                    
+                                                                                                    
                                                                                                     
                                                                                                     
                                                                                                     

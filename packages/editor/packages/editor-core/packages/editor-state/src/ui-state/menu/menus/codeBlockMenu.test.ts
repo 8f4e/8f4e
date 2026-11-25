@@ -3,13 +3,12 @@ import { createMockCodeBlock, createMockState } from '~/__tests__/helpers/mockEd
 import { codeBlockMenu } from './codeBlockMenu';
 
 describe('code block menu', () => {
-	it('places contributed items after enable/disable and before the remaining block actions', () => {
+	it('returns only contributed items for ordinary blocks in the root project', () => {
 		const codeBlock = createMockCodeBlock({ blockType: 'module', code: ['module test', 'moduleEnd'] });
 		const state = createMockState({ project: { selectedCodeBlock: codeBlock } });
 		const item = { title: 'Custom block action', action: 'customAction' };
 		const items = codeBlockMenu(state, codeBlock, [item]);
-		expect(items.indexOf(item)).toBe(items.findIndex(item => item.action === 'toggleCodeBlockDisabled') + 1);
-		expect(items.indexOf(item)).toBeLessThan(items.findIndex(item => item.action === 'consoleLog'));
+		expect(items).toEqual([item]);
 	});
 
 	it('allows contributed actions in view mode', () => {
@@ -19,12 +18,11 @@ describe('code block menu', () => {
 		expect(codeBlockMenu(state, codeBlock, [item])).toContain(item);
 	});
 
-	it('offers inspection but not enable/disable for read-only blocks', () => {
+	it('allows contributed items for read-only blocks', () => {
 		const codeBlock = createMockCodeBlock({ readOnly: true });
 		const state = createMockState({ editorMode: 'edit' });
-		const items = codeBlockMenu(state, codeBlock, []);
-		expect(items.some(candidate => candidate.action === 'toggleCodeBlockDisabled')).toBe(false);
-		expect(items.some(candidate => candidate.action === 'consoleLog')).toBe(true);
+		const item = { title: 'Inspect', action: 'inspect' };
+		expect(codeBlockMenu(state, codeBlock, [item])).toEqual([item]);
 	});
 
 	it('adds an open action for project-group blocks', async () => {

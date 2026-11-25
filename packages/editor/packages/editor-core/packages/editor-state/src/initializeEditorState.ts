@@ -19,7 +19,6 @@ import registerPointerRouting from './input/pointerRouting';
 import { createLayoutCoordinator } from './layout/blockLayoutCoordinator';
 import { createLayoutRegistry } from './layout/layoutContributionRegistry';
 import trackBlockLayout from './layout/trackBlockLayout';
-import registerBlockActionCommands from './project/blockActionCommands';
 import trackEntryBounds from './project/entries/trackEntryBounds';
 import registerGroupNavigation from './project/groupNavigation';
 import { createProjectMembership } from './project/membership';
@@ -82,15 +81,8 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 	cleanups.push(registerPointerRouting(store, events));
 	cleanups.push(registerBlockNavigation(store, events));
 	cleanups.push(registerViewportHandlers(store, events));
-	cleanups.push(registerBlockActionCommands(editingStore, events));
 	cleanups.push(registerGroupNavigation(store, events));
 	cleanups.push(trackEntryBounds(store, events));
-
-	const onConsoleLog = (event: unknown) => {
-		console.log(event);
-	};
-	events.on('consoleLog', onConsoleLog);
-	cleanups.push(() => events.off('consoleLog', onConsoleLog));
 
 	const dispose = () => {
 		while (cleanups.length) {

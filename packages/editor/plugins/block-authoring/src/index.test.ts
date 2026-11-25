@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -42,10 +42,9 @@ it.each([
 	['module', 'New Module', 'module quark', 'moduleEnd'],
 	['function', 'New Function', 'function quark', 'functionEnd'],
 	['note', 'New Note', 'note', 'noteEnd'],
-] as const)('forwards a %s template and menu coordinates to core', async (blockType, title, header, end) => {
+] as const)('inserts a %s template at the menu coordinates', async (blockType, title, header, end) => {
 	const test = setup();
 	vi.spyOn(Math, 'random').mockReturnValue(0);
-	const dispatch = vi.spyOn(test.events, 'dispatch');
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
 	await test.openMenu(96, 160);
@@ -53,10 +52,11 @@ it.each([
 	expect(index).toBeGreaterThanOrEqual(0);
 	expect(test.state.contextMenu.items[index].payload).toEqual({ blockType });
 	test.events.dispatch('activateContextMenuItem', { index, x: 96, y: 160 });
-	expect(dispatch).toHaveBeenCalledWith('insertCodeBlock', { x: 96, y: 160, code: [header, '', '', end] });
 	const block = test.state.project.activeLevel.blocks.at(-1)!;
 	expect(block.blockType).toBe(blockType);
 	expect(block.projectPath).toBe('');
+	expect(block.code).toEqual([header, '; @pos 12 10', '', '', end]);
+	expect(block).toMatchObject({ gridX: 12, gridY: 10 });
 	expect(test.state.contextMenu.open).toBe(false);
 	expect(test.state.projectChange.revision).toBe(revision + 1);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
@@ -69,6 +69,39 @@ it('allows duplicate generated names without numbering them', () => {
 	const blocks = test.state.project.activeLevel.blocks.filter(block => block.blockType === 'module');
 	expect(blocks.map(block => block.name)).toEqual(['quark', 'quark']);
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
+});
+
+it.each([
+	['module', ['module target', 'moduleEnd']],
+	['function', ['function target', 'functionEnd']],
+	['note', ['note target', 'noteEnd']],
+	['group', ['group target', 'groupEnd']],
+	['constants', ['constants target', 'constantsEnd']],
+	['includes', ['includes', 'includesEnd']],
+	['project source block', ['pass']],
+	['unknown', ['int value 1']],
+] as const)('labels deletion using the block kind: %s', async (label, source) => {
+	const test = setup();
+	const {
+		insertedBlocks: [block],
+	} = test.store.projectTransactions.apply({
+		inserts: [
+			{
+				targetLevel: test.state.project.rootLevel,
+				source: {
+					code: [source[0], '; @pos 12 10', ...source.slice(1)],
+					...(label === 'group' ? { childLevel: { entries: [], blocks: [] } } : {}),
+				},
+			},
+		],
+	});
+	const items = await test.openMenu(block.x - test.state.viewport.x + 8, block.y - test.state.viewport.y + 8);
+	expect(items).toContainEqual({
+		title: `Delete ${label}`,
+		action: 'deleteCodeBlock',
+		payload: { codeBlock: block },
+		close: true,
+	});
 });
 
 it('deletes the clicked block instead of the selected block', async () => {
@@ -136,7 +169,7 @@ it.each([false, true])('owns its menu and action registrations: installed=%s', a
 	test.events.dispatch('createCodeBlock', { x: 200, y: 200, blockType: 'note' });
 	test.events.dispatch('deleteCodeBlock', { codeBlock: block });
 	expect(test.state.project.activeLevel.blocks).toHaveLength(count);
-	test.events.dispatch('insertCodeBlock', { x: 200, y: 200, code: ['note supplied', 'noteEnd'] });
+	insertCodeBlock(test.store, { x: 200, y: 200, code: ['note supplied', 'noteEnd'] });
 	expect(test.state.project.activeLevel.blocks.at(-1)!.name).toBe('supplied');
 });
 

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectSourceBlock } from '@8f4e/editor-state-types';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import initState, { setGridSize } from '../index';
+import { afterEach, describe, expect, it } from 'vitest';
+import initState, { insertCodeBlock, setGridSize } from '../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -20,11 +20,11 @@ function setup(sources: readonly ProjectSourceBlock[] = []) {
 	const { insertedBlocks } = store.projectTransactions.apply({
 		inserts: sources.map(source => ({ targetLevel: state.project.activeLevel, source })),
 	});
-	const insert = (code: string[]) => events.dispatch('insertCodeBlock', { x: 100, y: 100, code });
+	const insert = (code: string[]) => insertCodeBlock(store, { x: 100, y: 100, code });
 	return { state, events, store, blocks: insertedBlocks, insert };
 }
 
-describe('codeBlockActions - insertion', () => {
+describe('source insertion', () => {
 	it.each(['module', 'function'])('inserts duplicate %s names without rewriting source references', blockType => {
 		const { state, insert } = setup([{ code: [`${blockType} same`, `${blockType}End`] }]);
 		insert([`${blockType} same`, 'push &same:value', `${blockType}End`]);
@@ -68,39 +68,7 @@ describe('codeBlockActions - insertion', () => {
 	});
 });
 
-describe('codeBlockActions - toggleCodeBlockDisabled', () => {
-	it.each([false, true])('toggles disabled state and source from %s', disabled => {
-		const {
-			blocks: [codeBlock],
-			events,
-			store,
-		} = setup([{ code: ['module test', ...(disabled ? ['; @disabled'] : []), 'moduleEnd'] }]);
-		expect(codeBlock.disabled).toBe(disabled);
-		const onProjectChange = vi.fn();
-		store.subscribe('projectChange', onProjectChange);
-		codeBlock.lastUpdated = 1000;
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock });
-		expect(codeBlock.disabled).toBe(!disabled);
-		expect(codeBlock.code.includes('; @disabled')).toBe(!disabled);
-		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
-		expect(onProjectChange).toHaveBeenCalledOnce();
-	});
-
-	it('does not toggle when editing is disabled', () => {
-		const {
-			blocks: [codeBlock],
-			events,
-			state,
-		} = setup([{ code: ['module test', 'moduleEnd'] }]);
-		const revision = state.projectChange.revision;
-		events.dispatch('exitToViewMode');
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock });
-		expect(codeBlock.disabled).toBe(false);
-		expect(state.projectChange.revision).toBe(revision);
-	});
-});
-
-describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
+describe('source insertion - alwaysOnTop z-order partitioning', () => {
 	it.each([false, true])('inserts a block in the correct z-order partition (alwaysOnTop=%s)', alwaysOnTop => {
 		const { state, insert } = setup([
 			{ code: ['module normal1', 'moduleEnd'] },

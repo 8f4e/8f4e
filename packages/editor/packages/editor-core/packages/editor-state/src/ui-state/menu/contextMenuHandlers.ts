@@ -27,10 +27,10 @@ export default function registerContextMenuHandlers(
 	const updateMenu = async () => {
 		const { menuStack } = state.contextMenu;
 		const items = await registry.generateMenu(menuStack.at(-1)!, state);
-		store.set('contextMenu.items', [
-			...(menuStack.length > 1 ? [{ title: 'Back', action: 'menuBack' }] : []),
-			...items,
-		]);
+		const visibleItems = [...(menuStack.length > 1 ? [{ title: 'Back', action: 'menuBack' }] : []), ...items];
+		store.set('contextMenu.items', visibleItems);
+		// A composition can omit every action for a block. Don't leave an invisible menu blocking input.
+		if (visibleItems.length === 0) close();
 	};
 	const close = () => store.set('contextMenu.open', false);
 	const activateItem = ({ index, x, y }: ActivateContextMenuItemEvent) => {

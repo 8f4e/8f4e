@@ -122,6 +122,8 @@ describe('default editor plugins', () => {
 				'context-menu',
 				'project-new',
 				'block-authoring',
+				'toggle-disabled',
+				'log-block-info',
 				'coordinate-grid',
 				'entry-outlines',
 				'offscreen-block-arrows',

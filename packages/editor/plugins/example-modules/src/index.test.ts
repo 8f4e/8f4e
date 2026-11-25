@@ -1,4 +1,4 @@
-import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import initState, { EMPTY_DEFAULT_PROJECT, insertCodeBlock, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -134,7 +134,7 @@ describe('example modules plugin', () => {
 
 	it('does not confuse a dependency with a different block type of the same name', async () => {
 		const test = setup();
-		test.events.dispatch('insertCodeBlock', { code: ['module dep', 'moduleEnd'], x: 400, y: 100 });
+		insertCodeBlock(test.store, { code: ['module dep', 'moduleEnd'], x: 400, y: 100 });
 		await test.addModule();
 		expect(
 			test.state.project.activeLevel.blocks.filter(block => block.name === 'dep').map(block => block.blockType)
@@ -206,7 +206,6 @@ describe('example modules plugin', () => {
 		const test = setup({ mode: 'view', sources: new Map([['audio/target', load]]) });
 		test.events.dispatch('contextmenu', { x: 100, y: 112 });
 		await Promise.resolve();
-		expect(test.state.contextMenu.open).toBe(true);
 		expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 		await test.addModule();
 		expect(load).not.toHaveBeenCalled();
