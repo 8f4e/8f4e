@@ -146,6 +146,7 @@ push sizeof(*fptr)  ; 8  — size of the float64 it points to
 ## Element max value
 
 - `max(name)` pushes the maximum finite value for the element type of a memory item.
+- The result retains the element's numeric type: integer, float32, or float64.
 
 For signed integers:
 - `int32` / `int` / `int[]`: 2,147,483,647
@@ -158,6 +159,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: 3.4028234663852886e+38 (max finite float32)
+- `float64` / `float64[]`: 1.7976931348623157e+308 (max finite float64)
 
 Example:
 
@@ -172,6 +174,7 @@ push max(unsignedBuffer)
 ## Pointee element max value
 
 - `max(*name)` pushes the maximum finite value for the type pointed to by a pointer-typed memory item.
+- The result retains the numeric type of that pointee.
 - Only valid for pointer identifiers (`int*`, `int8*`, `int8u*`, `int16*`, `int16u*`, `float*`, `float64*`, etc.).
 - On a non-pointer memory identifier, current compiler behavior resolves `max(*name)` to `0`.
 - `max(name)` keeps its existing meaning (max of the memory item's own element type).
@@ -204,6 +207,7 @@ push max(*fptr)  ; 1.7976931348623157e+308  — max of the float64 it points to
 
 - `min(name)` pushes the lowest finite value (most negative) for the element type of a memory item.
 - `min(*name)` pushes the lowest finite value for the type pointed to by a pointer-typed memory item.
+- Both forms retain the numeric type of the queried element or pointee.
 - On a non-pointer memory identifier, current compiler behavior resolves `min(*name)` to `0`.
 - `min(name)` keeps its existing meaning (min of the memory item's own element type).
 - Metadata queries currently support one leading `*`. For double pointers, `min(*name)` describes the intermediate pointer slot. `min(**name)` is not supported yet.
@@ -221,6 +225,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: -3.4028234663852886e+38 (lowest finite float32)
+- `float64` / `float64[]`: -1.7976931348623157e+308 (lowest finite float64)
 
 Example:
 

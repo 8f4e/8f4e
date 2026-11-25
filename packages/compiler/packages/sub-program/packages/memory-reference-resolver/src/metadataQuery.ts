@@ -7,10 +7,12 @@ import type {
 } from '@8f4e/language-spec';
 import {
 	ArgumentType,
+	getDereferencedValueKindFromMetadata,
 	getElementCount,
 	getElementMaxValue,
 	getElementMinValue,
 	getElementWordSize,
+	getMemoryBaseType,
 	getPointeeElementIsIntegerFromMetadata,
 	getPointeeElementMaxValueFromMetadata,
 	getPointeeElementMinValueFromMetadata,
@@ -75,6 +77,16 @@ export function getMetadataQuery(operand: CompileTimeOperand): MetadataQuery | u
 	};
 }
 
+function getBoundValueType(target: ResolvedMetadataTarget): Pick<Const, 'isInteger' | 'isFloat64'> {
+	const isInteger =
+		target.kind === 'memory' ? target.memory.isInteger : getPointeeElementIsIntegerFromMetadata(target.pointers[0]);
+	const isFloat64 =
+		target.kind === 'memory'
+			? getMemoryBaseType(target.memory) === 'float64'
+			: getDereferencedValueKindFromMetadata(target.pointers[0], 1) === 'float64';
+	return { isInteger, ...(isFloat64 ? { isFloat64: true } : {}) };
+}
+
 /** Evaluates metadata only; target lookup and source-specific pointer facts belong to resolution. */
 export function evaluateMetadataQuery(query: MetadataQueryKind, target: ResolvedMetadataTarget): Const | undefined {
 	switch (query) {
@@ -102,10 +114,7 @@ export function evaluateMetadataQuery(query: MetadataQueryKind, target: Resolved
 					target.kind === 'memory'
 						? getElementMaxValue(target.memory)
 						: getPointeeElementMaxValueFromMetadata(target.pointers[0]),
-				isInteger:
-					target.kind === 'memory'
-						? !!target.memory.isInteger
-						: getPointeeElementIsIntegerFromMetadata(target.pointers[0]),
+				...getBoundValueType(target),
 			};
 		case 'min':
 			return {
@@ -113,10 +122,7 @@ export function evaluateMetadataQuery(query: MetadataQueryKind, target: Resolved
 					target.kind === 'memory'
 						? getElementMinValue(target.memory)
 						: getPointeeElementMinValueFromMetadata(target.pointers[0]),
-				isInteger:
-					target.kind === 'memory'
-						? !!target.memory.isInteger
-						: getPointeeElementIsIntegerFromMetadata(target.pointers[0]),
+				...getBoundValueType(target),
 			};
 	}
 }
