@@ -126,12 +126,9 @@ Back navigation, and handles decoration, sizing, positioning, and clicks. Menu I
 use a distinct ID for your plugin's menu and call the returned unregister function during disposal.
 The built-in block submenu also uses this request shape: `{ menu: 'codeBlockMenu', payload: { codeBlock } }`.
 
-Use explicit block actions through `events.dispatch`:
-
-- `insertCodeBlock` receives `{ x, y, code }` and inserts those source lines without reading the clipboard.
-
 `@8f4e/editor-plugin-block-authoring` supplies New/Delete menu commands and source templates. Generic insertion
-and deletion remain available independently of that plugin.
+and deletion remain available independently of that plugin through `insertCodeBlock(store, { x, y, code })`
+and `deleteCodeBlocks(store, blocks)`.
 
 Coordinates are viewport pixels. Core applies entry assignment, grid positioning, and persistence; declaration names remain unchanged.
 Newly inserted blocks already carry their source-derived type; core keeps it current as source changes.

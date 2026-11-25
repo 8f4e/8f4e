@@ -55,7 +55,7 @@ a module uses an explicitly assigned entry or `main`. Empty authored entry secti
 
 The project and its related editor-state domains handle specific aspects:
 
-- `blockActionCommands.ts` - Generic source insertion action binding
+- `insertCodeBlock.ts` - Generic positioned source insertion
 - `../input/blockDragging.ts` - Drag and drop operations
 - `../input/blockNavigation.ts` - Keyboard navigation between blocks
 - `../layout/trackBlockLayout.ts` - Visual properties and cursor geometry
@@ -90,7 +90,6 @@ completion notification.
 
 ### Key Events
 
-- `insertCodeBlock({ x, y, code })`: insert supplied source lines
 - `resolveCodeBlockDragTargets({ codeBlock, altKey, targets })`: synchronously replace the blocks core will drag
 - `state.projectChange`: reports completed project mutations after metadata, configuration, generated source and
   available layout settle

@@ -66,7 +66,7 @@ test('composes enable/disable and console inspection with the block menu', async
 		expect(block.disabled).toBe(false);
 		await openMenu('Log module info to console');
 		activate('Log module info to console');
-		expect(log).toHaveBeenCalledExactlyOnceWith({ codeBlock: block, ...position });
+		expect(log).toHaveBeenCalledExactlyOnceWith(block);
 	} finally {
 		log.mockRestore();
 		editor.dispose();

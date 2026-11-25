@@ -5,6 +5,7 @@ import { createFifoEventDispatcher } from '~/__tests__/helpers/fifoEventDispatch
 import initState, {
 	applyCodeBlockSourceEdits,
 	deleteCodeBlocks,
+	insertCodeBlock,
 	insertCodeBlocks,
 	sameProjectSnapshot,
 	setGridSize,
@@ -118,10 +119,10 @@ describe('project and compiler input revisions', () => {
 	});
 
 	it('advance after adding, disabling, enabling and deleting, but not for repeated deletion', () => {
-		const { store, events, block, load, expectChanges } = setup();
+		const { store, block, load, expectChanges } = setup();
 		load();
 		const main = block('main');
-		events.dispatch('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
+		insertCodeBlock(store, { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expectChanges(1);
 		const enabledSource = [...main.code];
 		applyCodeBlockSourceEdits(store, [

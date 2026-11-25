@@ -1,12 +1,12 @@
-import type { EditorPlugin } from '@8f4e/editor-core';
+import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
 
-const action = 'consoleLog';
+const action = 'logBlockInfo';
 
 export const logBlockInfoPlugin: EditorPlugin = {
 	id: 'log-block-info',
 	setup: ({ events, menus }) => {
-		const onLog = (event: unknown) => {
-			console.log(event);
+		const onLog = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
+			console.log(codeBlock);
 		};
 		events.on(action, onLog);
 		const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ codeBlock }) => {

@@ -6,24 +6,22 @@ import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { logBlockInfoPlugin } from './index';
 
-const action = 'consoleLog';
+const action = 'logBlockInfo';
 const cleanups: Array<() => void> = [];
 
-function setup(code = ['module target', 'moduleEnd'], installed = true) {
+function setup(code = ['module target', 'moduleEnd']) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	let cleanup = installed
-		? logBlockInfoPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: undefined;
+	let cleanup: (() => void) | undefined = logBlockInfoPlugin.setup({
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	});
 	const disposePlugin = () => {
 		cleanup?.();
 		cleanup = undefined;
@@ -91,7 +89,7 @@ describe('log block info plugin', () => {
 			index: items.findIndex(item => item.action === action),
 			...position,
 		});
-		expect(log).toHaveBeenCalledExactlyOnceWith({ codeBlock: test.block, ...position });
+		expect(log).toHaveBeenCalledExactlyOnceWith(test.block);
 		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.state.project.selectedCodeBlock).toBe(test.other);
 		expect(test.state.projectChange.revision).toBe(revision);
@@ -106,15 +104,12 @@ describe('log block info plugin', () => {
 		expect((await test.openMenu(environment)).items.some(item => item.action === action)).toBe(true);
 	});
 
-	it.each([false, true])(
-		'removes menu and event registrations without a live installation: installed=%s',
-		async installed => {
-			const test = setup(undefined, installed);
-			const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-			test.disposePlugin();
-			expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
-			test.events.dispatch(action, { codeBlock: test.block });
-			expect(log).not.toHaveBeenCalled();
-		}
-	);
+	it('removes menu and event registrations on disposal', async () => {
+		const test = setup();
+		const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+		test.disposePlugin();
+		expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
+		test.events.dispatch(action, { codeBlock: test.block });
+		expect(log).not.toHaveBeenCalled();
+	});
 });

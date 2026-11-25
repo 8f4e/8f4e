@@ -3,11 +3,15 @@ import { applyCodeBlockSourceEdits, removeDirective, upsertDirective } from '@8f
 
 const action = 'toggleCodeBlockDisabled';
 
+/** Structural group and root-scope source do not support disabled compiler metadata. */
+const supportsToggle = (codeBlock: EditorCodeBlock) =>
+	!codeBlock.readOnly && !codeBlock.childLevel && !codeBlock.isProjectScope;
+
 export const toggleDisabledPlugin: EditorPlugin = {
 	id: 'toggle-disabled',
 	setup: ({ store, events, menus }) => {
 		const onToggle = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
-			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
+			if (store.getState().editorMode !== 'edit' || !supportsToggle(codeBlock)) return;
 			const code = codeBlock.disabled
 				? removeDirective(codeBlock.code, 'disabled')
 				: upsertDirective(codeBlock.code, 'disabled');
@@ -15,8 +19,8 @@ export const toggleDisabledPlugin: EditorPlugin = {
 		};
 		events.on(action, onToggle);
 		const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
-			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
-			const label = codeBlock.childLevel ? 'group' : codeBlock.isProjectScope ? 'project' : codeBlock.blockType;
+			if (state.editorMode !== 'edit' || !supportsToggle(codeBlock)) return;
+			const label = codeBlock.blockType;
 			return {
 				title: codeBlock.disabled ? `Enable ${label}` : `Disable ${label}`,
 				action,

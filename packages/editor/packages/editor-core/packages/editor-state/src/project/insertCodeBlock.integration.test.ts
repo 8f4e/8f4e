@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectSourceBlock } from '@8f4e/editor-state-types';
 import { afterEach, describe, expect, it } from 'vitest';
-import initState, { setGridSize } from '../index';
+import initState, { insertCodeBlock, setGridSize } from '../index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -20,11 +20,11 @@ function setup(sources: readonly ProjectSourceBlock[] = []) {
 	const { insertedBlocks } = store.projectTransactions.apply({
 		inserts: sources.map(source => ({ targetLevel: state.project.activeLevel, source })),
 	});
-	const insert = (code: string[]) => events.dispatch('insertCodeBlock', { x: 100, y: 100, code });
+	const insert = (code: string[]) => insertCodeBlock(store, { x: 100, y: 100, code });
 	return { state, events, store, blocks: insertedBlocks, insert };
 }
 
-describe('codeBlockActions - insertion', () => {
+describe('source insertion', () => {
 	it.each(['module', 'function'])('inserts duplicate %s names without rewriting source references', blockType => {
 		const { state, insert } = setup([{ code: [`${blockType} same`, `${blockType}End`] }]);
 		insert([`${blockType} same`, 'push &same:value', `${blockType}End`]);
@@ -68,7 +68,7 @@ describe('codeBlockActions - insertion', () => {
 	});
 });
 
-describe('codeBlockActions - alwaysOnTop z-order partitioning', () => {
+describe('source insertion - alwaysOnTop z-order partitioning', () => {
 	it.each([false, true])('inserts a block in the correct z-order partition (alwaysOnTop=%s)', alwaysOnTop => {
 		const { state, insert } = setup([
 			{ code: ['module normal1', 'moduleEnd'] },

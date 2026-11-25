@@ -9,7 +9,7 @@ import { toggleDisabledPlugin } from './index';
 const action = 'toggleCodeBlockDisabled';
 const cleanups: Array<() => void> = [];
 
-function setup(code = ['module target', 'moduleEnd'], installed = true) {
+function setup(code = ['module target', 'moduleEnd']) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
@@ -22,7 +22,7 @@ function setup(code = ['module target', 'moduleEnd'], installed = true) {
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
 	};
-	let cleanup = installed ? toggleDisabledPlugin.setup(context) : undefined;
+	let cleanup: (() => void) | undefined = toggleDisabledPlugin.setup(context);
 	const disposePlugin = () => {
 		cleanup?.();
 		cleanup = undefined;
@@ -83,10 +83,8 @@ describe('toggle disabled plugin', () => {
 		['module', ['module target', 'moduleEnd']],
 		['function', ['function target', 'functionEnd']],
 		['note', ['note target', 'noteEnd']],
-		['group', ['group target', 'groupEnd']],
 		['constants', ['constants target', 'constantsEnd']],
 		['includes', ['includes', 'includesEnd']],
-		['project', ['pass']],
 		['unknown', ['int value 1']],
 	] as const)('contributes the correct label for %s', async (label, source) => {
 		const test = setup([...source]);
@@ -97,6 +95,19 @@ describe('toggle disabled plugin', () => {
 			close: true,
 		});
 	});
+
+	it.each([['group target', 'groupEnd'], ['pass']])(
+		'does not toggle unsupported structural source: %j',
+		async (...source) => {
+			const test = setup(source);
+			const revision = test.state.projectChange.revision;
+			expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
+			test.events.dispatch(action, { codeBlock: test.block });
+			expect(test.block.disabled).toBe(false);
+			expect(test.block.code).not.toContain('; @disabled');
+			expect(test.state.projectChange.revision).toBe(revision);
+		}
+	);
 
 	it('toggles the clicked block rather than the selected block and updates the menu label', async () => {
 		const test = setup();
@@ -128,8 +139,8 @@ describe('toggle disabled plugin', () => {
 		expect(test.state.projectChange.revision).toBe(revision);
 	});
 
-	it.each([false, true])('does not contribute actions without a live installation: installed=%s', async installed => {
-		const test = setup(undefined, installed);
+	it('removes action and menu registrations on disposal', async () => {
+		const test = setup();
 		test.disposePlugin();
 		expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
 		test.events.dispatch(action, { codeBlock: test.block });
