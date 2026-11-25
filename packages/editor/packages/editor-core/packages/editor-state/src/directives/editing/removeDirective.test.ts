@@ -86,4 +86,11 @@ describe('removeDirective', () => {
 	it('preserves neighboring trailing directives and the instruction', () => {
 		expect(removeDirective(['int gate 0 ; @testDirective @watch'], 'testDirective')).toEqual(['int gate 0 ; @watch']);
 	});
+
+	it('preserves preceding trailing directives on a block declaration', () => {
+		expect(removeDirective(['module test ; @pos 2 3 @disabled', 'moduleEnd'], 'disabled')).toEqual([
+			'module test ; @pos 2 3',
+			'moduleEnd',
+		]);
+	});
 });

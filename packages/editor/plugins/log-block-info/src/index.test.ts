@@ -67,7 +67,10 @@ describe('log block info plugin', () => {
 		['function', ['function target', 'functionEnd']],
 		['note', ['note target', 'noteEnd']],
 		['group', ['group target', 'groupEnd']],
-		['module', ['constants target', 'constantsEnd']],
+		['constants', ['constants target', 'constantsEnd']],
+		['includes', ['includes', 'includesEnd']],
+		['project', ['pass']],
+		['unknown', ['int value 1']],
 	] as const)('contributes the inspection label for %s', async (label, source) => {
 		const test = setup([...source]);
 		expect((await test.openMenu()).items).toContainEqual({

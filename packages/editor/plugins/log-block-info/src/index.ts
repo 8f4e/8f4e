@@ -10,11 +10,7 @@ export const logBlockInfoPlugin: EditorPlugin = {
 		};
 		events.on(action, onLog);
 		const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
-			const label = codeBlock.childLevel
-				? 'group'
-				: codeBlock.blockType === 'function' || codeBlock.blockType === 'note'
-					? codeBlock.blockType
-					: 'module';
+			const label = codeBlock.childLevel ? 'group' : codeBlock.isProjectScope ? 'project' : codeBlock.blockType;
 			return {
 				title: `Log ${label} info to console`,
 				action,

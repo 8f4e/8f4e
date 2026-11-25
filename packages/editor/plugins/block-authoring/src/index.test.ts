@@ -71,6 +71,39 @@ it('allows duplicate generated names without numbering them', () => {
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
 });
 
+it.each([
+	['module', ['module target', 'moduleEnd']],
+	['function', ['function target', 'functionEnd']],
+	['note', ['note target', 'noteEnd']],
+	['group', ['group target', 'groupEnd']],
+	['constants', ['constants target', 'constantsEnd']],
+	['includes', ['includes', 'includesEnd']],
+	['project', ['pass']],
+	['unknown', ['int value 1']],
+] as const)('labels deletion using the block kind: %s', async (label, source) => {
+	const test = setup();
+	const {
+		insertedBlocks: [block],
+	} = test.store.projectTransactions.apply({
+		inserts: [
+			{
+				targetLevel: test.state.project.rootLevel,
+				source: {
+					code: [source[0], '; @pos 12 10', ...source.slice(1)],
+					...(label === 'group' ? { childLevel: { entries: [], blocks: [] } } : {}),
+				},
+			},
+		],
+	});
+	const items = await test.openMenu(block.x - test.state.viewport.x + 8, block.y - test.state.viewport.y + 8);
+	expect(items).toContainEqual({
+		title: `Delete ${label}`,
+		action: 'deleteCodeBlock',
+		payload: { codeBlock: block },
+		close: true,
+	});
+});
+
 it('deletes the clicked block instead of the selected block', async () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {

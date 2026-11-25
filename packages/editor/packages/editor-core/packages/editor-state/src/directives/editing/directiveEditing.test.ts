@@ -24,3 +24,36 @@ describe('directiveEditing with chained directives', () => {
 		]);
 	});
 });
+
+describe('upsertDirective without arguments', () => {
+	it.each([
+		{ code: [], expected: ['; @flag'] },
+		{ code: ['module test'], expected: ['module test', '; @flag'] },
+	])('supports short source arrays: $code', ({ code, expected }) => {
+		expect(upsertDirective(code, 'flag')).toEqual(expected);
+	});
+
+	it('canonicalizes a flag while preserving neighboring directives and prose', () => {
+		const code = [
+			'module test',
+			'; @group audio',
+			'; a comment mentioning @flag',
+			'; @flag',
+			'; @watch',
+			'output out 1',
+			'; @flag',
+			'moduleEnd',
+		];
+		const expected = [
+			'module test',
+			'; @flag',
+			'; @group audio',
+			'; a comment mentioning @flag',
+			'; @watch',
+			'output out 1',
+			'moduleEnd',
+		];
+		expect(upsertDirective(code, 'flag')).toEqual(expected);
+		expect(upsertDirective(expected, 'flag')).toEqual(expected);
+	});
+});
