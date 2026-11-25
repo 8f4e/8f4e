@@ -438,6 +438,80 @@ describe('resolveMemoryReferences', () => {
 	});
 });
 
+describe('min/max result types', () => {
+	const createFloat64Memory = () => ({
+		value: createMemoryDeclaration('value', {
+			type: 'float64',
+			elementWordSize: 8,
+			allocationUnitCount: 2,
+			isInteger: false,
+			isFloat64: true,
+		}),
+		doubles: createMemoryDeclaration('doubles', {
+			type: 'float64',
+			numberOfElements: 2,
+			elementWordSize: 8,
+			allocationUnitCount: 4,
+			isInteger: false,
+			isFloat64: true,
+		}),
+	});
+	const context = withRemoteModules(
+		createTestContext(
+			createPlannedModule('main', {
+				...createFloat64Memory(),
+				single: createMemoryDeclaration('single', { type: 'float', isInteger: false }),
+				integer: createMemoryDeclaration('integer', { type: 'int16u', elementWordSize: 2, isUnsigned: true }),
+				pointer: createMemoryDeclaration('pointer', {
+					type: 'float64*',
+					pointeeBaseType: 'float64',
+					pointerDepth: 1,
+				}),
+			})
+		),
+		[createPlannedModule('source', createFloat64Memory())]
+	);
+
+	it.each(['value', 'doubles', 'source:value', 'source:doubles'])('preserves float64 min/max types for %s', target => {
+		for (const [query, expected] of [
+			['min', -Number.MAX_VALUE],
+			['max', Number.MAX_VALUE],
+		] as const) {
+			expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`${query}(${target})`)), valueLine)).toEqual({
+				value: expected,
+				isInteger: false,
+				isFloat64: true,
+			});
+		}
+	});
+
+	it.each([
+		['single', -3.4028234663852886e38, 3.4028234663852886e38, false],
+		['integer', 0, 65535, true],
+		['pointer', -2147483648, 2147483647, true],
+	] as const)('preserves existing min/max types for %s', (target, min, max, isInteger) => {
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`min(${target})`)), valueLine)).toEqual({
+			value: min,
+			isInteger,
+		});
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`max(${target})`)), valueLine)).toEqual({
+			value: max,
+			isInteger,
+		});
+	});
+
+	it.each([
+		['min', -Number.MAX_VALUE / 2],
+		['max', Number.MAX_VALUE / 2],
+	] as const)('preserves float64 when folding %s(value)/2', (query, expected) => {
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`${query}(value)/2`)), valueLine)).toEqual({
+			value: expected,
+			isInteger: false,
+			isFloat64: true,
+		});
+	});
+});
+
 describe('tryResolveValueArgument', () => {
 	const samples = createMemoryDeclaration('samples', {
 		byteAddress: 32,
@@ -1137,6 +1211,7 @@ describe('metadata query compatibility', () => {
 				).toEqual({
 					value: [1, size, max, min][index],
 					isInteger: index < 2 || isInteger,
+					...(baseType === 'float64' && index >= 2 ? { isFloat64: true } : {}),
 				});
 			}
 		}
