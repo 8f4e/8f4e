@@ -19,9 +19,6 @@ export function resolveProjectMemoryInitializers(
 	const defaults = new Map<string, Map<number, Const>>();
 	for (const scope of scopes) {
 		for (const line of scope.initializers) {
-			if (scope.parentGroupPath === undefined) {
-				throw getError(ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP, line, {});
-			}
 			const [destination, source] = line.arguments;
 			const name = destination.targetMemoryId;
 			const resolved = resolveMemoryTarget(

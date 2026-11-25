@@ -8,7 +8,6 @@ let compileAndUpdateMemory: typeof compileAndUpdateMemoryType;
 
 const createInput = (modules: Array<{ code: string[] }>, entry = 'main'): ProjectObjectModel => ({
 	entries: [entry],
-	code: [],
 	execution: [...modules.map((module, id) => ({ ...module, type: 'module' as const, id, entry }))],
 	constants: [],
 	functions: [],

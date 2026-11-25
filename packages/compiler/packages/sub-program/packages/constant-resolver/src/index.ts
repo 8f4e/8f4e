@@ -357,14 +357,6 @@ function buildProjectNamespaceAliases(
 				);
 			}
 
-			if (scope.parentGroupPath === undefined) {
-				throw constantError(
-					ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE,
-					`Passed name ${name} is undefined in the parent project scope`,
-					line
-				);
-			}
-
 			const target = createProjectModuleId(scope.parentGroupPath, name);
 			aliases.set(alias, target);
 			passLinesByAlias.set(alias, line);

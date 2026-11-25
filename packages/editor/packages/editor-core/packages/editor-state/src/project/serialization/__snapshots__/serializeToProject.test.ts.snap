@@ -2,7 +2,6 @@
 
 exports[`serializeToProject > serializes basic project state without compiled data 1`] = `
 {
-  "code": [],
   "constants": [],
   "entries": [],
   "execution": [],

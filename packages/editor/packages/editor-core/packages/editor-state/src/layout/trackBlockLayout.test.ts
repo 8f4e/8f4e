@@ -30,17 +30,6 @@ function setup(initializeGrid = true) {
 }
 
 describe('project loading and block layout', () => {
-	it('rejects a model with standalone root source without replacing the current project', () => {
-		const { state, load, loadSource } = setup();
-		loadSource('entry main\nmodule retained\nmoduleEnd\nentryEnd');
-		const previousLevel = state.project.rootLevel;
-		expect(() => load({ ...EMPTY_DEFAULT_PROJECT, code: ['pass env'] })).toThrow(
-			'Root project source must be inside document blocks'
-		);
-		expect(state.project.rootLevel).toBe(previousLevel);
-		expect(previousLevel.blocks.some(block => block.name === 'retained')).toBe(true);
-	});
-
 	it('renders project-level includes blocks from imported project state', () => {
 		const { state, load } = setup();
 		const includesBlock = ['includes', 'include std/events/risingEdge', 'includesEnd'];

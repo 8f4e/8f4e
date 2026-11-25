@@ -94,8 +94,6 @@ function formatSemanticMessage(
 			return `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} cannot be rebound. (${code})`;
 		case ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET:
 			return getProjectMemoryExposureTargetMessage(details);
-		case ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP:
-			return `init can only be used at group level. (${code})`;
 		case ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET:
 			return `Initialization target must be exposed scalar memory${details?.identifier ? `: ${details.identifier}` : ''}. (${code})`;
 		case ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER:

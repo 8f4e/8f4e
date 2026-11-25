@@ -58,7 +58,6 @@ function serializeExecution(project: ProjectObjectModel): string[] {
  * Throws if any code block fails export-gate validation.
  */
 export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
-	if (project.code.length > 0) throw new Error('Root project source must be inside document blocks');
 	const documentBlocks = getDocumentBlocks(project);
 	const allBlocks = getAllBlocks(project);
 

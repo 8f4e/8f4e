@@ -258,7 +258,7 @@ describe('public editor editing handle', () => {
 		});
 		expect(target.blockType).toBe('unknown');
 		expect(target.entry).toBe('alternate');
-		expect(serializeToProject(state)).toMatchObject({ code: [], unknown: [{ id: 0, code: [code] }], execution: [] });
+		expect(serializeToProject(state)).toMatchObject({ unknown: [{ id: 0, code: [code] }], execution: [] });
 		editing.applyEdits({
 			expectedRevision: editing.getRevision(),
 			edits: [{ type: 'update', blockId, code: ['module original', 'moduleEnd'] }],

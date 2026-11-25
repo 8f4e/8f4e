@@ -20,7 +20,7 @@ describe('project-preparser integration', () => {
 			].join('\n')
 		);
 
-		expect(project.code).toEqual([]);
+		expect(project).not.toHaveProperty('code');
 		expect(getProjectGroups(project)[0].code).toEqual(['group audio', '; child contract', 'pass env', 'groupEnd']);
 	});
 

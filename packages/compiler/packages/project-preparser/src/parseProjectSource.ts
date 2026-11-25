@@ -91,21 +91,21 @@ function readGroup(
 function readScopeLine(node: SourceLine, context: ScopeContext): void {
 	const line = node.text;
 	const trimmed = line.trim();
-	const { project } = context;
 	if (context.kind === 'group') {
+		const { project } = context;
 		if (node.declaration === 'expose') {
 			const exposure = {
 				...parseProjectMemoryExposureLine(trimmed, node.lineNumber),
 				lineNumber: project.code.length,
 			};
-			if (context.project.exposures.some(item => item.name === exposure.name))
+			if (project.exposures.some(item => item.name === exposure.name))
 				throw syntaxErrorAt(
 					SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
 					`Parse error at line ${node.lineNumber}: duplicate exposure "${exposure.name}"`,
 					{ kind: 'document' },
 					{ lineNumber: node.lineNumber - 1 }
 				);
-			context.project.exposures.push(exposure);
+			project.exposures.push(exposure);
 		}
 		project.code.push(line);
 		return;

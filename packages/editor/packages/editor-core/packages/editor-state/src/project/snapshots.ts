@@ -58,7 +58,6 @@ export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSn
 
 /** Translate a loaded compiler project into authored editor source, discarding the root env. */
 export function snapshotFromProjectModel(project: ProjectObjectModel): EditorProjectSnapshot {
-	if (project.code.length > 0) throw new Error('Root project source must be inside document blocks');
 	const authoredProject = {
 		...project,
 		constants: project.constants.filter(block => !isEnvironmentSource(block.code)),

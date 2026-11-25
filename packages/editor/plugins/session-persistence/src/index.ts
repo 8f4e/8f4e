@@ -30,7 +30,12 @@ export function createSessionPersistencePlugin({
 						const saved = storage.getItem(storageKey);
 						if (saved !== null) {
 							const project: ProjectObjectModel | null = JSON.parse(saved);
-							if (project !== null) events.dispatch('loadProject', { project });
+							if (project !== null) {
+								// Older sessions may still have the removed root source field.
+								if ('code' in project && Array.isArray(project.code) && project.code.length > 0)
+									throw new Error('Root project source must be inside document blocks');
+								events.dispatch('loadProject', { project });
+							}
 						}
 					} catch (error) {
 						restoreFailed = true;

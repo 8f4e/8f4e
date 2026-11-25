@@ -21,11 +21,7 @@ import {
 	type ValidatedFunctionAST,
 } from '@8f4e/language-spec';
 import { validateProjectCodeBlock } from '@8f4e/project-preparser';
-import {
-	classifyProjectScopeLine,
-	parseProjectConstantNamespacePassLine,
-	parseProjectMemoryInitializerLine,
-} from '@8f4e/tokenizer';
+import { parseProjectConstantNamespacePassLine, parseProjectMemoryInitializerLine } from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
@@ -33,16 +29,16 @@ import { resolveFunctionPasses } from './resolveFunctionPasses';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectScopeDeclarations(code: readonly string[], projectPath: ProjectGroupPath, isGroup: boolean) {
+function appendGroupDeclarations(
+	code: readonly string[],
+	groupPath: ProjectGroupPath,
+	parentGroupPath: ProjectGroupPath,
+	program: ComposedProgram
+): void {
 	const passes: ProjectConstantNamespacePassLine[] = [];
 	const initializers: ProjectMemoryInitializerLine[] = [];
-	const diagnosticSource = { kind: 'scope', projectGroupPath: projectPath } as const;
-	const declarations = isGroup
-		? validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' })
-		: code.flatMap((line, lineNumber) => {
-				const scopeLine = classifyProjectScopeLine(line);
-				return scopeLine.kind === 'declaration' ? [{ instruction: scopeLine.instruction, lineNumber }] : [];
-			});
+	const diagnosticSource = { kind: 'scope', projectGroupPath: groupPath } as const;
+	const declarations = validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' });
 	for (const { instruction, lineNumber } of declarations) {
 		if (instruction === 'expose') continue;
 		const sourceLine = code[lineNumber];
@@ -58,7 +54,9 @@ function collectProjectScopeDeclarations(code: readonly string[], projectPath: P
 		if (result.value.instruction === 'pass') passes.push({ ...result.value, diagnosticSource });
 		else initializers.push({ ...result.value, diagnosticSource });
 	}
-	return { passes, initializers };
+	if (initializers.length > 0)
+		program.projectMemoryInitializerScopes.push({ groupPath, parentGroupPath, initializers });
+	if (passes.length > 0) program.projectConstantNamespaceScopes.push({ groupPath, parentGroupPath, passes });
 }
 
 function appendMemoryExposureAliases(
@@ -140,7 +138,6 @@ function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFun
 function appendUnit(
 	project: ProjectObjectModel,
 	projectPath: ProjectGroupPath,
-	parentProjectPath: ProjectGroupPath | undefined,
 	program: ComposedProgram,
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath,
 	exposures: readonly ProjectMemoryExposure[] = []
@@ -161,25 +158,6 @@ function appendUnit(
 	};
 	for (const name of project.entries) ensureEntry(name);
 	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
-	const { initializers: memoryInitializers, passes: constantNamespacePasses } = collectProjectScopeDeclarations(
-		project.code,
-		projectPath,
-		parentProjectPath !== undefined
-	);
-	if (memoryInitializers.length > 0) {
-		program.projectMemoryInitializerScopes.push({
-			groupPath: projectPath,
-			...(parentProjectPath !== undefined ? { parentGroupPath: parentProjectPath } : {}),
-			initializers: memoryInitializers,
-		});
-	}
-	if (constantNamespacePasses.length > 0) {
-		program.projectConstantNamespaceScopes.push({
-			groupPath: projectPath,
-			...(parentProjectPath !== undefined ? { parentGroupPath: parentProjectPath } : {}),
-			passes: constantNamespacePasses,
-		});
-	}
 
 	const prefix = projectPath === ROOT_PROJECT_GROUP_PATH ? undefined : `${projectPath}/`;
 	const qualify = <TAst extends ValidatedAST>(
@@ -229,14 +207,8 @@ function appendUnit(
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
-			const childEntries = appendUnit(
-				block,
-				groupPath,
-				projectPath,
-				program,
-				includedFunctionsByProjectPath,
-				block.exposures
-			);
+			appendGroupDeclarations(block.code, groupPath, projectPath, program);
+			const childEntries = appendUnit(block, groupPath, program, includedFunctionsByProjectPath, block.exposures);
 			groupTargets.add(block.name);
 			const childMain = childEntries.get('main');
 			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
@@ -283,7 +255,7 @@ export function composeProgram(
 		cache,
 	};
 
-	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
+	appendUnit(project, ROOT_PROJECT_GROUP_PATH, program, includedFunctionsByProjectPath);
 	resolveFunctionPasses(program);
 	return program;
 }
