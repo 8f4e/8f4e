@@ -19,16 +19,17 @@
 
 import type {
 	CompilerDiagnosticLine,
-	ProjectEntryDiagnosticLocation,
+	LineErrorCodeValue,
+	ProjectEntryName,
 	ProjectGroupPath,
 	ProjectModuleId,
 	StackItem,
 } from '@8f4e/language-spec';
 import {
 	ErrorCode,
-	type ErrorCodeValue,
 	MAX_FUNCTION_PARAMETERS,
 	MAX_FUNCTION_RETURN_VALUES,
+	ROOT_PROJECT_GROUP_PATH,
 	SUPPORTED_MEMORY_ACCESS_BYTE_WIDTHS,
 } from '@8f4e/language-spec';
 import { CompilerError } from './compilerError';
@@ -64,10 +65,10 @@ function getProjectMemoryExposureTargetMessage(details: ErrorDetails = {}): stri
 	return `Project memory exposure${publicReference} targets undeclared memory${targetReference}. (${code})`;
 }
 
-/** Formats semantic wording from the source row when available, optional details, and current stack facts. */
+/** Formats semantic wording from the source row, optional details, and current stack facts. */
 function formatSemanticMessage(
-	code: ErrorCodeValue,
-	lineNumber: number | undefined,
+	code: LineErrorCodeValue,
+	lineNumber: number,
 	details: ErrorDetails | undefined,
 	stack: readonly Pick<StackItem, 'kind' | 'valueType'>[]
 ): string {
@@ -120,8 +121,8 @@ function formatSemanticMessage(
 			return 'Missing module ID. (' + code + ')';
 		case ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS: {
 			return (
-				(lineNumber !== undefined ? `${lineNumber}: ` : '') +
-				'Expected 0 elements on the stack, found ' +
+				lineNumber +
+				': Expected 0 elements on the stack, found ' +
 				stack.length +
 				' [' +
 				stack.map(item => (item.kind === 'address' ? 'address' : item.valueType)).join(', ') +
@@ -272,8 +273,6 @@ function formatSemanticMessage(
 				code +
 				')'
 			);
-		case ErrorCode.RESERVED_ROOT_ENTRY_NAME:
-			return `Root entry name${details?.identifier ? ` "${details.identifier}"` : ''} is reserved for a compiler-generated export. (${code})`;
 		case ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED:
 			return (
 				'Pointer dereference depth exceeds the declared pointer depth' +
@@ -308,22 +307,33 @@ function formatSemanticMessage(
 	}
 }
 
-/** Creates a semantic source error at an owned source line or named project entry. */
+/** Creates a semantic source error. The caller must supply the owning source line. */
 export function getError(
-	code: ErrorCodeValue,
-	source: CompilerDiagnosticLine | ProjectEntryDiagnosticLocation,
+	code: LineErrorCodeValue,
+	line: CompilerDiagnosticLine,
 	{ symbol, stack = [], details }: SemanticErrorOptions = {}
 ): CompilerError {
-	const location =
-		'diagnosticSource' in source ? { ...source.diagnosticSource, lineNumber: source.lineNumber } : source;
-	const instruction = 'diagnosticSource' in source ? source.instruction : 'entry';
 	return new CompilerError({
 		kind: 'source',
 		domain: 'semantic',
 		code,
-		message: formatSemanticMessage(code, 'lineNumber' in location ? location.lineNumber : undefined, details, stack),
-		location,
-		...(instruction !== undefined ? { instruction } : {}),
+		message: formatSemanticMessage(code, line.lineNumber, details, stack),
+		location: { ...line.diagnosticSource, lineNumber: line.lineNumber },
+		...(line.instruction !== undefined ? { instruction: line.instruction } : {}),
 		...(symbol !== undefined ? { symbol } : {}),
+	});
+}
+
+/** Reports a root entry that conflicts with a compiler-generated export, without inventing a source row. */
+export function reservedRootEntryError(entryName: ProjectEntryName): CompilerError {
+	const code = ErrorCode.RESERVED_ROOT_ENTRY_NAME;
+	return new CompilerError({
+		kind: 'source',
+		domain: 'semantic',
+		code,
+		message: `Root entry name "${entryName}" is reserved for a compiler-generated export. (${code})`,
+		location: { kind: 'project-entry', projectGroupPath: ROOT_PROJECT_GROUP_PATH, entryName },
+		instruction: 'entry',
+		symbol: entryName,
 	});
 }

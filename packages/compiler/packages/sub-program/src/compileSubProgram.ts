@@ -1,4 +1,4 @@
-import { getError, withCompilerStage } from '@8f4e/compiler-diagnostics';
+import { getError, reservedRootEntryError, withCompilerStage } from '@8f4e/compiler-diagnostics';
 import { resolveConstants } from '@8f4e/constant-resolver';
 import { inlineFunctions } from '@8f4e/function-inliner';
 import type {
@@ -13,7 +13,7 @@ import type {
 	MemoryLayoutPlan,
 	ProjectMemoryExposuresByGroupPath,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode, ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode, INIT_DEFAULTS_EXPORT_NAME } from '@8f4e/language-spec';
 import { resolveMemoryDefaults } from '@8f4e/memory-default-resolver';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
 import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
@@ -30,7 +30,7 @@ import { registerFunctions } from './semantic/buildNamespace';
 const DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS = 1;
 
 /** Built-in WebAssembly export names that project entries and user functions cannot reuse. */
-const RESERVED_EXPORT_NAMES = ['initDefaults'];
+const RESERVED_EXPORT_NAMES: readonly string[] = [INIT_DEFAULTS_EXPORT_NAME];
 
 /** Validates exported entries and collects the names unavailable to exported user functions. */
 function collectReservedExportNames(entries: readonly ComposedEntry[]): string[] {
@@ -38,11 +38,7 @@ function collectReservedExportNames(entries: readonly ComposedEntry[]): string[]
 	for (const { exportName } of entries) {
 		if (exportName === undefined) continue;
 		if (RESERVED_EXPORT_NAMES.includes(exportName)) {
-			throw getError(
-				ErrorCode.RESERVED_ROOT_ENTRY_NAME,
-				{ kind: 'project-entry', projectGroupPath: ROOT_PROJECT_GROUP_PATH, entryName: exportName },
-				{ symbol: exportName, details: { identifier: exportName } }
-			);
+			throw reservedRootEntryError(exportName);
 		}
 		names.push(exportName);
 	}

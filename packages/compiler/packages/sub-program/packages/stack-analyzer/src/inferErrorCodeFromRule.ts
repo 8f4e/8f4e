@@ -1,5 +1,5 @@
 import type { OperandRule } from '@8f4e/language-spec';
-import { ErrorCode, type ErrorCodeValue } from '@8f4e/language-spec';
+import { ErrorCode, type LineErrorCodeValue } from '@8f4e/language-spec';
 
 /**
  * Maps an operand rule from the language spec to the semantic error emitted when it fails.
@@ -7,7 +7,7 @@ import { ErrorCode, type ErrorCodeValue } from '@8f4e/language-spec';
  * @param rule - Operand rule from the language spec.
  * @returns The compiler error instance.
  */
-export function inferErrorCodeFromRule(rule: OperandRule | OperandRule[]): ErrorCodeValue {
+export function inferErrorCodeFromRule(rule: OperandRule | OperandRule[]): LineErrorCodeValue {
 	if (Array.isArray(rule)) {
 		return ErrorCode.TYPE_MISMATCH;
 	} else if (rule === 'int') {

@@ -1,7 +1,7 @@
 import type { CompilerDiagnosticLine } from '@8f4e/language-spec';
 import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
-import { getError } from './semanticError';
+import { getError, reservedRootEntryError } from './semanticError';
 
 describe('getError', () => {
 	const line = {
@@ -11,31 +11,15 @@ describe('getError', () => {
 		arguments: [],
 	} satisfies CompilerDiagnosticLine;
 
-	it('returns a diagnostic for every compiler error code', () => {
+	it('returns a diagnostic for every line-based semantic error code', () => {
 		for (const code of Object.values(ErrorCode)) {
+			if (code === ErrorCode.RESERVED_ROOT_ENTRY_NAME) continue;
 			const error = getError(code, line);
 
 			expect(error.diagnostic.code).toBe(code);
 			expect(error.diagnostic.location).toEqual({ kind: 'document', lineNumber: line.lineNumber });
 			expect(error.message).toContain(`(${code})`);
 		}
-	});
-
-	it('locates an entry-table error by name and scope without inventing a row', () => {
-		const location = { kind: 'project-entry', projectGroupPath: '', entryName: 'initDefaults' } as const;
-		const error = getError(ErrorCode.RESERVED_ROOT_ENTRY_NAME, location, {
-			symbol: location.entryName,
-			details: { identifier: location.entryName },
-		});
-		expect(error.diagnostic).toEqual({
-			kind: 'source',
-			domain: 'semantic',
-			code: ErrorCode.RESERVED_ROOT_ENTRY_NAME,
-			message: `Root entry name "initDefaults" is reserved for a compiler-generated export. (${ErrorCode.RESERVED_ROOT_ENTRY_NAME})`,
-			location,
-			instruction: 'entry',
-			symbol: location.entryName,
-		});
 	});
 
 	it('formats stack mismatch diagnostics with stack item types', () => {
@@ -102,5 +86,20 @@ describe('getError', () => {
 		const error = getError(ErrorCode.DUPLICATE_IDENTIFIER, line, { details: { identifier: 'same' } });
 
 		expect(error.message).toBe(`Duplicate identifier: same. (${ErrorCode.DUPLICATE_IDENTIFIER})`);
+	});
+});
+
+describe('reservedRootEntryError', () => {
+	it('locates the error by name and scope without inventing a row', () => {
+		const error = reservedRootEntryError('initDefaults');
+		expect(error.diagnostic).toEqual({
+			kind: 'source',
+			domain: 'semantic',
+			code: ErrorCode.RESERVED_ROOT_ENTRY_NAME,
+			message: `Root entry name "initDefaults" is reserved for a compiler-generated export. (${ErrorCode.RESERVED_ROOT_ENTRY_NAME})`,
+			location: { kind: 'project-entry', projectGroupPath: '', entryName: 'initDefaults' },
+			instruction: 'entry',
+			symbol: 'initDefaults',
+		});
 	});
 });

@@ -66,6 +66,9 @@ export const ErrorCode = {
 
 export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
 
+/** Semantic error codes that are located at a source row. */
+export type LineErrorCodeValue = Exclude<ErrorCodeValue, typeof ErrorCode.RESERVED_ROOT_ENTRY_NAME>;
+
 /** Include resolution failures, distinguished by the diagnostic's include domain. */
 export const IncludeErrorCode = {
 	INVALID_DECLARATION: 0,

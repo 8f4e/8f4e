@@ -4,10 +4,13 @@ Shared construction and transport of compiler diagnostics. Diagnostic types, sou
 belong to `@8f4e/language-spec`; this package owns `CompilerError`, semantic wording and source-error factories.
 It depends on language-spec and does not depend on the tokenizer or compiler pipeline.
 
-`getError(code, source, options?)` creates a semantic `CompilerError`. A source line requires `diagnosticSource`
-and a zero-based `lineNumber`; an entry-table error uses a named `project-entry` location instead. Options contain
-only `symbol`, stack item kinds/types, and message `details`; they never supply or repair source ownership. Compiler
-passes preserve source ownership when copying or substituting lines.
+`getError(code, line, options?)` creates a semantic `CompilerError` at a source line. The line requires
+`diagnosticSource` and a zero-based `lineNumber`. Options contain only `symbol`, stack item kinds/types, and
+message `details`; they never supply or repair source ownership. Compiler passes preserve source ownership when
+copying or substituting lines.
+
+`reservedRootEntryError(entryName)` reports a semantic error for an entry whose name conflicts with a
+compiler-generated export. It derives the message and named `project-entry` location from the entry name alone.
 
 `syntaxErrorAt(code, message, source, line)` constructs a syntax error at an explicitly supplied source position.
 Pure syntax helpers return failure data for their caller to locate. Expected source errors use the single

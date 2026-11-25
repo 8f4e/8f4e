@@ -4,6 +4,7 @@ import type {
 	CompilerASTLine,
 	ConstantResolutionBlockFacts,
 	ConstantResolutionLineFacts,
+	LineErrorCodeValue,
 	MemoryDeclarationLine,
 	MemoryLayoutPlan,
 	ModuleAST,
@@ -16,7 +17,6 @@ import {
 	ALLOCATION_UNIT_BYTE_SIZE,
 	ArgumentType,
 	ErrorCode,
-	type ErrorCodeValue,
 	isArrayMemoryDeclarationLine,
 	isBinaryCompileTimeExpression,
 	isMemoryDeclarationLine,
@@ -57,7 +57,7 @@ export interface SubProgramMemoryLayoutPlanInput<TModule extends ModuleAST = Val
 }
 
 function plannerError(
-	compilerErrorCode: ErrorCodeValue,
+	compilerErrorCode: LineErrorCodeValue,
 	line: CompilerASTLine,
 	message?: string,
 	details?: MemoryPlannerErrorDetails

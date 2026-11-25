@@ -1,0 +1,33 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Group-local entries may use the same name as the generated host initializer.
+The host initializer sets memory defaults before the group entry is called.
+noteEnd
+
+entry test
+group voice
+entry main
+module driver
+int& stateValue &state:value
+
+push *stateValue
+assertEqual 7
+call initDefaults
+push *stateValue
+assertEqual 9
+moduleEnd
+entryEnd
+
+entry initDefaults
+module state
+int value 7
+push &value
+push 9
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
