@@ -1,6 +1,6 @@
 import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
-import type { CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, InternalPointerEvent, ViewportScrollEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { afterEach, expect, it, vi } from 'vitest';
 import createEvents from './events';
@@ -145,6 +145,25 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	expect(test.state.project.selectedCodeBlock).toBeUndefined();
 	expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	expect(test.state.projectChange.revision).toBe(revision);
+});
+
+it('keeps viewport scrolling blocked while a menu or modal dialog is open', async () => {
+	const test = setup();
+	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
+	const scroll: ViewportScrollEvent = { deltaX: 17, deltaY: 31, stopPropagation: false };
+
+	await openBlockMenu(test);
+	test.events.dispatch('viewportscroll', { ...scroll });
+	expect(test.state.viewport).toMatchObject(viewport);
+	test.events.dispatch('closeContextMenu');
+
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
+	test.events.dispatch('viewportscroll', { ...scroll });
+	expect(test.state.viewport).toMatchObject(viewport);
+	test.events.dispatch('removeDialog', 'modal');
+
+	test.events.dispatch('viewportscroll', scroll);
+	expect(test.state.viewport).toMatchObject({ x: viewport.x + 17, y: viewport.y + 31 });
 });
 
 it('forwards menu presses only after capture-only probes complete', async () => {

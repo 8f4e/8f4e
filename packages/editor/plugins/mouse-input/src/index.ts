@@ -1,5 +1,5 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent, ViewportScrollEvent } from '@8f4e/editor-state-types';
 
 const POINTER_EVENTS = {
 	mousedown: 'pointerdown',
@@ -53,20 +53,11 @@ export function createMouseInputPlugin({
 
 			function onWheelEvent(event: WheelEvent) {
 				event.preventDefault();
-				const movementX = event.deltaX * -1;
-				const movementY = event.deltaY * -1;
-
-				events.dispatch('pointermove', {
-					x: event.offsetX,
-					y: event.offsetY,
-					movementX,
-					movementY,
-					buttons: 1,
+				events.dispatch('viewportscroll', {
+					deltaX: event.deltaX,
+					deltaY: event.deltaY,
 					stopPropagation: false,
-					canvasWidth: inputTarget.clientWidth,
-					canvasHeight: inputTarget.clientHeight,
-					altKey: event.altKey,
-				} satisfies InternalPointerEvent);
+				} satisfies ViewportScrollEvent);
 			}
 
 			if (captureWheel) {

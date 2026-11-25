@@ -45,7 +45,7 @@ export default function registerDialogHandlers(store: StateManager<State>, event
 		event.stopPropagation = true;
 	}
 
-	function blockPointerEvent(event: InternalPointerEvent): void {
+	function blockInputEvent(event: Pick<InternalPointerEvent, 'stopPropagation'>): void {
 		if (state.dialogStack.length > 0) event.stopPropagation = true;
 	}
 
@@ -58,10 +58,11 @@ export default function registerDialogHandlers(store: StateManager<State>, event
 	events.on('removeDialog', removeDialog);
 	events.on('clearDialogs', clearDialogs);
 	events.on('activateDialogButton', activateButton);
-	events.on('pointermove', blockPointerEvent, { capture: true, layer: INPUT_LAYERS.modalOverlay });
+	events.on('pointermove', blockInputEvent, { capture: true, layer: INPUT_LAYERS.modalOverlay });
+	events.on('viewportscroll', blockInputEvent, { capture: true, layer: INPUT_LAYERS.modalOverlay });
 	events.on('pointerdown', onPointerDown, { layer: INPUT_LAYERS.modalOverlay });
-	events.on('pointerup', blockPointerEvent, { layer: INPUT_LAYERS.modalOverlay });
-	events.on('contextmenu', blockPointerEvent, { layer: INPUT_LAYERS.modalOverlay });
+	events.on('pointerup', blockInputEvent, { layer: INPUT_LAYERS.modalOverlay });
+	events.on('contextmenu', blockInputEvent, { layer: INPUT_LAYERS.modalOverlay });
 	syncVisibleDialog();
 
 	return () => {
@@ -70,9 +71,10 @@ export default function registerDialogHandlers(store: StateManager<State>, event
 		events.off('removeDialog', removeDialog);
 		events.off('clearDialogs', clearDialogs);
 		events.off('activateDialogButton', activateButton);
-		events.off('pointermove', blockPointerEvent);
+		events.off('pointermove', blockInputEvent);
+		events.off('viewportscroll', blockInputEvent);
 		events.off('pointerdown', onPointerDown);
-		events.off('pointerup', blockPointerEvent);
-		events.off('contextmenu', blockPointerEvent);
+		events.off('pointerup', blockInputEvent);
+		events.off('contextmenu', blockInputEvent);
 	};
 }

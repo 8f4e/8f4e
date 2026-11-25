@@ -34,7 +34,7 @@ import type {
 	MenuStackEntry,
 } from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
-import type { ProjectViewport, Viewport } from './features/viewport/types';
+import type { ProjectViewport, Viewport, ViewportScrollEvent } from './features/viewport/types';
 import type {
 	CodeBlockPointerDownEvent,
 	CodeError,
@@ -93,6 +93,7 @@ export type {
 	ResolvedGlobalEditorDirectives,
 	Size,
 	TypedValueKind,
+	ViewportScrollEvent,
 };
 
 export type InfoValue = unknown;

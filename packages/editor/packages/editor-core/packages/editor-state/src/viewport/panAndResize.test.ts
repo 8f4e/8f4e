@@ -1,11 +1,11 @@
 import { EventEmitter } from 'node:events';
-import type { EventDispatcher, InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { EventDispatcher, InternalPointerEvent, ViewportScrollEvent } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
 import { expect, it, vi } from 'vitest';
 import { createMockState } from '~/__tests__/helpers/mockEditorState';
 import registerViewportHandlers from './panAndResize';
 
-it('keeps the final pixel position when a pan ends between grid lines', () => {
+it.each(['pointermove', 'viewportscroll'] as const)('keeps the final pixel position after %s panning', input => {
 	const state = createMockState();
 	const store = createStateManager(state);
 	const emitter = new EventEmitter();
@@ -28,13 +28,16 @@ it('keeps the final pixel position when a pan ends between grid lines', () => {
 		canvasHeight: state.viewport.height,
 		altKey: false,
 	};
+	const scroll: ViewportScrollEvent = { deltaX: -5, deltaY: 19, stopPropagation: false };
 
-	events.dispatch('pointermove', move);
+	events.dispatch(input, input === 'pointermove' ? move : scroll);
 	events.dispatch('pointerup', { ...move, buttons: 0, movementX: 0, movementY: 0 });
 
 	expect(state.viewport).toMatchObject({ x: -5, y: 19 });
 	expect(changed).toHaveBeenCalledExactlyOnceWith({ previousX: 0, previousY: 0, x: -5, y: 19, source: 'pan' });
 
 	dispose();
+	events.dispatch('viewportscroll', scroll);
+	expect(state.viewport).toMatchObject({ x: -5, y: 19 });
 	store.dispose();
 });

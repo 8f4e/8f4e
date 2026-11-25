@@ -24,3 +24,11 @@ export interface Viewport extends GridSize {
 	x: number;
 	y: number;
 }
+
+/** Signed pixel deltas to add to the logical viewport position. */
+export interface ViewportScrollEvent {
+	deltaX: number;
+	deltaY: number;
+	/** An input layer may consume the scroll before the viewport pans. */
+	stopPropagation: boolean;
+}

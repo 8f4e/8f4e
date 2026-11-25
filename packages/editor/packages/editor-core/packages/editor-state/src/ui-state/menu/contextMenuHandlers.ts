@@ -5,6 +5,7 @@ import type {
 	InternalPointerEvent,
 	MenuStackEntry,
 	State,
+	ViewportScrollEvent,
 } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { StateManager } from '@8f4e/state-manager';
@@ -46,6 +47,9 @@ export default function registerContextMenuHandlers(
 		events.dispatch('contextMenuPointerMove', event);
 		event.stopPropagation = true;
 	};
+	const onViewportScroll = (event: ViewportScrollEvent) => {
+		if (state.contextMenu.open) event.stopPropagation = true;
+	};
 	const onPointerDown = (event: InternalPointerEvent) => {
 		if (!state.contextMenu.open) return;
 		events.dispatch('contextMenuPointerDown', event);
@@ -86,6 +90,7 @@ export default function registerContextMenuHandlers(
 	events.on('closeContextMenu', close);
 	events.on('pointerdown', onPointerDown, { layer: INPUT_LAYERS.contextMenu });
 	events.on('pointermove', onPointerMove, { capture: true, layer: INPUT_LAYERS.contextMenu });
+	events.on('viewportscroll', onViewportScroll, { capture: true, layer: INPUT_LAYERS.contextMenu });
 
 	return () => {
 		for (const unregister of unregisterMenus) unregister();
@@ -96,5 +101,6 @@ export default function registerContextMenuHandlers(
 		events.off('closeContextMenu', close);
 		events.off('pointerdown', onPointerDown);
 		events.off('pointermove', onPointerMove);
+		events.off('viewportscroll', onViewportScroll);
 	};
 }

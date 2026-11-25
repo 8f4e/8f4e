@@ -76,13 +76,18 @@ describe('mouse input', () => {
 		);
 	});
 
-	it('translates wheel movement into pointer movement', () => {
+	it.each([
+		[3, 5],
+		[-7, 9],
+		[8, -4],
+	])('forwards signed wheel deltas (%i, %i) as a viewport scroll', (deltaX, deltaY) => {
 		const test = setup();
-		expect(test.wheel().defaultPrevented).toBe(true);
-		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith(
-			'pointermove',
-			expect.objectContaining({ movementX: -3, movementY: -5, buttons: 1 })
-		);
+		expect(test.wheel(deltaX, deltaY).defaultPrevented).toBe(true);
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportscroll', {
+			deltaX,
+			deltaY,
+			stopPropagation: false,
+		});
 	});
 
 	it('leaves wheel input to the page when wheel capture is disabled', () => {
