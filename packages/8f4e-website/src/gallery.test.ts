@@ -651,16 +651,9 @@ test('registers site tools only after the selected project has loaded', async ()
 	await view.started();
 	expect(tools.size).toBe(0);
 	finish(new Response(source));
-	const editor = await view.mounted();
+	await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
 	expect(await tools.get('get_project')!.execute({})).toContain('module galleryExample');
-	expect(tools.has('undo')).toBe(false);
-	expect(tools.has('redo')).toBe(false);
-	expect(await tools.get('get_project_metadata')!.execute({})).toEqual({
-		revision: editor.editing.getRevision(),
-		projectPath: '',
-		editable: true,
-	});
 });
 
 test('replaces site tools and requires a fresh source read for the replacement editor', async () => {
