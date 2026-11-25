@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-project-new",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "New Project action for the 8f4e editor",
   "type": "module",

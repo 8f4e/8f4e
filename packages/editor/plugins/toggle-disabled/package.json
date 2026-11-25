@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-toggle-disabled",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Enable and disable code blocks from the 8f4e editor menu",
   "type": "module",

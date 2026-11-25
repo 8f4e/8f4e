@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-coordinate-grid",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "World-coordinate reference marks behind the 8f4e editor's code blocks",
   "type": "module",
