@@ -1,7 +1,7 @@
 # Default Editor Guidelines
 
 - Own the full authoring composition and its host overrides. Prepend the compiler even for custom or empty
-  feature arrays. Return the core editor with its compiler diagnostic getter and history handle for the default feature set.
+  feature arrays. Return the core editor with its compiler diagnostic getter.
 - Keep session restoration, URL loading and loading indicator presentation eager alongside
   first-render drawing. An explicit initial URL suppresses session restoration while leaving autosave active.
   Recover from a failed initial URL with an empty project so authoring can continue.

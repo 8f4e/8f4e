@@ -2,8 +2,8 @@
 
 - Bind one active bridge per document to one editor. Keep browser API detection, tool schemas, registration and
   cleanup in the adapter. Dispose and recreate on editor replacement, including cleanup after partial registration.
-- Read current state through the public editor. Delegate source writes to `editor.editing`, history to the optional
-  supplied history handle and navigation to `editor.navigation`. Keep tool-specific projections outside core.
+- Read current state through the public editor. Delegate source writes to `editor.editing` and navigation to
+  `editor.navigation`. Keep tool-specific projections outside core. History is not a WebMCP capability.
 - Scope project and block operations to the current project level. Resolve source type/name selectors to editor
   handles internally, target insertions by the active level's owning group handle (or root), and express placement
   through source `@pos` directives. Name-based paths describe source locations; they do not identify edit targets.

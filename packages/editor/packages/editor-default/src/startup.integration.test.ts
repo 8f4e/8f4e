@@ -1,6 +1,5 @@
 import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
-import { createUndoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import initState, {
 	createEditorCommandApi,
 	EMPTY_DEFAULT_PROJECT,
@@ -39,9 +38,7 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 	const renderRegistry = createEditorRenderRegistry();
 	const disposers: Array<() => void> = [];
 	try {
-		const undoRedo = createUndoRedoPlugin();
 		const plugins = createDefaultEditorPlugins({
-			undoRedo,
 			canvas,
 			storage: storage as Storage,
 			storageKey: 'session',
@@ -79,12 +76,13 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 		await vi.waitFor(() => expect(getProjectModules(JSON.parse(saved))[0]?.code).toContain('module remote'));
 		// History is installed before the lazy plugin gate, so an early API edit is already undoable.
 		const { handle: editing, dispose } = createEditorCommandApi(store, events);
-		const history = undoRedo.createHandle(editing);
 		disposers.push(dispose);
 		events.dispatch('enterEditMode');
 		const remote = () => store.getState().project.activeLevel.blocks.find(block => block.name === 'remote')!;
 		const originalCode = [...remote().code];
-		expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
+		const initialRevision = editing.getRevision();
+		events.dispatch('undo');
+		expect(editing.getRevision()).toBe(initialRevision);
 		const edited = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
 			edits: [
@@ -95,10 +93,10 @@ it('prioritizes the initial URL over the saved session and keeps autosaving whil
 				},
 			],
 		});
-		expect(history.getAvailability()).toEqual({ canUndo: true, canRedo: false });
-		history.undo({ expectedRevision: edited.revision });
+		expect(edited.revision).not.toBe(initialRevision);
+		events.dispatch('undo');
 		expect(remote().code).toEqual(originalCode);
-		expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: true });
+		expect(editing.getRevision()).not.toBe(edited.revision);
 		expect(getProjectModules(JSON.parse(saved))[0].code).toEqual(originalCode);
 		expect(store.getState().gridSizeReady).toBe(false);
 		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });

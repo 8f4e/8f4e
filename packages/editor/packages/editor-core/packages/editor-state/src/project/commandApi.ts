@@ -82,7 +82,6 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 			assertAlive();
 			return revision();
 		},
-		assertCanEdit: checkWrite,
 		applyEdits({ expectedRevision, edits }) {
 			checkWrite(expectedRevision);
 			if (!Array.isArray(edits) || edits.length === 0) invalid('Provide at least one edit');

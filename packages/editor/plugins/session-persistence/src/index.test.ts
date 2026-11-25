@@ -251,7 +251,6 @@ describe('session persistence plugin', () => {
 		expect(changes).toHaveLength(4);
 		expect(changes[3]).toEqual({ revision: startRevision + 4, kind: 'replace' });
 		expect(test.storage.setItem).toHaveBeenCalledTimes(4);
-		expect(() => editing.handle.assertCanEdit(editedRevision)).toThrow('getRevision again');
 	});
 
 	it('publishes one final replacement when loading regenerates environment constants', () => {

@@ -92,8 +92,7 @@ The host owns page URLs, loading/error UI, canvas layout, visibility management,
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
 from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs and shared
-navigation operations. The composition exposes the undo/redo plugin's command handle as `editor.history`.
-Keyboard bindings belong to plugins.
+navigation operations. History and keyboard bindings belong to plugins.
 
 After the first render, the gallery loads `group-path` to show the active group and its ancestors as an indented tree.
 The tree appears below the mode hint when it is available and starts on the first row otherwise. It is hidden at the

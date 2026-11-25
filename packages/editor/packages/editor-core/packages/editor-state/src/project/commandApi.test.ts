@@ -51,7 +51,7 @@ describe('public editor operations', () => {
 		expect(result.createdBlockIds).toHaveLength(1);
 		expect(result.revision).not.toBe(beforeRevision);
 		expect(test.state.projectChange).toEqual({ revision: projectRevision + 1, kind: 'edit', history: 'checkpoint' });
-		expect(() => test.editing.assertCanEdit(result.revision)).not.toThrow();
+		expect(test.editing.getRevision()).toBe(result.revision);
 	});
 
 	it('skips unchanged API edits before notifying history or publishing a change', () => {
@@ -86,16 +86,21 @@ describe('public editor operations', () => {
 		}
 	});
 
-	it('validates external edits against revision, mode and editor lifetime', () => {
-		const { editing, store, events } = setup();
+	it('validates public edits against revision, mode and editor lifetime', () => {
+		const { editing, store, events, block } = setup();
 		const revision = editing.getRevision();
-		expect(() => editing.assertCanEdit('stale')).toThrow(expect.objectContaining({ code: 'stale_revision', revision }));
+		const edit = (expectedRevision: string) =>
+			editing.applyEdits({
+				expectedRevision,
+				edits: [{ type: 'update', blockId: getEditorBlockId(block), code: [...block.code] }],
+			});
+		expect(() => edit('stale')).toThrow(expect.objectContaining({ code: 'stale_revision', revision }));
 		store.set('editorMode', 'view');
-		expect(() => editing.assertCanEdit(revision)).toThrow(expect.objectContaining({ code: 'read_only', revision }));
+		expect(() => edit(revision)).toThrow(expect.objectContaining({ code: 'read_only', revision }));
 		store.set('editorMode', 'edit');
-		expect(() => editing.assertCanEdit(revision)).not.toThrow();
+		expect(edit(revision)).toEqual({ revision, createdBlockIds: [] });
 		events.dispatch('dispose');
 		expect(() => editing.getRevision()).toThrow(expect.objectContaining({ code: 'disposed' }));
-		expect(() => editing.assertCanEdit(revision)).toThrow(expect.objectContaining({ code: 'disposed' }));
+		expect(() => edit(revision)).toThrow(expect.objectContaining({ code: 'disposed' }));
 	});
 });

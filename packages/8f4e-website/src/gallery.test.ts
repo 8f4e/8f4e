@@ -651,9 +651,16 @@ test('registers site tools only after the selected project has loaded', async ()
 	await view.started();
 	expect(tools.size).toBe(0);
 	finish(new Response(source));
-	await view.mounted();
+	const editor = await view.mounted();
 	await vi.waitFor(() => expect(tools.has('get_compiler_diagnostics')).toBe(true));
 	expect(await tools.get('get_project')!.execute({})).toContain('module galleryExample');
+	expect(tools.has('undo')).toBe(false);
+	expect(tools.has('redo')).toBe(false);
+	expect(await tools.get('get_project_metadata')!.execute({})).toEqual({
+		revision: editor.editing.getRevision(),
+		projectPath: '',
+		editable: true,
+	});
 });
 
 test('replaces site tools and requires a fresh source read for the replacement editor', async () => {
@@ -680,7 +687,7 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
 	expect(editor.state.project.activeLevel.blocks.filter(block => block.blockType === 'module')).toHaveLength(0);
-	expect(tools.size).toBe(18);
+	expect(tools.size).toBe(16);
 });
 
 test('creates group templates while editing and saves the rightmost copy for reopening', async () => {

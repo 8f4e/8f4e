@@ -8,14 +8,11 @@ import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loade
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
-import { createUndoRedoPlugin, type EditorHistoryHandle } from '@8f4e/editor-plugin-undo-redo';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
-export type GalleryEditorInstance = Editor & {
-	getCompilerDiagnostics: () => CompilerDiagnostics | null;
-	history: EditorHistoryHandle;
-};
+export type GalleryEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
 export interface GalleryEditorMountOptions {
 	/** Supply a renderer for this canvas instead of creating a WebGL engine. */
@@ -50,13 +47,12 @@ export async function mountGalleryEditor(
 	}: GalleryEditorMountOptions = {}
 ): Promise<GalleryEditorInstance> {
 	const compiler = createCompilerPlugin({ resolveInclude: resolveStdlibInclude });
-	const undoRedo = createUndoRedoPlugin();
 	const motionPreference = canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
-			undoRedo.plugin,
+			undoRedoPlugin,
 			homePlugin,
 			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
@@ -86,8 +82,5 @@ export async function mountGalleryEditor(
 		featureFlags,
 		renderer: renderer ?? new Engine(canvas),
 	});
-	return Object.assign(editor, {
-		getCompilerDiagnostics: compiler.getDiagnostics,
-		history: undoRedo.createHandle(editor.editing),
-	});
+	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

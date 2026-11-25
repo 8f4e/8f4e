@@ -17,8 +17,6 @@ export interface EditorEditResult {
 export interface EditorEditingHandle {
 	/** Opaque project token for validating writes after reading editor.state. */
 	getRevision(): string;
-	/** Validate that this editor is alive, editable and still at the expected revision before an external edit. */
-	assertCanEdit(expectedRevision: string): void;
 	applyEdits(request: { expectedRevision: string; edits: readonly EditorEdit[] }): EditorEditResult;
 }
 

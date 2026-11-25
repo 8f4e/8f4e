@@ -40,12 +40,7 @@ async function startEditor(canvas: HTMLCanvasElement) {
 	void import('@8f4e/editor-webmcp')
 		.then(({ createEditorWebMcp }) => {
 			if (disposed) return;
-			bridge = createEditorWebMcp({
-				document,
-				editor,
-				history: editor.history,
-				getCompilerDiagnostics: editor.getCompilerDiagnostics,
-			});
+			bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
 			return bridge.ready;
 		})
 		.catch(error => console.error('Failed to load editor site tools:', error));

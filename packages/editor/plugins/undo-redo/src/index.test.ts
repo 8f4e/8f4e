@@ -12,7 +12,7 @@ import type { EditorCodeBlock, EditorProjectSnapshot, ProjectChange, State } fro
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createUndoRedoPlugin } from './index';
+import { undoRedoPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -25,7 +25,7 @@ function createHistoryEditor(project: ProjectObjectModel = EMPTY_DEFAULT_PROJECT
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	const disposeHistory = createUndoRedoPlugin().plugin.setup({
+	const disposeHistory = undoRedoPlugin.setup({
 		store,
 		events,
 		menus: store.menus,

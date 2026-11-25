@@ -351,7 +351,12 @@ describe('public editor editing handle', () => {
 		const currentRevision = editing.getRevision();
 		events.dispatch('loadProject', { project: serializeToProject(state) });
 		expect(editing.getRevision()).not.toBe(currentRevision);
-		expect(() => editing.assertCanEdit(setup().editing.getRevision())).toThrow('getRevision again');
+		expect(() =>
+			editing.applyEdits({
+				expectedRevision: setup().editing.getRevision(),
+				edits: [{ type: 'insert', code: ['note foreign', 'noteEnd'] }],
+			})
+		).toThrow('getRevision again');
 	});
 
 	it('inserts into a copied group by owning block handle while omitted ownership targets the root', () => {

@@ -13,7 +13,7 @@ import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createUndoRedoPlugin } from './index';
+import { undoRedoPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
@@ -30,8 +30,7 @@ function setup(
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const compilationChanged = vi.fn();
 	const store = initState(events, { callbacks: {} });
-	const undoRedo = createUndoRedoPlugin();
-	const disposeHistory = undoRedo.plugin.setup({
+	const disposeHistory = undoRedoPlugin.setup({
 		store,
 		events,
 		menus: store.menus,
@@ -59,9 +58,7 @@ function setup(
 		store,
 		events,
 		editing: editing.handle,
-		history: undoRedo.createHandle(editing.handle),
 		navigation: editing.navigation,
-		disposeHistory,
 		compilationChanged,
 	};
 }
@@ -85,9 +82,9 @@ function setupGroup(name: string) {
 	return { ...test, group: test.state.project.rootLevel.blocks.find(block => block.name === name)! };
 }
 
-describe('undo and redo through the plugin history handle', () => {
+describe('undo and redo of public source edits through plugin events', () => {
 	it("restores a draft module's historical execution entry across undo and redo", () => {
-		const { editing, history, state } = setup({
+		const { editing, events, state } = setup({
 			...EMPTY_DEFAULT_PROJECT,
 			entries: ['main', 'alternate'],
 			execution: [{ type: 'module', id: 0, entry: 'alternate', code: ['module test', 'moduleEnd'] }],
@@ -103,18 +100,18 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(serializeToProject(state).unknown[0]).not.toHaveProperty('entry');
 		update(['module test', 'moduleEnd'], 'main');
 		expect(current().entry).toBe('main');
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(current()).toMatchObject({ blockType: 'unknown', entry: 'alternate' });
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(current().entry).toBe('main');
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		update(['module test', 'moduleEnd']);
 		expect(current()).toMatchObject({ blockType: 'module', entry: 'alternate' });
 		expect(serializeToProject(state).execution[0].entry).toBe('alternate');
 	});
 
 	it('restores the historical retained grid position of incomplete position directives', () => {
-		const { editing, history, state } = setup({
+		const { editing, events, state } = setup({
 			...EMPTY_DEFAULT_PROJECT,
 			execution: [{ type: 'module', id: 0, entry: 'main', code: ['module test', '; @pos 10 20', 'moduleEnd'] }],
 		});
@@ -128,16 +125,16 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
 		update('; @pos 30 40');
 		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(current()).toMatchObject({ code: ['module test', '; @pos incomplete', 'moduleEnd'], gridX: 10, gridY: 20 });
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(current()).toMatchObject({ gridX: 30, gridY: 40 });
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
 	});
 
 	it('preserves separately editable root project-scope blocks and their identities across history', () => {
-		const { editing, history, state } = setup();
+		const { editing, events, state } = setup();
 		const scope = () => state.project.rootLevel.blocks.filter(block => block.isProjectScope);
 		const result = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
@@ -153,21 +150,21 @@ describe('undo and redo through the plugin history handle', () => {
 			expectedRevision: editing.getRevision(),
 			edits: [{ type: 'update', blockId: firstId, code: ['pass changed'] }],
 		});
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(scope().map(block => [getEditorBlockId(block), block.code])).toEqual([
 			[firstId, ['pass env']],
 			[secondId, ['pass other']],
 		]);
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(scope()).toHaveLength(0);
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(scope().map(block => block.code)).toEqual([['pass changed'], ['pass other']]);
 	});
 
 	it('ignores final root env declarations while applying ordinary edits in the same API batch', () => {
-		const { editing, history, state } = setup();
+		const { editing, events, state } = setup();
 		const block = state.project.rootLevel.blocks.find(block => block.name === 'original')!;
 		const blockId = getEditorBlockId(block);
 		const envCode = ['constants env', 'const GENERATED 42', 'constantsEnd'];
@@ -194,9 +191,9 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(ordinary.createdBlockIds).toHaveLength(1);
 		expect(block.code).toEqual(['module changed', 'moduleEnd']);
 		expect(serializeToProject(state).constants).toHaveLength(1);
-		history.undo({ expectedRevision: ordinary.revision });
+		events.dispatch('undo');
 		expect(serializeToProject(state).notes).toHaveLength(0);
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(serializeToProject(state).notes).toHaveLength(1);
 		expect(serializeToProject(state).constants).toHaveLength(1);
 	});
@@ -246,7 +243,7 @@ describe('undo and redo through the plugin history handle', () => {
 				module(7, 'rootB'),
 			],
 		};
-		const { editing, history, events, state } = setup(project);
+		const { editing, events, state } = setup(project);
 		const before = serializeToProject(state);
 		expect(before.execution).toEqual(project.execution);
 		const rootB = state.project.rootLevel.blocks.find(block => block.name === 'rootB')!;
@@ -256,9 +253,9 @@ describe('undo and redo through the plugin history handle', () => {
 		});
 		const edited = serializeToProject(state);
 		expect(edited.execution.map(block => block.code[0])).toEqual(['module rootA', 'group synth', 'module rootB']);
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(serializeToProject(state)).toEqual(before);
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(serializeToProject(state)).toEqual(edited);
 		events.dispatch('loadProject', { project: edited });
 		expect(serializeToProject(state)).toEqual(edited);
@@ -282,7 +279,7 @@ describe('undo and redo through the plugin history handle', () => {
 				},
 			],
 		};
-		const { state, events, editing, history } = setup(project);
+		const { state, events, editing } = setup(project);
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'worker')!;
 		const work = group.childLevel!.blocks[0];
 		const check = () => {
@@ -297,16 +294,16 @@ describe('undo and redo through the plugin history handle', () => {
 			edits: [{ type: 'update', blockId: getEditorBlockId(work), code: ['module renamed', 'moduleEnd'] }],
 		});
 		check();
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		check();
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		const saved = check();
 		events.dispatch('loadProject', { project: saved });
 		check();
 	});
 
 	it('uses state reads and one undo step for a coordinated edit batch', () => {
-		const { editing, history, state, events, compilationChanged } = setup();
+		const { editing, state, events, compilationChanged } = setup();
 		const target = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 		const targetId = getEditorBlockId(target);
 		const load = vi.fn();
@@ -336,17 +333,18 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(state.viewport).toMatchObject({ x: 124, y: 256 });
 		expect(compilationChanged).toHaveBeenCalled();
 		expect(load).not.toHaveBeenCalled();
-		const undo = history.undo({ expectedRevision: result.revision });
+		events.dispatch('undo');
+		expect(editing.getRevision()).not.toBe(result.revision);
 		expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 1');
 		expect(state.project.activeLevel.blocks.filter(block => block.blockType === 'note')).toHaveLength(0);
-		history.redo({ expectedRevision: undo.revision });
+		events.dispatch('redo');
 		expect(serializeToProject(state)).toEqual(changedProject);
 	});
 
 	it.each(['disabled', 'customDisabled'])(
 		'keeps @%s flags consistent through public edits and skips unchanged batches',
 		directive => {
-			const { editing, history, state, store, events, compilationChanged } = setup();
+			const { editing, state, store, events, compilationChanged } = setup();
 			const onCustomDirective = vi.fn();
 			cleanups.push(
 				store.directives.register({
@@ -407,15 +405,15 @@ describe('undo and redo through the plugin history handle', () => {
 				});
 				expectCompilerInput(code, disabled);
 			}
-			history.undo({ expectedRevision: editing.getRevision() });
+			events.dispatch('undo');
 			expectCompilerInput(enabledCode, false);
-			history.redo({ expectedRevision: editing.getRevision() });
+			events.dispatch('redo');
 			expectCompilerInput(disabledCode, true);
 		}
 	);
 
 	it('updates valid positions and retains the last position when @pos is removed, including undo and redo', () => {
-		const { editing, history, state } = setup();
+		const { editing, events, state } = setup();
 		const code = ['module placed', '; @pos -12 34', 'moduleEnd'];
 		const inserted = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
@@ -436,14 +434,15 @@ describe('undo and redo through the plugin history handle', () => {
 			edits: [{ type: 'update', blockId: inserted.createdBlockIds[0], code: withoutPos }],
 		});
 		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
-		const undone = history.undo({ expectedRevision: removed.revision });
+		events.dispatch('undo');
+		expect(editing.getRevision()).not.toBe(removed.revision);
 		expect(findPlaced()).toMatchObject({ code: updatedCode, gridX: 56, gridY: -78 });
-		history.redo({ expectedRevision: undone.revision });
+		events.dispatch('redo');
 		expect(findPlaced()).toMatchObject({ code: withoutPos, gridX: 56, gridY: -78 });
 	});
 
 	it('applies a mixed edit plan as one checkpoint without replacing existing block handles', () => {
-		const { editing, history, state, compilationChanged, store } = setup({
+		const { editing, events, state, compilationChanged, store } = setup({
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			execution: [
 				{ type: 'module', id: 0, entry: 'main', code: ['module original', 'moduleEnd'] },
@@ -479,7 +478,7 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(state.compilerInputRevision).toBe(compilerRevision + 1);
 		expect(compilationChanged).toHaveBeenCalledOnce();
 		expect(changes).toEqual([serializeToProject(state)]);
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(serializeToProject(state)).toEqual(prior);
 	});
 
@@ -502,7 +501,7 @@ describe('undo and redo through the plugin history handle', () => {
 				entries: ['local', 'localEmpty'],
 			},
 		];
-		const { editing, history, navigation, events, state, store } = setup(project);
+		const { editing, navigation, events, state, store } = setup(project);
 		Object.assign(state.viewport, { x: 64, y: 96 });
 		const group = state.project.rootLevel.blocks.find(block => block.name === 'voice')!;
 		store.set('project.selectedCodeBlock', group);
@@ -528,11 +527,11 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(state.project.selectedCodeBlock?.name).toBe('updatedInner');
 		expect(state.project.selectedCodeBlock).toBe(inner);
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(state.project.activeLevel.path).toBe('voice');
 		expect(state.project.selectedCodeBlock?.name).toBe('inner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(state.project.selectedCodeBlock?.name).toBe('updatedInner');
 		expect(state.viewport).toMatchObject({ x: -320, y: 160 });
 		navigation.goToRoot();
@@ -555,7 +554,7 @@ describe('undo and redo through the plugin history handle', () => {
 	});
 
 	it('keeps independent views for duplicate sibling groups copied through the editor', () => {
-		const { editing, history, navigation, state, store, group: original } = setupGroup('voice');
+		const { editing, events, navigation, state, store, group: original } = setupGroup('voice');
 		const [copy] = insertCodeBlocks(store, { x: 240, y: 80, blocks: serializeCodeBlocks([original], original) });
 		const owner = (id: number) => state.project.rootLevel.blocks.find(block => block.creationIndex === id)!;
 		expect(original.childLevel!.path).toBe(copy.childLevel!.path);
@@ -584,9 +583,9 @@ describe('undo and redo through the plugin history handle', () => {
 			expect(originalLevel.blocks[0].name).toBe('sample');
 			expect(originalLevel.viewport).toMatchObject({ x: 64, y: 96 });
 		};
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expectRestoredCopy('sample');
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expectRestoredCopy('changed');
 		navigation.goToRoot();
 		expect(state.project.selectedCodeBlock).toBe(owner(copy.creationIndex));
@@ -595,12 +594,12 @@ describe('undo and redo through the plugin history handle', () => {
 		expect(state.project.selectedCodeBlock).toBe(owner(original.creationIndex).childLevel!.blocks[0]);
 		navigation.goToRoot();
 		navigation.openGroup(getEditorBlockId(owner(copy.creationIndex)));
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expectRestoredCopy('sample');
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 		expect(state.project.rootLevel.blocks.some(block => block.creationIndex === copy.creationIndex)).toBe(false);
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expect(state.project.activeLevel).toBe(state.project.rootLevel);
 		const recreatedCopy = owner(copy.creationIndex).childLevel!;
 		expect(recreatedCopy.viewport).toBeUndefined();
@@ -608,7 +607,7 @@ describe('undo and redo through the plugin history handle', () => {
 	});
 
 	it('keeps the same owning group view when a rename is undone and redone', () => {
-		const { editing, history, navigation, state, store, group } = setupGroup('voices');
+		const { events, navigation, state, store, group } = setupGroup('voices');
 		store.set('project.selectedCodeBlock', group);
 		applyCodeBlockSourceEdits(store, [{ codeBlock: group, code: ['group ensemble', 'groupEnd'] }], {
 			history: 'checkpoint',
@@ -625,16 +624,16 @@ describe('undo and redo through the plugin history handle', () => {
 			expect(state.project.selectedCodeBlock).toBe(owner.childLevel!.blocks[0]);
 			expect(state.viewport).toMatchObject({ x: 123, y: 456 });
 		};
-		history.undo({ expectedRevision: editing.getRevision() });
+		events.dispatch('undo');
 		expectRenamedView('voices');
-		history.redo({ expectedRevision: editing.getRevision() });
+		events.dispatch('redo');
 		expectRenamedView('ensemble');
 	});
 
 	it('keeps pending source edits and an API batch as separate undo steps without delayed duplicates', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, history, state, store } = setup();
+			const { editing, events, state, store } = setup();
 			const block = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 			store.set('project.selectedCodeBlock', block);
 			block.cursor.row = 1;
@@ -653,15 +652,19 @@ describe('undo and redo through the plugin history handle', () => {
 				],
 			});
 			await vi.advanceTimersByTimeAsync(2000);
-			history.undo({ expectedRevision: editing.getRevision() });
+			events.dispatch('undo');
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 12');
-			history.undo({ expectedRevision: editing.getRevision() });
+			events.dispatch('undo');
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 1');
-			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: true });
-			history.redo({ expectedRevision: editing.getRevision() });
-			history.redo({ expectedRevision: editing.getRevision() });
+			const undoneRevision = editing.getRevision();
+			events.dispatch('undo');
+			expect(editing.getRevision()).toBe(undoneRevision);
+			events.dispatch('redo');
+			events.dispatch('redo');
 			expect(state.project.activeLevel.blocks.find(block => block.name === 'original')!.code).toContain('int value 3');
-			expect(history.getAvailability()).toEqual({ canUndo: true, canRedo: false });
+			const redoneRevision = editing.getRevision();
+			events.dispatch('redo');
+			expect(editing.getRevision()).toBe(redoneRevision);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -670,7 +673,7 @@ describe('undo and redo through the plugin history handle', () => {
 	it('keeps pending typing separate from ignored env edits and preserves current generated source on restore', async () => {
 		vi.useFakeTimers();
 		try {
-			const { editing, history, state, store, events } = setup();
+			const { editing, state, store, events } = setup();
 			const authored = () => state.project.rootLevel.blocks.find(block => block.name === 'original')!;
 			const environment = () => state.project.rootLevel.blocks.find(block => block.name === 'env')!;
 			const beforeProjectEdit = vi.fn();
@@ -693,12 +696,12 @@ describe('undo and redo through the plugin history handle', () => {
 			expect(beforeProjectEdit).not.toHaveBeenCalled();
 			// The original typing timer was not canceled or postponed by generated updates or ignored edits.
 			await vi.advanceTimersByTimeAsync(500);
-			history.undo({ expectedRevision: editing.getRevision() });
+			events.dispatch('undo');
 			expect(authored().code).toContain('int value 1');
 			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 1');
 			store.set('envConstantContributions.test', ['const GENERATED 2']);
-			history.redo({ expectedRevision: editing.getRevision() });
+			events.dispatch('redo');
 			expect(authored().code).toContain('int value 12');
 			expect(environment().code).toContain('; @pos 0 0');
 			expect(environment().code).toContain('const GENERATED 2');
@@ -708,7 +711,7 @@ describe('undo and redo through the plugin history handle', () => {
 	});
 
 	it('does not retain history from a replaced project', () => {
-		const { editing, history, state, events } = setup();
+		const { editing, state, events } = setup();
 		const revision = editing.getRevision();
 		const target = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
 		editing.applyEdits({
@@ -716,37 +719,11 @@ describe('undo and redo through the plugin history handle', () => {
 			edits: [{ type: 'delete', blockId: getEditorBlockId(target) }],
 		});
 		events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });
-		expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
-	});
-
-	it('invalidates the history handle when its plugin is disposed', () => {
-		const { editing, history, disposeHistory } = setup();
-		const revision = editing.getRevision();
-		disposeHistory();
-		expect(() => history.getAvailability()).toThrow('History plugin has been disposed');
-		expect(() => history.undo({ expectedRevision: revision })).toThrow('History plugin has been disposed');
-		expect(editing.getRevision()).toBe(revision);
-	});
-
-	it('reports pending undo availability without committing the typing debounce or editing the project', async () => {
-		vi.useFakeTimers();
-		try {
-			const { editing, history, state, store } = setup();
-			const block = state.project.activeLevel.blocks.find(block => block.name === 'original')!;
-			const original = [...block.code];
-			const changed = ['module original', 'int value 2', 'moduleEnd'];
-			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
-			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: changed }]);
-			const revision = editing.getRevision();
-			expect(history.getAvailability()).toEqual({ canUndo: true, canRedo: false });
-			expect(editing.getRevision()).toBe(revision);
-			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: original }]);
-			expect(history.getAvailability()).toEqual({ canUndo: false, canRedo: false });
-			await vi.advanceTimersByTimeAsync(1000);
-			const restoredRevision = editing.getRevision();
-			expect(history.undo({ expectedRevision: restoredRevision })).toEqual({ revision: restoredRevision });
-		} finally {
-			vi.useRealTimers();
-		}
+		const replaced = editing.getRevision();
+		const project = serializeToProject(state);
+		events.dispatch('undo');
+		events.dispatch('redo');
+		expect(editing.getRevision()).toBe(replaced);
+		expect(serializeToProject(state)).toEqual(project);
 	});
 });
