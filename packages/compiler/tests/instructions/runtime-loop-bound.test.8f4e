@@ -1,0 +1,53 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+entry test
+module moduleBoundAssertions
+; Read the bound once, before
+; the loop changes the slot.
+#loopCap 1
+int count 3
+int sum
+
+push 9
+loop count
+push &sum
+push sum
+loopIndex
+add
+store
+push &count
+push 0
+store
+loopEnd
+assertEqual 9
+
+push sum
+assertEqual 3
+moduleEnd
+
+module parameterBoundAssertions
+call countIterations 1001
+assertEqual 1001
+call countIterations 0
+assertEqual 0
+call countIterations -1
+assertEqual 0
+moduleEnd
+entryEnd
+
+function countIterations
+param int count
+local int result
+
+loop count
+push result
+add 1
+localSet result
+loopEnd
+
+push result
+functionEnd int

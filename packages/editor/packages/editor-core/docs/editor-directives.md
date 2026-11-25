@@ -28,6 +28,7 @@ Examples:
 ; @watch counter
 ; @stack
 ; @plot &audioBuffer lengthMemory
+; @scope level 30 -1 1
 ; @button &gate0 0 1
 ; @config font ibmvga8x16
 ```
@@ -97,7 +98,7 @@ another project resolves its own declaration independently. Mode changes do not 
 
 The directive chooses initial mode independently of installed input plugins. Omitting the keyboard mode-switching
 plugin does not prevent the directive from selecting edit mode. `state.editorMode` alone determines whether source editing is allowed. Mode changes and
-project replacement preserve `codeLineSelection` and all other host feature flags. There is no host initial-mode
+project replacement preserve host feature flags. There is no host initial-mode
 option or editing feature flag.
 
 ### `@public`
@@ -136,6 +137,7 @@ Supported paths:
 - `color.<path>` - editor base palette color. See [Color Paths](./color-paths.md) for the full list of color paths.
 - `export.fileName` - base file name used by editor export actions.
 - `bin.<id>.url` / `bin.<id>.memory` - binary asset URL and memory load target.
+- `bin.baseUrl` / `bin.<id>.path` - shared URL prefix and per-asset path. `url` takes precedence over `path`.
 - `bin.<id>.memories.<name>` - additional memory load targets for the same binary asset.
 - `keyboard.keyCodeMemory` / `keyboard.keyPressedMemory` - memory ids for browser keyboard state.
 - `midi.inputs.<id>.port` / `midi.inputs.<id>.callback` - browser MIDI input bindings.
@@ -279,6 +281,32 @@ Range detection:
 - integer arrays use type-derived bounds, matching `@wave`
 - lengths can be positive literal counts, integer memory targets, or `count(buffer)`
 - if `minValue` and `maxValue` are specified, they override the type-derived defaults
+
+### `@scope`
+
+Provided by `@8f4e/editor-plugin-scope`.
+
+Plot the recent history of a single runtime value, without declaring a buffer in WebAssembly memory.
+
+```txt
+; @scope <typedValueSource> <sampleRate>
+; @scope <typedValueSource> <sampleRate> <minValue> <maxValue>
+
+float level 0
+; @scope level 30 -1 1
+```
+
+Like `@meter`, the source can be a scalar memory, a typed pointer whose pointee is read, or `&memory` to read
+directly from storage. Qualified memory names and group exposures work as well. The optional range defaults to
+the type-derived bounds used by `@plot` and must have a minimum below its maximum.
+
+The sample rate is in samples per second (Hz), up to 250 Hz. Higher rates produce a code error.
+Browser timer scheduling is best-effort and may be throttled; use `@plot` over a runtime-managed buffer for precise
+or audio-rate sampling.
+The editor samples independently of the render loop while the directive is displayed in the current project
+level. The history lives in a fixed-capacity JavaScript circular array, with one sample per horizontal pixel.
+New samples always enter at the right edge and older samples scroll left, including after the array fills.
+Resizing retains the newest samples. No WebAssembly buffer is allocated for the history.
 
 ### `@textureUpload` and `@texture`
 
@@ -569,6 +597,19 @@ Notes:
 - Binary payloads stay outside serialized project models; generated size constants are available to compilation.
 - Assets with a `url` but no load target are not fetched.
 
+Use `baseUrl` and per-asset `path` values for assets that share a URL prefix:
+
+```txt
+; @config bin.baseUrl https://example.com/samples/
+; @config bin.kick.path drums/kick.pcm
+; @config bin.kick.memory player:buffer
+```
+
+This fetches `https://example.com/samples/drums/kick.pcm`. The base and path are joined with one slash at their
+boundary, including when `path` starts with a slash. Without `baseUrl`, `path` is used directly and may be relative
+to the editor page. A configured `url` takes precedence over `path` and is used unchanged. Assets with a `path`
+also require a memory load target to be fetched.
+
 Multiple loads for one asset are supported with named load targets:
 
 ```txt
@@ -592,19 +633,21 @@ Use this to bookmark important modules, functions, or other blocks in large proj
 
 ### `@home`
 
-Mark a code block as the home block for initial viewport placement.
+Mark a code block as the home block for initial viewport placement. This directive is provided by the
+[`@8f4e/editor-plugin-home`](../../../plugins/home/README.md) plugin, installed by the default, gallery, and landing
+editor compositions.
 
 ```txt
 ; @home [center|left|right|top|bottom]
 ```
 
-When a project loads, the viewport moves to the first code block containing the `@home` directive. If no code block contains `@home`, the viewport defaults to position `(0,0)`.
+When a project loads, the viewport moves to the first code block containing a valid `@home` directive. If no code block contains a valid `@home`, the viewport defaults to position `(0,0)`.
 
 **Behavior:**
 
-- **Project Load**: On load, viewport moves to the first block with `@home` (determined by code block order).
-- **Multiple @home**: If multiple blocks have `@home`, only the first one (by project order) is used.
-- **No @home**: If no blocks have `@home`, viewport defaults to `(0,0)`.
+- **Project Load**: On load or the first visit to a project group, the viewport moves to the first block with a valid `@home` (determined by code block order). Remembered group positions take precedence on subsequent visits.
+- **Multiple @home**: Additional declarations in the same project level receive a source error, including repeats within one block. Raising blocks does not change which declarations receive errors. Navigation still uses the first block with a valid `@home` (by project order), and its last valid alignment. Each project group may declare its own home.
+- **No @home**: If no blocks have a valid `@home`, viewport defaults to `(0,0)`.
 - **Alignment**: Optional alignment hints are: `center` (default), `left`, `right`, `top`, or `bottom`.
 - **During Editing**: Use the "Go @home" main menu action (right-click on empty space) to return the viewport to the home block at any time using the same alignment rule.
 
@@ -631,7 +674,7 @@ moduleEnd
 **Important:**
 
 - Use `@home` to define the starting view for your project.
-- Only one `@home` directive takes effect (the first block in project order).
+- Declare at most one `@home` per project level.
 
 ### `@hide`
 
@@ -662,7 +705,7 @@ When a code block contains this directive, it is excluded from compilation and r
 **Behavior:**
 
 - **Project Load**: Disabled state is parsed from `@disabled` directive. Blocks without the directive are enabled by default.
-- **Context Menu**: Use "Disable <blockLabel>" or "Enable <blockLabel>" menu items to toggle the directive.
+- **Context Menu**: In the default editor, use "Disable <blockLabel>" or "Enable <blockLabel>" to toggle the directive. These menu items are provided by the optional toggle-disabled plugin.
 - **Compilation**: Disabled blocks are filtered out before compilation, so they don't affect the compiled program.
 - **Rendering**: Disabled blocks appear with a transparent/dimmed background in the editor.
 
@@ -728,60 +771,8 @@ moduleEnd
 
 **Important:**
 
-- The `@pos` directive is the source of truth for block position in saved projects
+- The `@pos` directive is the source of truth for a block's position in the project grid
 - During drag, `@pos` updates only on drag end (not during the drag)
-- When `@viewport` is also present, `@pos` stores the inward offset from the anchored corner instead of world-space coordinates (see `@viewport`)
-
-### `@viewport`
-
-Pin a code block to a viewport corner so it stays visible as you pan around the project.
-
-```txt
-; @viewport <top-left|top-right|bottom-left|bottom-right>
-```
-
-When this directive is present, `@pos` is interpreted as an **inward offset** from the specified corner of the visible viewport instead of world-space grid coordinates.
-
-**Accepted values:**
-
-- `top-left`
-- `top-right`
-- `bottom-left`
-- `bottom-right`
-
-**Offset semantics** — positive `@pos` values always move inward from the anchored edges:
-
-- `top-left`: `+x` moves right, `+y` moves down
-- `top-right`: `+x` moves left, `+y` moves down
-- `bottom-left`: `+x` moves right, `+y` moves up
-- `bottom-right`: `+x` moves left, `+y` moves up
-
-`; @pos 0 0` with any anchor means "flush against the anchored corner".
-
-**Clamping:**
-Viewport-anchored blocks are always clamped to remain visible. If a block would be placed outside the viewport due to a large or negative `@pos` offset, its position is clamped so the anchored corner stays within the visible area. Oversized blocks pin the anchored corner and allow overflow only on the opposite side.
-
-**Dragging:**
-Dragging a viewport-anchored block works normally. When the drag ends, `@pos` is rewritten in anchored coordinates (not world-space), and `@viewport` is left unchanged.
-
-**Important:**
-
-- `@viewport` changes how `@pos` is interpreted but does **not** replace it. `@pos` remains the only persisted coordinate.
-- When `@viewport` is absent the block uses normal world-space placement.
-- Only the first `@viewport` directive in a block takes effect; duplicates are ignored.
-- An unknown anchor value (anything other than the four listed above) is treated as if `@viewport` were absent.
-
-Example:
-
-```txt
-module hud
-; @viewport top-right
-; @pos 2 1
-output out 1
-moduleEnd
-```
-
-This places the block two grid cells inward from the right edge and one grid cell down from the top edge of the viewport, regardless of where the user pans.
 
 ### `@alwaysOnTop`
 
@@ -803,20 +794,18 @@ Clicking an always-on-top block brings it to the front of the always-on-top segm
 
 - Rendering and hit-testing both derive from the same `codeBlocks` array order; no separate rendering pass is used.
 - The directive takes no arguments; any text after `@alwaysOnTop` is ignored.
-- `@alwaysOnTop` is compatible with `@viewport`; a viewport-anchored block may also be always-on-top.
 
 Example:
 
 ```txt
 module overlay
 ; @alwaysOnTop
-; @viewport top-left
 ; @pos 1 1
 output status 1
 moduleEnd
 ```
 
-This block stays pinned to the top-left corner of the viewport and is always rendered above all normal code blocks.
+This block stays at `(1, 1)` in the project grid and is always rendered above normal code blocks.
 
 ### `@group`
 

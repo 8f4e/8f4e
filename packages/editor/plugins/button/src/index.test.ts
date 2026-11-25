@@ -1,7 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -31,8 +32,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 	const store = initState(events, {
 		callbacks: {},
 	});
-	events.dispatch('enterEditMode');
-	const drawers = createEditorDrawerRegistry();
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? createButtonPlugin({ writeMemory: write }).setup({
 				store,
@@ -41,7 +42,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -49,18 +50,15 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+	events.dispatch('enterEditMode');
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const point = (row = 2) => ({
 		x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
@@ -152,14 +150,23 @@ describe('button plugin', () => {
 
 	it('replaces button data after source edits and removes deleted directives', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @button &gate -5 100';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @button &gate -5 100' : line)),
+				},
+			],
+		});
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), 100, true);
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(expect.any(Number), -5, true);
-		test.codeBlock.code[2] = '; no widget';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
+			],
+		});
 		test.write.mockClear();
 		test.press();
 		test.render();
@@ -241,17 +248,20 @@ describe('button plugin', () => {
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 	});
 
-	it('rebinds after runtime memory metadata changes and drops unresolved buttons', async () => {
+	it('rebinds after compiler memory metadata changes and drops unresolved buttons', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.controls.memory };
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
 		const address = memory.gate.allocationUnitAddress + 4;
 		memory.gate = { ...memory.gate, allocationUnitAddress: address };
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', { ...memory });
+		expect(layoutsChanged).not.toHaveBeenCalled();
 		test.press();
 		test.release();
 		expect(test.write).toHaveBeenLastCalledWith(address, 0, true);
 		delete memory.gate;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', memory);
 		test.write.mockClear();
 		test.press();
 		test.render();

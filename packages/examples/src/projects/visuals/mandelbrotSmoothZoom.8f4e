@@ -5,12 +5,9 @@ includes
 include std/grid/indexToXY
 include std/math/exp2
 include std/math/log2
-include std/math/lerp
 include std/math/fract
 include std/math/smoothstep
 include std/color/lerpRGB
-include std/color/srgbByteToLinear
-include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x
 include std/events/hasChanged
 include std/memory/storeRGB
@@ -66,10 +63,15 @@ param int limit
 local float64 real
 local float64 imaginary
 local int iterations
+local int iterationLimit
+
+push limit
+min MAX_ITERATIONS
+localSet iterationLimit
 
 ; Start at z = 0. Stop when |z| > 2
 ; or the iteration limit is reached.
-loop MAX_ITERATIONS
+loop iterationLimit
 push real
 mul real
 push imaginary
@@ -77,10 +79,6 @@ mul imaginary
 add
 push 4.0f64
 greaterThan
-push iterations
-push limit
-greaterOrEqual
-or
 branchIfTrue 1
 
 call mandelbrotStep real imaginary cx cy
@@ -120,7 +118,6 @@ push imaginary
 mul imaginary
 add
 functionEnd float64
-
 
 function smoothEscapeIterations
 ; @pos -120 -30
@@ -249,7 +246,6 @@ call paletteStop
 call lerpRGB amount
 functionEnd int
 
-
 function paletteStop
 ; @pos -36 -30
 param int index
@@ -266,7 +262,6 @@ map 0xeb962d
 default 0x080c28
 mapEnd int
 functionEnd int
-
 
 constants view
 ; @pos -170 -8
@@ -285,7 +280,7 @@ const TARGET_Y 0.131825904205330f64
 constantsEnd
 
 constants env
-; @pos -170 14
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -336,7 +331,7 @@ noteEnd
 
 entry main
 module camera
-; @pos 9 0
+; @pos 57 2
 use view
 
 float zoom 1.05 ; @w
@@ -378,7 +373,7 @@ add TARGET_Y
 store
 moduleEnd
 module renderer
-; @pos 55 0
+; @pos 104 2
 use view
 
 ; Output: 1024x1024 RGB 
@@ -444,7 +439,7 @@ add 1
 store
 moduleEnd
 module antialiasing
-; @pos 104 0
+; @pos 154 2
 use view
 
 ; Input: 1024x1024 RGB 
@@ -508,7 +503,7 @@ add 1
 store
 moduleEnd
 module screen
-; @pos 146 0
+; @pos 198 2
 ; @home right
 use view
 

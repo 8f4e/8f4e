@@ -8,6 +8,41 @@ async function readProject(relativePath: string) {
 }
 
 describe('group compiler metadata and cache', () => {
+	it('rejects duplicate sibling names across entries but permits matching names under different parents', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group left
+entry first
+group voice
+groupEnd
+entryEnd
+entry second
+group spare
+groupEnd
+entryEnd
+groupEnd
+group right
+entry main
+group voice
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		await expect(compileProject(project)).resolves.toMatchObject({ compiledModules: {} });
+		const [left] = getProjectGroups(project);
+		const [, duplicate] = getProjectGroups(left);
+		duplicate.name = 'voice';
+		duplicate.code = ['', 'group voice', 'groupEnd'];
+		await expect(compileProject(project)).rejects.toMatchObject({
+			diagnostic: {
+				domain: 'syntax',
+				message: 'Duplicate sibling group "voice"',
+				instruction: 'group',
+				location: { kind: 'block', projectBlockId: duplicate.id, projectGroupPath: 'left', lineNumber: 1 },
+			},
+		});
+	});
+
 	it('preserves mixed declaration order per entry when reusing cached module ASTs', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
@@ -196,6 +231,153 @@ entryEnd`);
 		expect(result.memoryPlan.modules['processing/audio']).toBeUndefined();
 	});
 
+	it('forwards nested group inputs and outputs to the same backing memory', async () => {
+		const result = await compileProject(
+			parseProjectSource(`8f4e/v1
+entry main
+module source
+int value 41
+moduleEnd
+group outer
+expose input &middle:input
+expose out &middle:out
+init &input &source:value
+entry main
+group middle
+expose input &inner:input
+expose out &inner:out
+entry main
+group inner
+expose input &processor:input
+expose out &processor:rendered
+entry main
+module processor
+int* input
+int rendered
+push &rendered
+push *input
+store
+moduleEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+entryEnd
+groupEnd
+module observed
+int& input &outer:out
+int value
+push &value
+push *input
+store
+moduleEnd
+entryEnd`)
+		);
+		const backing = result.memoryPlan.modules['outer/middle/inner/processor'].memory;
+		for (const [groupPath, sourceModule, sourceOut] of [
+			['outer', 'middle', 'out'],
+			['outer/middle', 'inner', 'out'],
+			['outer/middle/inner', 'processor', 'rendered'],
+		]) {
+			const exposures = result.projectMemoryExposuresByGroupPath[groupPath];
+			expect(exposures.find(exposure => exposure.name === 'input')).toMatchObject({
+				targetModuleName: sourceModule,
+				targetMemoryName: 'input',
+				targetModuleId: 'outer/middle/inner/processor',
+			});
+			expect(exposures.find(exposure => exposure.name === 'out')).toMatchObject({
+				targetModuleName: sourceModule,
+				targetMemoryName: sourceOut,
+				targetModuleId: 'outer/middle/inner/processor',
+			});
+			expect(exposures.find(exposure => exposure.name === 'input')?.targetMemory).toBe(backing.input);
+			expect(exposures.find(exposure => exposure.name === 'out')?.targetMemory).toBe(backing.rendered);
+			expect(result.memoryPlan.modules[groupPath]).toBeUndefined();
+		}
+		const pages = Math.ceil(result.requiredMemoryBytes / 65536);
+		const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+		const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+		(instance.exports.initDefaults as () => void)();
+		(instance.exports.main as () => void)();
+		const view = new DataView(memory.buffer);
+		expect(view.getInt32(result.memoryPlan.modules.observed.memory.value.byteAddress, true)).toBe(41);
+		expect(view.getInt32(backing.input.byteAddress, true)).toBe(
+			result.memoryPlan.modules.source.memory.value.byteAddress
+		);
+	});
+
+	const competingModule = `module inner
+int out 41
+moduleEnd`;
+	const competingGroup = `group inner
+expose out &signal:raw
+entry main
+module signal
+int raw 17
+moduleEnd
+entryEnd
+groupEnd`;
+	const competingExposure = (...children: string[]) =>
+		parseProjectSource(`8f4e/v1
+entry main
+group outer
+expose out &inner:out
+entry main
+${children.join('\n')}
+entryEnd
+groupEnd
+module observed
+int& input &outer:out
+int value
+push &value
+push *input
+store
+moduleEnd
+entryEnd`);
+
+	it.each([
+		{ last: 'module', children: [competingGroup, competingModule], backing: 'outer/inner', key: 'out', value: 41 },
+		{
+			last: 'group',
+			children: [competingModule, competingGroup],
+			backing: 'outer/inner/signal',
+			key: 'raw',
+			value: 17,
+		},
+	])(
+		'targets the last declaration for an exposure when the $last is last',
+		async ({ children, backing, key, value }) => {
+			const result = await compileProject(competingExposure(...children));
+			const [exposure] = result.projectMemoryExposuresByGroupPath.outer;
+			expect(exposure.targetModuleId).toBe(backing);
+			expect(exposure.targetMemory).toBe(result.memoryPlan.modules[backing].memory[key]);
+
+			const pages = Math.ceil(result.requiredMemoryBytes / 65536);
+			const memory = new WebAssembly.Memory({ initial: pages, maximum: pages, shared: true });
+			const { instance } = await WebAssembly.instantiate(new Uint8Array(result.codeBuffer), { host: { memory } });
+			(instance.exports.initDefaults as () => void)();
+			(instance.exports.main as () => void)();
+			const view = new DataView(memory.buffer);
+			expect(view.getInt32(result.memoryPlan.modules.observed.memory.value.byteAddress, true)).toBe(value);
+		}
+	);
+
+	it('reports a missing exposure on the last-declared group even when an earlier module has that item', async () => {
+		const project = competingExposure(competingModule, competingGroup.replace('expose out ', 'expose other '));
+		await expect(compileProject(project)).rejects.toMatchObject({
+			diagnostic: expect.objectContaining({
+				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
+				message: expect.stringContaining('outer/inner:out'),
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
+			}),
+		});
+	});
+
 	it.each([
 		{ fixture: 'missing-exposure-module', targetModuleId: 'audio/missing', targetMemoryId: 'value' },
 		{ fixture: 'missing-exposure-memory', targetModuleId: 'audio/source', targetMemoryId: 'missing' },
@@ -207,7 +389,12 @@ entryEnd`);
 			diagnostic: expect.objectContaining({
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
-				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
 			}),
 		});
 	});

@@ -62,10 +62,9 @@ describe('prepared watch rendering', () => {
 		expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([end, end]);
 	});
 
-	it('refreshes named and inline fixed-reference reads after recompilation', async () => {
-		const source = (padding = '') => [
+	it('refreshes named and inline fixed-reference reads after recompilation without changing layout', async () => {
+		const source = [
 			'module source',
-			padding,
 			'int[] samples 2 3 4',
 			'moduleEnd',
 			'module audio',
@@ -73,19 +72,28 @@ describe('prepared watch rendering', () => {
 			'; @watch *buffer[1]',
 			'moduleEnd',
 		];
-		const test = await setup(plugin, source());
+		const test = await setup(plugin, source);
 		const values = () => {
 			test.render();
 			return vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2]);
 		};
 		expect(values()).toEqual(['4', '4']);
-		const project = parseProjectSource(['8f4e/v1', 'entry main', ...source('int padding'), 'entryEnd'].join('\n'));
-		const replacement = await compileProject(project, { cache: test.compiled.cache });
+		const project = parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n'));
+		const replacement = await compileProject(project, {
+			cache: test.compiled.cache,
+			startingMemoryAllocationUnitAddress: 16,
+		});
+		expect(replacement.memoryPlan.modules.source.memory.samples.byteAddress).not.toBe(
+			test.compiled.memoryPlan.modules.source.memory.samples.byteAddress
+		);
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
 		test.store.set('compiler.isCompiling', true);
-		test.store.set('compiler.result', { ...test.state.compiler.result, ...replacement });
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
 		test.store.set('compiler.isCompiling', false);
 		test.memoryViews.int32[replacement.memoryPlan.modules.source.memory.samples.allocationUnitAddress + 1] = 9;
 		expect(values()).toEqual(['9', '9']);
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 
 	it('renders live pointer targets without repeating declaration-name lookup', async () => {

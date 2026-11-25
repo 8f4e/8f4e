@@ -1,6 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
-import initView, { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { createEvents } from '../src/__tests__/events';
 import { createPianoPlugin } from '../src/index';
@@ -27,7 +28,7 @@ entryEnd`);
 		callbacks: {},
 	});
 	store.set('editorMode', 'edit');
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = createPianoPlugin({ writeMemory: () => {} }).setup({
 		store,
 		events,
@@ -35,18 +36,16 @@ entryEnd`);
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	const state = store.getState();
 	state.viewport.width = canvas.width;
 	state.viewport.height = canvas.height;
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
-	store.set('codeBlockRendering.currentProject.blocks', [codeBlock]);
+	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+	store.set('editorMode', 'edit');
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
+	store.set('project.activeLevel.blocks', [codeBlock]);
 	const buffer = new ArrayBuffer(65536);
 	const memoryViews: MemoryViews = {
 		int8: new Int8Array(buffer),
@@ -63,9 +62,9 @@ entryEnd`);
 	});
 	memoryViews.int32[memory.count.allocationUnitAddress] = 6;
 
-	const renderer = await initView(store, events, canvas, memoryViews, {
+	const renderer = await initView(store, events, new Engine(canvas), memoryViews, {
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {

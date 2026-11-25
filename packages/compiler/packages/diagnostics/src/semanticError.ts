@@ -17,7 +17,13 @@
  *  before any semantic context is built → use SyntaxIssue in syntaxError.ts.
  */
 
-import type { CompilerDiagnosticLine, ProjectGroupPath, ProjectModuleId, StackItem } from '@8f4e/language-spec';
+import type {
+	CompilerDiagnosticLine,
+	ProjectEntryDiagnosticLocation,
+	ProjectGroupPath,
+	ProjectModuleId,
+	StackItem,
+} from '@8f4e/language-spec';
 import {
 	ErrorCode,
 	type ErrorCodeValue,
@@ -58,10 +64,10 @@ function getProjectMemoryExposureTargetMessage(details: ErrorDetails = {}): stri
 	return `Project memory exposure${publicReference} targets undeclared memory${targetReference}. (${code})`;
 }
 
-/** Formats semantic wording from the source row, optional details, and current stack facts. */
+/** Formats semantic wording from the source row when available, optional details, and current stack facts. */
 function formatSemanticMessage(
 	code: ErrorCodeValue,
-	lineNumber: number,
+	lineNumber: number | undefined,
 	details: ErrorDetails | undefined,
 	stack: readonly Pick<StackItem, 'kind' | 'valueType'>[]
 ): string {
@@ -94,8 +100,6 @@ function formatSemanticMessage(
 			return `Fixed reference slot${details?.identifier ? ` "${details.identifier}"` : ''} cannot be rebound. (${code})`;
 		case ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET:
 			return getProjectMemoryExposureTargetMessage(details);
-		case ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP:
-			return `init can only be used at group level. (${code})`;
 		case ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET:
 			return `Initialization target must be exposed scalar memory${details?.identifier ? `: ${details.identifier}` : ''}. (${code})`;
 		case ErrorCode.DUPLICATE_GROUP_MEMORY_INITIALIZER:
@@ -116,8 +120,8 @@ function formatSemanticMessage(
 			return 'Missing module ID. (' + code + ')';
 		case ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS: {
 			return (
-				lineNumber +
-				': Expected 0 elements on the stack, found ' +
+				(lineNumber !== undefined ? `${lineNumber}: ` : '') +
+				'Expected 0 elements on the stack, found ' +
 				stack.length +
 				' [' +
 				stack.map(item => (item.kind === 'address' ? 'address' : item.valueType)).join(', ') +
@@ -130,16 +134,6 @@ function formatSemanticMessage(
 			return 'Possible division by zero. (' + code + ')';
 		case ErrorCode.MISSING_FUNCTION_ID:
 			return 'Missing function ID. (' + code + ')';
-		case ErrorCode.MISSING_PROTOTYPE_ID:
-			return 'Missing prototype ID. (' + code + ')';
-		case ErrorCode.PARAM_SHAPE_UNSUPPORTED_POINTER_DEPTH:
-			return (
-				'paramShape cannot expand this prototype declaration because the resulting pointer parameter type is unsupported. (' +
-				code +
-				')'
-			);
-		case ErrorCode.PUSH_SHAPE_REQUIRES_MODULE_SHAPE:
-			return 'pushShape requires the current module to declare the requested shape. (' + code + ')';
 		case ErrorCode.INVALID_FUNCTION_SIGNATURE:
 			return 'Invalid function signature. Parameters and returns must be "int", "float", or "float64". (' + code + ')';
 		case ErrorCode.DUPLICATE_FUNCTION_SIGNATURE:
@@ -278,6 +272,8 @@ function formatSemanticMessage(
 				code +
 				')'
 			);
+		case ErrorCode.RESERVED_ROOT_ENTRY_NAME:
+			return `Root entry name${details?.identifier ? ` "${details.identifier}"` : ''} is reserved for a compiler-generated export. (${code})`;
 		case ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED:
 			return (
 				'Pointer dereference depth exceeds the declared pointer depth' +
@@ -312,19 +308,22 @@ function formatSemanticMessage(
 	}
 }
 
-/** Creates a semantic source error. The caller must supply the owning source. */
+/** Creates a semantic source error at an owned source line or named project entry. */
 export function getError(
 	code: ErrorCodeValue,
-	line: CompilerDiagnosticLine,
+	source: CompilerDiagnosticLine | ProjectEntryDiagnosticLocation,
 	{ symbol, stack = [], details }: SemanticErrorOptions = {}
 ): CompilerError {
+	const location =
+		'diagnosticSource' in source ? { ...source.diagnosticSource, lineNumber: source.lineNumber } : source;
+	const instruction = 'diagnosticSource' in source ? source.instruction : 'entry';
 	return new CompilerError({
 		kind: 'source',
 		domain: 'semantic',
 		code,
-		message: formatSemanticMessage(code, line.lineNumber, details, stack),
-		location: { ...line.diagnosticSource, lineNumber: line.lineNumber },
-		...(line.instruction !== undefined ? { instruction: line.instruction } : {}),
+		message: formatSemanticMessage(code, 'lineNumber' in location ? location.lineNumber : undefined, details, stack),
+		location,
+		...(instruction !== undefined ? { instruction } : {}),
 		...(symbol !== undefined ? { symbol } : {}),
 	});
 }

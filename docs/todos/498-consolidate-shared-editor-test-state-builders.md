@@ -56,15 +56,15 @@ test setup rather than adding production fallbacks for fields guaranteed by the 
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state-testing/src/index.ts` and its tests/README.
-- `packages/editor/packages/editor-core/packages/editor-state/src/pureHelpers/testingUtils/testUtils.ts` and consumers.
-- Runtime fixtures in `packages/editor/packages/runtime-audio-worklet/src/runtimeDef.test.ts` and
-  `packages/editor/packages/runtime-web-worker/src/runtimeDef.test.ts`.
+- `packages/editor/packages/editor-core/packages/editor-state/src/__tests__/helpers/mockEditorState.ts` and consumers.
+- Page-side runtime fixtures in `packages/editor/plugins/audio-runtime/src/index.test.ts` and
+  `packages/editor/plugins/worker-runtime/src/index.test.ts`.
 - Full-state fixtures in web-ui and editor-core environment-plugin tests, plus their test dependency declarations.
 
 ## Validation Checkpoints
 
 - Run tests and typechecks for `@8f4e/editor-state-testing`, `@8f4e/editor-state`, `@8f4e/editor-core`, `@8f4e/web-ui`,
-  `@8f4e/runtime-audio-worklet`, and `@8f4e/runtime-web-worker` through Nx.
+  `@8f4e/editor-plugin-audio-runtime`, and `@8f4e/editor-plugin-worker-runtime` through Nx.
 - Run the full affected test set to catch downstream consumers beyond the directly edited packages.
 - Confirm the shared testing package still depends on state types rather than the editor-state implementation.
 

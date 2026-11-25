@@ -1,12 +1,13 @@
 import initEditor, { type Editor } from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
+import { createViewportMouseInputPlugin } from '@8f4e/editor-plugin-viewport-mouse-input';
 import { afterEach, expect, it, vi } from 'vitest';
 import { mountLandingEditor } from './index';
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
-vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
+vi.mock('glugglugglug', () => ({ Engine: class {} }));
+vi.mock('@8f4e/editor-plugin-viewport-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-compiler', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 
@@ -18,29 +19,37 @@ async function loadDeferredPlugins() {
 }
 afterEach(() => vi.clearAllMocks());
 
-it('starts without storage and reports empty-project readiness after initialization', async () => {
+it('starts without storage and waits for core initialization before resolving the mount', async () => {
 	let finish!: (editor: Editor) => void;
 	vi.mocked(initEditor).mockReturnValueOnce(
 		new Promise(resolve => {
 			finish = resolve;
 		})
 	);
-	const browserWindow = { navigator: {}, matchMedia: () => ({ matches: false }) };
+	const browserWindow = { navigator: {}, matchMedia: (query: string) => ({ matches: query === '(pointer: fine)' }) };
 	const canvas = { ownerDocument: { defaultView: browserWindow } } as HTMLCanvasElement;
-	const onInitialProjectLoaded = vi.fn();
+	const mounted = vi.fn();
 	const mounting = mountLandingEditor(canvas, {
 		captureWheel: false,
-		featureFlags: { moduleDragging: false },
-		onInitialProjectLoaded,
+		featureFlags: { canvasOverlays: false },
+	}).then(editor => {
+		mounted(editor);
+		return editor;
 	});
 	await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
 	const compiler = vi.mocked(createCompilerPlugin).mock.results[0].value;
 	const options = vi.mocked(initEditor).mock.calls[0][1];
 	expect(options.defaultFont).toBeUndefined();
-	expect(options.featureFlags).toEqual({ projectCreation: false, moduleDragging: false, contextMenu: false });
+	expect(options.featureFlags).toEqual({
+		canvasOverlays: false,
+		contextMenu: false,
+	});
 	expect(options.plugins![0]).toBe(compiler.plugin);
 	expect(options.plugins!.map(plugin => plugin.id)).toEqual([
 		'compiler',
+		'undo-redo',
+		'home',
+		'dotted-background',
 		'code-block-background',
 		'code-rendering',
 		'project-url-loader',
@@ -52,36 +61,41 @@ it('starts without storage and reports empty-project readiness after initializat
 	expect(entries.map(entry => entry.id)).toEqual([
 		'error-messages',
 		'connectors',
+		'wires',
+		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
+		'viewport-mouse-input',
 		'touch-input',
 		'keyboard-navigation',
 		'keyboard-editing',
 		'watch',
 		'stack',
 		'plot',
+		'scope',
 		'slider',
 		'worker-runtime',
 	]);
-	expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
+	expect(createViewportMouseInputPlugin).toHaveBeenCalledExactlyOnceWith({ inputTarget: canvas, captureWheel: false });
 	expect(deferredPlugins.map(plugin => plugin.id)).toEqual([
 		'lazy-loader',
 		'error-messages',
 		'connectors',
+		'wires',
+		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
+		'viewport-mouse-input',
 		'keyboard-navigation',
 		'keyboard-editing',
 	]);
-	expect(onInitialProjectLoaded).not.toHaveBeenCalled();
+	expect(mounted).not.toHaveBeenCalled();
 	const coreEditor = { dispose: vi.fn() } as unknown as Editor;
 	finish(coreEditor);
 	const editor = await mounting;
 	expect(editor).toBe(coreEditor);
 	expect(editor.getCompilerDiagnostics).toBe(compiler.getDiagnostics);
-	expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
+	expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
 	editor.dispose();
 });
 
@@ -95,9 +109,11 @@ it('selects touch input on coarse-pointer browsers', async () => {
 		'lazy-loader',
 		'error-messages',
 		'connectors',
+		'wires',
+		'stack-connections',
 		'stack-producers',
 		'tooltips',
-		'mouse-input',
+		'viewport-mouse-input',
 		'touch-input',
 	]);
 });
@@ -106,9 +122,9 @@ it('keeps context-menu requests disabled when the host supplies feature flags', 
 	vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as unknown as Editor);
 	await mountLandingEditor(
 		{ ownerDocument: { defaultView: { matchMedia: () => ({ matches: false }) } } } as unknown as HTMLCanvasElement,
-		{ featureFlags: { contextMenu: true, projectCreation: true } }
+		{ featureFlags: { contextMenu: true, canvasOverlays: false } }
 	);
-	expect(vi.mocked(initEditor).mock.calls[0][1].featureFlags).toEqual({ projectCreation: true, contextMenu: false });
+	expect(vi.mocked(initEditor).mock.calls[0][1].featureFlags).toEqual({ canvasOverlays: false, contextMenu: false });
 });
 
 it.each([false, true])('honors an explicit default font with coarse pointer %s', async coarse => {

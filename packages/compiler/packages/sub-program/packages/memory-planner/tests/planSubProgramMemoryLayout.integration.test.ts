@@ -1,34 +1,22 @@
-import type { ModuleAST, PrototypeAST } from '@8f4e/language-spec';
+import type { ModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { planSubProgramMemoryLayout, type SubProgramMemoryLayoutPlanInput } from '../src';
 
-type MemoryPlannerIntegrationInput = SubProgramMemoryLayoutPlanInput<PrototypeAST, ModuleAST>;
+type MemoryPlannerIntegrationInput = SubProgramMemoryLayoutPlanInput<ModuleAST>;
 
 describe('planSubProgramMemoryLayout integration', () => {
 	it('plans sub-program-level memory layout from pass-shaped fixtures', () => {
-		const statePrototypeLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 1,
-			instruction: 'prototype',
-			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
-		} as const;
 		const phaseDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 2,
+			lineNumber: 11,
 			instruction: 'float',
 			arguments: [{ type: 'identifier', value: 'phase', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const gainDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 3,
+			lineNumber: 12,
 			instruction: 'float',
 			arguments: [{ type: 'identifier', value: 'gain', referenceKind: 'plain', scope: 'local' }],
-		} as const;
-		const statePrototypeEndLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 4,
-			instruction: 'prototypeEnd',
-			arguments: [],
 		} as const;
 		const mainModuleLine = {
 			diagnosticSource: { kind: 'document' },
@@ -36,21 +24,15 @@ describe('planSubProgramMemoryLayout integration', () => {
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
-		const stateShapeLine = {
-			diagnosticSource: { kind: 'document' },
-			lineNumber: 11,
-			instruction: 'shape',
-			arguments: [{ type: 'identifier', value: 'state', referenceKind: 'plain', scope: 'local' }],
-		} as const;
 		const counterDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 12,
+			lineNumber: 13,
 			instruction: 'int',
 			arguments: [{ type: 'identifier', value: 'counter', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const bytesDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 13,
+			lineNumber: 14,
 			instruction: 'int8[]',
 			arguments: [
 				{ type: 'identifier', value: 'bytes', referenceKind: 'plain', scope: 'local' },
@@ -59,7 +41,7 @@ describe('planSubProgramMemoryLayout integration', () => {
 		} as const;
 		const doublesDeclarationLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 14,
+			lineNumber: 15,
 			instruction: 'float64[]',
 			arguments: [
 				{ type: 'identifier', value: 'doubles', referenceKind: 'plain', scope: 'local' },
@@ -68,7 +50,7 @@ describe('planSubProgramMemoryLayout integration', () => {
 		} as const;
 		const mainModuleEndLine = {
 			diagnosticSource: { kind: 'document' },
-			lineNumber: 15,
+			lineNumber: 16,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
@@ -102,14 +84,6 @@ describe('planSubProgramMemoryLayout integration', () => {
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
-		const prototypes = [
-			{
-				type: 'prototype',
-				id: 'state',
-				prototypeLine: statePrototypeLine,
-				lines: [statePrototypeLine, phaseDeclarationLine, gainDeclarationLine, statePrototypeEndLine],
-			},
-		] as const;
 		const modules = [
 			{
 				type: 'module',
@@ -117,7 +91,8 @@ describe('planSubProgramMemoryLayout integration', () => {
 				moduleLine: mainModuleLine,
 				lines: [
 					mainModuleLine,
-					stateShapeLine,
+					phaseDeclarationLine,
+					gainDeclarationLine,
 					counterDeclarationLine,
 					bytesDeclarationLine,
 					doublesDeclarationLine,
@@ -132,14 +107,9 @@ describe('planSubProgramMemoryLayout integration', () => {
 			},
 		] as const;
 		const constantReferences = {
-			prototypes: [
-				{
-					lineFacts: [undefined, undefined, undefined, undefined],
-				},
-			],
 			modules: [
 				{
-					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined],
+					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined, undefined],
 				},
 				{
 					lineFacts: [undefined, undefined, undefined, undefined, undefined],
@@ -147,13 +117,17 @@ describe('planSubProgramMemoryLayout integration', () => {
 			],
 		} as const;
 
-		expect(
-			planSubProgramMemoryLayout({
-				prototypes,
-				modules,
-				constantReferences,
-				startingByteAddress: 4,
-			} satisfies MemoryPlannerIntegrationInput)
-		).toMatchSnapshot();
+		const plan = planSubProgramMemoryLayout({
+			modules,
+			constantReferences,
+			startingByteAddress: 4,
+		} satisfies MemoryPlannerIntegrationInput);
+		for (const module of plan.moduleList) {
+			expect(plan.modules[module.id]).toBe(module);
+			for (const declaration of module.declarations) {
+				if (declaration.name !== undefined) expect(module.memory[declaration.name]).toBe(declaration);
+			}
+		}
+		expect(plan.moduleList.map(({ memory: _memory, ...module }) => module)).toMatchSnapshot();
 	});
 });

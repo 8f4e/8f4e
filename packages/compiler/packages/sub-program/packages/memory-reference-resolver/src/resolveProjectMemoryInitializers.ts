@@ -19,20 +19,16 @@ export function resolveProjectMemoryInitializers(
 	const defaults = new Map<string, Map<number, Const>>();
 	for (const scope of scopes) {
 		for (const line of scope.initializers) {
-			if (scope.parentGroupPath === undefined) {
-				throw getError(ErrorCode.GROUP_MEMORY_INITIALIZER_OUTSIDE_GROUP, line, {});
-			}
 			const [destination, source] = line.arguments;
 			const name = destination.targetMemoryId;
 			const resolved = resolveMemoryTarget(
 				{ scope: 'intermodule', targetModuleId: scope.groupPath, targetMemoryId: name },
 				context
 			);
-			const declaration = resolved?.targetModule.declarationSources[resolved.targetMemory.id];
 			if (
 				!context.memoryAliases.get(scope.groupPath)?.has(name) ||
 				!resolved ||
-				!isScalarMemoryDeclarationLine(declaration!.line)
+				!isScalarMemoryDeclarationLine(resolved.targetMemory.source)
 			) {
 				throw getError(ErrorCode.INVALID_GROUP_MEMORY_INITIALIZER_TARGET, line, {
 					details: {

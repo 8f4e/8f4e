@@ -1,8 +1,8 @@
-import { gapCalculator } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, State } from '@8f4e/editor-state-types';
+import { displayRowToGridRow } from '@8f4e/editor-state';
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 import type { AssertionSite } from '@8f4e/language-spec';
 
-export default function deriveAssertionMarkers(codeBlock: CodeBlockGraphicData, state: State) {
+export default function deriveAssertionMarkers(codeBlock: EditorCodeBlock, state: State) {
 	if (state.compiler.isCompiling || codeBlock.disabled) return [];
 
 	const sites = new Map<number, { site: AssertionSite; passed: boolean }>();
@@ -27,7 +27,7 @@ export default function deriveAssertionMarkers(codeBlock: CodeBlockGraphicData, 
 			{
 				passed,
 				x: state.viewport.vGrid,
-				y: gapCalculator(displayRow, codeBlock.gaps) * state.viewport.hGrid,
+				y: displayRowToGridRow(displayRow, codeBlock.gaps) * state.viewport.hGrid,
 				width: codeBlock.lineNumberColumnWidth * state.viewport.vGrid,
 				height: state.viewport.hGrid,
 			},

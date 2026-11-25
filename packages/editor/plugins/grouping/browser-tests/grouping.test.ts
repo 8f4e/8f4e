@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { createGroupingPlugin } from '../src/index';
 
@@ -15,6 +16,7 @@ test('contributes group menus and drag behavior through the real editor', async 
 	const plugin = createGroupingPlugin({ writeClipboardText: async () => {} });
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			plugins: [
 				{
 					...plugin,
@@ -44,8 +46,8 @@ entryEnd`),
 		editor.state.editorMode = 'edit';
 		editor.pauseRendering();
 		const state = editor.state;
-		const first = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'source')!;
-		const second = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'destination')!;
+		const first = state.project.activeLevel.blocks.find(block => block.name === 'source')!;
+		const second = state.project.activeLevel.blocks.find(block => block.name === 'destination')!;
 		const pointer = (type: string, x: number, y: number, movementX = 0) => {
 			events.dispatch(type, {
 				x,

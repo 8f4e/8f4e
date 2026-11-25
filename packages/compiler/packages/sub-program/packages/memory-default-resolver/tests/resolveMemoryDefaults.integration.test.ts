@@ -3,12 +3,12 @@ import { type ResolveMemoryDefaultsInput, resolveMemoryDefaults } from '../src';
 
 describe('resolveMemoryDefaults integration', () => {
 	it('resolves sub-program-level memory defaults from pass-shaped fixtures', () => {
-		const inheritedCounterLine = {
+		const counterLine = {
 			diagnosticSource: { kind: 'document' },
 			lineNumber: 11,
 			instruction: 'int',
 			arguments: [
-				{ type: 'identifier', value: 'inheritedCounter', referenceKind: 'plain', scope: 'local' },
+				{ type: 'identifier', value: 'counter', referenceKind: 'plain', scope: 'local' },
 				{ type: 'literal', value: 7, isInteger: true },
 			],
 		} as const;
@@ -71,7 +71,8 @@ describe('resolveMemoryDefaults integration', () => {
 				{ type: 'literal', value: 6, isInteger: true },
 			],
 		} as const;
-		const inheritedCounterMemory = {
+		const counterMemory = {
+			source: counterLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 4,
@@ -83,12 +84,13 @@ describe('resolveMemoryDefaults integration', () => {
 			lineNumber: 11,
 			isInteger: true,
 			id: 0,
-			name: 'inheritedCounter',
+			name: 'counter',
 			pointerDepth: 0,
 			type: 'int',
 			isUnsigned: false,
 		} as const;
 		const valuesMemory = {
+			source: valuesLine,
 			numberOfElements: 3,
 			elementWordSize: 4,
 			byteAddress: 8,
@@ -106,6 +108,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const ptrMemory = {
+			source: pointerLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 20,
@@ -124,6 +127,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const copiedCountMemory = {
+			source: copiedCountLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 24,
@@ -141,6 +145,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const gainMemory = {
+			source: gainLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 28,
@@ -158,6 +163,7 @@ describe('resolveMemoryDefaults integration', () => {
 			isUnsigned: false,
 		} as const;
 		const audioSamplesMemory = {
+			source: audioSamplesLine,
 			numberOfElements: 6,
 			elementWordSize: 2,
 			byteAddress: 4,
@@ -184,20 +190,13 @@ describe('resolveMemoryDefaults integration', () => {
 					allocatedByteLength: 28,
 					endByteAddress: 32,
 					memory: {
-						inheritedCounter: inheritedCounterMemory,
+						counter: counterMemory,
 						values: valuesMemory,
 						ptr: ptrMemory,
 						copiedCount: copiedCountMemory,
 						gain: gainMemory,
 					},
-					declarations: [inheritedCounterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
-					declarationSources: [
-						{ line: inheritedCounterLine, isInherited: true },
-						{ line: valuesLine, isInherited: false },
-						{ line: pointerLine, isInherited: false },
-						{ line: copiedCountLine, isInherited: false },
-						{ line: gainLine, isInherited: false },
-					],
+					declarations: [counterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
 				},
 				audio: {
 					id: 'audio',
@@ -210,7 +209,6 @@ describe('resolveMemoryDefaults integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesLine, isInherited: false }],
 				},
 			},
 			moduleList: [
@@ -222,20 +220,13 @@ describe('resolveMemoryDefaults integration', () => {
 					allocatedByteLength: 28,
 					endByteAddress: 32,
 					memory: {
-						inheritedCounter: inheritedCounterMemory,
+						counter: counterMemory,
 						values: valuesMemory,
 						ptr: ptrMemory,
 						copiedCount: copiedCountMemory,
 						gain: gainMemory,
 					},
-					declarations: [inheritedCounterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
-					declarationSources: [
-						{ line: inheritedCounterLine, isInherited: true },
-						{ line: valuesLine, isInherited: false },
-						{ line: pointerLine, isInherited: false },
-						{ line: copiedCountLine, isInherited: false },
-						{ line: gainLine, isInherited: false },
-					],
+					declarations: [counterMemory, valuesMemory, ptrMemory, copiedCountMemory, gainMemory],
 				},
 				{
 					id: 'audio',
@@ -248,7 +239,6 @@ describe('resolveMemoryDefaults integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesLine, isInherited: false }],
 				},
 			],
 		} as const;

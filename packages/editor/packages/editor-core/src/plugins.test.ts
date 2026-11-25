@@ -1,6 +1,6 @@
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { type EditorPlugin, installEditorPlugins } from './plugins';
 
@@ -14,7 +14,7 @@ function createContext() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	};
 }
 
@@ -49,7 +49,7 @@ describe('editor plugins', () => {
 						expect(received).toBe(context);
 						received.store.subscribe('compilerInputRevision', onChange);
 						received.events.on('plugin-action', onEvent);
-						const unregisterMenu = received.menus.registerItem('moduleMenu', () => ({ title: 'Plugin action' }));
+						const unregisterMenu = received.menus.registerItem('codeBlockMenu', () => ({ title: 'Plugin action' }));
 						const finishLoading = received.loading.add({
 							id: 'plugin-resource',
 							message: 'Loading plugin resource...',
@@ -160,23 +160,23 @@ describe('editor plugins', () => {
 		const secondDrawer = vi.fn();
 		const plugin: EditorPlugin = {
 			id: 'test',
-			setup: ({ drawers, store }) =>
-				drawers.registerCodeBlockDrawer(store === first.store ? firstDrawer : secondDrawer),
+			setup: ({ renderRegistry, store }) =>
+				renderRegistry.registerCodeBlockDrawer(store === first.store ? firstDrawer : secondDrawer),
 		};
 		const disposeFirst = installEditorPlugins([plugin], first);
 		const disposeSecond = installEditorPlugins([plugin], second);
 		const drawContext = {
-			draw: {} as Parameters<typeof first.drawers.drawCodeBlock>[0]['draw'],
+			draw: {} as Parameters<typeof first.renderRegistry.drawCodeBlock>[0]['draw'],
 			state: first.store.getState(),
 			codeBlock: createMockCodeBlock(),
-			memoryViews: {} as Parameters<typeof first.drawers.drawCodeBlock>[0]['memoryViews'],
+			memoryViews: {} as Parameters<typeof first.renderRegistry.drawCodeBlock>[0]['memoryViews'],
 		};
-		first.drawers.drawCodeBlock(drawContext);
+		first.renderRegistry.drawCodeBlock(drawContext);
 		expect(firstDrawer).toHaveBeenCalledOnce();
 		expect(secondDrawer).not.toHaveBeenCalled();
 		disposeFirst();
-		first.drawers.drawCodeBlock(drawContext);
-		second.drawers.drawCodeBlock(drawContext);
+		first.renderRegistry.drawCodeBlock(drawContext);
+		second.renderRegistry.drawCodeBlock(drawContext);
 		expect(firstDrawer).toHaveBeenCalledOnce();
 		expect(secondDrawer).toHaveBeenCalledOnce();
 		disposeSecond();

@@ -2,7 +2,6 @@
 
 exports[`compileProject (audioBuffer example) > compiles build artifacts without config packaging 1`] = `
 {
-  "code": [],
   "compiledModules": {
     "audioout": {
       "ast": {
@@ -20,7 +19,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "module",
@@ -37,7 +36,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "use",
@@ -62,7 +61,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "float&",
@@ -85,7 +84,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "float[]",
@@ -109,7 +108,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "int",
@@ -126,7 +125,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -145,7 +144,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -161,7 +160,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -171,7 +170,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "mul",
@@ -181,7 +180,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "store",
@@ -199,7 +198,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -216,7 +215,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -234,7 +233,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -244,7 +243,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "add",
@@ -254,7 +253,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "store",
@@ -271,7 +270,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -290,7 +289,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -300,7 +299,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "greaterOrEqual",
@@ -310,7 +309,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "ifBlock": {
@@ -333,7 +332,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -351,7 +350,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -361,7 +360,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "store",
@@ -371,7 +370,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "ifEndBlock": {
@@ -385,7 +384,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 191,
+              "projectBlockId": 125,
               "projectGroupPath": "",
             },
             "instruction": "moduleEnd",
@@ -403,13 +402,13 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           ],
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 191,
+            "projectBlockId": 125,
             "projectGroupPath": "",
           },
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 191,
+        "projectBlockId": 125,
         "sourceIdentity": {
           "codeBlockId": "audioout",
           "projectGroupPath": "",
@@ -438,6 +437,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "out",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "out",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 7,
+            },
             "type": "float",
           },
           "targetModuleId": "phaseAccumulator",
@@ -461,7 +477,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "module",
@@ -478,7 +494,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "use",
@@ -500,7 +516,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "float",
@@ -524,7 +540,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "float&",
@@ -541,7 +557,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "float",
@@ -558,7 +574,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "float",
@@ -575,7 +591,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "use",
@@ -593,7 +609,24 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
+              "projectGroupPath": "",
+            },
+            "instruction": "push",
+            "lineNumber": 12,
+          },
+          {
+            "arguments": [
+              {
+                "referenceKind": "plain",
+                "scope": "local",
+                "type": "identifier",
+                "value": "phase",
+              },
+            ],
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
@@ -605,36 +638,8 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
                 "referenceKind": "plain",
                 "scope": "local",
                 "type": "identifier",
-                "value": "phase",
+                "value": "hzToRadians",
               },
-            ],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "push",
-            "lineNumber": 14,
-          },
-          {
-            "arguments": [
-              {
-                "referenceKind": "constant",
-                "scope": "local",
-                "type": "identifier",
-                "value": "TAU",
-              },
-            ],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "push",
-            "lineNumber": 15,
-          },
-          {
-            "arguments": [
               {
                 "dereferenceDepth": 1,
                 "referenceKind": "memory-pointer",
@@ -643,27 +648,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
                 "type": "identifier",
                 "value": "*frequency",
               },
-            ],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "push",
-            "lineNumber": 16,
-          },
-          {
-            "arguments": [],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "mul",
-            "lineNumber": 17,
-          },
-          {
-            "arguments": [
               {
                 "referenceKind": "constant",
                 "scope": "local",
@@ -673,61 +657,31 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
-            "instruction": "push",
-            "lineNumber": 18,
+            "instruction": "call",
+            "lineNumber": 14,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "castToFloat",
-            "lineNumber": 19,
-          },
-          {
-            "arguments": [],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "ensureNonZero",
-            "lineNumber": 20,
-          },
-          {
-            "arguments": [],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
-              "projectGroupPath": "",
-            },
-            "instruction": "div",
-            "lineNumber": 21,
-          },
-          {
-            "arguments": [],
-            "diagnosticSource": {
-              "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "add",
-            "lineNumber": 22,
+            "lineNumber": 16,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "store",
-            "lineNumber": 23,
+            "lineNumber": 17,
           },
           {
             "arguments": [
@@ -740,11 +694,11 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 26,
+            "lineNumber": 20,
           },
           {
             "arguments": [
@@ -757,36 +711,36 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 27,
+            "lineNumber": 21,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "greaterThan",
-            "lineNumber": 28,
+            "lineNumber": 22,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "ifBlock": {
               "hasElse": false,
-              "matchingIfEndIndex": 25,
+              "matchingIfEndIndex": 19,
               "resultTypes": [],
             },
             "instruction": "if",
-            "lineNumber": 29,
+            "lineNumber": 23,
           },
           {
             "arguments": [
@@ -800,11 +754,11 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 30,
+            "lineNumber": 24,
           },
           {
             "arguments": [
@@ -817,35 +771,35 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 31,
+            "lineNumber": 25,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "store",
-            "lineNumber": 32,
+            "lineNumber": 26,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "ifEndBlock": {
-              "matchingIfIndex": 21,
+              "matchingIfIndex": 15,
               "resultTypes": [],
             },
             "instruction": "ifEnd",
-            "lineNumber": 33,
+            "lineNumber": 27,
           },
           {
             "arguments": [
@@ -859,11 +813,11 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 35,
+            "lineNumber": 29,
           },
           {
             "arguments": [
@@ -876,11 +830,11 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "push",
-            "lineNumber": 36,
+            "lineNumber": 30,
           },
           {
             "arguments": [
@@ -893,31 +847,31 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             ],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "call",
-            "lineNumber": 39,
+            "lineNumber": 33,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "store",
-            "lineNumber": 40,
+            "lineNumber": 34,
           },
           {
             "arguments": [],
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 148,
+              "projectBlockId": 88,
               "projectGroupPath": "",
             },
             "instruction": "moduleEnd",
-            "lineNumber": 42,
+            "lineNumber": 36,
           },
         ],
         "moduleLine": {
@@ -931,13 +885,13 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
           ],
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 148,
+            "projectBlockId": 88,
             "projectGroupPath": "",
           },
           "instruction": "module",
           "lineNumber": 0,
         },
-        "projectBlockId": 148,
+        "projectBlockId": 88,
         "sourceIdentity": {
           "codeBlockId": "phaseAccumulator",
           "projectGroupPath": "",
@@ -966,6 +920,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "defaultFreq",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 440,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 4,
+            },
             "type": "float",
           },
           "targetModuleId": "phaseAccumulator",
@@ -974,27 +950,12 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
       },
     },
   },
-  "compiledWasm": "AGFzbQEAAAABBAFgAAACEQEEaG9zdAZtZW1vcnkCAwEBAwQDAAAAByADDGluaXREZWZhdWx0cwAABG1haW4AAQZidWZmZXIAAgwBAQrEAgMXAEEAQQBBkAT8CwBBgARBAEEI/AgAAAuEAgQBfwF9AX0BfUGIBEGIBCoCAEPbD8lAQYQEKgIAlEGA9wKylZI4AgBBiAQqAgBD2w9JQF4EQEGIBEPbD0nAOAIAC0GMBEGIBCoCACECQwAAAAAhAyACQ9sPyT9eBEBD2w9JQCACkyECCyACQ9sPyT9DAACAv5RdBEBD2w9JQEMAAIC/lCACkyECCyACIAKUIQMgA0PRDFC5lEOIiAg8kiADlEOrqiq+kiADlEMAAIA/kiAClDgCAEGABCgCAEGMBCoCAEMAAAA/lCEBIQAgAEH8/wNNBEAgACABOAIABQtBgARBgAQoAgBBBGo2AgBBgAQoAgBBgAROBEBBgARBADYCAAsLJAEBf0EAIQACQANAIABBgAFOBEAMAgsgAEEBaiEAEAEMAAsLCwsLAQEIAAAAAAAA3EM=",
+  "compiledWasm": "AGFzbQEAAAABBAFgAAACEQEEaG9zdAZtZW1vcnkCAwEBAwQDAAAAByADDGluaXREZWZhdWx0cwAABG1haW4AAQZidWZmZXIAAgwBAQroAgMXAEEAQQBBkAT8CwBBgARBAEEI/AgAAAuoAgcBfwF9AX0BfwF9AX0BfUGIBEGIBCoCAEGEBCoCAEGA9wIhAyECIAJD2w/JQJQgA7IhBCAEQwAAAABbBEBDAACAPyEECyAElZI4AgBBiAQqAgBD2w9JQF4EQEGIBEPbD0nAOAIAC0GMBEGIBCoCACEFQwAAAAAhBiAFQ9sPyT9eBEBD2w9JQCAFkyEFCyAFQ9sPyT9DAACAv5RdBEBD2w9JQEMAAIC/lCAFkyEFCyAFIAWUIQYgBkPRDFC5lEOIiAg8kiAGlEOrqiq+kiAGlEMAAIA/kiAFlDgCAEGABCgCAEGMBCoCAEMAAAA/lCEBIQAgAEH8/wNNBEAgACABOAIABQtBgARBgAQoAgBBBGo2AgBBgAQoAgBBgAROBEBBgARBADYCAAsLJAEBf0EAIQACQANAIABBgAFOBEAMAgsgAEEBaiEAEAEMAAsLCwsLAQEIAAAAAAAA3EM=",
   "constants": [
     {
       "code": [
-        "constants env",
-        "; @pos -120 12",
-        "; @favorite",
-        "; Auto-generated environment constants",
-        "; Changes will be overwritten",
-        "",
-        "const SAMPLE_RATE 48000",
-        "const AUDIO_BUFFER_SIZE 128",
-        "",
-        "constantsEnd",
-      ],
-      "id": 78,
-    },
-    {
-      "code": [
         "constants math",
-        "; @pos -120 34",
+        "; @pos -30 37",
         "",
         "const PI      3.141592653589793",
         "const NEG_PI -3.141592653589793",
@@ -1015,7 +976,21 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "",
         "constantsEnd",
       ],
-      "id": 89,
+      "id": 19,
+    },
+    {
+      "code": [
+        "constants env",
+        "; @pos 0 0",
+        "; Auto-generated environment constants",
+        "; Changes will be overwritten",
+        "",
+        "const SAMPLE_RATE 48000",
+        "const AUDIO_BUFFER_SIZE 128",
+        "",
+        "constantsEnd",
+      ],
+      "id": 41,
     },
   ],
   "entries": [
@@ -1025,7 +1000,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     {
       "code": [
         "module phaseAccumulator",
-        "; @pos 46 1",
+        "; @pos 116 -1",
         "use env",
         "",
         "float defaultFreq 440",
@@ -1035,17 +1010,11 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "",
         "use math",
         "",
-        "; Advance phase by",
-        "; TAU * frequency / SAMPLE_RATE",
+        "; Advance phase in radians.",
         "push &phase",
         "push phase",
-        "push TAU",
-        "push *frequency",
-        "mul",
-        "push SAMPLE_RATE",
-        "castToFloat",
-        "ensureNonZero",
-        "div",
+        "call hzToRadians ",
+        "- *frequency SAMPLE_RATE",
         "add",
         "store",
         "",
@@ -1069,13 +1038,13 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 148,
+      "id": 88,
       "type": "module",
     },
     {
       "code": [
         "module audioout",
-        "; @pos 88 1",
+        "; @pos 158 -1",
         "; @home",
         "use env",
         "",
@@ -1119,7 +1088,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "moduleEnd",
       ],
       "entry": "main",
-      "id": 191,
+      "id": 125,
       "type": "module",
     },
   ],
@@ -1127,7 +1096,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     {
       "code": [
         "function buffer",
-        "; @pos -120 23",
+        "; @pos -30 27",
         "#export buffer",
         "use env",
         "",
@@ -1136,106 +1105,43 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "loopEnd",
         "functionEnd",
       ],
-      "id": 3,
-    },
-    {
-      "code": [
-        "function sine",
-        "; @pos 7 1",
-        "; Polynomial approximation",
-        "; of the sine function with",
-        "; Taylor series (7th order)",
-        "; Only works in the range of",
-        "; [-PI, PI]",
-        "param float x",
-        "",
-        "use math",
-        "",
-        "; Fold to [-pi/2, pi/2]",
-        "push x",
-        "push HALF_PI",
-        "greaterThan",
-        "if",
-        "push PI",
-        "push x",
-        "sub",
-        "localSet x",
-        "ifEnd",
-        "",
-        "push x",
-        "push HALF_PI",
-        "push -1.0",
-        "mul",
-        "lessThan",
-        "if",
-        "push PI",
-        "push -1.0",
-        "mul",
-        "push x",
-        "sub",
-        "localSet x",
-        "ifEnd",
-        "",
-        "local float x2",
-        "push x",
-        "push x",
-        "mul",
-        "localSet x2",
-        "",
-        "; Taylor coefficients",
-        "const T1 -0.1666666666",
-        "const T2 0.0083333333",
-        "const T3 -0.000198412",
-        "",
-        "push x2",
-        "push T3",
-        "mul",
-        "push T2",
-        "add",
-        "push x2",
-        "mul",
-        "push T1",
-        "add",
-        "push x2",
-        "mul",
-        "push 1.0",
-        "add",
-        "push x",
-        "mul",
-        "",
-        "functionEnd float",
-      ],
-      "id": 13,
+      "id": 9,
     },
   ],
-  "includes": [],
+  "includes": [
+    {
+      "code": [
+        "includes",
+        "; @pos 7 1",
+        "include std/audio/hzToRadians",
+        "include std/math/trig/sine",
+        "includesEnd",
+      ],
+      "id": 3,
+    },
+  ],
   "memoryDefaultsByModuleId": {
     "audioout": {
       "0": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": {},
       },
       "1": {
         "hasExplicitDefault": true,
-        "isInherited": false,
         "value": 0,
       },
     },
     "phaseAccumulator": {
       "0": {
         "hasExplicitDefault": true,
-        "isInherited": false,
         "value": 440,
       },
       "1": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": 0,
       },
       "2": {
         "hasExplicitDefault": false,
-        "isInherited": false,
         "value": 0,
       },
     },
@@ -1246,60 +1152,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "allocatedByteLength": 516,
         "allocationUnitCount": 129,
         "byteAddress": 0,
-        "declarationSources": [
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "buffer",
-                },
-                {
-                  "isInteger": true,
-                  "type": "literal",
-                  "value": 128,
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 191,
-                "projectGroupPath": "",
-              },
-              "instruction": "float[]",
-              "lineNumber": 8,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "pointer",
-                },
-                {
-                  "referenceKind": "memory-reference",
-                  "scope": "local",
-                  "targetMemoryId": "buffer",
-                  "type": "identifier",
-                  "value": "&buffer",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 191,
-                "projectGroupPath": "",
-              },
-              "instruction": "int",
-              "lineNumber": 9,
-            },
-          },
-        ],
         "declarations": [
           {
             "allocatedByteLength": 512,
@@ -1316,6 +1168,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "buffer",
             "numberOfElements": 128,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "buffer",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 128,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "float[]",
+              "lineNumber": 8,
+            },
             "type": "float",
           },
           {
@@ -1333,6 +1207,30 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "pointer",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "pointer",
+                },
+                {
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer",
+                  "type": "identifier",
+                  "value": "&buffer",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "int",
+              "lineNumber": 9,
+            },
             "type": "int",
           },
         ],
@@ -1355,6 +1253,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "buffer",
             "numberOfElements": 128,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "buffer",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 128,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "float[]",
+              "lineNumber": 8,
+            },
             "type": "float",
           },
           "pointer": {
@@ -1372,6 +1292,30 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "pointer",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "pointer",
+                },
+                {
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer",
+                  "type": "identifier",
+                  "value": "&buffer",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "int",
+              "lineNumber": 9,
+            },
             "type": "int",
           },
         },
@@ -1380,73 +1324,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "allocatedByteLength": 12,
         "allocationUnitCount": 3,
         "byteAddress": 516,
-        "declarationSources": [
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "defaultFreq",
-                },
-                {
-                  "isInteger": true,
-                  "type": "literal",
-                  "value": 440,
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 4,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "phase",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 6,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "out",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 7,
-            },
-          },
-        ],
         "declarations": [
           {
             "allocatedByteLength": 4,
@@ -1463,6 +1340,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "defaultFreq",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 440,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 4,
+            },
             "type": "float",
           },
           {
@@ -1480,6 +1379,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "phase",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "phase",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 6,
+            },
             "type": "float",
           },
           {
@@ -1497,6 +1413,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "out",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "out",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 7,
+            },
             "type": "float",
           },
         ],
@@ -1519,6 +1452,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "defaultFreq",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 440,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 4,
+            },
             "type": "float",
           },
           "out": {
@@ -1536,6 +1491,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "out",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "out",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 7,
+            },
             "type": "float",
           },
           "phase": {
@@ -1553,6 +1525,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "phase",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "phase",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 6,
+            },
             "type": "float",
           },
         },
@@ -1563,60 +1552,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "allocatedByteLength": 516,
         "allocationUnitCount": 129,
         "byteAddress": 0,
-        "declarationSources": [
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "buffer",
-                },
-                {
-                  "isInteger": true,
-                  "type": "literal",
-                  "value": 128,
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 191,
-                "projectGroupPath": "",
-              },
-              "instruction": "float[]",
-              "lineNumber": 8,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "pointer",
-                },
-                {
-                  "referenceKind": "memory-reference",
-                  "scope": "local",
-                  "targetMemoryId": "buffer",
-                  "type": "identifier",
-                  "value": "&buffer",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 191,
-                "projectGroupPath": "",
-              },
-              "instruction": "int",
-              "lineNumber": 9,
-            },
-          },
-        ],
         "declarations": [
           {
             "allocatedByteLength": 512,
@@ -1633,6 +1568,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "buffer",
             "numberOfElements": 128,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "buffer",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 128,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "float[]",
+              "lineNumber": 8,
+            },
             "type": "float",
           },
           {
@@ -1650,6 +1607,30 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "pointer",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "pointer",
+                },
+                {
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer",
+                  "type": "identifier",
+                  "value": "&buffer",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "int",
+              "lineNumber": 9,
+            },
             "type": "int",
           },
         ],
@@ -1672,6 +1653,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "buffer",
             "numberOfElements": 128,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "buffer",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 128,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "float[]",
+              "lineNumber": 8,
+            },
             "type": "float",
           },
           "pointer": {
@@ -1689,6 +1692,30 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "pointer",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "pointer",
+                },
+                {
+                  "referenceKind": "memory-reference",
+                  "scope": "local",
+                  "targetMemoryId": "buffer",
+                  "type": "identifier",
+                  "value": "&buffer",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 125,
+                "projectGroupPath": "",
+              },
+              "instruction": "int",
+              "lineNumber": 9,
+            },
             "type": "int",
           },
         },
@@ -1697,73 +1724,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "allocatedByteLength": 12,
         "allocationUnitCount": 3,
         "byteAddress": 516,
-        "declarationSources": [
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "defaultFreq",
-                },
-                {
-                  "isInteger": true,
-                  "type": "literal",
-                  "value": 440,
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 4,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "phase",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 6,
-            },
-          },
-          {
-            "isInherited": false,
-            "line": {
-              "arguments": [
-                {
-                  "referenceKind": "plain",
-                  "scope": "local",
-                  "type": "identifier",
-                  "value": "out",
-                },
-              ],
-              "diagnosticSource": {
-                "kind": "block",
-                "projectBlockId": 148,
-                "projectGroupPath": "",
-              },
-              "instruction": "float",
-              "lineNumber": 7,
-            },
-          },
-        ],
         "declarations": [
           {
             "allocatedByteLength": 4,
@@ -1780,6 +1740,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "defaultFreq",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 440,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 4,
+            },
             "type": "float",
           },
           {
@@ -1797,6 +1779,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "phase",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "phase",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 6,
+            },
             "type": "float",
           },
           {
@@ -1814,6 +1813,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "out",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "out",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 7,
+            },
             "type": "float",
           },
         ],
@@ -1836,6 +1852,28 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "defaultFreq",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "defaultFreq",
+                },
+                {
+                  "isInteger": true,
+                  "type": "literal",
+                  "value": 440,
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 4,
+            },
             "type": "float",
           },
           "out": {
@@ -1853,6 +1891,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "out",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "out",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 7,
+            },
             "type": "float",
           },
           "phase": {
@@ -1870,6 +1925,23 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
             "name": "phase",
             "numberOfElements": 1,
             "pointerDepth": 0,
+            "source": {
+              "arguments": [
+                {
+                  "referenceKind": "plain",
+                  "scope": "local",
+                  "type": "identifier",
+                  "value": "phase",
+                },
+              ],
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 88,
+                "projectGroupPath": "",
+              },
+              "instruction": "float",
+              "lineNumber": 6,
+            },
             "type": "float",
           },
         },
@@ -1880,7 +1952,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     {
       "code": [
         "note",
-        "; @pos -120 0",
+        "; @pos -43 -10",
         "; @config audioRuntime.enabled true",
         "; @config audioRuntime.sampleRate 48000",
         "; @config audioRuntime.audioOutBufferLAddress audioout:buffer",
@@ -1888,12 +1960,12 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; @config export.fileName audioBuffer",
         "noteEnd",
       ],
-      "id": 111,
+      "id": 51,
     },
     {
       "code": [
         "note colors",
-        "; @pos -172 0",
+        "; @pos -30 10",
         "; @config color.canvas #0c141b",
         "; @config color.surface #1a2933",
         "; @config color.ink #d3e0e1",
@@ -1909,12 +1981,12 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; @config color.detail #58cfe2",
         "noteEnd",
       ],
-      "id": 120,
+      "id": 60,
     },
     {
       "code": [
         "note",
-        "; @pos 131 7",
+        "; @pos 210 7",
         "; A minimal audio synthesis example",
         "; that generates a sine wave",
         "; (phaseAccumulator + sine)",
@@ -1923,7 +1995,7 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
         "; (audioout)",
         "noteEnd",
       ],
-      "id": 137,
+      "id": 77,
     },
   ],
   "pointerMetadataByModuleId": {
@@ -1931,7 +2003,6 @@ exports[`compileProject (audioBuffer example) > compiles build artifacts without
     "phaseAccumulator": {},
   },
   "projectMemoryExposuresByGroupPath": {},
-  "prototypes": [],
   "unknown": [],
 }
 `;

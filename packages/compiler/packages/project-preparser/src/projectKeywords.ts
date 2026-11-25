@@ -1,5 +1,7 @@
 import { PROJECT_BLOCK_DELIMITERS } from './delimiters';
 
+export type ProjectBlockOpener = (typeof PROJECT_BLOCK_DELIMITERS)[number]['opener'];
+
 const closerByOpener = new Map<string, string>(PROJECT_BLOCK_DELIMITERS.map(({ opener, closer }) => [opener, closer]));
 const openerByCloser = new Map<string, string>(PROJECT_BLOCK_DELIMITERS.map(({ opener, closer }) => [closer, opener]));
 
@@ -21,8 +23,8 @@ export function startsWithInstruction(line: string, instruction: string): boolea
  * @param line - Source AST line being processed.
  * @returns Resolved project opener keyword.
  */
-export function getProjectOpenerKeyword(line: string): string | null {
-	for (const opener of closerByOpener.keys()) {
+export function getProjectOpenerKeyword(line: string): ProjectBlockOpener | null {
+	for (const { opener } of PROJECT_BLOCK_DELIMITERS) {
 		if (startsWithInstruction(line, opener)) {
 			return opener;
 		}

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-grouping",
-  "version": "0.1.42",
+  "version": "0.3.6",
   "private": true,
   "description": "Editor block grouping, group actions, dragging, and paste handling",
   "type": "module",
@@ -22,6 +22,8 @@
     "@8f4e/tokenizer": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
+    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/compiler": "*",
     "@8f4e/web-ui": "*",

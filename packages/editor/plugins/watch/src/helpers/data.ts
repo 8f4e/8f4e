@@ -29,7 +29,7 @@ export function createWatchDirectiveData(args: string[], lineNumber: number): Wa
 	const endQuery = classifyEndQuery(formattedExpression);
 	if (!endQuery.ok) return;
 	if (endQuery.value) return { lineNumber, displayFormat, target: { kind: 'end', query: endQuery.value } };
-	const inline = /^([&*]?)(?:\[(\d+)\])?$/.exec(formattedExpression);
+	const inline = /^(&|\*{1,2})?(?:\[(\d+)\])?$/.exec(formattedExpression);
 	if (inline) {
 		const [, operator, index] = inline;
 		return {
@@ -37,7 +37,11 @@ export function createWatchDirectiveData(args: string[], lineNumber: number): Wa
 			displayFormat,
 			target: {
 				kind: 'inline',
-				options: { showAddress: operator === '&', dereference: operator === '*', bufferPointer: Number(index ?? 0) },
+				options: {
+					showAddress: operator === '&',
+					dereferenceDepth: operator === '**' ? 2 : operator === '*' ? 1 : 0,
+					bufferPointer: Number(index ?? 0),
+				},
 			},
 		};
 	}

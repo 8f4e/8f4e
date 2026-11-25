@@ -3,13 +3,14 @@
  * Shared feature types are re-exported here for editor consumers.
  */
 
-import type { MemoryAction as CompilerMemoryAction, ProjectObjectModel } from '@8f4e/language-spec';
+import type { MemoryAction as CompilerMemoryAction } from '@8f4e/language-spec';
 import type { AssertionResult } from './features/assertions/types';
 import type { NavigateCodeBlockEvent } from './features/code-blocks/navigation';
+import type { ProjectEditOptions } from './features/code-blocks/projectTransactions';
 import type {
-	CodeBlockGraphicData,
-	CodeBlockRendering,
 	CodeBlockType,
+	EditorCodeBlock,
+	EditorProjectState,
 	EntryBounds,
 	MemoryIdentifier,
 	ParsedDirectiveRecord,
@@ -33,7 +34,7 @@ import type {
 	MenuStackEntry,
 } from './features/menu/types';
 import type { Compiler } from './features/program-compiler/types';
-import type { ProjectViewport, Viewport, ViewportAnimation } from './features/viewport/types';
+import type { ProjectViewport, Viewport, ViewportScrollEvent } from './features/viewport/types';
 import type {
 	CodeBlockPointerDownEvent,
 	CodeError,
@@ -61,9 +62,7 @@ export type {
 	ActivateContextMenuItemEvent,
 	ActivateDialogButtonEvent,
 	AssertionResult,
-	CodeBlockGraphicData,
 	CodeBlockPointerDownEvent,
-	CodeBlockRendering,
 	CodeBlockType,
 	CodeError,
 	Compiler,
@@ -73,6 +72,8 @@ export type {
 	ContextMenuItem,
 	DialogButton,
 	DialogContent,
+	EditorCodeBlock,
+	EditorProjectState,
 	EntryBounds,
 	EventDispatcher,
 	EventDispatchOptions,
@@ -92,6 +93,7 @@ export type {
 	ResolvedGlobalEditorDirectives,
 	Size,
 	TypedValueKind,
+	ViewportScrollEvent,
 };
 
 export type InfoValue = unknown;
@@ -103,23 +105,8 @@ export interface FeatureFlags {
 	/** Enable/disable right-click context menu functionality */
 	contextMenu: boolean;
 
-	/** Enable/disable dragging and repositioning of code block modules */
-	moduleDragging: boolean;
-
-	/** Enable/disable selecting lines/caret positions; preserved across mode changes and project replacement. */
-	codeLineSelection: boolean;
-
-	/** Enable/disable panning/scrolling of the editor viewport */
-	viewportDragging: boolean;
-
 	/** Enable/disable plugin canvas overlays and offscreen block decorations */
 	canvasOverlays: boolean;
-
-	/** Enable/disable history tracking for undo/redo functionality */
-	historyTracking?: boolean;
-
-	/** Enable/disable the menu action that creates a new project */
-	projectCreation: boolean;
 }
 
 /**
@@ -132,8 +119,8 @@ export type EditorMode = 'view' | 'edit';
 
 // Core-provided memory callbacks.
 export interface Callbacks {
-	// Memory manipulation callback
-	getWordFromMemory?: (allocationUnitAddress: number) => number;
+	/** Reads a 32-bit word or returns undefined when the index is outside the current memory. */
+	getWordFromMemory?: (allocationUnitAddress: number) => number | undefined;
 }
 
 // Options interface for editor initialization (top-level public API)
@@ -151,11 +138,13 @@ export interface Options {
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
 }
 
+/** The operation published after project changes settle, without its assigned revision. */
+export type ProjectChangeDetails =
+	| { kind: 'edit'; history: NonNullable<ProjectEditOptions['history']> }
+	| { kind: 'generated' | 'restore' | 'replace' };
+
 /** One completed persisted-content operation, shared by API concurrency, history, and persistence. */
-export interface ProjectChange {
-	revision: number;
-	kind: 'edit' | 'checkpoint' | 'restore' | 'replace';
-}
+export type ProjectChange = { revision: number } & ProjectChangeDetails;
 
 /** One contributed operation, retained after completion independently of presentation. */
 export interface LoadingIndicator {
@@ -187,7 +176,7 @@ export interface State {
 	/** Monotonic change signal for persisted project content; selection, caret movement, and navigation do not advance it. */
 	projectChange: ProjectChange;
 	compiler: Compiler;
-	codeBlockRendering: CodeBlockRendering;
+	project: EditorProjectState;
 	contextMenu: ContextMenu;
 	/** Shared information records published by the editor and plugins. */
 	info: InfoState;
@@ -195,11 +184,10 @@ export interface State {
 	featureFlags: FeatureFlags;
 	editorMode: EditorMode;
 	editorConfig: EditorConfig;
+	/** Transient renderer settings, separate from the project's resolved configuration. */
+	appearance: { fontOverride?: string };
 	editorConfigValidators: EditorConfigValidatorRegistry;
 	editorConfigSchemaContributions: EditorConfigSchemaContributionRegistry;
-	historyStack: ProjectObjectModel[];
-	initialProjectState?: ProjectObjectModel;
-	redoStack: ProjectObjectModel[];
 	/** Source lines contributed to the generated environment constants block, keyed by contributor. */
 	envConstantContributions: Record<string, string[]>;
 	/** Console state for internal logging */
@@ -214,14 +202,17 @@ export interface State {
 	loadingIndicators: LoadingIndicator[];
 	dialog: DialogContent;
 	dialogStack: DialogContent[];
+	/** Whether the requested grid dimensions are installed and layout is settled. The previous grid remains usable while pending. */
+	gridSizeReady: boolean;
 	viewport: Viewport;
-	viewportAnimation: ViewportAnimation;
 }
 
 export type * from './features/code-blocks/buildDisplayModel';
 export type * from './features/code-blocks/features/directives/types';
 export type * from './features/code-blocks/layout';
 export type * from './features/code-blocks/navigation';
+export type * from './features/code-blocks/projectSnapshot';
+export type * from './features/code-blocks/projectTransactions';
 export type * from './features/code-blocks/types';
 export type * from './features/code-blocks/utils/types';
 export type * from './features/editor-config/types';

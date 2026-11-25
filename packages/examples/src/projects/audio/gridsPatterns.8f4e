@@ -35,6 +35,23 @@ const ASSET_HIHAT_SIZE 21500
 
 constantsEnd
 
+note drumMachineColors
+; @pos -156 -16
+; @config color.canvas #070809
+; @config color.surface #141619
+; @config color.ink #e4dfd3
+; @config color.primary #ed9865
+; @config color.secondary #df7b73
+; @config color.positive #9fbd94
+; @config color.warning #e8b968
+; @config color.negative #dc7878
+; @config color.muted #8e969f
+; @config color.stroke rgba(228,148,94,0.30)
+; @config color.tertiary #a4abb2
+; @config color.highlight #f0c383
+; @config color.detail #c5795d
+noteEnd
+
 note
 ; @pos -156 -37
 ; @config export.fileName gridsPatterns
@@ -42,11 +59,12 @@ note
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
 ; @config audioRuntime.audioOutBufferRAddress audioout:buffer
-; @config bin.kick.url https://static.8f4e.com/assets/samples/808-kick-48khz-s16le.pcm
+; @config bin.baseUrl https://static.8f4e.com/assets/samples/
+; @config bin.kick.path 808-kick-48khz-s16le.pcm
 ; @config bin.kick.memory kick:buffer
-; @config bin.snare.url https://static.8f4e.com/assets/samples/808-snare-48khz-s16le.pcm
+; @config bin.snare.path 808-snare-48khz-s16le.pcm
 ; @config bin.snare.memory snare:buffer
-; @config bin.hihat.url https://static.8f4e.com/assets/samples/808-hihat-48khz-s16le.pcm
+; @config bin.hihat.path 808-hihat-48khz-s16le.pcm
 ; @config bin.hihat.memory hiHat:buffer
 
 noteEnd
@@ -130,6 +148,7 @@ expose accentHH &outputs:accentHH
 includes
 ; @pos -244 0
 include std/events/risingEdge
+include std/bitwise/extractBits
 includesEnd
 function mapBalance
 ; @pos -286 0
@@ -227,10 +246,7 @@ param int shift
 
 push row
 load
-push shift
-shiftRightUnsigned
-push 255
-and
+call extractBits shift 8
 functionEnd int
 function mixByte
 ; @pos -243 23

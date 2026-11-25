@@ -1,13 +1,16 @@
 import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
-import { createProjectFileSession } from '@8f4e/editor-file-session';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
+import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
+import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
 const DEFAULT_STORAGE_NAMESPACE = 'editor';
@@ -20,10 +23,7 @@ export function createDefaultEditorPlugins(options: {
 	storage: Storage;
 	storageKey: string;
 	initialProjectUrl?: string;
-	onInitialProjectLoaded?: () => void;
-	onInitialProjectLoadError?: (error: unknown) => void;
 	renderFrame: () => void;
-	showOpenMenuItem: boolean;
 	captureWheel?: boolean;
 	touchNavigation?: Omit<TouchInputOptions, 'inputTarget'>;
 	pwaUpdates?: Pick<ServiceWorkerContainer, 'ready'>;
@@ -34,26 +34,30 @@ export function createDefaultEditorPlugins(options: {
 	getAssertionSites: ReturnType<typeof createCompilerPlugin>['getAssertionSites'];
 	sharedAudioContext?: AudioContext;
 }): NonNullable<EditorOptions['plugins']> {
-	const fileSession = createProjectFileSession();
+	const motionPreference = options.canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
+	const prefersReducedMotion = () => motionPreference.matches;
 	return [
-		fileSession.plugin,
+		undoRedoPlugin,
+		homePlugin,
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,
 			initialProjectUrl: options.initialProjectUrl,
-			onLoaded: options.onInitialProjectLoaded,
-			onError: options.onInitialProjectLoadError,
+			failureMode: 'empty-project',
 		}),
 		createSessionPersistencePlugin({
 			storage: options.storage,
 			storageKey: options.storageKey,
 			restoreOnStartup: !options.initialProjectUrl,
 		}),
+		dottedBackgroundPlugin,
 		codeBlockBackgroundPlugin,
 		codeRenderingPlugin,
-		loadingIndicatorsPlugin,
+		createLoadingIndicatorsPlugin({ prefersReducedMotion }),
 		createDeferredPluginLoaderPlugin({
 			load: () =>
-				import('./deferred-plugins').then(module => module.createDeferredEditorPlugin({ ...options, fileSession })),
+				import('./deferred-plugins').then(module =>
+					module.createDeferredEditorPlugin({ ...options, prefersReducedMotion })
+				),
 		}),
 	];
 }
@@ -73,12 +77,6 @@ export interface DefaultEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Initial source is installed; compilation and asset loading continue independently. */
-	onInitialProjectLoaded?: () => void;
-	/** The initial URL request or source parsing failed. */
-	onInitialProjectLoadError?: (error: unknown) => void;
-	/** Show Open From Disk in the project-open plugin menu. */
-	showOpenMenuItem?: boolean;
 	/** Include the keyboard mode-switching plugin and its hint. Defaults to true. */
 	includeKeyboardModeSwitching?: boolean;
 	storage?: Storage;
@@ -98,9 +96,6 @@ export async function mountDefaultEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoaded,
-		onInitialProjectLoadError,
-		showOpenMenuItem = true,
 		includeKeyboardModeSwitching,
 		storage = localStorage,
 		storageNamespace = DEFAULT_STORAGE_NAMESPACE,
@@ -118,10 +113,7 @@ export async function mountDefaultEditor(
 					storage,
 					storageKey: `project_${storageNamespace}`,
 					initialProjectUrl,
-					onInitialProjectLoaded,
-					onInitialProjectLoadError,
 					renderFrame: () => editor.renderFrame(),
-					showOpenMenuItem,
 					captureWheel,
 					touchNavigation,
 					pwaUpdates,
@@ -135,8 +127,8 @@ export async function mountDefaultEditor(
 		],
 		defaultFont,
 		featureFlags,
+		renderer: new Engine(canvas),
 	});
-	if (!initialProjectUrl) onInitialProjectLoaded?.();
 
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

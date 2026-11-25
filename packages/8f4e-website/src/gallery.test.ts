@@ -3,7 +3,8 @@ import { type GalleryEditorInstance, mountGalleryEditor } from '@8f4e/editor-gal
 import type { WebMcpTool } from '@8f4e/editor-webmcp';
 import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
-import { cdp } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
+import { getExampleProjectPreviewUrl } from './example-projects';
 import { mountGallery } from './gallery';
 
 vi.mock('@8f4e/editor-gallery', { spy: true });
@@ -17,7 +18,12 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-function setup(responses: Record<string, () => Promise<Response>>) {
+function setup(
+	responses: Record<string, () => Promise<Response>>,
+	{ previewUrl }: { previewUrl?: string } = {
+		previewUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
+	}
+) {
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
 		const id = Object.keys(responses).find(id => input === `/gallery-${id}.8f4e`);
@@ -40,7 +46,7 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 					title: id,
 					description: 'A gallery fixture.',
 					projectUrl: `/gallery-${id}.8f4e`,
-					previewUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
+					previewUrl,
 					githubUrl: 'https://github.com/8f4e/8f4e',
 				})),
 			},
@@ -62,6 +68,35 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	return { gallery, panel, started, mounted, dispose };
 }
 
+test('keeps sidebar selection in place but scrolls when following a fragment link', async () => {
+	const view = setup({ first: async () => new Response(source), second: async () => new Response(source) });
+	cleanups.push(() => window.scrollTo(0, 0));
+	// Match the desktop layout: switching editors doesn't change the list height.
+	view.panel('first').style.position = 'fixed';
+	view.panel('second').style.position = 'fixed';
+	view.gallery.style.paddingBottom = '100vh';
+	const button = view.gallery.querySelector<HTMLButtonElement>('button#example-second')!;
+	const target = document.getElementById('second')!;
+	target.style.marginTop = '200vh';
+	window.scrollTo(0, window.scrollY + target.getBoundingClientRect().top - window.innerHeight / 2);
+	const sidebarScroll = window.scrollY;
+	expect(sidebarScroll).toBeGreaterThan(0);
+
+	button.focus({ preventScroll: true });
+	await userEvent.keyboard(' ');
+	expect(window.location.hash).toBe('#second');
+	expect(button.getAttribute('aria-expanded')).toBe('true');
+	expect(view.panel('first').hidden).toBe(true);
+	await new Promise(requestAnimationFrame);
+	expect(window.scrollY).toBe(sidebarScroll);
+
+	const first = document.getElementById('first')!;
+	expect(first.getBoundingClientRect().bottom).toBeLessThan(0);
+	window.location.hash = '#first';
+	await expect.poll(() => view.panel('first').hidden).toBe(false);
+	expect(first.getBoundingClientRect().bottom).toBeGreaterThan(0);
+});
+
 test('keeps the loading canvas while mounting waits for the project and reveals it on completion', async () => {
 	let finish!: (response: Response) => void;
 	const pending = new Promise<Response>(resolve => {
@@ -78,7 +113,30 @@ test('keeps the loading canvas while mounting waits for the project and reveals 
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(status.hidden).toBe(true);
-	expect(editor.state.initialProjectState?.execution[0].code).toContain('module galleryExample ; @mode edit');
+	expect(editor.state.project.rootLevel.blocks.find(block => block.name === 'galleryExample')?.code).toContain(
+		'module galleryExample ; @mode edit'
+	);
+});
+
+test('keeps the loading status visible until the editor has mounted', async () => {
+	let finish!: (editor: GalleryEditorInstance) => void;
+	const pending = new Promise<GalleryEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ delayedMount: async () => new Response(source) });
+	await view.started();
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	const canvas = view.panel().querySelector('canvas')!;
+	await new Promise(requestAnimationFrame);
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	expect(status.hidden).toBe(false);
+	expect(status.textContent).toBe('Loading project…');
+
+	finish({ editing: {}, navigation: {}, dispose: vi.fn() } as unknown as GalleryEditorInstance);
+	await view.mounted();
+	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
+	expect(status.hidden).toBe(true);
 });
 
 test('reveals a successfully loaded empty project', async () => {
@@ -87,6 +145,144 @@ test('reveals a successfully loaded empty project', async () => {
 	const canvas = view.panel().querySelector('canvas')!;
 	await vi.waitFor(() => expect(canvas.classList.contains('editor-ready')).toBe(true));
 	expect(view.panel().querySelector<HTMLElement>('[role="status"]')!.hidden).toBe(true);
+});
+
+test.each([
+	{ slack: undefined, screenshot: 'gallery-loose-wires' },
+	{ slack: 0, screenshot: 'gallery-zero-slack' },
+])('draws a wire between gallery connectors with $screenshot', async ({ slack, screenshot }) => {
+	const config =
+		slack === undefined ? '' : `\nnote wireConfig\n; @pos 180 60\n; @config looseWires.slack ${slack}\nnoteEnd`;
+	const view = setup({
+		wires: async () =>
+			new Response(`8f4e/v1${config}
+entry main
+module osc
+; @pos 4 9
+float out 0.5
+moduleEnd
+module amp
+; @pos 48 9
+float* in &osc:out
+moduleEnd
+entryEnd`),
+	});
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	await expect.poll(() => editor.state.editorConfigSchemaContributions.looseWires).toBeDefined();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	expect(editor.state.editorConfig.looseWires).toEqual(slack === undefined ? undefined : { slack });
+	editor.pauseRendering();
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '704px';
+	canvas.style.height = '272px';
+	await expect.poll(() => editor.state.viewport.width).toBe(704);
+	// Refresh the overlay layout without transient loading times in the capture.
+	editor.state.loadingIndicators = [];
+	const rendering = editor.state.project;
+	rendering.selectedCodeBlock = rendering.activeLevel.blocks.find(block => block.name === 'amp');
+	editor.resize(704, 272);
+	editor.renderFrame();
+	await expect(canvas).toMatchScreenshot(screenshot);
+	if (slack === 0) {
+		const uniform1f = vi.spyOn(canvas.getContext('webgl2')!, 'uniform1f');
+		editor.renderFrame();
+		const [slackUniform, initialSlack] = uniform1f.mock.calls.at(-1)!;
+		expect(initialSlack).toBe(0);
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', cancelable: true }));
+		expect(editor.state.editorMode).toBe('edit');
+		const configNote = rendering.activeLevel.blocks.find(block => block.name === 'wireConfig')!;
+		editor.editing.applyEdits({
+			expectedRevision: editor.editing.getRevision(),
+			edits: [{ type: 'delete', blockId: getEditorBlockId(configNote) }],
+		});
+		expect(editor.state.editorConfig.looseWires).toBeUndefined();
+		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+		editor.renderFrame();
+		expect(uniform1f).toHaveBeenLastCalledWith(slackUniform, 0.25);
+	}
+});
+
+test('keeps the wheel-panned viewport at its last pixel position after scrolling stops', async () => {
+	const view = setup({ empty: async () => new Response('8f4e/v1') });
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	const canvas = view.panel().querySelector('canvas')!;
+	const { x, y } = editor.state.viewport;
+	const panned = { x: x - 3, y: y + 5 };
+	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+	try {
+		const wheel = new WheelEvent('wheel', { deltaX: -3, deltaY: 5, cancelable: true });
+		canvas.dispatchEvent(wheel);
+		expect(wheel.defaultPrevented).toBe(true);
+		expect(editor.state.viewport).toMatchObject(panned);
+		vi.advanceTimersByTime(200);
+		expect(editor.state.viewport).toMatchObject(panned);
+	} finally {
+		vi.useRealTimers();
+	}
+});
+
+test('steps through fonts with browser zoom shortcuts and shows credits without changing example source', async () => {
+	const view = setup({ fonts: async () => new Response(source) });
+	const editor = await view.mounted();
+	await vi.dynamicImportSettled();
+	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
+	editor.pauseRendering();
+	const canvas = view.panel().querySelector('canvas')!;
+	canvas.style.width = '640px';
+	canvas.style.height = '400px';
+	await expect.poll(() => editor.state.viewport.width).toBe(640);
+	const sources = editor.state.project.rootLevel.blocks.map(block => [...block.code]);
+	const revision = editor.editing.getRevision();
+	const sourceFont = editor.state.editorConfig.font;
+	const key = (key: string) => {
+		const event = new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true });
+		canvas.dispatchEvent(event);
+		return event;
+	};
+	for (const [shortcut, font, width, height] of [
+		['-', 'olivettithin8x16', 8, 16],
+		['-', 'departuremono7x14', 7, 14],
+		['+', 'olivettithin8x16', 8, 16],
+		['=', 'ibmvga8x16', 8, 16],
+	] as const) {
+		expect(key(shortcut).defaultPrevented).toBe(true);
+		expect(editor.state.appearance.fontOverride).toBe(font);
+		await expect.poll(() => editor.state.gridSizeReady).toBe(true);
+		expect(editor.state.viewport).toMatchObject({ vGrid: width, hGrid: height });
+		expect(editor.state.editorConfig.font).toBe(sourceFont);
+	}
+	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
+	editor.state.loadingIndicators = [];
+	editor.resize(640, 400);
+	await expect(canvas).toMatchScreenshot('gallery-font-credits');
+	expect(editor.state.project.rootLevel.blocks.map(block => block.code)).toEqual(sources);
+	expect(editor.editing.getRevision()).toBe(revision);
+	editor.dispose();
+	expect(editor.state.appearance.fontOverride).toBeUndefined();
+	expect(key('+').defaultPrevented).toBe(false);
+});
+
+test('uses Departure Mono for touch devices unless the project sets its own font', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 2 });
+	try {
+		const view = setup({
+			default: async () => new Response(source),
+			override: async () => new Response(source.replace('; @mode edit', '; @mode edit\n; @config font ibmvga8x16')),
+		});
+		const editor = await view.mounted();
+		expect(editor.state.editorConfig.font).toBeUndefined();
+		expect(editor.state.viewport).toMatchObject({ vGrid: 7, hGrid: 14 });
+
+		view.gallery.querySelector<HTMLButtonElement>('#example-override')!.click();
+		const overriddenEditor = await view.mounted(1);
+		expect(overriddenEditor.state.editorConfig.font).toBe('ibmvga8x16');
+		expect(overriddenEditor.state.viewport).toMatchObject({ vGrid: 8, hGrid: 16 });
+	} finally {
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
 });
 
 test('one-finger gallery drags pan horizontally while vertical swipes scroll the page', async () => {
@@ -110,9 +306,9 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 		const { x, y } = editor.state.viewport;
 		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(300, 200)] });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(320, 202)] });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(340, 204)] });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(337, 204)] });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
 		expect(window.scrollY).toBe(0);
 		const scrollStart = point(400, 300);
 		await input.send('Input.synthesizeScrollGesture', {
@@ -123,7 +319,7 @@ test('one-finger gallery drags pan horizontally while vertical swipes scroll the
 			preventFling: true,
 		});
 		await expect.poll(() => window.scrollY).toBeGreaterThan(0);
-		expect(editor.state.viewport).toMatchObject({ x: x - 40, y });
+		expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
 	} finally {
 		document.body.style.minHeight = originalMinHeight;
 		window.scrollTo(0, 0);
@@ -151,13 +347,13 @@ test('keeps live editing and project export available in the gallery editor', as
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(640));
 	await vi.waitFor(() => expect(editor.state.compiler.result.compiledModules.galleryExample).toBeDefined());
 	expect(editor.state.editorMode).toBe('edit');
-	expect(editor.state.featureFlags.projectCreation).toBe(false);
 	const rect = canvas.getBoundingClientRect();
 	canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.x + 600, clientY: rect.y + 100, bubbles: true }));
 	await vi.waitFor(() =>
 		expect(editor.state.contextMenu.items.some(item => item.action === 'createCodeBlock')).toBe(true)
 	);
 	const menu = editor.state.contextMenu.items;
+	expect(menu.some(item => item.title === 'New Project')).toBe(false);
 	for (const action of ['importProject', 'exportWasm', 'exportCanvasScreenshot', 'loadPluginsUsedByProject']) {
 		expect(menu.some(item => item.action === action)).toBe(false);
 	}
@@ -181,8 +377,8 @@ test('keeps live editing and project export available in the gallery editor', as
 	canvas.dispatchEvent(saveKey);
 	expect(saveKey.defaultPrevented).toBe(true);
 	await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(2));
-	expect(requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
-	expect(showSaveFilePicker).toHaveBeenCalledOnce();
+	expect(requestPermission).not.toHaveBeenCalled();
+	expect(showSaveFilePicker).toHaveBeenCalledTimes(2);
 });
 
 test('loads and runs worker and test runtime plugins together through the gallery composition', async () => {
@@ -275,7 +471,7 @@ entryEnd`),
 		timeout: 10000,
 	});
 	const state = editor.state;
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
 	await vi.waitFor(
 		() => expect([10, 11, 12, 13, 14, 15].map(row => block.gaps.get(row)?.size)).toEqual([2, 1, 8, 6, 2, 2]),
 		{ timeout: 10000 }
@@ -314,7 +510,7 @@ test('reports a failed request immediately and loads the project when retried', 
 			return new Response(source);
 		},
 	});
-	await view.mounted();
+	await expect(view.mounted()).rejects.toThrow('Offline');
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	await vi.waitFor(() => expect(status.textContent).toContain('This project could not be loaded.'));
 	expect(view.panel().querySelector('canvas')).toBeNull();
@@ -324,44 +520,58 @@ test('reports a failed request immediately and loads the project when retried', 
 	expect(status.hidden).toBe(true);
 });
 
-test('disposes an editor when loading fails before its mount promise resolves', async () => {
-	const dispose = vi.fn();
-	vi.mocked(mountGalleryEditor).mockImplementationOnce(async (_canvas, options) => {
-		options?.onInitialProjectLoadError?.(new Error('Offline'));
-		return { dispose } as unknown as GalleryEditorInstance;
+test('reports a rejected mount without revealing the editor', async () => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<GalleryEditorInstance>((_, reject) => {
+		fail = reject;
 	});
-	const view = setup({ early: async () => new Response(source) });
-	await view.mounted();
-	await vi.waitFor(() => expect(dispose).toHaveBeenCalledOnce());
-	expect(view.panel().querySelector('canvas')).toBeNull();
-	expect(view.panel().querySelector('[role="status"]')?.textContent).toContain('This project could not be loaded.');
+	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
+	const view = setup({ fontFailure: async () => new Response(source) });
+	await view.started();
+	const canvas = view.panel().querySelector('canvas')!;
+	await new Promise(requestAnimationFrame);
+	expect(canvas.classList.contains('editor-ready')).toBe(false);
+	const error = new Error('Font unavailable');
+	fail(error);
+	await expect(view.mounted()).rejects.toBe(error);
+	await vi.waitFor(() => expect(canvas.isConnected).toBe(false));
+	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
+	expect(status.hidden).toBe(false);
+	expect(status.textContent).toContain('This project could not be loaded.');
 });
 
-test('disposes a pending selection and ignores callbacks after the gallery is disposed', async () => {
+test.each(['fulfilled', 'rejected'])('ignores a %s mount after the gallery is disposed', async outcome => {
 	let finish!: (editor: GalleryEditorInstance) => void;
-	const pending = new Promise<GalleryEditorInstance>(resolve => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<GalleryEditorInstance>((resolve, reject) => {
 		finish = resolve;
+		fail = reject;
 	});
 	const disposeEditor = vi.fn();
 	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ pending: async () => new Response(source) });
 	await view.started();
 	const canvas = view.panel().querySelector('canvas')!;
-	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const status = view.panel().querySelector<HTMLElement>('[role="status"]')!;
 	view.dispose();
 	expect(canvas.isConnected).toBe(false);
 
-	options.onInitialProjectLoaded?.();
-	options.onInitialProjectLoadError?.(new Error('Late failure'));
-	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
-	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	if (outcome === 'fulfilled') {
+		finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
+		await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
+	} else {
+		const error = new Error('Late failure');
+		fail(error);
+		await expect(view.mounted()).rejects.toBe(error);
+		await new Promise(requestAnimationFrame);
+		expect(disposeEditor).not.toHaveBeenCalled();
+	}
 	expect(canvas.classList.contains('editor-ready')).toBe(false);
 	expect(status.textContent).toBe('Loading project…');
 	expect(status.hidden).toBe(false);
 });
 
-test('retries a timed-out selection without reviving its late mount', async () => {
+test('retries a timed-out pending mount without reviving its late completion', async () => {
 	let finish!: (editor: GalleryEditorInstance) => void;
 	const pending = new Promise<GalleryEditorInstance>(resolve => {
 		finish = resolve;
@@ -372,8 +582,10 @@ test('retries a timed-out selection without reviving its late mount', async () =
 	vi.mocked(mountGalleryEditor).mockImplementationOnce(() => pending);
 	const view = setup({ timeout: async () => new Response(source) });
 	await view.started();
-	const options = vi.mocked(mountGalleryEditor).mock.calls[0][1]!;
 	const timeoutIndex = timeouts.mock.calls.findIndex(([, delay]) => delay === 30_000);
+	await new Promise(requestAnimationFrame);
+	expect(clearTimeout).not.toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
+	expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(false);
 	const timeout = timeouts.mock.calls[timeoutIndex][0] as () => void;
 	timeout();
 	expect(clearTimeout).toHaveBeenCalledWith(timeouts.mock.results[timeoutIndex].value);
@@ -384,8 +596,6 @@ test('retries a timed-out selection without reviving its late mount', async () =
 	await view.mounted(1);
 	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
 
-	options.onInitialProjectLoadError?.(new Error('Late failure'));
-	options.onInitialProjectLoaded?.();
 	finish({ dispose: disposeEditor } as unknown as GalleryEditorInstance);
 	await vi.waitFor(() => expect(disposeEditor).toHaveBeenCalledOnce());
 	expect(status.hidden).toBe(true);
@@ -468,15 +678,13 @@ test('replaces site tools and requires a fresh source read for the replacement e
 	expect(await retained.execute(args)).toMatchObject({ error: { code: 'disposed' } });
 	await tools.get('get_project_metadata')!.execute({});
 	expect(await tools.get('apply_edits')!.execute(args)).toMatchObject({ error: { code: 'source_required' } });
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'module')!.code[0]
-	).toBe('module secondExample ; @mode edit');
+	expect(editor.state.project.activeLevel.blocks.find(block => block.blockType === 'module')!.code[0]).toBe(
+		'module secondExample ; @mode edit'
+	);
 	expect(await tools.get('get_project')!.execute({})).toContain('module secondExample');
 	expect(await tools.get('apply_edits')!.execute(args)).toBe('Edits applied.');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'module')
-	).toHaveLength(0);
-	expect(tools.size).toBe(18);
+	expect(editor.state.project.activeLevel.blocks.filter(block => block.blockType === 'module')).toHaveLength(0);
+	expect(tools.size).toBe(16);
 });
 
 test('creates group templates while editing and saves the rightmost copy for reopening', async () => {
@@ -522,18 +730,18 @@ entryEnd`;
 		timeout: 10000,
 	});
 	const [left, right] = ['left', 'right'].map(
-		name => editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === name)!
+		name => editor.state.project.rootLevel.blocks.find(block => block.name === name)!
 	);
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [left, right].map(block => ({
 			type: 'update' as const,
 			blockId: getEditorBlockId(block),
-			code: [...block.code.slice(0, -1), 'useTemplate counter', 'groupEnd'],
+			code: [`${block.code[0]} use counter`, ...block.code.slice(1)],
 		})),
 	});
 	editor.navigation.openGroup(getEditorBlockId(right));
-	const counter = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'counter')!;
+	const counter = editor.state.project.activeLevel.blocks.find(block => block.name === 'counter')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -542,18 +750,24 @@ entryEnd`;
 	});
 	editor.navigation.goToRoot();
 	const save = async (count: number) => {
-		view
-			.panel('templates')
-			.querySelector('canvas')!
-			.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true }));
+		const canvas = view.panel('templates').querySelector('canvas')!;
+		// Compilation can finish before the deferred save plugin starts handling shortcuts.
+		await vi.waitFor(
+			() => {
+				const shortcut = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true });
+				canvas.dispatchEvent(shortcut);
+				expect(shortcut.defaultPrevented).toBe(true);
+			},
+			{ timeout: 10000 }
+		);
 		await vi.waitFor(() => expect(writable.close).toHaveBeenCalledTimes(count));
 	};
 	await save(1);
 	expect(projectSource.match(/^template counter$/gm)).toHaveLength(1);
-	expect(projectSource.match(/^useTemplate counter$/gm)).toHaveLength(2);
+	expect(projectSource.match(/^group (left|right) use counter$/gm)).toHaveLength(2);
 	expect(projectSource).toContain('int value 22');
 	expect(projectSource).not.toContain('int value 1');
-	const moved = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'left')!;
+	const moved = editor.state.project.rootLevel.blocks.find(block => block.name === 'left')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -578,4 +792,17 @@ entryEnd`;
 	expect(reopened.state.compiler.result.memoryDefaultsByModuleId['right/counter'][0].value).toBe(1);
 	expect(reopened.state.codeErrors.compiler).toEqual([]);
 	expect(reopened.state.codeErrors['editor-directives']).toEqual([]);
+});
+
+test('loads an example without a generated preview and omits its image', async () => {
+	const previewUrl = getExampleProjectPreviewUrl('audio/not-yet-generated.8f4e');
+	expect(previewUrl).toBeUndefined();
+	const view = setup({ unpreviewed: async () => new Response(source) }, { previewUrl });
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(view.panel().querySelector('canvas')?.classList.contains('editor-ready')).toBe(true));
+	expect(view.gallery.querySelector('.example-preview')).toBeNull();
+	expect(view.gallery.querySelector('.example-title')?.textContent).toBe('unpreviewed');
+	expect(
+		editor.state.project.rootLevel.blocks.find(block => block.name === 'galleryExample')?.code.join('\n')
+	).toContain('module galleryExample');
 });

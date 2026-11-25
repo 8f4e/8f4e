@@ -1,10 +1,7 @@
-import { EventEmitter } from 'node:events';
-import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import type { EventDispatcher } from '@8f4e/editor-core';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import { executeTests } from '@8f4e/runtime-test-runner/execute-tests';
 import type { TestRunResult, TestRuntimeProgram } from '@8f4e/runtime-test-runner/types';
 import createStateManager from '@8f4e/state-manager';
+import type { TestAssertionResult } from '@8f4e/test-runner';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createTestRuntimePlugin } from './index';
 
@@ -42,25 +39,17 @@ function setup(initialProgram?: TestRuntimeProgram, isCompiling = false) {
 		editorConfig: { testRuntime: { enabled: true } },
 	});
 	const store = createStateManager(state);
-	const emitter = new EventEmitter();
-	const events = {
-		on: emitter.on.bind(emitter),
-		off: emitter.off.bind(emitter),
-		dispatch: vi.fn(emitter.emit.bind(emitter)),
-	} satisfies EventDispatcher;
 	const dispose = createTestRuntimePlugin({
 		getCodeBuffer: () => program?.codeBuffer ?? new Uint8Array(),
 		getMemory: () => program?.memory ?? null,
 		getAssertionSites: () => program?.assertionSites,
 	}).setup({
 		store,
-		events,
 		loading: { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) },
 	} as unknown as import('@8f4e/editor-core').EditorPluginContext);
 	return {
 		state,
 		store,
-		events,
 		dispose,
 		setProgram: (value?: TestRuntimeProgram) => {
 			program = value;
@@ -82,7 +71,7 @@ describe('TestRuntime lifecycle', () => {
 
 	it('publishes source sites, outcomes, and failure details and clears them on restart and disposal', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const { state, store, events, dispose } = setup(createProgram());
+		const { state, store, dispose } = setup(createProgram());
 		const otherErrors = [{ codeBlockId: 99, lineNumber: 0, message: 'Another contributor' }];
 		store.set('codeErrors.other', otherErrors);
 		const assertion = {
@@ -112,12 +101,12 @@ describe('TestRuntime lifecycle', () => {
 			},
 		]);
 		const block = createMockCodeBlock({ creationIndex: 7, disabled: true });
-		state.codeBlockRendering.rootProject.blocks = [block];
-		events.dispatch('compilationInputChanged');
+		state.project.rootLevel.blocks = [block];
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.codeErrors['test-runtime']).toEqual([]);
 		expect(state.assertionResults).toHaveLength(1);
 		block.disabled = false;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.codeErrors['test-runtime']).toHaveLength(1);
 		store.set('compiler.isCompiling', true);
 		expect(state.assertionResults).toEqual([]);
@@ -126,48 +115,65 @@ describe('TestRuntime lifecycle', () => {
 		FakeWorker.instances[1].emit(result);
 		expect(state.assertionResults).toHaveLength(1);
 		dispose();
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', state.compilerInputRevision + 1);
 		expect(state.assertionResults).toEqual([]);
 		expect(state.codeErrors['test-runtime']).toBeUndefined();
 		expect(state.codeErrors.other).toBe(otherErrors);
 	});
 
-	it('publishes expected and received values from executed Wasm assertions to the editor', async () => {
+	it('publishes expected and received values from worker assertion results to the editor', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const compiled = await compileProject(
-			parseProjectSource(`8f4e/v1
-entry test
-module checks
-push 10
-assertEqual 9
-push 0
-assert
-push 1
-assert
-moduleEnd
-entryEnd`),
-			{ enableAssertions: true }
-		);
-		const program = {
-			codeBuffer: compiled.codeBuffer,
-			assertionSites: compiled.assertionSites!,
-			memory: new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true }),
+		const blockSite = {
+			projectBlockId: 7,
+			projectGroupPath: '',
+			codeBlockType: 'module' as const,
+			codeBlockId: 'checks',
 		};
-		const { state, dispose } = setup(program);
-		FakeWorker.instances[0].emit(await executeTests(program));
+		const assertions: TestAssertionResult[] = [
+			{
+				site: { ...blockSite, siteId: 0, instruction: 'assertEqual', lineNumber: 2 },
+				passed: false,
+				expected: 9,
+				received: 10,
+				assertIndex: 0,
+			},
+			{
+				site: { ...blockSite, siteId: 1, instruction: 'assert', lineNumber: 4 },
+				passed: false,
+				condition: 0,
+				assertIndex: 1,
+			},
+			{
+				site: { ...blockSite, siteId: 2, instruction: 'assert', lineNumber: 6 },
+				passed: true,
+				condition: 1,
+				assertIndex: 2,
+			},
+		];
+		const assertionSites = assertions.map(assertion => assertion.site);
+		const { state, dispose } = setup({ ...createProgram(), assertionSites });
+		state.project.rootLevel.blocks = [
+			createMockCodeBlock({
+				creationIndex: 7,
+				name: 'checks',
+				blockType: 'module',
+				code: ['module checks', 'push 10', 'assertEqual 9', 'push 0', 'assert', 'push 1', 'assert', 'moduleEnd'],
+			}),
+		];
+		FakeWorker.instances[0].emit({ status: 'failed', assertions, failures: [assertions[0], assertions[1]] });
 		expect(state.assertionResults).toEqual([
-			{ site: compiled.assertionSites![0], passed: false },
-			{ site: compiled.assertionSites![1], passed: false },
-			{ site: compiled.assertionSites![2], passed: true },
+			{ site: assertionSites[0], passed: false },
+			{ site: assertionSites[1], passed: false },
+			{ site: assertionSites[2], passed: true },
 		]);
 		expect(state.codeErrors['test-runtime']).toEqual([
 			{
-				codeBlockId: compiled.assertionSites![0].projectBlockId,
+				codeBlockId: 7,
 				lineNumber: 2,
 				message: 'Assertion failed: expected 9, received 10',
 			},
 			{
-				codeBlockId: compiled.assertionSites![1].projectBlockId,
+				codeBlockId: 7,
 				lineNumber: 4,
 				message: 'Assertion failed: expected nonzero, received 0',
 			},
@@ -223,12 +229,11 @@ entryEnd`),
 
 	it('publishes runtime errors and stops responding after disposal', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		const { store, state, events, setProgram, dispose } = setup(createProgram());
+		const { store, state, setProgram, dispose } = setup(createProgram());
 		const worker = FakeWorker.instances[0];
 		worker.emit({ status: 'error', error: 'integer divide by zero' });
 		expect(state.info.testRuntime).toMatchObject({ status: 'error' });
 		expect(state.assertionResults).toEqual([]);
-		expect(events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		dispose();
 		setProgram(createProgram());
 		store.set('compiler.isCompiling', false);

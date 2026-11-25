@@ -1,6 +1,7 @@
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { afterEach, expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -20,7 +21,6 @@ async function setup() {
 		canvas,
 		storage: { getItem: () => null, setItem: () => {} } as Storage,
 		storageKey: 'clipboard-test',
-		showOpenMenuItem: false,
 		includeKeyboardModeSwitching: false,
 		renderFrame: () => editor.renderFrame(),
 		getMemory: () => null,
@@ -29,9 +29,9 @@ async function setup() {
 		writeMemory: () => {},
 	});
 	editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 120 60', 'constantsEnd'] }],
 			notes: [{ id: 1, code: ['note target', '; @mode edit', '; @pos 4 3', '', 'noteEnd'] }],
 			execution: [
 				{ type: 'module', id: 2, entry: 'main', code: ['module same', '; @pos 40 3', '; @group audio', 'moduleEnd'] },
@@ -58,14 +58,14 @@ async function setup() {
 
 test('Ctrl/Cmd+V pastes plain text into the selected block through native clipboard input', async () => {
 	const { canvas, editor, state, context } = await setup();
-	const target = () => state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const target = () => state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	await expect
 		.poll(async () => {
 			const block = target();
 			await userEvent.click(canvas, {
 				position: { x: block.x - state.viewport.x + 40, y: block.y - state.viewport.y + 3 * state.viewport.hGrid + 8 },
 			});
-			return state.codeBlockRendering.selectedCodeBlock?.name;
+			return state.project.selectedCodeBlock?.name;
 		})
 		.toBe('target');
 	const block = target();
@@ -80,20 +80,26 @@ test('Ctrl/Cmd+V pastes plain text into the selected block through native clipbo
 	const modifier = navigator.platform.startsWith('Mac') ? 'Meta' : 'Control';
 	await userEvent.keyboard(`{${modifier}>}v{/${modifier}}`);
 	await expect.poll(() => target().code[row]).toBe(beforePaste.slice(0, pasteCol) + text + beforePaste.slice(pasteCol));
-	expect(state.codeBlockRendering.currentProject.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	expect(state.project.activeLevel.blocks.filter(block => block.blockType === 'note')).toHaveLength(1);
+	await expect
+		.poll(() => state.loadingIndicators.find(item => item.id === 'plugin:coordinate-grid')?.status)
+		.toBe('done');
 	context.store.set('loadingIndicators', []);
 	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('text-pasted');
+	await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/text-pasted.viewport.snap');
 });
 
 test('the block paste menu changes placement while preserving duplicate names, groups and references', async () => {
 	const { canvas, state } = await setup();
 	const source = ['module same', '; @pos 1 2', '; @group audio', 'push &same:value', 'moduleEnd'];
+	const menuPosition = { x: 400, y: 16 };
 	await navigator.clipboard.writeText(source.join('\n'));
 	await expect
 		.poll(async () => {
 			const rect = canvas.getBoundingClientRect();
-			canvas.dispatchEvent(new MouseEvent('contextmenu', { clientX: rect.left + 24, clientY: rect.top + 16 }));
+			canvas.dispatchEvent(
+				new MouseEvent('contextmenu', { clientX: rect.left + menuPosition.x, clientY: rect.top + menuPosition.y })
+			);
 			await Promise.resolve();
 			return state.contextMenu.items.some(item => item.action === 'pasteCodeBlocks');
 		})
@@ -101,12 +107,12 @@ test('the block paste menu changes placement while preserving duplicate names, g
 	const menu = state.contextMenu;
 	const index = menu.items.findIndex(item => item.action === 'pasteCodeBlocks');
 	const pastePosition = {
-		x: 32,
-		y: 24 + index * state.viewport.hGrid,
+		x: menuPosition.x + 8,
+		y: menuPosition.y + (index + 0.5) * state.viewport.hGrid,
 	};
 	const pos = `; @pos ${Math.round((state.viewport.x + pastePosition.x) / state.viewport.vGrid)} ${Math.round((state.viewport.y + pastePosition.y) / state.viewport.hGrid)}`;
 	await userEvent.click(canvas, { position: pastePosition });
-	const sameNamed = () => state.codeBlockRendering.currentProject.blocks.filter(block => block.name === 'same');
+	const sameNamed = () => state.project.activeLevel.blocks.filter(block => block.name === 'same');
 	await expect.poll(() => sameNamed().length).toBe(2);
 	expect(sameNamed()[1].code).toEqual(['module same', pos, '; @group audio', 'push &same:value', 'moduleEnd']);
 });

@@ -1,9 +1,9 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import type { CodeBlockGraphicData, CodeBlockPointerDownEvent } from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
-import { registerSwitchLayout, type SwitchWidget } from './layout';
+import { registerSwitchPreparation, type SwitchWidget } from './layout';
 
 const ON_LABEL = textToGlyphIds('[ |]');
 const OFF_LABEL = textToGlyphIds('[| ]');
@@ -16,11 +16,11 @@ export function createSwitchPlugin({
 }): EditorPlugin {
 	return {
 		id: 'switch',
-		setup: ({ store, events, layout, drawers }) => {
+		setup: ({ store, events, layout, renderRegistry }) => {
 			const state = store.getState();
-			const widgets = new WeakMap<CodeBlockGraphicData, SwitchWidget[]>();
-			const unregisterLayout = registerSwitchLayout(layout, widgets);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const widgets = new WeakMap<EditorCodeBlock, SwitchWidget[]>();
+			const unregisterPreparation = registerSwitchPreparation(store, layout, widgets);
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				for (const control of widgets.get(codeBlock) ?? []) {
 					const value = memoryViews.int32[control.allocationUnitAddress] || 0;
 					if (value === control.onValue || value === control.offValue) {
@@ -47,7 +47,8 @@ export function createSwitchPlugin({
 					);
 				if (!control) return;
 				event.stopPropagation = true;
-				const value = state.callbacks.getWordFromMemory?.(control.allocationUnitAddress);
+				const readWord = state.callbacks.getWordFromMemory;
+				const value = readWord && (readWord(control.allocationUnitAddress) ?? 0);
 				writeMemory(
 					control.allocationUnitAddress,
 					value === control.offValue ? control.onValue : control.offValue,
@@ -58,7 +59,7 @@ export function createSwitchPlugin({
 			return () => {
 				events.off('codeBlockPointerDown', onPointerDown);
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

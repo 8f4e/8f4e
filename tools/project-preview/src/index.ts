@@ -56,7 +56,7 @@ export interface GenerateProjectPreviewOptions {
 }
 
 interface PreviewCodeBlock {
-	isHome: boolean;
+	parsedDirectives: { name: string; args: string[] }[];
 	x: number;
 	y: number;
 }
@@ -70,9 +70,9 @@ interface PreviewDialogButton {
 }
 
 interface PreviewState {
-	codeBlockRendering: {
-		currentProject: { blocks: PreviewCodeBlock[] };
-		rootProject: { blocks: PreviewCodeBlock[] };
+	project: {
+		activeLevel: { blocks: PreviewCodeBlock[] };
+		rootLevel: { blocks: PreviewCodeBlock[] };
 		selectedCodeBlock?: PreviewCodeBlock;
 	};
 	dialog: {
@@ -85,15 +85,12 @@ interface PreviewState {
 	featureFlags: {
 		canvasOverlays: boolean;
 	};
-	initialProjectState?: unknown;
+	projectChange: { revision: number };
 	viewport: {
 		height: number;
 		width: number;
 		x: number;
 		y: number;
-	};
-	viewportAnimation: {
-		active: boolean;
 	};
 }
 
@@ -234,6 +231,7 @@ export async function generateProjectPreview({
 			: { width: size, height: size };
 		const page = await browser.newPage({
 			deviceScaleFactor: 1,
+			reducedMotion: 'reduce',
 			viewport: initialViewport,
 		});
 		const pageErrors: string[] = [];
@@ -256,7 +254,7 @@ export async function generateProjectPreview({
 			await page.waitForFunction(
 				() => {
 					const state = (globalThis as unknown as PreviewWindow).state;
-					return Boolean(state?.initialProjectState && state.codeBlockRendering.rootProject.blocks.length > 0);
+					return Boolean(state && state.projectChange.revision > 0 && state.project.rootLevel.blocks.length > 0);
 				},
 				undefined,
 				{ timeout: timeoutMs }
@@ -325,18 +323,24 @@ export async function generateProjectPreview({
 		await page.evaluate(async previewPosition => {
 			const previewWindow = globalThis as unknown as PreviewWindow;
 			const state = previewWindow.state;
+			const blocks = state?.project.rootLevel.blocks;
 			const targetBlock =
-				state?.codeBlockRendering.rootProject.blocks.find(block => block.isHome) ??
-				state?.codeBlockRendering.rootProject.blocks[0];
+				blocks?.find(block =>
+					block.parsedDirectives.some(
+						directive =>
+							directive.name === 'home' &&
+							directive.args.length <= 1 &&
+							['center', 'left', 'right', 'top', 'bottom'].includes(directive.args[0] ?? 'center')
+					)
+				) ?? blocks?.[0];
 			if (!state || !targetBlock) {
 				throw new Error('Preview code block disappeared before capture');
 			}
 
-			state.viewportAnimation.active = false;
 			state.viewport.x = targetBlock.x - previewPosition.x;
 			state.viewport.y = targetBlock.y - previewPosition.y;
 			state.featureFlags.canvasOverlays = false;
-			state.codeBlockRendering.selectedCodeBlock = undefined;
+			state.project.selectedCodeBlock = undefined;
 			state.dialogStack.length = 0;
 
 			await new Promise<void>(resolve => previewWindow.requestAnimationFrame(() => resolve()));

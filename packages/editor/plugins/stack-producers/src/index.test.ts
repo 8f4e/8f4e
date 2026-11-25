@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { stackProducersPlugin } from './index';
 
@@ -21,18 +22,19 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
-	store.set('initialProjectState', project);
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	events.dispatch('loadProject', { project });
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'test')!;
 	store.set('compiler.result', {
 		...compiled,
 		inputRevision: state.compilerInputRevision,
 	});
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const context = {
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -42,7 +44,7 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 	const draw = { drawFill: vi.fn<DrawContext['drawFill']>() };
 	const drawBackground = () => {
 		draw.drawFill.mockClear();
-		drawers.drawCodeBlockTextBackgrounds({
+		renderRegistry.drawCodeBlockTextBackgrounds({
 			draw: draw as unknown as DrawContext,
 			state,
 			codeBlock: block,
@@ -51,8 +53,8 @@ async function setup(blockType = 'module', code = ['push 2', 'push 3', 'add', 'p
 		return draw.drawFill.mock.calls;
 	};
 	const select = (row: number) => {
-		store.set('codeBlockRendering.selectedCodeBlock', block);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
+		store.set('project.selectedCodeBlock', block);
+		store.set('project.selectedCodeBlock.cursor.row', row);
 	};
 	cleanups.push(() => {
 		disposeProducers();
@@ -83,7 +85,7 @@ it.each(['module', 'function'])(
 		expect(test.drawBackground().map(([, y]) => y)).toEqual([16, 32]);
 		test.select(1);
 		expect(test.drawBackground()).toEqual([]);
-		test.store.set('codeBlockRendering.selectedCodeBlock', undefined);
+		test.store.set('project.selectedCodeBlock', undefined);
 		expect(test.drawBackground()).toEqual([]);
 	}
 );
@@ -110,7 +112,7 @@ it('clears outdated producer rows after edits, including when installed after an
 	const test = await setup();
 	test.select(5);
 	expect(test.drawBackground()).toHaveLength(2);
-	applyCodeBlockSourceEdits(test, [
+	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block, code: [...test.block.code.slice(0, 1), '; inserted', ...test.block.code.slice(1)] },
 	]);
 	expect(test.drawBackground()).toEqual([]);
@@ -128,13 +130,9 @@ it('clears outdated producer rows after edits, including when installed after an
 	expect(test.drawBackground().map(([, y]) => y)).toEqual([64, 80]);
 });
 
-it('suppresses highlights when line selection is disabled and unregisters its background drawer', async () => {
+it('unregisters its background drawer on disposal', async () => {
 	const test = await setup();
 	test.select(5);
-	expect(test.drawBackground()).toHaveLength(2);
-	test.store.set('featureFlags.codeLineSelection', false);
-	expect(test.drawBackground()).toEqual([]);
-	test.store.set('featureFlags.codeLineSelection', true);
 	expect(test.drawBackground()).toHaveLength(2);
 	test.disposeProducers();
 	expect(test.drawBackground()).toEqual([]);

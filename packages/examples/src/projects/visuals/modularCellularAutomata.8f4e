@@ -3,6 +3,7 @@
 includes
 ; @pos -210 -31
 include std/bitwise/extractBit
+include std/math/wrapIndex
 include std/memory/loadBitAt2D
 include std/memory/storeBitAt2D
 includesEnd
@@ -30,10 +31,8 @@ push input
 push WIDTH
 push 1
 push x
-push WIDTH-1
-add
-push WIDTH
-remainder
+sub 1
+call wrapIndex WIDTH
 push 0
 call loadBitAt2D
 push 0b100
@@ -52,10 +51,8 @@ push input
 push WIDTH
 push 1
 push x
-push 1
-add
-push WIDTH
-remainder
+add 1
+call wrapIndex WIDTH
 push 0
 call loadBitAt2D
 

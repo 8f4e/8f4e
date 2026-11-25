@@ -1,5 +1,6 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { mountGalleryEditor } from '@8f4e/editor-gallery';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { afterEach, expect, test, vi } from 'vitest';
 
 const cleanups: Array<() => void> = [];
@@ -8,7 +9,11 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-async function setup(source: string, assets: Record<string, () => Promise<Response>> = {}) {
+async function setup(
+	source: string,
+	assets: Record<string, () => Promise<Response>> = {},
+	createRenderer?: typeof createAsciiCanvasRenderer
+) {
 	const projectUrl = '/lazy-plugins-project.8f4e';
 	const fetch = globalThis.fetch.bind(globalThis);
 	vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
@@ -23,7 +28,10 @@ async function setup(source: string, assets: Record<string, () => Promise<Respon
 	canvas.style.height = '512px';
 	document.body.append(canvas);
 	cleanups.push(() => canvas.remove());
-	const editor = await mountGalleryEditor(canvas, { initialProjectUrl: projectUrl });
+	const editor = await mountGalleryEditor(canvas, {
+		initialProjectUrl: projectUrl,
+		renderer: createRenderer?.(canvas),
+	});
 	cleanups.push(() => editor.dispose());
 	await vi.waitFor(() => expect(editor.state.viewport.width).toBe(768));
 	await vi.dynamicImportSettled();
@@ -49,7 +57,7 @@ entryEnd`
 		await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
 		if (!initialConfig) {
 			expect(editor.state.editorConfigSchemaContributions.keyboard).toBeUndefined();
-			const config = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+			const config = editor.state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 			editor.editing.applyEdits({
 				expectedRevision: editor.editing.getRevision(),
 				edits: [
@@ -83,7 +91,8 @@ entryEnd`
 );
 
 test('loads watch and stack with their aliases after entering a group', async () => {
-	const { canvas, editor } = await setup(`8f4e/v1
+	const { canvas, editor } = await setup(
+		`8f4e/v1
 note settings
 ; @config recompileDebounceDelay 10
 noteEnd
@@ -101,10 +110,13 @@ drop
 moduleEnd
 entryEnd
 groupEnd
-entryEnd`);
+entryEnd`,
+		{},
+		createAsciiCanvasRenderer
+	);
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'), { timeout: 10000 });
 	vi.spyOn(performance, 'now').mockReturnValue(0);
-	const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'nested')!;
+	const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'nested')!;
 	editor.navigation.openGroup(getEditorBlockId(group));
 	await vi.dynamicImportSettled();
 	editor.pauseRendering();
@@ -122,7 +134,9 @@ entryEnd`);
 		)
 		.toBe(true);
 	editor.renderFrame();
-	await expect(canvas).toMatchScreenshot('lazy-watch-stack-after-group-navigation');
+	await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+		'./__snapshots__/lazy-watch-stack-after-group-navigation.viewport.snap'
+	);
 	expect(editor.state.codeErrors.compiler).toEqual([]);
 	expect(editor.state.codeErrors['editor-directives']).toEqual([]);
 });
@@ -193,7 +207,7 @@ entryEnd`,
 	await vi.waitFor(() => expect(editor.getCompilerDiagnostics()?.status).toBe('ready'));
 	expect(fetchAsset).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.binaryAssets).toBeUndefined();
-	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.project.activeLevel.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [
@@ -254,7 +268,7 @@ functionEnd`);
 	});
 	expect(requestAccess).not.toHaveBeenCalled();
 	expect(editor.state.editorConfigSchemaContributions.midi).toBeUndefined();
-	const config = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.blockType === 'note')!;
+	const config = editor.state.project.activeLevel.blocks.find(block => block.blockType === 'note')!;
 	editor.editing.applyEdits({
 		expectedRevision: editor.editing.getRevision(),
 		edits: [

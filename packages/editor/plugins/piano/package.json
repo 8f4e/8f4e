@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-piano",
-  "version": "0.1.50",
+  "version": "0.3.6",
   "private": true,
   "description": "Piano keyboard directive plugin for the 8f4e editor",
   "type": "module",
@@ -25,6 +25,7 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
+    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
     "vitest": "4.1.12",

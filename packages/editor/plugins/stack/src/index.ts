@@ -1,16 +1,16 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import drawStack from './drawer/draw';
-import { registerStackLayout } from './state/layout';
+import { registerStackPreparation } from './state/layout';
 import type { StackLabel } from './types';
 
 export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMotion: () => boolean }): EditorPlugin {
 	return {
 		id: 'stack',
-		setup: ({ layout, drawers }) => {
-			const labelsByBlock = new WeakMap<CodeBlockGraphicData, StackLabel[]>();
-			const unregisterLayout = registerStackLayout(layout, labelsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+		setup: ({ store, layout, renderRegistry }) => {
+			const labelsByBlock = new WeakMap<EditorCodeBlock, StackLabel[]>();
+			const unregisterPreparation = registerStackPreparation(store, layout, labelsByBlock);
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 				drawStack(
 					draw,
 					state.viewport.vGrid,
@@ -22,7 +22,7 @@ export function createStackPlugin({ prefersReducedMotion }: { prefersReducedMoti
 			});
 			return () => {
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

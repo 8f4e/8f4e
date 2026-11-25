@@ -7,7 +7,7 @@ import {
 	prepareMemoryAccess,
 	readByteAddress,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { parseTextureDirective, parseTextureUploadDirective, type TextureUploadDirective } from './directive';
 
 interface Upload extends TextureUploadDirective {
@@ -16,10 +16,10 @@ interface Upload extends TextureUploadDirective {
 
 export function createTextureBindings(store: EditorPluginContext['store']) {
 	const state = store.getState();
-	const bindingsByBlock = new WeakMap<CodeBlockGraphicData, Map<string, PreparedAddressBinding | undefined>>();
+	const bindingsByBlock = new WeakMap<EditorCodeBlock, Map<string, PreparedAddressBinding | undefined>>();
 	let uploads: Upload[] = [];
 
-	function collect(blocks: CodeBlockGraphicData[]) {
+	function collect(blocks: EditorCodeBlock[]) {
 		for (const block of blocks) {
 			const scope = getCodeBlockMemoryScope(block);
 			const bindings = new Map<string, PreparedAddressBinding | undefined>();
@@ -39,13 +39,13 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 				if (data && !bindings.has(data.address)) bindings.set(data.address, prepare(data.address));
 			}
 			bindingsByBlock.set(block, bindings);
-			collect(block.childProject?.blocks ?? []);
+			collect(block.childLevel?.blocks ?? []);
 		}
 	}
 
 	function refresh() {
 		uploads = [];
-		collect(state.codeBlockRendering.rootProject.blocks);
+		collect(state.project.rootLevel.blocks);
 	}
 
 	function resolveUploads(memory: Int32Array) {
@@ -71,7 +71,7 @@ export function createTextureBindings(store: EditorPluginContext['store']) {
 	refresh();
 	return {
 		resolveUploads,
-		resolveViewAddress: (block: CodeBlockGraphicData, address: string, memory: Int32Array) => {
+		resolveViewAddress: (block: EditorCodeBlock, address: string, memory: Int32Array) => {
 			const binding = bindingsByBlock.get(block)?.get(address);
 			return binding && readByteAddress(binding, memory);
 		},

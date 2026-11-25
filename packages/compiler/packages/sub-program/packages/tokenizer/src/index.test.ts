@@ -56,23 +56,6 @@ describe('compileToAST', () => {
 		);
 	});
 
-	it('keeps shape instructions in module lines without adding module metadata', () => {
-		const ast = compileToAST(['module oscillator', 'shape oscillatorState', 'shape envelopeState', 'moduleEnd'], {
-			kind: 'document',
-		});
-
-		expect(ast).toMatchObject({
-			type: 'module',
-			id: 'oscillator',
-		});
-		if (ast.type !== 'module') {
-			throw new Error('Expected module AST');
-		}
-		const shapeInstructionLines = ast.lines.filter(line => line.instruction === 'shape');
-		expect(shapeInstructionLines.map(line => line.arguments[0].value)).toEqual(['oscillatorState', 'envelopeState']);
-		expect(shapeInstructionLines.map(line => line.lineNumber)).toEqual([1, 2]);
-	});
-
 	it('constructs function metadata from the source-block parse path', () => {
 		const ast = compileToAST(
 			[
@@ -93,24 +76,15 @@ describe('compileToAST', () => {
 			functionLine: { instruction: 'function' },
 			functionEndLine: { instruction: 'functionEnd' },
 			exportLine: { instruction: '#export' },
+			signature: {
+				parameters: [
+					{ name: 'left', type: 'int' },
+					{ name: 'right', type: 'float' },
+				],
+				returns: ['int', 'float'],
+			},
 		});
 		expect(ast.lines[0].instruction).toBe('const');
-	});
-
-	it('keeps paramShape instructions in function lines', () => {
-		const ast = compileToAST(['function mix', 'param int gain', 'paramShape mixerState', 'functionEnd int'], {
-			kind: 'document',
-		});
-
-		expect(ast).toMatchObject({
-			type: 'function',
-			name: 'mix',
-		});
-		if (ast.type !== 'function') {
-			throw new Error('Expected function AST');
-		}
-		const paramShapeInstructionLines = ast.lines.filter(line => line.instruction === 'paramShape');
-		expect(paramShapeInstructionLines.map(line => line.arguments[0].value)).toEqual(['mixerState']);
 	});
 
 	it('rejects memory declarations in function blocks', () => {
@@ -125,46 +99,12 @@ describe('compileToAST', () => {
 		);
 	});
 
-	it('rejects shape instructions outside module blocks based on language spec placement', () => {
-		for (const code of [
-			['shape oscillatorState'],
-			['function mix', 'shape oscillatorState', 'functionEnd'],
-			['prototype oscillatorState', 'shape oscillatorState', 'prototypeEnd'],
-		]) {
-			expect(() => compileToAST(code, { kind: 'document' })).toThrow(
-				expect.objectContaining({
-					diagnostic: expect.objectContaining({
-						code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-						instruction: 'shape',
-					}),
-				})
-			);
-		}
-	});
-
-	it('rejects paramShape instructions outside function blocks based on language spec placement', () => {
-		for (const code of [
-			['paramShape oscillatorState'],
-			['module mix', 'paramShape oscillatorState', 'moduleEnd'],
-			['prototype oscillatorState', 'paramShape oscillatorState', 'prototypeEnd'],
-		]) {
-			expect(() => compileToAST(code, { kind: 'document' })).toThrow(
-				expect.objectContaining({
-					diagnostic: expect.objectContaining({
-						code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-						instruction: 'paramShape',
-					}),
-				})
-			);
-		}
-	});
-
 	it('rejects source blocks nested inside source blocks', () => {
 		for (const code of [
 			['module synth', 'function helper', 'functionEnd', 'moduleEnd'],
 			['function helper', 'module synth', 'moduleEnd', 'functionEnd'],
 			['module synth', 'constants values', 'constantsEnd', 'moduleEnd'],
-			['prototype shape', 'module synth', 'moduleEnd', 'prototypeEnd'],
+			['constants env', 'module synth', 'moduleEnd', 'constantsEnd'],
 		]) {
 			expect(() => compileToAST(code, { kind: 'document' })).toThrow(
 				expect.objectContaining({
@@ -239,33 +179,6 @@ describe('compileToAST', () => {
 				kind: 'document',
 			})
 		).not.toThrow();
-	});
-
-	it('constructs prototype metadata from the source-block parse path', () => {
-		const ast = compileToAST(['prototype oscillatorState', 'float phase', 'float frequency 440', 'prototypeEnd'], {
-			kind: 'document',
-		});
-
-		expect(ast).toMatchObject({
-			type: 'prototype',
-			id: 'oscillatorState',
-			prototypeLine: { instruction: 'prototype' },
-		});
-		if (ast.type !== 'prototype') {
-			throw new Error('Expected prototype AST');
-		}
-		expect(ast.lines.filter(isMemoryDeclarationLine).map(line => line.arguments[0].value)).toEqual([
-			'phase',
-			'frequency',
-		]);
-	});
-
-	it('allows constants namespace imports in prototype blocks', () => {
-		const ast = compileToAST(['prototype oscillatorState', 'use env', 'float[] samples SAMPLE_COUNT', 'prototypeEnd'], {
-			kind: 'document',
-		});
-
-		expect(ast.lines[1]).toMatchObject({ instruction: 'use', arguments: [{ value: 'env' }] });
 	});
 
 	it('constructs imported function metadata from the source-block parse path', () => {

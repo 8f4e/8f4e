@@ -32,7 +32,7 @@ Active todo files are listed below.
 | 321 | Investigate buffer boundaries for mutable pointers | 🟡 | 2-4h | 2026-03-26 | Decide how mutable pointers could expose reliable buffer boundaries beyond the existing fixed-reference `end()` queries. |
 | 376 | Add ASCII scene renderer for editor snapshot tests | 🟡 | 1-2d | 2026-04-08 | The editor currently has strong unit coverage for directive parsing, layout derivation, and individual widget geometry, but it does not have a cheap whole-scene regression layer... |
 | 378 | Make parser stateful for block pairing and owning block context | 🟡 | 4-8h | 2026-04-08 | The tokenizer/parser already owns some cross-line structural syntax concerns such as `if` pairing and block-closure validation, but that statefulness is still too narrow in two... |
-| 380 | Remove hardcoded AudioWorklet buffer size from runtime contract | 🟡 | 1-2 days | 2026-04-21 | The AudioWorklet runtime currently injects `const AUDIO_BUFFER_SIZE 128` as an auto-managed environment constant in `packages/editor/packages/runtime-audio-worklet/src/runtimeDirectives.ts`. |
+| 380 | Remove hardcoded AudioWorklet buffer size from runtime contract | 🟡 | 1-2 days | 2026-04-21 | The audio-runtime plugin currently injects `const AUDIO_BUFFER_SIZE 128` as an auto-managed environment constant in `packages/editor/plugins/audio-runtime/src/index.ts`. |
 | 383 | Extend CLI run with tracing and derived debug signals | 🟡 | 1-2d | 2026-04-23 | The new `cli run` command is already useful for inspecting final state after a fixed |
 | 385 | Guard i32.div_s signed overflow | 🟡 | 2-4h | 2026-04-30 | The `div` instruction emits WebAssembly `i32.div_s` for integer operands. The compiler already rejects division when the divisor is not known to be non-zero, which prevents the... |
 | 386 | Guard i32.rem_s divisor zero | 🟡 | 2-4h | 2026-04-30 | The `remainder` instruction emits WebAssembly `i32.rem_s` for integer operands. WebAssembly has no non-trapping variant for integer remainder. The raw opcode traps when the divi... |
@@ -60,7 +60,6 @@ Active todo files are listed below.
 | 494 | Measure editor block-highlight parser scaling | 🟡 | 3-6h | 2026-10-14 | Benchmark the existing stack-based parser across increasing source sizes and report runtime, allocations, and complete highlight-preparation costs. |
 | 498 | Consolidate shared editor test-state builders | 🟡 | 4-8h | 2026-10-14 | Share complete typed state defaults and migrate cast-based editor/runtime fixtures so missing required fields are caught earlier. |
 | 499 | Unify project instruction syntax parsing | 🟡 | 4-8h | 2026-10-14 | Move exposure syntax into the tokenizer alongside pass and init, with shared comment handling, validation, and source diagnostics. |
-| 500 | Keep planned memory and its source together | 🟡 | 4-8h | 2026-10-14 | Attach effective source information to each planned declaration, removing parallel arrays and positional source lookups. |
 | 501 | Preserve known pointee counts of one | 🟡 | 1-2h | 2026-10-16 | Retain proven single-element pointee counts so count(*pointer) resolves correctly while unknown counts remain errors. |
 | 502 | Add browser-driven accessibility color-scheme overrides | 🟡 | 2-4d | 2026-10-18 | Add tested alternative editor palettes selected automatically from supported browser contrast and forced-color preferences. |
 | 504 | Add a color-theme contrast audit tool | 🟡 | 1-2d | 2026-10-21 | Measure critical foreground/background pairs in resolved editor themes and report contrast failures, including alpha compositing. |
@@ -71,6 +70,7 @@ Active todo files are listed below.
 | 520 | Explore performance controls and custom banks for Grids | 🟡 | TBD | 2026-11-10 | Start with momentary fills and Snap/Morph playback, then explore density, timing, velocity, and MIDI-derived banks. |
 | 521 | Benchmark Wasm IR simplifications | 🟡 | TBD | 2026-11-10 | Compare local fusion, literal propagation and integer folding, dead local writes, and conditional branch simplification on the DX7. |
 | 522 | Add composable Wasm IR passes | 🟡 | TBD | 2026-11-11 | Let usage sites lazily load ordered IR passes and separate inlining from subsequent pruning through read-only reachability analysis. |
+| 523 | Investigate sharing source across projects | 🟡 | TBD | 2026-11-18 | Explore how projects can share user-owned functions and group templates across the CLI and editor. |
 
 ### 🟢 Low Priority
 
@@ -85,6 +85,7 @@ Active todo files are listed below.
 
 | ID | Title | Completed | Notes |
 | ---- | ----- | --------- | ----- |
+| 500 | Keep planned memory and its source together | 2026-11-20 | Planned declarations carry their source directly; group initializers, default resolution, and editor lookup no longer join parallel arrays. |
 | 388 | Add PixelCode font to sprite-generator | 2026-11-06 | Added `pixelcode6x12` from PixelCode v2.2 with native pixel conversion, lazy loading, attribution, and rendering checks. |
 | 389 | Add EagleSpCGA Alt3 8x8 font to sprite-generator | 2026-11-06 | Added `eaglespcgaalt38x8` from the Oldschool PC Font Pack v2.2 bitmap strike; verified Unicode mapping and original pixels. |
 | 465 | Add Sergamon font to the editor | 2026-11-06 | Added `sergamon8x16` directly from v2.2.3 source grids, with lazy loading, attribution, and rendering checks. |

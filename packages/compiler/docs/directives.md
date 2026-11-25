@@ -144,7 +144,7 @@ param int address
 functionEnd int
 ```
 
-Only supported function prologue directives, `param` and `paramShape` declarations, and `functionEnd` are allowed in an imported function. Executable instructions such as `push`, `load`, `store`, or `call` are invalid because the implementation lives in the host.
+Only supported function prologue directives, `param` declarations, and `functionEnd` are allowed in an imported function. Executable instructions such as `push`, `load`, `store`, or `call` are invalid because the implementation lives in the host.
 
 **Host imports:**
 ```ts
@@ -185,7 +185,7 @@ moduleEnd
 
 **Behavior:**
 - Sets the ambient loop cap for `loop` instructions in the same module or function body
-- A per-loop explicit argument (`loop <int>`) takes precedence over the ambient `#loopCap`
+- An explicit `loop` argument takes precedence over the ambient `#loopCap`, including when the bound is a runtime integer
 - When no `#loopCap` is present and no per-loop argument is given, the built-in default of `1000` applies
 - The cap value `0` is valid and causes the loop guard to exit immediately on the first guard check
 - Multiple prologue `#loopCap` directives in the same block are allowed; the last prologue value becomes the ambient default

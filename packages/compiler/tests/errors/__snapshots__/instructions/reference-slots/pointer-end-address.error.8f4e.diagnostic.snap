@@ -1,0 +1,13 @@
+{
+  "code": 79,
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Fixed reference slot "ref" has no addressable storage. Push the slot name to use its target address. (79)",
+}

@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { createLazyPluginLoaderPlugin, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -42,6 +43,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 		let context!: EditorPluginContext;
 		try {
 			editor = await initEditor(canvas, {
+				renderer: new Engine(canvas),
 				initialProject:
 					trigger === 'source edit'
 						? parseProjectSource(source.replace('; @plot &points count(points) -1 1\n', ''))
@@ -51,19 +53,7 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 						id: 'test-artifacts',
 						setup: services => {
 							context = services;
-							Object.assign(services.store.getState().compiler.result, {
-								memoryPlan: compiled.memoryPlan,
-								memoryDefaultsByModuleId: compiled.memoryDefaultsByModuleId,
-								compiledModules: compiled.compiledModules,
-								compiledFunctions: compiled.compiledFunctions,
-								projectMemoryExposuresByGroupPath: compiled.projectMemoryExposuresByGroupPath,
-							});
-							const publish = () =>
-								services.events.dispatch('compilationSucceeded', {
-									memoryRef: memory,
-								});
-							services.events.on('init', publish);
-							return () => services.events.off('init', publish);
+							return () => {};
 						},
 					},
 					createLazyPluginLoaderPlugin([
@@ -73,21 +63,29 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 			});
 			editor.state.editorMode = 'edit';
 			editor.pauseRendering();
+			context.events.dispatch('compilationSucceeded', { memoryRef: memory });
+			const publishResult = () =>
+				context.store.set('compiler.result', {
+					...compiled,
+					inputRevision: context.store.getState().compilerInputRevision,
+				});
+			if (trigger !== 'source edit') publishResult();
 			if (trigger === 'group navigation') {
 				expect(load).not.toHaveBeenCalled();
 				context.events.dispatch('pointermove', { buttons: 1, movementX: 64, movementY: 96 });
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-viewport-before-group');
-				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
-				context.store.set('codeBlockRendering.selectedCodeBlock', group);
+				const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'audioGroup')!;
+				context.store.set('project.selectedCodeBlock', group);
 				editor.renderFrame();
 				await expect(canvas).toMatchScreenshot('parent-selection-before-group');
 				editor.navigation.openGroup(getEditorBlockId(group));
 			}
-			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audio')!;
+			const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'audio')!;
 			if (trigger === 'source edit') {
 				expect(load).not.toHaveBeenCalled();
-				applyCodeBlockSourceEdits(context, [{ codeBlock: block, code: project.execution[0].code }]);
+				applyCodeBlockSourceEdits(context.store, [{ codeBlock: block, code: project.execution[0].code }]);
+				publishResult();
 			}
 			await expect.poll(() => block.gaps.get(3)?.size).toBe(8);
 			expect(load).toHaveBeenCalledOnce();
@@ -98,8 +96,8 @@ test.each(['project load', 'source edit', 'group navigation'] as const)(
 				editor.navigation.goToRoot();
 				expect(editor.state.viewport).toMatchObject({ x: -64, y: -96 });
 				editor.renderFrame();
-				const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'audioGroup')!;
-				expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(group);
+				const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'audioGroup')!;
+				expect(editor.state.project.selectedCodeBlock).toBe(group);
 				await expect(canvas).toMatchScreenshot('parent-selection-before-group');
 				editor.navigation.openGroup(getEditorBlockId(group));
 				expect(editor.state.viewport).toMatchObject({ x: -128, y: -160 });

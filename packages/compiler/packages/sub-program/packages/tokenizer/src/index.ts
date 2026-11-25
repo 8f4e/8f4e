@@ -2,9 +2,12 @@ import { syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type { ASTCache, ASTCacheEntry, CompilerASTLine, DiagnosticSource, ValidatedAST } from '@8f4e/language-spec';
 
 export { createASTCache } from './cache';
+export { parseDirectiveLineRecords } from './parseDirectiveLineRecords';
+export { parseFunctionDocumentationTagLine } from './parseFunctionDocumentation';
 
 import { hashSource } from './cache';
 import { mainTokenizerLoop } from './mainTokenizerLoop';
+import { parseFunctionDocumentation } from './parseFunctionDocumentation';
 
 import { createASTFromBuilder } from './sourceBlockASTBuilder';
 import instructionParser from './syntax/instructionParser';
@@ -78,12 +81,14 @@ function bindSource(ast: ValidatedAST, diagnosticSource: DiagnosticSource): Vali
 			return { ...ast, lines, moduleLine: boundLine(ast.moduleLine) };
 		case 'constants':
 			return { ...ast, lines, constantsLine: boundLine(ast.constantsLine) };
-		case 'prototype':
-			return { ...ast, lines, prototypeLine: boundLine(ast.prototypeLine) };
 		case 'function':
 			return {
 				...ast,
 				lines,
+				signature: {
+					parameters: ast.signature.parameters.map(parameter => ({ ...parameter })),
+					returns: [...ast.signature.returns],
+				},
 				functionLine: boundLine(ast.functionLine),
 				functionEndLine: boundLine(ast.functionEndLine),
 				...(ast.exportLine ? { exportLine: boundLine(ast.exportLine) } : {}),
@@ -113,6 +118,10 @@ function parseSourceToAST(code: string[], cache?: ASTCache<ValidatedAST>, cacheK
 	}
 
 	const group = createASTFromBuilder(parsedSource.lines, parsedSource.astBuilder) as ValidatedAST;
+	if (group.type === 'function') {
+		const documentation = parseFunctionDocumentation(code, group);
+		if (documentation) group.documentation = documentation;
+	}
 
 	if (cache && cacheKey !== undefined) {
 		const entry: ASTCacheEntry<ValidatedAST> = {

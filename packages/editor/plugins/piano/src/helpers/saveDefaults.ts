@@ -26,5 +26,8 @@ function getPianoDefaults(keyboards: PianoKeyboard[], read: (address: number) =>
 export function getPianoDefaultEdits(state: State, keyboards: PianoKeyboard[]): MemoryDefaultEdit[] {
 	const read = state.callbacks.getWordFromMemory;
 	if (!read) return [];
-	return getMemoryDefaultEdits(state, getPianoDefaults(keyboards, read));
+	return getMemoryDefaultEdits(
+		state,
+		getPianoDefaults(keyboards, address => read(address) ?? 0)
+	);
 }

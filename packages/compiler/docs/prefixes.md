@@ -50,7 +50,8 @@ ifEnd
 
 Mutable pointer variables do not provide a fixed allocation boundary; pass that boundary separately. `end(pointer)`
 queries the pointer variable's own storage. `end(module:N)` queries an indexed declaration, and `end(module:)` queries
-the complete module allocation. Leading `&` selects start addresses. Circular buffers wrap when
+the complete module allocation. For a fixed reference to a pointer, `end(*connection)` gives the end of the bound
+pointer allocation. Leading `&` selects start addresses. Circular buffers wrap when
 `pointer >= end(buffer)`.
 
 ## Pointer dereference
@@ -74,6 +75,11 @@ push *ptr
 int** pptr &ptr
 push *pptr    ; pushes the address stored in ptr
 push **pptr   ; loads target
+
+int*& fixed &ptr
+push fixed    ; pushes the address of ptr, typed int**
+push *fixed   ; pushes the address stored in ptr, typed int*
+push **fixed  ; loads target
 ```
 
 ## Element count
@@ -82,6 +88,7 @@ push **pptr   ; loads target
 - `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address. Known counts of zero and one are preserved, including through group initializers.
 - If the pointer has no tracked pointee element count, `count(*name)` raises `POINTEE_ELEMENT_COUNT_UNKNOWN`. An end-address initializer does not establish a count; pass the length explicitly instead.
 - Metadata queries currently support one leading `*`. For double pointers, `count(*name)` describes the intermediate pointer slot. `count(**name)` is not supported yet.
+- For a fixed reference to a pointer, `count(*name)` gives the count of pointer elements in the bound allocation.
 
 Example:
 
@@ -124,6 +131,7 @@ Examples:
 | `float64* ptr`      | 4              | 8               |
 | `int** ptr`         | 4              | 4               |
 | `float64** ptr`     | 4              | 4               |
+| `int16*& ref`       | —              | 4               |
 
 ```
 int* ptr &someInt
@@ -138,6 +146,7 @@ push sizeof(*fptr)  ; 8  — size of the float64 it points to
 ## Element max value
 
 - `max(name)` pushes the maximum finite value for the element type of a memory item.
+- The result retains the element's numeric type: integer, float32, or float64.
 
 For signed integers:
 - `int32` / `int` / `int[]`: 2,147,483,647
@@ -150,6 +159,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: 3.4028234663852886e+38 (max finite float32)
+- `float64` / `float64[]`: 1.7976931348623157e+308 (max finite float64)
 
 Example:
 
@@ -164,6 +174,7 @@ push max(unsignedBuffer)
 ## Pointee element max value
 
 - `max(*name)` pushes the maximum finite value for the type pointed to by a pointer-typed memory item.
+- The result retains the numeric type of that pointee.
 - Only valid for pointer identifiers (`int*`, `int8*`, `int8u*`, `int16*`, `int16u*`, `float*`, `float64*`, etc.).
 - On a non-pointer memory identifier, current compiler behavior resolves `max(*name)` to `0`.
 - `max(name)` keeps its existing meaning (max of the memory item's own element type).
@@ -196,6 +207,7 @@ push max(*fptr)  ; 1.7976931348623157e+308  — max of the float64 it points to
 
 - `min(name)` pushes the lowest finite value (most negative) for the element type of a memory item.
 - `min(*name)` pushes the lowest finite value for the type pointed to by a pointer-typed memory item.
+- Both forms retain the numeric type of the queried element or pointee.
 - On a non-pointer memory identifier, current compiler behavior resolves `min(*name)` to `0`.
 - `min(name)` keeps its existing meaning (min of the memory item's own element type).
 - Metadata queries currently support one leading `*`. For double pointers, `min(*name)` describes the intermediate pointer slot. `min(**name)` is not supported yet.
@@ -213,6 +225,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: -3.4028234663852886e+38 (lowest finite float32)
+- `float64` / `float64[]`: -1.7976931348623157e+308 (lowest finite float64)
 
 Example:
 

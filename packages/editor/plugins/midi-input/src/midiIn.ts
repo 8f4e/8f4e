@@ -6,7 +6,7 @@ export default function createMidiIn({
 	getInputPort,
 	getWasmExports,
 }: {
-	store: EditorPluginContext['store'];
+	store: Pick<EditorPluginContext['store'], 'getState' | 'subscribe' | 'unsubscribe'>;
 	getInputPort: (port: string) => MIDIInput | undefined;
 	getWasmExports: () => Promise<WebAssembly.Exports | undefined>;
 }) {

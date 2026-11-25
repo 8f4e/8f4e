@@ -6,14 +6,14 @@ import type {
 	CompiledModule,
 	CompileOptions,
 	CompileResult,
-	ComposedPrototypeAST,
+	ComposedEntry,
 	FunctionMetadata,
 	FunctionMetadataLookup,
 	FunctionRegistry,
 	MemoryLayoutPlan,
 	ProjectMemoryExposuresByGroupPath,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, createFunctionId, ErrorCode, ROOT_PROJECT_GROUP_PATH } from '@8f4e/language-spec';
 import { resolveMemoryDefaults } from '@8f4e/memory-default-resolver';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
 import { resolveMemoryReferences } from '@8f4e/memory-reference-resolver';
@@ -29,23 +29,40 @@ import { registerFunctions } from './semantic/buildNamespace';
 
 const DEFAULT_STARTING_MEMORY_ALLOCATION_UNIT_ADDRESS = 1;
 
-/** Built-in WebAssembly export names that user functions are not allowed to reuse. */
+/** Built-in WebAssembly export names that project entries and user functions cannot reuse. */
 const RESERVED_EXPORT_NAMES = ['initDefaults'];
+
+/** Validates exported entries and collects the names unavailable to exported user functions. */
+function collectReservedExportNames(entries: readonly ComposedEntry[]): string[] {
+	const names = [...RESERVED_EXPORT_NAMES];
+	for (const { exportName } of entries) {
+		if (exportName === undefined) continue;
+		if (RESERVED_EXPORT_NAMES.includes(exportName)) {
+			throw getError(
+				ErrorCode.RESERVED_ROOT_ENTRY_NAME,
+				{ kind: 'project-entry', projectGroupPath: ROOT_PROJECT_GROUP_PATH, entryName: exportName },
+				{ symbol: exportName, details: { identifier: exportName } }
+			);
+		}
+		names.push(exportName);
+	}
+	return names;
+}
 
 function resolveProjectMemoryExposures(
 	program: ComposedProgram,
 	memoryPlan: MemoryLayoutPlan
 ): ProjectMemoryExposuresByGroupPath {
 	const result: ProjectMemoryExposuresByGroupPath = {};
-	for (const exposure of program.memoryExposures) {
-		const targetMemory = memoryPlan.modules[exposure.targetModuleId]?.memory[exposure.targetMemoryName];
+	for (const { targetMemoryId, ...exposure } of program.memoryExposures) {
+		const targetMemory = memoryPlan.modules[exposure.targetModuleId]?.memory[targetMemoryId];
 		if (!targetMemory) {
 			throw getError(ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET, exposure, {
 				details: {
 					projectGroupPath: exposure.groupPath,
 					projectMemoryExposureName: exposure.name,
 					targetModuleId: exposure.targetModuleId,
-					targetMemoryId: exposure.targetMemoryName,
+					targetMemoryId,
 				},
 			});
 		}
@@ -89,10 +106,6 @@ function mergeFunctionRegistries(...registries: FunctionRegistry[]): FunctionReg
 	return { byId, arityByName };
 }
 
-function indexPrototypeShapes(prototypes: readonly ComposedPrototypeAST[]): Record<string, ComposedPrototypeAST> {
-	return Object.fromEntries(prototypes.map(prototype => [prototype.id, prototype]));
-}
-
 /**
  * Compiles one composed program into emission-ready module, function, memory, and data-segment artifacts.
  *
@@ -102,17 +115,13 @@ function indexPrototypeShapes(prototypes: readonly ComposedPrototypeAST[]): Reco
  */
 export function compileSubProgram(program: ComposedProgram, options: CompileOptions): CompileResult {
 	const { entries, cache } = program;
+	const reservedExportNames = withCompilerStage('entry export validation', () => collectReservedExportNames(entries));
 	const entryNames = entries.map(entry => entry.id);
-	const prototypeShapesById = indexPrototypeShapes(program.ast.prototypes);
 	const entryFunctionMetadata = createEntryFunctionMetadata(entryNames);
 	const registration = withCompilerStage('function registration', () =>
 		registerFunctions(program.ast.functions, {
 			reservedFunctionIds: entryNames,
-			reservedExportNames: [
-				...RESERVED_EXPORT_NAMES,
-				...entries.flatMap(entry => (entry.exportName === undefined ? [] : [entry.exportName])),
-			],
-			prototypeShapes: prototypeShapesById,
+			reservedExportNames,
 		})
 	);
 	const subProgramAst = { ...program.ast, functions: registration.declarations.map(({ ast }) => ast) };
@@ -126,7 +135,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 
 	const memoryPlan = withCompilerStage('memory planning', () =>
 		planSubProgramMemoryLayout({
-			prototypes: subProgramAst.prototypes,
 			modules: subProgramAst.modules,
 			constantReferences: constantResolution.references,
 			startingByteAddress:
@@ -164,7 +172,6 @@ export function compileSubProgram(program: ComposedProgram, options: CompileOpti
 			constantReferences: constantResolution.references,
 			memoryReferences: memoryReferenceResolution.references,
 			functions: functionRegistry,
-			prototypeShapes: prototypeShapesById,
 		})
 	).references;
 	const stackReport = withCompilerStage('stack analysis', () =>

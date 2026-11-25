@@ -19,18 +19,19 @@ local float64 imaginary
 local float64 realSquared
 local float64 imaginarySquared
 local int iterations
+local int iterationLimit
+
+push limit
+min MAX_ITERATIONS
+localSet iterationLimit
 
 ; Iterate z = z*z + c from zero.
 ; Stop once |z| > 2 or at the limit.
-loop MAX_ITERATIONS
+loop iterationLimit
 push realSquared
 add imaginarySquared
 push 4.0f64
 greaterThan
-push iterations
-push limit
-greaterOrEqual
-or
 branchIfTrue 1
 
 push real
@@ -159,7 +160,7 @@ const TARGET_Y 0.131825904205330f64
 constantsEnd
 
 constants env
-; @pos -170 -3
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -194,7 +195,7 @@ note
 noteEnd
 
 note
-; @pos 40 -46
+; @pos 134 -44
 ; Explore the Mandelbrot set by iterating z = z*z + c.
 ; Use the zoom slider to explore a detailed boundary region.
 ; Each zoom level doubles the magnification.
@@ -207,7 +208,7 @@ noteEnd
 
 entry main
 module screen
-; @pos 40 -30
+; @pos 86 -31
 use view
 
 int8u[] rgb PIXEL_COUNT*3
@@ -216,7 +217,7 @@ int8u* display &rgb
 ; @texture display 1 512 512
 moduleEnd
 module camera
-; @pos 117 -30
+; @pos 158 -31
 ; @home right
 use view
 
@@ -259,7 +260,7 @@ add TARGET_Y
 store
 moduleEnd
 module renderer
-; @pos 162 -30
+; @pos 205 -31
 
 int8u* pixels &screen:rgb
 int renders ; @w

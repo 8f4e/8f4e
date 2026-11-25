@@ -4,8 +4,8 @@ import drawModeHint from './drawModeHint';
 export function createKeyboardModeSwitchingPlugin({ inputTarget }: { inputTarget: HTMLElement }): EditorPlugin {
 	return {
 		id: 'keyboard-mode-switching',
-		setup: ({ store, events, drawers }) => {
-			const removeHint = drawers.registerCanvasOverlay(drawModeHint);
+		setup: ({ store, events, renderRegistry }) => {
+			const removeHint = renderRegistry.registerCanvasOverlay(drawModeHint);
 			const onKeydown = (event: KeyboardEvent) => {
 				const state = store.getState();
 				if (event.defaultPrevented) return;

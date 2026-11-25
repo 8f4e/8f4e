@@ -17,9 +17,7 @@ import type {
 	LoopLine,
 	MapLine,
 	MemoryCopyLine,
-	PrototypeAST,
 	PushLine,
-	PushShapeLine,
 } from './ast';
 import type { FunctionMetadata, FunctionRegistry } from './compiled';
 import type { FunctionValueType } from './functionTypes';
@@ -107,7 +105,6 @@ export interface SourceLocalBinding {
 export interface Namespace {
 	moduleName: string | undefined;
 	functions?: FunctionRegistry;
-	prototypeShapeIds: string[];
 }
 
 export type CompilationMode = CompilerSourceCompilationMode;
@@ -126,9 +123,8 @@ export interface CompilationContext extends BlockState {
 	mode: CompilationMode;
 	/** Symbol label supplied explicitly to semantic diagnostics. Source ownership belongs to each source line. */
 	codeBlockId?: string;
-	/** Function identity, signature, parameter-shape expansions, and effect metadata used by semantic passes. */
+	/** Function identity, signature and effect metadata used by semantic passes. */
 	currentFunctionMetadata?: FunctionMetadata;
-	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
 
 /** Compilation context narrowed to a module body. */
@@ -233,7 +229,6 @@ export interface MemoryReferenceResolutionModuleFacts extends MemoryReferenceRes
 }
 
 export interface MemoryReferenceResolutionReport {
-	prototypes: readonly MemoryReferenceResolutionBlockFacts[];
 	modules: readonly MemoryReferenceResolutionModuleFacts[];
 	constants: readonly MemoryReferenceResolutionBlockFacts[];
 	functions: readonly MemoryReferenceResolutionBlockFacts[];
@@ -264,9 +259,15 @@ export type ResolvedMemoryCopyLine = Omit<MemoryCopyLine, 'arguments'> & {
 	arguments: [ResolvedArgumentLiteral];
 };
 
-export type ResolvedLoopLine = Omit<LoopLine, 'arguments'> & {
-	arguments: [ResolvedArgumentLiteral];
+/** A normalized loop that takes its bound from the preceding push. */
+export type RuntimeLoopLine = LoopLine & {
+	arguments: [];
+	runtimeBound: true;
 };
+
+export type ResolvedLoopLine =
+	| (Omit<LoopLine, 'arguments'> & { arguments: [ResolvedArgumentLiteral]; runtimeBound?: never })
+	| RuntimeLoopLine;
 
 export type ArrayDeclarationInitializerArgument =
 	| ArgumentCompileTimeExpression
@@ -342,16 +343,6 @@ export type SemanticAssertEqualLine = AssertEqualLine & {
 	expectedPush: CodegenPushLine;
 };
 
-export type PushShapeExpansion = {
-	pushLine: CodegenPushLine;
-	pointerType: FunctionValueType;
-};
-
-export type ResolvedPushShapeLine = Omit<PushShapeLine, 'arguments'> & {
-	arguments: [ArgumentIdentifier];
-	shapeExpansions: PushShapeExpansion[];
-};
-
 export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends InlineOperandLine
 	? ResolvedInlineOperandLine
 	: TLine extends DefaultLine
@@ -366,15 +357,13 @@ export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLin
 						? ResolvedLocalSetLine
 						: TLine extends PushLine
 							? CodegenPushLine
-							: TLine extends PushShapeLine
-								? ResolvedPushShapeLine
-								: TLine extends LoopLine
-									? ResolvedLoopLine
-									: TLine extends MemoryCopyLine
-										? ResolvedMemoryCopyLine | MemoryCopyLine
-										: TLine extends ArrayDeclarationLine
-											? ArrayDeclarationLine
-											: TLine;
+							: TLine extends LoopLine
+								? ResolvedLoopLine
+								: TLine extends MemoryCopyLine
+									? ResolvedMemoryCopyLine | MemoryCopyLine
+									: TLine extends ArrayDeclarationLine
+										? ArrayDeclarationLine
+										: TLine;
 
 /** Resolved instructions that remain after declaration processing. */
 export type ExecutableInstructionLine = Extract<SemanticReferenceLine, { instruction: CodegenInstructionName }>;

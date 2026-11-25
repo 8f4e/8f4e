@@ -1,0 +1,30 @@
+                                                                                
+                                                                                
+                                                                                
+     module checks                                                              
+     ; @pos 4 3                                                                 
+     push 10                                                                    
+     assertEqual 9                                                              
+     Error:                                                                     
+     Assertion failed: expected 9,                                              
+     received 10                                                                
+     Error:                                                                     
+     A second contributor can report                                            
+     an error on the same source                                                
+     line.                                                                      
+     drop                                                                       
+     moduleEnd                                                                  
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                

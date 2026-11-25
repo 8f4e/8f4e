@@ -1,5 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createCompilerResult } from '../__tests__/compilerResult';
@@ -18,19 +19,20 @@ async function setup(source: string) {
 	const compiled = await compileProject(project);
 	const events = createEvents();
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const tooltip = createTooltip(store, events);
 	cleanups.push(() => {
 		tooltip.dispose();
 		store.dispose();
 	});
+	events.dispatch('loadProject', { project });
 	store.set('editorMode', 'edit');
-	store.set('initialProjectState', project);
 	store.set('compiler.result', createCompilerResult(compiled, store.getState().compilerInputRevision));
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'sink')!;
-	store.set('codeBlockRendering.selectedCodeBlock', block);
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'sink')!;
+	store.set('project.selectedCodeBlock', block);
 	store.set(
-		'codeBlockRendering.selectedCodeBlock.cursor.row',
+		'project.selectedCodeBlock.cursor.row',
 		block.code.findIndex(line => line.includes(' input'))
 	);
 	const buffer = new ArrayBuffer(65536);
@@ -135,6 +137,36 @@ entryEnd`);
 			const target = compiled.compiledModules.sink.referenceSlots.input.targetMemory;
 			memory[view][target.byteAddress / size] = value;
 			expect(renderValues()).toEqual([String(target.byteAddress), expected]);
+		}
+	);
+
+	it.each([
+		{ type: 'int16', view: 'int16', firstValue: -32768, secondValue: 32767, expected: ['-32768', '32767'] },
+		{ type: 'float', view: 'float32', firstValue: -2.75, secondValue: 1.25, expected: ['-2.7500', '1.2500'] },
+	] as const)(
+		'shows the slot, live pointer and $type pointee',
+		async ({ type, view, firstValue, secondValue, expected }) => {
+			const { compiled, memory, renderValues } = await setup(`8f4e/v1
+entry main
+module source
+${type}[] first 1
+${type}[] second 1
+${type}* selected &first
+moduleEnd
+module sink
+${type}*& input &source:selected
+moduleEnd
+entryEnd`);
+			const { first, second, selected } = compiled.memoryPlan.modules.source.memory;
+			memory[view][first.byteAddress / first.elementWordSize] = firstValue;
+			memory[view][second.byteAddress / second.elementWordSize] = secondValue;
+
+			memory.int32[selected.allocationUnitAddress] = first.byteAddress;
+			expect(renderValues()).toEqual([String(selected.byteAddress), String(first.byteAddress), expected[0]]);
+			memory.int32[selected.allocationUnitAddress] = second.byteAddress;
+			expect(renderValues()).toEqual([String(selected.byteAddress), String(second.byteAddress), expected[1]]);
+			memory.int32[selected.allocationUnitAddress] = -1;
+			expect(renderValues()).toEqual([String(selected.byteAddress), '-1', '?']);
 		}
 	);
 

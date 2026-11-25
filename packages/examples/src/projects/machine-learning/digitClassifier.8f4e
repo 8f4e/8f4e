@@ -1,25 +1,9 @@
 8f4e/v1
 
-function sigmoid
+includes
 ; @pos -355 38
-param float x
-; Fast sigmoid approximation
-; of logistic sigmoid
-; mapped to [0, 1]
-
-push x
-push x
-abs
-push 1.0
-add
-ensureNonZero
-div
-push 0.5
-mul
-push 0.5
-add
-
-functionEnd float
+include std/math/fastSigmoid
+includesEnd
 
 constants env
 ; @pos 0 0
@@ -426,7 +410,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -464,7 +448,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -502,7 +486,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -540,7 +524,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -578,7 +562,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -616,7 +600,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -654,7 +638,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -692,7 +676,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -730,7 +714,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -768,7 +752,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -806,7 +790,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -844,7 +828,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -882,7 +866,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -920,7 +904,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -958,7 +942,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -996,7 +980,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1034,7 +1018,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1072,7 +1056,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1110,7 +1094,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1148,7 +1132,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1186,7 +1170,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1224,7 +1208,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1262,7 +1246,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1300,7 +1284,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1338,7 +1322,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1376,7 +1360,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1414,7 +1398,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1452,7 +1436,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1490,7 +1474,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1528,7 +1512,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1566,7 +1550,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1604,7 +1588,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1642,7 +1626,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1680,7 +1664,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1718,7 +1702,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1756,7 +1740,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1794,7 +1778,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1832,7 +1816,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1870,7 +1854,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1908,7 +1892,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1946,7 +1930,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -1984,7 +1968,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2022,7 +2006,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2060,7 +2044,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2098,7 +2082,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2136,7 +2120,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2174,7 +2158,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2212,7 +2196,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2250,7 +2234,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2288,7 +2272,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2326,7 +2310,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2364,7 +2348,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2402,7 +2386,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2440,7 +2424,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2478,7 +2462,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2516,7 +2500,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2554,7 +2538,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2592,7 +2576,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2630,7 +2614,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2668,7 +2652,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2706,7 +2690,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2744,7 +2728,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2782,7 +2766,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2820,7 +2804,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2858,7 +2842,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2896,7 +2880,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2934,7 +2918,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -2972,7 +2956,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3010,7 +2994,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3048,7 +3032,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3086,7 +3070,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3124,7 +3108,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3162,7 +3146,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3200,7 +3184,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3238,7 +3222,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3276,7 +3260,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3314,7 +3298,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3352,7 +3336,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3390,7 +3374,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3428,7 +3412,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3466,7 +3450,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3504,7 +3488,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3542,7 +3526,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3580,7 +3564,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3618,7 +3602,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3656,7 +3640,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3694,7 +3678,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3732,7 +3716,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3770,7 +3754,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3808,7 +3792,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3846,7 +3830,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3884,7 +3868,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3922,7 +3906,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3960,7 +3944,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -3998,7 +3982,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4036,7 +4020,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4074,7 +4058,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4112,7 +4096,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4150,7 +4134,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4188,7 +4172,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4226,7 +4210,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4264,7 +4248,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd
@@ -4302,7 +4286,7 @@ push	*in3
 push	W3
 mul
 add
-call	sigmoid
+call	fastSigmoid
 store
 
 moduleEnd

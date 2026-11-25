@@ -1,8 +1,13 @@
+includes
+include std/math/exp2
+include std/math/log2
+includesEnd
+
 function srgbByteToLinear
 #export
-; Requires std/math/log2 and
-; std/math/exp2 under their names.
-; channel must be in 0..255.
+; @doc Decodes an sRGB channel byte into linear light.
+; @returns Linear-light value in 0..1.
+; @param channel Encoded sRGB byte in 0..255.
 param int channel
 local float encoded
 

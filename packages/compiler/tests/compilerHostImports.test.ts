@@ -59,53 +59,50 @@ functionEnd int
 		});
 	});
 
-	test('supports paramShape signatures on host imports', async () => {
+	test('passes typed pointers to host imports in parameter order', async () => {
 		const calls: number[][] = [];
 		const fixture = await instantiateFixtureProgramSource(
 			`
 8f4e/v1
 
-prototype mixerState
+entry main
+module pointerImportCaller
 int left 2
 float right 1.5
-prototypeEnd
-
-entry main
-module shapeImportCaller
-shape mixerState
 
 push &left
 push &right
-call recordShape
+call recordAddresses
 moduleEnd
 entryEnd
 
-function recordShape
-#import recordShape
-paramShape mixerState
+function recordAddresses
+#import recordAddresses
+param int* left
+param float* right
 functionEnd
 `,
 			{
 				hostImports: {
-					recordShape: (leftAddress: number, rightAddress: number) => calls.push([leftAddress, rightAddress]),
+					recordAddresses: (leftAddress: number, rightAddress: number) => calls.push([leftAddress, rightAddress]),
 				},
 			}
 		);
 
-		const memory = fixture.compileResult.memoryPlan.modules.shapeImportCaller!.memory;
+		const memory = fixture.compileResult.memoryPlan.modules.pointerImportCaller!.memory;
 
 		getExportedFunction(fixture.instance.exports, 'initDefaults')();
 		getExportedFunction(fixture.instance.exports, 'main')();
 
 		expect(calls).toEqual([[memory.left.byteAddress, memory.right.byteAddress]]);
-		const functionId = createFunctionId('recordShape', ['int*', 'float*']);
+		const functionId = createFunctionId('recordAddresses', ['int*', 'float*']);
 		expect(fixture.compileResult.compiledFunctions![functionId].signature.parameters).toEqual([
 			{ name: 'left', type: 'int*' },
 			{ name: 'right', type: 'float*' },
 		]);
 		expect(fixture.compileResult.compiledFunctions![functionId].import).toEqual({
 			moduleName: 'host',
-			fieldName: 'recordShape',
+			fieldName: 'recordAddresses',
 		});
 	});
 });

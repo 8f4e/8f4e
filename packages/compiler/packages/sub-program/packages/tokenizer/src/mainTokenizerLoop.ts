@@ -143,7 +143,7 @@ function getNestedBlockDepth(state: ParserBlockState, block: NestedBlockPlacemen
 
 /** Narrows a placement kind to source blocks that own independent ASTs. */
 function isSourceBlockPlacement(block: string): block is SourceBlockPlacement {
-	return block === 'module' || block === 'function' || block === 'constants' || block === 'prototype';
+	return block === 'module' || block === 'function' || block === 'constants';
 }
 
 /** Reads block metadata for a block-start instruction from the language spec. */

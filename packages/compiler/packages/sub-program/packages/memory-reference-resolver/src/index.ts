@@ -19,14 +19,12 @@ import type {
 	ParamLine,
 	ProjectMemoryAliasLookup,
 	ProjectMemoryInitializerScope,
-	PrototypeAST,
 	ReferenceSlotMap,
 	ResolvedArgumentLiteral,
 	SourceArgumentsSpec,
 	ValidatedConstantsAST,
 	ValidatedFunctionAST,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
 	ArgumentType,
@@ -54,29 +52,25 @@ export type {
 } from '@8f4e/language-spec';
 
 export interface MemoryReferenceSubProgramAST<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 	TFunction extends FunctionAST = ValidatedFunctionAST,
 > {
-	prototypes: readonly TPrototype[];
 	modules: readonly TModule[];
 	constants: readonly TConstants[];
 	functions: readonly TFunction[];
 }
 
 export interface ResolveMemoryReferencesInput<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 	TFunction extends FunctionAST = ValidatedFunctionAST,
 > {
-	ast: MemoryReferenceSubProgramAST<TPrototype, TModule, TConstants, TFunction>;
+	ast: MemoryReferenceSubProgramAST<TModule, TConstants, TFunction>;
 	memoryPlan: MemoryLayoutPlan;
 	memoryAliases: ProjectMemoryAliasLookup;
 	projectMemoryInitializerScopes: readonly ProjectMemoryInitializerScope[];
 	constantReferences: {
-		prototypes: readonly ConstantResolutionBlockFacts[];
 		modules: readonly ConstantResolutionBlockFacts[];
 		constants: readonly ConstantResolutionBlockFacts[];
 		functions: readonly ConstantResolutionBlockFacts[];
@@ -288,7 +282,7 @@ function isReferenceValuePosition(line: CompilerASTLine, index: number): boolean
 		rule === 'pushValue' ||
 		rule === 'compileTimeValue' ||
 		rule === 'mapValue' ||
-		rule === 'nonNegativeIntegerCompileTimeValue' ||
+		rule === 'loopBound' ||
 		rule === 'nonNegativeCompileTimeValue'
 	);
 }
@@ -305,7 +299,7 @@ function applyMemoryReferenceFacts<TLine extends CompilerASTLine>(
 }
 
 function resolveMemoryReferencesInAst(
-	ast: PrototypeAST | ModuleAST | ConstantsAST | FunctionAST,
+	ast: ModuleAST | ConstantsAST | FunctionAST,
 	memoryPlan: MemoryLayoutPlan,
 	pointerMetadata: MemoryReferencePointerMetadataByModuleId,
 	memoryAliases: ProjectMemoryAliasLookup,
@@ -349,7 +343,7 @@ function resolveDeclarationSourceReferences(
 ): MemoryReferenceResolutionBlockFacts {
 	pointerMetadata[module.id] = pointerMetadata[module.id] ?? {};
 	const context = createModuleResolutionContext(memoryPlan, pointerMetadata, memoryAliases, module, referenceSlots);
-	const lineFacts = module.declarationSources.map(({ line }) => {
+	const lineFacts = module.declarations.map(({ source: line }) => {
 		const memoryReferenceFacts = resolveMemoryReferenceLineFacts(line, context, initializerDefaults);
 		updatePointerMemoryMetadata(applyMemoryReferenceFacts(line, memoryReferenceFacts), context);
 		return memoryReferenceFacts;
@@ -365,11 +359,10 @@ function resolveDeclarationSourceReferences(
  * @returns Memory-reference facts aligned with the input AST and planned memory declaration sources.
  */
 export function resolveMemoryReferences<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 	TFunction extends FunctionAST = ValidatedFunctionAST,
->(input: ResolveMemoryReferencesInput<TPrototype, TModule, TConstants, TFunction>): ResolveMemoryReferencesResult {
+>(input: ResolveMemoryReferencesInput<TModule, TConstants, TFunction>): ResolveMemoryReferencesResult {
 	const pointerMetadata: Record<string, MemoryPointerMetadataMap> = {};
 	const declarationSourcesByModuleId: Record<string, MemoryReferenceResolutionBlockFacts> = {};
 	const slotsByModuleId = Object.fromEntries(
@@ -404,16 +397,6 @@ export function resolveMemoryReferences<
 
 	return {
 		references: {
-			prototypes: input.ast.prototypes.map((ast, index) =>
-				resolveMemoryReferencesInAst(
-					ast,
-					input.memoryPlan,
-					pointerMetadata,
-					input.memoryAliases,
-					input.constantReferences.prototypes[index],
-					undefined
-				)
-			),
 			modules: input.ast.modules.map((ast, index) => ({
 				referenceSlots: slotsByModuleId[ast.id]!,
 				...resolveMemoryReferencesInAst(

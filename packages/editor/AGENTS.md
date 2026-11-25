@@ -10,7 +10,8 @@
   own page layout, hosting and deployment. WebMCP is a page-owned adapter to one editor's public API.
 - The compiler plugin coordinates compilation and provides live artifact and memory handles. Runtime plugins own
   configuration, readiness and execution lifecycle independently. Publish runtime info and environment
-  constants under each runtime's own key. Worker and worklet packages own execution code.
+  constants under each runtime's own key. Keep worker and worklet execution code in separate packages nested
+  under their owning runtime plugins.
 - Plugin READMEs document factory dependencies, loading signals and lifecycle. Composition READMEs document plugin
   selection.
 
@@ -24,12 +25,14 @@
   listeners and pointer capability checks belong to input adapters and compositions.
 - Use generic drawer hooks and shared palette tokens. Prepare static glyph IDs outside the render path and retain
   them with the owning feature. Use ASCII IDs directly for live numeric text.
-- Use live compiler handles for memory access. Inject the current writer into memory controls and use
-  `memoryValuesChanged` to refresh externally changed memory.
+- Use live compiler handles for memory access. Inject the current writer into memory controls and read current
+  values when drawing or sampling. Observe compiler metadata directly when preparing data that depends on it;
+  update layout contributions only when space requirements change.
 - Use generic schema, error and environment constant contributions. Use `loading.add` for operations that
   surface loading status. Producers report outcomes and cancel superseded or disposed work.
-- Batch source changes with `applyCodeBlockSourceEdits`. Pass replacement source; the helper determines
-  compilation invalidation and publishes the change. Only in-place ordinary comment text edits skip compilation.
+- Batch project mutations with `store.projectTransactions.apply`; use `applyCodeBlockSourceEdits` and the positioned
+  insertion helpers for simple actions. Pass replacement source rather than editing live source or membership
+  directly. The transaction determines compilation invalidation and publishes the completed change.
 
 ## Composition and Validation
 
@@ -40,8 +43,8 @@
   Match raw configuration before the relevant schema loads.
 - Load mouse input on all devices, touch input on coarse pointers and selected keyboard plugins on non-coarse
   pointers. Forward host input options to the owning plugin.
-- Share one file session per editor that supports source files. Install it before project loaders and inject it
-  into the file plugins.
+- Keep the file association private to the default editor's project-files plugin. Use only the one-shot export
+  plugin in gallery editors.
 - Keep shared libraries external in editor library bundles, including imported dependency subpaths.
 - Test individual features against core services and exercise combined real plugins in composition suites. Test
   native input in the adapter or composition. Use `@8f4e/editor-default:test:screenshot` for full-editor composition

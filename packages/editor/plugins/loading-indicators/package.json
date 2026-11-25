@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-loading-indicators",
-  "version": "0.0.18",
+  "version": "0.2.6",
   "private": true,
   "description": "Shared loading indicator overlay for the 8f4e editor",
   "type": "module",
@@ -21,10 +21,12 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
+    "@8f4e/web-ui-testing": "*",
     "@8f4e/config": "*",
     "vitest": "4.1.12",
     "@types/node": "24.13.2",
     "@8f4e/editor-state": "*",
+    "@8f4e/editor-state-testing": "*",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-offscreen-block-arrows",
-  "version": "0.0.21",
+  "version": "0.2.6",
   "private": true,
   "description": "Viewport-edge arrows for offscreen 8f4e code blocks",
   "type": "module",
@@ -21,6 +21,7 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
+    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-testing": "*",

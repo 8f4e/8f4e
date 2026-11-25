@@ -52,7 +52,6 @@ describe('ProjectObjectModel', () => {
 			init: 'init',
 			pass: 'pass',
 			template: { opener: 'template', closer: 'templateEnd' },
-			useTemplate: 'useTemplate',
 		});
 		expect(projectInstructionNames).toEqual([
 			'entry',
@@ -64,7 +63,6 @@ describe('ProjectObjectModel', () => {
 			'pass',
 			'template',
 			'templateEnd',
-			'useTemplate',
 		]);
 	});
 

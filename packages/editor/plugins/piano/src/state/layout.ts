@@ -1,6 +1,7 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import { getCodeBlockMemoryScope, resolveMemoryAddress } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import type { PianoDirectiveData } from '../helpers/data';
 import { createPianoDirectiveData } from '../helpers/data';
@@ -47,7 +48,7 @@ function createPianoKeyboardKeys(
 
 function resolvePianoLayout(
 	pianoKeyboard: PianoDirectiveData,
-	graphicData: CodeBlockGraphicData,
+	graphicData: EditorCodeBlock,
 	state: State,
 	keyboards: PianoKeyboard[]
 ): void {
@@ -83,7 +84,7 @@ function resolvePianoLayout(
 
 	keyboards.push({
 		x: 0,
-		y: (gapCalculator(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
+		y: (displayRowToGridRow(displayRow, graphicData.gaps) + 1) * state.viewport.hGrid,
 		width: KEY_COUNT * keyWidth,
 		height,
 		keyWidth,
@@ -114,20 +115,23 @@ function resolvePianoLayout(
 
 import { PIANO_KEYBOARD_MIN_GRID_WIDTH } from './constants';
 
-export function registerPianoLayout(
+export function registerPianoPreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>
+	keyboardsByBlock: WeakMap<EditorCodeBlock, PianoKeyboard[]>
 ): () => void {
 	const contribution = layout.createContribution();
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'piano' }]).flatMap(directive => {
 			const data = createPianoDirectiveData(directive.args, directive.sourceLineIndex);
 			return data ? [data] : [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 6 })),
-			minGridWidth: items.length ? PIANO_KEYBOARD_MIN_GRID_WIDTH : undefined,
-		});
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(data => ({ sourceLineIndex: data.sourceLineIndex, heightInRows: 6 })),
+				minGridWidth: items.length ? PIANO_KEYBOARD_MIN_GRID_WIDTH : undefined,
+			});
+		}
 		const widgets: PianoKeyboard[] = [];
 		keyboardsByBlock.set(codeBlock, widgets);
 		for (const data of items) resolvePianoLayout(data, codeBlock, state, widgets);

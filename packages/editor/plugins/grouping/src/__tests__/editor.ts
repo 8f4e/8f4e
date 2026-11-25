@@ -1,7 +1,8 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { vi } from 'vitest';
 import { createGroupingPlugin } from '../index';
 import { createEvents } from './events';
@@ -32,30 +33,29 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	const events = createEvents();
 	const writeClipboardText = vi.fn(async (_text: string) => {});
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const disposePlugin = installed
-		? createGroupingPlugin({ writeClipboardText }).setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
-			})
-		: () => {};
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposePlugin = installed ? createGroupingPlugin({ writeClipboardText }).setup(context) : () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
-	const block = (name: string) =>
-		state.codeBlockRendering.currentProject.blocks.find(candidate => candidate.name === name)!;
-	const openMenu = async (target: CodeBlockGraphicData = block('first')) => {
+	const block = (name: string) => state.project.activeLevel.blocks.find(candidate => candidate.name === name)!;
+	const openMenu = async (target: EditorCodeBlock = block('first')) => {
 		events.dispatch('contextmenu', { x: target.x - state.viewport.x + 8, y: target.y - state.viewport.y + 8 });
 		await Promise.resolve();
 		return state.contextMenu.items;
 	};
-	const drag = (target: CodeBlockGraphicData, altKey = false, dx = state.viewport.vGrid, dy = state.viewport.hGrid) => {
+	const startDrag = (target: EditorCodeBlock, altKey = false, dx = state.viewport.vGrid, dy = state.viewport.hGrid) => {
 		const pointer = {
 			x: target.x - state.viewport.x + 8,
 			y: target.y - state.viewport.y + 8,
@@ -69,6 +69,9 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		};
 		events.dispatch('pointerdown', pointer);
 		events.dispatch('pointermove', { ...pointer, movementX: dx, movementY: dy });
+	};
+	const drag = (target: EditorCodeBlock, altKey = false, dx = state.viewport.vGrid, dy = state.viewport.hGrid) => {
+		startDrag(target, altKey, dx, dy);
 		events.dispatch('pointerup');
 	};
 	return {
@@ -77,6 +80,7 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 		events,
 		block,
 		openMenu,
+		startDrag,
 		drag,
 		writeClipboardText,
 		disposePlugin,

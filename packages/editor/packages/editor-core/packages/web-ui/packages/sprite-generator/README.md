@@ -32,17 +32,21 @@ concurrent requests share the same promise. Returned atlases and pixel arrays ar
 as read-only. No canvas is needed. The default 8×16 font has a 128×272 atlas, with 257 cells on a 16-column grid.
 The remaining cells in its last row are transparent.
 
-Font names, cell dimensions, and lazy imports are defined once in `src/fonts/catalog.ts`. `FONT_NAMES` and the
-`Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`: `#` sets a pixel,
-and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
+`FONT_CATALOG` defines font display names, credits, cell dimensions and lazy imports in `src/fonts/catalog.ts`.
+`FONT_NAMES` lists fonts by increasing pixel-cell area (width × height), retaining catalog order for equal sizes.
+The `Font` type also comes from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`:
+`#` sets a pixel, and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
 `src/characterSet.ts`. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
 These generated modules are ignored by Git. The runtime decoder retains typed arrays for the packed rows.
+
+The catalog's display `name` and multiline `credits` follow the bundled third-party notices and remain available
+without loading font bitmap payloads. Register each font in this catalog alongside its dimensions and loader.
 
 Import a BDF font with `node tools/import-bdf.mjs <bdf-path> <font-name>`, then register its dimensions and payload
 import in the catalog. The importer maps Unicode BDF encodings to CP437 and accepts BDFs explicitly marked
 `CHARSET_REGISTRY "ibm"` and `CHARSET_ENCODING "437"` in slot order. Missing characters and the NUL slot stay blank.
-Web-ui owns font-specific background dot settings in `src/plugins/background/dot-settings.ts`;
-configure those there. Backgrounds use a procedural pass, and connectors use ordinary glyphs and fill.
+The optional `@8f4e/editor-plugin-dotted-background` derives its procedural dot pattern from the installed grid dimensions;
+no additional font-specific background settings are required. Connectors use ordinary glyphs and fill.
 
 Pixel-outline TTF/OTF fonts can first be converted to BDF with `tools/import-pixel-outline.py`. This optional
 import tool requires Python's `fontTools` package; production builds use only the committed ASCII sources.

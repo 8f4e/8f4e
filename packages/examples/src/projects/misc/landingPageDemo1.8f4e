@@ -1,8 +1,7 @@
 8f4e/v1
 
 constants env
-; @pos -71 7
-; @favorite
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -11,7 +10,7 @@ const SAMPLE_RATE 50
 constantsEnd
 
 note
-; @pos -153 -9
+; @pos 0 -8
 ; @mode edit
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
@@ -19,7 +18,7 @@ note
 noteEnd
 
 note colors
-; @pos -194 -9
+; @pos 0 9
 ; @config color.canvas #069
 ; @config color.surface #021924
 ; @config color.ink #f8ffff
@@ -37,7 +36,7 @@ noteEnd
 
 entry main
 module add
-; @pos 28 -5
+; @pos 123 -5
 ; @home left
 
 ; Add two numbers.
@@ -67,7 +66,7 @@ drop
 
 moduleEnd
 module div
-; @pos 65 -5
+; @pos 160 -5
 
 ; Divide two numbers.
 
@@ -88,7 +87,7 @@ drop ; Clear the stack.
 
 moduleEnd
 module many
-; @pos 101 -5
+; @pos 196 -5
 
 ; You can chain
 ; many instructions:

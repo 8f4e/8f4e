@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
 import type { WebWorkerRuntimeMessage } from '@8f4e/runtime-web-worker/messages';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createWorkerRuntimePlugin } from './index';
 
@@ -43,7 +43,7 @@ function setup(config = ['enabled true'], ready = true) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	const cleanup = () => {
 		cleanups.delete(cleanup);
@@ -62,7 +62,7 @@ function setup(config = ['enabled true'], ready = true) {
 		),
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'settings')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'settings')!;
 	return {
 		state,
 		store,
@@ -70,8 +70,7 @@ function setup(config = ['enabled true'], ready = true) {
 		workers,
 		getCodeBuffer,
 		cleanup,
-		configure: (settings: string[]) =>
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(settings) }]),
+		configure: (settings: string[]) => applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(settings) }]),
 		compile: () => {
 			store.set('compiler.isCompiling', true);
 			memory = new WebAssembly.Memory({ initial: 1 });
@@ -109,12 +108,10 @@ it('handles initialized and stats messages through its fixed info namespace', ()
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
 		{ id: 'worker-runtime', message: 'Starting worker runtime...', status: 'loading' },
 	]);
-	test.events.dispatch.mockClear();
 	test.workers[0].onMessage({
 		data: { type: 'initialized', requestId: test.workers[0].postMessage.mock.calls.at(-1)![0].requestId, payload: {} },
 	});
 	test.workers[0].onMessage({ data: { type: 'stats', payload: stats } });
-	expect(test.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 	expect(test.state.info.workerRuntime).toEqual(stats);
 	expect(test.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 });

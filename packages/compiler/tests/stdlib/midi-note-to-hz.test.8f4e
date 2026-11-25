@@ -1,0 +1,46 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/midi/midiNoteToHz
+includesEnd
+
+entry test
+module midiNoteFrequencyAssertions
+call midiNoteToHz 69
+assertEqual 440.0
+
+call midiNoteToHz 57
+assertEqual 220.0
+
+call midiNoteToHz 81
+assertEqual 880.0
+
+call midiNoteToHz 0
+div 8.175798915643707
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+call midiNoteToHz 127
+div 12543.853951415975
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+
+call midiNoteToHz 69.5
+div 452.8929841231365
+sub 1.0
+abs
+push 0.000001
+lessOrEqual
+assert
+moduleEnd
+entryEnd

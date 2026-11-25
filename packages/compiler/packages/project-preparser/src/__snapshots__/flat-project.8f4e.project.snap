@@ -1,5 +1,4 @@
 {
-  "code": [],
   "constants": [
     {
       "code": [
@@ -46,17 +45,6 @@
         "; @pos 1 2",
         "remember to tune this later",
         "noteEnd",
-      ],
-      "id": 25,
-    },
-  ],
-  "prototypes": [
-    {
-      "code": [
-        "prototype oscillatorState",
-        "float phase",
-        "float frequency 440",
-        "prototypeEnd",
       ],
       "id": 20,
     },

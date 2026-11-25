@@ -11,8 +11,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -91 27
-; @favorite
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -21,7 +20,7 @@ const SAMPLE_RATE 50
 constantsEnd
 
 note
-; @pos -171 -5
+; @pos 0 -9
 ; @mode edit
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 50
@@ -30,7 +29,7 @@ note
 noteEnd
 
 note colors
-; @pos -212 -5
+; @pos 0 9
 ; @config color.canvas #960
 ; @config color.surface #211307
 ; @config color.ink #f7f0df
@@ -48,7 +47,7 @@ noteEnd
 
 entry main
 module square
-; @pos 19 0
+; @pos 148 -1
 ; @home left
 
 float out ; @w
@@ -84,7 +83,7 @@ ifEnd
 
 moduleEnd
 module lowPassFilter
-; @pos 55 0
+; @pos 184 -1
 
 float& in &square:out
 float out
@@ -112,7 +111,7 @@ store
 
 moduleEnd
 module scope
-; @pos 91 0
+; @pos 220 -1
 float& in &lowPassFilter:out
 
 float[] buffer 128

@@ -1,10 +1,4 @@
-import type {
-	CodeBlockGraphicData,
-	CodeBlockPointerDownEvent,
-	EventDispatcher,
-	InternalPointerEvent,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { PianoKeyboard } from '../types';
 
@@ -22,12 +16,7 @@ function readRuntimePressedKeys(keyboard: PianoKeyboard, getWordFromMemory: (add
 	return pressedKeys;
 }
 
-function getClickedKeyOffset(
-	state: State,
-	codeBlock: CodeBlockGraphicData,
-	keyboard: PianoKeyboard,
-	x: number
-): number {
+function getClickedKeyOffset(state: State, codeBlock: EditorCodeBlock, keyboard: PianoKeyboard, x: number): number {
 	const keyboardViewportX = codeBlock.x + keyboard.x - state.viewport.x;
 
 	return Math.floor((x - keyboardViewportX) / keyboard.keyWidth);
@@ -36,7 +25,7 @@ function getClickedKeyOffset(
 export function registerPianoInteraction(
 	state: State,
 	events: EventDispatcher,
-	keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>,
+	keyboardsByBlock: WeakMap<EditorCodeBlock, PianoKeyboard[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	const onCodeBlockPointerDown = (event: CodeBlockPointerDownEvent) => {
@@ -67,7 +56,7 @@ export function registerPianoInteraction(
 
 		event.stopPropagation = true;
 		const noteNumber = keyboard.startingMidiNote + key;
-		const pressedKeys = readRuntimePressedKeys(keyboard, getWordFromMemory);
+		const pressedKeys = readRuntimePressedKeys(keyboard, address => getWordFromMemory(address) ?? 0);
 		if (pressedKeys.has(noteNumber)) {
 			pressedKeys.delete(noteNumber);
 		} else {

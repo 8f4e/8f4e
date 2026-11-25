@@ -236,7 +236,6 @@
         "type": "module",
       },
     ],
-    "prototypes": [],
   },
   "cache": {
     "keys": [
@@ -293,26 +292,30 @@
   "memoryExposures": [
     {
       "diagnosticSource": {
-        "kind": "scope",
-        "projectGroupPath": "audio",
+        "kind": "block",
+        "projectBlockId": 8,
+        "projectGroupPath": "",
       },
       "groupPath": "audio",
       "instruction": "expose",
       "lineNumber": 1,
       "name": "exposedValue",
+      "targetMemoryId": "value",
       "targetMemoryName": "value",
       "targetModuleId": "audio/source",
       "targetModuleName": "source",
     },
     {
       "diagnosticSource": {
-        "kind": "scope",
-        "projectGroupPath": "audio",
+        "kind": "block",
+        "projectBlockId": 8,
+        "projectGroupPath": "",
       },
       "groupPath": "audio",
       "instruction": "expose",
       "lineNumber": 2,
       "name": "exposedInput",
+      "targetMemoryId": "input",
       "targetMemoryName": "input",
       "targetModuleId": "audio/consumer",
       "targetModuleName": "consumer",

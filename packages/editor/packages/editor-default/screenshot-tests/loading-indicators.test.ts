@@ -4,8 +4,11 @@ import { createBinaryAssetsPlugin } from '@8f4e/editor-plugin-binary-assets';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
-import { loadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test, vi } from 'vitest';
+
+const loadingIndicatorsPlugin = createLoadingIndicatorsPlugin({ prefersReducedMotion: () => true });
 
 test('shows concurrent plugin and asset loads without blocking the editor', async () => {
 	vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
@@ -55,6 +58,7 @@ entryEnd`);
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			initialProject: project,
 			plugins: [
 				codeBlockBackgroundPlugin,
@@ -83,7 +87,9 @@ entryEnd`);
 		now.mockReturnValue(1240);
 		vi.advanceTimersByTime(100);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('loading-indicators-pending');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/loading-indicators-pending.viewport.snap'
+		);
 		const previousX = editor.state.viewport.x;
 		context.events.dispatch('pointermove', { buttons: 1, movementX: 16, movementY: 0 });
 		expect(editor.state.viewport.x).toBe(previousX - 16);
@@ -106,8 +112,12 @@ entryEnd`);
 			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])
 		);
 		expect(editor.state.loadingIndicators.map(indicator => indicator.status)).toEqual(['done', 'done', 'failed']);
+		now.mockReturnValue(2850);
+		await vi.advanceTimersByTimeAsync(500);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('loading-indicators-finished');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/loading-indicators-finished.viewport.snap'
+		);
 	} finally {
 		editor?.dispose();
 		canvas.remove();
@@ -133,6 +143,7 @@ test('shows the initial deferred import through an eagerly installed loading dra
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
 			plugins: [loadingIndicatorsPlugin, createDeferredPluginLoaderPlugin({ load: () => pending })],
 		});
 		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toMatchObject([
@@ -142,7 +153,9 @@ test('shows the initial deferred import through an eagerly installed loading dra
 		now.mockReturnValue(1240);
 		vi.advanceTimersByTime(100);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('initial-editor-plugins-loading');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot(
+			'./__snapshots__/initial-editor-plugins-loading.viewport.snap'
+		);
 		finish({ id: 'features', setup: () => () => {} });
 		await vi.waitFor(() =>
 			expect(editor!.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([])

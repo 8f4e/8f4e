@@ -1,24 +1,22 @@
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMouseInputPlugin } from './index';
 
 const cleanups: Array<() => void> = [];
 afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
-	vi.useRealTimers();
 });
-beforeEach(() => vi.useFakeTimers());
 
-function setup(captureWheel = true, viewportDragging = true) {
+function setup(captureWheel = true) {
 	const inputTarget = Object.assign(new EventTarget(), {
 		clientWidth: 640,
 		clientHeight: 480,
 		focus: vi.fn(),
 	}) as unknown as HTMLElement;
 	const events = { ...createMockEventDispatcher(), dispatch: vi.fn() };
-	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });
+	const store = initState(events, { callbacks: {} });
 	const dispose = createMouseInputPlugin({ inputTarget, captureWheel }).setup({
 		store,
 		events,
@@ -26,7 +24,7 @@ function setup(captureWheel = true, viewportDragging = true) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	events.dispatch.mockClear();
 	cleanups.push(store.dispose, dispose);
@@ -42,7 +40,7 @@ function setup(captureWheel = true, viewportDragging = true) {
 		return event;
 	};
 	const wheel = (deltaX = 3, deltaY = 5) => mouse('wheel', { deltaX, deltaY });
-	return { store, events, inputTarget, mouse, wheel, dispose };
+	return { events, inputTarget, mouse, wheel, dispose };
 }
 
 describe('mouse input', () => {
@@ -78,28 +76,18 @@ describe('mouse input', () => {
 		);
 	});
 
-	it('translates wheel movement and announces its end after scrolling pauses', () => {
+	it.each([
+		[3, 5],
+		[-7, 9],
+		[8, -4],
+	])('forwards signed wheel deltas (%i, %i) as a viewport scroll', (deltaX, deltaY) => {
 		const test = setup();
-		expect(test.wheel().defaultPrevented).toBe(true);
-		expect(test.events.dispatch).toHaveBeenCalledWith(
-			'pointermove',
-			expect.objectContaining({ movementX: -3, movementY: -5, buttons: 1 })
-		);
-		vi.advanceTimersByTime(119);
-		expect(test.events.dispatch).not.toHaveBeenCalledWith('viewportscrollend', expect.anything());
-		vi.advanceTimersByTime(1);
-		expect(test.events.dispatch).toHaveBeenLastCalledWith('viewportscrollend', { movementX: -3, movementY: -5 });
-	});
-
-	it('restarts the scroll-end timer with the latest movement', () => {
-		const test = setup();
-		test.wheel();
-		vi.advanceTimersByTime(100);
-		test.wheel(7, 9);
-		vi.advanceTimersByTime(119);
-		expect(test.events.dispatch).toHaveBeenCalledTimes(2);
-		vi.advanceTimersByTime(1);
-		expect(test.events.dispatch).toHaveBeenLastCalledWith('viewportscrollend', { movementX: -7, movementY: -9 });
+		expect(test.wheel(deltaX, deltaY).defaultPrevented).toBe(true);
+		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportscroll', {
+			deltaX,
+			deltaY,
+			stopPropagation: false,
+		});
 	});
 
 	it('leaves wheel input to the page when wheel capture is disabled', () => {
@@ -110,24 +98,12 @@ describe('mouse input', () => {
 		expect(test.events.dispatch).toHaveBeenCalledOnce();
 	});
 
-	it('honors viewport dragging changes without losing mouse input', () => {
-		const test = setup(true, false);
-		expect(test.wheel().defaultPrevented).toBe(false);
-		test.store.set('featureFlags.viewportDragging', true);
-		expect(test.wheel().defaultPrevented).toBe(true);
-		test.store.set('featureFlags.viewportDragging', false);
-		expect(test.wheel().defaultPrevented).toBe(false);
-	});
-
-	it('removes listeners and clears pending wheel work on disposal', () => {
+	it('removes mouse and wheel listeners on disposal', () => {
 		const test = setup();
-		test.wheel();
-		test.store.set('featureFlags.viewportDragging', false);
 		test.dispose();
-		vi.runAllTimers();
-		test.mouse('mousedown');
+		expect(test.mouse('mousedown').defaultPrevented).toBe(false);
 		expect(test.wheel().defaultPrevented).toBe(false);
-		expect(test.events.dispatch).toHaveBeenCalledOnce();
+		expect(test.events.dispatch).not.toHaveBeenCalled();
 	});
 
 	it('keeps movement history separate for each editor', () => {

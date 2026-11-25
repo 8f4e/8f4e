@@ -1,0 +1,24 @@
+ 00 constants env                                                                               
+ 01 ; @pos 0 0                                                                                  
+ 02 ; Auto-generated environment constants                   0 module player                    
+ 03 ; Changes will be overwritten                            1 ; @pos 60 2                      
+ 04                                                          2 int[] buffer 4                   
+ 05 ; Binary asset sizes in bytes                            3 moduleEnd                        
+ 06 ; 'sample.pcm'                                                                              
+ 07 const ASSET_SOUND_SIZE 6                                                                    
+ 08                                                                                             
+ 09 constantsEnd                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                

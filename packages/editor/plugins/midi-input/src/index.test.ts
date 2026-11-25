@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMidiAccess, createMidiInput } from './__tests__/midi';
 import { createMidiInputPlugin } from './index';
@@ -67,13 +67,13 @@ async function setup({ requestMIDIAccess = vi.fn(async () => createMidiFixture()
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(() => {
 		dispose();
 		store.dispose();
 	});
-	store.set('initialProjectState', project);
+	store.projectTransactions.load(project);
 	return {
 		store,
 		dispose,

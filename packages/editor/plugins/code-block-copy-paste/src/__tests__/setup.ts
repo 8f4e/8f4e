@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createCodeBlockCopyPastePlugin } from '../index';
 
@@ -24,6 +25,7 @@ export function setup() {
 		clipboard = text;
 	});
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
@@ -45,7 +47,7 @@ export function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);
 	const state = store.getState();
@@ -53,7 +55,7 @@ export function setup() {
 		clipboard = text;
 		await events.dispatchAsync('pasteCodeBlocks', { x, y });
 	};
-	const openMenu = async (codeBlock?: (typeof state.codeBlockRendering.currentProject.blocks)[number]) => {
+	const openMenu = async (codeBlock?: (typeof state.project.activeLevel.blocks)[number]) => {
 		await events.dispatchAsync(
 			'contextmenu',
 			codeBlock ? { x: codeBlock.x - state.viewport.x + 8, y: codeBlock.y - state.viewport.y + 8 } : { x: 600, y: 300 }

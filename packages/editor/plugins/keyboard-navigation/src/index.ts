@@ -22,8 +22,8 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 					return;
 				}
 				const state = store.getState();
-				const block = state.codeBlockRendering.selectedCodeBlock;
-				if (state.editorMode !== 'view' || !state.featureFlags.codeLineSelection || !block) return;
+				const block = state.project.selectedCodeBlock;
+				if (state.editorMode !== 'view' || !block) return;
 				if (direction === 'left' || direction === 'right') return;
 				event.preventDefault();
 				const [row, col] = clampSourcePosition(
@@ -31,8 +31,7 @@ export function createKeyboardNavigationPlugin({ inputTarget }: { inputTarget: H
 					block.cursor.row + (direction === 'up' ? -1 : 1),
 					block.cursor.col
 				);
-				store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
-				store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
+				store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 			};
 			inputTarget.addEventListener('keydown', onKeydown);
 			return () => inputTarget.removeEventListener('keydown', onKeydown);

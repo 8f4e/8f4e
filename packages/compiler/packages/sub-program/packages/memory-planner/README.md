@@ -2,31 +2,30 @@
 
 `@8f4e/memory-planner` decides module addresses and memory declaration addresses for a sub-program.
 
-The sub-program-level entry point receives validated module and prototype ASTs plus constant-resolution facts:
+The sub-program-level entry point receives validated module ASTs plus constant-resolution facts:
 
 ```ts
 const memoryPlan = planSubProgramMemoryLayout({
-	prototypes,
 	modules,
 	constantReferences,
 	startingByteAddress,
 });
 ```
 
-The planner builds planner-ready memory layout source from those ASTs:
+The planner collects module IDs and ordered memory declarations from those ASTs.
 
-- `prototypes`: prototype ids with normalized memory declaration lines.
-- `modules`: module ids and ordered layout source lines.
-
-Modules are allocated in alphabetical order by module id, independent from source or execution order. Module layout source lines are either memory declarations or `shape` lines. The planner expands `shape` lines into effective declaration sources, then plans those declarations in order within each module.
+Modules are allocated in alphabetical order by module id, independent of source or execution order. Within a
+module, the planner allocates memory declarations in source order and rejects a second declaration with the same
+name. Anonymous declarations are not subject to the name check.
 
 The returned plan contains:
 
 - `moduleList`: planned modules in layout order.
 - `modules`: planned modules keyed by id.
-- Each module's `declarations` lists every allocation in expanded order. Its zero-based index is the declaration ID.
-- Each module's `memory` looks up effective named declarations by source name. Anonymous declarations have no name.
-- Each module's `declarationSources` lists the corresponding source lines in declaration ID order, including inherited `shape` fields.
+- Each module's `declarations` lists every allocation in source order. Its zero-based index is the declaration ID,
+  and each declaration carries its `source` line.
+- Each module's `memory` looks up the same declaration objects by name. Anonymous declarations appear only in
+  `declarations`.
 
 ## Ownership
 
@@ -35,9 +34,8 @@ This package owns:
 - Module byte addresses.
 - Memory declaration byte addresses.
 - Building planner-ready memory layout source from validated ASTs.
-- Declaration order after `shape` expansion.
-- Declaration size and type layout facts.
-- Unknown `shape` prototype references, because layout cannot be planned without them.
+- Memory declaration order.
+- Declaration size and type layout facts, and uniqueness of named allocations within a module.
 
 This package does not own:
 
@@ -45,7 +43,6 @@ This package does not own:
 - Memory-reference inlining.
 - Default value resolution.
 - Pointer target metadata overlays.
-- Function parameter shape expansion.
 - Code generation or stack/type validation.
 
 The planner reads constant-resolution facts before normalizing declaration sizes. It expects array element counts to become literal planner-ready values after those facts and pure literal arithmetic are applied. Layout-dependent declaration sizes, such as `int[] dest count(source)`, are not supported.

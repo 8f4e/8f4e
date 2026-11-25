@@ -19,7 +19,8 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 Crossfades write float32 values to both targets while dragging and consume movement before block or viewport dragging.
 Each target accepts an allocated address (`&dry`) or a bare fixed reference (`dry` declared with `float&`).
 
-Cleanup releases layout subscriptions/contributions and the drawer and releases pointer listeners. Omit the plugin to remove its behavior and layout space.
+Bindings refresh independently of geometry when accepted compiler metadata changes. Cleanup releases compiler and
+layout subscriptions, layout contributions, the drawer and pointer listeners. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-crossfade:build

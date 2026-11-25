@@ -1,0 +1,9 @@
+8f4e/v1
+
+entry main
+module example
+float count 3.0
+loop count
+loopEnd
+moduleEnd
+entryEnd

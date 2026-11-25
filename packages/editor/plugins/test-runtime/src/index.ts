@@ -16,13 +16,13 @@ export function createTestRuntimePlugin({
 }): EditorPlugin {
 	return {
 		id: 'test-runtime',
-		setup: ({ store, events, loading }) => {
+		setup: ({ store, loading }) => {
 			const state = store.getState();
 			let worker: Worker | undefined;
 			let runLoading: LoadingIndicatorHandle | undefined;
 			let assertions: TestAssertionResult[] = [];
 			const publishErrors = () =>
-				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.codeBlockRendering.rootProject));
+				store.set('codeErrors.test-runtime', assertionErrors(assertions, state.project.rootLevel));
 
 			function publish(result: TestRunResult | { status: 'idle' | 'running' }) {
 				const completed = result.status === 'passed' || result.status === 'failed';
@@ -83,7 +83,6 @@ export function createTestRuntimePlugin({
 						if (data.status === 'error') console.error('[TestRuntime]', data.error);
 						else if (data.status === 'failed') console.error('[TestRuntime]', formatTestFailures(data.failures));
 						else console.info(`[TestRuntime] ${data.assertions.length} assertions passed`);
-						events.dispatch('memoryValuesChanged');
 					};
 					currentWorker.onmessage = ({ data }: MessageEvent<TestRunResult>) => finish(data);
 					currentWorker.onerror = event => finish({ status: 'error', error: event.message });
@@ -102,14 +101,14 @@ export function createTestRuntimePlugin({
 			});
 			store.subscribe('compiler.isCompiling', syncCompilation);
 			store.subscribe('editorConfig.testRuntime', syncCompilation);
-			events.on('compilationInputChanged', publishErrors);
+			store.subscribe('compilerInputRevision', publishErrors);
 
 			syncCompilation();
 
 			return () => {
 				store.unsubscribe('compiler.isCompiling', syncCompilation);
 				store.unsubscribe('editorConfig.testRuntime', syncCompilation);
-				events.off('compilationInputChanged', publishErrors);
+				store.unsubscribe('compilerInputRevision', publishErrors);
 				stopWorker();
 				publish({ status: 'idle' });
 				const errors = { ...state.codeErrors };

@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`digit classifier behavior > preserves every neuron for all 32768 binary input grids > all neuron outputs 1`] = `"1f63df8dedc9412f7e950f87f67526666a9da0d309646bdfbda86f3dfde28e7b"`;

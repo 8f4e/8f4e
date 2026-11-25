@@ -370,7 +370,6 @@
         "type": "module",
       },
     ],
-    "prototypes": [],
   },
   "cache": {
     "keys": [
@@ -438,8 +437,9 @@
             },
           ],
           "diagnosticSource": {
-            "kind": "scope",
-            "projectGroupPath": "child",
+            "kind": "block",
+            "projectBlockId": 13,
+            "projectGroupPath": "",
           },
           "instruction": "pass",
           "lineNumber": 1,
@@ -460,8 +460,9 @@
             },
           ],
           "diagnosticSource": {
-            "kind": "scope",
-            "projectGroupPath": "child/nested",
+            "kind": "block",
+            "projectBlockId": 22,
+            "projectGroupPath": "child",
           },
           "instruction": "pass",
           "lineNumber": 1,

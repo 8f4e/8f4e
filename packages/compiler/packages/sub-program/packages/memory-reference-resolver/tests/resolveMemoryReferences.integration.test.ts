@@ -1,13 +1,8 @@
-import type { ConstantsAST, FunctionAST, ModuleAST, PrototypeAST } from '@8f4e/language-spec';
+import type { ConstantsAST, FunctionAST, FunctionSignature, ModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type ResolveMemoryReferencesInput, resolveMemoryReferences } from '../src';
 
-type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<
-	PrototypeAST,
-	ModuleAST,
-	ConstantsAST,
-	FunctionAST
->;
+type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<ModuleAST, ConstantsAST, FunctionAST>;
 
 describe('resolveMemoryReferences integration', () => {
 	it('resolves sub-program-level memory references from pass-shaped fixtures', () => {
@@ -174,7 +169,12 @@ describe('resolveMemoryReferences integration', () => {
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],
 		} as const;
+		const signature: FunctionSignature = {
+			parameters: [{ name: 'sourcePtr', type: 'float*' }],
+			returns: ['int'],
+		};
 		const samplesMemory = {
+			source: samplesDeclarationLine,
 			numberOfElements: 4,
 			elementWordSize: 4,
 			byteAddress: 4,
@@ -192,6 +192,7 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: false,
 		} as const;
 		const ptrMemory = {
+			source: pointerDeclarationLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 20,
@@ -210,6 +211,7 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: false,
 		} as const;
 		const audioSamplesMemory = {
+			source: audioSamplesDeclarationLine,
 			numberOfElements: 6,
 			elementWordSize: 2,
 			byteAddress: 4,
@@ -227,7 +229,6 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: true,
 		} as const;
 		const ast = {
-			prototypes: [],
 			modules: [
 				{
 					type: 'module',
@@ -262,6 +263,7 @@ describe('resolveMemoryReferences integration', () => {
 				{
 					type: 'function',
 					name: 'readPointer',
+					signature,
 					functionLine,
 					functionEndLine,
 					lines: [functionLine, pointerParamLine, pointeeSizeLine, functionEndLine],
@@ -282,10 +284,6 @@ describe('resolveMemoryReferences integration', () => {
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
 				},
 				audio: {
 					id: 'audio',
@@ -298,7 +296,6 @@ describe('resolveMemoryReferences integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
 				},
 			},
 			moduleList: [
@@ -314,10 +311,6 @@ describe('resolveMemoryReferences integration', () => {
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
 				},
 				{
 					id: 'audio',
@@ -330,12 +323,10 @@ describe('resolveMemoryReferences integration', () => {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
 				},
 			],
 		} as const;
 		const constantReferences = {
-			prototypes: [],
 			modules: [
 				{
 					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined, undefined],
@@ -365,5 +356,6 @@ describe('resolveMemoryReferences integration', () => {
 				constantReferences,
 			} satisfies MemoryReferenceResolverIntegrationInput)
 		).toMatchSnapshot();
+		expect(ptrMemory.source.arguments[1]).toMatchObject({ type: 'identifier', value: '&samples' });
 	});
 });

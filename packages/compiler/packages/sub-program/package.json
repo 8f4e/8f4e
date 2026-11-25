@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sub-program",
-  "version": "0.2.48",
+  "version": "0.4.5",
   "private": true,
   "description": "Compilation pipeline for one closed 8f4e sub-program",
   "type": "module",
@@ -36,7 +36,6 @@
     "@8f4e/wasm-ir-lowering": "*",
     "@8f4e/wasm-ir-pruner": "*",
     "@8f4e/wasm-ir-simplifier": "*",
-    "@8f4e/semantic-utils": "*",
     "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {

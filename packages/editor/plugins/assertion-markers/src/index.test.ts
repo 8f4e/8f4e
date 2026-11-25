@@ -2,13 +2,13 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import initState from '@8f4e/editor-state';
 import { createMockCodeBlock, createMockEventDispatcher, createMockState } from '@8f4e/editor-state-testing';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { assertionMarkersPlugin } from './index';
 
 describe('assertion markers plugin', () => {
 	it('draws current results and layout, and unregisters its drawer on disposal', () => {
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		const events = createMockEventDispatcher();
 		const store = initState(events, { callbacks: {} });
 		const dispose = assertionMarkersPlugin.setup({
@@ -18,7 +18,7 @@ describe('assertion markers plugin', () => {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers,
+			renderRegistry,
 		});
 		const codeBlock = createMockCodeBlock({
 			creationIndex: 7,
@@ -28,7 +28,7 @@ describe('assertion markers plugin', () => {
 		});
 		const state = createMockState();
 		const draw = { drawFill: vi.fn() } as unknown as DrawContext;
-		const render = () => drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+		const render = () => renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
 		render();
 		expect(draw.drawFill).not.toHaveBeenCalled();
 		state.assertionResults = [

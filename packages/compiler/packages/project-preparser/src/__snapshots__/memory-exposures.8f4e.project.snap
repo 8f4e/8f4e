@@ -1,5 +1,4 @@
 {
-  "code": [],
   "constants": [],
   "entries": [
     "main",
@@ -69,7 +68,6 @@
       "includes": [],
       "name": "audio",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -77,6 +75,5 @@
   "functions": [],
   "includes": [],
   "notes": [],
-  "prototypes": [],
   "unknown": [],
 }

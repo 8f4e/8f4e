@@ -43,7 +43,7 @@ describe('compilation scheduling and publication', () => {
 			blockType: 'function',
 		});
 
-		mockState.codeBlockRendering.currentProject.blocks.push(helperBlock);
+		mockState.project.activeLevel.blocks.push(helperBlock);
 
 		store = createStateManager(mockState);
 	});
@@ -57,25 +57,23 @@ describe('compilation scheduling and publication', () => {
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
 
-	it('listens for compilation input changes without subscribing to editing state', () => {
+	it('subscribes only to the compiler input revision', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
-		const on = vi.spyOn(events, 'on');
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		expect(subscribeSpy).not.toHaveBeenCalled();
-		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
+		expect(subscribeSpy).toHaveBeenCalledExactlyOnceWith('compilerInputRevision', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(300);
-		const block = mockState.codeBlockRendering.rootProject.blocks[0];
+		const block = mockState.project.rootLevel.blocks[0];
 		block.code = ['function helper', 'push 2', 'functionEnd'];
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1);
@@ -88,7 +86,8 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it.each([false, true])('enables assertions for a test module with disabled=%s', async disabled => {
-		mockState.codeBlockRendering.rootProject.blocks.push(
+		mockState.project.rootLevel.entries.push('test');
+		mockState.project.rootLevel.blocks.push(
 			createMockCodeBlock({
 				blockType: 'module',
 				entry: 'test',
@@ -112,13 +111,14 @@ describe('compilation scheduling and publication', () => {
 	] as const)(
 		'uses the root entry %s rather than local entry %s to enable assertions',
 		async (parentEntry, localEntry, enabled) => {
-			mockState.codeBlockRendering.rootProject.blocks.push(
+			mockState.project.rootLevel.entries.push(parentEntry);
+			mockState.project.rootLevel.blocks.push(
 				createMockCodeBlock({
 					name: 'nested',
 					code: ['group nested', 'groupEnd'],
 					entry: parentEntry,
 
-					childProject: {
+					childLevel: {
 						path: '',
 						entries: [localEntry],
 						blocks: [
@@ -147,7 +147,7 @@ describe('compilation scheduling and publication', () => {
 		['checks', '#export test', true],
 		['test', '', false],
 	])('detects a root test function %s with directive %s', async (name, directive, enabled) => {
-		mockState.codeBlockRendering.rootProject.blocks.push(
+		mockState.project.rootLevel.blocks.push(
 			createMockCodeBlock({
 				blockType: 'function',
 				code: [`function ${name}`, directive, 'push 1', 'assert', 'functionEnd'],
@@ -186,7 +186,7 @@ describe('compilation scheduling and publication', () => {
 		]);
 	});
 
-	it('stores the owning project path for project-scope compiler errors', async () => {
+	it('stores the owning block ID for group declaration compiler errors', async () => {
 		mockCompileCode.mockRejectedValue(
 			new CompilerError({
 				kind: 'source',
@@ -194,7 +194,7 @@ describe('compilation scheduling and publication', () => {
 				code: 2,
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 				instruction: 'pass',
-				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+				location: { kind: 'block', projectBlockId: 17, projectGroupPath: '', lineNumber: 1 },
 			})
 		);
 
@@ -203,7 +203,7 @@ describe('compilation scheduling and publication', () => {
 		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 1,
-				projectGroupPath: 'audio',
+				codeBlockId: 17,
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
 		]);
@@ -267,7 +267,6 @@ describe('compilation scheduling and publication', () => {
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
-				prototypes: expect.any(Array),
 			}),
 			{
 				startingMemoryAllocationUnitAddress: 0,
@@ -291,42 +290,6 @@ describe('compilation scheduling and publication', () => {
 		});
 	});
 
-	it('includes stack analysis when code line selection is disabled', async () => {
-		mockState.featureFlags.codeLineSelection = false;
-		mockCompileCode.mockResolvedValue({
-			memoryRef: new WebAssembly.Memory({ initial: 1 }),
-			memoryPlan: { modules: {}, moduleList: [] },
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
-			codeBuffer: new Uint8Array([0x00]),
-			compiledModules: {},
-			compiledFunctions: {},
-			requiredMemoryBytes: 0,
-			allocatedMemoryBytes: 65536,
-			astCacheStats: { hits: 0, misses: 0 },
-			memoryAction: { action: 'reused' },
-		});
-
-		await triggerCompile();
-
-		expect(mockCompileCode).toHaveBeenCalledWith(
-			expect.objectContaining({
-				entries: [],
-				execution: expect.any(Array),
-				constants: expect.any(Array),
-				functions: expect.any(Array),
-				prototypes: expect.any(Array),
-			}),
-			{
-				startingMemoryAllocationUnitAddress: 0,
-				includeStackAnalysis: true,
-				enableAssertions: false,
-				enableMemoryGuards: true,
-			},
-			expect.any(Function)
-		);
-	});
-
 	it('contributes the compiler config schema', () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 
@@ -335,9 +298,9 @@ describe('compilation scheduling and publication', () => {
 
 	it('cancels a scheduled compilation when disposed', async () => {
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		dispose();
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(mockCompileCode).not.toHaveBeenCalled();
@@ -361,7 +324,7 @@ describe('compilation scheduling and publication', () => {
 				})
 		);
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
 		dispose();
@@ -397,7 +360,7 @@ describe('compilation scheduling and publication', () => {
 			creationIndex: 10,
 			blockType: 'includes',
 		});
-		mockState.codeBlockRendering.currentProject.blocks.unshift(includesBlock);
+		mockState.project.activeLevel.blocks.unshift(includesBlock);
 
 		await triggerCompile();
 
@@ -413,7 +376,7 @@ describe('compilation scheduling and publication', () => {
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 
@@ -423,7 +386,7 @@ describe('compilation scheduling and publication', () => {
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 

@@ -11,20 +11,28 @@ Add an `includes` block near the top of the project, after the `8f4e/v1` header 
 8f4e/v1
 
 includes
+include std/audio/biquad
+include std/audio/hzToRadians
+include std/audio/tptLowPass
 include std/math/clamp
 include std/math/exp2
+include std/math/fastSigmoid
 include std/math/fract
 include std/math/lerp
 include std/math/log2
+include std/math/mapRange
 include std/math/moveTowards
 include std/math/normalize
 include std/math/pow2
 include std/math/smoothstep
+include std/math/softsign
+include std/math/wrapIndex
 include std/math/trig/advancePhase
 include std/math/trig/cosine
 include std/math/trig/saw
 include std/math/trig/sine
 include std/math/trig/triangle
+include std/midi/midiNoteToHz
 include std/color/lerpRGB
 include std/color/srgbByteToLinear
 include std/color/linearToSrgbByte
@@ -42,8 +50,11 @@ include std/random/xorshift
 include std/memory/addAt
 include std/memory/advancePointer
 include std/memory/loadAt
+include std/memory/loadRangeAt
 include std/memory/loadBitAt2D
 include std/memory/nearestValue
+include std/memory/queuePush
+include std/memory/queuePop
 include std/memory/readInterpolated
 include std/memory/storeAt
 include std/memory/storeBitAt2D
@@ -106,9 +117,13 @@ Includes are resolved during project loading. The CLI loads the shipped standard
 package, while browser-based tools load those same files lazily. The compiler receives the included source as ordinary
 function blocks, so overload resolution, stack typing, and `call` behavior are the same as user-defined functions.
 
-Some helpers call functions from other include sources. Include those prerequisites explicitly under their standard
-exported names; source inclusion does not load dependencies recursively. Each helper's reference lists its prerequisites.
-Renaming a prerequisite does not rewrite calls from a different include source.
+An included library can declare its own `includes` block before its functions. The compiler resolves those imports
+recursively. Each library can call its own functions and the exports it imports directly. To call a dependency from
+your project, include it there as well. Library calls to dependencies use the bindings declared by the library
+even when the project renames or overrides a direct import.
+
+For example, `std/math/fastSigmoid` imports `std/math/softsign` in its source, so a project can include
+`std/math/fastSigmoid` on its own. The compiler reports missing dependencies and cycles at their declaration sites.
 
 ## `std/stack/dup`
 
@@ -273,6 +288,57 @@ moduleEnd
 entryEnd
 ```
 
+## `std/memory/queuePush`
+
+Provides `queuePush(int** writePointer, int* buffer, int itemCount, int value) -> void` for a zero-marked integer FIFO.
+The buffer starts filled with zeroes, and queued values are nonzero integers. Pass the address of the write cursor,
+the buffer's start address, and its positive element count. Initialize the cursor to the buffer's start.
+
+The helper writes the value and advances the cursor when its slot is empty. If the slot is occupied, it drops the
+new value and leaves the cursor unchanged. Queue state stays in caller-owned memory; the producer owns the write
+cursor and the consumer owns a separate read cursor.
+
+```8f4e
+includes
+include std/memory/queuePush
+includesEnd
+
+entry main
+module producer
+int[] buffer 3
+int* writePointer &buffer
+
+call queuePush &writePointer &buffer count(buffer) 17
+call queuePush &writePointer &buffer count(buffer) 23
+; buffer starts with 17, 23, 0.
+moduleEnd
+entryEnd
+```
+
+## `std/memory/queuePop`
+
+Provides `queuePop(int** readPointer, int* buffer, int itemCount) -> int`, which consumes one word from a zero-marked
+integer FIFO. Initialize the read cursor to the buffer's start and supply its positive element count.
+
+An empty slot returns zero without moving the cursor. Otherwise the helper copies the word, clears its slot,
+advances the cursor, and returns the copied value.
+
+```8f4e
+includes
+include std/memory/queuePop
+includesEnd
+
+entry main
+module consumer
+int[] buffer 3 17 23 0
+int* readPointer &buffer
+
+call queuePop &readPointer &buffer count(buffer)
+; stack: 17
+moduleEnd
+entryEnd
+```
+
 ## `std/memory/swapPointers`
 
 Provides `swapPointers`, which exchanges the addresses stored in two pointer variables of the same type.
@@ -392,6 +458,29 @@ push &buffer
 push 2
 call loadAt
 ; stack: 33
+moduleEnd
+entryEnd
+```
+
+## `std/memory/loadRangeAt`
+
+Provides `loadRangeAt(int* offsets, int index) -> int int`, returning the start and length of a range described
+by two adjacent offsets. The start is pushed first, leaving the length on top of the stack.
+
+The result is `offsets[index]` and `offsets[index + 1] - offsets[index]`, in the same units as the supplied offsets.
+Supply a valid adjacent pair. Equal offsets produce a zero-length range.
+
+```8f4e
+includes
+include std/memory/loadRangeAt
+includesEnd
+
+entry main
+module ranges
+int[] offsets 4 0 10 25 25
+
+call loadRangeAt &offsets 1
+; stack: 10, 15
 moduleEnd
 entryEnd
 ```
@@ -732,6 +821,33 @@ moduleEnd
 entryEnd
 ```
 
+## `std/math/mapRange`
+
+Provides `mapRange(float value, float inputStart, float inputEnd, float outputStart, float outputEnd) -> float`.
+It maps the input endpoints to the output endpoints using linear interpolation. Either range may descend,
+and values outside the input range are extrapolated. Supply finite values and distinct input endpoints, and
+keep intermediate results within the float32 range.
+
+```8f4e
+includes
+include std/math/mapRange
+includesEnd
+
+entry main
+module rangeExample
+call mapRange 0.5 -1.0 1.0 0.0 100.0
+; stack: 75.0
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/math/wrapIndex`
+
+Provides `wrapIndex(int index, int size) -> int`. For a positive `size`, the result is the index modulo
+that size, expressed in `0..size-1`. It accepts negative indices and indices more than one full turn away.
+For example, `call wrapIndex -1 8` returns `7`, and `call wrapIndex 19 8` returns `3`.
+
 ## `std/math/moveTowards`
 
 Provides `moveTowards`, which moves a float value toward a target by at most a given step without overshooting.
@@ -872,6 +988,176 @@ module smoothstepExamples
 push 0.5
 call smoothstep
 ; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+## `std/math/softsign`
+
+Provides `softsign(x) = x / (1 + abs(x))` for finite inputs, with `float` and `float64` overloads.
+It returns a value in `[-1, 1]` at the input precision. For example, `call softsign -3.0` returns `-0.75`.
+
+## `std/math/fastSigmoid`
+
+Provides `fastSigmoid(x) = 0.5 * softsign(x) + 0.5` for finite inputs, with `float` and `float64` overloads.
+It maps softsign to `[0, 1]`.
+
+```8f4e
+includes
+include std/math/fastSigmoid
+includesEnd
+
+entry main
+module activationExample
+call fastSigmoid -3.0f64
+; stack: 0.125f64
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/midi/midiNoteToHz`
+
+Provides `midiNoteToHz(int note) -> float` and `midiNoteToHz(float note) -> float`. For MIDI notes from
+`0` to `127`, it computes `440 * 2^((note - 69) / 12)` with float32 arithmetic. Pass a float for
+fractional notes.
+
+```8f4e
+includes
+include std/midi/midiNoteToHz
+includesEnd
+
+entry main
+module tuningExample
+call midiNoteToHz 69
+; stack: 440.0 Hz
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/audio/hzToRadians`
+
+Provides the pure conversion `hzToRadians(float frequencyHz, int sampleRate) -> float`, returning
+`TAU * frequencyHz / sampleRate` in radians per sample with float32 arithmetic. Supply a finite frequency and a
+positive sample rate. Signed frequencies are supported; the helper does not clamp to the audio frequency range
+and has no dependency on an `env` constants block.
+
+```8f4e
+includes
+include std/audio/hzToRadians
+includesEnd
+
+entry main
+module frequencyConversion
+call hzToRadians 1000.0 48000
+; stack: approximately 0.1308997 radians/sample
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/audio/tptLowPass`
+
+Provides a pure, single-sample trapezoidal state-variable low-pass filter:
+
+`tptLowPass(float input, float g, float damping, float s1, float s2) -> float low, float nextS1, float nextS2`
+
+The caller owns the two integrator states. Initialize `s1` and `s2` to zero once, pass the current states on each
+sample, and persist the returned next states for the next call. Results are pushed in the listed order, leaving
+`nextS2` at the top of the stack. The function performs no memory IO and uses locals for reused intermediate values.
+
+Supply finite arguments with `g >= 0` and `damping > 0`, keeping intermediate arithmetic within the float32 range.
+The frequency coefficient is
+`g = tan(PI * cutoffHz / sampleRate)`, with cutoff below half the sample rate. This helper takes `g` directly and
+has no prerequisite includes. Lower damping gives more resonance; the corresponding quality factor is
+`q = 1 / damping`. With `g = 0`, the output is the existing low-pass state `s2` and the states stay unchanged.
+The equations follow [Andrew Simper's trapezoidal SVF](https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf).
+
+```8f4e
+includes
+include std/audio/tptLowPass
+includesEnd
+
+entry main
+module lowPass
+float input
+float g 0.1
+float damping 1.0
+float s1
+float s2
+float out
+local float nextS1
+local float nextS2
+
+push &out
+call tptLowPass input g damping s1 s2
+localSet nextS2
+localSet nextS1
+store
+
+push &s1
+push nextS1
+store
+push &s2
+push nextS2
+store
+moduleEnd
+entryEnd
+```
+
+## `std/audio/biquad`
+
+Provides a pure Direct Form I processor for one biquad sample:
+
+`biquad(float input, float b0, float b1, float b2, float a1, float a2, float x1, float x2, float y1, float y2) -> float`
+
+Coefficients must be normalized so `a0 = 1`. If a design supplies a different `a0`, divide each of `b0`, `b1`, `b2`,
+`a1`, and `a2` by it before calling. The helper evaluates:
+
+```text
+output = b0*input + b1*x1 + b2*x2 - a1*y1 - a2*y2
+```
+
+`x1` and `x2` are the previous two inputs; `y1` and `y2` are the previous two outputs. Initialize histories to zero
+once, and advance them after each call. The helper returns only the output, performs no memory IO, and retains no
+history internally. Arguments and intermediate arithmetic must stay finite. Response and stability are determined
+by the caller's coefficients. The subtraction of feedback terms follows the
+[Audio EQ Cookbook convention](https://www.w3.org/TR/audio-eq-cookbook/).
+
+The same processor supports low-pass, high-pass, band-pass, notch, and EQ designs. It does not calculate
+frequency-dependent coefficients or require any other includes. This example uses a three-tap FIR average:
+
+```8f4e
+includes
+include std/audio/biquad
+includesEnd
+
+entry main
+module movingAverage
+float input
+float x1
+float x2
+float y1
+float y2
+float out
+
+push &out
+call biquad input 0.25 0.5 0.25 0.0 0.0 x1 x2 y1 y2
+store
+
+push &x2
+push x1
+store
+push &x1
+push input
+store
+push &y2
+push y1
+store
+push &y1
+push out
+store
 moduleEnd
 entryEnd
 ```
@@ -1046,12 +1332,8 @@ The channel must be in `0..255`. The pure function divides by 255, then applies 
 The result is in `0..1`. The nonlinear branch uses the standard-library logarithm and exponential approximations.
 Across all 256 byte inputs, tests require absolute error below `1e-6` against the reference formula and monotonic output.
 
-Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
 include std/color/srgbByteToLinear
 includesEnd
 
@@ -1070,12 +1352,8 @@ The encoded value is scaled to `0..255`, clamped, and rounded to the nearest int
 The nonlinear branch uses logarithm and exponential approximations. A monotonic sweep of 65,537 evenly spaced linear
 inputs is tested within one byte level of the reference formula; all 256 decoded sRGB bytes round-trip exactly.
 
-Include `std/math/log2` and `std/math/exp2` explicitly under their standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
 include std/color/linearToSrgbByte
 includesEnd
 
@@ -1110,16 +1388,8 @@ signed 32-bit integers, and the resulting addresses must be valid. A zero `outpu
 no reads or writes.
 The helper carries `#impure`; it preserves source bytes, destination padding, and all bytes outside the output pixels.
 
-Include both color conversions, `std/math/lerp`, and the conversions' math prerequisites explicitly under their
-standard exported names:
-
 ```8f4e
 includes
-include std/math/log2
-include std/math/exp2
-include std/math/lerp
-include std/color/srgbByteToLinear
-include std/color/linearToSrgbByte
 include std/image/downsampleRGB2x
 includesEnd
 

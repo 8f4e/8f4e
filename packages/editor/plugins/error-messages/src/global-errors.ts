@@ -4,11 +4,14 @@ import { createCodeErrorBlockLookup, wrapText } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 
 /** Keep errors without navigable source visible for as long as their contributor reports them. */
-export function installGlobalErrors({ store, drawers }: Pick<EditorPluginContext, 'store' | 'drawers'>): () => void {
+export function installGlobalErrors({
+	store,
+	renderRegistry,
+}: Pick<EditorPluginContext, 'store' | 'renderRegistry'>): () => void {
 	const state = store.getState();
 	let lines: GlyphIds[] = [];
 	const refresh = () => {
-		const findBlock = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject);
+		const findBlock = createCodeErrorBlockLookup(state.project.rootLevel);
 		const width = Math.max(1, Math.floor(state.viewport.width / state.viewport.vGrid) - 2);
 		lines = Object.values(state.codeErrors)
 			.flat()
@@ -19,15 +22,9 @@ export function installGlobalErrors({ store, drawers }: Pick<EditorPluginContext
 				return wrapText(`Error: ${error.message}`, width).map(textToGlyphIds);
 			});
 	};
-	const selectors = [
-		'codeErrors',
-		'projectChange',
-		'codeBlockRendering.rootProject',
-		'viewport.width',
-		'viewport.vGrid',
-	] as const;
+	const selectors = ['codeErrors', 'projectChange', 'project.rootLevel', 'viewport.width', 'viewport.vGrid'] as const;
 	for (const selector of selectors) store.subscribe(selector, refresh);
-	const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+	const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 		if (!lines.length || !state.featureFlags.canvasOverlays) return;
 		draw.startGroup(0, 0);
 		draw.drawFill(

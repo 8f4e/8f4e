@@ -4,7 +4,7 @@ note
 ; @config testRuntime.enabled true
 
 Group initializers override scalar defaults using the backing declaration's storage type.
-Numbers share ordinary declaration conversion, inherited defaults, and initialization timing.
+Numbers share ordinary declaration conversion and initialization timing.
 noteEnd
 
 entry test
@@ -25,7 +25,7 @@ expose precise &processor:precise
 expose zero &processor:zero
 expose signed &processor:signed
 expose bits &processor:bits
-expose inherited &processor:inherited
+expose threshold &processor:threshold
 expose truncated &processor:truncated
 expose rawPointer &processor:rawPointer
 expose address &processor:address
@@ -35,18 +35,14 @@ init &precise 1.0000000000000002f64
 init &zero 0
 init &signed -11
 init &bits 0b1010
-init &inherited 0x20
+init &threshold 0x20
 init &truncated 11.75
 init &rawPointer 0
 init &address &source:output
 
-prototype state
-int inherited 7
-prototypeEnd
-
 entry main
 module processor
-shape state
+int threshold 7
 int foo 3
 float gain 0.25
 float64 precise 0.0f64
@@ -71,7 +67,7 @@ push signed
 assertEqual -11
 push bits
 assertEqual 10
-push inherited
+push threshold
 assertEqual 32
 push truncated
 assertEqual 11

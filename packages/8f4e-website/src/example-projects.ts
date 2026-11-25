@@ -18,11 +18,8 @@ export function getExampleProjectUrl(path: string): string {
 	return url;
 }
 
-export function getExampleProjectPreviewUrl(path: string): string {
+/** Previews are optional so new examples can load before their icons are generated. */
+export function getExampleProjectPreviewUrl(path: string): string | undefined {
 	const previewPath = path.replace(/\.8f4e$/, '.gif');
-	const url = projectPreviewUrls[`./project-previews/examples/${previewPath}`];
-	if (!url) {
-		throw new Error(`Example project preview not found: ${path}`);
-	}
-	return url;
+	return projectPreviewUrls[`./project-previews/examples/${previewPath}`];
 }

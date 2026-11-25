@@ -15,6 +15,7 @@ export default function insertNewLine(
 	col: number;
 } {
 	const newCode = [...code];
-	newCode.splice(row, 1, code[row].slice(0, col), code[row].slice(col));
+	const line = code[row] ?? '';
+	newCode.splice(row, 1, line.slice(0, col), line.slice(col));
 	return { code: newCode, row: row + 1, col: 0 };
 }

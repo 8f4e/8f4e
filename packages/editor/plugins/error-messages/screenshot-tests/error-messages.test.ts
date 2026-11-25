@@ -1,7 +1,8 @@
-import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
+import initEditor, { type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
 import { expect, test } from 'vitest';
 import { errorMessagesPlugin } from '../src/index';
 
@@ -12,15 +13,26 @@ test('draws wrapped contributor messages between source rows and clears their re
 	document.body.append(canvas);
 	let context!: EditorPluginContext;
 	const editor = await initEditor(canvas, {
+		renderer: createAsciiCanvasRenderer(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
-			constants: [{ id: 0, code: ['constants env', '; @pos 100 100', 'constantsEnd'] }],
 			execution: [
 				{
-					type: 'module',
-					id: 7,
+					...EMPTY_DEFAULT_PROJECT,
+					type: 'group',
+					id: 0,
 					entry: 'main',
-					code: ['module checks', '; @pos 4 3', 'push 10', 'assertEqual 9', 'drop', 'moduleEnd'],
+					name: 'fixture',
+					code: ['group fixture', 'groupEnd'],
+					exposures: [],
+					execution: [
+						{
+							type: 'module',
+							id: 7,
+							entry: 'main',
+							code: ['module checks', '; @pos 4 3', 'push 10', 'assertEqual 9', 'drop', 'moduleEnd'],
+						},
+					],
 				},
 			],
 		},
@@ -37,11 +49,11 @@ test('draws wrapped contributor messages between source rows and clears their re
 							codeBlock.displayModel.lines.map(line => textToGlyphIds(line.text))
 						);
 					});
-					const removeDrawer = services.drawers.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
+					const removeDrawer = services.renderRegistry.registerCodeBlockDrawer(({ draw, state, codeBlock }) => {
 						codeBlock.displayModel.lines.forEach((line, row) =>
 							draw.drawGlyphs(
 								state.viewport.vGrid,
-								gapCalculator(row, codeBlock.gaps) * state.viewport.hGrid,
+								displayRowToGridRow(row, codeBlock.gaps) * state.viewport.hGrid,
 								glyphsByBlock.get(codeBlock)![row],
 								PALETTE_INDICES.inkBase
 							)
@@ -58,9 +70,11 @@ test('draws wrapped contributor messages between source rows and clears their re
 	editor.pauseRendering();
 	try {
 		const state = editor.state;
+		const group = state.project.rootLevel.blocks.find(block => block.name === 'fixture')!;
+		editor.navigation.openGroup(getEditorBlockId(group));
 		state.viewport.x = 0;
 		state.viewport.y = 0;
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'checks')!;
 		const height = block.height;
 		context.store.set('codeErrors.fixture-one', [
 			{ codeBlockId: block.creationIndex, lineNumber: 3, message: 'Assertion failed: expected 9, received 10' },
@@ -73,14 +87,14 @@ test('draws wrapped contributor messages between source rows and clears their re
 			},
 		]);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('contributor-errors');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/contributor-errors.viewport.snap');
 		context.store.set('codeErrors.fixture-one', []);
 		context.store.set('codeErrors.fixture-two', []);
 		expect(block.gaps.size).toBe(0);
 		expect(block.height).toBe(height);
 		context.store.set('codeErrors.fixture-global', [{ message: 'Internal compiler error: worker unavailable' }]);
 		editor.renderFrame();
-		await expect(canvas).toMatchScreenshot('unlocated-error');
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/unlocated-error.viewport.snap');
 	} finally {
 		editor.dispose();
 		canvas.remove();

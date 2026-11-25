@@ -2,9 +2,13 @@ import initEditor, { type Editor, type EditorOptions } from '@8f4e/editor-core';
 import { codeBlockBackgroundPlugin } from '@8f4e/editor-plugin-code-block-background';
 import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
 import { type CompilerDiagnostics, createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { dottedBackgroundPlugin } from '@8f4e/editor-plugin-dotted-background';
+import { homePlugin } from '@8f4e/editor-plugin-home';
 import { createDeferredPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
+import { Engine } from 'glugglugglug';
 
 export type LandingEditorInstance = Editor & { getCompilerDiagnostics: () => CompilerDiagnostics | null };
 
@@ -17,9 +21,6 @@ export interface LandingEditorMountOptions {
 	defaultFont?: EditorOptions['defaultFont'];
 	featureFlags?: EditorOptions['featureFlags'];
 	initialProjectUrl?: string;
-	/** Initial source is installed; compilation and plugin loading continue independently. */
-	onInitialProjectLoaded?: () => void;
-	onInitialProjectLoadError?: (error: unknown) => void;
 }
 
 export async function mountLandingEditor(
@@ -32,21 +33,20 @@ export async function mountLandingEditor(
 			: undefined,
 		featureFlags,
 		initialProjectUrl,
-		onInitialProjectLoaded,
-		onInitialProjectLoadError,
 	}: LandingEditorMountOptions = {}
 ): Promise<LandingEditorInstance> {
 	const compiler = createCompilerPlugin();
 	const editor = await initEditor(canvas, {
 		plugins: [
 			compiler.plugin,
+			undoRedoPlugin,
+			homePlugin,
+			dottedBackgroundPlugin,
 			codeBlockBackgroundPlugin,
 			codeRenderingPlugin,
 			createProjectUrlLoaderPlugin({
 				fetch: globalThis.fetch,
 				initialProjectUrl,
-				onLoaded: onInitialProjectLoaded,
-				onError: onInitialProjectLoadError,
 			}),
 			createDeferredPluginLoaderPlugin({
 				load: () =>
@@ -61,8 +61,8 @@ export async function mountLandingEditor(
 			}),
 		],
 		defaultFont,
-		featureFlags: { projectCreation: false, ...featureFlags, contextMenu: false },
+		featureFlags: { ...featureFlags, contextMenu: false },
+		renderer: new Engine(canvas),
 	});
-	if (!initialProjectUrl) onInitialProjectLoaded?.();
 	return Object.assign(editor, { getCompilerDiagnostics: compiler.getDiagnostics });
 }

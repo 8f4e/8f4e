@@ -15,7 +15,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 54,
+              "projectBlockId": 43,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -32,7 +32,7 @@
             "lineNumber": 8,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 54,
+              "projectBlockId": 43,
               "projectGroupPath": ""
             },
             "instruction": "int*",
@@ -57,7 +57,7 @@
             "lineNumber": 10,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 54,
+              "projectBlockId": 43,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -68,7 +68,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 54,
+            "projectBlockId": 43,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -81,7 +81,7 @@
             }
           ]
         },
-        "projectBlockId": 54,
+        "projectBlockId": 43,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
@@ -102,7 +102,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 65,
+              "projectBlockId": 54,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -119,7 +119,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 65,
+              "projectBlockId": 54,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -130,7 +130,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 65,
+            "projectBlockId": 54,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -143,7 +143,7 @@
             }
           ]
         },
-        "projectBlockId": 65,
+        "projectBlockId": 54,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
@@ -164,7 +164,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 75,
+              "projectBlockId": 64,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -181,7 +181,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 75,
+              "projectBlockId": 64,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -203,7 +203,7 @@
             "lineNumber": 7,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 75,
+              "projectBlockId": 64,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -225,7 +225,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 75,
+              "projectBlockId": 64,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -236,7 +236,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 75,
+            "projectBlockId": 64,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -249,7 +249,7 @@
             }
           ]
         },
-        "projectBlockId": 75,
+        "projectBlockId": 64,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
@@ -280,7 +280,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -303,7 +325,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -317,7 +361,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -334,7 +378,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -359,7 +403,7 @@
             "lineNumber": 5,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -384,7 +428,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -401,7 +445,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -423,7 +467,7 @@
             "lineNumber": 10,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -445,7 +489,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -467,7 +511,7 @@
             "lineNumber": 13,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -485,7 +529,7 @@
             "lineNumber": 14,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -504,7 +548,7 @@
             "lineNumber": 15,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -521,7 +565,7 @@
             "lineNumber": 16,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -531,7 +575,7 @@
             "lineNumber": 17,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -550,7 +594,7 @@
             "lineNumber": 18,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -567,7 +611,7 @@
             "lineNumber": 19,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -577,7 +621,7 @@
             "lineNumber": 20,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -587,7 +631,7 @@
             "lineNumber": 21,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -604,7 +648,7 @@
             "lineNumber": 22,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -614,7 +658,7 @@
             "lineNumber": 23,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -624,7 +668,7 @@
             "lineNumber": 24,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 85,
+              "projectBlockId": 74,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -635,7 +679,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 85,
+            "projectBlockId": 74,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -648,7 +692,7 @@
             }
           ]
         },
-        "projectBlockId": 85,
+        "projectBlockId": 74,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
@@ -679,7 +723,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -702,7 +768,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -716,7 +804,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -733,7 +821,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -758,7 +846,7 @@
             "lineNumber": 5,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -783,7 +871,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -800,7 +888,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -822,7 +910,7 @@
             "lineNumber": 10,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -844,7 +932,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -866,7 +954,7 @@
             "lineNumber": 13,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -884,7 +972,7 @@
             "lineNumber": 14,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -903,7 +991,7 @@
             "lineNumber": 15,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -920,7 +1008,7 @@
             "lineNumber": 16,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -930,7 +1018,7 @@
             "lineNumber": 17,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -949,7 +1037,7 @@
             "lineNumber": 18,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -966,7 +1054,7 @@
             "lineNumber": 19,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -976,7 +1064,7 @@
             "lineNumber": 20,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -986,7 +1074,7 @@
             "lineNumber": 21,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1003,7 +1091,7 @@
             "lineNumber": 22,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -1013,7 +1101,7 @@
             "lineNumber": 23,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -1023,7 +1111,7 @@
             "lineNumber": 24,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 110,
+              "projectBlockId": 99,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -1034,7 +1122,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 110,
+            "projectBlockId": 99,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -1047,7 +1135,7 @@
             }
           ]
         },
-        "projectBlockId": 110,
+        "projectBlockId": 99,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
@@ -1078,7 +1166,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1092,7 +1197,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -1109,7 +1214,7 @@
             "lineNumber": 3,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -1134,7 +1239,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -1151,7 +1256,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1169,7 +1274,7 @@
             "lineNumber": 7,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1188,14 +1293,14 @@
             "lineNumber": 8,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -1205,7 +1310,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -1215,7 +1320,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 135,
+              "projectBlockId": 124,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -1226,7 +1331,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 135,
+            "projectBlockId": 124,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -1239,7 +1344,7 @@
             }
           ]
         },
-        "projectBlockId": 135,
+        "projectBlockId": 124,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
@@ -1270,7 +1375,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1284,7 +1406,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -1301,7 +1423,7 @@
             "lineNumber": 3,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -1326,7 +1448,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -1343,7 +1465,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1361,7 +1483,7 @@
             "lineNumber": 7,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1380,14 +1502,14 @@
             "lineNumber": 8,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -1397,7 +1519,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -1407,7 +1529,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 147,
+              "projectBlockId": 136,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -1418,7 +1540,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 147,
+            "projectBlockId": 136,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -1431,7 +1553,7 @@
             }
           ]
         },
-        "projectBlockId": 147,
+        "projectBlockId": 136,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
@@ -1462,7 +1584,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -1485,7 +1624,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1499,7 +1655,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -1516,7 +1672,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -1541,7 +1697,7 @@
             "lineNumber": 5,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -1566,7 +1722,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "float",
@@ -1583,7 +1739,7 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -1605,7 +1761,7 @@
             "lineNumber": 10,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -1627,7 +1783,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "const",
@@ -1649,7 +1805,7 @@
             "lineNumber": 13,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1667,7 +1823,7 @@
             "lineNumber": 14,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1686,7 +1842,7 @@
             "lineNumber": 15,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1703,7 +1859,7 @@
             "lineNumber": 16,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -1713,7 +1869,7 @@
             "lineNumber": 17,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1732,7 +1888,7 @@
             "lineNumber": 18,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1749,7 +1905,7 @@
             "lineNumber": 19,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "mul",
@@ -1759,7 +1915,7 @@
             "lineNumber": 20,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -1769,7 +1925,7 @@
             "lineNumber": 21,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1786,7 +1942,7 @@
             "lineNumber": 22,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "add",
@@ -1796,7 +1952,7 @@
             "lineNumber": 23,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -1806,7 +1962,7 @@
             "lineNumber": 24,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 159,
+              "projectBlockId": 148,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -1817,7 +1973,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 159,
+            "projectBlockId": 148,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -1830,7 +1986,7 @@
             }
           ]
         },
-        "projectBlockId": 159,
+        "projectBlockId": 148,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
@@ -1861,7 +2017,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1875,7 +2048,7 @@
             "lineNumber": 0,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "module",
@@ -1892,7 +2065,7 @@
             "lineNumber": 3,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "float&",
@@ -1917,7 +2090,7 @@
             "lineNumber": 4,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "int",
@@ -1934,7 +2107,7 @@
             "lineNumber": 6,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1952,7 +2125,7 @@
             "lineNumber": 8,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -1971,14 +2144,14 @@
             "lineNumber": 9,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -1988,7 +2161,7 @@
             "lineNumber": 11,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -2004,7 +2177,7 @@
             "lineNumber": 12,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "greaterThan",
@@ -2014,7 +2187,7 @@
             "lineNumber": 13,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "if",
@@ -2031,7 +2204,7 @@
             "lineNumber": 14,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -2047,7 +2220,7 @@
             "lineNumber": 15,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "else",
@@ -2057,7 +2230,7 @@
             "lineNumber": 16,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "push",
@@ -2073,7 +2246,7 @@
             "lineNumber": 17,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "ifEnd",
@@ -2096,7 +2269,7 @@
             "lineNumber": 19,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "store",
@@ -2106,7 +2279,7 @@
             "lineNumber": 21,
             "diagnosticSource": {
               "kind": "block",
-              "projectBlockId": 184,
+              "projectBlockId": 173,
               "projectGroupPath": ""
             },
             "instruction": "moduleEnd",
@@ -2117,7 +2290,7 @@
           "lineNumber": 0,
           "diagnosticSource": {
             "kind": "block",
-            "projectBlockId": 184,
+            "projectBlockId": 173,
             "projectGroupPath": ""
           },
           "instruction": "module",
@@ -2130,7 +2303,7 @@
             }
           ]
         },
-        "projectBlockId": 184,
+        "projectBlockId": 173,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"
@@ -2165,7 +2338,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2184,16 +2374,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 135,
+                "projectBlockId": 124,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2205,8 +2391,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2233,7 +2418,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2252,16 +2454,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 147,
+                "projectBlockId": 136,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2273,8 +2471,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2301,7 +2498,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2320,16 +2534,12 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 184,
+                "projectBlockId": 173,
                 "projectGroupPath": ""
               },
               "instruction": "int",
@@ -2341,8 +2551,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2369,7 +2578,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           },
           "in2": {
             "numberOfElements": 1,
@@ -2386,7 +2617,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2405,33 +2658,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 75,
+                "projectBlockId": 64,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2448,15 +2680,29 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 75,
+                "projectBlockId": 64,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2473,8 +2719,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2486,8 +2731,7 @@
         "allocatedByteLength": 0,
         "endByteAddress": 20,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       "perceptron": {
         "id": "perceptron",
@@ -2512,7 +2756,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2531,16 +2792,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 85,
+                "projectBlockId": 74,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2552,8 +2809,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2580,7 +2836,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2599,16 +2872,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 110,
+                "projectBlockId": 99,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2620,8 +2889,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2648,7 +2916,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2667,16 +2952,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 159,
+                "projectBlockId": 148,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2688,8 +2969,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2717,36 +2997,12 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "lineNumber": 8,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 54,
+                "projectBlockId": 43,
                 "projectGroupPath": ""
               },
               "instruction": "int*",
@@ -2766,8 +3022,52 @@
                   "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 32,
+            "elementByteLength": 4,
+            "endByteAddress": 36,
+            "lineNumber": 8,
+            "type": "int*",
+            "pointerDepth": 1,
+            "isInteger": true,
+            "pointeeBaseType": "int",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         ]
       }
@@ -2796,7 +3096,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2815,16 +3132,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 135,
+                "projectBlockId": 124,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2836,8 +3149,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2864,7 +3176,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2883,16 +3212,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 147,
+                "projectBlockId": 136,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -2904,8 +3229,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2932,7 +3256,24 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2951,16 +3292,12 @@
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 184,
+                "projectBlockId": 173,
                 "projectGroupPath": ""
               },
               "instruction": "int",
@@ -2972,8 +3309,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3000,7 +3336,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           },
           "in2": {
             "numberOfElements": 1,
@@ -3017,7 +3375,29 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3036,33 +3416,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 20,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 75,
+                "projectBlockId": 64,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -3079,15 +3438,29 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
           {
-            "line": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 75,
+                "projectBlockId": 64,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -3104,8 +3477,7 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3117,8 +3489,7 @@
         "allocatedByteLength": 0,
         "endByteAddress": 20,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       {
         "id": "perceptron",
@@ -3143,7 +3514,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3162,16 +3550,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 85,
+                "projectBlockId": 74,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -3183,8 +3567,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3211,7 +3594,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3230,16 +3630,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 110,
+                "projectBlockId": 99,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -3251,8 +3647,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3279,7 +3674,24 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -3298,16 +3710,12 @@
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 159,
+                "projectBlockId": 148,
                 "projectGroupPath": ""
               },
               "instruction": "float",
@@ -3319,8 +3727,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -3348,36 +3755,12 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 36,
-            "lineNumber": 8,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
               "diagnosticSource": {
                 "kind": "block",
-                "projectBlockId": 54,
+                "projectBlockId": 43,
                 "projectGroupPath": ""
               },
               "instruction": "int*",
@@ -3397,8 +3780,52 @@
                   "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 32,
+            "elementByteLength": 4,
+            "endByteAddress": 36,
+            "lineNumber": 8,
+            "type": "int*",
+            "pointerDepth": 1,
+            "isInteger": true,
+            "pointeeBaseType": "int",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         ]
       }
@@ -3408,63 +3835,54 @@
     "activationFn": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "inputs": {
       "0": {
         "value": 1,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "notes": {},
     "perceptron": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "result": {
       "0": {
         "value": 8,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     }
   },

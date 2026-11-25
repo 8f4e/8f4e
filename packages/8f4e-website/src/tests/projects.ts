@@ -12,9 +12,6 @@ const previewUrls = import.meta.glob<string>('../project-previews/compiler-test.
 	eager: true,
 });
 const compilerTestPreviewUrl = previewUrls['../project-previews/compiler-test.gif'];
-if (!compilerTestPreviewUrl) {
-	throw new Error('Compiler test preview not found');
-}
 
 function humanize(name: string): string {
 	const words = name.replaceAll('-', ' ');

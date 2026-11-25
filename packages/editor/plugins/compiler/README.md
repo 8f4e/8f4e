@@ -9,9 +9,11 @@ Construct it before dependent plugins, then install its `plugin` first:
 import initEditor from '@8f4e/editor-core';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createButtonPlugin } from '@8f4e/editor-plugin-button';
+import { Engine } from 'glugglugglug';
 
 const compiler = createCompilerPlugin({ resolveInclude });
 const editor = await initEditor(canvas, {
+    renderer: new Engine(canvas),
     plugins: [compiler.plugin, createButtonPlugin({ writeMemory: compiler.writeMemory })],
 });
 ```
@@ -25,15 +27,15 @@ The default worker uses Vite's `?worker` import. Hosts can inject `createWorker:
 also injected at construction. The public editor options contain no callback bag. Editor state receives internal browser callbacks from core; the compiler
 plugin receives its worker and include dependencies directly.
 
-## Input and result events
+## Input revisions and result events
 
-Core emits `compilationInputChanged` after `compilerInputRevision` advances. Source edits, project loading and
-undo/redo, block insertion/removal, execution changes, regenerated environment constants, and saved control defaults
-advance that revision after their derived state is updated. Directive edits and source-line insertions, deletions,
+Source edits, project loading and undo/redo, block insertion/removal, execution changes, regenerated environment
+constants, and saved control defaults advance `compilerInputRevision` after their derived state is updated.
+Directive edits and source-line insertions, deletions,
 or reordering always invalidate compilation. In-place ordinary comment text edits, navigation, and layout changes
 without source edits leave the revision unchanged.
 
-The plugin listens to that event, debounces it, and serializes the latest root code-block tree, including nested
+The plugin subscribes to the revision, debounces changes, and serializes the latest root code-block tree, including nested
 projects. The default delay is 500ms; projects can set `; @config recompileDebounceDelay 120`. The plugin contributes an integer schema with a minimum of zero through
 `editorConfigSchemaContributions.compilerDebounce`, and removes that contribution on disposal. Compilation always requests stack analysis and enables assertions when the
 root project declares a `test` entry or an enabled function exported as `test`. Group entries named `test` remain

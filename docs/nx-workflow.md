@@ -72,8 +72,9 @@ All packages in `packages/` (including nested directories) are automatically det
 - `@8f4e/sprite-generator` (`packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator`)
 - `@8f4e/compiler`
 - `@8f4e/compiler-worker`
-- `@8f4e/runtime-audio-worklet`
-- `@8f4e/runtime-web-worker`
+- `@8f4e/runtime-audio-worklet` (`packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet`)
+- `@8f4e/runtime-web-worker` (`packages/editor/plugins/worker-runtime/packages/runtime-web-worker`)
+- `@8f4e/runtime-test-runner` (`packages/editor/plugins/test-runtime/packages/runtime-test-runner`)
 
 ## Configuration
 
@@ -85,7 +86,8 @@ All packages in `packages/` (including nested directories) are automatically det
 
 Builds use `production` and `^production`; tests use their own `default` files and dependency `production` files. Type checks keep their own test files. Test-only project imports still create graph edges even when declared as dev dependencies, so use local sample fixtures when the source package is not part of the behavior under test.
 
-Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks. The [workspace audit](build-input-audit.md) records confirmed cases, preserved shipped assets, verification and remaining package-boundary follow-ups.
+Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
+conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.
 
 ## Migration Notes
 

@@ -1,0 +1,289 @@
+8f4e/v1
+
+includes
+; @pos -43 -16
+include std/events/risingEdge
+includesEnd
+
+function buffer
+; @pos -43 -8
+#export buffer
+use env
+
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+constants env
+; @pos 0 0
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+; Binary asset sizes in bytes
+; '808-snare-48khz-s16le.pcm'
+const ASSET_SNARE_SIZE 19688
+
+constantsEnd
+
+note audioConfig
+; @pos -79 29
+; @config export.fileName polyrhythm
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
+; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
+; @config bin.baseUrl https://static.8f4e.com/assets/samples/
+; @config bin.snare.path 808-snare-48khz-s16le.pcm
+; @config bin.snare.memory snareA:buffer
+; @config bin.snare.memories.second snareB:buffer
+noteEnd
+
+note colors
+; @pos -79 46
+; @config color.canvas #18211f
+; @config color.surface #2c342f
+; @config color.ink #d8dccd
+; @config color.primary #78c6a6
+; @config color.secondary #e1b15f
+; @config color.positive #3d8d5b
+; @config color.warning #d7a63e
+; @config color.negative #c64c3c
+; @config color.muted #788278
+; @config color.stroke rgba(126,226,177,0.62)
+; @config color.tertiary #939b8d
+; @config color.highlight #f2b35d
+; @config color.detail #3d8d5b
+noteEnd
+
+note polyrhythm
+; @pos 0 -8
+; Set clock A's BPM and the A:B ratio.
+; Clock B runs at BPM A * B/A.
+; Press reset to restart both phases.
+; Snare A plays left, snare B right.
+noteEnd
+
+entry main
+module tempo
+; @pos 51 14
+use env
+; @home left
+int bpmA 93
+; @slider &bpmA 20 240 1
+int ratioA 32 ; @w
+; @slider &ratioA 1 32 1
+int ratioB 31 ; @w
+; @slider &ratioB 1 32 1
+int spanA SAMPLE_RATE*60
+int incrementB
+int spanB
+
+; BPM B = bpmA * ratioB / ratioA.
+; Keep both terms in the phase math.
+push &incrementB
+push bpmA
+mul ratioB
+store
+
+push &spanB
+push spanA
+mul ratioA
+store
+moduleEnd
+module phaseReset
+; @pos 51 48
+; Reset both clocks on press.
+int reset
+; @button &reset
+int previous -1
+int out
+
+; Also pulse on the first sample.
+push &out
+push reset
+call risingEdge &previous
+store
+moduleEnd
+module clockB
+; @pos 104 40
+int& increment &tempo:incrementB
+int& span &tempo:spanB
+int& reset &phaseReset:out
+int phase
+int out
+
+; Start a new beat on reset.
+push *reset
+if
+push &phase
+push *span
+store
+ifEnd
+
+push &out
+push phase
+push *span
+greaterOrEqual
+store
+
+; Advance and wrap the phase.
+push &phase
+push phase
+push out
+mul *span
+sub
+add *increment
+store
+moduleEnd
+module clockA
+; @pos 107 -6
+int& increment &tempo:bpmA
+int& span &tempo:spanA
+int& reset &phaseReset:out
+int phase
+int out
+
+; Start a new beat on reset.
+push *reset
+if
+push &phase
+push *span
+store
+ifEnd
+
+push &out
+push phase
+push *span
+greaterOrEqual
+store
+
+; Advance and wrap the phase.
+push &phase
+push phase
+push out
+mul *span
+sub
+add *increment
+store
+moduleEnd
+module snareA
+; @pos 147 -6
+use env
+
+int16[] buffer ASSET_SNARE_SIZE/2
+int& trigger &clockA:out
+int16* playhead end(buffer)
+int out
+; @wave2 &buffer count(buffer) playhead
+
+; Restart the sample on a pulse.
+push *trigger
+if
+push &playhead
+push &buffer
+store
+ifEnd
+
+; Play once to the end of the buffer.
+push playhead
+push end(buffer)
+lessThan
+if
+push &out
+push *playhead
+store
+
+push &playhead
+push playhead
+add sizeof(buffer)
+store
+ifEnd
+moduleEnd
+module snareB
+; @pos 147 40
+use env
+
+int16[] buffer ASSET_SNARE_SIZE/2
+int& trigger &clockB:out
+int16* playhead end(buffer)
+int out
+; @wave2 &buffer count(buffer) playhead
+
+; Restart the sample on a pulse.
+push *trigger
+if
+push &playhead
+push &buffer
+store
+ifEnd
+
+; Play once to the end of the buffer.
+push playhead
+push end(buffer)
+lessThan
+if
+push &out
+push *playhead
+store
+
+push &playhead
+push playhead
+add sizeof(buffer)
+store
+ifEnd
+moduleEnd
+module audiooutL
+; @pos 203 -6
+use env
+
+int& in &snareA:out
+float[] buffer AUDIO_BUFFER_SIZE
+int position
+; @plot &buffer count(buffer)
+
+push &buffer
+push position
+mul sizeof(buffer)
+add
+push *in
+castToFloat
+div 65536.0
+store
+
+push &position
+push position
+add 1
+push count(buffer)
+remainder
+store
+moduleEnd
+module audiooutR
+; @pos 203 40
+use env
+
+int& in &snareB:out
+float[] buffer AUDIO_BUFFER_SIZE
+int position
+; @plot &buffer count(buffer)
+
+push &buffer
+push position
+mul sizeof(buffer)
+add
+push *in
+castToFloat
+div 65536.0
+store
+
+push &position
+push position
+add 1
+push count(buffer)
+remainder
+store
+moduleEnd
+entryEnd

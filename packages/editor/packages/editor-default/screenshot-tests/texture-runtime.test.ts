@@ -3,7 +3,8 @@ import initEditor, { type Editor, getEditorBlockId } from '@8f4e/editor-core';
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
-import { gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -57,6 +58,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(projectSource),
 			plugins: [
 				compiler.plugin,
@@ -78,7 +80,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			() => expect(compiler.getCodeBuffer().byteLength, JSON.stringify(compiler.getDiagnostics())).toBeGreaterThan(0),
 			{ timeout: 10000 }
 		);
-		let block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!;
+		let block = editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!;
 		const gl = canvas.getContext('webgl2')!;
 		const origin = (name: string) => {
 			const line = block.code.findIndex(line => line.includes(`@texture &screen:${name} `));
@@ -86,7 +88,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 				block.x - editor!.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor!.state.viewport.vGrid,
 				block.y -
 					editor!.state.viewport.y +
-					(gapCalculator(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
+					(displayRowToGridRow(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
 						editor!.state.viewport.hGrid,
 			] as const;
 		};
@@ -140,7 +142,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 				},
 			],
 		});
-		block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!;
+		block = editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!;
 		await vi.waitFor(() => {
 			editor!.renderFrame();
 			const [x, y] = origin('bits');
@@ -172,9 +174,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			],
 		});
 		editor.renderFrame();
-		expect(
-			editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!.height
-		).toBeLessThan(height);
+		expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!.height).toBeLessThan(height);
 		expect(gl.getError()).toBe(gl.NO_ERROR);
 	} finally {
 		editor?.dispose();
@@ -199,6 +199,7 @@ test.each([
 		let editor: Editor | undefined;
 		try {
 			editor = await initEditor(canvas, {
+				renderer: new Engine(canvas),
 				initialProject: parseProjectSource(`8f4e/v1
 constants env
 ; @pos 150 100
@@ -236,13 +237,13 @@ entryEnd`),
 			).toHaveLength(1);
 			expect(updates.mock.calls.filter(call => call[4] === 2 && call[5] === 2 && call[6] === gl.RGBA)).toHaveLength(1);
 			for (const name of ['screen', 'viewer']) {
-				const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+				const block = editor.state.project.activeLevel.blocks.find(block => block.name === name)!;
 				const line = block.code.findIndex(line => line.includes('@texture '));
 				const x = block.x - editor.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor.state.viewport.vGrid;
 				const y =
 					block.y -
 					editor.state.viewport.y +
-					(gapCalculator(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
+					(displayRowToGridRow(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
 						editor.state.viewport.hGrid;
 				const width = magnificationX * 2;
 				const height = magnificationY * 2;

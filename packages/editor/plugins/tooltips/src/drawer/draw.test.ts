@@ -38,8 +38,7 @@ describe('selected line tooltip animation', () => {
 		const codeBlock = createMockCodeBlock();
 		const highlightFont = PALETTE_INDICES.inverseAccent;
 		const state = createMockState({
-			featureFlags: { codeLineSelection: true },
-			codeBlockRendering: { selectedCodeBlock: codeBlock },
+			project: { selectedCodeBlock: codeBlock },
 		});
 		const tooltip: TooltipState = {
 			...createEmptyTooltipState(),
@@ -131,12 +130,9 @@ describe('tooltip drawing', () => {
 			},
 		});
 		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [block] },
+			project: {
+				activeLevel: { entries: [], path: '', blocks: [block] },
 				selectedCodeBlock: block,
-			},
-			featureFlags: {
-				codeLineSelection: true,
 			},
 			viewport: {
 				vGrid: 8,
@@ -205,12 +201,9 @@ describe('tooltip drawing', () => {
 			code: ['add'],
 		});
 		const state = createMockState({
-			codeBlockRendering: {
-				currentProject: { entries: [], path: '', blocks: [block] },
+			project: {
+				activeLevel: { entries: [], path: '', blocks: [block] },
 				selectedCodeBlock: block,
-			},
-			featureFlags: {
-				codeLineSelection: true,
 			},
 		});
 		const tooltip: TooltipState = {

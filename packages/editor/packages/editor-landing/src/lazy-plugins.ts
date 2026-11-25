@@ -33,6 +33,12 @@ export function createLazyPluginRegistry({
 			load: () => import('@8f4e/editor-plugin-plot').then(module => module.plotPlugin),
 		},
 		{
+			id: 'scope',
+			scope: 'view',
+			matches: directives => hasDirective(directives, 'scope'),
+			load: () => import('@8f4e/editor-plugin-scope').then(module => module.createScopePlugin({ getMemory })),
+		},
+		{
 			id: 'slider',
 			scope: 'view',
 			matches: directives => hasDirective(directives, 'slider'),

@@ -1,0 +1,9 @@
+8f4e/v1
+entry main
+module invalid
+int* target
+int*& ref &target
+push ***ref
+drop
+moduleEnd
+entryEnd

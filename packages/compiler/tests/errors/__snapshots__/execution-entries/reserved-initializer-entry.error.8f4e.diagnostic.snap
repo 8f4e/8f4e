@@ -1,11 +1,13 @@
 {
-  "code": 9,
-  "domain": "syntax",
+  "code": 85,
+  "domain": "semantic",
   "instruction": "entry",
   "kind": "source",
   "location": {
-    "kind": "document",
-    "lineNumber": 1,
+    "entryName": "initDefaults",
+    "kind": "project-entry",
+    "projectGroupPath": "",
   },
-  "message": "Root entry name "initDefaults" is reserved for the compiler-generated memory initializer",
+  "message": "Root entry name "initDefaults" is reserved for a compiler-generated export. (85)",
+  "symbol": "initDefaults",
 }

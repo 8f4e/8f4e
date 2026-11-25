@@ -1,13 +1,13 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it, vi } from 'vitest';
-import { prepareAddressedRead, prepareBuffer, prepareElementCount } from '~/pureHelpers/preparedMemory';
+import { createMockState } from '~/__tests__/helpers/mockEditorState';
+import { prepareAddressedRead, prepareBuffer, prepareElementCount } from '~/memory/preparedMemory';
 import resolveMemoryIdentifier, {
 	prepareMemoryAccess,
 	resolveMemoryAccess,
 	resolveMemoryAddress,
-} from '~/pureHelpers/resolveMemoryIdentifier';
-import resolveMemoryTarget, { type MemoryScope } from '~/pureHelpers/resolveMemoryTarget';
-import { createMockState } from '~/pureHelpers/testingUtils/testUtils';
+} from '~/memory/resolveMemoryIdentifier';
+import resolveMemoryTarget, { type MemoryScope } from '~/memory/resolveMemoryTarget';
 
 const scope: MemoryScope = { kind: 'module', moduleId: 'audio/sink' };
 const source = (padding = '') => `8f4e/v1
@@ -47,7 +47,7 @@ describe('shared fixed reference resolution', () => {
 		const { state, compiled } = await setup();
 		const prepared = prepareMemoryAccess(state, scope, '*pointer[2]')!;
 		expect(prepared.target.memory).toBe(compiled.memoryPlan.modules['audio/sink'].memory.pointer);
-		expect(prepared.options).toEqual({ showAddress: false, dereference: true, bufferPointer: 2 });
+		expect(prepared.options).toEqual({ showAddress: false, dereferenceDepth: 1, bufferPointer: 2 });
 		expect(state.callbacks.getWordFromMemory).not.toHaveBeenCalled();
 
 		const samples = compiled.memoryPlan.modules['audio/bank/source'].memory.samples;

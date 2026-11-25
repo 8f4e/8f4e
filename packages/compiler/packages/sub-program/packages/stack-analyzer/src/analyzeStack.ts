@@ -260,7 +260,6 @@ function createModuleContext(
 		namespace: {
 			moduleName: ast.id,
 			functions: input.functions,
-			prototypeShapeIds: [],
 		},
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
@@ -296,7 +295,6 @@ function createFunctionContext(
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
-			prototypeShapeIds: [],
 		},
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])

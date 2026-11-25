@@ -1,7 +1,7 @@
 # Entry outlines
 
-`entryOutlinesPlugin` draws borders and labels for `state.codeBlockRendering.entryBounds` below code blocks through
-`registerCanvasBackgroundDrawer`. It translates world coordinates into the current viewport and owns border
+`entryOutlinesPlugin` draws borders and labels for `state.project.entryBounds` below code blocks through
+`registerCanvasBackgroundDrawer`. It translates world coordinates into the rendered viewport and owns border
 thickness, label offsets, and palette selection. Every frame reads the current core bounds directly.
 
 Editor-state owns entry membership, padded bounds, updates, and insertion hit testing. Creating a module inside

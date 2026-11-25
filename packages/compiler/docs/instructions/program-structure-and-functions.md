@@ -5,8 +5,7 @@
 Block instructions define the structure of your program. See detailed documentation in the `blocks/` folder:
 
 - [Module blocks](./blocks/module.md) - `module` and `moduleEnd`
-- [Prototype blocks](./blocks/prototype.md) - `prototype`, `prototypeEnd`, and `shape`
-- [Function blocks](./blocks/function.md) - `function`, `param`, `paramShape`, and `functionEnd`
+- [Function blocks](./blocks/function.md) - `function`, `param`, and `functionEnd`
 - [Constants blocks](./blocks/constants.md) - `constants` and `constantsEnd`
 
 ## Entries and project groups
@@ -57,11 +56,11 @@ position (left to right, then top to bottom, with creation order breaking ties),
 Existing group bodies must wrap executable modules in explicit entries; bare group modules no longer inherit the
 parent's entry.
 
-## template, templateEnd, and useTemplate
+## template, templateEnd, and group template references
 
 `template NAME` / `templateEnd` defines shared child blocks and entries in a project scope. A direct child group uses
-`useTemplate NAME` to receive an independent copy before ordinary parsing. Instance declaration lines remain local;
-lookup never searches ancestors. A raw using group accepts one reference and no inline child blocks or entries.
+the header `group INSTANCE use NAME` to receive an independent copy before ordinary parsing. Instance declaration
+lines remain local; lookup never searches ancestors. A raw using group cannot include inline child blocks or entries.
 See [group templates](../source-syntax.md#group-templates) for syntax, scope isolation, editor authoring, and silent
 rightmost-instance serialization.
 
@@ -77,6 +76,13 @@ expose input &processor:input
 
 The alias uses the backing declaration's type and allocates no additional memory. Editors derive control types and
 connector direction from that declaration: pointers are inputs, and non-pointers are outputs.
+
+A group can forward a direct child group's public memory with the same `expose` syntax. For example,
+`expose out &sampler:out` forwards the child `sampler` group's `out` exposure. Forwarded names resolve to the
+original backing declaration, including its type and pointer metadata, without allocating extra memory.
+
+When a direct module and child group share the target name, the last enabled declaration in the group's execution
+order wins. The selected module must declare the requested memory item, or the selected group must expose it.
 
 ### init
 
@@ -109,7 +115,7 @@ entryEnd
 ```
 
 The syntax is `init &<exposed-memory> <number>` or `init &<exposed-memory> &<module>:<memory>`. The destination resolves
-against this group's exposures and must refer to a scalar declaration, including a scalar inherited from a shape.
+against this group's exposures and must refer to a scalar declaration.
 Arrays cannot be initialized as a whole through `init`.
 
 Numeric values use ordinary literal syntax, including zero, negative numbers, hexadecimal, binary, and `f64` suffixes.

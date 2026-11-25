@@ -14,6 +14,7 @@ This package owns:
 - Standard-library include source files.
 - Stable include ids such as `std/math/clamp` and `std/memory/loadAt`.
 - Marking every public include function with `#export`.
+- Inline function, parameter, and return documentation for editor tooltips.
 
 This package does not own:
 
@@ -32,8 +33,13 @@ Stdlib source files must explicitly mark their public include functions with `#e
 ```8f4e
 function clamp
 #export
+; @doc Constrains a value to an inclusive range.
+; @returns The clamped value.
+; @param value Value to constrain.
 param int value
+; @param minValue Inclusive lower bound.
 param int minValue
+; @param maxValue Inclusive upper bound.
 param int maxValue
 ; ...
 functionEnd int
@@ -42,6 +48,17 @@ functionEnd int
 In stdlib include context, `#export` means "make this function available to the including project." It is consumed by
 the project preparser and does not create a WebAssembly export. Private helper functions should omit `#export`; the
 preparser prefixes those helper names when expanding the include.
+
+Document each overload with `; @doc`, `; @param NAME` directly above each matching `param` instruction, and `; @returns`
+when it returns values. Continue longer descriptions with `; -` on adjacent lines. See the
+[function documentation syntax](../../docs/instructions/blocks/function.md#function-documentation).
+
+Run `npx nx run @8f4e/stdlib:test` from the repository root to check documentation for every shipped function
+declaration, including private helpers.
+
+Use an `includes` block before the functions to import dependencies from other library files. A library can call
+its own functions and directly imported exports. These imports stay private to the library. A project declares
+its own include if it needs to call the same dependency directly.
 
 ## Floating-point math
 
@@ -53,6 +70,24 @@ overload accepts the full finite double range without an integer conversion.
 including subnormals. See the [standard-library reference](../../docs/standard-library.md#stdmathlog2) for the input
 contract and tested approximation bounds.
 
+## Audio helpers
+
+`std/audio/hzToRadians` converts a finite frequency in Hz to radians per sample, taking a positive integer sample
+rate explicitly. It supports signed frequencies and does not read project environment constants.
+
+`std/audio/tptLowPass` processes one low-pass sample from input, frequency coefficient `g`, damping, and two current
+integrator states. It returns the output and both next states on the stack, with no memory IO. The caller initializes
+and persists the state; reused intermediate calculations use locals. Supply finite values with `g >= 0` and
+`damping > 0`, using `g = tan(PI * cutoffHz / sampleRate)` for a cutoff below half the sample rate.
+
+`std/audio/biquad` is a pure Direct Form I sample processor. It accepts five normalized coefficients (`a0 = 1`)
+and the previous two input and output samples, returning the next output. The caller calculates coefficients and
+maintains all history; the helper performs no memory IO. Its feedback convention subtracts `a1*y1` and `a2*y2`.
+See the [biquad reference](../../docs/standard-library.md#stdaudiobiquad) for argument order and a usage example.
+
+See the [audio helper reference](../../docs/standard-library.md#stdaudiohztoradians) for signatures, return order,
+and an example that stores the next states in module memory.
+
 ## RGB colors
 
 `std/color/lerpRGB` blends two packed `0xRRGGBB` colors with a finite `float` or `float64` amount in `0..1`. It
@@ -61,7 +96,6 @@ to even. Input high bytes are ignored, and the result's high byte is zero.
 
 `std/color/srgbByteToLinear` decodes an sRGB byte into a linear-light float in `0..1`.
 `std/color/linearToSrgbByte` clamps a finite linear float to `0..1`, encodes it, and rounds to a byte.
-Both require explicit includes of `std/math/log2` and `std/math/exp2` under their standard exported names.
 See the [conversion reference](../../docs/standard-library.md#stdcolorsrgbbytetolinear) for approximation bounds.
 
 `std/memory/storeRGB` writes a packed color as three consecutive R, G, B bytes through an `int8u*` pointer. Supply
@@ -75,10 +109,8 @@ finite `float` amount in `0..1`. Zero selects the top-left sample, one averages 
 blend in linear light. Supply non-overlapping buffers; source data and destination row padding are preserved.
 Zero-sized outputs perform no memory access.
 
-Include `std/color/srgbByteToLinear`, `std/color/linearToSrgbByte`, `std/math/lerp`, `std/math/log2`, and `std/math/exp2`
-explicitly under their standard exported names. Includes do not load other sources recursively, and renaming a
-prerequisite does not rewrite calls from another source. See the
-[downsampling reference](../../docs/standard-library.md#stdimagedownsamplergb2x) for buffer sizes, strides, and an example.
+See the [downsampling reference](../../docs/standard-library.md#stdimagedownsamplergb2x) for buffer sizes, strides,
+and an example.
 
 ## Pointer swaps
 

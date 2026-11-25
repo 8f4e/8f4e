@@ -1,6 +1,6 @@
 import type {
-	CodeBlockGraphicData,
 	CodeBlockPointerDownEvent,
+	EditorCodeBlock,
 	EventDispatcher,
 	InternalPointerEvent,
 	State,
@@ -10,7 +10,7 @@ import type { Crossfade } from '../types';
 
 interface ActiveCrossfade {
 	crossfade: Crossfade;
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -20,7 +20,7 @@ function clamp(value: number, min: number, max: number): number {
 export function registerCrossfadeInteraction(
 	state: State,
 	events: EventDispatcher,
-	crossfadesByBlock: WeakMap<CodeBlockGraphicData, Crossfade[]>,
+	crossfadesByBlock: WeakMap<EditorCodeBlock, Crossfade[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let activeCrossfade: ActiveCrossfade | null = null;

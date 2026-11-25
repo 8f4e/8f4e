@@ -11,7 +11,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -47 9
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -19,6 +19,23 @@ const SAMPLE_RATE 48000
 const AUDIO_BUFFER_SIZE 128
 
 constantsEnd
+
+note echoStudioColors
+; @pos -126 -8
+; @config color.canvas #070a0c
+; @config color.surface #11171b
+; @config color.ink #d8e4e5
+; @config color.primary #7dbfbd
+; @config color.secondary #d4b28a
+; @config color.positive #94bda3
+; @config color.warning #d6b574
+; @config color.negative #d1848c
+; @config color.muted #83969f
+; @config color.stroke rgba(125,191,189,0.30)
+; @config color.tertiary #9bafb7
+; @config color.highlight #ead1a1
+; @config color.detail #689eae
+noteEnd
 
 note
 ; @pos -70 -8
@@ -43,7 +60,7 @@ noteEnd
 
 entry main
 module audioin
-; @pos 0 0
+; @pos 101 2
 use env
 
 float[] buffer AUDIO_BUFFER_SIZE
@@ -75,7 +92,7 @@ ifEnd
 
 moduleEnd
 module recorder
-; @pos 43 0
+; @pos 145 2
 ; @home
 use env
 
@@ -122,7 +139,7 @@ ifEnd
 
 moduleEnd
 module player
-; @pos 94 0
+; @pos 196 2
 use env
 ; The initial read-head offset
 ; is measured in bytes.
@@ -157,7 +174,7 @@ ifEnd
 
 moduleEnd
 module audioout
-; @pos 145 0
+; @pos 242 2
 use env
 
 float& in &player:out

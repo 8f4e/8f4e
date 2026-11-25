@@ -1,8 +1,14 @@
+includes
+include std/math/exp2
+include std/math/log2
+includesEnd
+
 function linearToSrgbByte
 #export
-; Requires std/math/log2 and
-; std/math/exp2 under their names.
-; Finite input; clamp to 0..1.
+; @doc Encodes linear light as an sRGB channel byte.
+; @returns Nearest sRGB byte (0..255), ties to even.
+; @param linear Finite linear-light value, clamped to
+; - 0..1.
 param float linear
 
 push linear

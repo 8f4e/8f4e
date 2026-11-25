@@ -5,4 +5,5 @@
   broader runtime and authoring features in other compositions.
 - Keep the composition menu-free and force core's `contextMenu` feature off even with host feature overrides.
   Keep editing and plain-text paste available independently of block clipboard and file commands.
-- The host owns loading UI. Core loading status remains available without the loading-indicators plugin.
+- A requested URL must load successfully for mounting to complete. The host owns loading UI.
+  Core loading status remains available without the loading-indicators plugin.

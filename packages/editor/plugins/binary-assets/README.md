@@ -27,6 +27,21 @@ Configure assets in project source:
 ; @config bin.sound.memories.preview preview:buffer
 ```
 
+Use `bin.baseUrl` with per-asset `path` values to share a URL prefix:
+
+```text
+; @config bin.baseUrl https://example.com/samples/
+; @config bin.sound.path drums/kick.pcm
+; @config bin.sound.memory player:buffer
+; @config bin.preview.url https://other.example.com/preview.pcm
+; @config bin.preview.memory preview:buffer
+```
+
+This loads `sound` from `https://example.com/samples/drums/kick.pcm`. The base and path are joined with one slash
+at their boundary; a leading slash in `path` still keeps the base prefix. Without `baseUrl`, `path` is used directly
+and may be relative to the editor page. A configured `url` takes precedence over `path` and is used unchanged.
+Changing or removing `baseUrl` updates path-based downloads through the same lifecycle as editing an asset URL.
+
 Distinct URLs fetch concurrently. Each configured asset keeps one source record and its memory destinations,
 including exposed project memory aliases. Configuration edits retain unchanged assets, their pending downloads,
 and their loading indicators. Editing one URL replaces only that asset; editing memory destinations copies the

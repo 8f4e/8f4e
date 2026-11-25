@@ -1,0 +1,347 @@
+import type { EditorCodeBlock, ProjectLevel } from '@8f4e/editor-state-types';
+import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { describe, expect, it } from 'vitest';
+import { createMockCodeBlock } from '~/__tests__/helpers/mockEditorState';
+import serializeProjectLevel from './serializeProjectLevel';
+
+describe('serializeProjectLevel', () => {
+	it('preserves detached empty entry definitions and excludes runtime level data', () => {
+		const child: ProjectLevel = {
+			path: 'worker',
+			entries: ['foo', 'bar'],
+			blocks: [],
+			viewport: { x: 32, y: 64 },
+		};
+		const level: ProjectLevel = {
+			path: '',
+			entries: ['main', 'rootEmpty'],
+			viewport: { x: 128, y: 256 },
+			blocks: [
+				createMockCodeBlock({ name: 'worker', entry: 'main', code: ['group worker', 'groupEnd'], childLevel: child }),
+			],
+		};
+		const saved = serializeProjectLevel(level);
+		const savedChild = getProjectGroups(saved)[0];
+		level.entries.push('later');
+		child.entries.push('later');
+		expect(saved.entries).toEqual(['main', 'rootEmpty']);
+		expect(savedChild.entries).toEqual(['foo', 'bar']);
+		expect(savedChild.execution).toEqual([]);
+		saved.entries.push('savedOnly');
+		savedChild.entries.push('savedOnly');
+		expect(level.entries).toEqual(['main', 'rootEmpty', 'later']);
+		expect(child.entries).toEqual(['foo', 'bar', 'later']);
+		for (const project of [saved, savedChild]) {
+			expect(project).not.toHaveProperty('path');
+			expect(project).not.toHaveProperty('viewport');
+		}
+	});
+
+	it('places editor blocks in their canonical collections', () => {
+		const result = serializeProjectLevel({
+			path: '',
+			entries: ['main'],
+			blocks: [
+				createMockCodeBlock({
+					code: ['module second', 'moduleEnd'],
+					blockType: 'module',
+					creationIndex: 2,
+					entry: 'main',
+					gridX: 10,
+					gridY: 0,
+				}),
+				createMockCodeBlock({
+					code: ['function first', 'functionEnd'],
+					blockType: 'function',
+					creationIndex: 1,
+					gridX: 0,
+					gridY: 0,
+				}),
+			],
+		});
+
+		expect(result.functions).toEqual([{ id: 1, code: ['function first', 'functionEnd'] }]);
+		expect(getProjectModules(result)).toEqual([
+			{ type: 'module', id: 2, code: ['module second', 'moduleEnd'], entry: 'main' },
+		]);
+	});
+
+	it('sorts code blocks by grid position before mapping', () => {
+		const blocks: EditorCodeBlock[] = [
+			createMockCodeBlock({ name: 'a', code: ['line 1'], gridX: 20, gridY: 0 }),
+			createMockCodeBlock({ name: 'b', code: ['line 2'], gridX: 0, gridY: 10 }),
+			createMockCodeBlock({ name: 'c', code: ['line 3'], gridX: 0, gridY: 0 }),
+		];
+
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+
+		expect(result.unknown.map(block => block.code[0])).toEqual(['line 3', 'line 2', 'line 1']);
+	});
+
+	it('stores explicit disabled state when a block is disabled', () => {
+		const blocks: EditorCodeBlock[] = [createMockCodeBlock({ name: 'disabled', code: ['code'], disabled: true })];
+
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+
+		expect(result.unknown[0].disabled).toBe(true);
+		expect(result.unknown[0].code).toEqual(['code']);
+	});
+
+	it('does not include disabled field when block is not disabled', () => {
+		const blocks: EditorCodeBlock[] = [createMockCodeBlock({ name: 'enabled', code: ['code'], disabled: false })];
+
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+
+		expect(result.unknown[0]).not.toHaveProperty('disabled');
+		expect(result.unknown[0].code).toEqual(['code']);
+	});
+
+	it('includes all notes regardless of their names in the exported project', () => {
+		const blocks: EditorCodeBlock[] = [
+			createMockCodeBlock({
+				name: 'local',
+				creationIndex: 0,
+				blockType: 'note',
+				code: ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'],
+			}),
+			createMockCodeBlock({
+				name: 'project-note',
+				creationIndex: 1,
+				blockType: 'note',
+				code: ['note', 'project note', 'noteEnd'],
+			}),
+			createMockCodeBlock({
+				name: 'typed-note',
+				creationIndex: 2,
+				blockType: 'note',
+				code: ['note custom', 'Some custom note content', 'noteEnd'],
+			}),
+		];
+
+		const result = serializeProjectLevel({ path: '', entries: [], blocks: blocks });
+
+		expect(result.notes.map(block => block.code[0])).toEqual(['note local.editorConfig', 'note', 'note custom']);
+	});
+
+	it('stores module entries on module blocks', () => {
+		const blocks: EditorCodeBlock[] = [
+			createMockCodeBlock({
+				name: 'main',
+				creationIndex: 1,
+				blockType: 'module',
+				entry: 'main',
+				code: ['module main', 'moduleEnd'],
+			}),
+			createMockCodeBlock({
+				name: 'entry',
+				creationIndex: 2,
+				blockType: 'module',
+				entry: 'entry1',
+				code: ['module entry', 'moduleEnd'],
+			}),
+		];
+
+		const result = serializeProjectLevel({ path: '', entries: ['main', 'entry1'], blocks: blocks });
+
+		expect(getProjectModules(result)).toEqual([
+			{ type: 'module', id: 1, code: ['module main', 'moduleEnd'], entry: 'main' },
+			{ type: 'module', id: 2, code: ['module entry', 'moduleEnd'], entry: 'entry1' },
+		]);
+	});
+
+	it('reconstructs recursively owned projects from nested project code-block slices', () => {
+		const result = serializeProjectLevel({
+			path: '',
+			entries: ['main'],
+			blocks: [
+				createMockCodeBlock({
+					name: 'Audio',
+					entry: 'main',
+					code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
+					childLevel: {
+						entries: ['main'],
+						path: '',
+						blocks: [
+							createMockCodeBlock({
+								name: 'Oscillator',
+								entry: 'main',
+								code: ['group Oscillator', '; child comment', '', 'expose childLevel &voice:level', 'groupEnd'],
+								childLevel: {
+									entries: ['main'],
+									path: '',
+									blocks: [
+										createMockCodeBlock({
+											creationIndex: 1,
+											blockType: 'module',
+											entry: 'main',
+											code: ['module voice', 'moduleEnd'],
+										}),
+									],
+								},
+							}),
+						],
+					},
+				}),
+			],
+		});
+
+		expect(getProjectGroups(result)[0]).toMatchObject({
+			entries: ['main'],
+			entry: 'main',
+			name: 'Audio',
+
+			code: ['group Audio', '; keep this comment', 'expose level &voice:level', 'groupEnd'],
+			exposures: [
+				{
+					lineNumber: 2,
+					name: 'level',
+					targetModuleName: 'voice',
+					targetMemoryName: 'level',
+				},
+			],
+			execution: [
+				{
+					entry: 'main',
+					entries: ['main'],
+					id: 0,
+					type: 'group',
+					name: 'Oscillator',
+					exposures: [{ name: 'childLevel', lineNumber: 3 }],
+
+					execution: [{ type: 'module', id: 1, entry: 'main', code: ['module voice', 'moduleEnd'] }],
+				},
+			],
+		});
+	});
+
+	it('preserves empty nested projects represented by project-group blocks', () => {
+		const result = serializeProjectLevel({
+			path: '',
+			entries: ['main'],
+			blocks: [
+				createMockCodeBlock({
+					name: 'Empty',
+					entry: 'main',
+					code: ['group Empty', 'groupEnd'],
+					childLevel: { entries: [], path: '', blocks: [] },
+				}),
+			],
+		});
+
+		expect(getProjectGroups(result)).toEqual([
+			{
+				entry: 'main',
+				entries: [],
+				type: 'group',
+				id: 0,
+				name: 'Empty',
+
+				code: ['group Empty', 'groupEnd'],
+				exposures: [],
+				execution: [],
+				functions: [],
+				constants: [],
+				includes: [],
+				notes: [],
+				unknown: [],
+			},
+		]);
+	});
+	it('returns independent source arrays for document blocks and nested projects', () => {
+		const note = createMockCodeBlock({ blockType: 'note', code: ['note', 'original', 'noteEnd'] });
+		const module = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			code: ['module root', 'int value 1', 'moduleEnd'],
+		});
+		const child = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			code: ['module child', 'int value 2', 'moduleEnd'],
+		});
+		const group = createMockCodeBlock({
+			name: 'voice',
+			entry: 'main',
+			code: ['group voice', 'groupEnd'],
+			childLevel: { entries: ['main'], path: '', blocks: [child] },
+		});
+		const blocks = [note, module, group];
+		const saved = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
+		const other = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
+
+		note.code[1] = 'changed';
+		module.code[1] = 'int value 3';
+		group.code.splice(1, 0, '; @testDirective');
+		child.code[1] = 'int value 4';
+		expect(saved.notes[0].code).toEqual(['note', 'original', 'noteEnd']);
+		expect(getProjectModules(saved)[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
+		expect(getProjectGroups(saved)[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(getProjectModules(getProjectGroups(saved)[0])[0].code).toEqual(['module child', 'int value 2', 'moduleEnd']);
+
+		saved.notes[0].code[1] = 'saved';
+		getProjectModules(saved)[0].code[1] = 'int value 5';
+		getProjectGroups(saved)[0].code.splice(1, 0, '; @pos 5 6');
+		getProjectModules(getProjectGroups(saved)[0])[0].code[1] = 'int value 6';
+		expect(note.code).toEqual(['note', 'changed', 'noteEnd']);
+		expect(module.code).toEqual(['module root', 'int value 3', 'moduleEnd']);
+		expect(group.code).toEqual(['group voice', '; @testDirective', 'groupEnd']);
+		expect(child.code).toEqual(['module child', 'int value 4', 'moduleEnd']);
+		expect(other.notes[0].code).toEqual(['note', 'original', 'noteEnd']);
+		expect(getProjectModules(other)[0].code[1]).toBe('int value 1');
+		expect(getProjectGroups(other)[0].code).toEqual(['group voice', 'groupEnd']);
+		expect(getProjectModules(getProjectGroups(other)[0])[0].code[1]).toBe('int value 2');
+	});
+
+	it('produces identical JSON independently of live object keys and array order, including nested ties', () => {
+		const first = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			creationIndex: 1,
+			gridX: 0,
+			gridY: 0,
+			code: ['module first', 'moduleEnd'],
+		});
+		const second = createMockCodeBlock({
+			blockType: 'module',
+			entry: 'main',
+			creationIndex: 2,
+			gridX: 0,
+			gridY: 0,
+			disabled: true,
+			code: ['module second', '; @disabled', 'moduleEnd'],
+		});
+		const group = createMockCodeBlock({
+			name: 'voice',
+			entry: 'main',
+			creationIndex: 3,
+			gridX: 4,
+			gridY: 8,
+			code: ['group voice', 'expose value &first:value', 'groupEnd'],
+			childLevel: { entries: ['main'], path: '', blocks: [second, first] },
+		});
+		const blocks = [second, group, first];
+		const reorder = (block: EditorCodeBlock): EditorCodeBlock =>
+			({
+				...Object.fromEntries(Object.entries(block).reverse()),
+				...(block.childLevel === undefined
+					? {}
+					: {
+							childLevel: {
+								entries: ['main'],
+								path: '',
+								blocks: [...block.childLevel.blocks].reverse().map(reorder),
+							},
+						}),
+			}) as EditorCodeBlock;
+		const original = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
+		const reordered = serializeProjectLevel({
+			path: '',
+			entries: ['main'],
+			blocks: [...blocks].reverse().map(reorder),
+		});
+
+		expect(JSON.stringify(reordered)).toBe(JSON.stringify(original));
+		expect(getProjectModules(original).map(block => block.id)).toEqual([1, 2]);
+		expect(getProjectModules(getProjectGroups(original)[0]).map(block => block.id)).toEqual([1, 2]);
+	});
+});

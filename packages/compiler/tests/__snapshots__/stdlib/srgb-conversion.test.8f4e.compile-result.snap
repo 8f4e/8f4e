@@ -1,6 +1,6 @@
 {
   "functionAst": {
-    "exp2__float": {
+    "linearToSrgbByte__float": {
       "lines": [
         {
           "arguments": [
@@ -8,7 +8,474 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "exp2",
+              "value": "linearToSrgbByte",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "max",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+          ],
+          "instruction": "min",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.0031308,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "lessOrEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 12.92,
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [],
+          "instruction": "else",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/math/log2§unselected__log2",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "linear",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.4,
+            },
+          ],
+          "instruction": "div",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/math/exp2§unselected__exp2",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.055,
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.055,
+            },
+          ],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+          ],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "max",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "min",
+        },
+        {
+          "arguments": [],
+          "instruction": "round",
+        },
+        {
+          "arguments": [],
+          "instruction": "castToInt",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "linearToSrgbByte",
+      "type": "function",
+    },
+    "srgbByteToLinear__int": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "srgbByteToLinear",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "channel",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "encoded",
+            },
+          ],
+          "instruction": "local",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "channel",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "castToFloat",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 255,
+            },
+          ],
+          "instruction": "div",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "encoded",
+            },
+          ],
+          "instruction": "localSet",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "encoded",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.04045,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "lessOrEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "if",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "encoded",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 12.92,
+            },
+          ],
+          "instruction": "div",
+        },
+        {
+          "arguments": [],
+          "instruction": "return",
+        },
+        {
+          "arguments": [],
+          "instruction": "ifEnd",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "encoded",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.055,
+            },
+          ],
+          "instruction": "add",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 1.055,
+            },
+          ],
+          "instruction": "div",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/math/log2§unselected__log2",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 2.4,
+            },
+          ],
+          "instruction": "mul",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/math/exp2§unselected__exp2",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "float",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "srgbByteToLinear",
+      "type": "function",
+    },
+    "§std/math/exp2§unselected__exp2__float": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "§std/math/exp2§unselected__exp2",
             },
           ],
           "instruction": "function",
@@ -378,10 +845,10 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "exp2",
+      "name": "§std/math/exp2§unselected__exp2",
       "type": "function",
     },
-    "linearToSrgbByte__float": {
+    "§std/math/log2§unselected__log2__float": {
       "lines": [
         {
           "arguments": [
@@ -389,255 +856,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "linearToSrgbByte",
-            },
-          ],
-          "instruction": "function",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "float",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0,
-            },
-          ],
-          "instruction": "max",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 1,
-            },
-          ],
-          "instruction": "min",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "localSet",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0.0031308,
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "lessOrEqual",
-        },
-        {
-          "arguments": [],
-          "instruction": "if",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 12.92,
-            },
-          ],
-          "instruction": "mul",
-        },
-        {
-          "arguments": [],
-          "instruction": "else",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "log2",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "linear",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 2.4,
-            },
-          ],
-          "instruction": "div",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "exp2",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 1.055,
-            },
-          ],
-          "instruction": "mul",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0.055,
-            },
-          ],
-          "instruction": "sub",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "float",
-            },
-          ],
-          "instruction": "ifEnd",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 255,
-            },
-          ],
-          "instruction": "mul",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0,
-            },
-          ],
-          "instruction": "max",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 255,
-            },
-          ],
-          "instruction": "min",
-        },
-        {
-          "arguments": [],
-          "instruction": "round",
-        },
-        {
-          "arguments": [],
-          "instruction": "castToInt",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-          ],
-          "instruction": "functionEnd",
-        },
-      ],
-      "name": "linearToSrgbByte",
-      "type": "function",
-    },
-    "log2__float": {
-      "lines": [
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "log2",
+              "value": "§std/math/log2§unselected__log2",
             },
           ],
           "instruction": "function",
@@ -1281,10 +1500,10 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "log2",
+      "name": "§std/math/log2§unselected__log2",
       "type": "function",
     },
-    "log2__float64": {
+    "§std/math/log2§unselected__log2__float64": {
       "lines": [
         {
           "arguments": [
@@ -1292,7 +1511,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "log2",
+              "value": "§std/math/log2§unselected__log2",
             },
           ],
           "instruction": "function",
@@ -1953,244 +2172,11 @@
           "instruction": "functionEnd",
         },
       ],
-      "name": "log2",
-      "type": "function",
-    },
-    "srgbByteToLinear__int": {
-      "lines": [
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "srgbByteToLinear",
-            },
-          ],
-          "instruction": "function",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "int",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "channel",
-            },
-          ],
-          "instruction": "param",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "float",
-            },
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "encoded",
-            },
-          ],
-          "instruction": "local",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "channel",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "castToFloat",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 255,
-            },
-          ],
-          "instruction": "div",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "encoded",
-            },
-          ],
-          "instruction": "localSet",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "encoded",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0.04045,
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [],
-          "instruction": "lessOrEqual",
-        },
-        {
-          "arguments": [],
-          "instruction": "if",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "encoded",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 12.92,
-            },
-          ],
-          "instruction": "div",
-        },
-        {
-          "arguments": [],
-          "instruction": "return",
-        },
-        {
-          "arguments": [],
-          "instruction": "ifEnd",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "encoded",
-            },
-          ],
-          "instruction": "push",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 0.055,
-            },
-          ],
-          "instruction": "add",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 1.055,
-            },
-          ],
-          "instruction": "div",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "log2",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [
-            {
-              "isInteger": false,
-              "type": "literal",
-              "value": 2.4,
-            },
-          ],
-          "instruction": "mul",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "exp2",
-            },
-          ],
-          "instruction": "call",
-        },
-        {
-          "arguments": [
-            {
-              "referenceKind": "plain",
-              "scope": "local",
-              "type": "identifier",
-              "value": "float",
-            },
-          ],
-          "instruction": "functionEnd",
-        },
-      ],
-      "name": "srgbByteToLinear",
+      "name": "§std/math/log2§unselected__log2",
       "type": "function",
     },
   },
   "functionOverview": {
-    "exp2__float": {
-      "id": "exp2__float",
-      "signature": {
-        "parameters": [
-          {
-            "name": "x",
-            "type": "float",
-          },
-        ],
-        "returns": [
-          "float",
-        ],
-      },
-    },
     "linearToSrgbByte__float": {
       "id": "linearToSrgbByte__float",
       "signature": {
@@ -2205,8 +2191,36 @@
         ],
       },
     },
-    "log2__float": {
-      "id": "log2__float",
+    "srgbByteToLinear__int": {
+      "id": "srgbByteToLinear__int",
+      "signature": {
+        "parameters": [
+          {
+            "name": "channel",
+            "type": "int",
+          },
+        ],
+        "returns": [
+          "float",
+        ],
+      },
+    },
+    "§std/math/exp2§unselected__exp2__float": {
+      "id": "§std/math/exp2§unselected__exp2__float",
+      "signature": {
+        "parameters": [
+          {
+            "name": "x",
+            "type": "float",
+          },
+        ],
+        "returns": [
+          "float",
+        ],
+      },
+    },
+    "§std/math/log2§unselected__log2__float": {
+      "id": "§std/math/log2§unselected__log2__float",
       "signature": {
         "parameters": [
           {
@@ -2219,8 +2233,8 @@
         ],
       },
     },
-    "log2__float64": {
-      "id": "log2__float64",
+    "§std/math/log2§unselected__log2__float64": {
+      "id": "§std/math/log2§unselected__log2__float64",
       "signature": {
         "parameters": [
           {
@@ -2230,20 +2244,6 @@
         ],
         "returns": [
           "float64",
-        ],
-      },
-    },
-    "srgbByteToLinear__int": {
-      "id": "srgbByteToLinear__int",
-      "signature": {
-        "parameters": [
-          {
-            "name": "channel",
-            "type": "int",
-          },
-        ],
-        "returns": [
-          "float",
         ],
       },
     },
@@ -2660,10 +2660,10 @@
   },
   "overview": {
     "compiledFunctions": [
-      "exp2__float",
+      "§std/math/exp2§unselected__exp2__float",
+      "§std/math/log2§unselected__log2__float",
+      "§std/math/log2§unselected__log2__float64",
       "linearToSrgbByte__float",
-      "log2__float",
-      "log2__float64",
       "srgbByteToLinear__int",
     ],
     "compiledModules": [

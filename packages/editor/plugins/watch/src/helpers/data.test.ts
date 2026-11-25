@@ -33,15 +33,16 @@ describe('watch directive data', () => {
 		{ args: ['0x'], displayFormat: 'hex' },
 		{ args: ['0b'], displayFormat: 'binary' },
 		{ args: ['&'], displayFormat: 'decimal', showAddress: true },
-		{ args: ['*'], displayFormat: 'decimal', dereference: true },
+		{ args: ['*'], displayFormat: 'decimal', dereferenceDepth: 1 },
+		{ args: ['**'], displayFormat: 'decimal', dereferenceDepth: 2 },
 		{ args: ['0x[2]'], displayFormat: 'hex', bufferPointer: 2 },
 	])(
 		'parses modifiers for an inline declaration: $args',
-		({ args, displayFormat, showAddress = false, dereference = false, bufferPointer = 0 }) => {
+		({ args, displayFormat, showAddress = false, dereferenceDepth = 0, bufferPointer = 0 }) => {
 			expect(createWatchDirectiveData(args, 4)).toEqual({
 				lineNumber: 4,
 				displayFormat,
-				target: { kind: 'inline', options: { showAddress, dereference, bufferPointer } },
+				target: { kind: 'inline', options: { showAddress, dereferenceDepth, bufferPointer } },
 			});
 		}
 	);

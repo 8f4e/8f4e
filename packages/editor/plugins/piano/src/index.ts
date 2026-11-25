@@ -1,10 +1,10 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { drawPianoKeyboards } from './drawer/draw';
 import { getPianoDefaultEdits } from './helpers/saveDefaults';
 import { registerPianoInteraction } from './state/interaction';
-import { registerPianoLayout } from './state/layout';
+import { registerPianoPreparation } from './state/layout';
 import type { PianoKeyboard } from './types';
 
 const saveAction = 'savePianoValuesToCode';
@@ -16,16 +16,16 @@ export function createPianoPlugin({
 }): EditorPlugin {
 	return {
 		id: 'piano',
-		setup: ({ store, events, menus, layout, drawers }) => {
+		setup: ({ store, events, menus, layout, renderRegistry }) => {
 			const state = store.getState();
-			const keyboardsByBlock = new WeakMap<CodeBlockGraphicData, PianoKeyboard[]>();
-			const unregisterLayout = registerPianoLayout(layout, keyboardsByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const keyboardsByBlock = new WeakMap<EditorCodeBlock, PianoKeyboard[]>();
+			const unregisterPreparation = registerPianoPreparation(store, layout, keyboardsByBlock);
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawPianoKeyboards(draw, keyboardsByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerPianoInteraction(state, events, keyboardsByBlock, writeMemory);
-			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-				if (state.editorMode !== 'edit' || !keyboardsByBlock.get(codeBlock)?.length) return;
+			const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
+				if (state.editorMode !== 'edit' || codeBlock.readOnly || !keyboardsByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save piano values to code',
 					action: saveAction,
@@ -34,14 +34,10 @@ export function createPianoPlugin({
 					disabled: !state.callbacks.getWordFromMemory,
 				};
 			});
-			const onSave = ({
-				codeBlock = state.codeBlockRendering.selectedCodeBlock,
-			}: {
-				codeBlock?: CodeBlockGraphicData;
-			} = {}) => {
+			const onSave = ({ codeBlock = state.project.selectedCodeBlock }: { codeBlock?: EditorCodeBlock } = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getPianoDefaultEdits(state, keyboardsByBlock.get(codeBlock) ?? []);
-				applyCodeBlockSourceEdits({ store, events }, edits);
+				applyCodeBlockSourceEdits(store, edits);
 			};
 			events.on(saveAction, onSave);
 			return () => {
@@ -49,7 +45,7 @@ export function createPianoPlugin({
 				unregisterMenuItem();
 				unregisterInteraction();
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

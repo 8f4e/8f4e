@@ -1,6 +1,7 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 test('coordinates independent keyboard plugins across cold editing, navigation, history and mode changes', async () => {
@@ -22,7 +23,6 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 				},
 			} as Storage,
 			storageKey: 'keyboard-test',
-			showOpenMenuItem: false,
 			renderFrame: () => editor!.renderFrame(),
 			getMemory: () => null,
 			writeMemory: () => {},
@@ -30,10 +30,10 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(
 				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote test\n; @pos 3 3\nhello\nworld\nnoteEnd'
 			),
-			featureFlags: { historyTracking: true },
 			plugins: [
 				...plugins,
 				{
@@ -64,8 +64,8 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('view-mode-hint');
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
-		context.store.set('codeBlockRendering.selectedCodeBlock', block);
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'test')!;
+		context.store.set('project.selectedCodeBlock', block);
 		block.cursor = { row: 3, col: 0, y: 0 };
 		const key = (key: string, modifiers: KeyboardEventInit = {}) => {
 			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true, ...modifiers });
@@ -91,17 +91,15 @@ test('coordinates independent keyboard plugins across cold editing, navigation, 
 		expect(block.cursor.row).toBe(1);
 		key('e');
 		key('z', { ctrlKey: true });
-		expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
-			'hello'
-		);
+		expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'test')!.code).toContain('hello');
 		key('y', { ctrlKey: true });
-		expect(editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!.code).toContain(
+		expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'test')!.code).toContain(
 			'hello21world'
 		);
-		const selected = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'test')!;
-		context.store.set('codeBlockRendering.selectedCodeBlock', selected);
-		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.row', 2);
-		context.store.set('codeBlockRendering.selectedCodeBlock.cursor.col', 5);
+		const selected = editor.state.project.activeLevel.blocks.find(block => block.name === 'test')!;
+		context.store.set('project.selectedCodeBlock', selected);
+		context.store.set('project.selectedCodeBlock.cursor.row', 2);
+		context.store.set('project.selectedCodeBlock.cursor.col', 5);
 		expect(editor.state.editorMode).toBe('edit');
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();

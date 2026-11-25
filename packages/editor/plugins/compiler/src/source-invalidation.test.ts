@@ -22,7 +22,7 @@ async function setup(lines: string[]) {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers: {} as EditorPluginContext['drawers'],
+			renderRegistry: {} as EditorPluginContext['renderRegistry'],
 		})
 	);
 	events.dispatch('loadProject', {
@@ -35,7 +35,7 @@ async function setup(lines: string[]) {
 	expect(worker.postedMessages).toHaveLength(1);
 	worker.emitMessage(createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })));
 	const state = store.getState();
-	const block = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'module')!;
+	const block = state.project.rootLevel.blocks.find(block => block.blockType === 'module')!;
 	return { store, events, worker, state, block };
 }
 
@@ -54,6 +54,12 @@ describe('source edit compilation invalidation', () => {
 		{ name: 'adding a directive', before: ['push 1'], after: ['; @favorite', 'push 1'] },
 		{ name: 'removing a directive', before: ['; @favorite', 'push 1'], after: ['push 1'] },
 		{ name: 'changing a directive in place', before: ['; @pos 0 0', 'push 1'], after: ['; @pos 2 3', 'push 1'] },
+		{ name: 'changing documentation in place', before: ['; @doc Old text.'], after: ['; @doc New text.'] },
+		{
+			name: 'changing a documentation continuation in place',
+			before: ['; @doc Description.', '; - Old text.'],
+			after: ['; @doc Description.', '; - New text.'],
+		},
 		{ name: 'replacing a comment with a directive', before: ['; explanation'], after: ['; @favorite'] },
 		{ name: 'replacing a directive with a comment', before: ['; @favorite'], after: ['; explanation'] },
 		{ name: 'removing an inline directive', before: ['push 1 ; @favorite'], after: ['push 1'] },
@@ -70,11 +76,11 @@ describe('source edit compilation invalidation', () => {
 			after: ['; @unknown', '; - second'],
 		},
 	])('revises and schedules compilation after $name', async ({ before, after }) => {
-		const { store, events, worker, state, block } = await setup(before);
+		const { store, worker, state, block } = await setup(before);
 		const revision = state.compilerInputRevision;
 		const onInputChanged = vi.fn();
-		events.on('compilationInputChanged', onInputChanged);
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: ['module test', ...after, 'moduleEnd'] }]);
+		store.subscribe('compilerInputRevision', onInputChanged);
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['module test', ...after, 'moduleEnd'] }]);
 		expect(state.compilerInputRevision).toBe(revision + 1);
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 		await vi.advanceTimersByTimeAsync(499);
@@ -84,18 +90,22 @@ describe('source edit compilation invalidation', () => {
 	});
 
 	it('publishes in-place ordinary comment edits without revising or scheduling compilation', async () => {
-		const { store, events, worker, state, block } = await setup(['; explanation', 'push 1', '  ; another comment']);
+		const { store, worker, state, block } = await setup(['; explanation', 'push 1', '  ; another comment']);
 		const revision = state.compilerInputRevision;
 		const projectRevision = state.projectChange.revision;
 		const onInputChanged = vi.fn();
-		const onSourcesChanged = vi.fn();
-		events.on('compilationInputChanged', onInputChanged);
-		events.on('codeBlockSourcesChanged', onSourcesChanged);
-		applyCodeBlockSourceEdits({ store, events }, [
+		const onProjectChange = vi.fn();
+		store.subscribe('compilerInputRevision', onInputChanged);
+		store.subscribe('projectChange', onProjectChange);
+		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: ['module test', '; updated explanation', 'push 1', '; updated comment', 'moduleEnd'] },
 		]);
 		expect(state.projectChange.revision).toBe(projectRevision + 1);
-		expect(onSourcesChanged).toHaveBeenCalledExactlyOnceWith({ codeBlocks: [block] });
+		expect(onProjectChange).toHaveBeenCalledExactlyOnceWith({
+			revision: projectRevision + 1,
+			kind: 'edit',
+			history: 'debounced',
+		});
 		expect(state.compilerInputRevision).toBe(revision);
 		expect(onInputChanged).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1000);
@@ -103,10 +113,10 @@ describe('source edit compilation invalidation', () => {
 	});
 
 	it('leaves an identical source replacement unchanged', async () => {
-		const { store, events, worker, state, block } = await setup(['; explanation', 'push 1']);
+		const { store, worker, state, block } = await setup(['; explanation', 'push 1']);
 		const revision = state.compilerInputRevision;
 		const projectRevision = state.projectChange.revision;
-		expect(applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: [...block.code] }])).toBe(false);
+		expect(applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: [...block.code] }])).toBe(false);
 		expect(state.compilerInputRevision).toBe(revision);
 		expect(state.projectChange.revision).toBe(projectRevision);
 		await vi.advanceTimersByTimeAsync(1000);

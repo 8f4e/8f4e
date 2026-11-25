@@ -1,0 +1,14 @@
+{
+  "code": 5,
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Undeclared identifier: count(**ref). (5)",
+  "symbol": "invalid",
+}

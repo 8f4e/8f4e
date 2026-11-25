@@ -1,15 +1,15 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { gapCalculator, getCodeBlockErrors, wrapText } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeBlockLayoutContext } from '@8f4e/editor-state-types';
+import { displayRowToGridRow, getCodeBlockErrors, subscribeToBlockPreparation, wrapText } from '@8f4e/editor-state';
+import type { CodeBlockLayoutContext, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
 import { installGlobalErrors } from './global-errors';
 
 export const errorMessagesPlugin: EditorPlugin = {
 	id: 'error-messages',
-	setup: ({ store, layout, drawers }) => {
-		const disposeGlobalErrors = installGlobalErrors({ store, drawers });
-		const messagesByBlock = new WeakMap<CodeBlockGraphicData, Array<{ lines: GlyphIds[]; y: number }>>();
+	setup: ({ store, layout, renderRegistry }) => {
+		const disposeGlobalErrors = installGlobalErrors({ store, renderRegistry });
+		const messagesByBlock = new WeakMap<EditorCodeBlock, Array<{ lines: GlyphIds[]; y: number }>>();
 		const contribution = layout.createContribution();
 		const prepare = ({ codeBlock, state }: CodeBlockLayoutContext) => {
 			const wrapWidth = Math.floor(codeBlock.width / state.viewport.vGrid) - 1;
@@ -39,19 +39,14 @@ export const errorMessagesPlugin: EditorPlugin = {
 				messages.map(({ row, lines }) => {
 					const remaining = remainingRows.get(row)!;
 					// Place messages at the end of the row's gap, after other contributed content.
-					const y = (gapCalculator(row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
+					const y = (displayRowToGridRow(row + 1, codeBlock.gaps) - remaining) * state.viewport.hGrid;
 					remainingRows.set(row, remaining - lines.length);
 					return { lines: lines.map(textToGlyphIds), y };
 				})
 			);
 		};
-		const refresh = () => {
-			const state = store.getState();
-			for (const codeBlock of state.codeBlockRendering.currentProject.blocks) prepare({ codeBlock, state });
-		};
-		const unsubscribeLayout = layout.subscribe(prepare);
-		store.subscribe('codeErrors', refresh);
-		const removeDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
+		const unsubscribePreparation = subscribeToBlockPreparation(store, layout, 'codeErrors', prepare);
+		const removeDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 			for (const { lines, y } of messagesByBlock.get(codeBlock) ?? []) {
 				draw.drawFill(0, y, PALETTE_INDICES.negativeSurface, codeBlock.width, lines.length * state.viewport.hGrid);
 				lines.forEach((line, row) =>
@@ -61,8 +56,7 @@ export const errorMessagesPlugin: EditorPlugin = {
 		});
 		return () => {
 			disposeGlobalErrors();
-			store.unsubscribe('codeErrors', refresh);
-			unsubscribeLayout();
+			unsubscribePreparation();
 			removeDrawer();
 			contribution.dispose();
 		};

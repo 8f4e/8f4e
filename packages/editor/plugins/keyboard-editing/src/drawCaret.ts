@@ -1,23 +1,29 @@
-import type { CodeBlockDrawer } from '@8f4e/editor-core';
+import type { CodeBlockDrawer, EditorPluginContext } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { getTabStopsByLine, getVisualColumnForRawIndex } from '@8f4e/editor-state';
-import type { CodeBlockLayoutsChangedEvent, EventDispatcher, State } from '@8f4e/editor-state-types';
+import { getVisualColumnForRawIndex } from '@8f4e/editor-state';
+import type { CodeBlockLayoutsChangedEvent } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
 const CARET = textToGlyphIds('_');
 
-export default function createCaretPresentation(state: State, events: EventDispatcher) {
+export default function createCaretPresentation({
+	store,
+	events,
+}: Pick<EditorPluginContext, 'events'> & {
+	store: Pick<EditorPluginContext['store'], 'getState' | 'subscribe' | 'unsubscribe'>;
+}) {
+	const state = store.getState();
 	let x = 0;
 	const prepare = () => {
-		const block = state.codeBlockRendering.selectedCodeBlock;
+		const block = state.project.selectedCodeBlock;
 		if (!block) return;
 		const { row, col } = block.cursor;
-		const tabStops = getTabStopsByLine(block.code)[row] || [];
+		const tabStops = block.tabStopsByLine[row] || [];
 		const visualColumn = getVisualColumnForRawIndex(block.code[row] || '', col, tabStops);
 		x = (visualColumn + block.lineNumberColumnWidth + 2) * state.viewport.vGrid;
 	};
 	const drawCaret: CodeBlockDrawer = ({ draw, codeBlock }) => {
-		if (state.editorMode !== 'edit' || state.codeBlockRendering.selectedCodeBlock !== codeBlock) return;
+		if (state.editorMode !== 'edit' || state.project.selectedCodeBlock !== codeBlock) return;
 		draw.drawGlyphs(
 			x,
 			codeBlock.cursor.y,
@@ -26,15 +32,18 @@ export default function createCaretPresentation(state: State, events: EventDispa
 		);
 	};
 
-	const onLayoutsChanged = ({ project, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
-		if (project !== state.codeBlockRendering.currentProject) return;
-		if (state.codeBlockRendering.selectedCodeBlock && codeBlocks.includes(state.codeBlockRendering.selectedCodeBlock))
-			prepare();
+	const onLayoutsChanged = ({ level, codeBlocks }: CodeBlockLayoutsChangedEvent) => {
+		if (level !== state.project.activeLevel) return;
+		if (state.project.selectedCodeBlock && codeBlocks.includes(state.project.selectedCodeBlock)) prepare();
 	};
 	events.on('codeBlockLayoutsChanged', onLayoutsChanged);
+	store.subscribe('project.selectedCodeBlock', prepare);
 	prepare();
 	return {
 		drawCaret,
-		dispose: () => events.off('codeBlockLayoutsChanged', onLayoutsChanged),
+		dispose: () => {
+			events.off('codeBlockLayoutsChanged', onLayoutsChanged);
+			store.unsubscribe('project.selectedCodeBlock', prepare);
+		},
 	};
 }

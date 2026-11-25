@@ -1,17 +1,11 @@
-import type {
-	CodeBlockGraphicData,
-	CodeBlockPointerDownEvent,
-	EventDispatcher,
-	InternalPointerEvent,
-	State,
-} from '@8f4e/editor-state-types';
+import type { CodeBlockPointerDownEvent, EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import type { ButtonWidget } from '../types';
 
 export function registerButtonInteraction(
 	state: State,
 	events: EventDispatcher,
-	buttonsByBlock: WeakMap<CodeBlockGraphicData, ButtonWidget[]>,
+	buttonsByBlock: WeakMap<EditorCodeBlock, ButtonWidget[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let pressedButton: ButtonWidget | undefined;

@@ -8,7 +8,7 @@ export function diagnosticToCodeError(diagnostic: CompilerDiagnostic): CodeError
 			? `Internal compiler error (${diagnostic.stage}): ${diagnostic.message}`
 			: diagnostic.message;
 	const location = diagnostic.location;
-	if (!location || location.kind === 'document') return { message };
+	if (!location || location.kind === 'document' || location.kind === 'project-entry') return { message };
 	if (location.kind === 'block')
 		return { message, codeBlockId: location.projectBlockId, lineNumber: location.lineNumber };
 	if (location.kind === 'include')
@@ -17,15 +17,12 @@ export function diagnosticToCodeError(diagnostic: CompilerDiagnostic): CodeError
 			codeBlockId: location.includeSite.projectBlockId,
 			lineNumber: location.includeSite.lineNumber,
 		};
-	if (location.kind === 'include-file') {
-		const fileMessage = `${location.includeId}:${location.lineNumber + 1}: ${message}`;
-		return location.includeSite
-			? {
-					message: fileMessage,
-					codeBlockId: location.includeSite.projectBlockId,
-					lineNumber: location.includeSite.lineNumber,
-				}
-			: { message: fileMessage };
-	}
-	return { message, projectGroupPath: location.projectGroupPath, lineNumber: location.lineNumber };
+	const fileMessage = `${location.includeId}:${location.lineNumber + 1}: ${message}`;
+	return location.includeSite
+		? {
+				message: fileMessage,
+				codeBlockId: location.includeSite.projectBlockId,
+				lineNumber: location.includeSite.lineNumber,
+			}
+		: { message: fileMessage };
 }

@@ -107,7 +107,7 @@ export function stackItemMatchesFunctionValueType(stackItem: StackItem, type: Fu
 /** Default WebAssembly import module namespace for 8f4e host-provided imports. */
 export const DEFAULT_HOST_IMPORT_MODULE_NAME = 'host';
 
-/** A named parameter in declaration order, including expanded prototype fields. */
+/** A named parameter in declaration order. */
 export interface FunctionParameter {
 	name: string;
 	type: FunctionValueType;
@@ -117,6 +117,14 @@ export interface FunctionParameter {
 export interface FunctionSignature {
 	parameters: FunctionParameter[];
 	returns: FunctionValueType[];
+}
+
+/** Optional source documentation for one concrete function declaration. */
+export interface FunctionDocumentation {
+	readonly description?: string;
+	readonly parameters?: Readonly<Record<string, string>>;
+	/** Description of the returned values in stack order. */
+	readonly returns?: string;
 }
 
 /** WebAssembly host import module/name pair for an imported function. */

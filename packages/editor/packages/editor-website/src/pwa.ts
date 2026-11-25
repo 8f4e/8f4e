@@ -8,5 +8,9 @@ export function registerEditorPwa() {
 	});
 	void navigator.serviceWorker
 		.register('/sw.js', { updateViaCache: 'none' })
+		.then(registration => {
+			if (!navigator.onLine || !registration.active || registration.installing || registration.waiting) return;
+			return registration.update().catch(error => console.warn('Failed to check for an editor update:', error));
+		})
 		.catch(error => console.error('Failed to prepare offline support:', error));
 }

@@ -21,8 +21,9 @@ The production website is an installable PWA. Its fullscreen manifest lets the i
 without system status/navigation bars in either orientation, with no orientation lock. After the editor mounts,
 its service worker downloads all build
 assets, including lazy plugins, fonts, workers, worklets, stdlib, and bundled example modules. Precaching does
-not import or execute those modules. First installation is silent. The `editor-plugin-pwa-updates` plugin shows
-waiting updates through an editor dialog with Reload and Later buttons, plus a main-menu action to reopen it.
+not import or execute those modules. On subsequent online launches, the website checks for an update.
+The `editor-plugin-pwa-updates` plugin shows a dialog when a download is detected and offers Reload when it finishes.
+First installation is silent.
 Development mode does not register a service worker.
 
 The browser tests run against the production build on port 3103, using desktop Chromium and Android touch

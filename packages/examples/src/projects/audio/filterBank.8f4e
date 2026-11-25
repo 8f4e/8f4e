@@ -1,0 +1,668 @@
+8f4e/v1
+
+includes
+; @pos -48 18
+include std/audio/biquad
+include std/audio/hzToRadians
+include std/audio/tptLowPass
+include std/random/xorshift
+include std/math/exp2
+include std/math/trig/sine
+include std/math/trig/cosine
+includesEnd
+
+constants env
+; @pos -48 32
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+constantsEnd
+
+constants math
+; @pos -92 0
+
+const PI      3.141592653589793
+const NEG_PI -3.141592653589793
+const TAU     6.283185307179586
+const HALF_PI 1.570796326794896
+const INV_PI  0.318309886183790
+const INV_TAU 0.159154943091895
+const PHI     1.618033988749895
+const DEG2RAD 0.017453292519943
+const RAD2DEG 57.29577951308232
+const SQRT2   1.414213562373095
+const SQRT1_2 0.707106781186547
+; Useful in FFT twiddle factors.
+const HANN_A0 0.5
+; For common window functions before FFT.
+const HAMMING_A0 0.54
+const HAMMING_A1 0.46
+const BLACKMAN_A0 0.42
+const BLACKMAN_A1 0.5
+const BLACKMAN_A2 0.08
+const LN2     0.693147180559945
+const LN10    2.302585092994046
+const LOG2E   1.442695040888963
+const LOG10E  0.434294481903251
+const E       2.718281828459045
+
+constantsEnd
+
+function buffer
+; @pos -48 42
+#export buffer
+use env
+loop AUDIO_BUFFER_SIZE
+call main
+loopEnd
+functionEnd
+
+note setup
+; @pos -48 0
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audioout:buffer
+; @config audioRuntime.audioOutBufferRAddress audioout:buffer
+; @config export.fileName filterBank
+noteEnd
+
+note guide
+; @pos 0 -22
+; White noise feeds seven parallel
+; filters. Each filter
+; has its own cutoff and, where
+; available, resonance control.
+; The one-pole also exposes its
+; complementary high-pass output.
+; The separate chamberlinFilter
+; exposes low, band and high.
+;
+; The filterbank module mixes
+; their outputs. Set a level to
+; zero to silence that output.
+; Set the other levels to zero
+; to hear one output on its own.
+; Match the three biquad cutoffs
+; and q values to compare forms.
+noteEnd
+
+function hzToPrewarpedFrequency
+; @pos -48 72
+; Normalized bilinear frequency:
+; tan(PI * cutoffHz / Fs).
+param float cutoffHz
+use env
+local float angle
+push cutoffHz
+push SAMPLE_RATE
+call hzToRadians
+mul 0.5
+localSet angle
+push angle
+call sine
+push angle
+call cosine
+ensureNonZero
+div
+functionEnd float
+
+note references
+; @pos -48 94
+; TPT SVF: Andrew Simper, Cytomic
+; https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+;
+; Biquad: Audio EQ Cookbook
+; https://www.w3.org/TR/audio-eq-cookbook/
+;
+; Direct Form II: Julius O. Smith
+; https://www.dsprelated.com/freebooks/filters/Direct_Form_II.html
+;
+; Transposed forms: Julius O. Smith
+; https://www.dsprelated.com/freebooks/filters/Transposed_Direct_Forms.html
+noteEnd
+
+entry main
+module noise
+; @pos 0 0
+; Shared white noise, about +/-0.2.
+int seed 69420
+float out
+
+push &out
+push &seed
+call xorshift
+castToFloat
+div 2147483648.0
+mul 0.2
+store
+moduleEnd
+
+module onePoleFilter
+; @pos 43 0
+; One-pole low/high-pass filter.
+use math
+use env
+
+float& in &noise:out
+float cutoffHz 400.0
+; @slider &cutoffHz 40 16000 10
+float out
+float high
+
+; Keep the destination and old
+; output below the coefficient.
+push &out
+push out
+
+; alpha = 1 - exp(-2*PI*Hz/Fs).
+push 1.0
+push cutoffHz
+push SAMPLE_RATE
+call hzToRadians
+mul LOG2E*-1
+call exp2
+sub
+
+; out += alpha * (input - out).
+push *in
+sub out
+mul
+add
+store
+
+; high = input - low.
+push &high
+push *in
+sub out
+store
+moduleEnd
+
+module chamberlinLowPass
+; @pos 86 0
+; Chamberlin state-variable low-pass.
+; Lower damping = more resonance.
+; Cutoff stays below 6 kHz to keep
+; this update stable at 48 kHz.
+use env
+float& in &noise:out
+float cutoffHz 800.0
+; @slider &cutoffHz 40 6000 10
+float damping 0.5
+; @slider &damping 0.1 2 0.01
+local float freq
+float band
+float out
+
+push cutoffHz
+push SAMPLE_RATE
+call hzToRadians
+localSet freq
+
+; low += freq * band.
+push &out
+push freq
+mul band
+add out
+store
+
+; band += freq * high, with
+; high = input - low - k * band.
+push &band
+push band
+push *in
+sub out
+push damping
+mul band
+sub
+mul freq
+add
+store
+moduleEnd
+
+module chamberlinFilter
+; @pos 129 0
+; Chamberlin state-variable filter
+; with low, band and high outputs.
+; Lower damping = more resonance.
+; Cutoff stays below 6 kHz to keep
+; this update stable at 48 kHz.
+use env
+float& in &noise:out
+float cutoffHz 800.0
+; @slider &cutoffHz 40 6000 10
+float damping 0.5
+; @slider &damping 0.1 2 0.01
+local float freq
+local float highValue
+float low
+float band
+float high
+
+push cutoffHz
+push SAMPLE_RATE
+call hzToRadians
+localSet freq
+
+; low += freq * band.
+push &low
+push freq
+mul band
+add low
+store
+
+; high = input - low - k * band.
+push *in
+sub low
+push damping
+mul band
+sub
+localSet highValue
+
+; band += freq * high.
+push &band
+push band
+push highValue
+mul freq
+add
+store
+
+push &high
+push highValue
+store
+moduleEnd
+
+module tptLowPass
+; @pos 172 0
+; Trapezoidal low-pass SVF.
+; Lower damping = more resonance.
+float& in &noise:out
+float cutoffHz 1600.0
+; @slider &cutoffHz 40 16000 10
+float damping 0.5
+; @slider &damping 0.1 2 0.01
+local float nextS1
+local float nextS2
+float s1
+float s2
+float out
+
+push &out
+push *in
+push cutoffHz
+call hzToPrewarpedFrequency
+push damping
+push s1
+push s2
+call tptLowPass
+; stack: &out, low, nextS1, nextS2.
+localSet nextS2
+localSet nextS1
+store
+
+; Persist state for the next sample.
+push &s1
+push nextS1
+store
+push &s2
+push nextS2
+store
+moduleEnd
+
+module biquadDirectForm1
+; @pos 215 0
+; Two-pole low-pass, Direct Form I.
+; Higher q = more resonance.
+float& in &noise:out
+float cutoffHz 3200.0
+; @slider &cutoffHz 40 16000 10
+float q 0.70710678
+; @slider &q 0.5 10 0.05
+local float g
+local float g2
+local float damping
+local float norm
+local float b0
+float x1
+float x2
+float y1
+float y2
+float out
+
+push cutoffHz
+call hzToPrewarpedFrequency
+localSet g
+push g
+mul g
+localSet g2
+push 1.0
+push q
+ensureNonZero
+div
+localSet damping
+
+; norm = 1 / (1 + g * (g + k)).
+push 1.0
+push g
+add damping
+mul g
+add 1.0
+ensureNonZero
+div
+localSet norm
+
+; b0 = g2 * norm.
+push g2
+mul norm
+localSet b0
+
+push &out
+push *in
+push b0
+; Low-pass: b1 = 2*b0, b2 = b0.
+push b0
+mul 2.0
+push b0
+; a1 = 2 * (g2 - 1) * norm.
+push g2
+sub 1.0
+mul 2.0
+mul norm
+; a2 = (1 - g*k + g2) * norm.
+push 1.0
+push g
+mul damping
+sub
+add g2
+mul norm
+push x1
+push x2
+push y1
+push y2
+call biquad
+store
+
+push &x2
+push x1
+store
+push &x1
+push *in
+store
+push &y2
+push y1
+store
+push &y1
+push out
+store
+moduleEnd
+
+module biquadDirectForm2
+; @pos 258 0
+; Two-pole low-pass, Direct Form II.
+; Higher q = more resonance.
+float& in &noise:out
+float cutoffHz 3200.0
+; @slider &cutoffHz 40 16000 10
+float q 0.70710678
+; @slider &q 0.5 10 0.05
+local float g
+local float g2
+local float damping
+local float norm
+local float b0
+local float w
+; Previous two internal w values.
+float s1
+float s2
+float out
+
+push cutoffHz
+call hzToPrewarpedFrequency
+localSet g
+push g
+mul g
+localSet g2
+push 1.0
+push q
+ensureNonZero
+div
+localSet damping
+
+; norm = 1 / (1 + g * (g + k)).
+push 1.0
+push g
+add damping
+mul g
+add 1.0
+ensureNonZero
+div
+localSet norm
+
+; b0 = g2 * norm.
+push g2
+mul norm
+localSet b0
+
+; w = input - a1*s1 - a2*s2.
+push *in
+push g2
+sub 1.0
+mul 2.0
+mul norm
+mul s1
+sub
+push 1.0
+push g
+mul damping
+sub
+add g2
+mul norm
+mul s2
+sub
+localSet w
+
+; out = b0*w + b1*s1 + b2*s2.
+push &out
+push w
+mul b0
+push s1
+push b0
+mul 2.0
+mul
+add
+push s2
+mul b0
+add
+store
+
+; Advance internal sample history.
+push &s2
+push s1
+store
+push &s1
+push w
+store
+moduleEnd
+
+module biquadDirectForm2Transposed
+; @pos 301 0
+; Transposed Direct Form II.
+; Higher q = more resonance.
+float& in &noise:out
+float cutoffHz 3200.0
+; @slider &cutoffHz 40 16000 10
+float q 0.70710678
+; @slider &q 0.5 10 0.05
+local float g
+local float g2
+local float damping
+local float norm
+local float b0
+float s1
+float s2
+float out
+
+push cutoffHz
+call hzToPrewarpedFrequency
+localSet g
+push g
+mul g
+localSet g2
+push 1.0
+push q
+ensureNonZero
+div
+localSet damping
+
+; norm = 1 / (1 + g * (g + k)).
+push 1.0
+push g
+add damping
+mul g
+add 1.0
+ensureNonZero
+div
+localSet norm
+
+; b0 = g2 * norm.
+push g2
+mul norm
+localSet b0
+
+; out = b0*input + s1.
+push &out
+push *in
+mul b0
+add s1
+store
+
+; nextS1 = b1*input - a1*out + s2.
+push &s1
+push b0
+mul 2.0
+push *in
+mul
+push g2
+sub 1.0
+mul 2.0
+mul norm
+mul out
+sub
+add s2
+store
+
+; nextS2 = b2*input - a2*out.
+push &s2
+push *in
+mul b0
+push 1.0
+push g
+mul damping
+sub
+add g2
+mul norm
+mul out
+sub
+store
+moduleEnd
+
+module filterbank
+; @pos 358 0
+; @home
+; @favorite
+; Mix low, band and high outputs.
+float& onePole &onePoleFilter:out
+float& onePoleHigh &onePoleFilter:high
+float& chamberlin &chamberlinLowPass:out
+float& chamberlinLow &chamberlinFilter:low
+float& chamberlinBand &chamberlinFilter:band
+float& chamberlinHigh &chamberlinFilter:high
+float& tpt &tptLowPass:out
+float& directForm1 &biquadDirectForm1:out
+float& directForm2 &biquadDirectForm2:out
+float& transposed
+- &biquadDirectForm2Transposed:out
+
+float onePoleLevel 0.16666667
+; @slider &onePoleLevel 0 1 0.01
+float onePoleHighLevel 0.0
+; @slider &onePoleHighLevel 0 1 0.01
+float chamberlinLevel 0.16666667
+; @slider &chamberlinLevel 0 1 0.01
+float chamberlinLowLevel 0.0
+; @slider &chamberlinLowLevel 0 1 0.01
+float chamberlinBandLevel 0.0
+; @slider &chamberlinBandLevel 0 1 0.01
+float chamberlinHighLevel 0.0
+; @slider &chamberlinHighLevel 0 1 0.01
+float tptLevel 0.16666667
+; @slider &tptLevel 0 1 0.01
+float directForm1Level 0.16666667
+; @slider &directForm1Level 0 1 0.01
+float directForm2Level 0.16666667
+; @slider &directForm2Level 0 1 0.01
+float transposedLevel 0.16666667
+; @slider &transposedLevel 0 1 0.01
+float out
+
+push &out
+push *onePole
+mul onePoleLevel
+push *onePoleHigh
+mul onePoleHighLevel
+add
+push *chamberlin
+mul chamberlinLevel
+add
+push *chamberlinLow
+mul chamberlinLowLevel
+add
+push *chamberlinBand
+mul chamberlinBandLevel
+add
+push *chamberlinHigh
+mul chamberlinHighLevel
+add
+push *tpt
+mul tptLevel
+add
+push *directForm1
+mul directForm1Level
+add
+push *directForm2
+mul directForm2Level
+add
+push *transposed
+mul transposedLevel
+add
+store
+moduleEnd
+
+module audioout
+; @pos 413 0
+use env
+float& in &filterbank:out
+float volume 0.25
+; @slider &volume 0 0.5 0.01
+float[] buffer AUDIO_BUFFER_SIZE
+float* pointer &buffer
+; @plot &buffer count(buffer) -0.25 0.25
+
+push pointer
+push *in
+mul volume
+max -1.0
+min 1.0
+store
+push &pointer
+push pointer
+add sizeof(buffer)
+store
+push pointer
+push end(buffer)
+greaterOrEqual
+if
+push &pointer
+push &buffer
+store
+ifEnd
+moduleEnd
+entryEnd

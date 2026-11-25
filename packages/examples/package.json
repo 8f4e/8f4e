@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/examples",
-  "version": "3.21.0",
+  "version": "5.2.2",
   "private": true,
   "description": "8f4e example modules and projects",
   "type": "module",
@@ -22,5 +22,10 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/cli": "*"
+  },
+  "devDependencies": {
+    "@8f4e/compiler": "*",
+    "@8f4e/config": "*",
+    "@8f4e/stdlib": "*"
   }
 }

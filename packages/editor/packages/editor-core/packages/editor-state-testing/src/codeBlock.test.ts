@@ -1,4 +1,4 @@
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { describe, expect, it } from 'vitest';
 import { createMockCodeBlock } from './index';
 
@@ -6,7 +6,7 @@ import { createMockCodeBlock } from './index';
  * Normalize a block for snapshot testing by converting Maps to arrays
  * and setting lastUpdated to a fixed value
  */
-function normalizeBlock(block: CodeBlockGraphicData) {
+function normalizeBlock(block: EditorCodeBlock) {
 	return {
 		...block,
 		lastUpdated: 0,

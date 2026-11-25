@@ -14,8 +14,8 @@ This directory owns the reusable editor core, embedded and full product composit
 - `packages/editor-website/` contains the HTML page and thin Vite entry point that mounts the default composition.
 - `packages/editor-core/` contains the reusable core editor and its state and UI packages.
 - `packages/compiler-worker/` contains the editor-specific Web Worker wrapper around the compiler.
-- `packages/runtime-audio-worklet/` and `packages/runtime-web-worker/` contain the
-  editor runtime implementations.
+- `plugins/audio-runtime/`, `plugins/worker-runtime/` and `plugins/test-runtime/` each own a nested
+  execution package, built separately for its AudioWorklet or Web Worker environment.
 
 ## Development
 

@@ -1,0 +1,13 @@
+{
+  "code": 19,
+  "domain": "syntax",
+  "instruction": "float*&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "A fixed reference requires a non-constant name and a memory start address: <type>& <name> &<memory>, &<module>:<memory>, or &<module>:<index>.",
+}

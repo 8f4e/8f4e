@@ -4,7 +4,7 @@ note
 ; @config testRuntime.enabled true
 
 Group initializers set exposed pointer defaults before child modules execute. Address sources use the immediate parent,
-and sibling group exposures can supply source addresses. Pointers inherited from a shape can also be initialized.
+and sibling group exposures can supply source addresses.
 noteEnd
 
 entry test
@@ -72,13 +72,9 @@ group consumer
 expose input &processor:input
 init &input &signal:output
 
-prototype state
-int* input
-prototypeEnd
-
 entry main
 module processor
-shape state
+int* input
 push *input
 assertEqual 55
 push count(*input)

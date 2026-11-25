@@ -20,12 +20,9 @@ moduleEnd
 
 group audio
 expose exposed &source:value
-prototype inheritedState
-int value 41
-prototypeEnd
 entry main
 module source
-shape inheritedState
+int value 41
 int& localValue &value
 int& indexedValue &this:0
 push *localValue

@@ -1,7 +1,8 @@
 import initEditor, { getEditorBlockId } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import { type GlyphIds, textToGlyphIds } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { entryOutlinesPlugin } from '../src/index';
 
@@ -11,6 +12,7 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	canvas.height = 400;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			entries: ['audio', 'checks'],
@@ -39,7 +41,7 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 					const removePreparation = context.layout.subscribe(({ codeBlock }) => {
 						glyphsByBlock.set(codeBlock, textToGlyphIds(codeBlock.name));
 					});
-					const removeDrawer = context.drawers.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
+					const removeDrawer = context.renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, state }) => {
 						if (!codeBlock.entry) return;
 						draw.drawFill(0, 0, PALETTE_INDICES.surfaceRaised1, codeBlock.width, codeBlock.height);
 						draw.drawGlyphs(
@@ -60,10 +62,9 @@ test.each(['root', 'nested'])('draws entries in the $0 project view', async leve
 	editor.pauseRendering();
 	try {
 		if (level === 'nested') {
-			const group = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
+			const group = editor.state.project.activeLevel.blocks.find(block => block.name === 'checks')!;
 			editor.navigation.openGroup(getEditorBlockId(group));
 		}
-		stopViewportAnimation(editor.state);
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
 		editor.renderFrame();

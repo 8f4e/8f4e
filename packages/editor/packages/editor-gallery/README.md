@@ -13,32 +13,50 @@ import { mountGalleryEditor } from '@8f4e/editor-gallery';
 const editor = await mountGalleryEditor(canvas, {
 	initialProjectUrl: '/examples/demo.8f4e',
 	captureWheel: false,
-	onInitialProjectLoaded: () => canvas.classList.add('editor-ready'),
 });
+canvas.classList.add('editor-ready');
 
 editor.dispose();
 ```
 
 Pass `defaultFont` (for example, `defaultFont: 'pixelcode6x12'`) to choose the font used by projects without
-a `; @config font` directive. Otherwise, the composition chooses PixelCode 6×12 when `(pointer: coarse)` matches
-at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
+a `; @config font` directive. Otherwise, the composition chooses Departure Mono 14 (7×14) when `(pointer: coarse)`
+matches at mount time and IBM VGA 8×16 on other devices. A project font directive takes priority; removing it or loading
 a project without one restores the mount's default. This preference is kept outside project source and saved files.
 
 The composition installs the compiler first, with lazy standard-library include resolution. It includes project URL
-loading, project source saving/export, keyboard input, assertion markers, watch and stack annotations, immediate stack producer highlights, and tooltips.
-Compiler coordination, file-session tracking, URL loading, block backgrounds, code rendering, and loading indicators are eager.
+loading, project source export, keyboard input, assertion markers, watch and stack annotations, immediate stack
+producer highlights, and tooltips. Stack Connections draws links beside the selected code block from each operand
+producer to the highlighted instruction.
+Compiler coordination, undo/redo history, URL loading, home navigation, the dotted canvas background, block backgrounds,
+code rendering, and loading indicators are eager.
+The Enable/Disable and Log block info context-menu actions are available only in the default editor;
+the gallery still interprets `@disabled` from project source.
+`@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
+`@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
+viewport's origin and cell dimensions, plus the active palette.
 `code-block-background` registers before `code-rendering` so block surfaces sit below text and line highlighting.
-On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, saving, tooltips, and
+On core's `ready` event, a deferred loader imports `src/deferred-plugins.ts` for input, connectors, assertion markers, exporting, tooltips, and
 the directive-based loader. Core emits this event after initial project loading/parsing, font-atlas loading, and
 rendering. This is the single loading gate, with no extra frame callback or timer. Optional features initialize from the
-current project and do not block the first render, mounting, or initial-project callbacks. Every optional feature is an individual entry in the
+current project and do not block the first render or mounting. Every optional feature is an individual entry in the
 same deferred list, including input plugins; their implementations load independently. This boundary also gates all
 directive-based lazy imports. The renderer loads its initial font before drawing, and font payloads remain separate
 lazy chunks.
-The `@8f4e/editor-plugin-project-save` plugin saves the entire current project as `.8f4e` source. Export Project
-chooses a destination; Cmd/Ctrl+S reuses it. The composition supplies the canvas and a per-editor
-`@8f4e/editor-file-session`. Open From Disk belongs to the default composition.
-Plot, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
+
+`@8f4e/editor-plugin-elastic-viewport` is included in the deferred set. During panning, larger blocks visibly lag more
+and take longer to spring back into place without changing logical positions or hit testing. The plugin follows the
+browser's live reduced-motion preference.
+The deferred coordinate grid plugin draws dots and labels every 100 editor grid columns and 50 rows. These background
+markers follow the viewport directly, providing a fixed reference for the motion of the blocks.
+The deferred `@8f4e/editor-plugin-loose-wires` plugin draws pixelated connections with a downward sag instead of the
+straight lines used by the default and landing editors. Wires stay attached to their rendered connectors as blocks move.
+
+The `@8f4e/editor-plugin-project-files/export` plugin exports the entire current project as `.8f4e` source.
+Export Project and Cmd/Ctrl+S each choose a destination (or download a file) every time. The gallery retains
+no file association. Open From Disk, file-associated saving and New Project are available in the default
+composition, omitted here.
+Plot, scope, wave, meter, bars, watch, stack, switch, button, piano, slider, crossfade, and audio/worker/test/texture runtimes load through the
 project-signal registry in `src/lazy-plugins.ts`. Watch matches `@watch`/`@w`, and stack matches `@stack`/`@s`.
 Both receive a live reduced-motion preference. Block drawers run in registration order, including later lazy installations.
 MIDI input and binary assets also load through that registry when
@@ -64,19 +82,25 @@ The loader checks cached directives automatically after project changes and grou
 use `view` scope: signals in unopened groups wait until that level is visited. Texture views load for `@texture` as well as `textureRuntime` configuration, using the existing overlay pass.
 Runtime, MIDI, and asset plugins use
 `project` scope and match signals across the complete project tree. Loaded plugins stay installed until disposal.
-Imports and compilation finish independently of mounting and the initial-project callback. A callback may run before
-the mount promise resolves. Mounting waits for URL fetching/parsing, font-atlas loading, and the first render. Project
-fetching/parsing and the selected default font download run in parallel.
+Imports and compilation finish independently of mounting. The mount promise resolves after URL fetching/parsing,
+then font-atlas loading using the prepared project's configuration or the default, layout, and the first render.
 
-Without `initialProjectUrl`, the editor starts with an empty project and calls `onInitialProjectLoaded` after core
-initialization. A URL failure calls `onInitialProjectLoadError`. The host owns page URLs, loading/error UI, canvas
-layout, visibility management, and any WebMCP bridge.
+Without `initialProjectUrl`, the editor starts with an empty project. A failed initial URL request or parse rejects the
+mount promise before the first render; the host can reveal the canvas on fulfillment and display errors on rejection.
+The host owns page URLs, loading/error UI, canvas layout, visibility management, and any WebMCP bridge.
 
-`GalleryEditorMountOptions` supports `initialProjectUrl`, the initial-project callbacks, `sharedAudioContext`,
-`captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. Project creation is disabled by default. A project selects its initial mode with
+`GalleryEditorMountOptions` supports `initialProjectUrl`, `sharedAudioContext`,
+`captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
-from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, and history. Keyboard bindings belong to plugins.
+from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs and shared
+navigation operations. History and keyboard bindings belong to plugins.
+
+After the first render, the gallery loads `group-path` to show the active group and its ancestors as an indented tree.
+The tree appears below the mode hint when it is available and starts on the first row otherwise. It is hidden at the
+project root.
+The deferred `enter-group-button` plugin adds a centered **Enter group** button below each project group header,
+so both mouse and touch users can open child projects directly.
 
 Keyboard behavior comes from three independent plugins: `keyboard-mode-switching` for `e`/Escape,
 `keyboard-navigation` for view-mode line selection and block navigation, and `keyboard-editing` for caret movement,
@@ -84,10 +108,15 @@ text changes, and undo/redo shortcuts. View mode supports line selection and blo
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
+The independent `font-preview` plugin uses **Cmd/Ctrl+-** and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**) to step backward and
+forward through the catalog ordered by pixel-cell area, stopping at either end. Equal-area fonts remain separate steps.
+Each loaded font change shows its name, credits and a 16×16 character grid for three seconds without blocking editing.
+Previewing leaves project source, history and saved files unchanged; loading another project restores its configured font.
+
 After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
-with a coarse primary pointer receive none of the three plugins, and their mode overlay is hidden by default. This
+with a coarse primary pointer receive none of these four plugins, and their mode overlay is hidden by default. This
 is a capability check when the deferred registry is created; it does not identify devices by user agent.
-Coarse-pointer devices load `touch-input` for configurable viewport dragging and grid snapping. Taps
+Coarse-pointer devices load `touch-input` for configurable viewport dragging. Taps
 remain available to controls, and dragging does not edit block positions.
 
 Touch panning uses one finger in both directions by default. Set `touchNavigation: { axis: 'horizontal' }`
@@ -98,10 +127,10 @@ and keep their gestures separate from viewport panning.
 The independent `mouse-input` plugin loads on all devices to forward mouse and wheel input, including the mouse events
 generated by touch taps. The host's `captureWheel` option configures this plugin; core has no wheel-capture option or
 DOM input listeners. Keyboard-to-memory loads only for raw `@config keyboard.*` directives throughout the project,
-including unopened groups and configuration added during editing. Save shortcuts remain an independent plugin.
+including unopened groups and configuration added during editing. The export shortcut belongs to the export plugin.
 
 This package has its own composition and dependencies. The full `@8f4e/editor-default` composition provides session
-persistence, Open From Disk, WASM exports, screenshots, built-in module browsing, and additional editing actions such as
+persistence, New Project, Open From Disk, WASM exports, screenshots, built-in module browsing, and additional editing actions such as
 visual grouping, execution toggles, favorites navigation/editing, and memory disconnection.
 
 Verify from the workspace root:
@@ -115,7 +144,7 @@ npx nx run @8f4e/8f4e-website:test:browser
 
 Block copy/paste is provided by `@8f4e/editor-plugin-code-block-copy-paste`, loaded independently in the deferred set. The host injects its browser clipboard reader/writer; grouping receives its own writer. Paste Code Block places sources at the menu location, changing only `@pos`. Declaration names, group names, and references stay intact. Ctrl/Cmd+V in keyboard editing inserts plain text at the caret, including multiple lines; paste is not buffered during loading.
 
-`@8f4e/editor-plugin-block-authoring` loads after `ready` for New Module/Function/Prototype/Note and Delete menu
+`@8f4e/editor-plugin-block-authoring` loads after `ready` for New Module/Function/Note and Delete menu
 commands. Templates, random names, and menu actions belong to that plugin; core owns generic insertion/removal,
 entry assignment, revisions, and history.
 

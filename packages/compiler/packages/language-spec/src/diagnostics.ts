@@ -1,10 +1,9 @@
-import type { ProjectGroupPath } from './project';
+import type { ProjectEntryName, ProjectGroupPath } from './project';
 
 /** Source ownership is explicit even before a document has been divided into blocks. */
 export type DiagnosticSource =
 	| { readonly kind: 'document' }
 	| { readonly kind: 'block'; readonly projectBlockId: number; readonly projectGroupPath: ProjectGroupPath }
-	| { readonly kind: 'scope'; readonly projectGroupPath: ProjectGroupPath }
 	| {
 			readonly kind: 'include-file';
 			readonly includeId: string;
@@ -23,8 +22,17 @@ export type DiagnosticSource =
 			readonly includeSite: { readonly projectBlockId: number; readonly lineNumber: number };
 	  };
 
-/** Zero-based line in the identified document, block, project scope, or include source. */
-export type DiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
+/** Zero-based line in the identified document, block, or include source. */
+export type LineDiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
+
+/** An entry-table declaration, which has a name and scope but no code-block row. */
+export interface ProjectEntryDiagnosticLocation {
+	readonly kind: 'project-entry';
+	readonly projectGroupPath: ProjectGroupPath;
+	readonly entryName: ProjectEntryName;
+}
+
+export type DiagnosticLocation = LineDiagnosticLocation | ProjectEntryDiagnosticLocation;
 
 /** Source line supplied to diagnostic construction after syntax has identified its position. */
 export interface CompilerDiagnosticLine {

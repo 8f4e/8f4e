@@ -3,9 +3,11 @@
 includes
 ; @pos -132 -30
 include std/grid/indexToXY
+include std/math/wrapIndex
 include std/memory/loadBitAt2D
 include std/memory/storeBitAt2D
 include std/random/xorshift
+include std/memory/swapPointers
 includesEnd
 
 function evolveCell
@@ -57,22 +59,14 @@ push neighbors
 push buffer
 push WIDTH
 push HEIGHT
-; Offset before remainder
-; to avoid negative values.
 push x
-push dx
-add
-push WIDTH-1
-add
-push WIDTH
-remainder
+add dx
+sub 1
+call wrapIndex WIDTH
 push y
-push dy
-add
-push HEIGHT-1
-add
-push HEIGHT
-remainder
+add dy
+sub 1
+call wrapIndex HEIGHT
 call loadBitAt2D
 add
 localSet neighbors
@@ -170,7 +164,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -132 -5
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -220,11 +214,11 @@ const SEED_HEIGHT HEIGHT/2
 int8u[] mono BYTE_COUNT
 int8u[] next BYTE_COUNT
 
-; @textureUpload &mono 1bit 128 128
-; @texture &mono 2 128 128
+; @textureUpload simulation:current 1bit 128 128
+; @texture simulation:current 2 128 128
 moduleEnd
 module simulation
-; @pos 126 -30
+; @pos 139 -30
 use screen
 
 int running 1
@@ -271,11 +265,8 @@ push current
 push next
 call drawGeneration
 
-; Publish the completed 
-; generation.
-push current
-push next
-memoryCopy BYTE_COUNT
+; Reuse the previous front buffer next time.
+call swapPointers &current &next
 
 push &generation
 push generation

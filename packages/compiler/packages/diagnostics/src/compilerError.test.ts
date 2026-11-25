@@ -2,14 +2,14 @@ import type { SourceDiagnostic } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { CompilerError, serializeDiagnostic, withAsyncCompilerStage, withCompilerStage } from './compilerError';
 
-const diagnostic: SourceDiagnostic = {
+const diagnostic = {
 	kind: 'source',
 	domain: 'semantic',
 	code: 1,
 	message: 'Unknown value',
 	location: { kind: 'block', projectBlockId: 7, projectGroupPath: 'audio', lineNumber: 3 },
 	instruction: 'push',
-};
+} satisfies SourceDiagnostic;
 
 describe('compiler diagnostics', () => {
 	it('preserves the complete diagnostic through serialization and returns detached snapshots', () => {

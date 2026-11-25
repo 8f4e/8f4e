@@ -345,6 +345,22 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       },
     ],
     "name": "mix",
+    "signature": {
+      "parameters": [
+        {
+          "name": "left",
+          "type": "int",
+        },
+        {
+          "name": "right",
+          "type": "float",
+        },
+      ],
+      "returns": [
+        "int",
+        "float",
+      ],
+    },
     "type": "function",
   },
   "module": {
@@ -659,86 +675,6 @@ exports[`compileToAST integration > tokenizes source blocks into validated ASTs 
       "lineNumber": 0,
     },
     "type": "module",
-  },
-  "prototype": {
-    "id": "state",
-    "lines": [
-      {
-        "arguments": [
-          {
-            "referenceKind": "plain",
-            "scope": "local",
-            "type": "identifier",
-            "value": "state",
-          },
-        ],
-        "diagnosticSource": {
-          "kind": "document",
-        },
-        "instruction": "prototype",
-        "lineNumber": 0,
-      },
-      {
-        "arguments": [
-          {
-            "referenceKind": "plain",
-            "scope": "local",
-            "type": "identifier",
-            "value": "phase",
-          },
-        ],
-        "diagnosticSource": {
-          "kind": "document",
-        },
-        "instruction": "float",
-        "lineNumber": 1,
-      },
-      {
-        "arguments": [
-          {
-            "referenceKind": "plain",
-            "scope": "local",
-            "type": "identifier",
-            "value": "history",
-          },
-          {
-            "referenceKind": "constant",
-            "scope": "local",
-            "type": "identifier",
-            "value": "TABLE_SIZE",
-          },
-        ],
-        "diagnosticSource": {
-          "kind": "document",
-        },
-        "instruction": "int[]",
-        "lineNumber": 2,
-      },
-      {
-        "arguments": [],
-        "diagnosticSource": {
-          "kind": "document",
-        },
-        "instruction": "prototypeEnd",
-        "lineNumber": 4,
-      },
-    ],
-    "prototypeLine": {
-      "arguments": [
-        {
-          "referenceKind": "plain",
-          "scope": "local",
-          "type": "identifier",
-          "value": "state",
-        },
-      ],
-      "diagnosticSource": {
-        "kind": "document",
-      },
-      "instruction": "prototype",
-      "lineNumber": 0,
-    },
-    "type": "prototype",
   },
 }
 `;

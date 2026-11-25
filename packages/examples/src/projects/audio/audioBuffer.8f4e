@@ -1,7 +1,13 @@
 8f4e/v1
 
+includes
+; @pos 7 1
+include std/audio/hzToRadians
+include std/math/trig/sine
+includesEnd
+
 function buffer
-; @pos -120 23
+; @pos -30 27
 #export buffer
 use env
 
@@ -10,84 +16,8 @@ call main
 loopEnd
 functionEnd
 
-function sine
-; @pos 7 1
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-param float x
-
-use math
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
-
-constants env
-; @pos -120 12
-; @favorite
-; Auto-generated environment constants
-; Changes will be overwritten
-
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
-
-constantsEnd
-
 constants math
-; @pos -120 34
+; @pos -30 37
 
 const PI      3.141592653589793
 const NEG_PI -3.141592653589793
@@ -108,8 +38,18 @@ const E       2.718281828459045
 
 constantsEnd
 
+constants env
+; @pos 0 0
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
 note
-; @pos -120 0
+; @pos -43 -10
 ; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
@@ -118,7 +58,7 @@ note
 noteEnd
 
 note colors
-; @pos -172 0
+; @pos -30 10
 ; @config color.canvas #0c141b
 ; @config color.surface #1a2933
 ; @config color.ink #d3e0e1
@@ -135,7 +75,7 @@ note colors
 noteEnd
 
 note
-; @pos 131 7
+; @pos 210 7
 ; A minimal audio synthesis example
 ; that generates a sine wave
 ; (phaseAccumulator + sine)
@@ -146,7 +86,7 @@ noteEnd
 
 entry main
 module phaseAccumulator
-; @pos 46 1
+; @pos 116 -1
 use env
 
 float defaultFreq 440
@@ -156,17 +96,11 @@ float out
 
 use math
 
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
+; Advance phase in radians.
 push &phase
 push phase
-push TAU
-push *frequency
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
+call hzToRadians 
+- *frequency SAMPLE_RATE
 add
 store
 
@@ -189,7 +123,7 @@ store
 
 moduleEnd
 module audioout
-; @pos 88 1
+; @pos 158 -1
 ; @home
 use env
 

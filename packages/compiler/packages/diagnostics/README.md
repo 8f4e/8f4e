@@ -4,9 +4,10 @@ Shared construction and transport of compiler diagnostics. Diagnostic types, sou
 belong to `@8f4e/language-spec`; this package owns `CompilerError`, semantic wording and source-error factories.
 It depends on language-spec and does not depend on the tokenizer or compiler pipeline.
 
-`getError(code, line, options?)` creates a semantic `CompilerError`. The line requires `diagnosticSource`
-and a zero-based `lineNumber`. Options contain only `symbol`, stack item kinds/types, and message `details`;
-they never supply or repair source ownership. Compiler passes preserve source ownership when copying or substituting lines.
+`getError(code, source, options?)` creates a semantic `CompilerError`. A source line requires `diagnosticSource`
+and a zero-based `lineNumber`; an entry-table error uses a named `project-entry` location instead. Options contain
+only `symbol`, stack item kinds/types, and message `details`; they never supply or repair source ownership. Compiler
+passes preserve source ownership when copying or substituting lines.
 
 `syntaxErrorAt(code, message, source, line)` constructs a syntax error at an explicitly supplied source position.
 Pure syntax helpers return failure data for their caller to locate. Expected source errors use the single
@@ -21,13 +22,13 @@ retaining the stage, stack and any known source location. There are no empty-con
 If a transported internal failure has no location, serialization or a later stage boundary can attach a known one
 without changing the original failure's stage or stack. Existing source and internal diagnostic locations are preserved.
 
-Locations distinguish document rows, block rows, project-scope rows, include-file rows, and included symbols with their
-include site. Exposure declarations retain their row in the owning group's `code`; composition supplies the group's
-scope identity before target validation. Hosts translate that complete scope location directly into editor errors.
+Locations distinguish document rows, block rows, named project entries, include-file rows, and included symbols with
+their include site. An entry location carries its project scope and entry name but no line number. Group declarations
+retain their row in the owning group's `code`; composition supplies that group's
+block identity and its containing project path. Hosts translate that block location directly into editor errors.
 Early include validation uses `include-file` with the file id and a row
 relative to that file. Its `includeSite` identifies the loading declaration when the file belongs to a project;
 standalone include parsing still retains file identity. Diagnostics inside an included symbol use a row relative to
 that symbol. Hosts can navigate source diagnostics and present internal or unmappable failures persistently.
-Inherited memory declarations retain their original source line and a separate `shapeLine` for module layout.
 
 Run the package's Nx `build`, `test` and `typecheck` targets from the repository root.

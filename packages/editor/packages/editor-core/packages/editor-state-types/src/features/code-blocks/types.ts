@@ -7,20 +7,23 @@ import type {
 	PlannedMemoryDeclaration,
 	ProjectEntryName,
 	ProjectGroupPath,
+	ProjectMemoryExposure,
 } from '@8f4e/language-spec';
 import type { Position } from '../../shared/types';
-import type { ViewportBlockAlignment } from '../viewport/blockAlignment';
 import type { CodeBlockDisplayModel } from './buildDisplayModel';
+import type { DirectiveDisplayState } from './features/directives/types';
 
 /**
- * The type of a code block, determined by its content markers.
+ * The type of an editor block, determined by structural ownership or document content markers.
  * - 'module': Contains module/moduleEnd markers (compiled to WASM)
  * - 'function': Contains function/functionEnd markers (compiled to WASM as reusable helper)
  * - 'constants': Contains constants/constantsEnd markers
+ * - 'includes': Contains includes/includesEnd markers
  * - 'note': Contains note/noteEnd markers (editor-only notes, not compiled)
+ * - 'group': Owns a child project level, even while its wrapper source is incomplete
  * - 'unknown': Mixed or incomplete markers, or no recognizable markers
  */
-export type CodeBlockType = DocumentBlockType | 'unknown';
+export type CodeBlockType = DocumentBlockType | 'group' | 'unknown';
 
 export interface MemoryIdentifier {
 	memory: PlannedMemoryDeclaration;
@@ -52,16 +55,20 @@ export interface ParsedDirectiveRecord {
 }
 
 /**
- * Runtime graphic data for a code block.
- * Contains all information needed to render and interact with a code block.
+ * Runtime source and logical layout data for a code block.
+ * World-space positions are used for layout and interaction; web-ui derives its own per-frame rendering geometry.
  */
-export interface CodeBlockGraphicData {
+export interface EditorCodeBlock {
 	width: number;
 	height: number;
 	code: string[];
-	/** True for the root project's directly owned project-scope source. */
-	isProjectScope?: boolean;
+	/** Editor-owned source that can be inspected but not edited, moved, or deleted. */
+	readonly readOnly?: boolean;
+	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
+	tabStopsByLine: number[][];
 	lineNumberColumnWidth: number;
+	/** Display facts derived from source directives, independent of selection and pixel layout. */
+	directiveDisplayState: DirectiveDisplayState;
 	/** Logical rows currently presented by the editor, before render-only glyph resolution. */
 	displayModel: CodeBlockDisplayModel;
 	/** The gaps between lines */
@@ -98,49 +105,33 @@ export interface CodeBlockGraphicData {
 	 */
 	creationIndex: number;
 	/**
-	 * The type of the code block, determined by its content markers.
+	 * The settled editor block type. Structural group ownership takes precedence over source markers.
 	 * Updated automatically when code changes.
 	 */
 	blockType: CodeBlockType;
 	/**
 	 * Execution entry name used by module and project-group blocks in the compiler export pipeline.
 	 * This is separate from the visual `; @group` directive.
+	 * Incomplete source may retain its last entry until it becomes a non-execution block.
 	 */
 	entry?: string;
 	/** Canonical path of the project group that owns this block. */
 	projectPath: ProjectGroupPath;
 	/** Child project level owned by a language-level project-group block. */
-	childProject?: ProjectLevel;
+	childLevel?: ProjectLevel;
+	/** Current source declarations prepared for a project group, separate from accepted compiler targets. */
+	projectMemoryExposures?: readonly ProjectMemoryExposure[];
 	/**
 	 * When true, the block is excluded from compilation and rendered with a transparent background.
 	 * Defaults to false.
 	 */
 	disabled: boolean;
 	/**
-	 * When true, marks this block as the home block for initial viewport placement.
-	 * The viewport centers on the first block with isHome=true when a project loads.
-	 * Derived from ; @home directive.
-	 * Defaults to false.
-	 */
-	isHome: boolean;
-	/**
-	 * Optional viewport alignment hint derived from `; @home [center|left|right|top|bottom]`.
-	 * When omitted, home navigation falls back to centered placement.
-	 */
-	homeAlignment?: ViewportBlockAlignment;
-	/**
 	 * Parsed directive records derived from this block's code lines during the central update pass.
 	 * Covers editor directives (`; @name`).
 	 * Populated once per update; consumers should prefer these over rescanning raw code lines.
 	 */
 	parsedDirectives: ParsedDirectiveRecord[];
-	/**
-	 * Viewport anchor set by `; @viewport <corner>`.
-	 * When present, `@pos` is interpreted as an inward offset from the specified viewport corner,
-	 * and `gridX`/`gridY` store those anchored offsets rather than world-space grid coordinates.
-	 * Undefined when no valid `@viewport` directive is present (world-space placement).
-	 */
-	viewportAnchor?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 	/**
 	 * When true, this block belongs to the always-on-top z-order partition and renders above
 	 * all normal blocks. Set by `; @alwaysOnTop`. Defaults to false.
@@ -159,22 +150,20 @@ export interface EntryBounds {
 
 /** An editor-owned project level. Remembered views and selections live only in browser memory. */
 export interface ProjectLevel {
-	/** Entry definitions local to this level, including empty entries. */
+	/** Settled entry definitions local to this level, including empty entries and each execution block's assigned entry. */
 	entries: ProjectEntryName[];
 	path: ProjectGroupPath;
-	blocks: CodeBlockGraphicData[];
+	blocks: EditorCodeBlock[];
 	viewport?: Position;
-	selectedBlock?: CodeBlockGraphicData;
+	selectedBlock?: EditorCodeBlock;
 }
 
-/**
- * Code block rendering state for rendering code blocks and UI elements.
- */
-export type CodeBlockRendering = {
+/** Live project tree, active level, selection and logical block interaction state. */
+export type EditorProjectState = {
 	/** Recursive project-tree root. */
-	rootProject: ProjectLevel;
-	/** Direct reference to the project level currently rendered by the editor. */
-	currentProject: ProjectLevel;
+	rootLevel: ProjectLevel;
+	/** Direct reference to the project level currently open in the editor. */
+	activeLevel: ProjectLevel;
 	/** Padded bounds of entries containing modules or project groups in the current level. */
 	entryBounds: EntryBounds[];
 	/**
@@ -183,6 +172,6 @@ export type CodeBlockRendering = {
 	 * This is a runtime-only value and is NOT persisted.
 	 */
 	nextCodeBlockCreationIndex: number;
-	draggedCodeBlock?: CodeBlockGraphicData;
-	selectedCodeBlock?: CodeBlockGraphicData;
+	draggedCodeBlock?: EditorCodeBlock;
+	selectedCodeBlock?: EditorCodeBlock;
 };

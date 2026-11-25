@@ -21,6 +21,23 @@ describe('getError', () => {
 		}
 	});
 
+	it('locates an entry-table error by name and scope without inventing a row', () => {
+		const location = { kind: 'project-entry', projectGroupPath: '', entryName: 'initDefaults' } as const;
+		const error = getError(ErrorCode.RESERVED_ROOT_ENTRY_NAME, location, {
+			symbol: location.entryName,
+			details: { identifier: location.entryName },
+		});
+		expect(error.diagnostic).toEqual({
+			kind: 'source',
+			domain: 'semantic',
+			code: ErrorCode.RESERVED_ROOT_ENTRY_NAME,
+			message: `Root entry name "initDefaults" is reserved for a compiler-generated export. (${ErrorCode.RESERVED_ROOT_ENTRY_NAME})`,
+			location,
+			instruction: 'entry',
+			symbol: location.entryName,
+		});
+	});
+
 	it('formats stack mismatch diagnostics with stack item types', () => {
 		const error = getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, line, {
 			symbol: 'example',

@@ -73,10 +73,11 @@ export const projects = [
 		path: 'audio/samplePlayerVariableSpeed.8f4e',
 	},
 	{
-		id: 'cyclic-timestretch',
-		title: 'Cyclic time stretch',
-		description: 'Stretch a sample by repeating and crossfading short cycles while preserving their playback pitch.',
-		path: 'audio/cyclicTimestretch.8f4e',
+		id: 'self-playing-piano',
+		title: 'Self-playing piano',
+		description:
+			'Choose notes on the on-screen keyboard and shape a felt piano melody with tempo, pitch and velocity controls.',
+		path: 'audio/selfPlayingPiano.8f4e',
 	},
 	{
 		id: 'minblep',
@@ -92,18 +93,6 @@ export const projects = [
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
 	},
 	{
-		id: 'dx7-algorithm-5',
-		title: 'DX7 Algorithm 5',
-		description: 'Play a six-operator DX7-style voice with movable factory presets.',
-		path: 'audio/dx7Algorithm5.8f4e',
-	},
-	{
-		id: 'dx7-stg-crescendo',
-		title: 'DX7 STG CRSNDO',
-		description: 'Hold a keyboard note to swell a DX7-style string voice with delayed vibrato and stereo reverb.',
-		path: 'audio/dx7StgCrescendo.8f4e',
-	},
-	{
 		id: 'formant-synth',
 		title: 'Formant synthesizer',
 		description: 'Cycle through vowel sounds with a sawtooth oscillator and three formant filters.',
@@ -117,16 +106,16 @@ export const projects = [
 		path: 'audio/gridsPatterns.8f4e',
 	},
 	{
+		id: 'polyrhythm',
+		title: 'Polyrhythm clocks',
+		description: 'Set a reference BPM and a ratio for two stereo 808 snare clocks, and reset both phases together.',
+		path: 'audio/polyrhythm.8f4e',
+	},
+	{
 		id: 'reverb',
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
 		path: 'audio/reverb.8f4e',
-	},
-	{
-		id: 'granular-sampler',
-		title: 'Granular sampler',
-		description: 'Explore sample playback driven by a clock, random positions and modulation, with stereo reverb.',
-		path: 'audio/granularSampler.8f4e',
 	},
 	{
 		id: 'risen',
@@ -257,13 +246,13 @@ export const projects = [
 ];
 
 export const projectCategories = [
-	{ path: 'misc', title: 'Basics' },
-	{ path: 'audio', title: 'Audio' },
-	{ path: 'audio/amigaMods', title: 'Amiga MODs' },
-	{ path: 'digital', title: 'Digital logic' },
-	{ path: 'midi', title: 'MIDI' },
-	{ path: 'machine-learning', title: 'Machine learning' },
-	{ path: 'visuals', title: 'Visuals' },
+	{ path: 'misc', title: 'Basic examples' },
+	{ path: 'audio', title: 'Audio examples' },
+	{ path: 'audio/amigaMods', title: 'Amiga MOD examples' },
+	{ path: 'digital', title: 'Digital logic examples' },
+	{ path: 'midi', title: 'MIDI examples' },
+	{ path: 'machine-learning', title: 'Machine learning examples' },
+	{ path: 'visuals', title: 'Visual examples' },
 ].map(category => ({
 	...category,
 	projects: projects.filter(project => project.path.slice(0, project.path.lastIndexOf('/')) === category.path),

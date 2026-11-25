@@ -1,11 +1,11 @@
 import exampleModuleSources from 'virtual:8f4e-sources/example-modules';
 import initEditor, { type Editor } from '@8f4e/editor-core';
+import { createElasticViewportPlugin } from '@8f4e/editor-plugin-elastic-viewport';
 import { createExampleModulesPlugin } from '@8f4e/editor-plugin-example-modules';
 import { createKeyboardMemoryPlugin } from '@8f4e/editor-plugin-keyboard-memory';
 import { createDeferredPluginLoaderPlugin, createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createMouseInputPlugin } from '@8f4e/editor-plugin-mouse-input';
-import { createProjectOpenPlugin } from '@8f4e/editor-plugin-project-open';
-import { createProjectSavePlugin } from '@8f4e/editor-plugin-project-save';
+import { createProjectFilesPlugin } from '@8f4e/editor-plugin-project-files';
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createScreenshotPlugin } from '@8f4e/editor-plugin-screenshot';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
@@ -20,6 +20,8 @@ const { getCodeBuffer, getMemory, writeMemory } = vi.hoisted(() => ({
 }));
 
 vi.mock('@8f4e/editor-core', () => ({ default: vi.fn() }));
+vi.mock('glugglugglug', () => ({ Engine: class {} }));
+vi.mock('@8f4e/editor-plugin-elastic-viewport', { spy: true });
 vi.mock('@8f4e/editor-plugin-mouse-input', { spy: true });
 vi.mock('@8f4e/editor-plugin-lazy-loader', { spy: true });
 vi.mock('@8f4e/editor-plugin-session-persistence', () => ({
@@ -37,11 +39,8 @@ vi.mock('@8f4e/editor-plugin-keyboard-memory', () => ({
 vi.mock('@8f4e/editor-plugin-screenshot', () => ({
 	createScreenshotPlugin: vi.fn(() => ({ id: 'screenshot', setup: () => () => {} })),
 }));
-vi.mock('@8f4e/editor-plugin-project-save', () => ({
-	createProjectSavePlugin: vi.fn(() => ({ id: 'project-save', setup: () => () => {} })),
-}));
-vi.mock('@8f4e/editor-plugin-project-open', () => ({
-	createProjectOpenPlugin: vi.fn(() => ({ id: 'project-open', setup: () => () => {} })),
+vi.mock('@8f4e/editor-plugin-project-files', () => ({
+	createProjectFilesPlugin: vi.fn(() => ({ id: 'project-files', setup: () => () => {} })),
 }));
 vi.mock('@8f4e/editor-plugin-wasm-export', () => ({
 	createWasmExportPlugin: vi.fn(() => ({ id: 'wasm-export', setup: () => () => {} })),
@@ -82,9 +81,11 @@ describe('default editor plugins', () => {
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
-			'project-file-session',
+			'undo-redo',
+			'home',
 			'project-url-loader',
 			'session-persistence',
+			'dotted-background',
 			'code-block-background',
 			'code-rendering',
 			'loading-indicators',
@@ -93,6 +94,9 @@ describe('default editor plugins', () => {
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
 		expect(createLazyPluginLoaderPlugin).not.toHaveBeenCalled();
 		const deferredPlugins = await loadDeferredPlugins();
+		expect(
+			vi.mocked(window.matchMedia).mock.calls.filter(([query]) => query === '(prefers-reduced-motion: reduce)')
+		).toHaveLength(1);
 		expect(createMouseInputPlugin).toHaveBeenCalledWith({ inputTarget: canvas, captureWheel: false });
 		const pluginIds = [...initialPlugins, ...deferredPlugins].map(plugin => plugin.id);
 		expect(pluginIds).toContain('mouse-input');
@@ -102,24 +106,33 @@ describe('default editor plugins', () => {
 		expect(pluginIds).toEqual(
 			expect.arrayContaining([
 				'keyboard-mode-switching',
+				'enter-group-button',
+				'group-path',
 				'keyboard-navigation',
 				'keyboard-editing',
 				'font-preview',
 				'code-block-background',
 				'code-rendering',
 				'connectors',
+				'wires',
 				'error-messages',
 				'jump-to-error',
 				'loading-indicators',
 				'dialogs',
 				'context-menu',
+				'project-new',
 				'block-authoring',
+				'toggle-disabled',
+				'log-block-info',
+				'coordinate-grid',
 				'entry-outlines',
 				'offscreen-block-arrows',
+				'elastic-viewport',
+				'stack-connections',
 				'stack-producers',
 				'tooltips',
 				'favorites',
-				'project-file-session',
+				'project-files',
 			])
 		);
 		expect(pluginIds).not.toContain('watch');
@@ -128,8 +141,7 @@ describe('default editor plugins', () => {
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl: undefined,
-			onLoaded: undefined,
-			onError: undefined,
+			failureMode: 'empty-project',
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage: expect.anything(),
@@ -140,19 +152,32 @@ describe('default editor plugins', () => {
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		const options = vi.mocked(createScreenshotPlugin).mock.calls[0][0];
 		expect(options.canvas).toBe(canvas);
-		const { fileSession } = vi.mocked(createProjectOpenPlugin).mock.calls[0][0];
-		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
-			document: canvas.ownerDocument,
-			fileSession,
-			showOpenMenuItem: true,
+		expect(createProjectFilesPlugin).toHaveBeenCalledWith({
+			inputTarget: canvas,
 		});
-		expect(createProjectSavePlugin).toHaveBeenCalledWith({ inputTarget: canvas, fileSession });
-		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].plugins).toContain(fileSession.plugin);
 		expect(createWasmExportPlugin).toHaveBeenCalledWith({ document: canvas.ownerDocument, getCodeBuffer });
 		expect(renderFrame).not.toHaveBeenCalled();
 		options.renderFrame();
 		expect(renderFrame).toHaveBeenCalledOnce();
 		editor.dispose();
+	});
+
+	it('defers elastic viewport motion and forwards the live reduced-motion preference', async () => {
+		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
+		const motionPreference = { matches: false };
+		vi.mocked(window.matchMedia).mockImplementation(
+			query => (query === '(prefers-reduced-motion: reduce)' ? motionPreference : { matches: false }) as MediaQueryList
+		);
+		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
+		await mountDefaultEditor(canvas, { storage: {} as Storage });
+		expect(createElasticViewportPlugin).not.toHaveBeenCalled();
+		const plugins = await loadDeferredPlugins();
+		expect(plugins.map(plugin => plugin.id)).toContain('elastic-viewport');
+		expect(createElasticViewportPlugin).toHaveBeenCalledOnce();
+		const { prefersReducedMotion } = vi.mocked(createElasticViewportPlugin).mock.calls[0][0];
+		expect(prefersReducedMotion()).toBe(false);
+		motionPreference.matches = true;
+		expect(prefersReducedMotion()).toBe(true);
 	});
 
 	it('defers the PWA update plugin when the host supplies a service worker', async () => {
@@ -172,29 +197,15 @@ describe('default editor plugins', () => {
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const storage = {} as Storage;
 		const initialProjectUrl = 'https://example.com/project.8f4e';
-		const onInitialProjectLoaded = vi.fn();
-		const onInitialProjectLoadError = vi.fn();
 		const editor = await mountDefaultEditor(canvas, {
 			storage,
 			storageNamespace: 'custom',
 			initialProjectUrl,
-			onInitialProjectLoaded,
-			onInitialProjectLoadError,
-			showOpenMenuItem: false,
 		});
 		expect(createProjectUrlLoaderPlugin).toHaveBeenCalledWith({
 			fetch: globalThis.fetch,
 			initialProjectUrl,
-			onLoaded: onInitialProjectLoaded,
-			onError: onInitialProjectLoadError,
-		});
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
-		await loadDeferredPlugins();
-		expect(createProjectOpenPlugin).toHaveBeenCalledWith({
-			document: canvas.ownerDocument,
-			fileSession: expect.anything(),
-			showOpenMenuItem: false,
+			failureMode: 'empty-project',
 		});
 		expect(createSessionPersistencePlugin).toHaveBeenCalledWith({
 			storage,
@@ -204,26 +215,28 @@ describe('default editor plugins', () => {
 		editor.dispose();
 	});
 
-	it('reports initialized content without a URL once editor initialization finishes', async () => {
+	it('waits for core initialization before resolving the mount without a URL', async () => {
 		let finish!: (editor: Editor) => void;
 		vi.mocked(initEditor).mockReturnValueOnce(
 			new Promise(resolve => {
 				finish = resolve;
 			})
 		);
-		const onInitialProjectLoaded = vi.fn();
-		const onInitialProjectLoadError = vi.fn();
+		const mounted = vi.fn();
 		const canvas = { ownerDocument: { defaultView: window } } as HTMLCanvasElement;
 		const mounting = mountDefaultEditor(canvas, {
 			storage: {} as Storage,
-			onInitialProjectLoaded,
-			onInitialProjectLoadError,
+		}).then(editor => {
+			mounted(editor);
+			return editor;
 		});
-		expect(onInitialProjectLoaded).not.toHaveBeenCalled();
-		finish({ dispose: vi.fn() } as Editor);
+		await vi.waitFor(() => expect(initEditor).toHaveBeenCalledOnce());
+		expect(mounted).not.toHaveBeenCalled();
+		const coreEditor = { dispose: vi.fn() } as Editor;
+		finish(coreEditor);
 		const editor = await mounting;
-		expect(onInitialProjectLoaded).toHaveBeenCalledOnce();
-		expect(onInitialProjectLoadError).not.toHaveBeenCalled();
+		expect(editor).toBe(coreEditor);
+		expect(mounted).toHaveBeenCalledExactlyOnceWith(editor);
 		editor.dispose();
 	});
 
@@ -235,10 +248,10 @@ describe('default editor plugins', () => {
 		});
 		const ids = (await loadDeferredPlugins()).map(plugin => plugin.id);
 		expect(ids).not.toContain('keyboard-mode-switching');
-		expect(ids).toEqual(expect.arrayContaining(['keyboard-navigation', 'keyboard-editing']));
+		expect(ids).toEqual(expect.arrayContaining(['group-path', 'keyboard-navigation', 'keyboard-editing']));
 	});
 
-	it('keeps the compiler first when hosts replace or omit feature plugins', async () => {
+	it('keeps the compiler first when hosts replace or omit feature plugins, including the dotted background', async () => {
 		vi.mocked(initEditor).mockResolvedValue({ dispose: vi.fn() } as Editor);
 		const plugins = [{ id: 'custom', setup: vi.fn(() => () => {}) }];
 		const editor = await mountDefaultEditor({ ownerDocument: { defaultView: window } } as HTMLCanvasElement, {
@@ -260,8 +273,7 @@ describe('default editor plugins', () => {
 		expect(createExampleModulesPlugin).not.toHaveBeenCalled();
 		expect(createKeyboardMemoryPlugin).not.toHaveBeenCalled();
 		expect(createScreenshotPlugin).not.toHaveBeenCalled();
-		expect(createProjectOpenPlugin).not.toHaveBeenCalled();
-		expect(createProjectSavePlugin).not.toHaveBeenCalled();
+		expect(createProjectFilesPlugin).not.toHaveBeenCalled();
 		expect(createWasmExportPlugin).not.toHaveBeenCalled();
 		withoutPlugins.dispose();
 	});
@@ -279,7 +291,9 @@ it('omits all keyboard plugins and keyboard guidance on coarse-pointer browsers'
 		});
 		expect(vi.mocked(initEditor).mock.calls.at(-1)![1].defaultFont).toBe('pixelcode6x12');
 		const plugins = await loadDeferredPlugins();
-		expect(plugins.map(plugin => plugin.id)).toEqual(expect.arrayContaining(['mouse-input', 'touch-input']));
+		expect(plugins.map(plugin => plugin.id)).toEqual(
+			expect.arrayContaining(['mouse-input', 'touch-input', 'group-path'])
+		);
 		for (const id of ['keyboard-mode-switching', 'keyboard-navigation', 'keyboard-editing', 'font-preview'])
 			expect(plugins.some(plugin => plugin.id === id)).toBe(false);
 	} finally {

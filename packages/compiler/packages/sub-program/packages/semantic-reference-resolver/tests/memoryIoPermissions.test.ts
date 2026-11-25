@@ -22,14 +22,13 @@ function resolveFunction(body: string[], isImpure = false) {
 	};
 
 	return resolveSemanticReferences({
-		ast: { prototypes: [], modules: [], constants: [] },
+		ast: { modules: [], constants: [] },
 		registeredFunctions: [{ ast, metadata }],
 		memoryPlan: { modules: {}, moduleList: [] },
 		memoryAliases: new Map(),
 		pointerMetadataByModuleId: {},
-		constantReferences: { prototypes: [], modules: [], constants: [], functions: [{ lineFacts: [] }] },
+		constantReferences: { modules: [], constants: [], functions: [{ lineFacts: [] }] },
 		memoryReferences: {
-			prototypes: [],
 			modules: [],
 			constants: [],
 			functions: [{ lineFacts: [] }],
@@ -40,7 +39,6 @@ function resolveFunction(body: string[], isImpure = false) {
 			byId: { [metadata.id]: metadata, [consumer.id]: consumer },
 			arityByName: { caller: 1, consume: 1 },
 		},
-		prototypeShapes: {},
 	}).references.functions[metadata.id];
 }
 

@@ -59,7 +59,6 @@
 
 - [Stack instructions](instructions/stack.md)
   - [push](instructions/stack.md#push)
-  - [pushShape](instructions/stack.md#pushshape)
   - [drop](instructions/stack.md#drop)
   - [clearStack](instructions/stack.md#clearstack)
 
@@ -86,6 +85,7 @@
   - [int[]](instructions/declarations-and-locals.md#int-1)
   - [float[]](instructions/declarations-and-locals.md#float-1)
   - [float64[]](instructions/declarations-and-locals.md#float64-1)
+  - [Fixed reference slots](instructions/declarations-and-locals.md#fixed-reference-slots)
   - [local](instructions/declarations-and-locals.md#local)
   - [localSet](instructions/declarations-and-locals.md#localset)
 
@@ -94,12 +94,8 @@
   - [init](instructions/program-structure-and-functions.md#init)
   - [module](instructions/blocks/module.md#module)
   - [moduleEnd](instructions/blocks/module.md#moduleend)
-  - [prototype](instructions/blocks/prototype.md#prototype)
-  - [prototypeEnd](instructions/blocks/prototype.md#prototypeend)
-  - [shape](instructions/blocks/prototype.md#shape)
   - [function](instructions/blocks/function.md#function)
   - [param](instructions/blocks/function.md#param)
-  - [paramShape](instructions/blocks/function.md#paramshape)
   - [functionEnd](instructions/blocks/function.md#functionend)
   - [call](instructions/program-structure-and-functions.md#call)
   - [Imported functions](instructions/program-structure-and-functions.md#imported-functions)

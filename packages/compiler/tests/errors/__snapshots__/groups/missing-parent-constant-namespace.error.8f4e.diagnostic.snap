@@ -4,9 +4,10 @@
   "instruction": "pass",
   "kind": "source",
   "location": {
-    "kind": "scope",
+    "kind": "block",
     "lineNumber": 1,
-    "projectGroupPath": "audio",
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Passed name env is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
 }

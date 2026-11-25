@@ -155,7 +155,6 @@ describe('constant resolver', () => {
 			grandchildModuleLine
 		);
 		const projectConstantNamespaceScopes: ProjectConstantNamespaceScope[] = [
-			{ groupPath: '', passes: [] },
 			{
 				groupPath: 'child',
 				parentGroupPath: '',
@@ -166,7 +165,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [childModule, grandchildModule],
 				constants: [env],
 				functions: [],
@@ -200,11 +198,8 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [childModule], constants: [env], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				ast: { modules: [childModule], constants: [env], functions: [] },
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrow('Undeclared identifier: RATE');
 	});
@@ -219,10 +214,8 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [env], functions: [] },
+				ast: { modules: [], constants: [env], functions: [] },
 				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [] },
 					{ groupPath: 'child/nested', parentGroupPath: 'child', passes: [passLine(1, 'env')] },
 				],
 			})
@@ -241,32 +234,17 @@ describe('constant resolver', () => {
 
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [childEnv], constants: [env], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				ast: { modules: [childEnv], constants: [env], functions: [] },
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.DUPLICATE_NAMESPACE);
-	});
-
-	it('reports a root pass as an unresolved parent namespace', () => {
-		expect(() =>
-			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [{ groupPath: '', passes: [passLine(1, 'env')] }],
-			})
-		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});
 
 	it('reports a child pass whose parent has no matching constants block', () => {
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				ast: { modules: [], constants: [], functions: [] },
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});
@@ -280,11 +258,8 @@ describe('constant resolver', () => {
 		);
 		expect(() =>
 			resolveConstants({
-				ast: { prototypes: [], modules: [rootModule], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				ast: { modules: [rootModule], constants: [], functions: [] },
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});
@@ -308,7 +283,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [mainAst],
 				constants: [sharedAst],
 				functions: [],
@@ -341,7 +315,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -379,7 +352,6 @@ describe('constant resolver', () => {
 
 		const result = resolveConstants({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -401,7 +373,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -411,7 +382,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -427,7 +397,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -437,7 +406,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [ast],
 					constants: [],
 					functions: [],
@@ -463,7 +431,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [module],
 					constants: [constants],
 					functions: [],
@@ -473,7 +440,6 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: {
-					prototypes: [],
 					modules: [module],
 					constants: [constants],
 					functions: [],

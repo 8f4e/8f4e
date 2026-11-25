@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-dialogs",
-  "version": "0.0.24",
+  "version": "0.2.6",
   "private": true,
   "description": "Dialog layout and rendering for the 8f4e editor",
   "type": "module",
@@ -23,6 +23,7 @@
     "@8f4e/web-ui": "*"
   },
   "devDependencies": {
+    "@8f4e/web-ui-testing": "*",
     "@8f4e/config": "*",
     "@8f4e/editor-state-testing": "*",
     "vitest": "4.1.12",

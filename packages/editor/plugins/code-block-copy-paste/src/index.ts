@@ -1,6 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { insertCodeBlocks, type SerializedCodeBlock, serializeCodeBlocks } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 
 function parseBlockSources(text: string): SerializedCodeBlock[] | undefined {
 	try {
@@ -22,8 +22,8 @@ export function createCodeBlockCopyPastePlugin({
 		id: 'code-block-copy-paste',
 		setup: ({ store, events, menus }) => {
 			const state = store.getState();
-			const onCopy = async ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-				const text = codeBlock.childProject
+			const onCopy = async ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
+				const text = codeBlock.childLevel
 					? JSON.stringify(serializeCodeBlocks([codeBlock], codeBlock))
 					: codeBlock.code.join('\n');
 				await writeClipboardText(text);
@@ -38,8 +38,8 @@ export function createCodeBlockCopyPastePlugin({
 				if (state.editorMode !== 'edit') return;
 				return { title: 'Paste Code Block', action: 'pasteCodeBlocks', close: true };
 			});
-			const removeCopyMenu = menus.registerItem('moduleMenu', ({ codeBlock }) => ({
-				title: `Copy ${codeBlock.childProject ? 'group' : codeBlock.blockType}`,
+			const removeCopyMenu = menus.registerItem('codeBlockMenu', ({ codeBlock }) => ({
+				title: `Copy ${codeBlock.blockType}`,
 				action: 'copyCodeBlock',
 				payload: { codeBlock },
 				close: true,

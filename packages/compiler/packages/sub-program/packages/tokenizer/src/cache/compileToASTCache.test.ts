@@ -114,7 +114,6 @@ describe('compileToAST cache', () => {
 	it.each([
 		{ name: 'module', code: ['module state', 'int value', 'moduleEnd'] },
 		{ name: 'constants', code: ['constants settings', 'const SIZE 2', 'constantsEnd'] },
-		{ name: 'prototype', code: ['prototype state', 'int value', 'prototypeEnd'] },
 		{ name: 'exported function', code: ['function helper', '#export', 'functionEnd'] },
 		{ name: 'imported function', code: ['function tick', '#import "tick"', 'functionEnd int'] },
 	])('binds $name declaration references to the copied instruction stream', ({ code }) => {
@@ -131,9 +130,6 @@ describe('compileToAST cache', () => {
 				break;
 			case 'constants':
 				expectLinked(ast.constantsLine);
-				break;
-			case 'prototype':
-				expectLinked(ast.prototypeLine);
 				break;
 			case 'function':
 				expectLinked(ast.functionLine);

@@ -1,8 +1,7 @@
 8f4e/v1
 
 constants env
-; @pos -84 14
-; @favorite
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -11,7 +10,7 @@ const SAMPLE_RATE 1
 constantsEnd
 
 note
-; @pos -167 -10
+; @pos 0 -8
 ; @mode edit
 ; @config workerRuntime.enabled true
 ; @config workerRuntime.sampleRate 1
@@ -19,7 +18,7 @@ note
 noteEnd
 
 note colors
-; @pos -208 -10
+; @pos 0 9
 ; @config color.canvas #096
 ; @config color.surface #011b17
 ; @config color.ink #f8fff9
@@ -37,7 +36,7 @@ noteEnd
 
 entry main
 module source
-; @pos -1 7
+; @pos 158 0
 ; @home left
 
 ; Declare an integer
@@ -46,7 +45,7 @@ int memory 14
 
 moduleEnd
 module relay
-; @pos 36 2
+; @pos 194 0
 int* pointer &source:memory
 int memory
 
@@ -72,7 +71,7 @@ store
 
 moduleEnd
 module endpoint
-; @pos 77 2
+; @pos 235 0
 int* pointer &relay:memory
 
 ; The address stored in

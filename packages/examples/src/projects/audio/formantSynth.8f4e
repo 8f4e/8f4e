@@ -2,6 +2,7 @@
 
 includes
 ; @pos -38 -9
+include std/audio/hzToRadians
 include std/events/risingEdge
 includesEnd
 
@@ -34,17 +35,6 @@ const LN10    2.302585092994046
 const LOG2E   1.442695040888963
 const LOG10E  0.434294481903251
 const E       2.718281828459045
-
-constantsEnd
-
-constants env
-; @pos -47 -2
-; @favorite
-; Auto-generated environment constants
-; Changes will be overwritten
-
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
 
 constantsEnd
 
@@ -94,6 +84,16 @@ const BUT_F3 2390*SCALE
 
 constantsEnd
 
+constants env
+; @pos 0 0
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
 note
 ; @pos -125 -7
 ; @config audioRuntime.enabled true
@@ -121,36 +121,6 @@ note colors
 noteEnd
 
 entry main
-module clock
-; @pos 20 -20
-use env
-
-int counter
-int out
-
-; Count samples until one 
-; second has passed.
-push &counter
-push counter
-push 1
-add
-store
-
-; High for exactly one sample.
-push &out
-push counter
-push SAMPLE_RATE
-equal
-store
-
-push out
-if
-push &counter
-push 0
-store
-ifEnd
-
-moduleEnd
 module formantFreqs
 ; @pos 20 18
 
@@ -187,11 +157,41 @@ float BOOT_F3
 float BUT_F3
 
 moduleEnd
+module clock
+; @pos 50 -18
+use env
+
+int counter
+int out
+
+; Count samples until one 
+; second has passed.
+push &counter
+push counter
+push 1
+add
+store
+
+; High for exactly one sample.
+push &out
+push counter
+push SAMPLE_RATE
+equal
+store
+
+push out
+if
+push &counter
+push 0
+store
+ifEnd
+
+moduleEnd
 module sequencer1
 ; @pos 65 17
 
-float& formantFreqsItem8 &formantFreqs:8
-float& formantFreqsItem0 &formantFreqs:0
+float& start &formantFreqs:8
+float& end &formantFreqs:0
 
 float* in &formantFreqs:0
 int& trigger &clock:out
@@ -214,20 +214,20 @@ store
 ifEnd
 
 push in
-push formantFreqsItem8
+push start
 greaterThan
 if
 push &in
-push formantFreqsItem0
+push end
 store
 ifEnd
 
 moduleEnd
 module sequencer2
-; @pos 99 17
+; @pos 102 17
 
-float& formantFreqsItem17 &formantFreqs:17
-float& formantFreqsItem9 &formantFreqs:9
+float& start &formantFreqs:17
+float& end &formantFreqs:9
 
 float* in &formantFreqs:9
 int& trigger &clock:out
@@ -250,11 +250,11 @@ store
 ifEnd
 
 push in
-push formantFreqsItem17
+push start
 greaterThan
 if
 push &in
-push formantFreqsItem9
+push end
 store
 ifEnd
 
@@ -270,17 +270,10 @@ float out
 
 use math
 
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
+; Advance phase in radians.
 push &phase
 push phase
-push TAU
-push *frequency
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
+call hzToRadians *frequency SAMPLE_RATE
 add
 store
 
@@ -303,10 +296,10 @@ store
 
 moduleEnd
 module sequencer3
-; @pos 133 17
+; @pos 140 17
 
-float& formantFreqsItem26 &formantFreqs:26
-float& formantFreqsItem18 &formantFreqs:18
+float& start &formantFreqs:26
+float& end &formantFreqs:18
 
 float* in &formantFreqs:18
 int& trigger &clock:out
@@ -329,11 +322,11 @@ store
 ifEnd
 
 push in
-push formantFreqsItem26
+push start
 greaterThan
 if
 push &in
-push formantFreqsItem18
+push end
 store
 ifEnd
 

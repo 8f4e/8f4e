@@ -1,21 +1,33 @@
+includes
+include std/color/linearToSrgbByte
+include std/color/srgbByteToLinear
+include std/math/lerp
+includesEnd
+
 function downsampleRGB2x
 #export
 #impure
-; 2x2 RGB downsampling in linear light.
-; Dimensions are output pixel counts.
-; Buffers must be non-overlapping
-; and large enough. Byte strides are
-; at least 6*outputWidth for source
-; and 3*outputWidth for destination.
-; amount is finite and in 0..1.
-; Requires both sRGB conversions
-; and std/math/lerp by their names.
+; @doc Downsamples 2x2 sRGB blocks in linear light.
+; - Supply non-overlapping buffers.
+; @param source RGB source buffer, twice the output
+; - dimensions.
 param int8u* source
+; @param destination Writable RGB output buffer.
 param int8u* destination
+; @param outputWidth Non-negative output width in
+; - pixels.
 param int outputWidth
+; @param outputHeight Non-negative output height in
+; - pixels.
 param int outputHeight
+; @param sourceStride Source row stride in bytes (at
+; - least 6*outputWidth).
 param int sourceStride
+; @param destinationStride Output row stride in bytes
+; - (at least 3*outputWidth).
 param int destinationStride
+; @param amount Finite blend: 0 copies top-left, 1
+; - averages the block.
 param float amount
 
 local int x
@@ -87,8 +99,14 @@ functionEnd
 
 function resolveChannel
 #impure
+; @doc Resolves one channel of a 2x2 sRGB block in
+; - linear light.
+; @returns The filtered sRGB byte.
+; @param first Address of the top-left channel byte.
 param int8u* first
+; @param sourceStride Source row stride in bytes.
 param int sourceStride
+; @param amount Finite blend factor in 0..1.
 param float amount
 local float nearest
 local float filtered

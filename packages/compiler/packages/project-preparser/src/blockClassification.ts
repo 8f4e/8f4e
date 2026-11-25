@@ -1,8 +1,8 @@
 import type { DocumentBlockType } from '@8f4e/language-spec';
 import { compilableBlockTypes, documentBlockInstructionByType } from '@8f4e/language-spec';
+import { isProjectGapLine } from '@8f4e/tokenizer';
 import { BLOCK_DELIMITERS } from './delimiters';
 import { getProjectCloserKeyword, getProjectOpenerKeyword, startsWithInstruction } from './projectKeywords';
-import { isProjectGapLine } from './projectLines';
 
 const blockDelimiters = compilableBlockTypes.map(type => documentBlockInstructionByType[type]);
 

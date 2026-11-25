@@ -6,6 +6,8 @@ include std/events/risingEdge
 include std/events/hasChanged
 include std/bitwise/extractNibble
 include std/math/lerp
+include std/bitwise/extractBits
+include std/bitwise/extractByte
 includesEnd
 
 function buffer
@@ -32,34 +34,22 @@ functionEnd int
 
 function maskSampleNumber
 ; @pos 312 -127
-use mod
+; Sample number nibbles live in separate bytes.
 param int row
-
-push row
-and SAMPLE_HI_NIBBLE
-push row
-and SAMPLE_LO_NIBBLE
-push SAMPLE_LO_NIBBLE_SHIFT
-shiftRight
+call extractNibble row 1
+shiftLeft 4
+call extractNibble row 5
 or
-
 functionEnd int
 
 function maskPeriod
 ; @pos 314 -110
-use mod
+; Assemble the MOD period from two fields.
 param int row
-
-push row
-and PERIOD_HI
-push PERIOD_SHIFT
-shiftLeft
-push row
-and PERIOD_LO
-push PERIOD_SHIFT
-shiftRight
+call extractBits row 0 4
+shiftLeft 8
+call extractByte row 1
 or
-
 functionEnd int
 
 function period2Step
@@ -316,12 +306,6 @@ constants mod
 ; @tab 30
 use env
 ; Row layout (little-endian)
-const SAMPLE_HI_NIBBLE	0x000000F0
-const PERIOD_HI	0x0000000F
-const PERIOD_LO	0x0000FF00
-const PERIOD_SHIFT	8
-const SAMPLE_LO_NIBBLE	0x00F00000
-const SAMPLE_LO_NIBBLE_SHIFT	20
 const EFFECT_PARAM	0xFF000000
 const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
@@ -453,22 +437,23 @@ noteEnd
 note
 ; @pos -32 -109
 ; @tab 22
-; @config bin.sample1.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_1.bin
-; @config bin.sample2.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_2.bin
-; @config bin.sample3.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_3.bin
-; @config bin.sample4.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_4.bin
-; @config bin.sample5.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_5.bin
-; @config bin.sample6.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_6.bin
-; @config bin.sample7.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_7.bin
-; @config bin.sample8.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_8.bin
-; @config bin.sample9.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_9.bin
-; @config bin.sample10.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_10.bin
-; @config bin.sample11.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_11.bin
-; @config bin.sample12.url https://static.8f4e.com/assets/mods/hymn_to_aurora/sample_12.bin
-; @config bin.ch1.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch1.bin
-; @config bin.ch2.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch2.bin
-; @config bin.ch3.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch3.bin
-; @config bin.ch4.url https://static.8f4e.com/assets/mods/hymn_to_aurora/patterns_ch4.bin
+; @config bin.baseUrl https://static.8f4e.com/assets/mods/hymn_to_aurora/
+; @config bin.sample1.path sample_1.bin
+; @config bin.sample2.path sample_2.bin
+; @config bin.sample3.path sample_3.bin
+; @config bin.sample4.path sample_4.bin
+; @config bin.sample5.path sample_5.bin
+; @config bin.sample6.path sample_6.bin
+; @config bin.sample7.path sample_7.bin
+; @config bin.sample8.path sample_8.bin
+; @config bin.sample9.path sample_9.bin
+; @config bin.sample10.path sample_10.bin
+; @config bin.sample11.path sample_11.bin
+; @config bin.sample12.path sample_12.bin
+; @config bin.ch1.path patterns_ch1.bin
+; @config bin.ch2.path patterns_ch2.bin
+; @config bin.ch3.path patterns_ch3.bin
+; @config bin.ch4.path patterns_ch4.bin
 
 noteEnd
 
@@ -749,28 +734,22 @@ int* row &rowCount1:out
 use env
 int[] _dat ASSET_CH1_SIZE/4
 ; @config bin.ch1.memory _dat
-local int loopCounter
 
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -820,28 +799,21 @@ use env
 int[] _dat ASSET_CH2_SIZE/4
 ; @config bin.ch2.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -891,28 +863,21 @@ use env
 int[] _dat ASSET_CH3_SIZE/4
 ; @config bin.ch3.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -962,28 +927,21 @@ use env
 int[] _dat ASSET_CH4_SIZE/4
 ; @config bin.ch4.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
