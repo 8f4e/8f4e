@@ -42,7 +42,8 @@ precision; viewport updates round to whole pixels. Zoom is not implemented.
   Either takes precedence over a pending first visit.
 - `resize(state, width, height)` updates the canvas dimensions.
 - The viewport effect handles unconsumed `pointermove` and `viewportscroll` input, as well as `resize` events.
-  Wheel scrolling pans independently of block dragging. Manual panning leaves the viewport at its final pixel
+  Wheel scrolling adds the signed `deltaX` and `deltaY` to the viewport position, independently of block dragging.
+  Pressed pointer movement pans in the opposite direction. Manual panning leaves the viewport at its final pixel
   position without aligning it to the grid.
 - `centerViewportOnCodeBlock(viewport, block, options)` calculates a grid-aligned target with optional alignment.
   `centerViewportOnCodeBlockCursor` calculates a target centered on the highlighted source line.

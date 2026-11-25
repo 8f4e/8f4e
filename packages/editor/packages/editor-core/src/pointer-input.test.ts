@@ -150,7 +150,7 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 it('keeps viewport scrolling blocked while a menu or modal dialog is open', async () => {
 	const test = setup();
 	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
-	const scroll: ViewportScrollEvent = { movementX: -17, movementY: -31, stopPropagation: false };
+	const scroll: ViewportScrollEvent = { deltaX: 17, deltaY: 31, stopPropagation: false };
 
 	await openBlockMenu(test);
 	test.events.dispatch('viewportscroll', { ...scroll });

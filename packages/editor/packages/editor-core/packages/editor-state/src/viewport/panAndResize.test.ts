@@ -28,7 +28,7 @@ it.each(['pointermove', 'viewportscroll'] as const)('keeps the final pixel posit
 		canvasHeight: state.viewport.height,
 		altKey: false,
 	};
-	const scroll: ViewportScrollEvent = { movementX: 5, movementY: -19, stopPropagation: false };
+	const scroll: ViewportScrollEvent = { deltaX: -5, deltaY: 19, stopPropagation: false };
 
 	events.dispatch(input, input === 'pointermove' ? move : scroll);
 	events.dispatch('pointerup', { ...move, buttons: 0, movementX: 0, movementY: 0 });

@@ -11,14 +11,18 @@ interface ResizeEvent {
 export default function registerViewportHandlers(store: StateManager<State>, events: EventDispatcher): () => void {
 	const state = store.getState();
 
-	function pan({ movementX, movementY }: ViewportScrollEvent) {
-		updateViewport(state, state.viewport.x - movementX, state.viewport.y - movementY, events, 'pan');
+	function pan(deltaX: number, deltaY: number) {
+		updateViewport(state, state.viewport.x + deltaX, state.viewport.y + deltaY, events, 'pan');
 	}
 
 	function onPointerMove(event: InternalPointerEvent) {
 		if (event.buttons === 1) {
-			pan(event);
+			pan(-event.movementX, -event.movementY);
 		}
+	}
+
+	function onViewportScroll({ deltaX, deltaY }: ViewportScrollEvent) {
+		pan(deltaX, deltaY);
 	}
 
 	function onResize(event: ResizeEvent) {
@@ -26,12 +30,12 @@ export default function registerViewportHandlers(store: StateManager<State>, eve
 	}
 
 	events.on('pointermove', onPointerMove);
-	events.on('viewportscroll', pan);
+	events.on('viewportscroll', onViewportScroll);
 	events.on('resize', onResize);
 
 	return () => {
 		events.off('pointermove', onPointerMove);
-		events.off('viewportscroll', pan);
+		events.off('viewportscroll', onViewportScroll);
 		events.off('resize', onResize);
 	};
 }

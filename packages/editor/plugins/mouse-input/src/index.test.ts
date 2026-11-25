@@ -76,12 +76,16 @@ describe('mouse input', () => {
 		);
 	});
 
-	it('translates wheel movement into a viewport scroll', () => {
+	it.each([
+		[3, 5],
+		[-7, 9],
+		[8, -4],
+	])('forwards signed wheel deltas (%i, %i) as a viewport scroll', (deltaX, deltaY) => {
 		const test = setup();
-		expect(test.wheel().defaultPrevented).toBe(true);
+		expect(test.wheel(deltaX, deltaY).defaultPrevented).toBe(true);
 		expect(test.events.dispatch).toHaveBeenCalledExactlyOnceWith('viewportscroll', {
-			movementX: -3,
-			movementY: -5,
+			deltaX,
+			deltaY,
 			stopPropagation: false,
 		});
 	});

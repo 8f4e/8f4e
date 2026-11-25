@@ -53,12 +53,9 @@ export function createMouseInputPlugin({
 
 			function onWheelEvent(event: WheelEvent) {
 				event.preventDefault();
-				const movementX = event.deltaX * -1;
-				const movementY = event.deltaY * -1;
-
 				events.dispatch('viewportscroll', {
-					movementX,
-					movementY,
+					deltaX: event.deltaX,
+					deltaY: event.deltaY,
 					stopPropagation: false,
 				} satisfies ViewportScrollEvent);
 			}

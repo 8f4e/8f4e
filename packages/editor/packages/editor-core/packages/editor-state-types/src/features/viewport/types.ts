@@ -25,10 +25,10 @@ export interface Viewport extends GridSize {
 	y: number;
 }
 
-/** Canvas movement from wheel input, independent of pointer button state. */
+/** Signed pixel deltas to add to the logical viewport position. */
 export interface ViewportScrollEvent {
-	movementX: number;
-	movementY: number;
+	deltaX: number;
+	deltaY: number;
 	/** An input layer may consume the scroll before the viewport pans. */
 	stopPropagation: boolean;
 }
