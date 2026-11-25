@@ -42,6 +42,13 @@ function setup() {
 	return { events, store, state, block, pointer };
 }
 
+async function openBlockMenu(test: ReturnType<typeof setup>) {
+	cleanups.push(test.store.menus.registerItem('codeBlockMenu', () => ({ title: 'Inspect', action: 'inspect' })));
+	test.events.dispatch('contextmenu', { ...test.pointer });
+	await Promise.resolve();
+	expect(test.state.contextMenu.open).toBe(true);
+}
+
 it('routes controls before block selection', () => {
 	const test = setup();
 	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
@@ -113,7 +120,7 @@ it('leaves dialog activation to the completed press after a capture-only probe',
 	expect(test.state.dialogStack).toHaveLength(0);
 });
 
-it('blocks menu movement and closing presses from reaching blocks or moving the viewport', () => {
+it('blocks menu movement and closing presses from reaching blocks or moving the viewport', async () => {
 	const test = setup();
 	const blockPressed = vi.fn();
 	const menuMoved = vi.fn();
@@ -122,7 +129,7 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	test.events.on('codeBlockPointerDown', blockPressed);
 	test.events.on('contextMenuPointerMove', menuMoved);
 	test.events.on('contextMenuPointerDown', menuPressed);
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 	const revision = test.state.projectChange.revision;
 	const move = { ...test.pointer, x: 0, y: 0, movementX: 40, movementY: 30 };
@@ -140,13 +147,13 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	expect(test.state.projectChange.revision).toBe(revision);
 });
 
-it('forwards menu presses only after capture-only probes complete', () => {
+it('forwards menu presses only after capture-only probes complete', async () => {
 	const test = setup();
 	const menuPressed = vi.fn();
 	const blockPressed = vi.fn();
 	test.events.on('contextMenuPointerDown', menuPressed);
 	test.events.on('codeBlockPointerDown', blockPressed, { capture: true });
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	test.events.dispatch('pointerdown', { ...test.pointer }, { phase: 'capture' });
 	expect(menuPressed).not.toHaveBeenCalled();
 	expect(blockPressed).not.toHaveBeenCalled();
@@ -156,13 +163,13 @@ it('forwards menu presses only after capture-only probes complete', () => {
 	expect(blockPressed).not.toHaveBeenCalled();
 });
 
-it('gives modal dialogs priority over menu pointer forwarding', () => {
+it('gives modal dialogs priority over menu pointer forwarding', async () => {
 	const test = setup();
 	const menuPressed = vi.fn();
 	const menuMoved = vi.fn();
 	test.events.on('contextMenuPointerDown', menuPressed);
 	test.events.on('contextMenuPointerMove', menuMoved);
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
 	const move = { ...test.pointer };
 	test.events.dispatch('pointermove', move);
@@ -182,13 +189,13 @@ it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type
 	expect(released).toHaveBeenCalledOnce();
 });
 
-it('gives dialogs and context menus precedence over a later overlay handler', () => {
+it('gives dialogs and context menus precedence over a later overlay handler', async () => {
 	const test = setup();
 	const overlay = vi.fn((event: InternalPointerEvent) => {
 		event.stopPropagation = true;
 	});
 	test.events.on('pointerdown', overlay, { capture: true, layer: INPUT_LAYERS.canvasOverlay });
-	test.events.dispatch('contextmenu', { ...test.pointer });
+	await openBlockMenu(test);
 	test.events.dispatch('pointerdown', { ...test.pointer });
 	expect(overlay).not.toHaveBeenCalled();
 	test.events.dispatch('closeContextMenu');

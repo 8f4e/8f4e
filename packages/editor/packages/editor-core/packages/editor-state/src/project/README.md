@@ -55,12 +55,14 @@ a module uses an explicitly assigned entry or `main`. Empty authored entry secti
 
 The project and its related editor-state domains handle specific aspects:
 
-- `blockActionCommands.ts` - Generic source insertion and enable/disable action bindings
+- `blockActionCommands.ts` - Generic source insertion action binding
 - `../input/blockDragging.ts` - Drag and drop operations
 - `../input/blockNavigation.ts` - Keyboard navigation between blocks
 - `../layout/trackBlockLayout.ts` - Visual properties and cursor geometry
 
 New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
+The `toggle-disabled` plugin owns the Enable/Disable action; `log-block-info` owns console inspection.
+Core still interprets the authored `@disabled` directive.
 Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and authored snapshot
 capture and restoration. The undo-redo plugin owns edit history and its policy.
 

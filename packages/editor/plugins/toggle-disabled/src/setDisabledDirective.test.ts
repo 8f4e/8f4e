@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import setDisabledDirective from './setDisabledDirective';
 
 describe('setDisabledDirective', () => {
+	it('preserves trailing source and unrelated directives when enabling a block', () => {
+		const code = ['module test ; @pos 2 3 @disabled', 'moduleEnd'];
+		expect(setDisabledDirective(code, false)).toEqual(['module test ; @pos 2 3', 'moduleEnd']);
+	});
+
 	it('adds @disabled directive when disabled is true', () => {
 		const code = ['module test', 'moduleEnd'];
 		const result = setDisabledDirective(code, true);

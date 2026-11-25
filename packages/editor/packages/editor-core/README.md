@@ -105,8 +105,9 @@ the views only when the underlying buffer changes.
 
 Register menu items with `menus.registerItem('codeBlockMenu', provider)`. Providers receive the current
 `{ state, codeBlock }` when the menu opens, and return a `ContextMenuItem` or `undefined` to omit it. The target block
-can differ from the selection. Contributions appear in registration order after Enable/Disable. The item uses the
+can differ from the selection. Contributions appear in registration order after built-in group navigation actions. The item uses the
 existing event dispatcher through its `action` and `payload`. Registration returns an unregister function.
+Enable/Disable and Log block info are contributed by the `toggle-disabled` and `log-block-info` plugins.
 Menu items stay raw in `state.contextMenu`: `open`, requested world anchor `x`/`y`, `items`, and `menuStack`.
 `@8f4e/editor-plugin-context-menu` owns decorated labels, geometry, and hovered rows privately. Core forwards
 `contextMenuPointerMove` and completed `contextMenuPointerDown` events while blocking input below an open menu.

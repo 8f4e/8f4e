@@ -30,6 +30,8 @@ producer highlights, and tooltips. Stack Connections draws links beside the sele
 producer to the highlighted instruction.
 Compiler coordination, undo/redo history, URL loading, home navigation, the dotted canvas background, block backgrounds,
 code rendering, and loading indicators are eager.
+The Enable/Disable and Log block info context-menu actions are available only in the default editor;
+the gallery still interprets `@disabled` from project source.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
 viewport's origin and cell dimensions, plus the active palette.

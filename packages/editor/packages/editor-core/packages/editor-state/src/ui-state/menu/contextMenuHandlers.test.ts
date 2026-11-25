@@ -18,6 +18,21 @@ describe('contextMenu effect', () => {
 			.mocked(events.on)
 			.mock.calls.find(([name]) => name === 'contextmenu')![1]({ x: 100, y: 112 });
 		expect(state.contextMenu.items).toEqual(contributed ? [{ title: 'Inspect', action: 'inspect' }] : []);
+		expect(state.contextMenu.open).toBe(contributed);
+		dispose();
+		store.dispose();
+	});
+	it('does not leave an empty block menu open when no actions are contributed', async () => {
+		const codeBlock = createMockCodeBlock();
+		const state = createMockState({ project: { activeLevel: { blocks: [codeBlock] } } });
+		const store = createStateManager(state);
+		const events = createMockEventDispatcherWithVitest();
+		const dispose = registerContextMenuHandlers(store, events, createMenuRegistry());
+		await vi
+			.mocked(events.on)
+			.mock.calls.find(([name]) => name === 'contextmenu')![1]({ x: codeBlock.x + 8, y: codeBlock.y + 8 });
+		expect(state.contextMenu.items).toEqual([]);
+		expect(state.contextMenu.open).toBe(false);
 		dispose();
 		store.dispose();
 	});

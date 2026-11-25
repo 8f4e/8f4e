@@ -123,10 +123,13 @@ describe('project and compiler input revisions', () => {
 		const main = block('main');
 		events.dispatch('insertCodeBlock', { x: 100, y: 100, code: ['module added', 'moduleEnd'] });
 		expectChanges(1);
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock: main });
+		const enabledSource = [...main.code];
+		applyCodeBlockSourceEdits(store, [
+			{ codeBlock: main, code: ['module main', '; @disabled', ...enabledSource.slice(1)] },
+		]);
 		expect(main.disabled).toBe(true);
 		expectChanges(2);
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock: main });
+		applyCodeBlockSourceEdits(store, [{ codeBlock: main, code: enabledSource }]);
 		expect(main.disabled).toBe(false);
 		expectChanges(3);
 		deleteCodeBlocks(store, [main]);

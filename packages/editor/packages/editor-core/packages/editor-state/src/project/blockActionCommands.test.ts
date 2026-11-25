@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { ProjectSourceBlock } from '@8f4e/editor-state-types';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import initState, { setGridSize } from '../index';
 
 const cleanups: Array<() => void> = [];
@@ -65,38 +65,6 @@ describe('codeBlockActions - insertion', () => {
 		);
 		insert(['module supplied', 'moduleEnd']);
 		expect(state.project.activeLevel.blocks.at(-1)!.entry).toBe(expected);
-	});
-});
-
-describe('codeBlockActions - toggleCodeBlockDisabled', () => {
-	it.each([false, true])('toggles disabled state and source from %s', disabled => {
-		const {
-			blocks: [codeBlock],
-			events,
-			store,
-		} = setup([{ code: ['module test', ...(disabled ? ['; @disabled'] : []), 'moduleEnd'] }]);
-		expect(codeBlock.disabled).toBe(disabled);
-		const onProjectChange = vi.fn();
-		store.subscribe('projectChange', onProjectChange);
-		codeBlock.lastUpdated = 1000;
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock });
-		expect(codeBlock.disabled).toBe(!disabled);
-		expect(codeBlock.code.includes('; @disabled')).toBe(!disabled);
-		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
-		expect(onProjectChange).toHaveBeenCalledOnce();
-	});
-
-	it('does not toggle when editing is disabled', () => {
-		const {
-			blocks: [codeBlock],
-			events,
-			state,
-		} = setup([{ code: ['module test', 'moduleEnd'] }]);
-		const revision = state.projectChange.revision;
-		events.dispatch('exitToViewMode');
-		events.dispatch('toggleCodeBlockDisabled', { codeBlock });
-		expect(codeBlock.disabled).toBe(false);
-		expect(state.projectChange.revision).toBe(revision);
 	});
 });
 

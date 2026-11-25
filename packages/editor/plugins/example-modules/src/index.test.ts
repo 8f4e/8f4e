@@ -206,7 +206,7 @@ describe('example modules plugin', () => {
 		const test = setup({ mode: 'view', sources: new Map([['audio/target', load]]) });
 		test.events.dispatch('contextmenu', { x: 100, y: 112 });
 		await Promise.resolve();
-		expect(test.state.contextMenu.open).toBe(true);
+		expect(test.state.contextMenu.open).toBe(false);
 		expect(test.state.contextMenu.items.some(item => item.payload?.menu === EXAMPLE_MODULES_MENU)).toBe(false);
 		await test.addModule();
 		expect(load).not.toHaveBeenCalled();

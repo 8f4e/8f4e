@@ -27,6 +27,18 @@ export function createDeferredEditorPlugin(
 			load: () => import('@8f4e/editor-plugin-block-authoring').then(module => module.blockAuthoringPlugin),
 		},
 		{
+			id: 'toggle-disabled',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-toggle-disabled').then(module => module.toggleDisabledPlugin),
+		},
+		{
+			id: 'log-block-info',
+			scope: 'view',
+			matches: () => true,
+			load: () => import('@8f4e/editor-plugin-log-block-info').then(module => module.logBlockInfoPlugin),
+		},
+		{
 			id: 'offscreen-block-arrows',
 			scope: 'view',
 			matches: () => true,

@@ -86,12 +86,6 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 	cleanups.push(registerGroupNavigation(store, events));
 	cleanups.push(trackEntryBounds(store, events));
 
-	const onConsoleLog = (event: unknown) => {
-		console.log(event);
-	};
-	events.on('consoleLog', onConsoleLog);
-	cleanups.push(() => events.off('consoleLog', onConsoleLog));
-
 	const dispose = () => {
 		while (cleanups.length) {
 			cleanups.pop()!();
