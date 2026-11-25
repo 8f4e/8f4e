@@ -5,12 +5,20 @@ The editor and runtime stack follows a REPL-style coding loop (edit, compile/eva
 
 More details about the language design and documentation can be found at [./docs/README.md](./docs/README.md)
 
-## Package Architecture
+## Workspace Architecture
 
-The 8f4e project is organized as an Nx monorepo with the following package hierarchy:
+The 8f4e project is organized as an Nx monorepo with the following project hierarchy:
 
 <pre>
 8f4e/
+├── apps/
+│   ├── <a href="./apps/8f4e-website/README.md">8f4e-website</a> (Product homepage, examples gallery, and compiler test gallery)
+│   ├── <a href="./apps/cli/README.md">cli</a> (CLI for compiling, running, testing, formatting, and capturing output from 8f4e projects)
+│   ├── <a href="./apps/editor-webapp/README.md">editor-webapp</a> (Thin deployable web app for the default editor)
+│   ├── <a href="./apps/metrics-dashboard">metrics-dashboard</a> (Local dashboard for release metrics)
+│   ├── <a href="./apps/runtime-command/README.md">runtime-command</a> (Generator for native runtime launch arguments)
+│   ├── <a href="./apps/runtime-daisy/README.md">runtime-daisy</a> (Daisy Field firmware that loads instruments from microSD for audio and MIDI)
+│   └── <a href="./apps/runtime-linux/README.md">runtime-linux</a> (Native Linux runtime with JACK audio and MIDI)
 └── packages/
     ├── <a href="./packages/compiler/README.md">compiler</a> (The core compiler that transforms 8f4e code into WebAssembly)
     │   └── packages/
@@ -37,24 +45,22 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       │       └── <a href="./packages/compiler/packages/wasm-codegen/packages/wasm-utils/README.md">wasm-utils</a> (Low-level WebAssembly byte construction helpers)
     │       └── <a href="./packages/compiler/packages/stdlib/README.md">stdlib</a> (Standard-library include source files)
     ├── <a href="./packages/editor/README.md">editor</a> (Editor product packages)
-    │   ├── packages/
-    │   │   ├── <a href="./packages/editor/packages/compiler-worker/README.md">compiler-worker</a> (Web Worker wrapper around the compiler for live coding)
-    │   │   ├── <a href="./packages/editor/packages/editor-default/README.md">editor-default</a> (Default compiler, runtime, storage, and example composition)
-    │   │   ├── <a href="./packages/editor/packages/editor-core/README.md">editor-core</a> (Minimal reusable editor)
-    │   │   │   └── packages/
-    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-palette/README.md">editor-palette</a> (Shared base palette and predefined editor shades)
-    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state/README.md">editor-state</a> (Editor state management)
-    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state-types">editor-state-types</a> (Shared public editor-state model types)
-    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/editor-state-testing/README.md">editor-state-testing</a> (Framework-agnostic editor-state test helpers)
-    │   │   │       ├── <a href="./packages/editor/packages/editor-core/packages/state-manager/README.md">state-manager</a> (State manager with subscriptions)
-    │   │   │       └── <a href="./packages/editor/packages/editor-core/packages/web-ui/README.md">web-ui</a> (WebGL rendering for the editor interface)
-    │   │   │           └── packages/
-    │   │   │               ├── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug/README.md">glugglugglug</a> (2D WebGL graphics utilities)
-    │   │   │               └── <a href="./packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
-    │   │   ├── <a href="./packages/editor/packages/editor-landing/README.md">editor-landing</a> (Lightweight editor composition for interactive landing-page demos)
-    │   │   ├── <a href="./packages/editor/packages/editor-gallery/README.md">editor-gallery</a> (Embedded editor composition for examples and compiler tests)
-    │   │   ├── <a href="./packages/editor/packages/editor-webmcp/README.md">editor-webmcp</a> (Page-owned WebMCP adapter for one live editor)
-    │   │   └── <a href="./packages/editor/packages/editor-website/README.md">editor-website</a> (Thin deployable website for the default editor)
+    │   ├── core/
+    │   │   ├── <a href="./packages/editor/core/editor-core/README.md">editor-core</a> (Minimal reusable editor)
+    │   │   ├── <a href="./packages/editor/core/editor-palette/README.md">editor-palette</a> (Shared base palette and predefined editor shades)
+    │   │   ├── <a href="./packages/editor/core/editor-state/README.md">editor-state</a> (Editor state management)
+    │   │   ├── <a href="./packages/editor/core/editor-state-types">editor-state-types</a> (Shared public editor-state model types)
+    │   │   ├── <a href="./packages/editor/core/editor-state-testing/README.md">editor-state-testing</a> (Framework-agnostic editor-state test helpers)
+    │   │   ├── <a href="./packages/editor/core/state-manager/README.md">state-manager</a> (State manager with subscriptions)
+    │   │   ├── <a href="./packages/editor/core/web-ui/README.md">web-ui</a> (WebGL rendering for the editor interface)
+    │   │   ├── <a href="./packages/editor/core/web-ui-testing/README.md">web-ui-testing</a> (Renderer test helpers)
+    │   │   ├── <a href="./packages/editor/core/glugglugglug/README.md">glugglugglug</a> (2D WebGL graphics utilities)
+    │   │   └── <a href="./packages/editor/core/sprite-generator/README.md">sprite-generator</a> (All UI graphics are generative)
+    │   ├── compositions/
+    │   │   ├── <a href="./packages/editor/compositions/editor-default/README.md">editor-default</a> (Default compiler, runtime, storage, and example composition)
+    │   │   ├── <a href="./packages/editor/compositions/editor-gallery/README.md">editor-gallery</a> (Embedded editor composition for examples and compiler tests)
+    │   │   └── <a href="./packages/editor/compositions/editor-landing/README.md">editor-landing</a> (Lightweight editor composition for interactive landing-page demos)
+    │   ├── <a href="./packages/editor/editor-webmcp/README.md">editor-webmcp</a> (Page-owned WebMCP adapter for one live editor)
     │   └── <a href="./packages/editor/plugins">plugins</a> (Optional editor features)
     │       ├── <a href="./packages/editor/plugins/assertion-markers">assertion-markers</a> (Executed assertion pass/fail indicators)
     │       ├── <a href="./packages/editor/plugins/audio-runtime">audio-runtime</a> (Audio execution, configuration, and lifecycle management)
@@ -68,6 +74,8 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │       ├── <a href="./packages/editor/plugins/code-block-copy-paste">code-block-copy-paste</a> (Code-block copy and paste actions)
     │       ├── <a href="./packages/editor/plugins/code-rendering/README.md">code-rendering</a> (Code text, syntax highlighting, and sprite preparation)
     │       ├── <a href="./packages/editor/plugins/compiler">compiler</a> (Live compilation, artifacts, diagnostics, and memory access)
+    │       │   └── packages/
+    │       │       └── <a href="./packages/editor/plugins/compiler/packages/compiler-worker/README.md">compiler-worker</a> (Web Worker wrapper around the compiler for live coding)
     │       ├── <a href="./packages/editor/plugins/connectors">connectors</a> (Input/output connector sprites, declaration labels, and endpoint geometry)
     │       ├── <a href="./packages/editor/plugins/context-menu">context-menu</a> (Context-menu layout, hit testing, and drawing)
     │       ├── <a href="./packages/editor/plugins/crossfade">crossfade</a> (Interactive crossfade controls)
@@ -120,17 +128,12 @@ The 8f4e project is organized as an Nx monorepo with the following package hiera
     │           └── packages/
     │               └── <a href="./packages/editor/plugins/worker-runtime/packages/runtime-web-worker/README.md">runtime-web-worker</a> (Web Worker execution loop and message protocol)
     ├── <a href="./packages/examples/README.md">examples</a> (Example modules and projects)
-    ├── <a href="./packages/cli/README.md">cli</a> (CLI for compiling, running, testing, formatting, and capturing output from 8f4e projects)
     ├── <a href="./packages/test-runner/README.md">test-runner</a> (Shared native assertion execution and reporting)
-    ├── <a href="./packages/runtime-linux/README.md">runtime-linux</a> (Native Linux runtime with JACK audio and MIDI)
-    ├── <a href="./packages/runtime-daisy/README.md">runtime-daisy</a> (Daisy Field firmware that loads instruments from microSD for audio and MIDI)
-    ├── <a href="./packages/8f4e-website/README.md">8f4e-website</a> (Product homepage, examples gallery, and compiler test gallery)
-    ├── <a href="./packages/metrics-dashboard">metrics-dashboard</a> (Local dashboard for release metrics)
     ├── <a href="./packages/vite-plugin-sources/README.md">vite-plugin-sources</a> (Vite source discovery and lazy text collections)
     └── <a href="./packages/config/README.md">config</a> (Shared tooling and configuration helpers for the workspace)
 </pre>
 
-You can use `npx nx graph` to explore the relationship between the packages.
+You can use `npx nx graph` to explore the relationships between projects.
 
 ## Development
 
@@ -143,12 +146,12 @@ You can use `npx nx graph` to explore the relationship between the packages.
 
 2. **Build all packages:**
    ```bash
-   npx nx run @8f4e/editor-website:build
+   npx nx run @8f4e/editor-webapp:build
    ```
 
 3. **Start the development server:**
    ```bash
-   npx nx run @8f4e/editor-website:dev
+   npx nx run @8f4e/editor-webapp:dev
    ```
    The app will be available at http://localhost:3000
 

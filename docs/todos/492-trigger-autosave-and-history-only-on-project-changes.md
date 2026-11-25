@@ -51,11 +51,11 @@ invalidate redo history.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/project/undoRedo.ts`
+- `packages/editor/core/editor-state/src/project/undoRedo.ts`
 - `packages/editor/plugins/session-persistence/src/index.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-editing/effect.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/project/blocks/` source and metadata updates
-- `packages/editor/packages/editor-core/packages/editor-state-types/src/index.ts` and state defaults/test helpers
+- `packages/editor/core/editor-state/src/features/code-editing/effect.ts`
+- `packages/editor/core/editor-state/src/project/blocks/` source and metadata updates
+- `packages/editor/core/editor-state-types/src/index.ts` and state defaults/test helpers
 
 ## Validation Checkpoints
 

@@ -102,8 +102,8 @@ The recommended direction is to use `bigint` for host/runtime-facing `int64` val
 - `packages/compiler/src/types.ts` - Extend memory/stack/type metadata for 64-bit integers.
 - `packages/compiler/src/wasmUtils` - Add or expose `i64` opcodes/utilities where needed.
 - `packages/compiler/src/utils` - Update memory parsing, alignment, validation, and resolution helpers.
-- `packages/editor` and `packages/editor/packages/editor-core/packages/web-ui` - Add host/runtime handling and rendering support for `int64` memory values.
-- `packages/editor/packages/compiler-worker` or equivalent live-update path - Add safe `int64` default patching.
+- `packages/editor` and `packages/editor/core/web-ui` - Add host/runtime handling and rendering support for `int64` memory values.
+- `packages/editor/plugins/compiler/packages/compiler-worker` or equivalent live-update path - Add safe `int64` default patching.
 - `packages/compiler/docs` - Add comprehensive `int64` documentation.
 
 ## Risks & Considerations

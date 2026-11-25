@@ -44,12 +44,12 @@
     "wabt": "1.0.39"
   },
   "workspaces": [
+    "apps/*",
     "packages/*",
     "packages/*/*",
     "packages/*/*/*",
     "packages/*/*/*/*/*",
-    "packages/*/*/*/*/*/*/*",
-    "!packages/runtime-daisy/third_party/**"
+    "!apps/runtime-daisy/third_party/**"
   ],
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

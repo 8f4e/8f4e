@@ -81,7 +81,7 @@ backend.
 - `npx nx run @8f4e/language-spec:typecheck`
 - `npx nx run @8f4e/wasm-codegen:test`
 - `npx nx run @8f4e/compiler:test`
-- `npx nx run @8f4e/editor-website:build`
+- `npx nx run @8f4e/editor-webapp:build`
 
 ## Success Criteria
 

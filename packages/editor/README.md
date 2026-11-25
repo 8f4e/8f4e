@@ -1,29 +1,29 @@
 # Editor Packages
 
-This directory owns the reusable editor core, embedded and full product compositions, and the deployable editor website.
+This directory owns the reusable editor core, independent plugins, embedded and full product compositions, and the
+WebMCP adapter. The deployable [editor web app](../../apps/editor-webapp/README.md) lives under `apps/` at the workspace root.
 
 ## Package Layout
 
-- `packages/editor-default/` composes the core with the compiler worker, runtimes, standard library, examples, and
+- `core/` groups the reusable editor core, state, UI, graphics and testing libraries.
+- `plugins/` contains independently built editor features. The compiler, audio runtime, worker runtime and test
+  runtime plugins each own a nested package for execution in a Web Worker or AudioWorklet environment.
+- `compositions/editor-default/` composes the core with the compiler worker, runtimes, standard library, examples, and
   browser storage.
-- `packages/editor-gallery/` supplies the embedded composition used by the example/test
+- `compositions/editor-gallery/` supplies the embedded composition used by the example/test
   galleries, with live editing, controls, runtimes, and URL loading. Each mount starts fresh.
-- `packages/editor-landing/` supplies the product homepage composition with live editing, slider controls, the worker
+- `compositions/editor-landing/` supplies the product homepage composition with live editing, slider controls, the worker
   runtime, and URL loading for self-contained projects, while omitting standard-library discovery, gallery authoring
   menus, and project saving/export.
-- `packages/editor-website/` contains the HTML page and thin Vite entry point that mounts the default composition.
-- `packages/editor-core/` contains the reusable core editor and its state and UI packages.
-- `packages/compiler-worker/` contains the editor-specific Web Worker wrapper around the compiler.
-- `plugins/audio-runtime/`, `plugins/worker-runtime/` and `plugins/test-runtime/` each own a nested
-  execution package, built separately for its AudioWorklet or Web Worker environment.
+- `editor-webmcp/` adapts one live editor to browser agents; it is installed by the page host.
 
 ## Development
 
 From the workspace root:
 
 ```bash
-npx nx run @8f4e/editor-website:dev
-npx nx run @8f4e/editor-website:build
+npx nx run @8f4e/editor-webapp:dev
+npx nx run @8f4e/editor-webapp:build
 npx nx run @8f4e/editor-default:test
 npx nx run @8f4e/editor-gallery:test
 ```

@@ -23,8 +23,8 @@
 	},
 	"scripts": {
 		"build": "vite build && tsc -p tsconfig.build.json",
-		"build:editor": "nx run @8f4e/editor-website:build",
-		"generate-gallery-previews": "npm run build:editor && npm run build && node ../../packages/8f4e-website/scripts/generate-project-previews.mjs",
+		"build:editor": "nx run @8f4e/editor-webapp:build",
+		"generate-gallery-previews": "npm run build:editor && npm run build && node ../../apps/8f4e-website/scripts/generate-project-previews.mjs",
 		"lint": "biome check --write src tests vite.config.ts vitest.config.ts",
 		"test": "npm run build:editor && npm run build && vitest run",
 		"typecheck": "tsc --noEmit"

@@ -72,15 +72,15 @@ The integration tests use synthetic source trees and exercise Vite builds, consu
 
 ### Default editor integration
 
-The default editor's [Vite configuration](../editor/packages/editor-default/vite.config.ts) resolves the stdlib and
+The default editor's [Vite configuration](../editor/compositions/editor-default/vite.config.ts) resolves the stdlib and
 examples package directories through their exported `package.json` paths. It registers collections matching
-`std/**/*.8f4e` and `src/modules/**/*.8f4em`. The [stdlib resolver](../editor/packages/editor-default/src/stdlib-resolver.ts)
-looks up IDs such as `std/math/fract`. The [module catalog](../editor/packages/editor-default/src/examples/exampleModules.ts)
+`std/**/*.8f4e` and `src/modules/**/*.8f4em`. The [stdlib resolver](../editor/compositions/editor-default/src/stdlib-resolver.ts)
+looks up IDs such as `std/math/fract`. The [module catalog](../editor/plugins/example-modules/src/catalog.ts)
 derives metadata from paths and maps filename-based slugs to lazy source loaders. Parsing and compilation stay in
 the consuming packages. Example/test galleries continue using their existing file URLs.
 
 The plugin's integration tests own file discovery and exact source-text coverage using synthetic source trees. The
-editor's [resolver tests](../editor/packages/editor-default/src/stdlib-resolver.test.ts) verify compilation and execution
+editor's [resolver tests](../editor/compositions/editor-default/src/stdlib-resolver.test.ts) verify compilation and execution
 with a real stdlib include and handling of unknown IDs. The CLI and compiler test resolvers load exported source files
 directly by include ID. Stdlib has no generated manifest or build step.
 

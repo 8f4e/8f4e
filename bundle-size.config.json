@@ -1,9 +1,9 @@
 {
   "outDir": "logs/bundle-sizes",
   "packages": {
-    "@8f4e/editor-website": {
-      "label": "Editor Website",
-      "distDir": "packages/editor/packages/editor-website/dist",
+    "@8f4e/editor-webapp": {
+      "label": "Editor Web App",
+      "distDir": "apps/editor-webapp/dist",
       "entries": [
         {
           "name": "index.js",
@@ -13,7 +13,7 @@
     },
     "@8f4e/editor-core": {
       "label": "Editor Core",
-      "distDir": "packages/editor/packages/editor-core/dist",
+      "distDir": "packages/editor/core/editor-core/dist",
       "entries": [
         {
           "name": "index.js",
@@ -23,7 +23,7 @@
     },
     "@8f4e/editor-state": {
       "label": "Editor State",
-      "distDir": "packages/editor/packages/editor-core/packages/editor-state/dist",
+      "distDir": "packages/editor/core/editor-state/dist",
       "entries": [
         {
           "name": "index.js",
@@ -47,7 +47,7 @@
     },
     "@8f4e/web-ui": {
       "label": "Web UI",
-      "distDir": "packages/editor/packages/editor-core/packages/web-ui/dist",
+      "distDir": "packages/editor/core/web-ui/dist",
       "entries": [
         {
           "name": "index.js",
@@ -57,7 +57,7 @@
     },
     "@8f4e/sprite-generator": {
       "label": "Sprite Generator",
-      "distDir": "packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator/dist",
+      "distDir": "packages/editor/core/sprite-generator/dist",
       "entries": [
         {
           "name": "index.js",

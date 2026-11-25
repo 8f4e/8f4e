@@ -76,4 +76,4 @@ the runner.
 ## Validation
 
 Use `npx nx run @8f4e/test-runner:build|test|typecheck|lint`. Real compiler/Wasm integration coverage lives in
-`packages/compiler/tests/testRunner.test.ts`, terminal reporting in `packages/cli/tests/cli.test.ts`.
+`packages/compiler/tests/testRunner.test.ts`, terminal reporting in `apps/cli/tests/cli.test.ts`.

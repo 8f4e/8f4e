@@ -49,7 +49,7 @@ Treat every declared memory location as observable through the editor.
 
 - [Wasm IR simplifier](../../packages/compiler/packages/sub-program/packages/wasm-ir-simplifier/src/index.ts)
   for the candidate rewrites.
-- [CLI compile](../../packages/cli/README.md#wasm-optimization) for selecting benchmark variants.
+- [CLI compile](../../apps/cli/README.md#wasm-optimization) for selecting benchmark variants.
 
 ## Risks & Considerations
 

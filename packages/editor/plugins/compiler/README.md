@@ -25,7 +25,8 @@ only when compilation begins. A factory instance installs once; create a new ins
 
 The default worker uses Vite's `?worker` import. Hosts can inject `createWorker: () => Worker`; `resolveInclude` is
 also injected at construction. The public editor options contain no callback bag. Editor state receives internal browser callbacks from core; the compiler
-plugin receives its worker and include dependencies directly.
+plugin receives its worker and include dependencies directly. The [compiler worker](packages/compiler-worker/README.md)
+owns the worker protocol and compilation dispatch, and builds as the separate `@8f4e/compiler-worker` package.
 
 ## Input revisions and result events
 

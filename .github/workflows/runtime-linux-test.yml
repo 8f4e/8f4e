@@ -7,9 +7,9 @@ on:
     branches: [main, staging]
     paths:
       - '.github/workflows/runtime-linux-*.yml'
-      - 'packages/runtime-linux/**'
-      - 'tools/runtime-command/**'
-      - 'packages/cli/**'
+      - 'apps/runtime-linux/**'
+      - 'apps/runtime-command/**'
+      - 'apps/cli/**'
       - 'packages/compiler/**'
       - 'packages/config/**'
       - 'package.json'
@@ -20,9 +20,9 @@ on:
     branches: [main, staging]
     paths:
       - '.github/workflows/runtime-linux-*.yml'
-      - 'packages/runtime-linux/**'
-      - 'tools/runtime-command/**'
-      - 'packages/cli/**'
+      - 'apps/runtime-linux/**'
+      - 'apps/runtime-command/**'
+      - 'apps/cli/**'
       - 'packages/compiler/**'
       - 'packages/config/**'
       - 'package.json'

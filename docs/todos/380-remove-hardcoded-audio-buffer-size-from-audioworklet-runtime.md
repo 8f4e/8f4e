@@ -79,7 +79,7 @@ Likely directions to evaluate:
 - `packages/editor/plugins/audio-runtime/src/index.ts` and `src/runtime.ts` - current hardcoded env constant injection and value
 - `packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet/src/index.ts` - runtime-observed block-length handling inside `process()`
 - `packages/examples/src/projects/audio/` - examples that size buffers from `AUDIO_BUFFER_SIZE`
-- `packages/cli/tests/` and tokenizer/compiler example snapshots - fixtures that encode the current env constant behavior
+- `apps/cli/tests/` and tokenizer/compiler example snapshots - fixtures that encode the current env constant behavior
 
 ## Risks & Considerations
 

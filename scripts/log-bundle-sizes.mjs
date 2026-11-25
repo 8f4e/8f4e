@@ -210,6 +210,7 @@ async function findPackageManifests(root) {
 	}
 
 	await collectPackageManifests(path.join(root, 'packages'), manifests);
+	await collectPackageManifests(path.join(root, 'apps'), manifests);
 
 	return manifests.sort((a, b) => {
 		const aDepth = path.relative(root, a).split(path.sep).length;

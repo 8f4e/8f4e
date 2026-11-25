@@ -91,9 +91,9 @@ selected by its flags. Reuse loaded modules across compilations and verify produ
   removal of the pruner dependency.
 - `packages/compiler/packages/sub-program/packages/wasm-ir-pruner/` and `wasm-ir-simplifier/` - Independent pass
   factories and shared call-graph analysis where appropriate.
-- `packages/editor/packages/compiler-worker/` and `packages/editor/plugins/compiler/` - Worker-side lazy loading,
+- `packages/editor/plugins/compiler/packages/compiler-worker/` and `packages/editor/plugins/compiler/` - Worker-side lazy loading,
   serializable selection, and existing editor configuration.
-- `packages/cli/src/compile/` - Flag-to-pass selection and lazy package imports.
+- `apps/cli/src/compile/` - Flag-to-pass selection and lazy package imports.
 - Compiler package dependencies, build configuration, consumer documentation, and compiler pipeline tests.
 
 ## Risks & Considerations
@@ -117,7 +117,7 @@ loading outside the transformation loop and preserve compilation scheduling when
 
 - [Compiler design](../../packages/compiler/docs/compiler-design.md#wasm-module-lowering-and-optimization)
 - [Wasm IR contract](../../packages/compiler/packages/language-spec/src/wasmIR.ts)
-- [Compiler worker](../../packages/editor/packages/compiler-worker/README.md)
+- [Compiler worker](../../packages/editor/plugins/compiler/packages/compiler-worker/README.md)
 
 ## Notes
 

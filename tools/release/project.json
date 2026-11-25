@@ -34,7 +34,7 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/editor-website"],
+					"projects": ["@8f4e/editor-webapp"],
 					"target": "build"
 				}
 			],
@@ -57,7 +57,7 @@
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-website", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
+					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-webapp", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
 					"target": "test",
 					"options": "forward"
 				}

@@ -62,7 +62,7 @@ compiler cannot know the address type.
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test`
-- `node packages/cli/bin/cli.js test packages/compiler/tests/stdlib/read-interpolated-int16.test.8f4e`
+- `node apps/cli/bin/cli.js test packages/compiler/tests/stdlib/read-interpolated-int16.test.8f4e`
 
 ## Success Criteria
 

@@ -52,5 +52,5 @@ Deploy the complete build directory together over HTTPS. Keep the supplied Cloud
 HTML must retain COOP/COEP isolation for shared WebAssembly memory, and `sw.js` must be revalidated for updates.
 The Vite production preview supplies the same isolation headers.
 
-Run `npx nx run @8f4e/editor-website:test:browser` for production offline and update tests. These include Android
+Run `npx nx run @8f4e/editor-webapp:test:browser` for production offline and update tests. These include Android
 touch emulation, but installation and device-specific audio behavior should also be checked on a physical phone.

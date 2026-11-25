@@ -5,6 +5,7 @@ updates:
     # Match every workspace manifest so security alerts use the same group.
     directories:
       - "/"
+      - "/apps/**"
       - "/packages/**"
       - "/tools/project-preview"
     schedule:

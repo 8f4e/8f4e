@@ -7,7 +7,7 @@ import path from 'node:path';
 import ts from 'typescript';
 
 const workspaceRoot = process.cwd();
-const packagesRoot = path.resolve(workspaceRoot, 'packages');
+const projectRoots = ['packages', 'apps'].map(directory => path.resolve(workspaceRoot, directory));
 const outputDir = path.resolve(workspaceRoot, 'logs/tsdoc-coverage');
 const suiteName = 'tsdoc-coverage';
 
@@ -68,7 +68,7 @@ function getPackageRoots() {
 	const packageRootArgs = getArgValues('--package-root');
 
 	if (packageRootArgs.length === 0) {
-		return [packagesRoot];
+		return projectRoots;
 	}
 
 	return packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot));

@@ -15,7 +15,7 @@ Duplicated code can inflate the app bundle and hide dependency-boundary problems
 1. Build the production app without reusing stale output.
 
    ```sh
-   npx nx run @8f4e/editor-website:build --skip-nx-cache
+   npx nx run @8f4e/editor-webapp:build --skip-nx-cache
    ```
 
 2. Search built assets for a distinctive repeated fragment.
@@ -37,7 +37,7 @@ Duplicated code can inflate the app bundle and hide dependency-boundary problems
 5. Verify the fix with another production build.
 
    ```sh
-   npx nx run @8f4e/editor-website:build --skip-nx-cache
+   npx nx run @8f4e/editor-webapp:build --skip-nx-cache
    ```
 
 ## Review Notes

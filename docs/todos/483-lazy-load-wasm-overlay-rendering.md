@@ -42,9 +42,9 @@ rendering resources owned by each editor instance.
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/web-ui/src/index.ts`
-- `packages/editor/packages/editor-core/packages/web-ui/src/drawers/wasmOverlayTexture.ts`
-- `packages/editor/packages/editor-core/packages/web-ui/src/plugins/rgba-texture-layer/`
+- `packages/editor/core/web-ui/src/index.ts`
+- `packages/editor/core/web-ui/src/drawers/wasmOverlayTexture.ts`
+- `packages/editor/core/web-ui/src/plugins/rgba-texture-layer/`
 
 ## Risks & Considerations
 
@@ -56,7 +56,7 @@ worth the lifecycle complexity.
 ## Validation Checkpoints
 
 - Run `npx nx run-many --target=test --projects=@8f4e/web-ui,@8f4e/editor-core` and corresponding typechecks.
-- Run `npx nx run @8f4e/editor-website:build` and inspect the resulting dependency graph and network requests.
+- Run `npx nx run @8f4e/editor-webapp:build` and inspect the resulting dependency graph and network requests.
 - Exercise projects with and without overlays, configuration changes during loading, and disposal/release/resume.
 - Run relevant web UI screenshot checks for layer ordering.
 
@@ -66,7 +66,7 @@ worth the lifecycle complexity.
 
 ## References
 
-- [Web UI initialization](../../packages/editor/packages/editor-core/packages/web-ui/src/index.ts)
+- [Web UI initialization](../../packages/editor/core/web-ui/src/index.ts)
 
 ## Notes
 

@@ -2,16 +2,16 @@
 
 ## Ownership
 
-- `packages/editor-core` owns reusable editor setup and lifecycle. Its editor-state library owns generic project,
-  editing, layout and input behavior. Web-ui owns drawing and GPU resources.
+- `core/` groups reusable editor libraries. `core/editor-core` owns editor setup and lifecycle; editor-state owns
+  generic project, editing, layout and input behavior. Web-ui owns drawing and GPU resources.
 - Feature logic lives in `plugins/<feature>` as independent `@8f4e/editor-plugin-<feature>` packages. Keep feature
   state, config schemas, directive interpretation, presentation and actions in the owning plugin.
-- Default, gallery and landing compose core and choose plugins, startup policy and browser dependencies. Websites
-  own page layout, hosting and deployment. WebMCP is a page-owned adapter to one editor's public API.
+- Default, gallery and landing in `compositions/` compose core and choose plugins, startup policy and browser
+  dependencies. Websites own page layout, hosting and deployment. WebMCP is a page-owned adapter to one editor's public API.
 - The compiler plugin coordinates compilation and provides live artifact and memory handles. Runtime plugins own
   configuration, readiness and execution lifecycle independently. Publish runtime info and environment
   constants under each runtime's own key. Keep worker and worklet execution code in separate packages nested
-  under their owning runtime plugins.
+  under their owning compiler or runtime plugins.
 - Plugin READMEs document factory dependencies, loading signals and lifecycle. Composition READMEs document plugin
   selection.
 

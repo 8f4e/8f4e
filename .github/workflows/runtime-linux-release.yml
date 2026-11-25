@@ -73,7 +73,7 @@ jobs:
         env:
           RUNTIME_ARCH: ${{ matrix.arch }}
         run: |
-          version="$(node -p "require('./packages/runtime-linux/package.json').version")"
+          version="$(node -p "require('./apps/runtime-linux/package.json').version")"
           [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
           existing_tag="$(git ls-remote --tags origin "refs/tags/@8f4e/runtime-linux@${version}")"
           if [[ -n "$existing_tag" ]]; then
@@ -83,9 +83,9 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           package="8f4e-runtime-${version}-linux-${RUNTIME_ARCH}"
           mkdir -p "$RUNNER_TEMP/$package"
-          strip packages/runtime-linux/dist/8f4e-runtime
-          cp packages/runtime-linux/dist/8f4e-runtime packages/runtime-linux/README.md LICENSE "$RUNNER_TEMP/$package/"
-          cp packages/runtime-linux/dist/build/_deps/wasmtime_distribution-src/LICENSE "$RUNNER_TEMP/$package/LICENSE.wasmtime"
+          strip apps/runtime-linux/dist/8f4e-runtime
+          cp apps/runtime-linux/dist/8f4e-runtime apps/runtime-linux/README.md LICENSE "$RUNNER_TEMP/$package/"
+          cp apps/runtime-linux/dist/build/_deps/wasmtime_distribution-src/LICENSE "$RUNNER_TEMP/$package/LICENSE.wasmtime"
           tar -C "$RUNNER_TEMP" -czf "${package}.tar.gz" "$package"
           mkdir -p "$RUNNER_TEMP/package-smoke"
           tar -C "$RUNNER_TEMP/package-smoke" -xzf "${package}.tar.gz"

@@ -46,7 +46,7 @@
 			"options": {
 				"commands": [
 					{
-						"command": "node ../cli/bin/cli.js test \"src/modules/**/*.8f4em\"",
+						"command": "node ../../apps/cli/bin/cli.js test \"src/modules/**/*.8f4em\"",
 						"forwardAllArgs": false
 					},
 					{

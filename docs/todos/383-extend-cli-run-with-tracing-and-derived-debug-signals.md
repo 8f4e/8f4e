@@ -73,7 +73,7 @@ JSON should stay the default, but CSV is easier to inspect in plotting tools and
 ## Implementation notes
 
 - Keep this as an extension of the existing `run` command, not a separate subcommand.
-- Prefer small, composable helpers under `packages/cli/src/run/`.
+- Prefer small, composable helpers under `apps/cli/src/run/`.
 - Avoid turning the CLI into a REPL for now.
 - Derived expressions should operate on already-resolved values and traces, not introduce a general expression language.
 

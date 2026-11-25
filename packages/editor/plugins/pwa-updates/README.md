@@ -14,4 +14,4 @@ observes `serviceWorker.ready`, registration/installing-worker events, and sends
 Disposal removes event listeners, its menu item, and its dialog, including when readiness resolves late.
 
 Verify with `npx nx run @8f4e/editor-plugin-pwa-updates:build|test|typecheck|lint`. Production desktop/Android
-dialog interactions are covered by `npx nx run @8f4e/editor-website:test:browser`.
+dialog interactions are covered by `npx nx run @8f4e/editor-webapp:test:browser`.

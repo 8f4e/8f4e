@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const workspaceRoot = process.cwd();
-const packagesRoot = path.resolve(workspaceRoot, 'packages');
+const projectRoots = ['packages', 'apps'].map(directory => path.resolve(workspaceRoot, directory));
 const outputDir = path.resolve(workspaceRoot, 'logs/test-coverage');
 const suiteName = 'test-coverage';
 
@@ -88,7 +88,7 @@ function getPackageRoots() {
 	const packageRootArgs = getArgValues('--package-root');
 
 	if (packageRootArgs.length === 0) {
-		return [packagesRoot];
+		return projectRoots;
 	}
 
 	return packageRootArgs.map(packageRoot => path.resolve(workspaceRoot, packageRoot));

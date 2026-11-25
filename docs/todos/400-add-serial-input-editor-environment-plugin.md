@@ -163,7 +163,7 @@ Responsibilities:
 
 - `npx nx run @8f4e/editor-plugin-serial-input:test`
 - `npx nx run @8f4e/editor-plugin-serial-input:typecheck`
-- `npx nx run @8f4e/editor-website:build`
+- `npx nx run @8f4e/editor-webapp:build`
 
 ## Success Criteria
 
@@ -181,8 +181,8 @@ Responsibilities:
 ## Affected Components
 
 - `packages/editor/plugins/serial-input` - new serial plugin implementation, WASM access, and tests.
-- `packages/editor/packages/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
-- `packages/editor/packages/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
+- `packages/editor/compositions/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
+- `packages/editor/core/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
 
 ## Risks & Considerations
 

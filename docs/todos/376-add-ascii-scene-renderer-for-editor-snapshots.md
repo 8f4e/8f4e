@@ -52,7 +52,7 @@ The main snapshot coverage should live in `editor-state`, while the ASCII render
 ## Implementation Plan
 
 ### Step 1: Create a pure ASCII renderer package under editor
-- Add a new browser-free package under `packages/editor/packages/`.
+- Add a new browser-free package under `packages/editor/core/`.
 - Expose a small API such as `renderStateToAscii(state, options): string`.
 - Keep dependencies limited to editor-state and shared pure helpers.
 
@@ -75,9 +75,9 @@ The main snapshot coverage should live in `editor-state`, while the ASCII render
 
 ## Affected Components
 
-- `packages/editor/packages/` - new ASCII renderer package
-- `packages/editor/packages/editor-core/packages/editor-state/` - scene snapshot tests using the new renderer
-- `packages/editor/packages/editor-core/src/` or shared render-order helpers - any production ordering logic that should be centralized and reused
+- `packages/editor/core/` - new ASCII renderer package
+- `packages/editor/core/editor-state/` - scene snapshot tests using the new renderer
+- `packages/editor/core/editor-core/src/` or shared render-order helpers - any production ordering logic that should be centralized and reused
 - `docs/todos/` - tracking and follow-up documentation
 
 ## Risks & Considerations

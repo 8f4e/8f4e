@@ -11,7 +11,7 @@ const execFileAsync = promisify(execFile);
 const workspaceRoot = process.cwd();
 const benchmarkDir = path.resolve(workspaceRoot, 'packages/examples/src/benchmarks/bytecode-size');
 const outputDir = path.resolve(workspaceRoot, 'logs/bytecode-size');
-const cliPath = path.resolve(workspaceRoot, 'packages/cli/bin/cli.js');
+const cliPath = path.resolve(workspaceRoot, 'apps/cli/bin/cli.js');
 const suiteName = 'bytecode-size';
 
 async function main() {

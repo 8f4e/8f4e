@@ -63,15 +63,23 @@ npx nx run @8f4e/compiler:dev
 
 ## Project Structure
 
-All packages in `packages/` (including nested directories) are automatically detected as Nx projects with their original names:
+Application entry points live under `apps/`, reusable libraries and sources under `packages/`, and standalone repository
+utilities under `tools/`. Nx discovers npm workspaces by their package names; native applications without npm manifests
+declare their projects in `project.json`.
 
-- `@8f4e/editor-default`
-- `@8f4e/editor-website`
-- `@8f4e/editor-core`
-- `glugglugglug` (`packages/editor/packages/editor-core/packages/web-ui/packages/glugglugglug`)
-- `@8f4e/sprite-generator` (`packages/editor/packages/editor-core/packages/web-ui/packages/sprite-generator`)
+- `@8f4e/editor-default` (`packages/editor/compositions/editor-default`)
+- `@8f4e/editor-webapp` (`apps/editor-webapp`)
+- `@8f4e/8f4e-website` (`apps/8f4e-website`)
+- `@8f4e/cli` (`apps/cli`)
+- `@8f4e/metrics-dashboard` (`apps/metrics-dashboard`)
+- `@8f4e/runtime-daisy` (`apps/runtime-daisy`)
+- `@8f4e/runtime-linux` (`apps/runtime-linux`)
+- `@8f4e/runtime-command` (`apps/runtime-command`)
+- `@8f4e/editor-core` (`packages/editor/core/editor-core`)
+- `glugglugglug` (`packages/editor/core/glugglugglug`)
+- `@8f4e/sprite-generator` (`packages/editor/core/sprite-generator`)
 - `@8f4e/compiler`
-- `@8f4e/compiler-worker`
+- `@8f4e/compiler-worker` (`packages/editor/plugins/compiler/packages/compiler-worker`)
 - `@8f4e/runtime-audio-worklet` (`packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet`)
 - `@8f4e/runtime-web-worker` (`packages/editor/plugins/worker-runtime/packages/runtime-web-worker`)
 - `@8f4e/runtime-test-runner` (`packages/editor/plugins/test-runtime/packages/runtime-test-runner`)
