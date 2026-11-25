@@ -72,8 +72,9 @@ module tempo
 ; @pos 51 14
 use env
 ; @home left
-int bpmA 93
+int bpmA 120 ; @w
 ; @slider &bpmA 20 240 1
+; @slider &bpmA 20 50000 1
 int ratioA 32 ; @w
 ; @slider &ratioA 1 32 1
 int ratioB 31 ; @w
