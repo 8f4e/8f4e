@@ -66,6 +66,9 @@ block occlusion.
 visible textures. Textures still display shared memory with execution disabled, so audio/worker runtimes or static
 initial values can supply their pixels. Execution never reinitializes memory defaults.
 
+Texture views stay hidden while any modal dialog is open. The configured entry continues to run when enabled, and
+views show current memory on the first frame after the last dialog closes.
+
 Custom hosts install `createTextureRuntimePlugin({ getCodeBuffer, getMemory })` using live compiler getters. Install it
 after connectors for overlay ordering. Ready/pending instances survive presentation and entry edits; activation and
 accepted compilation create instances. Disable, recompilation, and disposal invalidate stale pending instantiations.

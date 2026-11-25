@@ -32,6 +32,10 @@ export function createTextureRenderLayer({
 				if (!previousConflicts.has(address))
 					logError(state, `Conflicting @textureUpload definitions at byte address ${address}`);
 			previousConflicts = conflicts;
+			if (state.dialogStack.length > 0) {
+				drawer?.releaseMemory();
+				return;
+			}
 			visibleAddresses.clear();
 			for (const { codeBlock: block, x: blockX, y: blockY } of blockPositions.ordered) {
 				for (const texture of textures.viewsByBlock.get(block) ?? []) {

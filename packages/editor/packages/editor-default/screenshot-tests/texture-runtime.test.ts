@@ -1,7 +1,8 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initEditor, { type Editor, getEditorBlockId } from '@8f4e/editor-core';
+import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } from '@8f4e/editor-core';
 import { resolvePalette } from '@8f4e/editor-palette';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
+import { dialogsPlugin } from '@8f4e/editor-plugin-dialogs';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
 import { displayRowToGridRow } from '@8f4e/editor-state';
 import { Engine } from 'glugglugglug';
@@ -40,13 +41,11 @@ store
 moduleEnd
 entryEnd`;
 
+const enabledConfig =
+	'note config\n; @pos 150 100\n; @config textureRuntime.enabled true\n; @config textureRuntime.entry renderFrame\nnoteEnd\n';
+
 test.each([false, true])('renders multiple block-bound textures with entry execution enabled=%s', async enabled => {
-	const projectSource = enabled
-		? source.replace(
-				'note views',
-				'note config\n; @pos 150 100\n; @config textureRuntime.enabled true\n; @config textureRuntime.entry renderFrame\nnoteEnd\nnote views'
-			)
-		: source;
+	const projectSource = enabled ? source.replace('note views', enabledConfig + 'note views') : source;
 	const canvas = document.createElement('canvas');
 	canvas.width = 640;
 	canvas.height = 480;
@@ -175,6 +174,106 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		});
 		editor.renderFrame();
 		expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!.height).toBeLessThan(height);
+		expect(gl.getError()).toBe(gl.NO_ERROR);
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+	}
+});
+
+test.each([false, true])('hides texture views under modal dialogs with entry execution enabled=%s', async enabled => {
+	const crop = '; @texture &screen:rgba 16 1 1 1 1';
+	const modalSource = source.replace('Code follows', `${crop}\nCode follows`);
+	const projectSource = enabled ? modalSource.replace('note views', enabledConfig + 'note views') : modalSource;
+	const canvas = document.createElement('canvas');
+	canvas.width = 640;
+	canvas.height = 480;
+	document.body.append(canvas);
+	const compiler = createCompilerPlugin();
+	const { createTextureRuntimePlugin } = await import('@8f4e/editor-plugin-texture-runtime');
+	let events!: EditorPluginContext['events'];
+	let editor: Editor | undefined;
+	try {
+		const activeEditor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
+			initialProject: parseProjectSource(projectSource),
+			plugins: [
+				compiler.plugin,
+				dialogsPlugin,
+				createTextureRuntimePlugin(compiler),
+				{
+					id: 'test-events',
+					setup: context => {
+						events = context.events;
+						return () => {};
+					},
+				},
+			],
+		});
+		editor = activeEditor;
+		editor.pauseRendering();
+		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
+		const { viewport } = editor.state;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!;
+		const gl = canvas.getContext('webgl2')!;
+		const memory = compiler.getMemory()!;
+		const codeBuffer = compiler.getCodeBuffer();
+		const allocations = editor.state.compiler.result.memoryPlan.modules.screen.memory;
+		const frames = new Int32Array(memory.buffer);
+		const framesAddress = allocations.frames.allocationUnitAddress;
+		const samples = [
+			{ directive: '; @texture &screen:rgba 24 2 2', offsetX: 0, color: [255, 0, 0, 255] },
+			{ directive: '; @texture &screen:rgb 16 3 2', offsetX: 0, color: [255, 0, 0, 255] },
+			{ directive: '; @texture &screen:mono 16 3 2', offsetX: 16, color: [128, 128, 128, 255] },
+			{
+				directive: '; @texture &screen:bits 6 10 2',
+				offsetX: 0,
+				color: resolvePalette().rgba.inkBase.map(value => Math.round(value * 255)),
+			},
+			{ directive: crop, offsetX: 0, color: [255, 255, 0, 255] },
+		];
+		const readSample = ({ directive, offsetX }: (typeof samples)[number]) => {
+			const line = block.code.indexOf(directive);
+			const row = displayRowToGridRow(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps);
+			const x = block.x - viewport.x + (block.lineNumberColumnWidth + 2) * viewport.vGrid + offsetX;
+			const y = block.y - viewport.y + (row + 1) * viewport.hGrid;
+			const pixel = new Uint8Array(4);
+			gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+			return [...pixel];
+		};
+		await vi.waitFor(() => {
+			activeEditor.renderFrame();
+			expect(samples.map(readSample)).toEqual(samples.map(sample => sample.color));
+			if (enabled) expect(frames[framesAddress]).toBeGreaterThan(0);
+		});
+		const expectHiddenFrame = () => {
+			const before = frames[framesAddress];
+			activeEditor.renderFrame();
+			expect(frames[framesAddress]).toBe(before + (enabled ? 1 : 0));
+			for (const sample of samples) expect(readSample(sample), sample.directive).not.toEqual(sample.color);
+		};
+		for (const id of ['first', 'second']) {
+			events.dispatch('addDialog', {
+				id,
+				title: 'Paused for confirmation',
+				text: 'The framebuffer continues updating while this dialog is open.',
+				buttons: [],
+			});
+			expectHiddenFrame();
+		}
+		events.dispatch('removeDialog', 'second');
+		expect(editor.state.dialogStack.map(dialog => dialog.id)).toEqual(['first']);
+		expectHiddenFrame();
+		if (enabled) await expect(canvas).toMatchScreenshot('dialog-hides-textures');
+
+		const latestColor = [0, 255, 0, 255];
+		new Uint8Array(memory.buffer).set(latestColor, allocations.rgba.byteAddress);
+		if (enabled) events.dispatch('removeDialog', 'first');
+		else events.dispatch('clearDialogs');
+		editor.renderFrame();
+		expect(samples.map(readSample)).toEqual([latestColor, ...samples.slice(1).map(sample => sample.color)]);
+		expect(compiler.getMemory()).toBe(memory);
+		expect(compiler.getCodeBuffer()).toBe(codeBuffer);
 		expect(gl.getError()).toBe(gl.NO_ERROR);
 	} finally {
 		editor?.dispose();
