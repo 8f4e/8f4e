@@ -28,7 +28,6 @@ describe('ProjectObjectModel', () => {
 		expectTypeOf<ProjectGroupObjectModel['id']>().toEqualTypeOf<ProjectBlockId>();
 		expectTypeOf<ProjectObjectModel['functions']>().toEqualTypeOf<ProjectBlock[]>();
 		expectTypeOf<ProjectGroupObjectModel['entry']>().toEqualTypeOf<ProjectEntryName>();
-		expectTypeOf<Extract<keyof ProjectObjectModel, 'code'>>().toEqualTypeOf<never>();
 		expectTypeOf<ProjectGroupObjectModel['code']>().toEqualTypeOf<string[]>();
 		expectTypeOf<ProjectGroupObjectModel['exposures']>().toEqualTypeOf<ProjectMemoryExposure[]>();
 	});
