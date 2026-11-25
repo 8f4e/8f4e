@@ -46,9 +46,10 @@ text changes, and undo/redo shortcuts. View mode supports line selection and blo
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
-The independent `font-preview` plugin uses Cmd/Ctrl+- for a smaller font and Cmd/Ctrl++ (or Cmd/Ctrl+=) for a larger
-font, stopping at the ends of the size-ordered catalog. It previews without changing source, history, or saved files.
-Previewing persists across source edits; loading a project or disposing the plugin restores source configuration.
+The independent `font-preview` plugin uses Cmd/Ctrl+- and Cmd/Ctrl++ (or Cmd/Ctrl+=) to step backward and forward
+through the catalog ordered by pixel-cell area, stopping at either end. Equal-area fonts remain separate steps.
+It previews without changing source, history, or saved files. Previewing persists across source edits; loading a
+project or disposing the plugin restores source configuration.
 Each loaded font change shows its name, credits and a 16×16 character grid for three seconds without blocking editing.
 
 After the first render, the browser host imports and installs these four plugins only when `(pointer: coarse)` does not match. Phones and tablets

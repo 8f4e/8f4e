@@ -108,7 +108,7 @@ describe('font preview', () => {
 		}
 	);
 
-	it('leaves plain typing, other shortcuts and the old function keys alone', () => {
+	it('leaves plain typing and unrelated shortcuts alone', () => {
 		const test = setup();
 		for (const key of ['+', '=', '-']) {
 			expect(test.key(key).defaultPrevented).toBe(false);
@@ -116,7 +116,7 @@ describe('font preview', () => {
 			expect(test.key(key, { altKey: true, ctrlKey: true }).defaultPrevented).toBe(false);
 			expect(test.key(key, { altKey: true, metaKey: true }).defaultPrevented).toBe(false);
 		}
-		for (const key of ['F8', 'F9', '0', 'z']) {
+		for (const key of ['0', 'z']) {
 			expect(test.key(key).defaultPrevented).toBe(false);
 			expect(test.key(key, { ctrlKey: true }).defaultPrevented).toBe(false);
 		}

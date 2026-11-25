@@ -30,8 +30,6 @@ producer highlights, and tooltips. Stack Connections draws links beside the sele
 producer to the highlighted instruction.
 Compiler coordination, undo/redo history, URL loading, home navigation, the dotted canvas background, block backgrounds,
 code rendering, and loading indicators are eager.
-The Enable/Disable and Log block info context-menu actions are available only in the default editor;
-the gallery still interprets `@disabled` from project source.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
 viewport's origin and cell dimensions, plus the active palette.
@@ -108,10 +106,10 @@ text changes, and undo/redo shortcuts. View mode supports line selection and blo
 The editing plugin keeps a small input bridge and imports its text-editing implementation on first entry into edit
 mode, including projects that start in edit mode. It buffers keys during that import and replays them in order.
 
-The independent `font-preview` plugin uses **Cmd/Ctrl+-** for a smaller font and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**)
-for a larger font, stopping at the ends of the size-ordered catalog. Each loaded font
-change shows its name, credits and a 16×16 character grid for three seconds without blocking editing. Previewing leaves project source,
-history and saved files unchanged; loading another project restores its configured font.
+The independent `font-preview` plugin uses **Cmd/Ctrl+-** and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**) to step backward and
+forward through the catalog ordered by pixel-cell area, stopping at either end. Equal-area fonts remain separate steps.
+Each loaded font change shows its name, credits and a 16×16 character grid for three seconds without blocking editing.
+Previewing leaves project source, history and saved files unchanged; loading another project restores its configured font.
 
 After the first render, the browser host imports and installs these plugins only when `(pointer: coarse)` does not match. Phones and tablets
 with a coarse primary pointer receive none of these four plugins, and their mode overlay is hidden by default. This

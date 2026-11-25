@@ -499,8 +499,9 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 
 The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`, ordered by pixel-cell area. In the default and gallery
 desktop editors, the independent font-preview plugin uses Cmd/Ctrl+- and Cmd/Ctrl++ (or Cmd/Ctrl+=) to step through
-that catalog temporarily, stopping at either end. Previewing does not change the resolved
-source configuration or saved files; loading a project clears the preview after its source configuration settles.
+that catalog temporarily, stopping at either end. Equal-area fonts remain separate steps; cell dimensions may vary
+independently between fonts. Previewing does not change the resolved source configuration or saved files; loading a
+project clears the preview after its source configuration settles.
 Web-ui emits `fontChanged` with `{ font }` after installing a different font atlas and settling its grid. The
 font-preview plugin uses this notification to show the new font's name, credits and all 256 characters in a 16×16 grid
 for three seconds. The panel scales down to fit smaller viewports.

@@ -1,9 +1,10 @@
 # Font preview
 
-`@8f4e/editor-plugin-font-preview` uses **Cmd/Ctrl+-** for a smaller font and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**)
-for a larger font. It steps through sprite-generator's catalog by pixel-cell area and stops at the smallest and
-largest fonts. With the editor focused, these shortcuts replace browser zoom in view and edit modes; unmodified
-and already handled keys are left alone.
+`@8f4e/editor-plugin-font-preview` uses **Cmd/Ctrl+-** to step backward and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**)
+to step forward through sprite-generator's catalog, ordered by pixel-cell area. It stops at either end. Fonts of
+equal area remain separate steps, and because cell proportions vary, a step need not increase or decrease both
+dimensions. With the editor focused, these shortcuts replace browser zoom in view and edit modes; unmodified and
+already handled keys are left alone.
 
 After a different font finishes loading, a small, nonmodal panel shows its display name, creator credits and
 license for three seconds. Switching again replaces the panel and restarts the timer. This also covers changes
