@@ -36,7 +36,6 @@ export function reconstructProject(
 				entry: block.entry,
 				gridX: block.gridX,
 				gridY: block.gridY,
-				isProjectScope: block.isProjectScope,
 				childLevel: block.childLevel ? createProjectLevel(block.childLevel, previousBlock?.childLevel) : undefined,
 			});
 			if (previousBlock && previousBlock === previousLevel?.selectedBlock) selectedBlock = editorBlock;

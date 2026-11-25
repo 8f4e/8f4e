@@ -58,6 +58,7 @@ function serializeExecution(project: ProjectObjectModel): string[] {
  * Throws if any code block fails export-gate validation.
  */
 export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
+	if (project.code.length > 0) throw new Error('Root project source must be inside document blocks');
 	const documentBlocks = getDocumentBlocks(project);
 	const allBlocks = getAllBlocks(project);
 
@@ -69,10 +70,7 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 		});
 	}
 
-	const blockStrings = [
-		...(project.code.length > 0 ? [project.code.join('\n')] : []),
-		...documentBlocks.map(block => block.code.join('\n')),
-	];
+	const blockStrings = documentBlocks.map(block => block.code.join('\n'));
 	const execution = serializeExecution(project);
 	if (execution.length) blockStrings.push(execution.join('\n'));
 

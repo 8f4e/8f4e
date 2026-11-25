@@ -78,7 +78,6 @@ it.each([
 	['group', ['group target', 'groupEnd']],
 	['constants', ['constants target', 'constantsEnd']],
 	['includes', ['includes', 'includesEnd']],
-	['project source block', ['pass']],
 	['unknown', ['int value 1']],
 ] as const)('labels deletion using the block kind: %s', async (label, source) => {
 	const test = setup();

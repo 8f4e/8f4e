@@ -88,7 +88,7 @@ function readGroup(
 	return group;
 }
 
-function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines: string[]): void {
+function readScopeLine(node: SourceLine, context: ScopeContext): void {
 	const line = node.text;
 	const trimmed = line.trim();
 	const { project } = context;
@@ -111,10 +111,7 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 		return;
 	}
 	const scopeLine = classifyProjectScopeLine(line);
-	if (scopeLine.kind === 'gap') {
-		if (context.kind === 'root') pendingGapLines.push(line);
-		return;
-	}
+	if (scopeLine.kind === 'gap') return;
 	if (context.kind === 'entry')
 		throw syntaxErrorAt(
 			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
@@ -122,16 +119,16 @@ function readScopeLine(node: SourceLine, context: ScopeContext, pendingGapLines:
 			{ kind: 'document' },
 			{ lineNumber: node.lineNumber - 1 }
 		);
-	if (scopeLine.kind !== 'declaration' || scopeLine.instruction === 'expose')
-		throw syntaxErrorAt(
-			SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
-			`Parse error at line ${node.lineNumber}: expected opener keyword, got "${trimmed}"`,
-			{ kind: 'document' },
-			{ lineNumber: node.lineNumber - 1 }
-		);
-	if (project.code.length === 0) while (pendingGapLines[0]?.trim() === '') pendingGapLines.shift();
-	project.code.push(...pendingGapLines, line);
-	pendingGapLines.length = 0;
+	const message =
+		scopeLine.kind === 'declaration'
+			? `instruction "${scopeLine.instruction}" is only allowed in a group body`
+			: `expected opener keyword, got "${trimmed}"`;
+	throw syntaxErrorAt(
+		SyntaxErrorCode.INVALID_BLOCK_STRUCTURE,
+		`Parse error at line ${node.lineNumber}: ${message}`,
+		{ kind: 'document' },
+		{ lineNumber: node.lineNumber - 1 }
+	);
 }
 
 function readScopeBlock(node: SourceBlock, context: ScopeContext, id: number, position: ExpandedSourcePosition): void {
@@ -181,19 +178,16 @@ function readScopeBlock(node: SourceBlock, context: ScopeContext, id: number, po
 }
 
 function readScope(nodes: SourceNode[], context: ScopeContext, position: ExpandedSourcePosition): void {
-	const pendingGapLines: string[] = [];
 	for (const node of nodes) {
 		if (isBlock(node)) {
-			pendingGapLines.length = 0;
 			const id = position.nextLineNumber++;
 			readScopeBlock(node, context, id, position);
 			position.nextLineNumber++;
 		} else {
 			position.nextLineNumber++;
-			readScopeLine(node, context, pendingGapLines);
+			readScopeLine(node, context);
 		}
 	}
-	if (context.kind === 'root' && context.project.code.length) context.project.code.push(...pendingGapLines);
 }
 
 /** Parses `.8f4e` text into the canonical compiler-owned project object model. */

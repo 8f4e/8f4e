@@ -64,8 +64,6 @@ export interface EditorCodeBlock {
 	readonly readOnly?: boolean;
 	/** Tab stops for every raw source line, prepared with parsed directives when source changes. */
 	tabStopsByLine: number[][];
-	/** True for the root project's directly owned project-scope source. */
-	isProjectScope?: boolean;
 	lineNumberColumnWidth: number;
 	/** Display facts derived from source directives, independent of selection and pixel layout. */
 	directiveDisplayState: DirectiveDisplayState;

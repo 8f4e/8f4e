@@ -30,14 +30,15 @@ function setup(initializeGrid = true) {
 }
 
 describe('project loading and block layout', () => {
-	it('renders root project-scope source as an editable code block', () => {
-		const { state, load } = setup();
-		load({ ...EMPTY_DEFAULT_PROJECT, code: ['pass env'] });
-		expect(state.project.activeLevel.blocks.find(block => block.isProjectScope)).toMatchObject({
-			code: ['pass env'],
-			isProjectScope: true,
-			projectPath: '',
-		});
+	it('rejects a model with standalone root source without replacing the current project', () => {
+		const { state, load, loadSource } = setup();
+		loadSource('entry main\nmodule retained\nmoduleEnd\nentryEnd');
+		const previousLevel = state.project.rootLevel;
+		expect(() => load({ ...EMPTY_DEFAULT_PROJECT, code: ['pass env'] })).toThrow(
+			'Root project source must be inside document blocks'
+		);
+		expect(state.project.rootLevel).toBe(previousLevel);
+		expect(previousLevel.blocks.some(block => block.name === 'retained')).toBe(true);
 	});
 
 	it('renders project-level includes blocks from imported project state', () => {

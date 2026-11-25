@@ -67,7 +67,6 @@ describe('log block info plugin', () => {
 		['group', ['group target', 'groupEnd']],
 		['constants', ['constants target', 'constantsEnd']],
 		['includes', ['includes', 'includesEnd']],
-		['project', ['pass']],
 		['unknown', ['int value 1']],
 	] as const)('contributes the inspection label for %s', async (label, source) => {
 		const test = setup([...source]);

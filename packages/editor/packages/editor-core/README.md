@@ -300,8 +300,8 @@ Unregister with the same `events.off` call as other listeners. Layer groups are 
 removed; dispatch traverses those snapshots without sorting or filtering registrations.
 
 Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
-contributor errors to document blocks or project scopes, independently of any presentation or navigation plugin.
-`createCodeErrorBlockLookup(rootLevel)` indexes document identities and project scopes once for a batch of errors,
+contributor errors to document blocks or group scopes, independently of any presentation or navigation plugin.
+`createCodeErrorBlockLookup(rootLevel)` indexes document identities and group scopes once for a batch of errors,
 retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.

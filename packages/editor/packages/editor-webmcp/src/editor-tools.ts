@@ -13,7 +13,7 @@ const code = { type: 'string', description: 'Complete source of the block, with 
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 const blockTypeInput = {
 	type: 'string',
-	enum: ['module', 'function', 'constants', 'includes', 'note', 'unknown', 'group', 'project'],
+	enum: ['module', 'function', 'constants', 'includes', 'note', 'unknown', 'group'],
 };
 const blockInput = objectInput({ type: blockTypeInput, name: { type: 'string' } }, ['type', 'name']);
 const editInputs = {
@@ -40,8 +40,7 @@ const editsInput = objectInput({ edits: { type: 'array', minItems: 1, items: { o
 ]);
 const helpHint = ' If you are unfamiliar with 8f4e, start with get_help.';
 const normalizeNewlines = (text: string) => text.replace(/\r\n|\r/g, '\n');
-const blockType = (block: EditorCodeBlock) =>
-	block.childLevel !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
+const blockType = (block: EditorCodeBlock) => (block.childLevel !== undefined ? 'group' : block.blockType);
 export function createEditorTools(
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>,
 	getCompilerDiagnostics?: () => unknown

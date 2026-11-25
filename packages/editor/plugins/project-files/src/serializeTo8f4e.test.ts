@@ -146,15 +146,10 @@ entryEnd`;
 		expect(serializeProjectTo8f4e(createProject())).toBe('8f4e/v1\n\n');
 	});
 
-	it('round-trips editable root project-scope source', () => {
+	it('rejects standalone root source rather than exporting an invalid document', () => {
 		const project = createProject({ code: ['; namespace contract', 'pass env'] });
 
-		const text = serializeProjectTo8f4e(project);
-		const parsed = parseProjectSource(text);
-
-		expect(text).toBe(['8f4e/v1', '', '; namespace contract', 'pass env'].join('\n'));
-		expect(parsed.code).toEqual(['; namespace contract', 'pass env']);
-		expect(serializeProjectTo8f4e(parsed)).toBe(text);
+		expect(() => serializeProjectTo8f4e(project)).toThrow('Root project source must be inside document blocks');
 	});
 
 	it('round-trips canonical block collections through project text', () => {

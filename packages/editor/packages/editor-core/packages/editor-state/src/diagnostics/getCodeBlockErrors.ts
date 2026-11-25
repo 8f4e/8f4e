@@ -3,11 +3,7 @@ import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import { walkProjectBlocks } from '../project/tree';
 
 function getProjectScopePath(codeBlock: EditorCodeBlock) {
-	return codeBlock.isProjectScope
-		? codeBlock.projectPath
-		: codeBlock.childLevel
-			? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name)
-			: undefined;
+	return codeBlock.childLevel ? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name) : undefined;
 }
 
 export default function getCodeBlockErrors(state: State, codeBlock: EditorCodeBlock) {

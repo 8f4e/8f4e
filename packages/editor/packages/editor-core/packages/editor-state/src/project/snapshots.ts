@@ -25,7 +25,6 @@ function captureBlock(block: EditorCodeBlock): EditorBlockSnapshot {
 		entry: block.entry,
 		gridX: block.gridX,
 		gridY: block.gridY,
-		isProjectScope: block.isProjectScope === true,
 		childLevel: block.childLevel ? captureLevel(block.childLevel) : undefined,
 	};
 }
@@ -59,23 +58,19 @@ export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSn
 
 /** Translate a loaded compiler project into authored editor source, discarding the root env. */
 export function snapshotFromProjectModel(project: ProjectObjectModel): EditorProjectSnapshot {
+	if (project.code.length > 0) throw new Error('Root project source must be inside document blocks');
 	const authoredProject = {
 		...project,
 		constants: project.constants.filter(block => !isEnvironmentSource(block.code)),
 	};
-	let nextCodeBlockCreationIndex = getHighestProjectBlockId(authoredProject) + 1;
+	const nextCodeBlockCreationIndex = getHighestProjectBlockId(authoredProject) + 1;
 	const createBlock = (block: ProjectBlock): EditorBlockSnapshot => ({
 		creationIndex: block.id,
 		code: [...block.code],
 		gridX: 0,
 		gridY: 0,
-		isProjectScope: false,
 	});
-	const createLevel = (level: ProjectObjectModel, path: ProjectGroupPath, root = false): EditorLevelSnapshot => {
-		const scoped: EditorBlockSnapshot[] =
-			root && level.code.length
-				? [{ ...createBlock({ id: nextCodeBlockCreationIndex++, code: level.code }), isProjectScope: true }]
-				: [];
+	const createLevel = (level: ProjectObjectModel, path: ProjectGroupPath): EditorLevelSnapshot => {
 		const execution: EditorBlockSnapshot[] = level.execution.map(block => ({
 			...createBlock(block),
 			entry: block.entry,
@@ -88,7 +83,6 @@ export function snapshotFromProjectModel(project: ProjectObjectModel): EditorPro
 			path,
 			entries: [...level.entries],
 			blocks: [
-				...scoped,
 				...level.functions.map(createBlock),
 				...level.constants.map(createBlock),
 				...level.includes.map(createBlock),
@@ -98,6 +92,6 @@ export function snapshotFromProjectModel(project: ProjectObjectModel): EditorPro
 			],
 		};
 	};
-	const rootLevel = createLevel(authoredProject, ROOT_PROJECT_GROUP_PATH, true);
+	const rootLevel = createLevel(authoredProject, ROOT_PROJECT_GROUP_PATH);
 	return { rootLevel, nextCodeBlockCreationIndex };
 }

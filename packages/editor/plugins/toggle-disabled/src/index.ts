@@ -3,9 +3,8 @@ import { applyCodeBlockSourceEdits, removeDirective, upsertDirective } from '@8f
 
 const action = 'toggleCodeBlockDisabled';
 
-/** Structural group and root-scope source do not support disabled compiler metadata. */
-const supportsToggle = (codeBlock: EditorCodeBlock) =>
-	!codeBlock.readOnly && !codeBlock.childLevel && !codeBlock.isProjectScope;
+/** Structural groups do not support disabled compiler metadata. */
+const supportsToggle = (codeBlock: EditorCodeBlock) => !codeBlock.readOnly && !codeBlock.childLevel;
 
 export const toggleDisabledPlugin: EditorPlugin = {
 	id: 'toggle-disabled',

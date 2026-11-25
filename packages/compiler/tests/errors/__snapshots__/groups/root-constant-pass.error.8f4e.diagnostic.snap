@@ -1,12 +1,10 @@
 {
-  "code": 69,
-  "domain": "semantic",
-  "instruction": "pass",
+  "code": 9,
+  "domain": "syntax",
   "kind": "source",
   "location": {
-    "kind": "scope",
-    "lineNumber": 0,
-    "projectGroupPath": "",
+    "kind": "document",
+    "lineNumber": 1,
   },
-  "message": "Passed name env is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
+  "message": "Parse error at line 2: instruction "pass" is only allowed in a group body",
 }

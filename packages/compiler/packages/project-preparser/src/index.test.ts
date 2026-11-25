@@ -146,47 +146,17 @@ describe('parseProjectSource', () => {
 		expect(getProjectGroups(project)).toEqual([]);
 	});
 
-	it('preserves root declaration gaps while discarding comments around child blocks', () => {
-		const project = parseProjectSource(
-			[
-				'8f4e/v1',
-				'',
-				'   ',
-				'; first retained declaration',
-				'pass common',
-				'',
-				'// between declarations',
-				'pass shared',
-				'',
-				'; discarded before a child block',
-				'entry main',
-				'; discarded inside an entry',
-				'module first',
-				'moduleEnd',
-				'entryEnd',
-				'',
-				'; retained before another root declaration',
-				'pass last',
-				'',
-				'// retained at the end',
-			].join('\n')
+	it.each([
+		['pass', 'pass common'],
+		['init', 'init &out 1'],
+		['expose', 'expose out &voice:value'],
+	])('rejects root %s declarations at their document line', (instruction, source) => {
+		expect(() => parseProjectSource(`8f4e/v1\n; root comment\n\n${source}`)).toThrowError(
+			expect.objectContaining({
+				message: `Parse error at line 4: instruction "${instruction}" is only allowed in a group body`,
+				diagnostic: expect.objectContaining({ location: { kind: 'document', lineNumber: 3 } }),
+			})
 		);
-
-		expect(project.code).toEqual([
-			'; first retained declaration',
-			'pass common',
-			'',
-			'// between declarations',
-			'pass shared',
-			'',
-			'; retained before another root declaration',
-			'pass last',
-			'',
-			'// retained at the end',
-		]);
-		expect(getProjectModules(project)).toEqual([
-			{ type: 'module', id: 13, code: ['module first', 'moduleEnd'], entry: 'main' },
-		]);
 	});
 
 	it.each([

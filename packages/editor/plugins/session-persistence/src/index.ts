@@ -24,19 +24,22 @@ export function createSessionPersistencePlugin({
 				}
 			};
 			const initialize = () => {
-				let project: ProjectObjectModel | null = null;
+				let restoreFailed = false;
 				if (restoreOnStartup) {
 					try {
 						const saved = storage.getItem(storageKey);
-						if (saved !== null) project = JSON.parse(saved);
+						if (saved !== null) {
+							const project: ProjectObjectModel | null = JSON.parse(saved);
+							if (project !== null) events.dispatch('loadProject', { project });
+						}
 					} catch (error) {
+						restoreFailed = true;
 						logError(state, `Failed to restore editor session: ${String(error)}`);
 					}
 				}
-				if (project !== null) events.dispatch('loadProject', { project });
 
 				store.subscribe('projectChange', save);
-				save();
+				if (!restoreFailed) save();
 			};
 			events.on('prepareInitialProject', initialize);
 			return () => {

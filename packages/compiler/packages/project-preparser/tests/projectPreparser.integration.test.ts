@@ -4,13 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { parseProjectSource, resolveProjectIncludesAsync } from '../src';
 
 describe('project-preparser integration', () => {
-	it('preserves root and nested project-scope namespace passes', () => {
+	it('preserves group-owned namespace passes', () => {
 		const project = parseProjectSource(
 			[
 				'8f4e/v1',
 				'',
-				'; root contract',
-				'pass env',
+				'; root comment',
 				'',
 				'entry main',
 				'group audio',
@@ -21,7 +20,7 @@ describe('project-preparser integration', () => {
 			].join('\n')
 		);
 
-		expect(project.code).toEqual(['; root contract', 'pass env']);
+		expect(project.code).toEqual([]);
 		expect(getProjectGroups(project)[0].code).toEqual(['group audio', '; child contract', 'pass env', 'groupEnd']);
 	});
 

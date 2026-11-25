@@ -127,7 +127,7 @@ export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectMode
 export interface ProjectObjectModel {
 	/** Entry definitions local to this scope, including empty entries. */
 	entries: ProjectEntryName[];
-	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
+	/** Group wrapper and declarations, excluding recursively owned blocks; empty for the root project. */
 	code: string[];
 	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
 	execution: ProjectExecutableBlock[];
