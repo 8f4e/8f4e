@@ -87,7 +87,7 @@ while it is only partially updated or already being overwritten.
 
 Concrete project:
 
-- `packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e`
+- `examples/src/projects/audio/amigaMods/lowerIntentions.8f4e`
 
 This project:
 
@@ -142,7 +142,7 @@ done
 ASSET_DIR="/tmp/8f4e-lowerintentions-assets"
 
 node apps/cli/bin/cli.js capture \
-  packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e \
+  examples/src/projects/audio/amigaMods/lowerIntentions.8f4e \
   --load-file rowBuffer1:_dat="$ASSET_DIR/patterns_ch1.bin" \
   --load-file rowBuffer2:_dat="$ASSET_DIR/patterns_ch2.bin" \
   --load-file rowBuffer3:_dat="$ASSET_DIR/patterns_ch3.bin" \
@@ -178,7 +178,7 @@ Use the same command as the left channel, but change the captured buffer from
 ASSET_DIR="/tmp/8f4e-lowerintentions-assets"
 
 node apps/cli/bin/cli.js capture \
-  packages/examples/src/projects/audio/amigaMods/lowerIntentions.8f4e \
+  examples/src/projects/audio/amigaMods/lowerIntentions.8f4e \
   --load-file rowBuffer1:_dat="$ASSET_DIR/patterns_ch1.bin" \
   --load-file rowBuffer2:_dat="$ASSET_DIR/patterns_ch2.bin" \
   --load-file rowBuffer3:_dat="$ASSET_DIR/patterns_ch3.bin" \

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = process.cwd();
-const benchmarkDir = path.resolve(workspaceRoot, 'packages/examples/src/benchmarks/bytecode-size');
+const benchmarkDir = path.resolve(workspaceRoot, 'examples/src/benchmarks/bytecode-size');
 const outputDir = path.resolve(workspaceRoot, 'logs/compiler-coverage-counts');
 const suiteName = 'compiler-coverage-counts';
 const schemaVersion = 2;
@@ -21,62 +21,62 @@ const coverageComponents = [
 	{
 		id: 'compiler',
 		label: 'compiler core',
-		pathFragment: '/packages/compiler/dist/',
+		pathFragment: '/compiler/dist/',
 	},
 	{
 		id: 'tokenizer',
 		label: 'tokenizer',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/tokenizer/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/tokenizer/dist/',
 	},
 	{
 		id: 'constantResolver',
 		label: 'constant resolver',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/constant-resolver/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/constant-resolver/dist/',
 	},
 	{
 		id: 'memoryPlanner',
 		label: 'memory planner',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/memory-planner/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/memory-planner/dist/',
 	},
 	{
 		id: 'memoryReferenceResolver',
 		label: 'memory reference resolver',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/memory-reference-resolver/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/memory-reference-resolver/dist/',
 	},
 	{
 		id: 'memoryDefaultResolver',
 		label: 'memory default resolver',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/memory-default-resolver/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/memory-default-resolver/dist/',
 	},
 	{
 		id: 'semanticReferenceResolver',
 		label: 'semantic reference resolver',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/semantic-reference-resolver/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/semantic-reference-resolver/dist/',
 	},
 	{
 		id: 'semanticUtils',
 		label: 'semantic utils',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/semantic-utils/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/semantic-utils/dist/',
 	},
 	{
 		id: 'stackAnalyzer',
 		label: 'stack analyzer',
-		pathFragment: '/packages/compiler/packages/sub-program/packages/stack-analyzer/dist/',
+		pathFragment: '/compiler/packages/sub-program/packages/stack-analyzer/dist/',
 	},
 	{
 		id: 'wasmCodegen',
 		label: 'wasm codegen',
-		pathFragment: '/packages/compiler/packages/wasm-codegen/dist/',
+		pathFragment: '/compiler/packages/wasm-codegen/dist/',
 	},
 	{
 		id: 'compilerWasmUtils',
 		label: 'compiler wasm utils',
-		pathFragment: '/packages/compiler/packages/wasm-codegen/packages/wasm-utils/dist/',
+		pathFragment: '/compiler/packages/wasm-codegen/packages/wasm-utils/dist/',
 	},
 	{
 		id: 'languageSpec',
 		label: 'language spec',
-		pathFragment: '/packages/compiler/packages/language-spec/dist/',
+		pathFragment: '/compiler/packages/language-spec/dist/',
 	},
 ];
 const coverageComponentById = new Map(coverageComponents.map(component => [component.id, component]));
@@ -86,7 +86,7 @@ await main();
 async function main() {
 	const benchmarkCases = await collectBenchmarkCases(benchmarkDir);
 	const gitMetadata = getGitMetadata();
-	const packageJson = await readJson(path.resolve(workspaceRoot, 'packages/compiler/package.json'));
+	const packageJson = await readJson(path.resolve(workspaceRoot, 'compiler/package.json'));
 
 	if (benchmarkCases.length === 0) {
 		console.error(`No compiler coverage benchmark cases matched in ${path.relative(workspaceRoot, benchmarkDir)}`);

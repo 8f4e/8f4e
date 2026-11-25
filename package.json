@@ -45,10 +45,18 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "packages/*/*",
-    "packages/*/*/*",
-    "packages/*/*/*/*/*",
+    "compiler",
+    "compiler/packages/*",
+    "compiler/packages/*/packages/*",
+    "editor/core/*",
+    "editor/compositions/*",
+    "editor/plugins/*",
+    "editor/plugins/*/packages/*",
+    "editor/editor-webmcp",
+    "examples",
+    "tools/config",
+    "tools/test-runner",
+    "tools/vite-plugin-sources",
     "!apps/runtime-daisy/third_party/**"
   ],
   "lint-staged": {

@@ -66,9 +66,9 @@ Preserve unknown-count diagnostics rather than guessing a count from pointer typ
 
 ## Affected Components
 
-- `packages/compiler/packages/sub-program/packages/memory-reference-resolver/src/index.ts`
-- `packages/compiler/packages/sub-program/packages/memory-reference-resolver/src/resolveMemoryExpressionOperand.ts`
-- `packages/compiler/packages/sub-program/packages/semantic-reference-resolver/src/referenceResolvers/push.ts`
+- `compiler/packages/sub-program/packages/memory-reference-resolver/src/index.ts`
+- `compiler/packages/sub-program/packages/memory-reference-resolver/src/resolveMemoryExpressionOperand.ts`
+- `compiler/packages/sub-program/packages/semantic-reference-resolver/src/referenceResolvers/push.ts`
 - Compiler fixtures and pointer-metadata snapshots.
 
 ## Risks & Considerations

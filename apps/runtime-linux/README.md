@@ -40,7 +40,7 @@ Build the CLI and export the DX7 project on the development computer:
 
 ```sh
 npx nx run @8f4e/cli:build
-node apps/cli/bin/cli.js compile packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e \
+node apps/cli/bin/cli.js compile examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e \
   --wasm-output /tmp/dx7.wasm \
   --memory-output /tmp/dx7.memory.json
 ```

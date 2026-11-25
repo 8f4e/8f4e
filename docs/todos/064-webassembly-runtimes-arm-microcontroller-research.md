@@ -131,7 +131,7 @@ Alternative approaches considered:
 
 - Future `packages/runtime-arm-cortex-m7/` - Will be implemented based on research findings
 - Future `apps/runtime-linux-arm/` - May benefit from Linux-compatible runtime research
-- `packages/compiler/` - May need adjustments based on runtime-specific requirements
+- `compiler/` - May need adjustments based on runtime-specific requirements
 - `docs/` - Should be updated with runtime compatibility information
 - Development toolchain - May need updates for cross-compilation support
 

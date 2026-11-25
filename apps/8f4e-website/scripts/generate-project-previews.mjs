@@ -10,8 +10,8 @@ import { projects as unlistedProjects } from '../src/unlisted-examples/projects.
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workspaceRoot = path.resolve(packageRoot, '../..');
 const previewRoot = path.join(packageRoot, 'src', 'project-previews');
-const compilerTestRoot = path.join(workspaceRoot, 'packages', 'compiler', 'tests');
-const exampleProjectRoot = path.join(workspaceRoot, 'packages', 'examples', 'src', 'projects');
+const compilerTestRoot = path.join(workspaceRoot, 'compiler', 'tests');
+const exampleProjectRoot = path.join(workspaceRoot, 'examples', 'src', 'projects');
 const compilerTestPreviewSource = path.join(compilerTestRoot, 'argument-continuation.test.8f4e');
 const featuredProjectIds = [
 	'dx7-algorithm-5-eight-voices',

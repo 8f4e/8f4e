@@ -83,10 +83,10 @@ The outcome is an evidence-based recommendation and a concrete follow-up impleme
 
 ## Affected Components
 
-- `packages/editor/core/glugglugglug/src/instanceBuffer.ts` - Packing and buffer growth.
-- `packages/editor/core/glugglugglug/src/renderer.ts` - Attribute types and stride.
-- `packages/editor/core/glugglugglug/src/shaders.ts` - Rectangle input compatibility.
-- `packages/editor/core/glugglugglug/src/utils/drawContext.ts` - Final group offsets.
+- `editor/core/glugglugglug/src/instanceBuffer.ts` - Packing and buffer growth.
+- `editor/core/glugglugglug/src/renderer.ts` - Attribute types and stride.
+- `editor/core/glugglugglug/src/shaders.ts` - Rectangle input compatibility.
+- `editor/core/glugglugglug/src/utils/drawContext.ts` - Final group offsets.
 - Core and plugin drawers, renderer tests, and package documentation - Coordinate audit and any future API changes.
 
 ## Risks & Considerations

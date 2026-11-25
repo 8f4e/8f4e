@@ -66,9 +66,9 @@ and diagnostic-context code where useful without introducing another project obj
 
 ## Affected Components
 
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/` and its project-instruction parsers/tests.
-- `packages/compiler/packages/project-preparser/src/projectMemoryExposure.ts`, its exports, project-source parsing, `projectLines.ts`, and template instruction parsing.
-- `packages/compiler/packages/program-composer/src/composeProgram.ts` and composition fixtures.
+- `compiler/packages/sub-program/packages/tokenizer/src/` and its project-instruction parsers/tests.
+- `compiler/packages/project-preparser/src/projectMemoryExposure.ts`, its exports, project-source parsing, `projectLines.ts`, and template instruction parsing.
+- `compiler/packages/program-composer/src/composeProgram.ts` and composition fixtures.
 - Editor exposure consumers in `features/code-blocks/features/connectors/` and `project/serialization/`.
 - `@8f4e/language-spec` project contracts only where shared syntax types are needed.
 

@@ -56,7 +56,7 @@ The precise names should follow language-spec style, but pointer facts should li
 ## Implementation Plan
 
 ### Step 1: Define shared pointer metadata types
-- Add shared `PointerMetadata` and `PointerPointeeMetadata` types to `packages/compiler/packages/language-spec/src/semantic.ts` or another appropriate language-spec file.
+- Add shared `PointerMetadata` and `PointerPointeeMetadata` types to `compiler/packages/language-spec/src/semantic.ts` or another appropriate language-spec file.
 - Decide whether `depth` should be a numeric literal union using the current `**` cap.
 
 ### Step 2: Migrate producers
@@ -74,7 +74,7 @@ The precise names should follow language-spec style, but pointer facts should li
 
 ## Validation Checkpoints
 
-- `rg -n "pointeeBaseType|pointeeElementCount|pointsTo" packages/compiler packages/compiler/packages/language-spec -g '*.ts'`
+- `rg -n "pointeeBaseType|pointeeElementCount|pointsTo" compiler compiler/packages/language-spec -g '*.ts'`
 - `npx nx run @8f4e/language-spec:typecheck`
 - `npx nx run @8f4e/compiler:typecheck`
 - `npx nx run compiler:test -- --run src/utils/memoryData.test.ts src/stackAnalysis/analyzeInstruction.test.ts tests/instructions/constantExpressions.test.ts`
@@ -88,12 +88,12 @@ The precise names should follow language-spec style, but pointer facts should li
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/memory.ts`
-- `packages/compiler/packages/language-spec/src/semantic.ts`
-- `packages/compiler/src/semantic/declarations/`
-- `packages/compiler/src/stackAnalysis/`
-- `packages/compiler/src/utils/memoryData.ts`
-- `packages/compiler/src/instructionCompilers/`
+- `compiler/packages/language-spec/src/memory.ts`
+- `compiler/packages/language-spec/src/semantic.ts`
+- `compiler/src/semantic/declarations/`
+- `compiler/src/stackAnalysis/`
+- `compiler/src/utils/memoryData.ts`
+- `compiler/src/instructionCompilers/`
 
 ## Risks & Considerations
 

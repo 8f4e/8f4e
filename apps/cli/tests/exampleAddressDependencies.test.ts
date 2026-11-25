@@ -28,10 +28,7 @@ async function instantiate(source: string) {
 
 describe('example address dependencies', () => {
 	it.each(sampleProjects)('preserves sample selection and fallbacks in $file', async project => {
-		const source = await readFile(
-			new URL(`../../../packages/examples/src/${project.file}.8f4e`, import.meta.url),
-			'utf8'
-		);
+		const source = await readFile(new URL(`../../../examples/src/${project.file}.8f4e`, import.meta.url), 'utf8');
 		const { result, lookup } = await instantiate(`${source}
 function lookup
 #export

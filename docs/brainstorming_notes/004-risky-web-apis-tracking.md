@@ -24,7 +24,7 @@ This document catalogs Web APIs currently used in the 8f4e project that may have
 **Browser Support**: Chrome/Edge 86+, Safari/Firefox: Not supported
 
 **Usage Locations**:
-- `packages/editor/core/editor-core/src/state/effects/menu/menus.ts`: `FileSystemFileHandle` operations
+- `editor/core/editor-core/src/state/effects/menu/menus.ts`: `FileSystemFileHandle` operations
 
 **Context**: Used for advanced file picking and OPFS (Origin Private File System) operations
 **Fallback**: Currently uses traditional `<input type="file">` as fallback
@@ -42,7 +42,7 @@ const entries = (opfsRoot as unknown as {
 **Browser Support**: Chrome 66+, Firefox 76+, Safari 14.1+
 
 **Usage Locations**:
-- `packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet/src/index.ts`: Core AudioWorklet implementation
+- `editor/plugins/audio-runtime/packages/runtime-audio-worklet/src/index.ts`: Core AudioWorklet implementation
 - `src/runtime-audio-worklet-factory.ts`: AudioWorklet factory and management
 
 **Context**: Used for low-latency audio processing in separate thread
@@ -74,7 +74,7 @@ const entries = (opfsRoot as unknown as {
 
 **Usage Locations**:
 - Multiple `createModule.ts` files across packages
-- `packages/editor/core/editor-core/src/state/index.ts`: Memory management
+- `editor/core/editor-core/src/state/index.ts`: Memory management
 - Extensive usage in compiler and runtime packages
 
 **Context**: Core technology for compiled code execution
@@ -153,7 +153,7 @@ const entries = (opfsRoot as unknown as {
 **Browser Support**: Widely supported (IE 10+)
 
 **Usage Locations**:
-- `packages/editor/core/editor-core/src/state/effects/compiler.ts`: Compilation timing
+- `editor/core/editor-core/src/state/effects/compiler.ts`: Compilation timing
 - Multiple runtime packages: Performance measurement
 
 **Context**: High-resolution timing for performance monitoring
@@ -164,7 +164,7 @@ const entries = (opfsRoot as unknown as {
 **Browser Support**: Universally supported
 
 **Usage Locations**:
-- `packages/editor/core/glugglugglug/src/engine.ts`: Frame rendering loop
+- `editor/core/glugglugglug/src/engine.ts`: Frame rendering loop
 
 **Context**: Smooth animation scheduling
 **Considerations**: Frame rate varies by display, may be throttled in background tabs

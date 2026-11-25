@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { brotliCompress, gzip } from 'node:zlib';
+import { getWorkspacePackageRoots } from './workspace-package-roots.mjs';
 
 const gzipAsync = promisify(gzip);
 const brotliCompressAsync = promisify(brotliCompress);
@@ -203,47 +204,14 @@ Notes:
 }
 
 async function findPackageManifests(root) {
-	const manifests = [];
-
-	if (await pathExists(path.join(root, 'package.json'))) {
-		manifests.push(path.join(root, 'package.json'));
-	}
-
-	await collectPackageManifests(path.join(root, 'packages'), manifests);
-	await collectPackageManifests(path.join(root, 'apps'), manifests);
-
-	return manifests.sort((a, b) => {
-		const aDepth = path.relative(root, a).split(path.sep).length;
-		const bDepth = path.relative(root, b).split(path.sep).length;
-		if (aDepth !== bDepth) {
-			return aDepth - bDepth;
-		}
-		return a.localeCompare(b);
-	});
-}
-
-async function collectPackageManifests(dir, manifests) {
-	if (!(await pathExists(dir))) {
-		return;
-	}
-
-	const entries = await fs.readdir(dir, { withFileTypes: true });
-
-	for (const entry of entries) {
-		if (entry.name === 'node_modules' || entry.name === 'dist') {
-			continue;
-		}
-
-		const entryPath = path.join(dir, entry.name);
-
-		if (entry.isDirectory()) {
-			const manifestPath = path.join(entryPath, 'package.json');
-			if (await pathExists(manifestPath)) {
-				manifests.push(manifestPath);
-			}
-			await collectPackageManifests(entryPath, manifests);
-		}
-	}
+	const roots = [root, ...(await getWorkspacePackageRoots(root))];
+	const manifests = await Promise.all(
+		roots.map(async packageRoot => {
+			const manifest = path.join(packageRoot, 'package.json');
+			return (await pathExists(manifest)) ? manifest : null;
+		})
+	);
+	return manifests.filter(Boolean);
 }
 
 async function getPackageManifestsByName(packageManifests) {

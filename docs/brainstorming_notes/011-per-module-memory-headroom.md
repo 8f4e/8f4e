@@ -8,8 +8,8 @@ This document captures brainstorming and planning notes for introducing per-modu
 
 - All modules compile into a single linear WebAssembly memory arena (`Int32Array` / `Float32Array` over `WebAssembly.Memory`).
 - Memory addresses are assigned in a strict global order:
-  - First by module order (topologically sorted via `sortModules` in `packages/compiler/src/index.ts`).
-  - Then by declaration order within each module (`packages/compiler/src/compiler.ts`).
+  - First by module order (topologically sorted via `sortModules` in `compiler/src/index.ts`).
+  - Then by declaration order within each module (`compiler/src/compiler.ts`).
 - For each module, `compileModule`:
   - Receives a `startingByteAddress` (derived from a global `memoryAddress` word index).
   - Compiles all `memory` declarations into a `memoryMap` of `DataStructure` entries.
@@ -17,7 +17,7 @@ This document captures brainstorming and planning notes for introducing per-modu
     - `byteAddress` and `wordAlignedAddress` (index into the global arena).
     - `wordAlignedSize` (how many words the structure occupies).
 - After compilation, `calculateWordAlignedSizeOfMemory` sums a module’s declared data structures to get its total `wordAlignedSize`.
-- In `compileModules` (`packages/compiler/src/index.ts`):
+- In `compileModules` (`compiler/src/index.ts`):
   - A global `memoryAddress` (in words) is maintained.
   - For each module:
     - `startingByteAddress = memoryAddress * GLOBAL_ALIGNMENT_BOUNDARY`.

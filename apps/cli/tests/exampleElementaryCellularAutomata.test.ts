@@ -37,7 +37,7 @@ describe('Elementary cellular automata example', () => {
 		'packs pixels correctly across rule and seed changes with memory allocation offset %i',
 		async offset => {
 			const source = await readFile(
-				new URL('../../../packages/examples/src/projects/visuals/elementaryCellularAutomata.8f4e', import.meta.url),
+				new URL('../../../examples/src/projects/visuals/elementaryCellularAutomata.8f4e', import.meta.url),
 				'utf8'
 			);
 			const result = await compileProject(parseProjectSource(source), {

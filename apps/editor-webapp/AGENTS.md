@@ -1,6 +1,6 @@
 # Editor Web App Guidelines
 
-- Follow the [editor ownership and integration guidelines](../../packages/editor/AGENTS.md) when composing editor packages.
+- Follow the [editor ownership and integration guidelines](../../editor/AGENTS.md) when composing editor packages.
 - Own HTML, hosting assets, deployment and mounting the default composition. Keep product behavior in
   editor-default and reusable editor behavior in editor-core.
 - Load the external WebMCP bridge after mounting. Keep registration failures independent of editor startup and

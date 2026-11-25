@@ -2,15 +2,15 @@
 
 ## Project Map
 
-- [Compiler](packages/compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
+- [Compiler](compiler/AGENTS.md) owns language parsing, analysis and WebAssembly compilation.
 - The [CLI](apps/cli/README.md) exposes the compiler and execution tooling as command-line commands.
-- [Editor](packages/editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
+- [Editor](editor/AGENTS.md) owns reusable editing, browser runtime integration, optional plugins and
   editor compositions. The [editor web app](apps/editor-webapp/AGENTS.md) is the thin host for the default composition.
 - The [product website](apps/8f4e-website/README.md) hosts the landing demos, example gallery and compiler fixture
   gallery. Keep full gallery catalogs out of the homepage build. Ship project sources as assets.
-- [Examples](packages/examples) ships project and module source. Consumers that discover these files depend on
+- [Examples](examples) ships project and module source. Consumers that discover these files depend on
   `@8f4e/examples` so generators and source changes participate in Nx builds and watches.
-- [Vite source collections](packages/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
+- [Vite source collections](tools/vite-plugin-sources/AGENTS.md) provide reusable source discovery. Source
   selection and interpretation belong to consumers.
 - [Linux runtime](apps/runtime-linux/AGENTS.md) owns native JACK playback. The separate
   [runtime command tool](apps/runtime-command/README.md) translates compiler metadata into numeric launch arguments.

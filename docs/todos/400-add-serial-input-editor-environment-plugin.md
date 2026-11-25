@@ -80,7 +80,7 @@ Incomplete trailing bytes remain buffered until more serial data arrives. Queues
 ## Proposed File Organization
 
 ```text
-packages/editor/plugins/serial-input/src/
+editor/plugins/serial-input/src/
   index.ts
   devices.ts
   directives.ts
@@ -180,9 +180,9 @@ Responsibilities:
 
 ## Affected Components
 
-- `packages/editor/plugins/serial-input` - new serial plugin implementation, WASM access, and tests.
-- `packages/editor/compositions/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
-- `packages/editor/core/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
+- `editor/plugins/serial-input` - new serial plugin implementation, WASM access, and tests.
+- `editor/compositions/editor-default/src/index.ts` - compose the factory with navigator and current compiler-resource getters.
+- `editor/core/editor-core/docs/editor-directives.md` - document `@serialIn`, `@serialInCallback`, and `state.info.serial`.
 
 ## Risks & Considerations
 

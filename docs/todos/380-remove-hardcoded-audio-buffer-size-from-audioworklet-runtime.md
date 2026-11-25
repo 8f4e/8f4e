@@ -12,7 +12,7 @@ completed: null
 
 ## Problem Description
 
-The audio-runtime plugin currently injects `const AUDIO_BUFFER_SIZE 128` as an auto-managed environment constant in `packages/editor/plugins/audio-runtime/src/index.ts`.
+The audio-runtime plugin currently injects `const AUDIO_BUFFER_SIZE 128` as an auto-managed environment constant in `editor/plugins/audio-runtime/src/index.ts`.
 
 That matches the current browser render quantum, but it bakes a host runtime property into compile-time project memory layout. AudioWorklet code can observe the real block size only once the processor is running, while 8f4e source uses `AUDIO_BUFFER_SIZE` in declarations such as `float[] buffer AUDIO_BUFFER_SIZE`, which must be resolved before compilation finishes.
 
@@ -62,7 +62,7 @@ Likely directions to evaluate:
 
 ## Validation Checkpoints
 
-- `rg -n "AUDIO_BUFFER_SIZE|Float32Array\\(128\\)|channel.length" packages/editor/plugins/audio-runtime packages/examples`
+- `rg -n "AUDIO_BUFFER_SIZE|Float32Array\\(128\\)|channel.length" editor/plugins/audio-runtime examples`
 - `npx nx run @8f4e/runtime-audio-worklet:test`
 - `npx nx run @8f4e/editor-plugin-audio-runtime:test`
 - `npx nx run-many --target=test --all`
@@ -76,9 +76,9 @@ Likely directions to evaluate:
 
 ## Affected Components
 
-- `packages/editor/plugins/audio-runtime/src/index.ts` and `src/runtime.ts` - current hardcoded env constant injection and value
-- `packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet/src/index.ts` - runtime-observed block-length handling inside `process()`
-- `packages/examples/src/projects/audio/` - examples that size buffers from `AUDIO_BUFFER_SIZE`
+- `editor/plugins/audio-runtime/src/index.ts` and `src/runtime.ts` - current hardcoded env constant injection and value
+- `editor/plugins/audio-runtime/packages/runtime-audio-worklet/src/index.ts` - runtime-observed block-length handling inside `process()`
+- `examples/src/projects/audio/` - examples that size buffers from `AUDIO_BUFFER_SIZE`
 - `apps/cli/tests/` and tokenizer/compiler example snapshots - fixtures that encode the current env constant behavior
 
 ## Risks & Considerations

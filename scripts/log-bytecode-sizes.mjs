@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 
 const workspaceRoot = process.cwd();
-const benchmarkDir = path.resolve(workspaceRoot, 'packages/examples/src/benchmarks/bytecode-size');
+const benchmarkDir = path.resolve(workspaceRoot, 'examples/src/benchmarks/bytecode-size');
 const outputDir = path.resolve(workspaceRoot, 'logs/bytecode-size');
 const cliPath = path.resolve(workspaceRoot, 'apps/cli/bin/cli.js');
 const suiteName = 'bytecode-size';
@@ -17,7 +17,7 @@ const suiteName = 'bytecode-size';
 async function main() {
 	const benchmarkCases = await collectBenchmarkCases(benchmarkDir);
 	const gitMetadata = getGitMetadata();
-	const packageJson = await readJson(path.resolve(workspaceRoot, 'packages/compiler/package.json'));
+	const packageJson = await readJson(path.resolve(workspaceRoot, 'compiler/package.json'));
 
 	if (benchmarkCases.length === 0) {
 		console.error(`No bytecode-size benchmark cases matched in ${path.relative(workspaceRoot, benchmarkDir)}`);

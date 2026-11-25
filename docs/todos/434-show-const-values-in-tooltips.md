@@ -77,9 +77,9 @@ If the value or type is unavailable, omit the unavailable row entirely. Do not s
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/compiled.ts` - compiler result metadata contract.
-- `packages/compiler/src/compiler.ts` - resolved constant metadata returned to consumers.
-- `packages/editor/plugins/tooltips/src/` - selected-line tooltip lookup and rendering.
+- `compiler/packages/language-spec/src/compiled.ts` - compiler result metadata contract.
+- `compiler/src/compiler.ts` - resolved constant metadata returned to consumers.
+- `editor/plugins/tooltips/src/` - selected-line tooltip lookup and rendering.
 
 ## Risks & Considerations
 

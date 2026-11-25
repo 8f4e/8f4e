@@ -98,8 +98,8 @@ The current implementation is reflected in:
 
 - [Shared context owned by the 8f4e website](../../apps/8f4e-website/src/shared-audio-context.ts);
 - [Gallery editor lifecycle](../../apps/8f4e-website/src/gallery.ts);
-- [Default editor mount option](../../packages/editor/compositions/editor-default/src/index.ts);
-- [AudioWorklet context borrowing and disposal](../../packages/editor/plugins/audio-runtime/src/runtime.ts);
+- [Default editor mount option](../../editor/compositions/editor-default/src/index.ts);
+- [AudioWorklet context borrowing and disposal](../../editor/plugins/audio-runtime/src/runtime.ts);
 - [Shared audio context documentation](../shared-editor-audio.md).
 
 ## Related Decisions

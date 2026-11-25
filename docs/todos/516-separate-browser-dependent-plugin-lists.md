@@ -49,8 +49,8 @@ name suffixes or a `requiresBrowser` flag.
 
 ## Affected Components
 
-- `packages/editor/compositions/editor-default/src/index.ts` - Default plugin composition and host options.
-- `packages/editor/core/editor-core/src/plugins.ts` - Shared installation contract and lifecycle.
+- `editor/compositions/editor-default/src/index.ts` - Default plugin composition and host options.
+- `editor/core/editor-core/src/plugins.ts` - Shared installation contract and lifecycle.
 - Editor host examples and plugin documentation - Show the separate lists.
 
 ## Risks & Considerations
@@ -65,8 +65,8 @@ can be considered separately from the initial composition change.
 
 ## References
 
-- [Editor plugin contract](../../packages/editor/core/editor-core/README.md#plugins)
-- [Default editor composition](../../packages/editor/compositions/editor-default/README.md)
+- [Editor plugin contract](../../editor/core/editor-core/README.md#plugins)
+- [Default editor composition](../../editor/compositions/editor-default/README.md)
 
 ## Notes
 

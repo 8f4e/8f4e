@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDir, '..');
 const repoRoot = path.resolve(packageRoot, '..', '..');
-const fixturePath = path.join(repoRoot, 'packages/examples/src/projects/audio/audioBuffer.8f4e');
+const fixturePath = path.join(repoRoot, 'examples/src/projects/audio/audioBuffer.8f4e');
 
 async function loadAudioBufferProject() {
 	const raw = await fs.readFile(fixturePath, 'utf8');

@@ -58,7 +58,7 @@ logical ends and the existing `end()` query syntax before planning compiler or r
 
 ## Validation Checkpoints
 
-- Compare the proposal with the current fixed-reference behavior in `packages/compiler/docs/prefixes.md`.
+- Compare the proposal with the current fixed-reference behavior in `compiler/docs/prefixes.md`.
 - Review pointer provenance work in `docs/todos/431-separate-pointer-type-and-provenance-facts.md`.
 - Verify proposed semantics against reassignment, calls, interior pointers, empty buffers, and padded byte buffers.
 
@@ -71,10 +71,10 @@ logical ends and the existing `end()` query syntax before planning compiler or r
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/memory.ts` — pointer types and allocation metadata.
-- `packages/compiler/packages/sub-program/packages/memory-reference-resolver/` — compile-time boundary resolution.
-- `packages/compiler/packages/sub-program/packages/stack-analyzer/` — pointer facts during instruction analysis.
-- `packages/compiler/docs/prefixes.md` — documented query semantics.
+- `compiler/packages/language-spec/src/memory.ts` — pointer types and allocation metadata.
+- `compiler/packages/sub-program/packages/memory-reference-resolver/` — compile-time boundary resolution.
+- `compiler/packages/sub-program/packages/stack-analyzer/` — pointer facts during instruction analysis.
+- `compiler/docs/prefixes.md` — documented query semantics.
 
 ## Related Items
 

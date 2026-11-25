@@ -95,11 +95,11 @@ make it easy for other consumers to audit a `ResolvedPalette` without depending 
 
 ## Affected Components
 
-- `packages/editor/core/editor-palette/` - Color resolution and contrast helpers.
-- `packages/editor/core/sprite-generator/` - Atlas integration,
+- `editor/core/editor-palette/` - Color resolution and contrast helpers.
+- `editor/core/sprite-generator/` - Atlas integration,
   relationship registry, and unit tests.
-- `packages/examples/src/projects/` - Bundled theme inputs and any narrowly documented fixes or exceptions.
-- `packages/editor/core/editor-core/docs/color-paths.md` - Documentation of audited semantic relationships.
+- `examples/src/projects/` - Bundled theme inputs and any narrowly documented fixes or exceptions.
+- `editor/core/editor-core/docs/color-paths.md` - Documentation of audited semantic relationships.
 - Nx project configuration - A reusable contrast-audit target for local checks and CI.
 
 ## Risks & Considerations
@@ -116,7 +116,7 @@ make it easy for other consumers to audit a `ResolvedPalette` without depending 
 ## Related Items
 
 - [TODO 502: Add browser-driven accessibility color-scheme overrides](502-add-browser-driven-accessibility-color-scheme-overrides.md)
-- [Color paths](../../packages/editor/core/editor-core/docs/color-paths.md)
+- [Color paths](../../editor/core/editor-core/docs/color-paths.md)
 
 ## References
 

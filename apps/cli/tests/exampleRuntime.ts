@@ -14,10 +14,7 @@ export async function loadExample(
 	offset = 0,
 	scopeFunction?: string
 ) {
-	const original = await readFile(
-		new URL('../../../packages/examples/src/projects/' + relativePath, import.meta.url),
-		'utf8'
-	);
+	const original = await readFile(new URL('../../../examples/src/projects/' + relativePath, import.meta.url), 'utf8');
 	let project = parseProjectSource(transform(original));
 	if (scopeFunction) {
 		const find = (unit: ProjectObjectModel, inherited: ProjectBlock[]): ProjectObjectModel | undefined => {

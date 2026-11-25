@@ -1,0 +1,23 @@
+{
+	"name": "@8f4e/config",
+	"projectType": "library",
+	"sourceRoot": "src",
+	"targets": {
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write tools/config/src",
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
+			"options": {
+				"command": "rm -rf dist && tsc",
+				"cwd": "{projectRoot}"
+			}
+		}
+	},
+	"tags": ["type:config", "scope:tooling"]
+}

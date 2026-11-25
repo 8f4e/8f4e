@@ -1,0 +1,38 @@
+{
+	"name": "@8f4e/vite-plugin-sources",
+	"version": "0.2.6",
+	"description": "Discover and lazily load 8f4e source collections in Vite",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./client": {
+			"types": "./client.d.ts"
+		}
+	},
+	"files": ["dist", "client.d.ts", "README.md"],
+	"keywords": ["vite-plugin", "8f4e"],
+	"publishConfig": { "access": "public" },
+	"sideEffects": false,
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/8f4e/8f4e.git",
+		"directory": "tools/vite-plugin-sources"
+	},
+	"dependencies": {
+		"tinyglobby": "0.2.17"
+	},
+	"peerDependencies": {
+		"vite": "^7.0.0"
+	},
+	"devDependencies": {
+		"@8f4e/config": "*",
+		"@types/node": "24.13.2",
+		"vitest": "4.1.12"
+	}
+}

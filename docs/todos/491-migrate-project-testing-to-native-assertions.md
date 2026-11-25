@@ -115,13 +115,13 @@ remaining work.
 
 ## Affected Components
 
-- `packages/test-runner/` - Shared execution API, callbacks, reporting, and removal of its nested precompiler.
+- `tools/test-runner/` - Shared execution API, callbacks, reporting, and removal of its nested precompiler.
 - `apps/cli/src/test/` - Native assertion compilation and runner adapter.
-- `packages/editor/core/editor-core/` - Runtime option contribution and assertion result state contracts.
-- `packages/editor/compositions/editor-default/` - Runtime registration, lazy loading, and compiler service integration.
-- `packages/editor/plugins/compiler/packages/compiler-worker/` - Initialization imports and source-site metadata transport.
+- `editor/core/editor-core/` - Runtime option contribution and assertion result state contracts.
+- `editor/compositions/editor-default/` - Runtime registration, lazy loading, and compiler service integration.
+- `editor/plugins/compiler/packages/compiler-worker/` - Initialization imports and source-site metadata transport.
 - A new editor test-runtime package, existing instantiation paths, and project/language documentation.
-- Compiler fixture sources and runner integration tests under `packages/compiler/tests/`.
+- Compiler fixture sources and runner integration tests under `compiler/tests/`.
 
 ## Risks & Considerations
 
@@ -146,8 +146,8 @@ remaining work.
 
 ## References
 
-- [Shared runner and current contract](../../packages/test-runner/README.md).
-- [Runtime registry types](../../packages/editor/core/editor-state-types/src/features/runtime/types.ts).
+- [Shared runner and current contract](../../tools/test-runner/README.md).
+- [Runtime registry types](../../editor/core/editor-state-types/src/features/runtime/types.ts).
 - [Current shared-runner PR](https://github.com/8f4e/8f4e/pull/1002).
 
 ## Notes

@@ -65,7 +65,7 @@ There is no quick layout action to arrange multiple related code blocks into a c
 
 - `npx nx run editor-state:test`
 - `npx nx run editor-state:typecheck`
-- `rg -n "Align blocks in row|align.*row|gridX|gridY" packages/editor/core/editor-state/src`
+- `rg -n "Align blocks in row|align.*row|gridX|gridY" editor/core/editor-state/src`
 
 ## Success Criteria
 
@@ -78,8 +78,8 @@ There is no quick layout action to arrange multiple related code blocks into a c
 
 ## Affected Components
 
-- `packages/editor/core/editor-state/src/ui-state/menu/menus/codeBlockMenu.ts`
-- `packages/editor/core/editor-state/src/project/` (new align-row handler and its tests)
+- `editor/core/editor-state/src/ui-state/menu/menus/codeBlockMenu.ts`
+- `editor/core/editor-state/src/project/` (new align-row handler and its tests)
 
 ## Notes
 

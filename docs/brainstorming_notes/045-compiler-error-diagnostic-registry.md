@@ -24,11 +24,11 @@ That keeps `language-spec` as the source of truth for diagnostics while avoiding
 
 ## Current shape
 
-Semantic compiler codes live in `packages/compiler/packages/language-spec/src/errors.ts`.
+Semantic compiler codes live in `compiler/packages/language-spec/src/errors.ts`.
 
-Semantic error objects are currently constructed in `packages/compiler/src/compilerError.ts` by a large `getError(...)` switch. Most cases only differ by a static message, with a few dynamic cases using details such as an identifier or the current stack.
+Semantic error objects are currently constructed in `compiler/src/compilerError.ts` by a large `getError(...)` switch. Most cases only differ by a static message, with a few dynamic cases using details such as an identifier or the current stack.
 
-Syntax errors are separate and still tokenizer-owned in `packages/compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts`.
+Syntax errors are separate and still tokenizer-owned in `compiler/packages/sub-program/packages/tokenizer/src/syntax/syntaxError.ts`.
 
 ## Proposed shape
 

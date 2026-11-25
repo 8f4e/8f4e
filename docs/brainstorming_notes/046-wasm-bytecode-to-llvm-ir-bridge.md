@@ -237,7 +237,7 @@ That would answer several practical questions without committing to the whole ar
 - Is LLVM IR the right first native bridge, or should C output come first?
 - Should the bridge consume raw WebAssembly bytecode, a decoded wasm-utils representation, or compiler metadata plus bytecode?
 - How much of WebAssembly's validation should the bridge redo?
-- Should the bridge live under `packages/compiler/`, a future native tooling package, or a CLI package?
+- Should the bridge live under `compiler/`, a future native tooling package, or a CLI package?
 - Should generated LLVM IR preserve WebAssembly-like stack structure or aggressively reconstruct SSA/control flow?
 - What is the minimum useful 8f4e subset for native linking?
 - How should target profiles be described and validated?

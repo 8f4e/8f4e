@@ -88,7 +88,7 @@
 		"default": [
 			"{projectRoot}/**/*",
 			"sharedGlobals",
-			"{workspaceRoot}/packages/compiler/tests/**/*.test.8f4e"
+			"{workspaceRoot}/compiler/tests/**/*.test.8f4e"
 		]
 	},
 	"tags": ["type:application", "scope:website"]

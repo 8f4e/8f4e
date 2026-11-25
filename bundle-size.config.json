@@ -13,7 +13,7 @@
     },
     "@8f4e/editor-core": {
       "label": "Editor Core",
-      "distDir": "packages/editor/core/editor-core/dist",
+      "distDir": "editor/core/editor-core/dist",
       "entries": [
         {
           "name": "index.js",
@@ -23,7 +23,7 @@
     },
     "@8f4e/editor-state": {
       "label": "Editor State",
-      "distDir": "packages/editor/core/editor-state/dist",
+      "distDir": "editor/core/editor-state/dist",
       "entries": [
         {
           "name": "index.js",
@@ -37,7 +37,7 @@
     },
     "@8f4e/compiler": {
       "label": "Compiler",
-      "distDir": "packages/compiler/dist",
+      "distDir": "compiler/dist",
       "entries": [
         {
           "name": "index.js",
@@ -47,7 +47,7 @@
     },
     "@8f4e/web-ui": {
       "label": "Web UI",
-      "distDir": "packages/editor/core/web-ui/dist",
+      "distDir": "editor/core/web-ui/dist",
       "entries": [
         {
           "name": "index.js",
@@ -57,7 +57,7 @@
     },
     "@8f4e/sprite-generator": {
       "label": "Sprite Generator",
-      "distDir": "packages/editor/core/sprite-generator/dist",
+      "distDir": "editor/core/sprite-generator/dist",
       "entries": [
         {
           "name": "index.js",

@@ -62,10 +62,10 @@ This keeps `graphicHelper.codeBlocks` as the canonical z-ordered array, but remo
 
 ## Affected Components
 
-- `packages/editor/core/editor-state/src/features/code-blocks/features/codeBlockCreator/effect.ts`
-- `packages/editor/core/editor-state/src/features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.ts`
-- `packages/editor/core/editor-state/src/input/blockDragging.ts`
-- `packages/editor/core/editor-state/src/features/code-blocks/features/graphicHelper/effect.ts`
+- `editor/core/editor-state/src/features/code-blocks/features/codeBlockCreator/effect.ts`
+- `editor/core/editor-state/src/features/code-blocks/features/codeBlockCreator/pasteMultipleBlocks.ts`
+- `editor/core/editor-state/src/input/blockDragging.ts`
+- `editor/core/editor-state/src/features/code-blocks/features/graphicHelper/effect.ts`
 
 ## Risks & Considerations
 

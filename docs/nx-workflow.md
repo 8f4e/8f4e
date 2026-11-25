@@ -63,11 +63,12 @@ npx nx run @8f4e/compiler:dev
 
 ## Project Structure
 
-Application entry points live under `apps/`, reusable libraries and sources under `packages/`, and standalone repository
-utilities under `tools/`. Nx discovers npm workspaces by their package names; native applications without npm manifests
-declare their projects in `project.json`.
+Application entry points live under `apps/`; the `compiler/`, `editor/` and `examples/` directories own product libraries
+and sources. `tools/` holds shared tooling libraries and standalone development utilities. The root npm workspace
+lists these project locations explicitly, so standalone tools do not become npm workspaces accidentally. Nx discovers
+workspaces by their package names; native applications without npm manifests declare their projects in `project.json`.
 
-- `@8f4e/editor-default` (`packages/editor/compositions/editor-default`)
+- `@8f4e/editor-default` (`editor/compositions/editor-default`)
 - `@8f4e/editor-webapp` (`apps/editor-webapp`)
 - `@8f4e/8f4e-website` (`apps/8f4e-website`)
 - `@8f4e/cli` (`apps/cli`)
@@ -75,14 +76,18 @@ declare their projects in `project.json`.
 - `@8f4e/runtime-daisy` (`apps/runtime-daisy`)
 - `@8f4e/runtime-linux` (`apps/runtime-linux`)
 - `@8f4e/runtime-command` (`apps/runtime-command`)
-- `@8f4e/editor-core` (`packages/editor/core/editor-core`)
-- `glugglugglug` (`packages/editor/core/glugglugglug`)
-- `@8f4e/sprite-generator` (`packages/editor/core/sprite-generator`)
-- `@8f4e/compiler`
-- `@8f4e/compiler-worker` (`packages/editor/plugins/compiler/packages/compiler-worker`)
-- `@8f4e/runtime-audio-worklet` (`packages/editor/plugins/audio-runtime/packages/runtime-audio-worklet`)
-- `@8f4e/runtime-web-worker` (`packages/editor/plugins/worker-runtime/packages/runtime-web-worker`)
-- `@8f4e/runtime-test-runner` (`packages/editor/plugins/test-runtime/packages/runtime-test-runner`)
+- `@8f4e/editor-core` (`editor/core/editor-core`)
+- `glugglugglug` (`editor/core/glugglugglug`)
+- `@8f4e/sprite-generator` (`editor/core/sprite-generator`)
+- `@8f4e/compiler` (`compiler/`)
+- `@8f4e/examples` (`examples/`)
+- `@8f4e/config` (`tools/config`)
+- `@8f4e/test-runner` (`tools/test-runner`)
+- `@8f4e/vite-plugin-sources` (`tools/vite-plugin-sources`)
+- `@8f4e/compiler-worker` (`editor/plugins/compiler/packages/compiler-worker`)
+- `@8f4e/runtime-audio-worklet` (`editor/plugins/audio-runtime/packages/runtime-audio-worklet`)
+- `@8f4e/runtime-web-worker` (`editor/plugins/worker-runtime/packages/runtime-web-worker`)
+- `@8f4e/runtime-test-runner` (`editor/plugins/test-runtime/packages/runtime-test-runner`)
 
 ## Configuration
 

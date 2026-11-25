@@ -18,7 +18,7 @@ with other small IR rewrites. [Local simplification PR](https://github.com/8f4e/
 
 ## Proposed Solution
 
-Benchmark compiler-only rewrites on the existing [eight-voice DX7 project](../../packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e).
+Benchmark compiler-only rewrites on the existing [eight-voice DX7 project](../../examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e).
 Treat every declared memory location as observable through the editor.
 
 - Propagate known literals through Wasm locals within straight-line blocks. Fold the resulting
@@ -47,7 +47,7 @@ Treat every declared memory location as observable through the editor.
 
 ## Affected Components
 
-- [Wasm IR simplifier](../../packages/compiler/packages/sub-program/packages/wasm-ir-simplifier/src/index.ts)
+- [Wasm IR simplifier](../../compiler/packages/sub-program/packages/wasm-ir-simplifier/src/index.ts)
   for the candidate rewrites.
 - [CLI compile](../../apps/cli/README.md#wasm-optimization) for selecting benchmark variants.
 

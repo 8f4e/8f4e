@@ -67,10 +67,10 @@ Implement visual regression testing for the 2D engine using:
 
 ## Affected Components
 
-- `packages/editor/core/glugglugglug/tests/` - Visual test directory and fixtures
-- `packages/editor/core/glugglugglug/package.json` - New testing dependencies
-- `packages/editor/core/glugglugglug/jest.config.js` - Visual testing configuration
-- `packages/editor/core/glugglugglug/test-fixtures/` - Test HTML pages and assets
+- `editor/core/glugglugglug/tests/` - Visual test directory and fixtures
+- `editor/core/glugglugglug/package.json` - New testing dependencies
+- `editor/core/glugglugglug/jest.config.js` - Visual testing configuration
+- `editor/core/glugglugglug/test-fixtures/` - Test HTML pages and assets
 - CI/CD pipeline configuration
 
 ## Risks & Considerations

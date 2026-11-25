@@ -15,7 +15,7 @@ completed: null
 The compiler worker currently recreates the WebAssembly instance on every compile, even when memory can be reused and the runtime shape has not changed.
 
 Current behavior:
-- `packages/editor/plugins/compiler/packages/compiler-worker/src/compileAndUpdateMemory.ts` calls `WebAssembly.instantiate(...)` for each compilation.
+- `editor/plugins/compiler/packages/compiler-worker/src/compileAndUpdateMemory.ts` calls `WebAssembly.instantiate(...)` for each compilation.
 - The worker can reuse memory and patch changed defaults, but it has no instance cache or executable-code invalidation check.
 - A new instance is created even when the compiled execution code is unchanged.
 
@@ -47,7 +47,7 @@ Likely implementation shape:
 ## Implementation Plan
 
 ### Step 1: Define the actual reset condition
-- Audit current worker helpers in `packages/editor/plugins/compiler/packages/compiler-worker/src/`
+- Audit current worker helpers in `editor/plugins/compiler/packages/compiler-worker/src/`
 - Decide which changes require a fresh `WebAssembly.instantiate(...)`
 - Capture that in a dedicated helper or well-named boolean
 
@@ -84,10 +84,10 @@ Likely implementation shape:
 
 ## Affected Components
 
-- `packages/editor/plugins/compiler/packages/compiler-worker/src/compileAndUpdateMemory.ts` - current per-compilation instantiation
-- `packages/editor/plugins/compiler/packages/compiler-worker/src/getOrCreateMemory.ts` - memory recreation logic
-- `packages/editor/plugins/compiler/packages/compiler-worker/src/didProgramOrMemoryStructureChange.ts` - existing structure checks
-- `packages/editor/plugins/compiler/packages/compiler-worker/src/getMemoryValueChanges.ts` - incremental patch path
+- `editor/plugins/compiler/packages/compiler-worker/src/compileAndUpdateMemory.ts` - current per-compilation instantiation
+- `editor/plugins/compiler/packages/compiler-worker/src/getOrCreateMemory.ts` - memory recreation logic
+- `editor/plugins/compiler/packages/compiler-worker/src/didProgramOrMemoryStructureChange.ts` - existing structure checks
+- `editor/plugins/compiler/packages/compiler-worker/src/getMemoryValueChanges.ts` - incremental patch path
 
 ## Risks & Considerations
 

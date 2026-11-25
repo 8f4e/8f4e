@@ -13,7 +13,7 @@ The agent rejected an invalid review suggestion after verifying it against the c
 
 ## Original Feedback
 
-A review comment suggested changing `getClampAccessByteWidth` in `packages/compiler/src/utils/addressClamp.ts` so present-but-non-literal clamp width arguments would throw `SyntaxRulesError` instead of defaulting.
+A review comment suggested changing `getClampAccessByteWidth` in `compiler/src/utils/addressClamp.ts` so present-but-non-literal clamp width arguments would throw `SyntaxRulesError` instead of defaulting.
 
 At first glance this looked plausible because `getClampAccessByteWidth` contains:
 

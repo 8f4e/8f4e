@@ -4,7 +4,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { describe, expect, it } from 'vitest';
 import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
 
-const examplesRoot = new URL('../../../packages/examples/src/', import.meta.url);
+const examplesRoot = new URL('../../../examples/src/', import.meta.url);
 const projects: Array<{ file: string; source: string }> = [];
 for await (const file of glob('**/*.{8f4e,8f4em}', { cwd: fileURLToPath(examplesRoot) })) {
 	const source = await readFile(new URL(file, examplesRoot), 'utf8');

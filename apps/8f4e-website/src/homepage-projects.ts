@@ -1,7 +1,7 @@
-import stackOperationsUrl from '../../../packages/examples/src/projects/misc/landingPageDemo1.8f4e?url&no-inline';
-import pointersUrl from '../../../packages/examples/src/projects/misc/landingPageDemo2.8f4e?url&no-inline';
-import memoryLayoutUrl from '../../../packages/examples/src/projects/misc/landingPageDemo3.8f4e?url&no-inline';
-import interactiveControlsUrl from '../../../packages/examples/src/projects/misc/landingPageDemo4.8f4e?url&no-inline';
+import stackOperationsUrl from '../../../examples/src/projects/misc/landingPageDemo1.8f4e?url&no-inline';
+import pointersUrl from '../../../examples/src/projects/misc/landingPageDemo2.8f4e?url&no-inline';
+import memoryLayoutUrl from '../../../examples/src/projects/misc/landingPageDemo3.8f4e?url&no-inline';
+import interactiveControlsUrl from '../../../examples/src/projects/misc/landingPageDemo4.8f4e?url&no-inline';
 
 const projectUrls = new Map([
 	['misc/landingPageDemo1.8f4e', stackOperationsUrl],

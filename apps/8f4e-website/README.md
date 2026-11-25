@@ -1,8 +1,8 @@
 # 8f4e Website
 
 `@8f4e/8f4e-website` contains a product homepage using
-[`@8f4e/editor-landing`](../../packages/editor/compositions/editor-landing/README.md), plus examples and compiler test galleries using
-[`@8f4e/editor-gallery`](../../packages/editor/compositions/editor-gallery/README.md). Both embedded compositions keep live editing,
+[`@8f4e/editor-landing`](../../editor/compositions/editor-landing/README.md), plus examples and compiler test galleries using
+[`@8f4e/editor-gallery`](../../editor/compositions/editor-gallery/README.md). Both embedded compositions keep live editing,
 controls, visualizations, and URL loading. The landing editor uses the worker runtime, watch/stack, plot, scope, and slider;
 its projects must be self-contained because it has no standard-library include resolver. It omits switch, button,
 piano, assertion markers, keyboard mode switching, dialogs, test/audio/texture runtimes, binary
@@ -31,7 +31,7 @@ npx nx run @8f4e/8f4e-website:serve
 The development server runs at `http://localhost:3001` so it can run alongside `@8f4e/editor-webapp`.
 
 Set the canvas's `data-project-path` attribute in `src/index.html` to a path relative to
-`packages/examples/src/projects/` to choose the project loaded when the editor mounts. `src/homepage-projects.ts`
+`examples/src/projects/` to choose the project loaded when the editor mounts. `src/homepage-projects.ts`
 imports only the four homepage demo URLs; update its explicit imports when changing the homepage's project selection.
 The examples gallery uses the full project and preview URL catalogs in `src/example-projects.ts`.
 The homepage fetches each demo's source when its editor becomes visible. Featured preview GIFs use `?no-inline`
@@ -42,7 +42,7 @@ their `@home` blocks change. The compiler gallery reuses one shared preview gene
 ## Examples gallery
 
 The separate `/examples/` page lists curated projects from `src/examples/projects.ts`. Each entry supplies a stable ID,
-title, short description, and a path relative to `packages/examples/src/projects/`. The homepage footer links
+title, short description, and a path relative to `examples/src/projects/`. The homepage footer links
 to the gallery. Previews are optional: examples without a generated preview load without a thumbnail, and the compiler
 test gallery also works without its shared preview. Vite builds the homepage and galleries with their project
 source assets, so example projects need no separate deployment or precompiled WASM files. The `.8f4e` asset responses allow cross-origin requests through
@@ -86,7 +86,7 @@ registration failures are logged independently of project loading.
 
 ## Compiler test gallery
 
-The `/tests/` page discovers `packages/compiler/tests/**/*.test.8f4e` through the Vite glob in `src/tests/projects.ts`.
+The `/tests/` page discovers `compiler/tests/**/*.test.8f4e` through the Vite glob in `src/tests/projects.ts`.
 Adding or removing a fixture updates the catalog at the next build. Fixtures are grouped by directory, with root-level
 files under General. Error fixtures and include-only helper sources are excluded.
 

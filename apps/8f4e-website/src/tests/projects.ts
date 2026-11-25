@@ -1,7 +1,7 @@
 import type { GalleryCategory } from '../gallery';
 
-const fixtureRoot = '../../../../packages/compiler/tests/';
-const fixtureUrls = import.meta.glob<string>('../../../../packages/compiler/tests/**/*.test.8f4e', {
+const fixtureRoot = '../../../../compiler/tests/';
+const fixtureUrls = import.meta.glob<string>('../../../../compiler/tests/**/*.test.8f4e', {
 	query: '?url&no-inline',
 	import: 'default',
 	eager: true,
@@ -39,7 +39,7 @@ for (const [file, projectUrl] of Object.entries(fixtureUrls).sort(([left], [righ
 		description: path,
 		projectUrl,
 		previewUrl: compilerTestPreviewUrl,
-		githubUrl: `https://github.com/8f4e/8f4e/blob/main/packages/compiler/tests/${path}`,
+		githubUrl: `https://github.com/8f4e/8f4e/blob/main/compiler/tests/${path}`,
 	});
 }
 

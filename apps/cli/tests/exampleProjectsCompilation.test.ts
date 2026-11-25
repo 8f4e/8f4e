@@ -10,21 +10,21 @@ const packageRoot = path.resolve(testDir, '..');
 const repoRoot = path.resolve(packageRoot, '..', '..');
 
 const exampleProjects = [
-	'packages/examples/src/projects/audio/audioBuffer.8f4e',
-	'packages/examples/src/projects/audio/keyboardControlledMonoSynth.8f4e',
-	'packages/examples/src/projects/digital/bistableMultivibrators.8f4e',
-	'packages/examples/src/projects/machine-learning/xorProblem.8f4e',
+	'examples/src/projects/audio/audioBuffer.8f4e',
+	'examples/src/projects/audio/keyboardControlledMonoSynth.8f4e',
+	'examples/src/projects/digital/bistableMultivibrators.8f4e',
+	'examples/src/projects/machine-learning/xorProblem.8f4e',
 ] as const;
 
 const additionalProjects = [
-	'packages/examples/src/projects/audio/formantSynth.8f4e',
-	'packages/examples/src/projects/audio/keyboardController6OperatorFMSynth.8f4e',
-	'packages/examples/src/projects/audio/minBLEP.8f4e',
-	'packages/examples/src/benchmarks/bytecode-size/fmSynth.8f4e',
-	'packages/examples/src/benchmarks/bytecode-size/minBLEP.8f4e',
-	'packages/examples/src/projects/audio/reverb.8f4e',
-	'packages/examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e',
-	'packages/examples/src/projects/audio/gridsPatterns.8f4e',
+	'examples/src/projects/audio/formantSynth.8f4e',
+	'examples/src/projects/audio/keyboardController6OperatorFMSynth.8f4e',
+	'examples/src/projects/audio/minBLEP.8f4e',
+	'examples/src/benchmarks/bytecode-size/fmSynth.8f4e',
+	'examples/src/benchmarks/bytecode-size/minBLEP.8f4e',
+	'examples/src/projects/audio/reverb.8f4e',
+	'examples/src/projects/midi/dx7Algorithm5EightVoices.8f4e',
+	'examples/src/projects/audio/gridsPatterns.8f4e',
 ] as const;
 
 function getSnapshotPath(relativePath: string): string {

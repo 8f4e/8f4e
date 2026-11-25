@@ -8,7 +8,7 @@ Its primary target is the WebAssembly virtual machine, as I wanted an efficient 
 
 - [Self-Hosting The 8f4e Editor](self-hosting.md)
 - [Stack Oriented Execution Model](#stack-oriented-execution-model)
-- [Instruction Reference](../packages/compiler/docs/instructions.md)
+- [Instruction Reference](../compiler/docs/instructions.md)
 - [Memory Access and Pointers](#memory-access-and-pointers)
 - [Endless Execution Loop](#endless-execution-loop)
 - [Memory Layout and Allocation](#memory-layout-and-allocation)
@@ -41,12 +41,12 @@ div
 ; Now 5 again
 ```
 
-The full instruction set reference lives alongside the compiler docs. See [Instruction Reference](../packages/compiler/docs/instructions.md).
+The full instruction set reference lives alongside the compiler docs. See [Instruction Reference](../compiler/docs/instructions.md).
 
 ## Memory Access and Pointers
 
 It is also possible to take values from the stack and store them in memory.
-For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../packages/compiler/docs/prefixes.md).
+For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../compiler/docs/prefixes.md).
 
 The language uses C style pointer notation.
 
@@ -92,7 +92,7 @@ where the group is declared: `rootA`, `synth { voiceA, voiceB }`, `rootB` runs a
 parent initialization entry. Groups without `main` perform no automatic main work. In the editor, spatial position
 defines declaration order at each project level. A memory reference does
 not reorder execution: if a module reads a producer's memory, the producer is not moved earlier. See the
-[compiler documentation](../packages/compiler/README.md) for recursive composition details.
+[compiler documentation](../compiler/README.md) for recursive composition details.
 
 The root entry name `initDefaults` is reserved for the compiler-generated memory initializer. Group-local entries may
 use that name because they are not exported directly.

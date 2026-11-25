@@ -35,15 +35,15 @@ npx nx run @8f4e/editor-webapp:kill-dev
 
 ## Repository Layout
 
-- `packages/editor/compositions/editor-default/src/`: default editor composition.
+- `editor/compositions/editor-default/src/`: default editor composition.
 - `apps/editor-webapp/src/`: thin browser website entry point.
-- `packages/compiler`: core compiler from 8f4e source to WebAssembly.
-- `packages/editor`: composed editor, minimal editor core, compiler worker, and runtime packages.
-- `packages/examples`: example modules and projects.
+- `compiler`: core compiler from 8f4e source to WebAssembly.
+- `editor`: composed editor, minimal editor core, compiler worker, and runtime packages.
+- `examples`: example modules and projects.
 - `apps/cli`: command-line compiler and execution tooling.
 - `apps/8f4e-website` and `apps/metrics-dashboard`: the product website and release metrics dashboard.
 - `apps/runtime-daisy`, `apps/runtime-linux` and `apps/runtime-command`: native runtimes and launch command tooling.
-- `packages/config`: shared workspace configuration.
+- `tools/config`, `tools/test-runner` and `tools/vite-plugin-sources`: shared workspace infrastructure.
 - `docs/`: language documentation, ADRs, postmortems, and agent guidance.
 
 Use package README files for package-specific context. Some package directories also contain `AGENTS.md` files with extra instructions for automated contributors.

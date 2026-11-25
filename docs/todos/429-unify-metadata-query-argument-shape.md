@@ -56,7 +56,7 @@ The exact field names can change, but the important part is that the query kind,
 ## Implementation Plan
 
 ### Step 1: Add the unified argument shape
-- Replace metadata-specific reference kinds in `packages/compiler/packages/language-spec/src/arguments.ts`.
+- Replace metadata-specific reference kinds in `compiler/packages/language-spec/src/arguments.ts`.
 - Include explicit `query` and `dereferenceDepth` fields.
 - Keep address references, plain identifiers, constants, and runtime pointer dereferences as separate concepts.
 
@@ -90,11 +90,11 @@ The exact field names can change, but the important part is that the query kind,
 
 ## Affected Components
 
-- `packages/compiler/packages/language-spec/src/arguments.ts`
-- `packages/compiler/packages/sub-program/packages/tokenizer/src/syntax/parseArgument.ts`
-- `packages/compiler/src/semantic/resolveCompileTimeArgument.ts`
-- `packages/compiler/src/semantic/normalizeCompileTimeArguments.ts`
-- `packages/compiler/tests/instructions/`
+- `compiler/packages/language-spec/src/arguments.ts`
+- `compiler/packages/sub-program/packages/tokenizer/src/syntax/parseArgument.ts`
+- `compiler/src/semantic/resolveCompileTimeArgument.ts`
+- `compiler/src/semantic/normalizeCompileTimeArguments.ts`
+- `compiler/tests/instructions/`
 
 ## Risks & Considerations
 

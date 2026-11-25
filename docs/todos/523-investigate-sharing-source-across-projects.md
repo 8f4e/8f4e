@@ -19,11 +19,11 @@ Project authors currently copy shared functions and templates between project fi
 Two pairs of examples exercise different kinds of reuse.
 
 - Self-playing Piano and Felt Piano One Shot carry the same `oneShotSampler` template. Each project supplies its
-  own note events. [Self-playing Piano](../../packages/examples/src/projects/audio/selfPlayingPiano.8f4e) ·
-  [Felt Piano One Shot](../../packages/examples/src/projects/midi/feltPianoOneShot.8f4e)
+  own note events. [Self-playing Piano](../../examples/src/projects/audio/selfPlayingPiano.8f4e) ·
+  [Felt Piano One Shot](../../examples/src/projects/midi/feltPianoOneShot.8f4e)
 - The single- and double-buffered Mandelbrot examples share escape calculation, drawing, and coloring functions.
-  Each example manages its own display buffer. [Single-buffered Mandelbrot](../../packages/examples/src/projects/visuals/mandelbrotZoomSingleBuffered.8f4e) ·
-  [Double-buffered Mandelbrot](../../packages/examples/src/projects/visuals/mandelbrotZoomDoubleBuffered.8f4e)
+  Each example manages its own display buffer. [Single-buffered Mandelbrot](../../examples/src/projects/visuals/mandelbrotZoomSingleBuffered.8f4e) ·
+  [Double-buffered Mandelbrot](../../examples/src/projects/visuals/mandelbrotZoomDoubleBuffered.8f4e)
 
 ## Proposed Investigation
 
@@ -61,7 +61,7 @@ the resolved definition.
 
 ## Related Items and References
 
-- [Standard-library includes](../../packages/compiler/docs/standard-library.md#include-syntax)
+- [Standard-library includes](../../compiler/docs/standard-library.md#include-syntax)
 - [Group-scoped source templates](archived/519-add-group-scoped-source-templates.md)
 
 ## Archive Instructions

@@ -42,9 +42,9 @@ rendering resources owned by each editor instance.
 
 ## Affected Components
 
-- `packages/editor/core/web-ui/src/index.ts`
-- `packages/editor/core/web-ui/src/drawers/wasmOverlayTexture.ts`
-- `packages/editor/core/web-ui/src/plugins/rgba-texture-layer/`
+- `editor/core/web-ui/src/index.ts`
+- `editor/core/web-ui/src/drawers/wasmOverlayTexture.ts`
+- `editor/core/web-ui/src/plugins/rgba-texture-layer/`
 
 ## Risks & Considerations
 
@@ -66,7 +66,7 @@ worth the lifecycle complexity.
 
 ## References
 
-- [Web UI initialization](../../packages/editor/core/web-ui/src/index.ts)
+- [Web UI initialization](../../editor/core/web-ui/src/index.ts)
 
 ## Notes
 

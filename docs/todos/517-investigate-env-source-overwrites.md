@@ -27,7 +27,7 @@ entryEnd
 
 Parsing and compilation succeed. Loading the project through the editor's `loadProject` action replaces the module
 body with the generated environment block. The refresh triggered when rendered blocks are populated reaches a
-name-only block match in the [environment constants effect](../../packages/editor/core/editor-state/src/features/code-blocks/features/auto-env-constants/effect.ts).
+name-only block match in the [environment constants effect](../../editor/core/editor-state/src/features/code-blocks/features/auto-env-constants/effect.ts).
 
 Explore how generated environment source should coexist with user-authored blocks, what ownership means across
 project scopes, and which loading, editing, or navigation paths can trigger unintended rewrites. The desired

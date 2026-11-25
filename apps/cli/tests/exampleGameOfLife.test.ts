@@ -35,7 +35,7 @@ function evolveFrame(previous: Uint8Array): Uint8Array {
 
 async function loadExample(offset: number) {
 	const source = await readFile(
-		new URL('../../../packages/examples/src/projects/visuals/gameOfLife.8f4e', import.meta.url),
+		new URL('../../../examples/src/projects/visuals/gameOfLife.8f4e', import.meta.url),
 		'utf8'
 	);
 	const result = await compileProject(parseProjectSource(source), {

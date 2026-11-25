@@ -15,7 +15,7 @@ Using the full compiler package for these cases would:
 3. Make it harder to reuse syntax logic in environments that only need lightweight validation.
 4. Blur the architectural boundary between syntax services and full compilation.
 
-The repository already exposes a distinct syntax surface from `packages/compiler/src/syntax` and publishes it as a subpath export.
+The repository already exposes a distinct syntax surface from `compiler/src/syntax` and publishes it as a subpath export.
 
 ## Decision
 

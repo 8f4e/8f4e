@@ -1,4 +1,4 @@
-const projectUrls = import.meta.glob<string>('../../../packages/examples/src/projects/**/*.8f4e', {
+const projectUrls = import.meta.glob<string>('../../../examples/src/projects/**/*.8f4e', {
 	query: '?url&no-inline',
 	import: 'default',
 	eager: true,
@@ -11,7 +11,7 @@ const projectPreviewUrls = import.meta.glob<string>('./project-previews/examples
 });
 
 export function getExampleProjectUrl(path: string): string {
-	const url = projectUrls[`../../../packages/examples/src/projects/${path}`];
+	const url = projectUrls[`../../../examples/src/projects/${path}`];
 	if (!url) {
 		throw new Error(`Example project not found: ${path}`);
 	}

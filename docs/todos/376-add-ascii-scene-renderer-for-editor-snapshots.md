@@ -29,7 +29,7 @@ As a result, regressions in composed editor scenes can slip through without an e
 
 ## Proposed Solution
 
-Add a browser-free ASCII renderer under `packages/editor` that accepts editor state and produces deterministic text output for snapshot tests.
+Add a browser-free ASCII renderer under `editor` that accepts editor state and produces deterministic text output for snapshot tests.
 
 The renderer should behave like a coarse rendering backend:
 
@@ -52,7 +52,7 @@ The main snapshot coverage should live in `editor-state`, while the ASCII render
 ## Implementation Plan
 
 ### Step 1: Create a pure ASCII renderer package under editor
-- Add a new browser-free package under `packages/editor/core/`.
+- Add a new browser-free package under `editor/core/`.
 - Expose a small API such as `renderStateToAscii(state, options): string`.
 - Keep dependencies limited to editor-state and shared pure helpers.
 
@@ -68,16 +68,16 @@ The main snapshot coverage should live in `editor-state`, while the ASCII render
 
 ## Success Criteria
 
-- [ ] A pure ASCII renderer exists under `packages/editor` and can render editor state without browser APIs.
+- [ ] A pure ASCII renderer exists under `editor` and can render editor state without browser APIs.
 - [ ] Full-scene snapshots can detect overwrite/z-order regressions when blocks overlap.
 - [ ] `editor-state` has snapshot coverage for at least one overlapping-scene case and one layout/alignment case.
 - [ ] Browser/image-based visual tests remain optional and focused on rasterization-specific correctness.
 
 ## Affected Components
 
-- `packages/editor/core/` - new ASCII renderer package
-- `packages/editor/core/editor-state/` - scene snapshot tests using the new renderer
-- `packages/editor/core/editor-core/src/` or shared render-order helpers - any production ordering logic that should be centralized and reused
+- `editor/core/` - new ASCII renderer package
+- `editor/core/editor-state/` - scene snapshot tests using the new renderer
+- `editor/core/editor-core/src/` or shared render-order helpers - any production ordering logic that should be centralized and reused
 - `docs/todos/` - tracking and follow-up documentation
 
 ## Risks & Considerations

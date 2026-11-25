@@ -73,8 +73,8 @@ The active TODO folder is a planning surface for humans and agents. Stale comple
    Search for the success condition, not just the TODO title. For example:
 
    ```sh
-   rg -n "compileSegment\(" packages/compiler/src
-   rg -n "pixelcode|PixelCode|Pixel Code" packages/editor -g '!**/dist/**'
+   rg -n "compileSegment\(" compiler/src
+   rg -n "pixelcode|PixelCode|Pixel Code" editor -g '!**/dist/**'
    rg -n "trace-out|--trace|--expr|dump-range" apps/cli/src apps/cli/tests apps/cli/README.md
    ```
 

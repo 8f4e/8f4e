@@ -47,14 +47,14 @@ that already work in view mode, such as project controls, available according to
 
 ## Affected Components
 
-- `packages/editor/core/editor-state/src/index.ts`
-- `packages/editor/core/editor-state/src/input/editorMode.ts`
-- `packages/editor/plugins/keyboard-editing/`
-- `packages/editor/core/editor-state/src/layout/text-geometry/`
-- `packages/editor/core/editor-state/src/project/undoRedo.ts`
-- `packages/editor/core/editor-state/src/project/` and `packages/editor/core/editor-state/src/input/`
-- `packages/editor/plugins/keyboard-navigation/`
-- `packages/editor/plugins/keyboard-mode-switching/`
+- `editor/core/editor-state/src/index.ts`
+- `editor/core/editor-state/src/input/editorMode.ts`
+- `editor/plugins/keyboard-editing/`
+- `editor/core/editor-state/src/layout/text-geometry/`
+- `editor/core/editor-state/src/project/undoRedo.ts`
+- `editor/core/editor-state/src/project/` and `editor/core/editor-state/src/input/`
+- `editor/plugins/keyboard-navigation/`
+- `editor/plugins/keyboard-mode-switching/`
 - Default/gallery browser composition
 
 ## Risks & Considerations
@@ -78,7 +78,7 @@ testing helpers. Changing the product website's initial mode is a separate produ
 
 ## References
 
-- [Editor-state initialization](../../packages/editor/core/editor-state/src/index.ts)
+- [Editor-state initialization](../../editor/core/editor-state/src/index.ts)
 
 ## Notes
 

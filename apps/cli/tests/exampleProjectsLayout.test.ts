@@ -11,10 +11,10 @@ const packageRoot = path.resolve(testDir, '..');
 const repoRoot = path.resolve(packageRoot, '..', '..');
 
 const exampleProjects = [
-	'packages/examples/src/projects/audio/audioBuffer.8f4e',
-	'packages/examples/src/projects/audio/keyboardControlledMonoSynth.8f4e',
-	'packages/examples/src/projects/digital/bistableMultivibrators.8f4e',
-	'packages/examples/src/projects/machine-learning/xorProblem.8f4e',
+	'examples/src/projects/audio/audioBuffer.8f4e',
+	'examples/src/projects/audio/keyboardControlledMonoSynth.8f4e',
+	'examples/src/projects/digital/bistableMultivibrators.8f4e',
+	'examples/src/projects/machine-learning/xorProblem.8f4e',
 ] as const;
 
 function getSnapshotPath(relativePath: string): string {

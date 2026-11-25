@@ -6,7 +6,13 @@ updates:
     directories:
       - "/"
       - "/apps/**"
-      - "/packages/**"
+      - "/compiler"
+      - "/compiler/packages/**"
+      - "/editor/**"
+      - "/examples"
+      - "/tools/config"
+      - "/tools/test-runner"
+      - "/tools/vite-plugin-sources"
       - "/tools/project-preview"
     schedule:
       interval: "weekly"

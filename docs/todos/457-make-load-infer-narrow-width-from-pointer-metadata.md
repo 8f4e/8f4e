@@ -62,7 +62,7 @@ compiler cannot know the address type.
 ## Validation Checkpoints
 
 - `npx nx run @8f4e/compiler:test`
-- `node apps/cli/bin/cli.js test packages/compiler/tests/stdlib/read-interpolated-int16.test.8f4e`
+- `node apps/cli/bin/cli.js test compiler/tests/stdlib/read-interpolated-int16.test.8f4e`
 
 ## Success Criteria
 
@@ -73,10 +73,10 @@ compiler cannot know the address type.
 
 ## Affected Components
 
-- `packages/compiler/src/instructionCompilers/load.ts` - load variant selection.
-- `packages/compiler/src/stackAnalysis` - consumed address metadata must remain available to codegen.
-- `packages/compiler/tests` - instruction and fixture coverage.
-- `packages/compiler/packages/stdlib/std/memory/readInterpolated.8f4e` - may simplify the `int16*` overload after the compiler behavior lands.
+- `compiler/src/instructionCompilers/load.ts` - load variant selection.
+- `compiler/src/stackAnalysis` - consumed address metadata must remain available to codegen.
+- `compiler/tests` - instruction and fixture coverage.
+- `compiler/packages/stdlib/std/memory/readInterpolated.8f4e` - may simplify the `int16*` overload after the compiler behavior lands.
 
 ## Risks & Considerations
 

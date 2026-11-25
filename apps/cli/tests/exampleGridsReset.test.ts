@@ -6,7 +6,7 @@ import { resolveStdlibInclude } from '../src/shared/stdlibResolver';
 describe('Grids output reset', () => {
 	it('clears one-sample triggers while preserving density controls', async () => {
 		const source = await readFile(
-			new URL('../../../packages/examples/src/projects/audio/gridsPatterns.8f4e', import.meta.url),
+			new URL('../../../examples/src/projects/audio/gridsPatterns.8f4e', import.meta.url),
 			'utf8'
 		);
 		const result = await compileProject(parseProjectSource(source), { resolveInclude: resolveStdlibInclude });
