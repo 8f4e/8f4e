@@ -60,6 +60,8 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 	events.dispatch('openProjectGroup', { codeBlock: parent });
 	const voice = state.project.activeLevel.blocks.find(block => block.name === 'voice')!;
 	for (const code of [
+		['group voice'],
+		['module voice', 'moduleEnd'],
 		['group voice', '; keep this row', 'group ghost', 'groupEnd'],
 		['', 'group voice use authored; comment', 'groupEnd', ''],
 	]) {
@@ -72,6 +74,8 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 			execution: [{ type: 'module', code: ['module oscillator', 'int value 1', 'moduleEnd'] }],
 		});
 		expect(voice.projectPath).toBe('parent');
+		expect(voice.blockType).toBe('group');
+		expect(voice.entry).toBe('main');
 		expect(voice.childLevel?.blocks.find(block => block.name === 'oscillator')?.projectPath).toBe('parent/voice');
 	}
 });

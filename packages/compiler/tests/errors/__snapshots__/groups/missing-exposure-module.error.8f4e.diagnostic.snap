@@ -4,9 +4,10 @@
   "instruction": "expose",
   "kind": "source",
   "location": {
-    "kind": "scope",
+    "kind": "block",
     "lineNumber": 1,
-    "projectGroupPath": "audio",
+    "projectBlockId": 7,
+    "projectGroupPath": "",
   },
   "message": "Project memory exposure "audio:publicValue" targets undeclared memory "audio/missing:value". (73)",
 }

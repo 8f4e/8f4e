@@ -6,7 +6,10 @@ import initState, {
 	applyCodeBlockSourceEdits,
 	createEditorCommandApi,
 	getEditorBlockId,
+	insertCodeBlocks,
+	serializeCodeBlocks,
 	serializeToProject,
+	setGridSize,
 } from '~/index';
 import { getProjectGroupMemoryExposures } from './projectGroupMemoryExposures';
 
@@ -111,11 +114,31 @@ it('keeps settled exposure records current and preserves compiler diagnostics fo
 		await expect(compileProject(project)).rejects.toMatchObject({
 			diagnostic: {
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-				location: { kind: 'scope', projectGroupPath: 'patch', lineNumber: 2 },
+				location: { kind: 'block', projectBlockId: test.group().creationIndex, projectGroupPath: '', lineNumber: 2 },
 			},
 		});
 	} finally {
 		dispose();
+		test.store.dispose();
+	}
+});
+
+it('locates an invalid copied group wrapper by its own block ID', async () => {
+	const test = setup();
+	try {
+		setGridSize(test.state, test.events, { vGrid: 8, hGrid: 16 });
+		test.events.dispatch('enterEditMode');
+		const original = test.group();
+		const [copy] = insertCodeBlocks(test.store, { x: 240, y: 128, blocks: serializeCodeBlocks([original], original) });
+		expect(copy.childLevel!.path).toBe(original.childLevel!.path);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: copy, code: ['group patch', 'pass', 'groupEnd'] }]);
+		await expect(compileProject(test.serialize())).rejects.toMatchObject({
+			diagnostic: {
+				instruction: 'pass',
+				location: { kind: 'block', projectBlockId: copy.creationIndex, projectGroupPath: '', lineNumber: 1 },
+			},
+		});
+	} finally {
 		test.store.dispose();
 	}
 });

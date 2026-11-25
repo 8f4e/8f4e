@@ -26,7 +26,7 @@ project files, regardless of their names.
 
 `serializeToProject(state)` and `serializeProjectLevel(level)` return detached project data. The latter requires a
 settled `ProjectLevel`, keeping its blocks and authoritative entry definitions together, including empty entries. Every source
-array is copied, including group wrappers, nested blocks, and project-scope code. Callers can retain or edit the
+array is copied, including group wrappers and nested blocks. Callers can retain or edit the
 returned model without changing live editor state, and later live edits leave previously returned models unchanged.
 
 Object fields are emitted in a fixed order. Blocks are ordered by grid X, grid Y, and creation index within each

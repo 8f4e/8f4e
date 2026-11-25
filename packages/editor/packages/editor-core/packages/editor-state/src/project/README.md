@@ -44,10 +44,13 @@ Code blocks are categorized by type, which determines compilation and rendering 
 - **`module`** - Top-level code modules compiled as standalone units
 - **`function`** - Function definitions compiled separately
 - **`constants`** - Constant definitions (compiled as modules)
+- **`includes`** - Include declarations
 - **`note`** - Editor-only notes
+- **`group`** - Structural block owning a child project level
 - **`unknown`** - Unclassified blocks (fallback)
 
-Block types are automatically detected and updated based on code content without replacing the block. An incomplete
+Document block types are automatically detected and updated based on code content without replacing the block.
+Groups retain their structural type even when the wrapper source is incomplete or malformed. An incomplete
 declaration retains its last execution entry; a completed non-execution block clears it. Converting that block back to
 a module uses an explicitly assigned entry or `main`. Empty authored entry sections remain part of the project.
 

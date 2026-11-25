@@ -333,7 +333,12 @@ entryEnd`);
 			diagnostic: expect.objectContaining({
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				message: expect.stringContaining('outer/inner:out'),
-				location: { kind: 'scope', projectGroupPath: 'outer', lineNumber: 1 },
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
 			}),
 		});
 	});
@@ -349,7 +354,12 @@ entryEnd`);
 			diagnostic: expect.objectContaining({
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
-				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
 			}),
 		});
 	});

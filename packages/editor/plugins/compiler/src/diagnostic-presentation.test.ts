@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { diagnosticToCodeError } from './diagnostic-presentation';
 
 describe('diagnostic presentation', () => {
-	it('presents the supplied scope row directly for an exposure failure', () => {
+	it('presents the supplied block identity and row directly for an exposure failure', () => {
 		expect(
 			diagnosticToCodeError({
 				kind: 'source',
@@ -10,9 +10,9 @@ describe('diagnostic presentation', () => {
 				code: 73,
 				message: 'Undeclared exposure target',
 				instruction: 'expose',
-				location: { kind: 'scope', projectGroupPath: 'outer/inner', lineNumber: 4 },
+				location: { kind: 'block', projectBlockId: 12, projectGroupPath: 'outer', lineNumber: 4 },
 			})
-		).toEqual({ message: 'Undeclared exposure target', projectGroupPath: 'outer/inner', lineNumber: 4 });
+		).toEqual({ message: 'Undeclared exposure target', codeBlockId: 12, lineNumber: 4 });
 	});
 	it('targets the include declaration for file-level validation failures', () => {
 		expect(

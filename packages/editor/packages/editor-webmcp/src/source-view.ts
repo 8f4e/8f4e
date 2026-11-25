@@ -45,7 +45,7 @@ export function createSourceView(state: Editor['state']): string {
 		lines.push(...group.code.slice(0, closer));
 	} else lines.push('8f4e/v1');
 
-	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.childLevel !== undefined;
+	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.blockType === 'group';
 	for (const block of ordered.filter(block => !executable(block))) append(block);
 	let current: string | undefined;
 	const emitted = new Set<string>();

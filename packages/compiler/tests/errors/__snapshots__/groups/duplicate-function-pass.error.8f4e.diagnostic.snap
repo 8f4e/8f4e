@@ -4,9 +4,10 @@
   "instruction": "pass",
   "kind": "source",
   "location": {
-    "kind": "scope",
+    "kind": "block",
     "lineNumber": 2,
-    "projectGroupPath": "child",
+    "projectBlockId": 6,
+    "projectGroupPath": "",
   },
   "message": "Duplicate identifier: helper. (45)",
 }

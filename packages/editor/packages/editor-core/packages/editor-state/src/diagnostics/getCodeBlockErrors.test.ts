@@ -1,7 +1,7 @@
 import type { CodeError, ProjectLevel } from '@8f4e/editor-state-types';
 import { expect, it } from 'vitest';
-import { createMockCodeBlock } from '../__tests__/helpers/mockEditorState';
-import { createCodeErrorBlockLookup } from './getCodeBlockErrors';
+import { createMockCodeBlock, createMockState } from '../__tests__/helpers/mockEditorState';
+import getCodeBlockErrors, { createCodeErrorBlockLookup } from './getCodeBlockErrors';
 
 function fixture() {
 	const root = createMockCodeBlock({
@@ -23,7 +23,13 @@ function fixture() {
 		code: ['group audio', 'pass missing', 'groupEnd'],
 		childLevel: { path: 'audio', entries: [], blocks: [voice] },
 	});
-	const project: ProjectLevel = { path: '', entries: [], blocks: [root, group] };
+	const copy = createMockCodeBlock({
+		creationIndex: 3,
+		name: 'audio',
+		code: ['group audio', 'pass missing', 'groupEnd'],
+		childLevel: { path: 'audio', entries: [], blocks: [] },
+	});
+	const project: ProjectLevel = { path: '', entries: [], blocks: [root, group, copy] };
 	const findBlock = createCodeErrorBlockLookup(project);
 	const error = (fields: Partial<CodeError>): CodeError => ({
 		codeBlockId: -1,
@@ -31,22 +37,23 @@ function fixture() {
 		message: 'Fixture error',
 		...fields,
 	});
-	return { root, voice, group, findBlock, error };
+	return { root, voice, group, copy, project, findBlock, error };
 }
 
-it('indexes document identities and group source scopes', () => {
+it('indexes root, nested and group block identities', () => {
 	const { root, voice, group, findBlock, error } = fixture();
 	expect(findBlock(error({ codeBlockId: root.creationIndex }))).toBe(root);
 	expect(findBlock(error({ codeBlockId: voice.creationIndex }))).toBe(voice);
-	expect(findBlock(error({ projectGroupPath: 'audio' }))).toBe(group);
-	expect(findBlock(error({ projectGroupPath: '' }))).toBeUndefined();
+	expect(findBlock(error({ codeBlockId: group.creationIndex }))).toBe(group);
+	expect(findBlock(error({ codeBlockId: undefined }))).toBeUndefined();
 	expect(findBlock(error({ codeBlockId: 999 }))).toBeUndefined();
-	expect(findBlock(error({ projectGroupPath: 'missing' }))).toBeUndefined();
 });
 
-it('retains project-tree precedence when a diagnostic matches both a document and a scope', () => {
-	const { root, voice, group, findBlock, error } = fixture();
-	expect(findBlock(error({ codeBlockId: voice.creationIndex, projectGroupPath: 'audio' }))).toBe(group);
-	expect(findBlock(error({ codeBlockId: voice.creationIndex, projectGroupPath: '' }))).toBe(voice);
-	expect(findBlock(error({ codeBlockId: root.creationIndex, projectGroupPath: 'audio' }))).toBe(root);
+it('matches only the targeted group when two groups share a path', () => {
+	const { group, copy, project, findBlock, error } = fixture();
+	const diagnostic = error({ codeBlockId: copy.creationIndex });
+	const state = createMockState({ project: { rootLevel: project }, codeErrors: { compiler: [diagnostic] } });
+	expect(findBlock(diagnostic)).toBe(copy);
+	expect(getCodeBlockErrors(state, group)).toEqual([]);
+	expect(getCodeBlockErrors(state, copy)).toEqual([diagnostic]);
 });

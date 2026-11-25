@@ -186,7 +186,7 @@ describe('compilation scheduling and publication', () => {
 		]);
 	});
 
-	it('stores the owning project path for project-scope compiler errors', async () => {
+	it('stores the owning block ID for group declaration compiler errors', async () => {
 		mockCompileCode.mockRejectedValue(
 			new CompilerError({
 				kind: 'source',
@@ -194,7 +194,7 @@ describe('compilation scheduling and publication', () => {
 				code: 2,
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 				instruction: 'pass',
-				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+				location: { kind: 'block', projectBlockId: 17, projectGroupPath: '', lineNumber: 1 },
 			})
 		);
 
@@ -203,7 +203,7 @@ describe('compilation scheduling and publication', () => {
 		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 1,
-				projectGroupPath: 'audio',
+				codeBlockId: 17,
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
 		]);

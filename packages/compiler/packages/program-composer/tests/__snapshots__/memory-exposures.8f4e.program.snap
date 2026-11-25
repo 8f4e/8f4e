@@ -292,8 +292,9 @@
   "memoryExposures": [
     {
       "diagnosticSource": {
-        "kind": "scope",
-        "projectGroupPath": "audio",
+        "kind": "block",
+        "projectBlockId": 8,
+        "projectGroupPath": "",
       },
       "groupPath": "audio",
       "instruction": "expose",
@@ -306,8 +307,9 @@
     },
     {
       "diagnosticSource": {
-        "kind": "scope",
-        "projectGroupPath": "audio",
+        "kind": "block",
+        "projectBlockId": 8,
+        "projectGroupPath": "",
       },
       "groupPath": "audio",
       "instruction": "expose",

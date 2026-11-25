@@ -2,33 +2,17 @@ import type { CodeError, EditorCodeBlock, ProjectLevel, State } from '@8f4e/edit
 import { walkProjectBlocks } from '../project/tree';
 
 export default function getCodeBlockErrors(state: State, codeBlock: EditorCodeBlock) {
-	const projectScopePath = codeBlock.childLevel?.path;
 	return Object.values(state.codeErrors)
 		.flat()
 		.filter(
 			(error): error is CodeError & { lineNumber: number } =>
-				error.lineNumber !== undefined &&
-				(error.codeBlockId === codeBlock.creationIndex ||
-					(projectScopePath !== undefined && error.projectGroupPath === projectScopePath))
+				error.lineNumber !== undefined && error.codeBlockId === codeBlock.creationIndex
 		);
 }
 
-/** Index the current tree once, retaining the first block matching either identity or project scope. */
+/** Index the current tree once by code block identity. */
 export function createCodeErrorBlockLookup(project: ProjectLevel) {
-	type Entry = { codeBlock: EditorCodeBlock; order: number };
-	const blocksById = new Map<number, Entry>();
-	const blocksByScope = new Map<string, Entry>();
-	let order = 0;
-	for (const codeBlock of walkProjectBlocks(project)) {
-		const entry = { codeBlock, order: order++ };
-		blocksById.set(codeBlock.creationIndex, entry);
-		const scope = codeBlock.childLevel?.path;
-		if (scope !== undefined && !blocksByScope.has(scope)) blocksByScope.set(scope, entry);
-	}
-	return (error: CodeError): EditorCodeBlock | undefined => {
-		const document = error.codeBlockId === undefined ? undefined : blocksById.get(error.codeBlockId);
-		const scope = error.projectGroupPath === undefined ? undefined : blocksByScope.get(error.projectGroupPath);
-		if (!document) return scope?.codeBlock;
-		return scope && scope.order < document.order ? scope.codeBlock : document.codeBlock;
-	};
+	const blocksById = new Map([...walkProjectBlocks(project)].map(block => [block.creationIndex, block]));
+	return (error: CodeError): EditorCodeBlock | undefined =>
+		error.codeBlockId === undefined ? undefined : blocksById.get(error.codeBlockId);
 }

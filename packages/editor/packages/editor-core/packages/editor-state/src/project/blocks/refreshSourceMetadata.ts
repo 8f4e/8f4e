@@ -14,8 +14,8 @@ import replaceBlocksInPlace from './replaceBlocksInPlace';
 import { partitionCodeBlocksByAlwaysOnTop } from './zOrder';
 
 /** Modules and structural project-group blocks can own execution entries. */
-export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType' | 'childLevel'>): boolean {
-	return block.blockType === 'module' || block.childLevel !== undefined;
+export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType'>): boolean {
+	return block.blockType === 'module' || block.blockType === 'group';
 }
 
 /** Keep the editor's entry table authoritative, including empty previously declared entries. */
@@ -47,7 +47,7 @@ export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: E
 		block.gridX = position.x;
 		block.gridY = position.y;
 	}
-	block.blockType = getCodeBlockTypeFromSource(block.code);
+	block.blockType = block.childLevel ? 'group' : getCodeBlockTypeFromSource(block.code);
 	// Unknown source may be an incomplete module rather than a conversion. Keep its
 	// last entry until the user finishes declaring a non-execution block.
 	if (supportsExecutionEntry(block)) {

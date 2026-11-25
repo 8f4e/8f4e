@@ -6,6 +6,7 @@ import {
 	type ComposedEntry,
 	createChildProjectGroupPath,
 	createProjectModuleId,
+	type DiagnosticSource,
 	ErrorCode,
 	type FunctionLine,
 	type IncludedFunctionBindings,
@@ -29,15 +30,17 @@ import { resolveFunctionPasses } from './resolveFunctionPasses';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
+type BlockDiagnosticSource = Extract<DiagnosticSource, { kind: 'block' }>;
+
 function appendGroupDeclarations(
 	code: readonly string[],
 	groupPath: ProjectGroupPath,
-	parentGroupPath: ProjectGroupPath,
+	diagnosticSource: BlockDiagnosticSource,
 	program: ComposedProgram
 ): void {
 	const passes: ProjectConstantNamespacePassLine[] = [];
 	const initializers: ProjectMemoryInitializerLine[] = [];
-	const diagnosticSource = { kind: 'scope', projectGroupPath: groupPath } as const;
+	const parentGroupPath = diagnosticSource.projectGroupPath;
 	const declarations = validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' });
 	for (const { instruction, lineNumber } of declarations) {
 		if (instruction === 'expose') continue;
@@ -63,7 +66,8 @@ function appendMemoryExposureAliases(
 	program: ComposedProgram,
 	groupPath: ProjectGroupPath,
 	exposures: readonly ProjectMemoryExposure[],
-	groupTargets: ReadonlySet<string>
+	groupTargets: ReadonlySet<string>,
+	diagnosticSource: BlockDiagnosticSource
 ): void {
 	if (exposures.length === 0) {
 		return;
@@ -76,7 +80,7 @@ function appendMemoryExposureAliases(
 		const source = {
 			...exposure,
 			groupPath,
-			diagnosticSource: { kind: 'scope' as const, projectGroupPath: groupPath },
+			diagnosticSource,
 			instruction: 'expose' as const,
 		};
 		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
@@ -139,9 +143,8 @@ function appendUnit(
 	project: ProjectObjectModel,
 	projectPath: ProjectGroupPath,
 	program: ComposedProgram,
-	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath,
-	exposures: readonly ProjectMemoryExposure[] = []
-): Map<string, ComposedEntry> {
+	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath
+): { entries: Map<string, ComposedEntry>; groupTargets: Set<string> } {
 	const entries = new Map<string, ComposedEntry>();
 	const ensureEntry = (name: string): ComposedEntry => {
 		let entry = entries.get(name);
@@ -207,12 +210,18 @@ function appendUnit(
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
-			appendGroupDeclarations(block.code, groupPath, projectPath, program);
-			const childEntries = appendUnit(block, groupPath, program, includedFunctionsByProjectPath, block.exposures);
+			const diagnosticSource: BlockDiagnosticSource = {
+				kind: 'block',
+				projectBlockId: block.id,
+				projectGroupPath: projectPath,
+			};
+			appendGroupDeclarations(block.code, groupPath, diagnosticSource, program);
+			const child = appendUnit(block, groupPath, program, includedFunctionsByProjectPath);
+			appendMemoryExposureAliases(program, groupPath, block.exposures, child.groupTargets, diagnosticSource);
 			groupTargets.add(block.name);
-			const childMain = childEntries.get('main');
+			const childMain = child.entries.get('main');
 			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
-			const childInit = childEntries.get('init');
+			const childInit = child.entries.get('init');
 			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
 			continue;
 		}
@@ -228,8 +237,7 @@ function appendUnit(
 		program.ast.modules.push(ast);
 		entry.steps.push({ type: 'module', id: ast.id });
 	}
-	appendMemoryExposureAliases(program, projectPath, exposures, groupTargets);
-	return entries;
+	return { entries, groupTargets };
 }
 
 /**

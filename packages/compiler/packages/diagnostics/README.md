@@ -21,9 +21,9 @@ retaining the stage, stack and any known source location. There are no empty-con
 If a transported internal failure has no location, serialization or a later stage boundary can attach a known one
 without changing the original failure's stage or stack. Existing source and internal diagnostic locations are preserved.
 
-Locations distinguish document rows, block rows, project-scope rows, include-file rows, and included symbols with their
-include site. Exposure declarations retain their row in the owning group's `code`; composition supplies the group's
-scope identity before target validation. Hosts translate that complete scope location directly into editor errors.
+Locations distinguish document rows, block rows, include-file rows, and included symbols with their
+include site. Group declarations retain their row in the owning group's `code`; composition supplies that group's
+block identity and its containing project path. Hosts translate that block location directly into editor errors.
 Early include validation uses `include-file` with the file id and a row
 relative to that file. Its `includeSite` identifies the loading declaration when the file belongs to a project;
 standalone include parsing still retains file identity. Diagnostics inside an included symbol use a row relative to

@@ -39,7 +39,7 @@ export function createCodeBlockCopyPastePlugin({
 				return { title: 'Paste Code Block', action: 'pasteCodeBlocks', close: true };
 			});
 			const removeCopyMenu = menus.registerItem('codeBlockMenu', ({ codeBlock }) => ({
-				title: `Copy ${codeBlock.childLevel ? 'group' : codeBlock.blockType}`,
+				title: `Copy ${codeBlock.blockType}`,
 				action: 'copyCodeBlock',
 				payload: { codeBlock },
 				close: true,

@@ -253,7 +253,11 @@ describe('favorites plugin', () => {
 			test.events.dispatch('openSubMenu', { menu: 'favoritesMenu' });
 			await Promise.resolve();
 		};
+		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
 		await openFavorites();
+		expect(test.state.contextMenu.items).toContainEqual(
+			expect.objectContaining({ title: 'group target', payload: { creationIndex: test.block.creationIndex } })
+		);
 		expect(test.state.contextMenu.items.some(item => item.title?.includes('nested'))).toBe(false);
 		test.events.dispatch('openProjectGroup', { codeBlock: test.block });
 		await openFavorites();

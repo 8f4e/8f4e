@@ -138,7 +138,7 @@ describe('deriveConnectors', () => {
 		const block = createMockCodeBlock({
 			name: 'audio',
 			width: 100,
-			childLevel: { entries: [], path: '', blocks: [] },
+			childLevel: { entries: [], path: 'audio', blocks: [] },
 			code: [
 				'group audio',
 				'expose publicInput &source:_input',

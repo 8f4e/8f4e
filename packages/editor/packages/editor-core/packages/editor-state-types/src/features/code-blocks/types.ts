@@ -14,14 +14,16 @@ import type { CodeBlockDisplayModel } from './buildDisplayModel';
 import type { DirectiveDisplayState } from './features/directives/types';
 
 /**
- * The type of a code block, determined by its content markers.
+ * The type of an editor block, determined by structural ownership or document content markers.
  * - 'module': Contains module/moduleEnd markers (compiled to WASM)
  * - 'function': Contains function/functionEnd markers (compiled to WASM as reusable helper)
  * - 'constants': Contains constants/constantsEnd markers
+ * - 'includes': Contains includes/includesEnd markers
  * - 'note': Contains note/noteEnd markers (editor-only notes, not compiled)
+ * - 'group': Owns a child project level, even while its wrapper source is incomplete
  * - 'unknown': Mixed or incomplete markers, or no recognizable markers
  */
-export type CodeBlockType = DocumentBlockType | 'unknown';
+export type CodeBlockType = DocumentBlockType | 'group' | 'unknown';
 
 export interface MemoryIdentifier {
 	memory: PlannedMemoryDeclaration;
@@ -103,7 +105,7 @@ export interface EditorCodeBlock {
 	 */
 	creationIndex: number;
 	/**
-	 * The type of the code block, determined by its content markers.
+	 * The settled editor block type. Structural group ownership takes precedence over source markers.
 	 * Updated automatically when code changes.
 	 */
 	blockType: CodeBlockType;

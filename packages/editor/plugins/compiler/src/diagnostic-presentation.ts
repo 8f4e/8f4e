@@ -17,15 +17,12 @@ export function diagnosticToCodeError(diagnostic: CompilerDiagnostic): CodeError
 			codeBlockId: location.includeSite.projectBlockId,
 			lineNumber: location.includeSite.lineNumber,
 		};
-	if (location.kind === 'include-file') {
-		const fileMessage = `${location.includeId}:${location.lineNumber + 1}: ${message}`;
-		return location.includeSite
-			? {
-					message: fileMessage,
-					codeBlockId: location.includeSite.projectBlockId,
-					lineNumber: location.includeSite.lineNumber,
-				}
-			: { message: fileMessage };
-	}
-	return { message, projectGroupPath: location.projectGroupPath, lineNumber: location.lineNumber };
+	const fileMessage = `${location.includeId}:${location.lineNumber + 1}: ${message}`;
+	return location.includeSite
+		? {
+				message: fileMessage,
+				codeBlockId: location.includeSite.projectBlockId,
+				lineNumber: location.includeSite.lineNumber,
+			}
+		: { message: fileMessage };
 }

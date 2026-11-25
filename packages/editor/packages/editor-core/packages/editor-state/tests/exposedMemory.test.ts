@@ -27,7 +27,7 @@ function createBlocks(project: ProjectObjectModel, projectPath = ''): EditorCode
 				projectPath,
 				childLevel: {
 					entries: [],
-					path: '',
+					path: createChildProjectGroupPath(projectPath, group.name),
 					blocks: createBlocks(group, createChildProjectGroupPath(projectPath, group.name)),
 				},
 			})

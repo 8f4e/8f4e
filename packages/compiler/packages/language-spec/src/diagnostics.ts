@@ -4,7 +4,6 @@ import type { ProjectGroupPath } from './project';
 export type DiagnosticSource =
 	| { readonly kind: 'document' }
 	| { readonly kind: 'block'; readonly projectBlockId: number; readonly projectGroupPath: ProjectGroupPath }
-	| { readonly kind: 'scope'; readonly projectGroupPath: ProjectGroupPath }
 	| {
 			readonly kind: 'include-file';
 			readonly includeId: string;
@@ -23,7 +22,7 @@ export type DiagnosticSource =
 			readonly includeSite: { readonly projectBlockId: number; readonly lineNumber: number };
 	  };
 
-/** Zero-based line in the identified document, block, project scope, or include source. */
+/** Zero-based line in the identified document, block, or include source. */
 export type DiagnosticLocation = DiagnosticSource & { readonly lineNumber: number };
 
 /** Source line supplied to diagnostic construction after syntax has identified its position. */

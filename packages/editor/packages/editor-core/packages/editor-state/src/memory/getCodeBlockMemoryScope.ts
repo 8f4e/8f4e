@@ -1,5 +1,4 @@
 import type { EditorCodeBlock } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import getCodeBlockModuleId from '../compiler-metadata/getCodeBlockModuleId';
 import type { MemoryScope } from './resolveMemoryTarget';
 
@@ -9,5 +8,5 @@ export default function getCodeBlockMemoryScope(
 ): MemoryScope {
 	return codeBlock.childLevel === undefined
 		? { kind: 'module', moduleId: getCodeBlockModuleId(codeBlock) }
-		: { kind: 'project', groupPath: createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name) };
+		: { kind: 'project', groupPath: codeBlock.childLevel.path };
 }
