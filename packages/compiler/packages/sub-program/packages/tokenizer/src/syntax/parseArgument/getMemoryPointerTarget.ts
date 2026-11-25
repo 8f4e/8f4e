@@ -1,4 +1,4 @@
-import { SyntaxErrorCode, SyntaxRulesError } from '../syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from '../syntaxError';
 
 /**
  * Reads the target memory id and dereference depth from a memory-pointer identifier token.
@@ -9,12 +9,12 @@ import { SyntaxErrorCode, SyntaxRulesError } from '../syntaxError';
 export function getMemoryPointerTarget(value: string): { targetMemoryId: string; dereferenceDepth: number } {
 	const dereferenceDepth = getLeadingPointerDepth(value);
 	if (dereferenceDepth > 2) {
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_POINTER_DEPTH);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_POINTER_DEPTH);
 	}
 
 	const targetMemoryId = value.slice(dereferenceDepth);
 	if (targetMemoryId.trim().length === 0) {
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_IDENTIFIER, `Memory pointer target is missing: ${value}`);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_IDENTIFIER, `Memory pointer target is missing: ${value}`);
 	}
 
 	return { targetMemoryId, dereferenceDepth };

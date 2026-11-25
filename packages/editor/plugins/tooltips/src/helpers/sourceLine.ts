@@ -14,44 +14,31 @@ export interface SourceInstruction {
 	spec: InstructionSpec;
 }
 
+/** The current source interpretation shared by documentation, live-value preparation, and compiler lookup. */
+export interface SourceLineDescription {
+	text: string | undefined;
+	sourceInstruction: SourceInstruction | undefined;
+	declaration: { kind: 'memory' | 'reference'; id: string } | undefined;
+}
+
 function getSourceLineTokens(line: string | undefined): string[] {
 	const source = line?.split(';')[0].trim();
 	return source ? source.split(/\s+/) : [];
 }
 
-/**
- * Returns the first non-whitespace token from a source line.
- */
-export function getInstructionNameFromSourceLine(line: string): string | undefined {
-	return getSourceLineTokens(line)[0];
-}
-
-/**
- * Extracts a recognized instruction and its source arguments with one spec lookup.
- */
-export function getSourceInstruction(line: string): SourceInstruction | undefined {
+/** Classifies current source text once, including incomplete edits that are absent from the accepted compiler AST. */
+export function describeSourceLine(line: string | undefined): SourceLineDescription {
 	const [instruction, ...args] = getSourceLineTokens(line);
 	const spec = instruction ? getInstructionSpec(instruction) : undefined;
-	return spec ? { instruction, arguments: args, spec } : undefined;
-}
-
-/**
- * Extracts the declared memory identifier from a memory declaration line.
- */
-export function getMemoryDeclarationIdFromSourceLine(line: string | undefined): string | undefined {
-	const [instruction, id] = getSourceLineTokens(line);
-
-	if (!memoryDeclarationInstructionSet.has(instruction) || !id || !memoryIdentifierRegExp.test(id)) {
-		return undefined;
+	const id = args[0];
+	let declaration: SourceLineDescription['declaration'];
+	if (instruction && id && memoryIdentifierRegExp.test(id)) {
+		if (memoryDeclarationInstructionSet.has(instruction)) declaration = { kind: 'memory', id };
+		else if (isReferenceSlotInstruction(instruction)) declaration = { kind: 'reference', id };
 	}
-
-	return id;
-}
-
-/** Extracts the identifier of a fixed reference declaration. */
-export function getReferenceDeclarationIdFromSourceLine(line: string | undefined): string | undefined {
-	const [instruction, id] = getSourceLineTokens(line);
-	return instruction && isReferenceSlotInstruction(instruction) && id && memoryIdentifierRegExp.test(id)
-		? id
-		: undefined;
+	return {
+		text: line,
+		sourceInstruction: instruction && spec ? { instruction, arguments: args, spec } : undefined,
+		declaration,
+	};
 }

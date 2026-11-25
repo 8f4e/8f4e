@@ -1,5 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
 import { DrawContext } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import type { ConnectorWidgets, Output } from '../types';
@@ -12,17 +12,14 @@ function fixture(width = 8, height = 16) {
 		viewport: { vGrid: width, hGrid: height },
 	});
 	const engine = new DrawContext({ drawSprite }, width);
-	const block = createMockCodeBlock();
 	const output: Output = {
-		codeBlock: block,
 		x: 2,
 		y: 3,
-		wireX: 0,
-		wireY: 0,
 		calibratedMax: 1,
 		calibratedMin: -1,
 		memory: {
 			id: 0,
+			source: createMockMemoryDeclarationSource('float', 0, 'value'),
 			name: 'value',
 			type: 'float',
 			numberOfElements: 1,
@@ -32,8 +29,7 @@ function fixture(width = 8, height = 16) {
 			allocationUnitAddress: 0,
 			allocationUnitCount: 1,
 			allocatedByteLength: 4,
-			endByteAddress: 0,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 4,
 			lineNumber: 0,
 			isInteger: false,
 			pointerDepth: 0,
@@ -65,9 +61,6 @@ describe('drawConnectors', () => {
 		widgets.inputs.push({
 			x: 2,
 			y: 3,
-			wireX: 0,
-			wireY: 0,
-			source: { kind: 'pointer', allocationUnitAddress: 0 },
 		});
 
 		drawConnectors(engine, state, widgets, memory);

@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	Argument,
 	ArgumentLiteral,
@@ -12,40 +13,35 @@ import type {
 	ValidatedConstantsAST,
 	ValidatedFunctionAST,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
-import { ArgumentType, createProjectModuleId, isBinaryCompileTimeExpression } from '@8f4e/language-spec';
+import { ArgumentType, createProjectModuleId, ErrorCode, isBinaryCompileTimeExpression } from '@8f4e/language-spec';
 import { resolveCompileTimeExpression } from '@8f4e/semantic-utils';
 
-type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST | ValidatedPrototypeAST;
+type ConstantResolvableAST = ValidatedModuleAST | ValidatedConstantsAST | ValidatedFunctionAST;
 type ConstantNamespaceAST = ValidatedModuleAST | ValidatedConstantsAST;
 export type ConstantEnvironment = Readonly<Record<string, Const>>;
 export type ConstantNamespaceMap = Readonly<Record<string, ConstantEnvironment>>;
 
 export interface ResolveConstantsSubProgramAST<
-	TPrototype extends ValidatedPrototypeAST = ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST = ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST = ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST = ValidatedFunctionAST,
 > {
-	prototypes: readonly TPrototype[];
 	modules: readonly TModule[];
 	constants: readonly TConstants[];
 	functions: readonly TFunction[];
 }
 
 export interface ResolveConstantsInput<
-	TPrototype extends ValidatedPrototypeAST = ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST = ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST = ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST = ValidatedFunctionAST,
 > {
-	ast: ResolveConstantsSubProgramAST<TPrototype, TModule, TConstants, TFunction>;
+	ast: ResolveConstantsSubProgramAST<TModule, TConstants, TFunction>;
 	projectConstantNamespaceScopes?: readonly ProjectConstantNamespaceScope[];
 }
 
 export interface ConstantResolutionReport {
-	prototypes: ConstantResolutionBlockFacts[];
 	modules: ConstantResolutionBlockFacts[];
 	constants: ConstantResolutionBlockFacts[];
 	functions: ConstantResolutionBlockFacts[];
@@ -65,22 +61,12 @@ export const ConstantResolverErrorCode = {
 
 export type ConstantResolverErrorCodeValue = (typeof ConstantResolverErrorCode)[keyof typeof ConstantResolverErrorCode];
 
-export class ConstantResolverError extends Error {
-	readonly code: ConstantResolverErrorCodeValue;
-	readonly detail: string;
-	readonly line?: CompilerASTLine | ProjectConstantNamespacePassLine;
-
-	constructor(
-		code: ConstantResolverErrorCodeValue,
-		message: string,
-		line?: CompilerASTLine | ProjectConstantNamespacePassLine
-	) {
-		super(`${message} (${code})`);
-		this.name = 'ConstantResolverError';
-		this.code = code;
-		this.detail = message;
-		this.line = line;
-	}
+function constantError(
+	code: ConstantResolverErrorCodeValue,
+	detail: string,
+	line: CompilerASTLine | ProjectConstantNamespacePassLine
+) {
+	return getError(ErrorCode.CONSTANT_RESOLUTION_FAILED, line, { details: { reason: `${detail} (${code})` } });
 }
 
 export interface ResolveConstantsOptions {
@@ -128,7 +114,21 @@ function resolveConstantArgument(argument: Argument, constants: ConstantEnvironm
 	return resolveCompileTimeExpression(argument, operand => resolveConstantOperand(operand, constants));
 }
 
-function resolveConstantArgumentReference(argument: Argument, constants: ConstantEnvironment): Argument {
+function resolveConstantArgumentReference(
+	argument: Argument,
+	constants: ConstantEnvironment,
+	line: CompilerASTLine
+): Argument {
+	const operands =
+		argument.type === ArgumentType.COMPILE_TIME_EXPRESSION
+			? [argument.left, ...(isBinaryCompileTimeExpression(argument) ? [argument.right] : [])]
+			: [argument];
+	for (const operand of operands) {
+		if (operand.type === ArgumentType.IDENTIFIER && operand.referenceKind === 'constant' && !constants[operand.value]) {
+			throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, { details: { identifier: operand.value } });
+		}
+	}
+
 	if (argument.type === ArgumentType.IDENTIFIER) {
 		const resolved = resolveConstantOperand(argument, constants);
 		return resolved ? constToLiteral(resolved) : argument;
@@ -170,7 +170,7 @@ function resolveConstantOperandReference(
 function resolveConstLine(line: ConstLine, constants: Record<string, Const>): Const {
 	const resolved = resolveConstantArgument(line.arguments[1], constants);
 	if (!resolved) {
-		throw new ConstantResolverError(
+		throw constantError(
 			ConstantResolverErrorCode.UNRESOLVED_CONSTANT_VALUE,
 			`Unable to resolve constant ${line.arguments[0].value}`,
 			line
@@ -239,7 +239,7 @@ function findUnresolvedUseLine(
 }
 
 function flattenSubProgramAST(input: ResolveConstantsSubProgramAST): ConstantResolvableAST[] {
-	return [...input.prototypes, ...input.modules, ...input.constants, ...input.functions];
+	return [...input.modules, ...input.constants, ...input.functions];
 }
 
 function collectConstantNamespacesFromAsts(
@@ -259,7 +259,7 @@ function collectConstantNamespacesFromAsts(
 			Object.hasOwn(namespaces, ast.id) ||
 			(previous && (ast.type !== 'constants' || previous[0].type !== 'constants'))
 		) {
-			throw new ConstantResolverError(
+			throw constantError(
 				ConstantResolverErrorCode.DUPLICATE_NAMESPACE,
 				`Duplicate constant namespace ${ast.id}`,
 				previous?.[0].lines[0] ?? ast.lines[0]
@@ -290,7 +290,7 @@ function collectConstantNamespacesFromAsts(
 		}
 
 		if (!madeProgress) {
-			throw new ConstantResolverError(
+			throw constantError(
 				ConstantResolverErrorCode.UNRESOLVED_NAMESPACE,
 				'Unable to resolve constant namespace dependencies',
 				findUnresolvedUseLine(pending.flat(), namespaces, namespaceAliases) ?? pending[0][0].lines[0]
@@ -350,17 +350,9 @@ function buildProjectNamespaceAliases(
 			const name = line.arguments[0].value;
 			const alias = createProjectModuleId(scope.groupPath, name);
 			if (aliases.has(alias) || astNamespaceIds.has(alias) || Object.hasOwn(externalNamespaces, alias)) {
-				throw new ConstantResolverError(
+				throw constantError(
 					ConstantResolverErrorCode.DUPLICATE_NAMESPACE,
 					`Duplicate constant namespace ${alias}`,
-					line
-				);
-			}
-
-			if (scope.parentGroupPath === undefined) {
-				throw new ConstantResolverError(
-					ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE,
-					`Passed name ${name} is undefined in the parent project scope`,
 					line
 				);
 			}
@@ -375,7 +367,7 @@ function buildProjectNamespaceAliases(
 	for (const [alias, target] of aliases) {
 		if (!availableTargets.has(target)) {
 			const line = passLinesByAlias.get(alias)!;
-			throw new ConstantResolverError(
+			throw constantError(
 				ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE,
 				`Passed name ${line.arguments[0].value} is undefined in the parent project scope`,
 				line
@@ -408,11 +400,7 @@ function resolveConstantsInASTWithNamespaces(
 ): ConstantResolutionBlockFacts {
 	const lineFacts = ast.lines.map(line => {
 		if (!importConstants(line, constants, namespaces, EMPTY_CONSTANT_NAMESPACE_ALIASES)) {
-			throw new ConstantResolverError(
-				ConstantResolverErrorCode.UNRESOLVED_NAMESPACE,
-				'Unable to resolve constant namespace',
-				line
-			);
+			throw constantError(ConstantResolverErrorCode.UNRESOLVED_NAMESPACE, 'Unable to resolve constant namespace', line);
 		}
 
 		if (line.instruction === 'const') {
@@ -424,7 +412,9 @@ function resolveConstantsInASTWithNamespaces(
 			return undefined;
 		}
 
-		const resolvedArguments = line.arguments.map(argument => resolveConstantArgumentReference(argument, constants));
+		const resolvedArguments = line.arguments.map(argument =>
+			resolveConstantArgumentReference(argument, constants, line)
+		);
 		return collectLineFacts(line, resolvedArguments);
 	});
 
@@ -432,12 +422,11 @@ function resolveConstantsInASTWithNamespaces(
 }
 
 export function resolveConstants<
-	TPrototype extends ValidatedPrototypeAST,
 	TModule extends ValidatedModuleAST,
 	TConstants extends ValidatedConstantsAST,
 	TFunction extends ValidatedFunctionAST,
 >(
-	input: ResolveConstantsInput<TPrototype, TModule, TConstants, TFunction>,
+	input: ResolveConstantsInput<TModule, TConstants, TFunction>,
 	options: ResolveConstantsOptions = {}
 ): ResolveConstantsResult {
 	const namespaces = collectConstantNamespaces(input, options);
@@ -445,7 +434,6 @@ export function resolveConstants<
 	return {
 		namespaces,
 		references: {
-			prototypes: input.ast.prototypes.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			modules: input.ast.modules.map(ast => resolveConstantsInASTWithNamespaces(ast, namespaces)),
 			constants: input.ast.constants.map(ast => {
 				const constants = constantsByNamespace.get(ast.id) ?? {};

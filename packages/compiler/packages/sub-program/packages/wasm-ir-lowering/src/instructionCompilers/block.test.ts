@@ -10,6 +10,7 @@ describe('block instruction compiler', () => {
 		compileInstructionForTest(
 			block,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'block',
 				arguments: [],
@@ -30,6 +31,7 @@ describe('block instruction compiler', () => {
 		compileInstructionForTest(
 			block,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'block',
 				arguments: [],
@@ -50,6 +52,7 @@ describe('block instruction compiler', () => {
 		compileInstructionForTest(
 			block,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'block',
 				arguments: [],

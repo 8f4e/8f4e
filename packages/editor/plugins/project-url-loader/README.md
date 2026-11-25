@@ -4,19 +4,19 @@
 core's generic `loadProject` action. The host supplies `fetch` and optionally an initial URL.
 
 ```ts
-createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, onLoaded, onError })
+createProjectUrlLoaderPlugin({ fetch, initialProjectUrl, failureMode: 'reject' })
 ```
 
-The initial URL is fetched on the generic `init` event. Fetching, parsing, and project installation run alongside the
-default font download. Rendering waits for both.
+The initial URL is fetched on `prepareInitialProject`. Fetching, parsing, and project installation complete before
+web-ui loads the font selected by the prepared project and core draws the first frame.
 Without an initial URL, initialization performs no request.
 Fetching uses `cache: 'no-store'` and preserves the supplied URL. HTTP, network, and parser errors are logged in the
-editor console and load an empty project.
+editor console and reject source preparation by default. A composition that can recover from a failed load can
+instead set `failureMode: 'empty-project'` to install an empty project and continue mounting.
 
-The optional `onLoaded()` callback runs after the parsed source has been installed through `loadProject`, including
-when that source is an empty project. `onError(error)` receives the original fetch or parser failure after the empty
-fallback is installed; a failure does not call `onLoaded`. With no URL, neither callback runs. Disposal suppresses both
-notifications for pending requests. Callback errors are not treated as fetch or parser failures.
+Successful source installation, including valid empty source, completes the source preparation hook.
+In reject mode, the original error propagates to the mounting caller before the first frame. Disposal suppresses
+late errors and results for pending requests. Installation errors propagate independently of the selected failure mode.
 
 The plugin contributes ID `project-url` and message `Loading project...` while fetching, parsing, and installing
 source. Success/failure settle its status; disposal cancels pending work. Results remain in state independently of presentation.
@@ -31,4 +31,4 @@ loader does not know about session storage, and the session plugin does not know
 replacement path, which also clears file associations appropriately. Disposal unregisters listeners and prevents a
 pending request from replacing the project after the editor closes.
 
-Run the package's `build`, `test`, `typecheck`, and `test:screenshot` Nx targets to verify it.
+Run the package's `build`, `test`, and `typecheck` Nx targets to verify it.

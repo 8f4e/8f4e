@@ -328,7 +328,6 @@
               "value": "risingEdge",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -388,7 +387,6 @@
               "value": "risingEdge",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -448,7 +446,6 @@
               "value": "risingEdge",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -487,7 +484,6 @@
               "value": "risingEdge",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",
@@ -526,7 +522,6 @@
               "value": "risingEdge",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "previousInt",

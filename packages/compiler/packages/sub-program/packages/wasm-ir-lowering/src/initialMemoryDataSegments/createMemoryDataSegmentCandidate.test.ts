@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import { createMemory, createMemoryDefault, serializeSegments } from '../../tests/initialMemoryDataSegments/testUtils';
+import { createMemory, createMemoryDefault, serializeSegments } from '../../tests/memoryFixtures';
 import createMemoryDataSegmentCandidate from './createMemoryDataSegmentCandidate';
 
 function trackDataViewAllocations() {

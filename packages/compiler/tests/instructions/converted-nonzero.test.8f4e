@@ -1,0 +1,111 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+A nonzero floating-point input
+can become zero during integer
+conversion.
+noteEnd
+
+function convertedDivisor
+#export
+push 10
+push 0.5
+castToInt
+ensureNonZero
+div
+functionEnd int
+
+function convertedDynamicDivisor
+param float value
+push 10
+push value
+ensureNonZero
+castToInt
+ensureNonZero
+div
+functionEnd int
+
+entry test
+module convertedNonzeroAssertions
+call convertedDivisor
+assertEqual 10
+
+push 10
+push -0.5
+castToInt
+ensureNonZero
+div
+assertEqual 10
+
+push 10
+push 2.5
+castToInt
+ensureNonZero
+div
+assertEqual 5
+
+push 10
+push 0.5f64
+castToInt
+ensureNonZero
+div
+assertEqual 10
+
+push 10
+push -0.5f64
+castToInt
+ensureNonZero
+div
+assertEqual 10
+
+push 10
+push -2.5f64
+castToInt
+ensureNonZero
+div
+assertEqual -5
+
+; A nonzero proof without an exact value
+; does not survive truncation either.
+push 0.5
+call convertedDynamicDivisor
+assertEqual 10
+push -0.5
+call convertedDynamicDivisor
+assertEqual 10
+push 2.5
+call convertedDynamicDivisor
+assertEqual 5
+
+; Known NaN also converts to zero.
+push 10
+push 1e40
+push 1e40
+sub
+castToInt
+ensureNonZero
+div
+assertEqual 10
+moduleEnd
+
+module representedFallbackAssertions
+; Fallbacks are represented at the operand's
+; runtime width. These become zero, so the
+; following ensureNonZero must still run.
+push 10
+push 0
+ensureNonZero 4294967296
+ensureNonZero
+div
+assertEqual 10
+
+push 10.0
+push 0.0
+ensureNonZero 1e-50
+ensureNonZero
+div
+assertEqual 10.0
+moduleEnd
+entryEnd

@@ -1,3 +1,4 @@
+import type { ResolvedPalette } from '@8f4e/editor-palette';
 import { createProgram, prepareRenderPass, requireResource, requireUniform } from '@8f4e/web-ui';
 import type { TextureCrop, TextureFormat } from './directive';
 import { createRectangleGeometry, deleteRectangleGeometry, type RectangleGeometry } from './geometry';
@@ -28,6 +29,8 @@ const textureFragmentShaderSource = `#version 300 es
 	uniform sampler2D u_texture;
 	uniform int u_format;
 	uniform vec4 u_sourceRectangle;
+	uniform vec4 u_bitZeroColor;
+	uniform vec4 u_bitOneColor;
 
 	out vec4 outColor;
 
@@ -37,7 +40,7 @@ const textureFragmentShaderSource = `#version 300 es
 		if (u_format == 0) {
 			uint packed = uint(round(texelFetch(u_texture, ivec2(pixel.x / 8, pixel.y), 0).r * 255.0));
 			float value = float((packed >> uint(7 - pixel.x % 8)) & 1u);
-			color = vec4(vec3(value), 1.0);
+			color = mix(u_bitZeroColor, u_bitOneColor, value);
 		} else {
 			color = texelFetch(u_texture, pixel, 0);
 			if (u_format == 1) color = vec4(vec3(color.r), 1.0);
@@ -65,6 +68,8 @@ export class TextureDrawer {
 	private readonly textureLocation: WebGLUniformLocation;
 	private readonly formatLocation: WebGLUniformLocation;
 	private readonly sourceRectangleLocation: WebGLUniformLocation;
+	private readonly bitZeroColorLocation: WebGLUniformLocation;
+	private readonly bitOneColorLocation: WebGLUniformLocation;
 	private readonly textures = new Map<number, TextureStorage>();
 
 	/**
@@ -83,6 +88,8 @@ export class TextureDrawer {
 			this.textureLocation = requireUniform(this.gl, program, 'u_texture');
 			this.formatLocation = requireUniform(this.gl, program, 'u_format');
 			this.sourceRectangleLocation = requireUniform(this.gl, program, 'u_sourceRectangle');
+			this.bitZeroColorLocation = requireUniform(this.gl, program, 'u_bitZeroColor');
+			this.bitOneColorLocation = requireUniform(this.gl, program, 'u_bitOneColor');
 		} catch (error) {
 			if (program) {
 				this.gl.deleteProgram(program);
@@ -127,8 +134,16 @@ export class TextureDrawer {
 		}
 	}
 
-	/** Draws a source texture with nearest sampling and premultiplied-alpha output. */
-	drawTexture(address: number, x: number, y: number, width: number, height: number, crop: TextureCrop): void {
+	/** Draws with nearest sampling and premultiplied alpha; one-bit pixels use surfaceBase and inkBase. */
+	drawTexture(
+		address: number,
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		crop: TextureCrop,
+		palette: ResolvedPalette
+	): void {
 		const gl = this.gl;
 		const source = this.textures.get(address)!;
 		prepareRenderPass(gl, this.program, this.geometry.vertexArray);
@@ -137,6 +152,10 @@ export class TextureDrawer {
 		gl.bindSampler(0, null);
 		gl.uniform1i(this.textureLocation, 0);
 		gl.uniform1i(this.formatLocation, FORMAT_IDS[source.format]);
+		if (source.format === '1bit') {
+			gl.uniform4f(this.bitZeroColorLocation, ...palette.rgba.surfaceBase);
+			gl.uniform4f(this.bitOneColorLocation, ...palette.rgba.inkBase);
+		}
 		gl.uniform4f(this.sourceRectangleLocation, crop.x, crop.y, crop.width, crop.height);
 		gl.uniform2f(this.pixelToClipLocation, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight);
 		gl.uniform4f(this.rectangleLocation, x, y, width, height);

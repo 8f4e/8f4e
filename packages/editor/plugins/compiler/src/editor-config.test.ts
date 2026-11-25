@@ -22,7 +22,7 @@ function setup(installed = true) {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: {} as EditorPluginContext['drawers'],
+				renderRegistry: {} as EditorPluginContext['renderRegistry'],
 			})
 		: () => {};
 	cleanups.push(dispose);
@@ -92,7 +92,7 @@ describe('compiler configuration directives', () => {
 	});
 
 	it('passes project optimization options to the worker and restores defaults when removed', async () => {
-		const { store, events, worker, load } = setup();
+		const { store, worker, load } = setup();
 		load(
 			'0',
 			'; @config compiler.functionInlining.enabled false',
@@ -119,21 +119,19 @@ describe('compiler configuration directives', () => {
 		});
 		worker.emitMessage(createSuccessMessage(new Uint8Array([0]), new WebAssembly.Memory({ initial: 1 })));
 
-		const codeBlock = store.getState().codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
+		const codeBlock = store.getState().project.rootLevel.blocks.find(block => block.blockType === 'note')!;
 		const revision = store.getState().compilerInputRevision;
-		applyCodeBlockSourceEdits(
-			{ store, events },
-			[{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] }],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits(store, [
+			{ codeBlock, code: ['note config', '; @config recompileDebounceDelay 0', 'noteEnd'] },
+		]);
 		expect(store.getState().compilerInputRevision).toBe(revision + 1);
 		await vi.advanceTimersByTimeAsync(0);
 		expect(worker.postedMessages).toHaveLength(2);
 		expect(worker.postedMessages[1]).toHaveProperty('payload.compilerOptions', defaultOptions);
 	});
 
-	it.each([false, true])('announces a config edit once after its diagnostics settle (%s)', affectsCompilation => {
-		const { store, events, load } = setup();
+	it('announces a config edit once after its diagnostics settle', () => {
+		const { store, load } = setup();
 		load(
 			undefined,
 			'; @config compiler.functionInlining.enabled false',
@@ -142,11 +140,9 @@ describe('compiler configuration directives', () => {
 		const state = store.getState();
 		expect(state.codeErrors['editor-directives']).toHaveLength(1);
 		const errorsAtRevision = vi.fn(() => state.codeErrors['editor-directives']);
-		events.on('compilationInputChanged', errorsAtRevision);
-		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.blockType === 'note')!;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: ['note config', 'noteEnd'] }], {
-			affectsCompilation,
-		});
+		store.subscribe('compilerInputRevision', errorsAtRevision);
+		const codeBlock = state.project.rootLevel.blocks.find(block => block.blockType === 'note')!;
+		applyCodeBlockSourceEdits(store, [{ codeBlock, code: ['note config', 'noteEnd'] }]);
 		expect(errorsAtRevision.mock.results.map(result => result.value)).toEqual([[]]);
 	});
 

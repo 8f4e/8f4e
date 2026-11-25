@@ -25,7 +25,6 @@
               "value": "ptr",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "buffer",

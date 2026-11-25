@@ -16,6 +16,7 @@ describe('ifEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 9,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -23,12 +24,8 @@ describe('ifEnd stack analysis', () => {
 			context
 		);
 
-		expect(facts.stackAnalysis.producedStackItems).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(3.5) },
-		]);
-		expect(context.stack).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(3.5) },
-		]);
+		expect(facts.stackAnalysis.producedStackItems).toEqual([{ kind: 'value', valueType: 'float' }]);
+		expect(context.stack).toEqual([{ kind: 'value', valueType: 'float' }]);
 	});
 
 	it('accepts and restores multi-result conditional values in order', () => {
@@ -45,6 +42,7 @@ describe('ifEnd stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -53,20 +51,18 @@ describe('ifEnd stack analysis', () => {
 		);
 
 		expect(facts.stackAnalysis.producedStackItems).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(1.5) },
-			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 4 },
+			{ kind: 'value', valueType: 'float' },
+			{ kind: 'value', valueType: 'int' },
 		]);
 		expect(context.stack).toEqual([
-			{ kind: 'value', valueType: 'float', isNonZero: true, knownValue: Math.fround(1.5) },
-			{ kind: 'value', valueType: 'int', isNonZero: true, knownValue: 4 },
+			{ kind: 'value', valueType: 'float' },
+			{ kind: 'value', valueType: 'int' },
 		]);
 	});
 
 	it.each(['int', 'float64'] as const)('rejects a %s else-branch result when float is expected', valueType => {
 		const context = createStackAnalyzerTestContext({
 			codeBlockId: 'example',
-			codeBlockType: 'module',
-			projectBlockId: 13,
 			stack: [{ kind: 'value', valueType, isNonZero: true }],
 			blockStack: [
 				{ blockType: BlockType.MODULE, expectedResultTypes: [] },
@@ -74,6 +70,7 @@ describe('ifEnd stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 			lineNumber: 9,
 			instruction: 'ifEnd',
 			arguments: [],
@@ -81,12 +78,15 @@ describe('ifEnd stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.ONLY_FLOATS,
-				line,
-				context: expect.objectContaining({
-					codeBlockId: 'example',
-					codeBlockType: 'module',
-					projectBlockId: 13,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.ONLY_FLOATS,
+					symbol: 'example',
+					instruction: line.instruction,
+					location: expect.objectContaining({
+						...line.diagnosticSource,
+						lineNumber: line.lineNumber,
+						projectBlockId: 13,
+					}),
 				}),
 			})
 		);
@@ -106,6 +106,7 @@ describe('ifEnd stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -113,8 +114,11 @@ describe('ifEnd stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}
@@ -134,6 +138,7 @@ describe('ifEnd stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 13, projectGroupPath: '' },
 				lineNumber: 10,
 				instruction: 'ifEnd',
 				arguments: [],
@@ -141,8 +146,11 @@ describe('ifEnd stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}

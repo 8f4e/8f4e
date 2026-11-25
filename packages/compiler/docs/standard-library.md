@@ -11,20 +11,34 @@ Add an `includes` block near the top of the project, after the `8f4e/v1` header 
 8f4e/v1
 
 includes
+include std/audio/biquad
+include std/audio/hzToRadians
+include std/audio/tptLowPass
 include std/math/clamp
 include std/math/exp2
+include std/math/fastSigmoid
 include std/math/fract
 include std/math/lerp
+include std/math/log2
+include std/math/mapRange
 include std/math/moveTowards
 include std/math/normalize
 include std/math/pow2
 include std/math/smoothstep
+include std/math/softsign
+include std/math/wrapIndex
 include std/math/trig/advancePhase
 include std/math/trig/cosine
 include std/math/trig/saw
 include std/math/trig/sine
 include std/math/trig/triangle
+include std/midi/midiNoteToHz
+include std/color/lerpRGB
+include std/color/srgbByteToLinear
+include std/color/linearToSrgbByte
+include std/image/downsampleRGB2x
 include std/bitwise/extractBit
+include std/bitwise/extractBits
 include std/bitwise/extractByte
 include std/bitwise/extractNibble
 include std/events/gateToTrigger
@@ -36,9 +50,15 @@ include std/random/xorshift
 include std/memory/addAt
 include std/memory/advancePointer
 include std/memory/loadAt
+include std/memory/loadRangeAt
+include std/memory/loadBitAt2D
 include std/memory/nearestValue
+include std/memory/queuePush
+include std/memory/queuePop
 include std/memory/readInterpolated
 include std/memory/storeAt
+include std/memory/storeBitAt2D
+include std/memory/storeRGB
 include std/memory/wrapPointer
 include std/stack/dup
 include std/stack/swap
@@ -87,13 +107,23 @@ the include-all form with a renamed selection. Each source is loaded once per re
 shared by all selections. Unselected exports remain private dependencies so calls inside included functions still work.
 
 Composition renames selected function declarations and their include-local call targets after syntax validation.
-Local names use the same overload and duplicate-signature rules as ordinary project functions, including when two exports
-or an included function and a project function share a name. The include resolver does not inspect project declarations
-or allocate alternative names to avoid collisions; ordinary namespace validation handles them.
+Local names use the same overload and signature override rules as ordinary project functions. Included source files follow
+the order of their first include declaration, with functions from each file in source order. A later included definition
+replaces an earlier implementation with the same local name and parameter types. Local project functions take precedence
+over included implementations with matching signatures; other overloads remain available. The include resolver does not
+inspect project declarations or allocate alternative names to avoid collisions.
 
 Includes are resolved during project loading. The CLI loads the shipped standard library files from the installed
 package, while browser-based tools load those same files lazily. The compiler receives the included source as ordinary
 function blocks, so overload resolution, stack typing, and `call` behavior are the same as user-defined functions.
+
+An included library can declare its own `includes` block before its functions. The compiler resolves those imports
+recursively. Each library can call its own functions and the exports it imports directly. To call a dependency from
+your project, include it there as well. Library calls to dependencies use the bindings declared by the library
+even when the project renames or overrides a direct import.
+
+For example, `std/math/fastSigmoid` imports `std/math/softsign` in its source, so a project can include
+`std/math/fastSigmoid` on its own. The compiler reports missing dependencies and cycles at their declaration sites.
 
 ## `std/stack/dup`
 
@@ -189,7 +219,7 @@ sub
 push &buffer
 push count(buffer)
 call wrapPointer
-; stack: buffer&
+; stack: end(buffer)-sizeof(buffer)
 moduleEnd
 entryEnd
 ```
@@ -253,7 +283,96 @@ push &pointer
 push &buffer
 push count(buffer)
 call decrementPointer
-; pointer is buffer&
+; pointer is end(buffer)-sizeof(buffer)
+moduleEnd
+entryEnd
+```
+
+## `std/memory/queuePush`
+
+Provides `queuePush(int** writePointer, int* buffer, int itemCount, int value) -> void` for a zero-marked integer FIFO.
+The buffer starts filled with zeroes, and queued values are nonzero integers. Pass the address of the write cursor,
+the buffer's start address, and its positive element count. Initialize the cursor to the buffer's start.
+
+The helper writes the value and advances the cursor when its slot is empty. If the slot is occupied, it drops the
+new value and leaves the cursor unchanged. Queue state stays in caller-owned memory; the producer owns the write
+cursor and the consumer owns a separate read cursor.
+
+```8f4e
+includes
+include std/memory/queuePush
+includesEnd
+
+entry main
+module producer
+int[] buffer 3
+int* writePointer &buffer
+
+call queuePush &writePointer &buffer count(buffer) 17
+call queuePush &writePointer &buffer count(buffer) 23
+; buffer starts with 17, 23, 0.
+moduleEnd
+entryEnd
+```
+
+## `std/memory/queuePop`
+
+Provides `queuePop(int** readPointer, int* buffer, int itemCount) -> int`, which consumes one word from a zero-marked
+integer FIFO. Initialize the read cursor to the buffer's start and supply its positive element count.
+
+An empty slot returns zero without moving the cursor. Otherwise the helper copies the word, clears its slot,
+advances the cursor, and returns the copied value.
+
+```8f4e
+includes
+include std/memory/queuePop
+includesEnd
+
+entry main
+module consumer
+int[] buffer 3 17 23 0
+int* readPointer &buffer
+
+call queuePop &readPointer &buffer count(buffer)
+; stack: 17
+moduleEnd
+entryEnd
+```
+
+## `std/memory/swapPointers`
+
+Provides `swapPointers`, which exchanges the addresses stored in two pointer variables of the same type.
+
+Available overloads:
+
+- `swapPointers(int** first, int** second) -> void`
+- `swapPointers(int8** first, int8** second) -> void`
+- `swapPointers(int8u** first, int8u** second) -> void`
+- `swapPointers(int16** first, int16** second) -> void`
+- `swapPointers(int16u** first, int16u** second) -> void`
+- `swapPointers(float** first, float** second) -> void`
+- `swapPointers(float64** first, float64** second) -> void`
+
+Pass the addresses of valid, writable pointer variables. The function reads and writes the four-byte pointer slots;
+it does not read or modify the pointed-to data. The slots may be the same, and null pointer values are preserved.
+The first slot is written before the second using ordinary stores; the pair is not an atomic operation.
+
+Examples:
+
+```8f4e
+includes
+include std/memory/swapPointers
+includesEnd
+
+entry main
+module buffers
+int8u[] firstFrame 16
+int8u[] secondFrame 16
+int8u* display &firstFrame
+int8u* drawing &secondFrame
+
+call swapPointers &display &drawing
+; display points to secondFrame; drawing points to firstFrame.
 moduleEnd
 entryEnd
 ```
@@ -339,6 +458,60 @@ push &buffer
 push 2
 call loadAt
 ; stack: 33
+moduleEnd
+entryEnd
+```
+
+## `std/memory/loadRangeAt`
+
+Provides `loadRangeAt(int* offsets, int index) -> int int`, returning the start and length of a range described
+by two adjacent offsets. The start is pushed first, leaving the length on top of the stack.
+
+The result is `offsets[index]` and `offsets[index + 1] - offsets[index]`, in the same units as the supplied offsets.
+Supply a valid adjacent pair. Equal offsets produce a zero-length range.
+
+```8f4e
+includes
+include std/memory/loadRangeAt
+includesEnd
+
+entry main
+module ranges
+int[] offsets 4 0 10 25 25
+
+call loadRangeAt &offsets 1
+; stack: 10, 15
+moduleEnd
+entryEnd
+```
+
+## `std/memory/loadBitAt2D`
+
+Provides `loadBitAt2D`, which reads a pixel from a packed binary grid as `0` or `1`.
+
+Available overloads:
+
+- `loadBitAt2D(int8u* buffer, int width, int height, int x, int y) -> int`
+
+Pixels are stored in the texture runtime's `1bit` layout: the leftmost pixel occupies the most-significant bit of
+each byte, and every row starts on a byte boundary. A row occupies `ceil(width / 8)` bytes; unused bits at its end
+are padding. Coordinates outside the pixel dimensions return zero, including coordinates that fall on padding bits.
+
+Dimensions must be non-negative, and the buffer must hold `ceil(width / 8) * height` bytes. The helper performs
+memory IO and carries `#impure`.
+
+Example:
+
+```8f4e
+includes
+include std/memory/loadBitAt2D
+includesEnd
+
+entry test
+module packedPixelExample
+int8u[] pixels 2 0x80 0x40
+call loadBitAt2D &pixels 10 1 9 0
+; stack: 1
 moduleEnd
 entryEnd
 ```
@@ -466,6 +639,65 @@ moduleEnd
 entryEnd
 ```
 
+## `std/memory/storeBitAt2D`
+
+Provides `storeBitAt2D`, which sets or clears one pixel in a packed binary grid.
+
+Available overloads:
+
+- `storeBitAt2D(int8u* buffer, int width, int height, int x, int y, int value)`
+
+The layout matches `loadBitAt2D`: pixels are MSB first, with `ceil(width / 8)` bytes per row. A zero value clears
+the pixel; any nonzero value sets it. Writes preserve neighboring pixels and unused padding bits. Coordinates
+outside the pixel dimensions do nothing, including coordinates on padding bits.
+
+Dimensions must be non-negative, and the buffer must hold `ceil(width / 8) * height` bytes. The helper performs
+memory IO and carries `#impure`.
+
+Example:
+
+```8f4e
+includes
+include std/memory/storeBitAt2D
+includesEnd
+
+entry test
+module packedPixelExample
+int8u[] pixels 4 0 0x3F 0x80 0x15
+call storeBitAt2D &pixels 10 2 9 0 1
+; pixels[1] is now 0x7F; padding is preserved.
+call storeBitAt2D &pixels 10 2 0 1 0
+; pixels[2] is now zero.
+moduleEnd
+entryEnd
+```
+
+## `std/memory/storeRGB`
+
+Provides `storeRGB`, which writes a packed `0xRRGGBB` integer into three consecutive unsigned-byte elements.
+
+Available overloads:
+
+- `storeRGB(int8u* pixel, int color) -> void`
+
+The destination must have at least three writable bytes and may have any byte alignment. The function writes red,
+green, then blue using ordinary byte stores, ignores the color's high eight bits, and leaves every other byte and
+the supplied pointer variable unchanged. It carries `#impure`.
+
+```8f4e
+includes
+include std/memory/storeRGB
+includesEnd
+
+entry main
+module pixelExample
+int8u[] pixel 3
+call storeRGB &pixel 0x123456
+; pixel contains 0x12, 0x34, 0x56.
+moduleEnd
+entryEnd
+```
+
 ## `std/math/clamp`
 
 Provides `clamp`, which constrains a value to an inclusive minimum and maximum.
@@ -499,15 +731,52 @@ moduleEnd
 entryEnd
 ```
 
+## `std/math/log2`
+
+Provides `log2`, an approximation of the base-two logarithm for finite, strictly positive inputs.
+
+Available overloads:
+
+- `log2(float value) -> float`
+- `log2(float64 value) -> float64`
+
+Both overloads support their full positive finite range, including subnormal values. Callers must exclude zero,
+negative values, infinities, and NaN. The result is exact for representable powers of two. Range reduction normalizes
+the input to `[1, 2)`, followed by a truncated odd-power logarithm series.
+
+Numerical regression tests cover every representable power of two, four mantissa samples at each exponent, and
+8,193 evenly spaced inputs in `[1, 2]`. On those samples, the absolute error is below `1e-5` for `float` and `1.6e-10`
+for `float64`, with a monotonic result across the dense mantissa grid. These are tested approximation bounds, not a
+correct-rounding guarantee for every input.
+
+```8f4e
+includes
+include std/math/log2
+includesEnd
+
+entry main
+module logarithmExamples
+call log2 8.0
+; stack: 3.0
+call log2 0.5f64
+; stack: -1.0f64
+moduleEnd
+entryEnd
+```
+
 ## `std/math/fract`
 
-Provides `fract`, which returns the fractional part of a float by subtracting its integer-truncated value.
+Provides `fract`, which returns the signed fractional part by subtracting the value truncated toward zero.
 
 Available overloads:
 
 - `fract(float value) -> float`
+- `fract(float64 value) -> float64`
 
-This helper is intended for positive values, such as fractional sample offsets. For negative inputs, the result follows integer truncation rather than positive modulo wrapping.
+Inputs must be finite. For example, `3.25` returns `0.25`, while `-3.25` returns `-0.25`; this is truncation toward zero
+rather than positive modulo wrapping. The `float` overload converts the integer part through a signed 32-bit integer,
+so that part must fit in `int`. The `float64` overload uses floating-point rounding and accepts the full finite double
+range, including large integral values and subnormal fractions.
 
 Examples:
 
@@ -527,11 +796,12 @@ entryEnd
 
 ## `std/math/lerp`
 
-Provides `lerp`, which linearly interpolates between two float values.
+Provides `lerp`, which linearly interpolates between two values at the supplied floating-point precision.
 
 Available overloads:
 
 - `lerp(float start, float end, float amount) -> float`
+- `lerp(float64 start, float64 end, float64 amount) -> float64`
 
 Examples:
 
@@ -550,6 +820,33 @@ call lerp
 moduleEnd
 entryEnd
 ```
+
+## `std/math/mapRange`
+
+Provides `mapRange(float value, float inputStart, float inputEnd, float outputStart, float outputEnd) -> float`.
+It maps the input endpoints to the output endpoints using linear interpolation. Either range may descend,
+and values outside the input range are extrapolated. Supply finite values and distinct input endpoints, and
+keep intermediate results within the float32 range.
+
+```8f4e
+includes
+include std/math/mapRange
+includesEnd
+
+entry main
+module rangeExample
+call mapRange 0.5 -1.0 1.0 0.0 100.0
+; stack: 75.0
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/math/wrapIndex`
+
+Provides `wrapIndex(int index, int size) -> int`. For a positive `size`, the result is the index modulo
+that size, expressed in `0..size-1`. It accepts negative indices and indices more than one full turn away.
+For example, `call wrapIndex -1 8` returns `7`, and `call wrapIndex 19 8` returns `3`.
 
 ## `std/math/moveTowards`
 
@@ -668,14 +965,16 @@ entryEnd
 
 ## `std/math/smoothstep`
 
-Provides `smoothstep`, which maps a float amount to a cubic eased curve. It is commonly used for fades and modulation
+Provides `smoothstep`, which maps a floating-point amount to a cubic eased curve. It is commonly used for fades and modulation
 shaping.
 
 Available overloads:
 
 - `smoothstep(float amount) -> float`
+- `smoothstep(float64 amount) -> float64`
 
-The usual input range is `0..1`, where `0` returns `0`, `0.5` returns `0.5`, and `1` returns `1`.
+The usual input range is `0..1`, where `0` returns `0`, `0.5` returns `0.5`, and `1` returns `1`. Both overloads evaluate
+`amount * amount * (3 - 2 * amount)` directly without clamping.
 
 Examples:
 
@@ -689,6 +988,176 @@ module smoothstepExamples
 push 0.5
 call smoothstep
 ; stack: 0.5
+moduleEnd
+entryEnd
+```
+
+## `std/math/softsign`
+
+Provides `softsign(x) = x / (1 + abs(x))` for finite inputs, with `float` and `float64` overloads.
+It returns a value in `[-1, 1]` at the input precision. For example, `call softsign -3.0` returns `-0.75`.
+
+## `std/math/fastSigmoid`
+
+Provides `fastSigmoid(x) = 0.5 * softsign(x) + 0.5` for finite inputs, with `float` and `float64` overloads.
+It maps softsign to `[0, 1]`.
+
+```8f4e
+includes
+include std/math/fastSigmoid
+includesEnd
+
+entry main
+module activationExample
+call fastSigmoid -3.0f64
+; stack: 0.125f64
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/midi/midiNoteToHz`
+
+Provides `midiNoteToHz(int note) -> float` and `midiNoteToHz(float note) -> float`. For MIDI notes from
+`0` to `127`, it computes `440 * 2^((note - 69) / 12)` with float32 arithmetic. Pass a float for
+fractional notes.
+
+```8f4e
+includes
+include std/midi/midiNoteToHz
+includesEnd
+
+entry main
+module tuningExample
+call midiNoteToHz 69
+; stack: 440.0 Hz
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/audio/hzToRadians`
+
+Provides the pure conversion `hzToRadians(float frequencyHz, int sampleRate) -> float`, returning
+`TAU * frequencyHz / sampleRate` in radians per sample with float32 arithmetic. Supply a finite frequency and a
+positive sample rate. Signed frequencies are supported; the helper does not clamp to the audio frequency range
+and has no dependency on an `env` constants block.
+
+```8f4e
+includes
+include std/audio/hzToRadians
+includesEnd
+
+entry main
+module frequencyConversion
+call hzToRadians 1000.0 48000
+; stack: approximately 0.1308997 radians/sample
+drop
+moduleEnd
+entryEnd
+```
+
+## `std/audio/tptLowPass`
+
+Provides a pure, single-sample trapezoidal state-variable low-pass filter:
+
+`tptLowPass(float input, float g, float damping, float s1, float s2) -> float low, float nextS1, float nextS2`
+
+The caller owns the two integrator states. Initialize `s1` and `s2` to zero once, pass the current states on each
+sample, and persist the returned next states for the next call. Results are pushed in the listed order, leaving
+`nextS2` at the top of the stack. The function performs no memory IO and uses locals for reused intermediate values.
+
+Supply finite arguments with `g >= 0` and `damping > 0`, keeping intermediate arithmetic within the float32 range.
+The frequency coefficient is
+`g = tan(PI * cutoffHz / sampleRate)`, with cutoff below half the sample rate. This helper takes `g` directly and
+has no prerequisite includes. Lower damping gives more resonance; the corresponding quality factor is
+`q = 1 / damping`. With `g = 0`, the output is the existing low-pass state `s2` and the states stay unchanged.
+The equations follow [Andrew Simper's trapezoidal SVF](https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf).
+
+```8f4e
+includes
+include std/audio/tptLowPass
+includesEnd
+
+entry main
+module lowPass
+float input
+float g 0.1
+float damping 1.0
+float s1
+float s2
+float out
+local float nextS1
+local float nextS2
+
+push &out
+call tptLowPass input g damping s1 s2
+localSet nextS2
+localSet nextS1
+store
+
+push &s1
+push nextS1
+store
+push &s2
+push nextS2
+store
+moduleEnd
+entryEnd
+```
+
+## `std/audio/biquad`
+
+Provides a pure Direct Form I processor for one biquad sample:
+
+`biquad(float input, float b0, float b1, float b2, float a1, float a2, float x1, float x2, float y1, float y2) -> float`
+
+Coefficients must be normalized so `a0 = 1`. If a design supplies a different `a0`, divide each of `b0`, `b1`, `b2`,
+`a1`, and `a2` by it before calling. The helper evaluates:
+
+```text
+output = b0*input + b1*x1 + b2*x2 - a1*y1 - a2*y2
+```
+
+`x1` and `x2` are the previous two inputs; `y1` and `y2` are the previous two outputs. Initialize histories to zero
+once, and advance them after each call. The helper returns only the output, performs no memory IO, and retains no
+history internally. Arguments and intermediate arithmetic must stay finite. Response and stability are determined
+by the caller's coefficients. The subtraction of feedback terms follows the
+[Audio EQ Cookbook convention](https://www.w3.org/TR/audio-eq-cookbook/).
+
+The same processor supports low-pass, high-pass, band-pass, notch, and EQ designs. It does not calculate
+frequency-dependent coefficients or require any other includes. This example uses a three-tap FIR average:
+
+```8f4e
+includes
+include std/audio/biquad
+includesEnd
+
+entry main
+module movingAverage
+float input
+float x1
+float x2
+float y1
+float y2
+float out
+
+push &out
+call biquad input 0.25 0.5 0.25 0.0 0.0 x1 x2 y1 y2
+store
+
+push &x2
+push x1
+store
+push &x1
+push input
+store
+push &y2
+push y1
+store
+push &y1
+push out
+store
 moduleEnd
 entryEnd
 ```
@@ -761,7 +1230,7 @@ Available overloads:
 
 - `cosine(float x) -> float`
 
-`cosine` uses a self-contained 6th-order Taylor polynomial with folding to `[-PI/2, PI/2]`. Standard library files are independent include units, so this helper does not call `sine`.
+`cosine` uses a self-contained 6th-order Taylor polynomial with folding to `[-PI/2, PI/2]`. Include sources are resolved independently, so this helper does not require `sine`.
 
 Examples:
 
@@ -827,6 +1296,113 @@ moduleEnd
 entryEnd
 ```
 
+## `std/color/lerpRGB`
+
+Provides `lerpRGB`, which interpolates the channels of two packed `0xRRGGBB` colors and returns a packed color.
+
+Available overloads:
+
+- `lerpRGB(int start, int end, float amount) -> int`
+- `lerpRGB(int start, int end, float64 amount) -> int`
+
+The interpolation amount must be finite and in `0..1`. An amount of zero returns the start color, and one returns
+the end color. Only the low 24 bits of each color are used; the returned high byte is zero. Interpolation operates
+directly on the stored RGB channel values at the amount's floating-point precision. Each channel is rounded to the
+nearest integer, with halfway values rounded to even. The function is pure.
+
+```8f4e
+includes
+include std/color/lerpRGB
+includesEnd
+
+entry main
+module colorExample
+call lerpRGB 0xff0000 0x0000ff 0.5f64
+; stack: 0x800080
+moduleEnd
+entryEnd
+```
+
+## `std/color/srgbByteToLinear`
+
+Provides `srgbByteToLinear(int channel) -> float`, which decodes an sRGB channel byte into linear light.
+
+The channel must be in `0..255`. The pure function divides by 255, then applies the sRGB transfer function:
+`encoded / 12.92` at or below `0.04045`, otherwise `((encoded + 0.055) / 1.055)^2.4`.
+The result is in `0..1`. The nonlinear branch uses the standard-library logarithm and exponential approximations.
+Across all 256 byte inputs, tests require absolute error below `1e-6` against the reference formula and monotonic output.
+
+```8f4e
+includes
+include std/color/srgbByteToLinear
+includesEnd
+
+; Inside a module or function:
+call srgbByteToLinear 128
+; stack: about 0.21586
+```
+
+## `std/color/linearToSrgbByte`
+
+Provides `linearToSrgbByte(float linear) -> int`, which encodes linear light as an sRGB channel byte.
+
+Supply a finite float. The pure function clamps it to `0..1`, then applies the sRGB transfer function:
+`linear * 12.92` at or below `0.0031308`, otherwise `1.055 * linear^(1/2.4) - 0.055`.
+The encoded value is scaled to `0..255`, clamped, and rounded to the nearest integer, with halfway values rounded to even.
+The nonlinear branch uses logarithm and exponential approximations. A monotonic sweep of 65,537 evenly spaced linear
+inputs is tested within one byte level of the reference formula; all 256 decoded sRGB bytes round-trip exactly.
+
+```8f4e
+includes
+include std/color/linearToSrgbByte
+includesEnd
+
+; Inside a module or function:
+call linearToSrgbByte 0.5
+; stack: 188
+```
+
+## `std/image/downsampleRGB2x`
+
+Provides a linear-light 2x2 downsampler for interleaved sRGB byte buffers:
+
+```8f4e
+downsampleRGB2x(int8u* source, int8u* destination,
+                int outputWidth, int outputHeight,
+                int sourceStride, int destinationStride, float amount)
+```
+
+`outputWidth` and `outputHeight` are non-negative output dimensions in pixels. The source contains
+`2 * outputWidth` by `2 * outputHeight` pixels, each stored as consecutive R, G, B bytes. Both strides are in bytes
+and may include row padding independently: `sourceStride >= 6 * outputWidth` and
+`destinationStride >= 3 * outputWidth`. Buffers may start at any byte alignment.
+
+The finite `amount` must be in `0..1`. Zero copies the top-left sample of each 2x2 block. One decodes all four samples,
+averages their channels in linear light, and encodes the result back to sRGB. Intermediate values blend from the
+top-left sample toward that average in linear light. The destination always has half the source width and height.
+
+Supply non-overlapping buffers with enough storage. For nonzero dimensions, the source needs at least
+`(2 * outputHeight - 1) * sourceStride + 6 * outputWidth` bytes, and the destination needs at least
+`(outputHeight - 1) * destinationStride + 3 * outputWidth` bytes. Dimensions, strides, and computed offsets must fit
+signed 32-bit integers, and the resulting addresses must be valid. A zero `outputWidth` or `outputHeight` performs
+no reads or writes.
+The helper carries `#impure`; it preserves source bytes, destination padding, and all bytes outside the output pixels.
+
+```8f4e
+includes
+include std/image/downsampleRGB2x
+includesEnd
+
+entry main
+module downsampleExample
+int8u[] samples 12 255 0 0 0 255 0 0 0 255 255 255 255
+int8u[] output 3
+call downsampleRGB2x &samples &output 1 1 6 3 1.0
+; output: 188, 188, 188
+moduleEnd
+entryEnd
+```
+
 ## `std/bitwise/extractBit`
 
 Provides `extractBit`, which extracts one bit from a 32-bit integer.
@@ -850,6 +1426,33 @@ push 0b10100100
 push 2
 call extractBit
 ; stack: 1
+moduleEnd
+entryEnd
+```
+
+## `std/bitwise/extractBits`
+
+Provides `extractBits`, which extracts a bit field from a 32-bit integer into the low bits of the result.
+
+Available overloads:
+
+- `extractBits(int word, int offset, int count) -> int`
+
+Offsets count from the least-significant bit. Callers provide `0 <= count <= 32` and `0 <= offset <= 32 - count`.
+A count of zero returns zero, and a count of 32 returns the original word with its signed integer representation.
+Narrower fields are extracted with an unsigned shift and return non-negative integers. The helper is pure.
+
+Example:
+
+```8f4e
+includes
+include std/bitwise/extractBits
+includesEnd
+
+entry test
+module extractBitsExample
+call extractBits 0x89ABCDEF 4 12
+; stack: 0xCDE
 moduleEnd
 entryEnd
 ```

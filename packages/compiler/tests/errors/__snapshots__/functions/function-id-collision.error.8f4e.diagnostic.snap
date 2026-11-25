@@ -1,0 +1,13 @@
+{
+  "code": 66,
+  "domain": "semantic",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 0,
+    "projectBlockId": 9,
+    "projectGroupPath": "",
+  },
+  "message": "Generated function ID collision: selected__int__float. Rename one of the conflicting functions. (66)",
+}

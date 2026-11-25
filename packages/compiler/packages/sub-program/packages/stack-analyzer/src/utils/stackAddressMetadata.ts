@@ -23,7 +23,7 @@ function shiftSafeRange(safeRange: MemoryAddressRange, byteOffset: number): Memo
 export function deriveAddStackMetadata(operand1: StackItem, operand2: StackItem): Partial<StackItem> {
 	const knownValue =
 		operand1.knownValue !== undefined && operand2.knownValue !== undefined
-			? operand1.knownValue + operand2.knownValue
+			? (operand1.knownValue + operand2.knownValue) | 0
 			: undefined;
 	const addressOperand = operand1.kind === 'address' ? operand1 : operand2.kind === 'address' ? operand2 : undefined;
 	const offsetOperand = addressOperand === operand1 ? operand2 : operand1;
@@ -60,7 +60,7 @@ export function deriveAddStackMetadata(operand1: StackItem, operand2: StackItem)
 export function deriveSubStackMetadata(operand1: StackItem, operand2: StackItem): Partial<StackItem> {
 	const knownValue =
 		operand1.knownValue !== undefined && operand2.knownValue !== undefined
-			? operand1.knownValue - operand2.knownValue
+			? (operand1.knownValue - operand2.knownValue) | 0
 			: undefined;
 	const addressOperand = operand1.kind === 'address' && operand2.kind !== 'address' ? operand1 : undefined;
 	const safeRange =

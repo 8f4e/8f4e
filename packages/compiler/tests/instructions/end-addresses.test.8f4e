@@ -1,0 +1,61 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+end() is an exclusive typed boundary, including for empty and padded allocations.
+noteEnd
+
+entry test
+module source
+int8[] bytes 3 11 22 33
+int16[] words 3 1 2 3
+float[] samples 4 0.1 0.2 0.3 0.5
+float64[] precise 2 1.0f64 2.0f64
+int8u[] empty 0
+int tail 9
+
+push end(bytes)
+push &bytes
+sub
+assertEqual 3
+push end(words)
+push &words
+sub
+assertEqual 6
+push end(samples)
+push &samples
+sub
+assertEqual 16
+push end(precise)
+push &precise
+sub
+assertEqual 16
+push end(empty)
+assertEqual &empty
+push end(this)
+push &this
+sub
+push 0
+greaterThan
+assert
+moduleEnd
+module consumer
+float& connected &source:samples
+int8& narrow &source:bytes
+float* bound end(*connected)
+float* last end(*connected)-4
+
+push bound
+assertEqual end(source:samples)
+push end(*narrow)
+assertEqual end(source:bytes)
+push *last
+assertEqual 0.5
+push end(source:0)
+assertEqual end(source:bytes)
+push end(source:)
+push &source:
+sub
+assertEqual 48
+moduleEnd
+entryEnd

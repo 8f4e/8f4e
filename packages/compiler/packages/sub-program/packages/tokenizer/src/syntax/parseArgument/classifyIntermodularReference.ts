@@ -12,10 +12,6 @@ export function classifyIntermodularReference(value: string): ArgumentIdentifier
 		return classifyStartAddressIntermodularReference(value);
 	}
 
-	if (value.endsWith('&')) {
-		return classifyEndAddressIntermodularReference(value);
-	}
-
 	return null;
 }
 
@@ -38,7 +34,6 @@ function classifyStartAddressIntermodularReference(value: string): ArgumentIdent
 			referenceKind: 'intermodular-module-reference',
 			scope: 'intermodule',
 			targetModuleId,
-			isEndAddress: false,
 		};
 	}
 
@@ -64,45 +59,6 @@ function classifyStartAddressIntermodularReference(value: string): ArgumentIdent
 		scope: 'intermodule',
 		targetModuleId,
 		targetMemoryId,
-		isEndAddress: false,
-	};
-}
-
-function classifyEndAddressIntermodularReference(value: string): ArgumentIdentifier | null {
-	const colonIndex = value.indexOf(':');
-	if (colonIndex === -1 || value.indexOf(':', colonIndex + 1) !== -1) {
-		return null;
-	}
-
-	const targetModuleId = value.slice(0, colonIndex);
-	if (!isValidModuleReferenceName(targetModuleId)) {
-		return null;
-	}
-
-	const targetMemoryId = value.slice(colonIndex + 1, -1);
-	if (targetMemoryId.length === 0) {
-		return {
-			type: ArgumentType.IDENTIFIER,
-			value,
-			referenceKind: 'intermodular-module-reference',
-			scope: 'intermodule',
-			targetModuleId,
-			isEndAddress: true,
-		};
-	}
-
-	if (!isValidModuleReferenceName(targetMemoryId)) {
-		return null;
-	}
-
-	return {
-		type: ArgumentType.IDENTIFIER,
-		value,
-		referenceKind: 'intermodular-reference',
-		scope: 'intermodule',
-		targetModuleId,
-		targetMemoryId,
-		isEndAddress: true,
 	};
 }
 
@@ -113,7 +69,7 @@ function isValidModuleReferenceName(value: string): boolean {
 
 	for (let index = 0; index < value.length; index++) {
 		const char = value[index];
-		if (char === '&' || char === ':' || char === '.' || char.trim() === '') {
+		if (char === '&' || char === ':' || char === '.' || char === '(' || char === ')' || char.trim() === '') {
 			return false;
 		}
 	}

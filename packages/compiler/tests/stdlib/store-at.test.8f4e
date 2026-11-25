@@ -41,4 +41,27 @@ add
 load
 assertEqual 44
 moduleEnd
+module storeAtByteAssertions
+int8u[] buffer 4 11 22 33 44
+
+call storeAt &buffer 1 511
+push &buffer
+load8u
+assertEqual 11
+push &buffer
+push 1
+add
+load8u
+assertEqual 255
+push &buffer
+push 2
+add
+load8u
+assertEqual 33
+push &buffer
+push 3
+add
+load8u
+assertEqual 44
+moduleEnd
 entryEnd

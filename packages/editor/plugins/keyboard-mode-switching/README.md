@@ -4,8 +4,8 @@
 The browser host supplies its canvas; the shared plugin context remains browser independent.
 
 Own `e` to enter editing, Escape to return to viewing, and their mode hint. Installing this plugin enables its bindings and hint.
-The hint uses `drawers.registerCanvasOverlay` in viewport coordinates. Core renders these overlays after menus and
-before dialogs; `canvasOverlays` controls their visibility, including during screenshot capture.
+The hint uses `renderRegistry.registerCanvasOverlay` in viewport coordinates. Core renders these overlays before context
+menus and dialogs; `canvasOverlays` controls their visibility, including during screenshot capture.
 
 Omit the plugin to disable its bindings and hint. There is no mode-switching
 feature flag in core or a runtime enable switch inside this plugin.

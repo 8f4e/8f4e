@@ -1,7 +1,7 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState from '@8f4e/editor-state';
 import { createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createKeyboardMemoryPlugin } from './index';
 
@@ -53,7 +53,7 @@ entryEnd`
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	const prefix = exposed ? 'keyboard' : 'keys';
 	store.set('editorConfig.keyboard', { keyCodeMemory: `${prefix}:code`, keyPressedMemory: `${prefix}:pressed` });
@@ -155,7 +155,7 @@ int code
 int pressed
 moduleEnd
 entryEnd`);
-		editor.store.set('initialProjectState', project);
+		editor.store.projectTransactions.load(project);
 		expect(editor.store.getState().editorConfig.keyboard).toEqual({
 			keyCodeMemory: 'keys:code',
 			keyPressedMemory: 'keys:pressed',

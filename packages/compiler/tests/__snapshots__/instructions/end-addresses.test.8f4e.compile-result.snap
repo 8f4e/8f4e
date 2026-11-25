@@ -1,0 +1,814 @@
+{
+  "functionAst": {},
+  "functionOverview": {},
+  "moduleAst": {
+    "consumer": {
+      "id": "consumer",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "consumer",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "connected",
+            },
+            {
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "samples",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:samples",
+            },
+          ],
+          "instruction": "float&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "narrow",
+            },
+            {
+              "referenceKind": "intermodular-reference",
+              "scope": "intermodule",
+              "targetMemoryId": "bytes",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:bytes",
+            },
+          ],
+          "instruction": "int8&",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bound",
+            },
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "connected",
+              "type": "identifier",
+              "value": "end(*connected)",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "last",
+            },
+            {
+              "left": {
+                "referenceKind": "end-address",
+                "scope": "local",
+                "targetKind": "pointee",
+                "targetMemoryId": "connected",
+                "type": "identifier",
+                "value": "end(*connected)",
+              },
+              "operator": "-",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 4,
+              },
+              "type": "compile_time_expression",
+            },
+          ],
+          "instruction": "float*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bound",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "samples",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "end(source:samples)",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "narrow",
+              "type": "identifier",
+              "value": "end(*narrow)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "bytes",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "end(source:bytes)",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 1,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "last",
+              "type": "identifier",
+              "value": "*last",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.5,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "indexed-memory",
+              "targetMemoryIndex": 0,
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "end(source:0)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "bytes",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "end(source:bytes)",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "module",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "end(source:)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "intermodular-module-reference",
+              "scope": "intermodule",
+              "targetModuleId": "source",
+              "type": "identifier",
+              "value": "&source:",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 48,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "source": {
+      "id": "source",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "source",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "bytes",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 11,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 22,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 33,
+            },
+          ],
+          "instruction": "int8[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "words",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "int16[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "samples",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 4,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.1,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.2,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.3,
+            },
+            {
+              "isInteger": false,
+              "type": "literal",
+              "value": 0.5,
+            },
+          ],
+          "instruction": "float[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "precise",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 2,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 1,
+            },
+            {
+              "isFloat64": true,
+              "isInteger": false,
+              "type": "literal",
+              "value": 2,
+            },
+          ],
+          "instruction": "float64[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "empty",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "int8u[]",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "tail",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 9,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "bytes",
+              "type": "identifier",
+              "value": "end(bytes)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "bytes",
+              "type": "identifier",
+              "value": "&bytes",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 3,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "words",
+              "type": "identifier",
+              "value": "end(words)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "words",
+              "type": "identifier",
+              "value": "&words",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 6,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "samples",
+              "type": "identifier",
+              "value": "end(samples)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "samples",
+              "type": "identifier",
+              "value": "&samples",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "precise",
+              "type": "identifier",
+              "value": "end(precise)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "precise",
+              "type": "identifier",
+              "value": "&precise",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 16,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "end(empty)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "empty",
+              "type": "identifier",
+              "value": "&empty",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "this",
+              "type": "identifier",
+              "value": "end(this)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "this",
+              "type": "identifier",
+              "value": "&this",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "sub",
+        },
+        {
+          "arguments": [
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 0,
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [],
+          "instruction": "greaterThan",
+        },
+        {
+          "arguments": [],
+          "instruction": "assert",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "consumer": {
+      "memory": {
+        "bound": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 40,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+        "last": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 36,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "float",
+          "pointerDepth": 1,
+          "type": "float*",
+        },
+      },
+    },
+    "source": {
+      "memory": {
+        "bytes": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": {
+            "0": 11,
+            "1": 22,
+            "2": 33,
+          },
+          "elementWordSize": 1,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 3,
+          "pointerDepth": 0,
+          "type": "int8",
+        },
+        "empty": {
+          "allocationUnitAddress": 14,
+          "allocationUnitCount": 0,
+          "byteAddress": 56,
+          "default": {},
+          "elementWordSize": 1,
+          "id": 4,
+          "isInteger": true,
+          "isUnsigned": true,
+          "numberOfElements": 0,
+          "pointerDepth": 0,
+          "type": "int8u",
+        },
+        "precise": {
+          "allocationUnitAddress": 10,
+          "allocationUnitCount": 4,
+          "byteAddress": 40,
+          "default": {
+            "0": 1,
+            "1": 2,
+          },
+          "elementWordSize": 8,
+          "hasExplicitDefault": true,
+          "id": 3,
+          "isFloat64": true,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 2,
+          "pointerDepth": 0,
+          "type": "float64",
+        },
+        "samples": {
+          "allocationUnitAddress": 6,
+          "allocationUnitCount": 4,
+          "byteAddress": 24,
+          "default": {
+            "0": 0.1,
+            "1": 0.2,
+            "2": 0.3,
+            "3": 0.5,
+          },
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 2,
+          "isInteger": false,
+          "isUnsigned": false,
+          "numberOfElements": 4,
+          "pointerDepth": 0,
+          "type": "float",
+        },
+        "tail": {
+          "allocationUnitAddress": 14,
+          "allocationUnitCount": 1,
+          "byteAddress": 56,
+          "default": 9,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "words": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 2,
+          "byteAddress": 16,
+          "default": {
+            "0": 1,
+            "1": 2,
+            "2": 3,
+          },
+          "elementWordSize": 2,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 3,
+          "pointerDepth": 0,
+          "type": "int16",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [],
+    "compiledModules": [
+      "consumer",
+      "source",
+    ],
+    "requiredMemoryBytes": 60,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

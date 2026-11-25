@@ -42,19 +42,19 @@ noteEnd
 
 note colors
 ; @pos -141 -54
-; @config color.canvas #16130f
-; @config color.surface #c8b99f
-; @config color.ink #211c17
-; @config color.primary #7b281f
-; @config color.secondary #683b13
-; @config color.positive #588b5c
-; @config color.warning #e5a94e
-; @config color.negative #c54d43
-; @config color.muted #51483d
-; @config color.stroke rgba(240,162,74,0.34)
-; @config color.tertiary #4b4339
-; @config color.highlight #f0a24a
-; @config color.detail #b45032
+; @config color.canvas #898c83
+; @config color.surface #9c9f95
+; @config color.ink #202620
+; @config color.primary #591b26
+; @config color.secondary #08314f
+; @config color.positive #2d5638
+; @config color.warning #efa54d
+; @config color.negative #85282d
+; @config color.muted #29342c
+; @config color.stroke rgba(25,36,31,0.82)
+; @config color.tertiary #2b352d
+; @config color.highlight #85d5bd
+; @config color.detail #34495b
 noteEnd
 
 note
@@ -99,8 +99,8 @@ store
 ; Reset playhead
 ; when reaches buffer end
 push playhead
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &playhead
 push &buffer
@@ -137,8 +137,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

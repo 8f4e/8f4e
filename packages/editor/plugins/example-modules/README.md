@@ -16,12 +16,14 @@ build this map with `@8f4e/vite-plugin-sources`.
 
 The `./catalog` subpath exports `createModuleCatalog`, and `./public-block` exports the default `extractPublicBlockFromModuleSource` helper. Other consumers, including the WebMCP package's content build, can reuse these pure operations without installing the editor plugin.
 
-Each source is a canonical `8f4e/v1` example file with a public module, function, constants, prototype, or note block marked
+Each source is a canonical `8f4e/v1` example file with a public module, function, constants, or note block marked
 with `; @public`. Test-entry modules are excluded from selection, and the public marker is removed before insertion.
 Sources without an eligible public block fail with an error explaining the required `; @public` marker.
 The plugin reads `use` dependencies that match catalog slugs and inserts missing blocks to the right, skipping
 blocks of the same name and type already in the current project slice. Dependency discovery covers the requested
-file's direct dependencies. Core owns ordinary block creation, entry assignment, and persistence.
+file's direct dependencies. Core owns ordinary block creation, entry assignment, and persistence. The insertion
+helper returns each created block after layout settles; dependency placement uses that block's width, including
+contributed minimum widths.
 Color scheme presets use named public notes so palette configuration adds no executable modules.
 
 The plugin registers its complete submenu through `menus.registerMenu` and contributes its opening item through

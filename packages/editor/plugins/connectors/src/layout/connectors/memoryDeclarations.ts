@@ -5,5 +5,5 @@ export function isInputMemoryDeclaration(memory: PlannedMemoryDeclaration): bool
 }
 
 export function isOutputMemoryDeclaration(memory: PlannedMemoryDeclaration): boolean {
-	return memory.pointerDepth === 0 && !memory.name?.startsWith('_');
+	return memory.pointerDepth > 0 || !memory.name?.startsWith('_');
 }

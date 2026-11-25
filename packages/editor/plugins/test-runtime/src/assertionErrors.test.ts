@@ -16,7 +16,7 @@ describe('assertion errors', () => {
 			lineNumber: 2,
 		};
 		const failure = { site, passed: false, expected: 9, received: 10, assertIndex: 0 };
-		state.codeBlockRendering.rootProject.blocks = [
+		state.project.rootLevel.blocks = [
 			createMockCodeBlock({ creationIndex: 7 }),
 			createMockCodeBlock({ creationIndex: 8, disabled: true }),
 		];
@@ -31,7 +31,7 @@ describe('assertion errors', () => {
 			{ ...failure, site: { ...site, siteId: 2, projectBlockId: 8 } },
 			{ ...failure, site: { ...site, siteId: 3, projectBlockId: undefined } },
 		];
-		expect(assertionErrors(assertions, state.codeBlockRendering.rootProject)).toEqual([
+		expect(assertionErrors(assertions, state.project.rootLevel)).toEqual([
 			{ codeBlockId: 7, lineNumber: 2, message: 'Assertion failed: expected 9, received 10' },
 		]);
 	});

@@ -31,18 +31,16 @@ function lowerBody(
 	resolved: FunctionSemanticReferences | ModuleSemanticReferences,
 	facts: readonly StackAnalysisLineFacts[],
 	enableMemoryGuards: boolean,
+	minimumMemoryBytes: number,
 	assertions?: AssertionCodegenSites
 ): WasmIRBody {
-	const { ast, bindings, body } = resolved;
+	const { bindings, body } = resolved;
 	const blockType = 'metadata' in resolved ? BlockType.FUNCTION : BlockType.MODULE;
 	const context = createCodegenContext(
 		{
 			blockStack: [{ blockType, expectedResultTypes: [] }],
-			codeBlockType: ast.type,
-			codeBlockId: 'metadata' in resolved ? resolved.metadata.name : resolved.ast.id,
-			projectBlockId: ast.projectBlockId,
-			source: ast.source,
 			enableMemoryGuards,
+			minimumMemoryBytes,
 		},
 		bindings
 	);
@@ -89,6 +87,8 @@ export function lowerToWasmIR({
 	assertionCalls,
 	assertionImports = [],
 }: LowerModuleInput): WasmIR {
+	const pages = Math.max(1, Math.ceil(requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE));
+	const minimumMemoryBytes = pages * WASM_MEMORY_PAGE_SIZE;
 	const functions = new Map<string, WasmIRFunction>();
 	const exports = new Map<string, string>();
 	const dataSegments = new Map<string, Uint8Array>();
@@ -138,6 +138,7 @@ export function lowerToWasmIR({
 							resolved,
 							stackReport.functions[id].operationFacts,
 							enableMemoryGuards,
+							minimumMemoryBytes,
 							assertionCalls?.get(ast)
 						),
 					}
@@ -155,12 +156,12 @@ export function lowerToWasmIR({
 				resolved,
 				stackReport.modules[id].operationFacts,
 				enableMemoryGuards,
+				minimumMemoryBytes,
 				assertionCalls?.get(resolved.ast)
 			),
 		});
 	}
 
-	const pages = Math.max(1, Math.ceil(requiredMemoryBytes / WASM_MEMORY_PAGE_SIZE));
 	return {
 		functions,
 		exports,

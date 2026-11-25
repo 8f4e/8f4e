@@ -1,11 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "constants",
+  "domain": "syntax",
+  "instruction": "constants",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Missing required argument for constants.",
 }

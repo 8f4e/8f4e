@@ -1,11 +1,13 @@
 {
   "code": 10,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "#skipExecution",
+  "domain": "syntax",
+  "instruction": "#skipExecution",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Compiler directives must appear in the block prologue, immediately after module or function.",
 }

@@ -1,30 +1,14 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 3,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "slot",
-      },
-      {
-        "isEndAddress": false,
-        "referenceKind": "intermodular-reference",
-        "scope": "intermodule",
-        "targetMemoryId": "value",
-        "targetModuleId": "missing",
-        "type": "identifier",
-        "value": "&missing:value",
-      },
-    ],
-    "instruction": "float&",
+  "domain": "semantic",
+  "instruction": "float&",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Undeclared identifier: &missing:value. (5)",
+  "symbol": "invalid",
 }

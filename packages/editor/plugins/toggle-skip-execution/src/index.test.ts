@@ -1,7 +1,7 @@
-import initState from '@8f4e/editor-state';
-import { createMockCodeBlock } from '@8f4e/editor-state-testing';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher, Options } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { toggleSkipExecutionPlugin } from './index';
 
@@ -30,6 +30,7 @@ const cleanups: Array<() => void> = [];
 
 function setupState(events: EventDispatcher, options: Options, installed = true) {
 	const store = initState(events, options);
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const disposePlugin = installed
 		? toggleSkipExecutionPlugin.setup({
 				store,
@@ -38,7 +39,7 @@ function setupState(events: EventDispatcher, options: Options, installed = true)
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	const dispose = () => {
@@ -56,31 +57,48 @@ function createContext(code = ['module test', '', 'moduleEnd']) {
 	});
 	events.dispatch('enterEditMode');
 	const state = store.getState();
-	const codeBlock = createMockCodeBlock({ code, blockType: 'module', entry: 'main', lastUpdated: 1000 });
-	state.codeBlockRendering.rootProject.blocks.push(codeBlock);
-	return { state, store, events, codeBlock, dispose };
+	const codeBlock = insertSource(store, code);
+	return {
+		state,
+		store,
+		events,
+		codeBlock,
+		dispose,
+		initialCompilerRevision: state.compilerInputRevision,
+		initialProjectRevision: state.projectChange.revision,
+		initialTimestamp: codeBlock.lastUpdated,
+	};
+}
+
+function insertSource(store: ReturnType<typeof initState>, code: string[]) {
+	const targetLevel = store.getState().project.activeLevel;
+	return store.projectTransactions.apply({ inserts: [{ targetLevel, source: { code } }] }).insertedBlocks[0];
 }
 
 describe('toggle skip execution plugin', () => {
 	afterEach(() => {
 		while (cleanups.length) cleanups.pop()!();
+		vi.useRealTimers();
 	});
 
 	it('inserts the directive, publishes the source edit, and advances the compiler revision', () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(1000);
 		const context = createContext();
 		const { state, store, events, codeBlock } = context;
 		const revisions: string[][] = [];
 		store.subscribe('compilerInputRevision', () => revisions.push([...codeBlock.code]));
+		vi.setSystemTime(2000);
 		events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
 		expect(codeBlock.code).toEqual(['module test', '#skipExecution', '', 'moduleEnd']);
-		expect(codeBlock.lastUpdated).toBeGreaterThan(1000);
-		expect(state.compilerInputRevision).toBe(1);
-		expect(state.projectChange.revision).toBe(1);
+		expect(codeBlock.lastUpdated).toBeGreaterThan(context.initialTimestamp);
+		expect(state.compilerInputRevision).toBe(context.initialCompilerRevision + 1);
+		expect(state.projectChange.revision).toBe(context.initialProjectRevision + 1);
 		expect(revisions).toEqual([codeBlock.code]);
 		events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock });
 		expect(codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
-		expect(state.compilerInputRevision).toBe(2);
-		expect(state.projectChange.revision).toBe(2);
+		expect(state.compilerInputRevision).toBe(context.initialCompilerRevision + 2);
+		expect(state.projectChange.revision).toBe(context.initialProjectRevision + 2);
 	});
 
 	it.each([['#skipExecution'], ['  #skipExecution'], ['#skipExecution  '], ['#skipExecution', '', '#skipExecution']])(
@@ -89,7 +107,7 @@ describe('toggle skip execution plugin', () => {
 			const context = createContext(['module test', ...lines, 'moduleEnd']);
 			context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 			expect(context.codeBlock.code).toEqual(['module test', ...lines.filter(line => line === ''), 'moduleEnd']);
-			expect(context.state.compilerInputRevision).toBe(1);
+			expect(context.state.compilerInputRevision).toBe(context.initialCompilerRevision + 1);
 		}
 	);
 
@@ -98,17 +116,17 @@ describe('toggle skip execution plugin', () => {
 		context.state.editorMode = 'view';
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
 		expect(context.codeBlock.code).toEqual(['module test', '', 'moduleEnd']);
-		expect(context.codeBlock.lastUpdated).toBe(1000);
-		expect(context.state.compilerInputRevision).toBe(0);
-		expect(context.state.projectChange.revision).toBe(0);
+		expect(context.codeBlock.lastUpdated).toBe(context.initialTimestamp);
+		expect(context.state.compilerInputRevision).toBe(context.initialCompilerRevision);
+		expect(context.state.projectChange.revision).toBe(context.initialProjectRevision);
 	});
 
 	it('ignores malformed source without publishing an edit', () => {
 		const context = createContext(['invalid']);
 		context.events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: context.codeBlock });
-		expect(context.codeBlock.lastUpdated).toBe(1000);
-		expect(context.state.compilerInputRevision).toBe(0);
-		expect(context.state.projectChange.revision).toBe(0);
+		expect(context.codeBlock.lastUpdated).toBe(context.initialTimestamp);
+		expect(context.state.compilerInputRevision).toBe(context.initialCompilerRevision);
+		expect(context.state.projectChange.revision).toBe(context.initialProjectRevision);
 	});
 
 	it('removes its handler when the host is disposed', () => {
@@ -136,8 +154,7 @@ describe('toggle skip execution plugin', () => {
 			events.dispatch('enterEditMode');
 			try {
 				const code = blockType === 'module' ? ['module test', 'moduleEnd'] : ['note test', 'noteEnd'];
-				const block = createMockCodeBlock({ code, blockType, entry: 'main' });
-				store.getState().codeBlockRendering.rootProject.blocks.push(block);
+				insertSource(store, code);
 				events.dispatch('contextmenu', { x: 16, y: 16 });
 				await Promise.resolve();
 				expect(
@@ -156,17 +173,10 @@ describe('toggle skip execution plugin', () => {
 		});
 		events.dispatch('enterEditMode');
 		try {
-			const block = createMockCodeBlock({ code: ['module target', 'moduleEnd'], blockType: 'module', entry: 'main' });
-			const selected = createMockCodeBlock({
-				code: ['module other', 'moduleEnd'],
-				blockType: 'module',
-				entry: 'main',
-				x: 320,
-				creationIndex: 1,
-			});
+			const block = insertSource(store, ['module target', 'moduleEnd']);
+			const selected = insertSource(store, ['module other', '; @pos 40 0', 'moduleEnd']);
 			const state = store.getState();
-			state.codeBlockRendering.rootProject.blocks.push(block, selected);
-			state.codeBlockRendering.selectedCodeBlock = selected;
+			store.set('project.selectedCodeBlock', selected);
 			events.dispatch('contextmenu', { x: 16, y: 16 });
 			await Promise.resolve();
 			const index = state.contextMenu.items.findIndex(item => item.action === 'toggleModuleSkipExecutionDirective');
@@ -193,14 +203,14 @@ describe('toggle skip execution plugin', () => {
 	it('announces updated inputs through editor initialization', () => {
 		const events = createEvents();
 		const changed = vi.fn();
-		events.on('compilationInputChanged', changed);
 		const { store, dispose } = setupState(events, {
 			callbacks: {},
 		});
+		store.subscribe('compilerInputRevision', changed);
 		events.dispatch('enterEditMode');
 		try {
-			const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
-			store.getState().codeBlockRendering.rootProject.blocks.push(block);
+			const block = insertSource(store, ['module test', 'moduleEnd']);
+			changed.mockClear();
 			changed.mockImplementation(() => [...block.code]);
 			events.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
 			expect(changed).toHaveBeenCalledOnce();
@@ -220,16 +230,21 @@ describe('toggle skip execution plugin', () => {
 		firstEvents.dispatch('enterEditMode');
 		const { store: second, dispose: disposeSecond } = setupState(secondEvents, options);
 		secondEvents.dispatch('enterEditMode');
-		const block = createMockCodeBlock({ code: ['module test', 'moduleEnd'], blockType: 'module', entry: 'main' });
-		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(first.getState().compilerInputRevision).toBe(1);
-		expect(second.getState().compilerInputRevision).toBe(0);
+		const firstBlock = insertSource(first, ['module test', 'moduleEnd']);
+		const secondBlock = insertSource(second, ['module test', 'moduleEnd']);
+		const firstRevision = first.getState().compilerInputRevision;
+		const secondRevision = second.getState().compilerInputRevision;
+		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: firstBlock });
+		expect(firstBlock.code).toContain('#skipExecution');
+		expect(secondBlock.code).not.toContain('#skipExecution');
+		expect(first.getState().compilerInputRevision).toBe(firstRevision + 1);
+		expect(second.getState().compilerInputRevision).toBe(secondRevision);
 		disposeFirst();
-		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(block.code).toContain('#skipExecution');
-		secondEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: block });
-		expect(block.code).not.toContain('#skipExecution');
-		expect(second.getState().compilerInputRevision).toBe(1);
+		firstEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: firstBlock });
+		expect(firstBlock.code).toContain('#skipExecution');
+		secondEvents.dispatch('toggleModuleSkipExecutionDirective', { codeBlock: secondBlock });
+		expect(secondBlock.code).toContain('#skipExecution');
+		expect(second.getState().compilerInputRevision).toBe(secondRevision + 1);
 		disposeSecond();
 	});
 });

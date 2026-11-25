@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-example-modules",
-  "version": "0.0.37",
+  "version": "0.2.6",
   "private": true,
   "description": "Example module browsing and insertion for the 8f4e editor",
   "type": "module",
@@ -31,6 +31,8 @@
     "@8f4e/tokenizer": "*"
   },
   "devDependencies": {
+    "@8f4e/editor-state-testing": "*",
+    "glugglugglug": "*",
     "@8f4e/config": "*",
     "@8f4e/web-ui": "*",
     "vitest": "4.1.12",

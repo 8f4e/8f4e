@@ -1,19 +1,13 @@
 {
   "code": 69,
-  "context": {
-    "projectGroupPath": "middle/child",
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "helper",
-      },
-    ],
-    "instruction": "pass",
+  "domain": "semantic",
+  "instruction": "pass",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 8,
+    "projectGroupPath": "middle",
   },
   "message": "Passed name helper is undefined in the parent project scope (UNRESOLVED_PASSED_NAMESPACE). (69)",
 }

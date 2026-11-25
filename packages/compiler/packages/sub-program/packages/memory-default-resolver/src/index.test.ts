@@ -1,16 +1,16 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import type {
 	ArrayMemoryDeclarationLine,
 	CompilerASTLine,
 	MemoryDeclarationLine,
 	ModuleLine,
-	ShapeLine,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import { ArgumentType, ErrorCode } from '@8f4e/language-spec';
 import { planSubProgramMemoryLayout } from '@8f4e/memory-planner';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
-import { MemoryDefaultResolverError, type ResolveMemoryDefaultsInput, resolveMemoryDefaults } from './index';
+import { type ResolveMemoryDefaultsInput, resolveMemoryDefaults } from './index';
 
 const { classifyIdentifier } = await import('@8f4e/tokenizer');
 
@@ -24,9 +24,10 @@ function literal(value: number, isInteger = Number.isInteger(value)) {
 
 function moduleLine(id: string, lineNumber = 1): ModuleLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber,
 		instruction: 'module',
-		arguments: [classifyIdentifier(id)],
+		arguments: [syntaxValue(classifyIdentifier(id))],
 	};
 }
 
@@ -35,11 +36,7 @@ function scalarLine(
 	instruction: MemoryDeclarationLine['instruction'],
 	args: MemoryDeclarationLine['arguments']
 ): MemoryDeclarationLine {
-	return {
-		lineNumber,
-		instruction,
-		arguments: args,
-	} as MemoryDeclarationLine;
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction, arguments: args } as MemoryDeclarationLine;
 }
 
 function arrayLine(
@@ -47,11 +44,7 @@ function arrayLine(
 	instruction: ArrayMemoryDeclarationLine['instruction'],
 	args: ArrayMemoryDeclarationLine['arguments']
 ): ArrayMemoryDeclarationLine {
-	return {
-		lineNumber,
-		instruction,
-		arguments: args,
-	};
+	return { diagnosticSource: { kind: 'document' }, lineNumber, instruction, arguments: args };
 }
 
 function moduleAst(id: string, lines: readonly CompilerASTLine[]): ValidatedModuleAST {
@@ -65,24 +58,8 @@ function moduleAst(id: string, lines: readonly CompilerASTLine[]): ValidatedModu
 	} as ValidatedModuleAST;
 }
 
-function prototypeAst(id: string, declarationLines: readonly MemoryDeclarationLine[]): ValidatedPrototypeAST {
-	const prototypeLine = {
-		lineNumber: 1,
-		instruction: 'prototype',
-		arguments: [classifyIdentifier(id)],
-	} as const;
-
-	return {
-		type: 'prototype',
-		id,
-		lines: [prototypeLine, ...declarationLines],
-		prototypeLine,
-	} as ValidatedPrototypeAST;
-}
-
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 	};
 }
@@ -99,16 +76,15 @@ function noMemoryReferences(
 
 describe('resolveMemoryDefaults', () => {
 	it('resolves scalar and array declaration defaults', () => {
-		const counter = scalarLine(2, 'int', [classifyIdentifier('counter'), literal(7)]);
+		const counter = scalarLine(2, 'int', [syntaxValue(classifyIdentifier('counter')), literal(7)]);
 		const values = arrayLine(3, 'float[]', [
-			classifyIdentifier('values'),
+			syntaxValue(classifyIdentifier('values')),
 			literal(3),
 			literal(1.5, false),
 			literal(2.5, false),
 		]);
 		const module = moduleAst('main', [counter, values]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});
@@ -119,20 +95,23 @@ describe('resolveMemoryDefaults', () => {
 		});
 
 		expect(result.main).toEqual({
-			0: { value: 7, hasExplicitDefault: true, isInherited: false },
-			1: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true, isInherited: false },
+			0: { value: 7, hasExplicitDefault: true },
+			1: { value: { 0: 1.5, 1: 2.5 }, hasExplicitDefault: true },
 		});
 	});
 
 	it('derives explicit default markers from declaration syntax', () => {
-		const implicitScalar = scalarLine(2, 'int', [classifyIdentifier('implicitScalar')]);
-		const explicitScalar = scalarLine(3, 'int', [classifyIdentifier('explicitScalar'), literal(0)]);
+		const implicitScalar = scalarLine(2, 'int', [syntaxValue(classifyIdentifier('implicitScalar'))]);
+		const explicitScalar = scalarLine(3, 'int', [syntaxValue(classifyIdentifier('explicitScalar')), literal(0)]);
 		const anonymousScalar = scalarLine(4, 'int', [literal(9)]);
-		const implicitArray = arrayLine(5, 'int[]', [classifyIdentifier('implicitArray'), literal(2)]);
-		const explicitArray = arrayLine(6, 'int[]', [classifyIdentifier('explicitArray'), literal(2), literal(1)]);
+		const implicitArray = arrayLine(5, 'int[]', [syntaxValue(classifyIdentifier('implicitArray')), literal(2)]);
+		const explicitArray = arrayLine(6, 'int[]', [
+			syntaxValue(classifyIdentifier('explicitArray')),
+			literal(2),
+			literal(1),
+		]);
 		const module = moduleAst('main', [implicitScalar, explicitScalar, anonymousScalar, implicitArray, explicitArray]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});
@@ -152,11 +131,13 @@ describe('resolveMemoryDefaults', () => {
 	});
 
 	it('resolves pointer address defaults from declaration reference facts', () => {
-		const buffer = arrayLine(2, 'int[]', [classifyIdentifier('buffer'), literal(4)]);
-		const pointer = scalarLine(3, 'int*', [classifyIdentifier('ptr'), classifyIdentifier('&buffer')]);
+		const buffer = arrayLine(2, 'int[]', [syntaxValue(classifyIdentifier('buffer')), literal(4)]);
+		const pointer = scalarLine(3, 'int*', [
+			syntaxValue(classifyIdentifier('ptr')),
+			syntaxValue(classifyIdentifier('&buffer')),
+		]);
 		const module = moduleAst('main', [buffer, pointer]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 			startingByteAddress: 4,
@@ -168,7 +149,7 @@ describe('resolveMemoryDefaults', () => {
 				undefined,
 				{
 					arguments: [
-						classifyIdentifier('ptr'),
+						syntaxValue(classifyIdentifier('ptr')),
 						{
 							type: ArgumentType.LITERAL,
 							value: bufferDeclaration.byteAddress,
@@ -196,42 +177,12 @@ describe('resolveMemoryDefaults', () => {
 		expect(result.main[1]).toMatchObject({
 			value: memoryPlan.modules.main.memory.buffer.byteAddress,
 			hasExplicitDefault: true,
-			isInherited: false,
-		});
-	});
-
-	it('preserves inherited shape defaults until local declarations override them', () => {
-		const prototypeFoo = scalarLine(2, 'int', [classifyIdentifier('foo'), literal(1)]);
-		const prototypeBar = scalarLine(3, 'int', [classifyIdentifier('bar'), literal(3)]);
-		const shape = {
-			lineNumber: 11,
-			instruction: 'shape',
-			arguments: [classifyIdentifier('state')],
-		} satisfies ShapeLine;
-		const localFoo = scalarLine(12, 'int', [classifyIdentifier('foo'), literal(2)]);
-		const prototype = prototypeAst('state', [prototypeFoo, prototypeBar]);
-		const module = moduleAst('main', [shape, localFoo]);
-		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [prototype],
-			modules: [module],
-			constantReferences: noConstantReferences(),
-		});
-
-		const result = resolveMemoryDefaults({
-			memoryPlan,
-			memoryReferences: noMemoryReferences(memoryPlan),
-		});
-
-		expect(result.main).toEqual({
-			0: { value: 2, hasExplicitDefault: true, isInherited: true },
-			2: { value: 2, hasExplicitDefault: true, isInherited: false },
-			1: { value: 3, hasExplicitDefault: true, isInherited: true },
 		});
 	});
 
 	it('rejects array initializers longer than the planned array', () => {
 		const values = arrayLine(2, 'int[]', [
-			classifyIdentifier('values'),
+			syntaxValue(classifyIdentifier('values')),
 			literal(2),
 			literal(1),
 			literal(2),
@@ -239,7 +190,6 @@ describe('resolveMemoryDefaults', () => {
 		]);
 		const module = moduleAst('main', [values]);
 		const memoryPlan = planSubProgramMemoryLayout({
-			prototypes: [],
 			modules: [module],
 			constantReferences: noConstantReferences(),
 		});
@@ -249,12 +199,19 @@ describe('resolveMemoryDefaults', () => {
 				memoryPlan,
 				memoryReferences: noMemoryReferences(memoryPlan),
 			})
-		).toThrow(MemoryDefaultResolverError);
+		).toThrow(CompilerError);
 		expect(() =>
 			resolveMemoryDefaults({
 				memoryPlan,
 				memoryReferences: noMemoryReferences(memoryPlan),
 			})
-		).toThrow(expect.objectContaining({ compilerErrorCode: ErrorCode.ARRAY_INITIALIZER_TOO_LONG }));
+		).toThrow(
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: ErrorCode.ARRAY_INITIALIZER_TOO_LONG }) })
+		);
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

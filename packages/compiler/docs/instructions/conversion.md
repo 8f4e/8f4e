@@ -14,6 +14,7 @@ castToFloat
 ### castToInt
 
 The castToInt instruction takes a value from the stack, converts it to an integer, and then places the resulting integer back onto the stack.
+Finite values truncate toward zero, so nonzero fractions between `-1` and `1` convert to `0`.
 The conversion is non-trapping: `NaN` converts to `0`, values above the signed 32-bit integer range saturate to `2147483647`, and values below the signed 32-bit integer range saturate to `-2147483648`.
 
 #### Examples

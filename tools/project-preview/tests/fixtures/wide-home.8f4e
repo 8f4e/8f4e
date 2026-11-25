@@ -1,0 +1,22 @@
+8f4e/v1
+
+note invalidHome
+; @pos 100 100
+; @home middle
+; @home left extra
+These invalid markers must not override the valid home block below.
+noteEnd
+
+note wide
+; @pos 10 10
+; @home
+; @config font ibmvga8x16
+; @config color.surface #205080
+This deliberately wide note gives the home block a heavier spring profile.
+Its top-left corner should align with the requested preview position.
+The preview is cropped by the fixed-size output.
+The capture should not depend on the spring having time to settle.
+One more line keeps the block's area in the highest profile.
+The background color makes the block's visible edge easy to measure.
+This note has no runtime requirements.
+noteEnd

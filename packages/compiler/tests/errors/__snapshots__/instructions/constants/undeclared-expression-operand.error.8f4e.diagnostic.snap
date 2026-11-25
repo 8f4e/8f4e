@@ -1,36 +1,13 @@
 {
   "code": 69,
-  "context": {
-    "codeBlockId": "undeclaredExpressionOperand",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "RESULT",
-      },
-      {
-        "left": {
-          "referenceKind": "constant",
-          "scope": "local",
-          "type": "identifier",
-          "value": "UNDEFINED_CONST",
-        },
-        "operator": "/",
-        "right": {
-          "isInteger": true,
-          "type": "literal",
-          "value": 2,
-        },
-        "type": "compile_time_expression",
-      },
-    ],
-    "instruction": "const",
+  "domain": "semantic",
+  "instruction": "const",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Unable to resolve constant RESULT (UNRESOLVED_CONSTANT_VALUE). (69)",
 }

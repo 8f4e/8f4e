@@ -1,28 +1,28 @@
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import { ArgumentType, isCompilerDirectiveLine, isMemoryDeclarationLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { compileToAST } from './index';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode } from './syntax/syntaxError';
 
 /** Compiles source through the production AST path and returns the parsed instruction stream. */
 function compileLinesFromAST(code: string[]) {
-	return compileToAST(code).lines;
+	return compileToAST(code, { kind: 'document' }).lines;
 }
 
 describe('compileToAST', () => {
 	it('rejects project-scope pass declarations inside compiler source blocks', () => {
-		expect(() => compileToAST(['module synth', 'pass SAMPLE_RATE', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION })
+		expect(() => compileToAST(['module synth', 'pass SAMPLE_RATE', 'moduleEnd'], { kind: 'document' })).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.UNRECOGNISED_INSTRUCTION }),
+			})
 		);
 	});
 
 	it('constructs module metadata from the source-block parse path', () => {
-		const ast = compileToAST([
-			'module target',
-			'#skipExecution',
-			'int counter',
-			'int sourceStart &source:buffer',
-			'moduleEnd',
-		]);
+		const ast = compileToAST(
+			['module target', '#skipExecution', 'int counter', 'int sourceStart &source:buffer', 'moduleEnd'],
+			{ kind: 'document' }
+		);
 
 		expect(ast).toMatchObject({
 			type: 'module',
@@ -51,36 +51,24 @@ describe('compileToAST', () => {
 		{ moduleName: 'voice:left', errorCode: SyntaxErrorCode.INVALID_IDENTIFIER },
 		{ moduleName: 'voice.left', errorCode: SyntaxErrorCode.INVALID_IDENTIFIER },
 	])('rejects the invalid module name $moduleName through the production AST path', ({ moduleName, errorCode }) => {
-		expect(() => compileToAST([`module ${moduleName}`, 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: errorCode })
+		expect(() => compileToAST([`module ${moduleName}`, 'moduleEnd'], { kind: 'document' })).toThrow(
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: errorCode }) })
 		);
 	});
 
-	it('keeps shape instructions in module lines without adding module metadata', () => {
-		const ast = compileToAST(['module oscillator', 'shape oscillatorState', 'shape envelopeState', 'moduleEnd']);
-
-		expect(ast).toMatchObject({
-			type: 'module',
-			id: 'oscillator',
-		});
-		if (ast.type !== 'module') {
-			throw new Error('Expected module AST');
-		}
-		const shapeInstructionLines = ast.lines.filter(line => line.instruction === 'shape');
-		expect(shapeInstructionLines.map(line => line.arguments[0].value)).toEqual(['oscillatorState', 'envelopeState']);
-		expect(shapeInstructionLines.map(line => line.lineNumber)).toEqual([1, 2]);
-	});
-
 	it('constructs function metadata from the source-block parse path', () => {
-		const ast = compileToAST([
-			'const SCALE 2',
-			'function mix',
-			'#export mixExport',
-			'param int left',
-			'param float right',
-			'push left',
-			'functionEnd int float',
-		]);
+		const ast = compileToAST(
+			[
+				'const SCALE 2',
+				'function mix',
+				'#export mixExport',
+				'param int left',
+				'param float right',
+				'push left',
+				'functionEnd int float',
+			],
+			{ kind: 'document' }
+		);
 
 		expect(ast).toMatchObject({
 			type: 'function',
@@ -88,68 +76,27 @@ describe('compileToAST', () => {
 			functionLine: { instruction: 'function' },
 			functionEndLine: { instruction: 'functionEnd' },
 			exportLine: { instruction: '#export' },
+			signature: {
+				parameters: [
+					{ name: 'left', type: 'int' },
+					{ name: 'right', type: 'float' },
+				],
+				returns: ['int', 'float'],
+			},
 		});
 		expect(ast.lines[0].instruction).toBe('const');
 	});
 
-	it('keeps paramShape instructions in function lines', () => {
-		const ast = compileToAST(['function mix', 'param int gain', 'paramShape mixerState', 'functionEnd int']);
-
-		expect(ast).toMatchObject({
-			type: 'function',
-			name: 'mix',
-		});
-		if (ast.type !== 'function') {
-			throw new Error('Expected function AST');
-		}
-		const paramShapeInstructionLines = ast.lines.filter(line => line.instruction === 'paramShape');
-		expect(paramShapeInstructionLines.map(line => line.arguments[0].value)).toEqual(['mixerState']);
-	});
-
 	it('rejects memory declarations in function blocks', () => {
-		expect(() => compileToAST(['function mix', 'int value', 'functionEnd'])).toThrow(
+		expect(() => compileToAST(['function mix', 'int value', 'functionEnd'], { kind: 'document' })).toThrow(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-				line: expect.objectContaining({
-					lineNumber: 1,
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
 					instruction: 'int',
+					location: expect.objectContaining({ lineNumber: 1 }),
 				}),
 			})
 		);
-	});
-
-	it('rejects shape instructions outside module blocks based on language spec placement', () => {
-		for (const code of [
-			['shape oscillatorState'],
-			['function mix', 'shape oscillatorState', 'functionEnd'],
-			['prototype oscillatorState', 'shape oscillatorState', 'prototypeEnd'],
-		]) {
-			expect(() => compileToAST(code)).toThrow(
-				expect.objectContaining({
-					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-					line: expect.objectContaining({
-						instruction: 'shape',
-					}),
-				})
-			);
-		}
-	});
-
-	it('rejects paramShape instructions outside function blocks based on language spec placement', () => {
-		for (const code of [
-			['paramShape oscillatorState'],
-			['module mix', 'paramShape oscillatorState', 'moduleEnd'],
-			['prototype oscillatorState', 'paramShape oscillatorState', 'prototypeEnd'],
-		]) {
-			expect(() => compileToAST(code)).toThrow(
-				expect.objectContaining({
-					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-					line: expect.objectContaining({
-						instruction: 'paramShape',
-					}),
-				})
-			);
-		}
 	});
 
 	it('rejects source blocks nested inside source blocks', () => {
@@ -157,23 +104,23 @@ describe('compileToAST', () => {
 			['module synth', 'function helper', 'functionEnd', 'moduleEnd'],
 			['function helper', 'module synth', 'moduleEnd', 'functionEnd'],
 			['module synth', 'constants values', 'constantsEnd', 'moduleEnd'],
-			['prototype shape', 'module synth', 'moduleEnd', 'prototypeEnd'],
+			['constants env', 'module synth', 'moduleEnd', 'constantsEnd'],
 		]) {
-			expect(() => compileToAST(code)).toThrow(
+			expect(() => compileToAST(code, { kind: 'document' })).toThrow(
 				expect.objectContaining({
-					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK }),
 				})
 			);
 		}
 	});
 
 	it('rejects instructions that are not allowed in constants blocks', () => {
-		expect(() => compileToAST(['constants values', 'push 1', 'constantsEnd'])).toThrow(
+		expect(() => compileToAST(['constants values', 'push 1', 'constantsEnd'], { kind: 'document' })).toThrow(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-				line: expect.objectContaining({
-					lineNumber: 1,
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
 					instruction: 'push',
+					location: expect.objectContaining({ lineNumber: 1 }),
 				}),
 			})
 		);
@@ -181,13 +128,15 @@ describe('compileToAST', () => {
 
 	it('rejects instructions that are not allowed in map blocks', () => {
 		expect(() =>
-			compileToAST(['module synth', 'mapBegin int', 'push 1', 'map 0 10', 'mapEnd int', 'moduleEnd'])
+			compileToAST(['module synth', 'mapBegin int', 'push 1', 'map 0 10', 'mapEnd int', 'moduleEnd'], {
+				kind: 'document',
+			})
 		).toThrow(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-				line: expect.objectContaining({
-					lineNumber: 2,
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
 					instruction: 'push',
+					location: expect.objectContaining({ lineNumber: 2 }),
 				}),
 			})
 		);
@@ -199,9 +148,9 @@ describe('compileToAST', () => {
 			['module synth', 'return', 'moduleEnd'],
 			['function helper', 'exitIfTrue', 'functionEnd'],
 		]) {
-			expect(() => compileToAST(code)).toThrow(
+			expect(() => compileToAST(code, { kind: 'document' })).toThrow(
 				expect.objectContaining({
-					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
+					diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK }),
 				})
 			);
 		}
@@ -209,21 +158,16 @@ describe('compileToAST', () => {
 
 	it('rejects nested map blocks', () => {
 		expect(() =>
-			compileToAST([
-				'module synth',
-				'mapBegin int',
-				'mapBegin int',
-				'map 0 10',
-				'mapEnd int',
-				'mapEnd int',
-				'moduleEnd',
-			])
+			compileToAST(
+				['module synth', 'mapBegin int', 'mapBegin int', 'map 0 10', 'mapEnd int', 'mapEnd int', 'moduleEnd'],
+				{ kind: 'document' }
+			)
 		).toThrow(
 			expect.objectContaining({
-				code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
-				line: expect.objectContaining({
-					lineNumber: 2,
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.INSTRUCTION_NOT_ALLOWED_IN_BLOCK,
 					instruction: 'mapBegin',
+					location: expect.objectContaining({ lineNumber: 2 }),
 				}),
 			})
 		);
@@ -231,35 +175,16 @@ describe('compileToAST', () => {
 
 	it('allows loop nesting under modules, functions, and loops', () => {
 		expect(() =>
-			compileToAST(['function helper', 'loop', 'loop', 'loopIndex', 'loopEnd', 'loopEnd', 'functionEnd'])
+			compileToAST(['function helper', 'loop', 'loop', 'loopIndex', 'loopEnd', 'loopEnd', 'functionEnd'], {
+				kind: 'document',
+			})
 		).not.toThrow();
 	});
 
-	it('constructs prototype metadata from the source-block parse path', () => {
-		const ast = compileToAST(['prototype oscillatorState', 'float phase', 'float frequency 440', 'prototypeEnd']);
-
-		expect(ast).toMatchObject({
-			type: 'prototype',
-			id: 'oscillatorState',
-			prototypeLine: { instruction: 'prototype' },
-		});
-		if (ast.type !== 'prototype') {
-			throw new Error('Expected prototype AST');
-		}
-		expect(ast.lines.filter(isMemoryDeclarationLine).map(line => line.arguments[0].value)).toEqual([
-			'phase',
-			'frequency',
-		]);
-	});
-
-	it('allows constants namespace imports in prototype blocks', () => {
-		const ast = compileToAST(['prototype oscillatorState', 'use env', 'float[] samples SAMPLE_COUNT', 'prototypeEnd']);
-
-		expect(ast.lines[1]).toMatchObject({ instruction: 'use', arguments: [{ value: 'env' }] });
-	});
-
 	it('constructs imported function metadata from the source-block parse path', () => {
-		const ast = compileToAST(['function hostLog', '#import "log.value"', 'param int value', 'functionEnd']);
+		const ast = compileToAST(['function hostLog', '#import "log.value"', 'param int value', 'functionEnd'], {
+			kind: 'document',
+		});
 
 		expect(ast).toMatchObject({
 			type: 'function',
@@ -269,7 +194,7 @@ describe('compileToAST', () => {
 	});
 
 	it('constructs constants metadata from the source-block parse path', () => {
-		const ast = compileToAST(['constants sizes', 'const COUNT 4', 'constantsEnd']);
+		const ast = compileToAST(['constants sizes', 'const COUNT 4', 'constantsEnd'], { kind: 'document' });
 
 		expect(ast).toMatchObject({
 			type: 'constants',
@@ -328,13 +253,13 @@ describe('compileToAST line parsing', () => {
 
 	it('rejects bare dash argument continuation lines', () => {
 		expect(() => compileLinesFromAST(['module test', 'push 1', '-', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.MISSING_ARGUMENT })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: SyntaxErrorCode.MISSING_ARGUMENT }) })
 		);
 	});
 
 	it('rejects dash argument continuation lines without a previous instruction', () => {
 		expect(() => compileLinesFromAST(['- 1'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT })
+			expect.objectContaining({ diagnostic: expect.objectContaining({ code: SyntaxErrorCode.INVALID_ARGUMENT }) })
 		);
 	});
 
@@ -368,25 +293,35 @@ describe('compileToAST line parsing', () => {
 
 	it('rejects module directives after the module prologue', () => {
 		expect(() => compileLinesFromAST(['module test', 'int counter', '#skipExecution', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE })
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE }),
+			})
 		);
 	});
 
 	it('rejects function directives after the function prologue', () => {
 		expect(() =>
 			compileLinesFromAST(['function readValue', 'param int address', '#impure', 'functionEnd int'])
-		).toThrow(expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE }));
+		).toThrow(
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE }),
+			})
+		);
 	});
 
 	it('rejects directives nested inside non-prologue blocks', () => {
 		expect(() => compileLinesFromAST(['module test', 'if', '#loopCap 20', 'ifEnd', 'moduleEnd'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE })
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE }),
+			})
 		);
 	});
 
 	it('rejects directives before any module or function prologue', () => {
 		expect(() => compileLinesFromAST(['#skipExecution'])).toThrow(
-			expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE })
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({ code: SyntaxErrorCode.COMPILER_DIRECTIVE_MUST_BE_PROLOGUE }),
+			})
 		);
 	});
 
@@ -460,11 +395,11 @@ describe('compileToAST line parsing', () => {
 	});
 
 	it('rejects else without an open if block', () => {
-		expect(() => compileLinesFromAST(['else'])).toThrowError(SyntaxRulesError);
+		expect(() => compileLinesFromAST(['else'])).toThrow(CompilerError);
 	});
 
 	it('rejects unclosed if blocks', () => {
-		expect(() => compileLinesFromAST(['module test', 'push 1', 'if', 'push 10'])).toThrowError(SyntaxRulesError);
+		expect(() => compileLinesFromAST(['module test', 'push 1', 'if', 'push 10'])).toThrow(CompilerError);
 	});
 
 	it('pairs block with blockEnd metadata without rewriting source arguments', () => {
@@ -514,32 +449,32 @@ describe('compileToAST line parsing', () => {
 	});
 
 	it('rejects block with a type argument', () => {
-		expect(() => compileLinesFromAST(['block int'])).toThrowError(SyntaxRulesError);
+		expect(() => compileLinesFromAST(['block int'])).toThrow(CompilerError);
 	});
 
 	it('rejects blockEnd with an invalid type argument', () => {
 		expect(() => compileLinesFromAST(['module test', 'block', 'blockEnd void', 'moduleEnd'])).toThrowError(
-			SyntaxRulesError
+			CompilerError
 		);
 	});
 
 	it('rejects unexpected blockEnd without a matching block', () => {
-		expect(() => compileLinesFromAST(['blockEnd'])).toThrowError(SyntaxRulesError);
+		expect(() => compileLinesFromAST(['blockEnd'])).toThrow(CompilerError);
 	});
 
 	it('rejects unclosed block blocks', () => {
-		expect(() => compileLinesFromAST(['module test', 'block', 'push 1'])).toThrowError(SyntaxRulesError);
+		expect(() => compileLinesFromAST(['module test', 'block', 'push 1'])).toThrow(CompilerError);
 	});
 
-	it('exposes line location in block structure errors via the line property', () => {
-		let thrownError: SyntaxRulesError | undefined;
+	it('exposes the source location in block structure diagnostics', () => {
+		let thrownError: CompilerError | undefined;
 		try {
 			compileLinesFromAST(['module test', 'push 1', 'if', 'push 10']);
 		} catch (error) {
-			thrownError = error as SyntaxRulesError;
+			thrownError = error as CompilerError;
 		}
-		expect(thrownError).toBeInstanceOf(SyntaxRulesError);
-		expect(thrownError?.line?.lineNumber).toBe(2);
-		expect(thrownError?.line?.instruction).toBe('if');
+		expect(thrownError).toBeInstanceOf(CompilerError);
+		expect(thrownError?.diagnostic.location).toEqual({ kind: 'document', lineNumber: 2 });
+		expect(thrownError?.diagnostic.instruction).toBe('if');
 	});
 });

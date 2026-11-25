@@ -6,11 +6,13 @@ import type {
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 
+import { createMemory } from '../../tests/memoryFixtures';
 import createInstructionCompilerTestContext, { compileInstructionForTest, identifier } from '../../tests/testUtils';
 import push from './push';
 
 function resolvedMemoryPushLine(id: string, memoryItem: ResolvedMemoryDeclaration): ResolvedMemoryPushLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [identifier(id)],
@@ -23,6 +25,7 @@ function resolvedMemoryPointerPushLine(
 	memoryItem: ResolvedMemoryDeclaration
 ): ResolvedMemoryPointerPushLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction: 'push',
 		arguments: [
@@ -41,20 +44,8 @@ function resolvedMemoryPointerPushLine(
 
 function createMemoryItem(
 	overrides: Partial<ResolvedMemoryDeclaration> & Pick<ResolvedMemoryDeclaration, 'byteAddress'>
-) {
-	return {
-		id: 0,
-		numberOfElements: 1,
-		elementWordSize: 4,
-		allocationUnitAddress: 0,
-		allocationUnitCount: 1,
-		isInteger: true,
-		pointerDepth: 0,
-		isUnsigned: false,
-		type: 'int',
-		lineNumber: 1,
-		...overrides,
-	} as ResolvedMemoryDeclaration;
+): ResolvedMemoryDeclaration {
+	return createMemory({ id: 0, lineNumber: 1, ...overrides });
 }
 
 describe('push instruction compiler', () => {
@@ -64,6 +55,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 5, isInteger: true }],
@@ -82,6 +74,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 42, isInteger: true }],
@@ -100,6 +93,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -125,6 +119,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [
@@ -150,6 +145,7 @@ describe('push instruction compiler', () => {
 		compileInstructionForTest(
 			push,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 3.14, isInteger: false }],

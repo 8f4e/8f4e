@@ -1,6 +1,6 @@
-import initState from '@8f4e/editor-state';
-import { createMockCodeBlock, createMockEventDispatcher } from '@8f4e/editor-state-testing';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { createMockCodeBlock, createMockEventDispatcher, TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { selectionAnimationPlugin } from './index';
 
@@ -13,7 +13,8 @@ afterEach(() => {
 function setup() {
 	const events = createMockEventDispatcher();
 	const store = initState(events, { callbacks: {} });
-	const drawers = createEditorDrawerRegistry();
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = selectionAnimationPlugin.setup({
 		store,
 		events,
@@ -21,7 +22,7 @@ function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawGlyphs = vi.fn();
@@ -29,7 +30,7 @@ function setup() {
 	const state = store.getState();
 	const block = createMockCodeBlock({ width: 96, height: 64 });
 	const render = (codeBlock = block) =>
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
 	return { state, block, drawGlyphs, render, dispose };
 }
 
@@ -41,25 +42,25 @@ describe('selection animation plugin', () => {
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
 
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		render();
 		render(other);
 		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
 		drawGlyphs.mockClear();
-		state.codeBlockRendering.selectedCodeBlock = other;
+		state.project.selectedCodeBlock = other;
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
 		render(other);
 		expect(drawGlyphs).toHaveBeenCalledTimes(4);
 
 		drawGlyphs.mockClear();
-		state.codeBlockRendering.selectedCodeBlock = undefined;
+		state.project.selectedCodeBlock = undefined;
 		render();
 		render(other);
 		expect(drawGlyphs).not.toHaveBeenCalled();
 
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		dispose();
 		render();
 		expect(drawGlyphs).not.toHaveBeenCalled();
@@ -74,7 +75,7 @@ describe('selection animation plugin', () => {
 		block.height = options.height;
 		state.viewport.vGrid = options.vGrid;
 		state.viewport.hGrid = options.hGrid;
-		state.codeBlockRendering.selectedCodeBlock = block;
+		state.project.selectedCodeBlock = block;
 		const now = vi.spyOn(performance, 'now').mockReturnValue(0);
 		render();
 		const initial = [...drawGlyphs.mock.calls];

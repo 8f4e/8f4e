@@ -1,21 +1,13 @@
 {
   "code": 69,
-  "context": {
-    "codeBlockId": "useUndeclaredNamespace",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "missingNamespace",
-      },
-    ],
-    "instruction": "use",
+  "domain": "semantic",
+  "instruction": "use",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Unable to resolve constant namespace dependencies (UNRESOLVED_NAMESPACE). (69)",
 }

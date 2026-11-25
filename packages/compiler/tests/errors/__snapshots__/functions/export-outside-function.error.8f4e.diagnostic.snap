@@ -1,11 +1,13 @@
 {
   "code": 12,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "#export",
+  "domain": "syntax",
+  "instruction": "#export",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Instruction is not allowed in this block.",
 }

@@ -11,6 +11,7 @@ describe('exitIfTrue stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'exitIfTrue',
 				arguments: [],

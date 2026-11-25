@@ -1,6 +1,6 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { mountDefaultEditor } from '@8f4e/editor-default';
-import { gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow } from '@8f4e/editor-state';
 import { expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -29,11 +29,10 @@ entryEnd`;
 		initialProjectUrl: `data:text/plain,${encodeURIComponent(source)}`,
 		storage: { getItem: () => null, setItem: () => {} } as unknown as Storage,
 		includeKeyboardModeSwitching: false,
-		showOpenMenuItem: false,
 	});
 	editor.pauseRendering();
 	try {
-		const block = () => editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'checks')!;
+		const block = () => editor.state.project.activeLevel.blocks.find(block => block.name === 'checks')!;
 		await expect.poll(() => editor.state.info.testRuntime?.status, { timeout: 10000 }).toBe('failed');
 		expect(editor.state.codeErrors['test-runtime'][0]).toMatchObject({
 			codeBlockId: block().creationIndex,
@@ -41,6 +40,9 @@ entryEnd`;
 			message: 'Assertion failed: expected nonzero, received 0',
 		});
 		await expect.poll(() => block().gaps.get(3)?.size).toBeGreaterThan(0);
+		await expect
+			.poll(() => editor.state.loadingIndicators.find(item => item.id === 'plugin:coordinate-grid')?.status)
+			.toBe('done');
 		editor.state.viewport.x = 0;
 		editor.state.viewport.y = 0;
 		// Let completed startup indicators hide before capturing the assertion layout.
@@ -69,10 +71,10 @@ entryEnd`;
 		await userEvent.click(canvas, { position: { x: 620, y: 344 } });
 		const row =
 			block().displayModel.sourceLineIndexToDisplayRow[editor.state.codeErrors['test-runtime'][0].lineNumber]!;
-		expect(editor.state.codeBlockRendering.selectedCodeBlock).toBe(block());
+		expect(editor.state.project.selectedCodeBlock).toBe(block());
 		expect(editor.state.viewport.x).toBe(Math.round(block().x + block().width / 2 - 320));
 		expect(editor.state.viewport.y).toBe(
-			Math.round(block().y + (gapCalculator(row, block().gaps) + 0.5) * editor.state.viewport.hGrid - 192)
+			Math.round(block().y + (displayRowToGridRow(row, block().gaps) + 0.5) * editor.state.viewport.hGrid - 192)
 		);
 
 		// Sample a solid part of the jump button: menu labels may arrive in different lazy-plugin orders.

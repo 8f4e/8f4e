@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { CompilerError } from '@8f4e/compiler-diagnostics';
 import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
 import type { EditorLoadingRegistry, State } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
@@ -21,15 +22,15 @@ describe('compilation scheduling and publication', () => {
 		cleanup = () => {};
 		loading = { add: () => ({ done: () => {}, fail: () => {}, cancel: () => {} }) };
 
-		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue({
-			message: 'Memory access is not allowed in pure functions. (19)',
-			line: { lineNumber: 2 },
-			context: {
-				codeBlockId: 'helper',
-				codeBlockType: 'function',
-				projectBlockId: 0,
-			},
-		});
+		mockCompileCode = vi.fn<CompilerService['compileCode']>().mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'semantic',
+				code: 19,
+				message: 'Memory access is not allowed in pure functions. (19)',
+				location: { kind: 'block', projectBlockId: 0, projectGroupPath: '', lineNumber: 2 },
+			})
+		);
 
 		mockState = createMockState();
 		const emitter = new EventEmitter();
@@ -42,7 +43,7 @@ describe('compilation scheduling and publication', () => {
 			blockType: 'function',
 		});
 
-		mockState.codeBlockRendering.currentProject.blocks.push(helperBlock);
+		mockState.project.activeLevel.blocks.push(helperBlock);
 
 		store = createStateManager(mockState);
 	});
@@ -56,25 +57,23 @@ describe('compilation scheduling and publication', () => {
 
 	async function triggerCompile(delayMs = 500): Promise<void> {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(delayMs);
 	}
 
-	it('listens for compilation input changes without subscribing to editing state', () => {
+	it('subscribes only to the compiler input revision', () => {
 		const subscribeSpy = vi.spyOn(store, 'subscribe');
-		const on = vi.spyOn(events, 'on');
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		expect(subscribeSpy).not.toHaveBeenCalled();
-		expect(on).toHaveBeenCalledWith('compilationInputChanged', expect.any(Function));
+		expect(subscribeSpy).toHaveBeenCalledExactlyOnceWith('compilerInputRevision', expect.any(Function));
 	});
 
 	it('debounces multiple revisions and compiles the current project independently of selection', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(300);
-		const block = mockState.codeBlockRendering.rootProject.blocks[0];
+		const block = mockState.project.rootLevel.blocks[0];
 		block.code = ['function helper', 'push 2', 'functionEnd'];
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 		await vi.advanceTimersByTimeAsync(1);
@@ -87,7 +86,8 @@ describe('compilation scheduling and publication', () => {
 	});
 
 	it.each([false, true])('enables assertions for a test module with disabled=%s', async disabled => {
-		mockState.codeBlockRendering.rootProject.blocks.push(
+		mockState.project.rootLevel.entries.push('test');
+		mockState.project.rootLevel.blocks.push(
 			createMockCodeBlock({
 				blockType: 'module',
 				entry: 'test',
@@ -111,13 +111,14 @@ describe('compilation scheduling and publication', () => {
 	] as const)(
 		'uses the root entry %s rather than local entry %s to enable assertions',
 		async (parentEntry, localEntry, enabled) => {
-			mockState.codeBlockRendering.rootProject.blocks.push(
+			mockState.project.rootLevel.entries.push(parentEntry);
+			mockState.project.rootLevel.blocks.push(
 				createMockCodeBlock({
 					name: 'nested',
 					code: ['group nested', 'groupEnd'],
 					entry: parentEntry,
 
-					childProject: {
+					childLevel: {
 						path: '',
 						entries: [localEntry],
 						blocks: [
@@ -146,7 +147,7 @@ describe('compilation scheduling and publication', () => {
 		['checks', '#export test', true],
 		['test', '', false],
 	])('detects a root test function %s with directive %s', async (name, directive, enabled) => {
-		mockState.codeBlockRendering.rootProject.blocks.push(
+		mockState.project.rootLevel.blocks.push(
 			createMockCodeBlock({
 				blockType: 'function',
 				code: [`function ${name}`, directive, 'push 1', 'assert', 'functionEnd'],
@@ -162,12 +163,17 @@ describe('compilation scheduling and publication', () => {
 		);
 	});
 
-	it('reads line number from syntax errors that expose line directly (no longer defaults to 0)', async () => {
-		mockCompileCode.mockRejectedValue({
-			message: 'Too many arguments for if.',
-			line: { lineNumber: 3, instruction: 'if' },
-			context: { projectBlockId: 0 },
-		});
+	it('preserves syntax diagnostic locations', async () => {
+		mockCompileCode.mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'syntax',
+				code: 2,
+				message: 'Too many arguments for if.',
+				instruction: 'if',
+				location: { kind: 'block', projectBlockId: 0, projectGroupPath: '', lineNumber: 3 },
+			})
+		);
 
 		await triggerCompile();
 
@@ -180,20 +186,24 @@ describe('compilation scheduling and publication', () => {
 		]);
 	});
 
-	it('stores the owning project path for project-scope compiler errors', async () => {
-		mockCompileCode.mockRejectedValue({
-			message: 'Passed constant namespace env is undefined in the parent project scope.',
-			line: { lineNumber: 1, instruction: 'pass' },
-			context: { projectGroupPath: 'audio' },
-		});
+	it('stores the owning block ID for group declaration compiler errors', async () => {
+		mockCompileCode.mockRejectedValue(
+			new CompilerError({
+				kind: 'source',
+				domain: 'semantic',
+				code: 2,
+				message: 'Passed constant namespace env is undefined in the parent project scope.',
+				instruction: 'pass',
+				location: { kind: 'block', projectBlockId: 17, projectGroupPath: '', lineNumber: 1 },
+			})
+		);
 
 		await triggerCompile();
 
 		expect(mockState.codeErrors.compiler).toEqual([
 			{
 				lineNumber: 1,
-				codeBlockId: -1,
-				projectGroupPath: 'audio',
+				codeBlockId: 17,
 				message: 'Passed constant namespace env is undefined in the parent project scope.',
 			},
 		]);
@@ -210,20 +220,27 @@ describe('compilation scheduling and publication', () => {
 			'memoryDefaultsByModuleId',
 		] as const;
 		const observed: State['compiler'][] = [];
+		const allFields = [...fields, 'inputRevision'] as const;
 		const progress: boolean[] = [];
+		const accepted = vi.fn();
+		store.subscribe('compiler.result', accepted);
 		store.subscribe('compiler.isCompiling', value => progress.push(value));
-		for (const field of fields) {
+		for (const field of allFields) {
 			store.subscribe(`compiler.result.${field}`, () => observed.push({ ...mockState.compiler }));
 		}
 
 		await triggerCompile();
 
-		expect(observed).toHaveLength(fields.length);
+		expect(accepted).toHaveBeenCalledOnce();
+		expect(observed).toHaveLength(allFields.length);
 		for (const metadata of observed) {
 			expect(metadata.isCompiling).toBe(true);
+			expect(metadata.result).toBe(mockState.compiler.result);
+			expect(metadata.result.inputRevision).toBe(mockState.compilerInputRevision);
 			for (const field of fields) expect(metadata.result[field]).toBe(result[field]);
 		}
 		expect(mockState.compiler.isCompiling).toBe(false);
+		expect(mockState.compiler.result.inputRevision).toBe(mockState.compilerInputRevision);
 		expect(progress).toEqual([true, false]);
 	});
 
@@ -250,7 +267,6 @@ describe('compilation scheduling and publication', () => {
 				execution: expect.any(Array),
 				constants: expect.any(Array),
 				functions: expect.any(Array),
-				prototypes: expect.any(Array),
 			}),
 			{
 				startingMemoryAllocationUnitAddress: 0,
@@ -274,42 +290,6 @@ describe('compilation scheduling and publication', () => {
 		});
 	});
 
-	it('includes stack analysis when code line selection is disabled', async () => {
-		mockState.featureFlags.codeLineSelection = false;
-		mockCompileCode.mockResolvedValue({
-			memoryRef: new WebAssembly.Memory({ initial: 1 }),
-			memoryPlan: { modules: {}, moduleList: [] },
-			memoryDefaultsByModuleId: {},
-			projectMemoryExposuresByGroupPath: {},
-			codeBuffer: new Uint8Array([0x00]),
-			compiledModules: {},
-			compiledFunctions: {},
-			requiredMemoryBytes: 0,
-			allocatedMemoryBytes: 65536,
-			astCacheStats: { hits: 0, misses: 0 },
-			memoryAction: { action: 'reused' },
-		});
-
-		await triggerCompile();
-
-		expect(mockCompileCode).toHaveBeenCalledWith(
-			expect.objectContaining({
-				entries: [],
-				execution: expect.any(Array),
-				constants: expect.any(Array),
-				functions: expect.any(Array),
-				prototypes: expect.any(Array),
-			}),
-			{
-				startingMemoryAllocationUnitAddress: 0,
-				includeStackAnalysis: true,
-				enableAssertions: false,
-				enableMemoryGuards: true,
-			},
-			expect.any(Function)
-		);
-	});
-
 	it('contributes the compiler config schema', () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
 
@@ -318,9 +298,9 @@ describe('compilation scheduling and publication', () => {
 
 	it('cancels a scheduled compilation when disposed', async () => {
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		dispose();
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(mockCompileCode).not.toHaveBeenCalled();
@@ -330,7 +310,7 @@ describe('compilation scheduling and publication', () => {
 		mockCompileCode.mockRejectedValue(new Error('Worker unavailable'));
 		await triggerCompile();
 		expect(mockState.codeErrors.compiler).toEqual([
-			expect.objectContaining({ lineNumber: 0, codeBlockId: -1, message: 'Worker unavailable' }),
+			{ message: 'Internal compiler error (compilation): Worker unavailable' },
 		]);
 		expect(mockState.compiler.isCompiling).toBe(false);
 	});
@@ -344,7 +324,7 @@ describe('compilation scheduling and publication', () => {
 				})
 		);
 		const dispose = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
 		expect(mockCompileCode).toHaveBeenCalledTimes(1);
 		dispose();
@@ -380,7 +360,7 @@ describe('compilation scheduling and publication', () => {
 			creationIndex: 10,
 			blockType: 'includes',
 		});
-		mockState.codeBlockRendering.currentProject.blocks.unshift(includesBlock);
+		mockState.project.activeLevel.blocks.unshift(includesBlock);
 
 		await triggerCompile();
 
@@ -396,7 +376,7 @@ describe('compilation scheduling and publication', () => {
 	it('uses the configured recompile debounce delay', async () => {
 		mockState.editorConfig.recompileDebounceDelay = 120;
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(119);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 
@@ -406,7 +386,7 @@ describe('compilation scheduling and publication', () => {
 
 	it('uses the default recompile debounce delay when the config value is absent', async () => {
 		cleanup = compilerEffect({ store, events, loading }, mockCompileCode).dispose;
-		events.dispatch('compilationInputChanged');
+		store.set('compilerInputRevision', mockState.compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(499);
 		expect(mockCompileCode).not.toHaveBeenCalled();
 

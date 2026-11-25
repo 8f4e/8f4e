@@ -1,0 +1,191 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+Fixed references select pointer slots and read their current contents.
+noteEnd
+
+entry test
+module source
+int16[] first 2 -32768 123
+int16[] second 2 32767 -123
+int16* selected &first
+int sentinel 0x12345678
+int number -2147483647
+int* numberAddress &number
+float signal -2.75
+float* signalAddress &signal
+
+; An update at the original declaration is visible through the reference.
+push &selected
+push &second
+store
+moduleEnd
+
+module consumer
+int16*& selected &source:selected
+int*& number &source:5
+float*& signal &source:signalAddress
+int16*[] slots 2 -1 -1
+int16*& array &this:0
+int16* negative -1
+int16* oversized 2147483647
+int16* zero 0
+local int16** slotAddress
+local int16* sampleAddress
+
+push **number
+assertEqual -2147483647
+push **signal
+assertEqual -2.75
+push **selected
+assertEqual 32767
+
+push count(*selected)
+assertEqual 1
+push count(*array)
+assertEqual 2
+push sizeof(*array)
+assertEqual 4
+push sizeof(*signal)
+assertEqual 4
+push min(*signal)
+assertEqual -2147483648
+push max(*signal)
+assertEqual 2147483647
+push end(*array)
+assertEqual end(slots)
+
+; A word store must overwrite all four bytes of the original -1.
+push array
+push &source:first
+store
+push *array
+assertEqual &source:first
+push array+4
+push &source:second
+store
+push array+4
+call readSample
+assertEqual 32767
+
+push selected
+localSet slotAddress
+push *slotAddress
+localSet sampleAddress
+call readSample sampleAddress
+assertEqual 32767
+call readSample *selected
+assertEqual 32767
+
+; Pointer mutation through the reference and through a typed helper.
+push selected
+push &source:first
+store
+call readSample selected
+assertEqual -32768
+call selectSample selected &source:second
+assertEqual *selected
+push **selected
+assertEqual 32767
+
+push *selected
+push -1
+store
+push **selected
+assertEqual -1
+push &source:second
+add 2
+load16s
+assertEqual -123
+push &source:sentinel
+load
+assertEqual 0x12345678
+
+; Changing a pointer with a valid initial default cannot remove guards.
+call selectSample selected negative
+assertEqual negative
+push **selected
+assertEqual 0
+push *selected
+push 99
+store
+call selectSample selected oversized
+assertEqual oversized
+push **selected
+assertEqual 0
+push *selected
+push 99
+store
+call selectSample selected zero
+assertEqual zero
+push *selected
+push -314
+store
+push **selected
+assertEqual -314
+
+; A signed halfword fits at the last two bytes, but not at the last byte.
+push selected
+push &source:first
+add 1000000000
+clampGlobalAddress 2
+call selectSample
+push -1234
+store
+push **selected
+assertEqual -1234
+
+push selected
+push &source:first
+add 1000000000
+clampGlobalAddress 1
+call selectSample
+push 99
+store
+push **selected
+assertEqual 0
+push &source:first
+add 1000000000
+clampGlobalAddress 2
+load16s
+assertEqual -1234
+
+push signal
+call readSignal
+assertEqual -2.75
+push *signal
+push 1.25
+store
+call readSignal signal
+assertEqual 1.25
+moduleEnd
+entryEnd
+
+function readSample
+#impure
+param int16* address
+push *address
+functionEnd int
+
+function readSample
+#impure
+param int16** address
+push **address
+functionEnd int
+
+function selectSample
+#impure
+param int16** slot
+param int16* next
+push slot
+push next
+store
+push *slot
+functionEnd int16*
+
+function readSignal
+#impure
+param float** address
+push **address
+functionEnd float

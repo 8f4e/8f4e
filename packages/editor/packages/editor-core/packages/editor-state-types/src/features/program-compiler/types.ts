@@ -8,7 +8,11 @@ export interface ProgramArtifacts {
 
 export interface Compiler {
 	isCompiling: boolean;
-	result: Pick<
+	/** Metadata and its source identity are accepted together in one state replacement. */
+	result: {
+		/** Input revision of this result; null before the first successful compilation. */
+		inputRevision: number | null;
+	} & Pick<
 		CompileResult,
 		| 'compiledModules'
 		| 'compiledFunctions'

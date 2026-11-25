@@ -13,6 +13,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 43,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -25,6 +30,11 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 43,
+              "projectGroupPath": ""
+            },
             "instruction": "int*",
             "arguments": [
               {
@@ -39,19 +49,28 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn3",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 43,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 43,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -62,7 +81,7 @@
             }
           ]
         },
-        "projectBlockId": 54,
+        "projectBlockId": 43,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "result"
@@ -81,6 +100,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 54,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -93,12 +117,22 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 54,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 54,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -109,7 +143,7 @@
             }
           ]
         },
-        "projectBlockId": 65,
+        "projectBlockId": 54,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "notes"
@@ -128,6 +162,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 64,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -140,6 +179,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 64,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -157,6 +201,11 @@
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 64,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -174,12 +223,22 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 64,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 64,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -190,7 +249,7 @@
             }
           ]
         },
-        "projectBlockId": 75,
+        "projectBlockId": 64,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "inputs"
@@ -214,15 +273,36 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -238,15 +318,36 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -258,6 +359,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -270,6 +376,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -284,13 +395,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in1",
-                "isEndAddress": false
+                "targetMemoryId": "in1"
               }
             ]
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -305,13 +420,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in2",
-                "isEndAddress": false
+                "targetMemoryId": "in2"
               }
             ]
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -324,6 +443,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -341,6 +465,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -358,6 +487,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -375,6 +509,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -382,13 +521,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -403,6 +546,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -415,11 +563,21 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -434,6 +592,11 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -446,16 +609,31 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -468,22 +646,42 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 74,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 74,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -494,7 +692,7 @@
             }
           ]
         },
-        "projectBlockId": 85,
+        "projectBlockId": 74,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron"
@@ -518,15 +716,36 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -542,15 +761,36 @@
             "allocatedByteLength": 4,
             "byteAddress": 16,
             "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 20,
             "lineNumber": 7,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 1,
-            "name": "in2"
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         }
       },
@@ -562,6 +802,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -574,6 +819,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -588,13 +838,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in1",
-                "isEndAddress": false
+                "targetMemoryId": "in1"
               }
             ]
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -609,13 +863,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "inputs",
-                "targetMemoryId": "in2",
-                "isEndAddress": false
+                "targetMemoryId": "in2"
               }
             ]
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -628,6 +886,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -645,6 +908,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -662,6 +930,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -679,6 +952,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -686,13 +964,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -707,6 +989,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -719,11 +1006,21 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -738,6 +1035,11 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -750,16 +1052,31 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -772,22 +1089,42 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 99,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 99,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -798,7 +1135,7 @@
             }
           ]
         },
-        "projectBlockId": 110,
+        "projectBlockId": 99,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron2"
@@ -822,15 +1159,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -842,6 +1195,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -854,6 +1212,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -868,13 +1231,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -887,6 +1254,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -894,13 +1266,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -915,11 +1291,16 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -927,17 +1308,32 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 124,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 124,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -948,7 +1344,7 @@
             }
           ]
         },
-        "projectBlockId": 135,
+        "projectBlockId": 124,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn"
@@ -972,15 +1368,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -992,6 +1404,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1004,6 +1421,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -1018,13 +1440,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron2",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1037,6 +1463,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1044,13 +1475,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 7,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1065,11 +1500,16 @@
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -1077,17 +1517,32 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 136,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 136,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1098,7 +1553,7 @@
             }
           ]
         },
-        "projectBlockId": 147,
+        "projectBlockId": 136,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn2"
@@ -1122,15 +1577,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "in2": {
@@ -1146,15 +1617,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1166,6 +1653,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1178,6 +1670,11 @@
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -1192,13 +1689,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 5,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -1213,13 +1714,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "activationFn2",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "float",
             "arguments": [
               {
@@ -1232,6 +1737,11 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -1249,6 +1759,11 @@
           },
           {
             "lineNumber": 10,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -1266,6 +1781,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "const",
             "arguments": [
               {
@@ -1283,6 +1803,11 @@
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1290,13 +1815,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1311,6 +1840,11 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1323,11 +1857,21 @@
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1342,6 +1886,11 @@
           },
           {
             "lineNumber": 18,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1354,16 +1903,31 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "mul",
             "arguments": []
           },
           {
             "lineNumber": 20,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1376,22 +1940,42 @@
           },
           {
             "lineNumber": 22,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "add",
             "arguments": []
           },
           {
             "lineNumber": 23,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 24,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 148,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 148,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1402,7 +1986,7 @@
             }
           ]
         },
-        "projectBlockId": 159,
+        "projectBlockId": 148,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "perceptron3"
@@ -1426,15 +2010,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         }
       },
@@ -1446,6 +2046,11 @@
         "lines": [
           {
             "lineNumber": 0,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "module",
             "arguments": [
               {
@@ -1458,6 +2063,11 @@
           },
           {
             "lineNumber": 3,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "float&",
             "arguments": [
               {
@@ -1472,13 +2082,17 @@
                 "referenceKind": "intermodular-reference",
                 "scope": "intermodule",
                 "targetModuleId": "perceptron3",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 4,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "int",
             "arguments": [
               {
@@ -1491,6 +2105,11 @@
           },
           {
             "lineNumber": 6,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1498,13 +2117,17 @@
                 "value": "&out",
                 "referenceKind": "memory-reference",
                 "scope": "local",
-                "targetMemoryId": "out",
-                "isEndAddress": false
+                "targetMemoryId": "out"
               }
             ]
           },
           {
             "lineNumber": 8,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1519,11 +2142,16 @@
           },
           {
             "lineNumber": 9,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "call",
             "arguments": [
               {
                 "type": "identifier",
-                "value": "sigmoid",
+                "value": "softsign",
                 "referenceKind": "plain",
                 "scope": "local"
               }
@@ -1531,6 +2159,11 @@
           },
           {
             "lineNumber": 11,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1542,11 +2175,21 @@
           },
           {
             "lineNumber": 12,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "greaterThan",
             "arguments": []
           },
           {
             "lineNumber": 13,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "if",
             "arguments": [],
             "ifBlock": {
@@ -1559,6 +2202,11 @@
           },
           {
             "lineNumber": 14,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1570,11 +2218,21 @@
           },
           {
             "lineNumber": 15,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "else",
             "arguments": []
           },
           {
             "lineNumber": 16,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "push",
             "arguments": [
               {
@@ -1586,6 +2244,11 @@
           },
           {
             "lineNumber": 17,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "ifEnd",
             "arguments": [
               {
@@ -1604,17 +2267,32 @@
           },
           {
             "lineNumber": 19,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "store",
             "arguments": []
           },
           {
             "lineNumber": 21,
+            "diagnosticSource": {
+              "kind": "block",
+              "projectBlockId": 173,
+              "projectGroupPath": ""
+            },
             "instruction": "moduleEnd",
             "arguments": []
           }
         ],
         "moduleLine": {
           "lineNumber": 0,
+          "diagnosticSource": {
+            "kind": "block",
+            "projectBlockId": 173,
+            "projectGroupPath": ""
+          },
           "instruction": "module",
           "arguments": [
             {
@@ -1625,7 +2303,7 @@
             }
           ]
         },
-        "projectBlockId": 184,
+        "projectBlockId": 173,
         "sourceIdentity": {
           "projectGroupPath": "",
           "codeBlockId": "activationFn3"
@@ -1643,8 +2321,7 @@
         "byteAddress": 0,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 0,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -1654,15 +2331,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -1674,21 +2367,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -1698,8 +2391,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -1709,8 +2401,7 @@
         "byteAddress": 4,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 4,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 8,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -1720,41 +2411,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 4,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -1764,8 +2435,43 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 4,
+            "elementByteLength": 4,
+            "endByteAddress": 8,
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       },
@@ -1775,8 +2481,7 @@
         "byteAddress": 8,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 8,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 12,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -1786,15 +2491,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -1806,21 +2527,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -1830,8 +2551,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -1841,8 +2561,7 @@
         "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 20,
         "memory": {
           "in1": {
             "numberOfElements": 1,
@@ -1852,77 +2571,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 3,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 12,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -1937,12 +2600,31 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "in2": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -1957,8 +2639,87 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 12,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         ]
       },
@@ -1969,10 +2730,8 @@
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
         "endByteAddress": 20,
-        "endAddressSafeByteLength": 0,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       "perceptron": {
         "id": "perceptron",
@@ -1980,8 +2739,7 @@
         "byteAddress": 20,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 20,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 24,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -1991,15 +2749,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2011,21 +2785,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2035,8 +2809,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2046,8 +2819,7 @@
         "byteAddress": 24,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 24,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 28,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2057,15 +2829,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2077,21 +2865,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2101,8 +2889,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2112,8 +2899,7 @@
         "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 28,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 32,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2123,41 +2909,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 7,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 28,
-            "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2167,8 +2933,43 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 28,
+            "elementByteLength": 4,
+            "endByteAddress": 32,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2178,8 +2979,7 @@
         "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 32,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 36,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2189,8 +2989,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -2198,34 +2997,14 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 8,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
               "instruction": "int*",
               "arguments": [
                 {
@@ -2240,12 +3019,55 @@
                   "referenceKind": "intermodular-reference",
                   "scope": "intermodule",
                   "targetModuleId": "activationFn3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
+                  "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 32,
+            "elementByteLength": 4,
+            "endByteAddress": 36,
+            "lineNumber": 8,
+            "type": "int*",
+            "pointerDepth": 1,
+            "isInteger": true,
+            "pointeeBaseType": "int",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         ]
       }
@@ -2257,8 +3079,7 @@
         "byteAddress": 0,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 0,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 4,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2268,15 +3089,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2288,21 +3125,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 0,
             "elementByteLength": 4,
-            "endByteAddress": 0,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 4,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 124,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2312,8 +3149,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2323,8 +3159,7 @@
         "byteAddress": 4,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 4,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 8,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2334,41 +3169,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 4,
             "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 8,
             "lineNumber": 4,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 1,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 4,
-            "elementByteLength": 4,
-            "endByteAddress": 4,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 4,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2378,8 +3193,43 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 1,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 4,
+            "elementByteLength": 4,
+            "endByteAddress": 8,
+            "lineNumber": 4,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 136,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2389,8 +3239,7 @@
         "byteAddress": 8,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 8,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 12,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2400,15 +3249,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
+              "instruction": "int",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2420,21 +3285,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 8,
             "elementByteLength": 4,
-            "endByteAddress": 8,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 12,
             "lineNumber": 4,
             "type": "int",
             "pointerDepth": 0,
             "isInteger": true,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 4,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 173,
+                "projectGroupPath": ""
+              },
               "instruction": "int",
               "arguments": [
                 {
@@ -2444,8 +3309,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2455,8 +3319,7 @@
         "byteAddress": 12,
         "allocationUnitCount": 2,
         "allocatedByteLength": 8,
-        "endByteAddress": 16,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 20,
         "memory": {
           "in1": {
             "numberOfElements": 1,
@@ -2466,77 +3329,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 12,
             "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 16,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "in1"
-          },
-          "in2": {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 3,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 12,
-            "elementByteLength": 4,
-            "endByteAddress": 12,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "in1"
-          },
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 4,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 16,
-            "elementByteLength": 4,
-            "endByteAddress": 16,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 7,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 1,
-            "name": "in2"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "in1",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2551,12 +3358,31 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
           },
-          {
-            "line": {
+          "in2": {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
               "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2571,8 +3397,87 @@
                   "isInteger": false
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 3,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 12,
+            "elementByteLength": 4,
+            "endByteAddress": 16,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "in1",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in1",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 1,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
+          },
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 4,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 16,
+            "elementByteLength": 4,
+            "endByteAddress": 20,
+            "lineNumber": 7,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 1,
+            "name": "in2",
+            "source": {
+              "lineNumber": 7,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 64,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "in2",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "value": 0,
+                  "type": "literal",
+                  "isInteger": false
+                }
+              ]
+            }
           }
         ]
       },
@@ -2583,10 +3488,8 @@
         "allocationUnitCount": 0,
         "allocatedByteLength": 0,
         "endByteAddress": 20,
-        "endAddressSafeByteLength": 0,
         "memory": {},
-        "declarations": [],
-        "declarationSources": []
+        "declarations": []
       },
       {
         "id": "perceptron",
@@ -2594,8 +3497,7 @@
         "byteAddress": 20,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 20,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 24,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2605,15 +3507,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2625,21 +3543,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 20,
             "elementByteLength": 4,
-            "endByteAddress": 20,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 24,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 74,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2649,8 +3567,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2660,8 +3577,7 @@
         "byteAddress": 24,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 24,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 28,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2671,15 +3587,31 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         },
         "declarations": [
@@ -2691,21 +3623,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 24,
             "elementByteLength": 4,
-            "endByteAddress": 24,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 28,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 99,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2715,8 +3647,7 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
           }
         ]
       },
@@ -2726,8 +3657,7 @@
         "byteAddress": 28,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 28,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 32,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2737,41 +3667,21 @@
             "allocatedByteLength": 4,
             "byteAddress": 28,
             "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 32,
             "lineNumber": 6,
             "type": "float",
             "pointerDepth": 0,
             "isInteger": false,
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 7,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 28,
-            "elementByteLength": 4,
-            "endByteAddress": 28,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 6,
-            "type": "float",
-            "pointerDepth": 0,
-            "isInteger": false,
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
               "instruction": "float",
               "arguments": [
                 {
@@ -2781,8 +3691,43 @@
                   "scope": "local"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 7,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 28,
+            "elementByteLength": 4,
+            "endByteAddress": 32,
+            "lineNumber": 6,
+            "type": "float",
+            "pointerDepth": 0,
+            "isInteger": false,
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 6,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 148,
+                "projectGroupPath": ""
+              },
+              "instruction": "float",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2792,8 +3737,7 @@
         "byteAddress": 32,
         "allocationUnitCount": 1,
         "allocatedByteLength": 4,
-        "endByteAddress": 32,
-        "endAddressSafeByteLength": 4,
+        "endByteAddress": 36,
         "memory": {
           "out": {
             "numberOfElements": 1,
@@ -2803,8 +3747,7 @@
             "allocatedByteLength": 4,
             "byteAddress": 32,
             "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
+            "endByteAddress": 36,
             "lineNumber": 8,
             "type": "int*",
             "pointerDepth": 1,
@@ -2812,34 +3755,14 @@
             "pointeeBaseType": "int",
             "isUnsigned": false,
             "id": 0,
-            "name": "out"
-          }
-        },
-        "declarations": [
-          {
-            "numberOfElements": 1,
-            "elementWordSize": 4,
-            "allocationUnitAddress": 8,
-            "allocationUnitCount": 1,
-            "allocatedByteLength": 4,
-            "byteAddress": 32,
-            "elementByteLength": 4,
-            "endByteAddress": 32,
-            "endAddressSafeByteLength": 4,
-            "lineNumber": 8,
-            "type": "int*",
-            "pointerDepth": 1,
-            "isInteger": true,
-            "pointeeBaseType": "int",
-            "isUnsigned": false,
-            "id": 0,
-            "name": "out"
-          }
-        ],
-        "declarationSources": [
-          {
-            "line": {
+            "name": "out",
+            "source": {
               "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
               "instruction": "int*",
               "arguments": [
                 {
@@ -2854,12 +3777,55 @@
                   "referenceKind": "intermodular-reference",
                   "scope": "intermodule",
                   "targetModuleId": "activationFn3",
-                  "targetMemoryId": "out",
-                  "isEndAddress": false
+                  "targetMemoryId": "out"
                 }
               ]
-            },
-            "isInherited": false
+            }
+          }
+        },
+        "declarations": [
+          {
+            "numberOfElements": 1,
+            "elementWordSize": 4,
+            "allocationUnitAddress": 8,
+            "allocationUnitCount": 1,
+            "allocatedByteLength": 4,
+            "byteAddress": 32,
+            "elementByteLength": 4,
+            "endByteAddress": 36,
+            "lineNumber": 8,
+            "type": "int*",
+            "pointerDepth": 1,
+            "isInteger": true,
+            "pointeeBaseType": "int",
+            "isUnsigned": false,
+            "id": 0,
+            "name": "out",
+            "source": {
+              "lineNumber": 8,
+              "diagnosticSource": {
+                "kind": "block",
+                "projectBlockId": 43,
+                "projectGroupPath": ""
+              },
+              "instruction": "int*",
+              "arguments": [
+                {
+                  "type": "identifier",
+                  "value": "out",
+                  "referenceKind": "plain",
+                  "scope": "local"
+                },
+                {
+                  "type": "identifier",
+                  "value": "&activationFn3:out",
+                  "referenceKind": "intermodular-reference",
+                  "scope": "intermodule",
+                  "targetModuleId": "activationFn3",
+                  "targetMemoryId": "out"
+                }
+              ]
+            }
           }
         ]
       }
@@ -2869,63 +3835,54 @@
     "activationFn": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "activationFn3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "inputs": {
       "0": {
         "value": 1,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       },
       "1": {
         "value": 0,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     },
     "notes": {},
     "perceptron": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron2": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "perceptron3": {
       "0": {
         "value": 0,
-        "hasExplicitDefault": false,
-        "isInherited": false
+        "hasExplicitDefault": false
       }
     },
     "result": {
       "0": {
         "value": 8,
-        "hasExplicitDefault": true,
-        "isInherited": false
+        "hasExplicitDefault": true
       }
     }
   },

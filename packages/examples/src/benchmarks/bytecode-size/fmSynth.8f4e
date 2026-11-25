@@ -219,18 +219,23 @@ module adsrEnv4
 ; @tab 8
 ; @group operator4
 use env
-shape adsrEnvState
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/10000
 int	decayTime SAMPLE_RATE/10000
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/1
+float	out
+int	_state 4
+int	_counter
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module adsrEnv2
@@ -238,20 +243,25 @@ module adsrEnv2
 ; @tab 8
 ; @group operator2
 use env
-shape adsrEnvState
 
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/2000
 int	decayTime SAMPLE_RATE/2000
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/10
+float	out
+int	_state 4
+int	_counter
 
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module adsrEnv6
@@ -259,19 +269,24 @@ module adsrEnv6
 ; @tab 8
 ; @group operator5
 use env
-shape adsrEnvState
 
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/10000
 int	decayTime SAMPLE_RATE/10000
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/2
+float	out
+int	_state 4
+int	_counter
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module modulator4
@@ -470,20 +485,25 @@ module adsrEnv1
 ; @tab 8
 ; @group operator1
 use env
-shape adsrEnvState
 
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/100
 int	decayTime SAMPLE_RATE/10
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/10
+float	out
+int	_state 4
+int	_counter
 
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module adsrEnv3
@@ -491,20 +511,25 @@ module adsrEnv3
 ; @tab 8
 ; @group operator3
 use env
-shape adsrEnvState
 
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/100
 int	decayTime SAMPLE_RATE/100
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/1
+float	out
+int	_state 4
+int	_counter
 
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module adsrEnv5
@@ -512,20 +537,25 @@ module adsrEnv5
 ; @tab 8
 ; @group operator6
 use env
-shape adsrEnvState
 
 int*	trigger &keyboard:keyPressed
+int	previousTrigger
 int	attackTime SAMPLE_RATE/10000
 int	decayTime SAMPLE_RATE/10000
 float	sustainLevel 0.5
 int	releaseTime SAMPLE_RATE/1
+float	out
+int	_state 4
+int	_counter
 
 ; @watch _counter
 ; @watch out
 ; @watch _state
 
-pushShape adsrEnvState
 call adsrEnv
+- &trigger &previousTrigger &attackTime
+- &decayTime &sustainLevel &releaseTime
+- &out &_state &_counter
 
 moduleEnd
 module adrEnv
@@ -930,8 +960,8 @@ store
 ; Wrap buffer pointer back
 ; to start when reaches end
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -970,8 +1000,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -981,25 +1011,20 @@ ifEnd
 moduleEnd
 entryEnd
 
-prototype adsrEnvState
-; @pos -79 58
-int* trigger
-int previousTrigger
-int attackTime
-int decayTime
-float sustainLevel
-int releaseTime
-float out
-int _state 4
-int _counter
-prototypeEnd
-
 function adsrEnv
 ; @pos -79 72
 ; @hide
 ; @tab 8
 #impure
-paramShape adsrEnvState
+param int** trigger
+param int* previousTrigger
+param int* attackTime
+param int* decayTime
+param float* sustainLevel
+param int* releaseTime
+param float* out
+param int* _state
+param int* _counter
 
 const	ATTACK 1
 const	DECAY 2

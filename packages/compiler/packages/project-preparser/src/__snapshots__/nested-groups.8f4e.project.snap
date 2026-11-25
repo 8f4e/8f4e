@@ -1,5 +1,4 @@
 {
-  "code": [],
   "constants": [],
   "entries": [
     "main",
@@ -54,7 +53,17 @@
             "",
             "groupEnd",
           ],
-          "constants": [],
+          "constants": [
+            {
+              "code": [
+                "constants oscillatorState",
+                "const PHASE 0",
+                "const FREQUENCY 440",
+                "constantsEnd",
+              ],
+              "id": 26,
+            },
+          ],
           "entries": [
             "main",
           ],
@@ -66,17 +75,6 @@
           "includes": [],
           "name": "oscillator",
           "notes": [],
-          "prototypes": [
-            {
-              "code": [
-                "prototype oscillatorState",
-                "float phase",
-                "float frequency 440",
-                "prototypeEnd",
-              ],
-              "id": 26,
-            },
-          ],
           "type": "group",
           "unknown": [],
         },
@@ -97,7 +95,6 @@
       "includes": [],
       "name": "audio",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -105,6 +102,5 @@
   "functions": [],
   "includes": [],
   "notes": [],
-  "prototypes": [],
   "unknown": [],
 }

@@ -1,5 +1,5 @@
 import { PALETTE_INDICES, type PaletteConfig, resolvePalette, toPaletteBytes } from '@8f4e/editor-palette';
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
+import { createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
 import loadFontAtlas, { FILL_SPRITE_ID, type Font } from '@8f4e/sprite-generator';
 import { DrawContext } from '@8f4e/web-ui';
 import { Engine } from 'glugglugglug';
@@ -37,28 +37,22 @@ for (const font of [
 			const state = createMockState({
 				viewport: { vGrid: characterWidth, hGrid: characterHeight },
 			});
-			const block = createMockCodeBlock();
 			const widgets: ConnectorWidgets = { inputs: [], outputs: [] };
 			widgets.inputs.push({
 				x: characterWidth,
 				y: characterHeight,
-				wireX: 0,
-				wireY: 0,
-				allocationUnitAddress: 0,
 			});
 			const memoryViews = createMockMemoryViews();
 			for (const [index, value] of [-1, -0.6, -0.2, 0.2, 0.6, 1].entries()) {
 				memoryViews.float32[index] = value;
 				widgets.outputs.push({
-					codeBlock: block,
 					x: characterWidth * (5 + index * 4),
 					y: characterHeight,
-					wireX: 0,
-					wireY: 0,
 					calibratedMax: 1,
 					calibratedMin: -1,
 					memory: {
-						id: `value${index}`,
+						id: index,
+						source: createMockMemoryDeclarationSource('float', 0),
 						type: 'float',
 						numberOfElements: 1,
 						elementWordSize: 4,
@@ -67,8 +61,7 @@ for (const font of [
 						allocationUnitAddress: index,
 						allocationUnitCount: 1,
 						allocatedByteLength: 4,
-						endByteAddress: index * 4,
-						endAddressSafeByteLength: 4,
+						endByteAddress: (index + 1) * 4,
 						lineNumber: 0,
 						isInteger: false,
 						pointerDepth: 0,

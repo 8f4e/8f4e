@@ -1,7 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createEvents } from './events';
 import { createDrawContextMock } from './rendering';
@@ -21,12 +22,12 @@ export async function setup(
 		installed = true,
 		mode = 'edit',
 		name = 'audio',
-		drawers = createEditorDrawerRegistry(),
+		renderRegistry = createEditorRenderRegistry(),
 	}: {
 		installed?: boolean;
 		mode?: 'edit' | 'view';
 		name?: string;
-		drawers?: ReturnType<typeof createEditorDrawerRegistry>;
+		renderRegistry?: ReturnType<typeof createEditorRenderRegistry>;
 	} = {}
 ) {
 	const text =
@@ -55,6 +56,7 @@ export async function setup(
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
 	const dispose = installed
@@ -65,32 +67,28 @@ export async function setup(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
 		dispose();
 		store.dispose();
 	});
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
 	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
-	store.set('codeBlockRendering.currentProject.blocks', [block]);
+	const block = state.project.activeLevel.blocks.find(block => block.name === name)!;
+	store.set('project.activeLevel.blocks', [block]);
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
 		vi.mocked(draw.drawSprite).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock: block, memoryViews });
 	};
 	const update = (code: string[]) => {
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: true });
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 	};
 	return {
 		store,

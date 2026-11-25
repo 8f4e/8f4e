@@ -1,7 +1,13 @@
+import { createMockMemoryDeclarationSource } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 export function createMemory(overrides: Partial<PlannedMemoryDeclaration>): PlannedMemoryDeclaration {
 	return {
 		id: 0,
+		source: createMockMemoryDeclarationSource(
+			overrides.type ?? 'int',
+			overrides.lineNumber ?? 0,
+			overrides.name ?? 'value'
+		),
 		name: 'value',
 		type: 'int',
 		numberOfElements: 1,
@@ -11,8 +17,7 @@ export function createMemory(overrides: Partial<PlannedMemoryDeclaration>): Plan
 		allocationUnitAddress: 0,
 		allocationUnitCount: 1,
 		allocatedByteLength: 4,
-		endByteAddress: 0,
-		endAddressSafeByteLength: 4,
+		endByteAddress: 4,
 		lineNumber: 0,
 		isInteger: true,
 		isUnsigned: false,

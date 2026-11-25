@@ -7,6 +7,8 @@ include std/events/hasChanged
 include std/bitwise/extractNibble
 include std/math/lerp
 include std/math/clamp
+include std/bitwise/extractBits
+include std/bitwise/extractByte
 includesEnd
 
 function buffer
@@ -21,17 +23,12 @@ functionEnd
 
 function maskSampleNumber
 ; @pos 297 -128
-use mod
+; Sample number nibbles live in separate bytes.
 param int row
-
-push row
-and SAMPLE_HI_NIBBLE
-push row
-and SAMPLE_LO_NIBBLE
-push SAMPLE_LO_NIBBLE_SHIFT
-shiftRightUnsigned
+call extractNibble row 1
+shiftLeft 4
+call extractNibble row 5
 or
-
 functionEnd int
 
 function maskEffect
@@ -100,19 +97,12 @@ functionEnd int
 
 function maskPeriod
 ; @pos 367 -128
-use mod
+; Assemble the MOD period from two fields.
 param int row
-
-push row
-and PERIOD_HI
-push PERIOD_SHIFT
-shiftLeft
-push row
-and PERIOD_LO
-push PERIOD_SHIFT
-shiftRightUnsigned
+call extractBits row 0 4
+shiftLeft 8
+call extractByte row 1
 or
-
 functionEnd int
 
 function sampleNumberToRepeatOffset
@@ -204,14 +194,8 @@ functionEnd int
 
 function maskParam
 ; @pos 401 -128
-use mod
 param int row
-
-push row
-and EFFECT_PARAM
-push EFFECT_PARAM_SHIFT
-shiftRightUnsigned
-
+call extractByte row 3
 functionEnd int
 
 function maskParamHi
@@ -628,15 +612,6 @@ constants mod
 ; @pos 232 -197
 ; @tab 30
 use env
-; Row layout (little-endian)
-const SAMPLE_HI_NIBBLE	0x000000F0
-const PERIOD_HI	0x0000000F
-const PERIOD_LO	0x0000FF00
-const PERIOD_SHIFT	8
-const SAMPLE_LO_NIBBLE	0x00F00000
-const SAMPLE_LO_NIBBLE_SHIFT	20
-const EFFECT_PARAM	0xFF000000
-const EFFECT_PARAM_SHIFT	24
 ; AMIGA magic const
 const PAL_AMIGA_CLOCK	7093789.2
 ; Default ticks per row
@@ -834,40 +809,41 @@ noteEnd
 note
 ; @pos -3 -116
 ; @tab 22
-; @config bin.sample1.url https://static.8f4e.com/assets/mods/pneumatic/sample_1.pcm
-; @config bin.sample2.url https://static.8f4e.com/assets/mods/pneumatic/sample_2.pcm
-; @config bin.sample3.url https://static.8f4e.com/assets/mods/pneumatic/sample_3.pcm
-; @config bin.sample4.url https://static.8f4e.com/assets/mods/pneumatic/sample_4.pcm
-; @config bin.sample5.url https://static.8f4e.com/assets/mods/pneumatic/sample_5.pcm
-; @config bin.sample6.url https://static.8f4e.com/assets/mods/pneumatic/sample_6.pcm
-; @config bin.sample7.url https://static.8f4e.com/assets/mods/pneumatic/sample_7.pcm
-; @config bin.sample8.url https://static.8f4e.com/assets/mods/pneumatic/sample_8.pcm
-; @config bin.sample10.url https://static.8f4e.com/assets/mods/pneumatic/sample_10.pcm
-; @config bin.sample11.url https://static.8f4e.com/assets/mods/pneumatic/sample_11.pcm
-; @config bin.sample12.url https://static.8f4e.com/assets/mods/pneumatic/sample_12.pcm
-; @config bin.sample13.url https://static.8f4e.com/assets/mods/pneumatic/sample_13.pcm
-; @config bin.sample14.url https://static.8f4e.com/assets/mods/pneumatic/sample_14.pcm
-; @config bin.sample15.url https://static.8f4e.com/assets/mods/pneumatic/sample_15.pcm
-; @config bin.sample16.url https://static.8f4e.com/assets/mods/pneumatic/sample_16.pcm
-; @config bin.sample17.url https://static.8f4e.com/assets/mods/pneumatic/sample_17.pcm
-; @config bin.sample18.url https://static.8f4e.com/assets/mods/pneumatic/sample_18.pcm
-; @config bin.sample19.url https://static.8f4e.com/assets/mods/pneumatic/sample_19.pcm
-; @config bin.sample20.url https://static.8f4e.com/assets/mods/pneumatic/sample_20.pcm
-; @config bin.sample21.url https://static.8f4e.com/assets/mods/pneumatic/sample_21.pcm
-; @config bin.sample22.url https://static.8f4e.com/assets/mods/pneumatic/sample_22.pcm
-; @config bin.sample23.url https://static.8f4e.com/assets/mods/pneumatic/sample_23.pcm
-; @config bin.sample24.url https://static.8f4e.com/assets/mods/pneumatic/sample_24.pcm
-; @config bin.sample25.url https://static.8f4e.com/assets/mods/pneumatic/sample_25.pcm
-; @config bin.sample26.url https://static.8f4e.com/assets/mods/pneumatic/sample_26.pcm
-; @config bin.sample27.url https://static.8f4e.com/assets/mods/pneumatic/sample_27.pcm
-; @config bin.sample28.url https://static.8f4e.com/assets/mods/pneumatic/sample_28.pcm
-; @config bin.sample29.url https://static.8f4e.com/assets/mods/pneumatic/sample_29.pcm
-; @config bin.sample30.url https://static.8f4e.com/assets/mods/pneumatic/sample_30.pcm
-; @config bin.sample31.url https://static.8f4e.com/assets/mods/pneumatic/sample_31.pcm
-; @config bin.ch1.url https://static.8f4e.com/assets/mods/pneumatic/patterns_ch1.bin
-; @config bin.ch2.url https://static.8f4e.com/assets/mods/pneumatic/patterns_ch2.bin
-; @config bin.ch3.url https://static.8f4e.com/assets/mods/pneumatic/patterns_ch3.bin
-; @config bin.ch4.url https://static.8f4e.com/assets/mods/pneumatic/patterns_ch4.bin
+; @config bin.baseUrl https://static.8f4e.com/assets/mods/pneumatic/
+; @config bin.sample1.path sample_1.pcm
+; @config bin.sample2.path sample_2.pcm
+; @config bin.sample3.path sample_3.pcm
+; @config bin.sample4.path sample_4.pcm
+; @config bin.sample5.path sample_5.pcm
+; @config bin.sample6.path sample_6.pcm
+; @config bin.sample7.path sample_7.pcm
+; @config bin.sample8.path sample_8.pcm
+; @config bin.sample10.path sample_10.pcm
+; @config bin.sample11.path sample_11.pcm
+; @config bin.sample12.path sample_12.pcm
+; @config bin.sample13.path sample_13.pcm
+; @config bin.sample14.path sample_14.pcm
+; @config bin.sample15.path sample_15.pcm
+; @config bin.sample16.path sample_16.pcm
+; @config bin.sample17.path sample_17.pcm
+; @config bin.sample18.path sample_18.pcm
+; @config bin.sample19.path sample_19.pcm
+; @config bin.sample20.path sample_20.pcm
+; @config bin.sample21.path sample_21.pcm
+; @config bin.sample22.path sample_22.pcm
+; @config bin.sample23.path sample_23.pcm
+; @config bin.sample24.path sample_24.pcm
+; @config bin.sample25.path sample_25.pcm
+; @config bin.sample26.path sample_26.pcm
+; @config bin.sample27.path sample_27.pcm
+; @config bin.sample28.path sample_28.pcm
+; @config bin.sample29.path sample_29.pcm
+; @config bin.sample30.path sample_30.pcm
+; @config bin.sample31.path sample_31.pcm
+; @config bin.ch1.path patterns_ch1.bin
+; @config bin.ch2.path patterns_ch2.bin
+; @config bin.ch3.path patterns_ch3.bin
+; @config bin.ch4.path patterns_ch4.bin
 
 noteEnd
 
@@ -1065,8 +1041,8 @@ store
 ifEnd
 
 push patternPointer
-push patternOrder:&
-greaterThan
+push end(patternOrder:)
+greaterOrEqual
 if
 push &patternPointer
 push &patternOrder:
@@ -1108,8 +1084,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1137,28 +1113,22 @@ int* row &rowCount1:out
 use env
 int[] _dat ASSET_CH1_SIZE/4
 ; @config bin.ch1.memory _dat
-local int loopCounter
 
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1178,8 +1148,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1208,28 +1178,21 @@ use env
 int[] _dat ASSET_CH2_SIZE/4
 ; @config bin.ch2.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1249,8 +1212,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1279,28 +1242,21 @@ use env
 int[] _dat ASSET_CH3_SIZE/4
 ; @config bin.ch3.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -1320,8 +1276,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer
@@ -1350,28 +1306,21 @@ use env
 int[] _dat ASSET_CH4_SIZE/4
 ; @config bin.ch4.memory _dat
 
-local int loopCounter
-
 loop 8
 push &this
-push loopCounter
+loopIndex
 push sizeof(_dat)
 mul
 add
 push &_dat
 push *row
-push loopCounter
+loopIndex
 add
 push sizeof(_dat)
 mul
 add
 load
 store
-
-push loopCounter
-push 1
-add
-localSet loopCounter
 
 loopEnd
 
@@ -2761,8 +2710,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -2797,8 +2746,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

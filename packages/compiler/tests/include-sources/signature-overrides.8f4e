@@ -1,0 +1,20 @@
+function increment
+#export
+param int value
+push value
+add 1
+functionEnd int
+
+function increment
+#export
+param float value
+push value
+add 1.0
+functionEnd float
+
+function twice
+#export
+param int value
+push value
+mul 2
+functionEnd int

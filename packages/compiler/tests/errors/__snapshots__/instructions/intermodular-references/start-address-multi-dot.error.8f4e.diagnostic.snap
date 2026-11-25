@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "startAddressMultiDotTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "ptr",
-      },
-      {
-        "isEndAddress": false,
-        "referenceKind": "memory-reference",
-        "scope": "local",
-        "targetMemoryId": "startAddressMultiDotSource:buffer:extra",
-        "type": "identifier",
-        "value": "&startAddressMultiDotSource:buffer:extra",
-      },
-    ],
-    "instruction": "int*",
+  "domain": "semantic",
+  "instruction": "int*",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: startAddressMultiDotSource:buffer:extra. (5)",
+  "message": "Unknown memory declaration.",
 }

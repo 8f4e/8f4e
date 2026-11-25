@@ -19,6 +19,7 @@ export default defineConfig({
 		formats: ['es'],
 		fileName: () => 'index.js',
 		emptyOutDir: false,
+		external: ['glugglugglug'],
 	}),
 	worker: {
 		rollupOptions: {

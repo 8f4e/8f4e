@@ -1,5 +1,3 @@
-import type { ProjectGroupPath, SourceMetadata } from '@8f4e/language-spec';
-
 /**
  * Syntax errors — raised when source structure is invalid before semantic analysis.
  *
@@ -41,7 +39,6 @@ export const SyntaxErrorCode = {
 	INVALID_PROJECT_MEMORY_INITIALIZER: 18,
 	INVALID_REFERENCE_SLOT: 19,
 	INVALID_TEMPLATE_NAME: 20,
-	MULTIPLE_TEMPLATE_REFERENCES: 21,
 	TEMPLATE_INSTANCE_HAS_CONTENT: 22,
 	INVALID_TEMPLATE_CONTENT: 23,
 } as const;
@@ -54,9 +51,7 @@ export type SyntaxErrorCodeValue = (typeof SyntaxErrorCode)[keyof typeof SyntaxE
  * and this registry will supply the default.
  */
 const SyntaxErrorMessages: Record<SyntaxErrorCodeValue, string> = {
-	[SyntaxErrorCode.INVALID_TEMPLATE_NAME]:
-		'template and useTemplate require exactly one name matching [A-Za-z_][A-Za-z0-9_-]*.',
-	[SyntaxErrorCode.MULTIPLE_TEMPLATE_REFERENCES]: 'A group may contain only one useTemplate instruction.',
+	[SyntaxErrorCode.INVALID_TEMPLATE_NAME]: 'Expected one template name matching [A-Za-z_][A-Za-z0-9_-]*.',
 	[SyntaxErrorCode.TEMPLATE_INSTANCE_HAS_CONTENT]:
 		'A source group using a template cannot also contain child blocks or entries.',
 	[SyntaxErrorCode.INVALID_TEMPLATE_CONTENT]: 'A template body may contain only child blocks, entries, and comments.',
@@ -92,20 +87,18 @@ export interface SyntaxErrorLine {
 	arguments?: unknown[];
 }
 
-export interface SyntaxErrorContext {
-	projectBlockId?: number;
-	projectGroupPath?: ProjectGroupPath;
-	source?: SourceMetadata;
-}
-
-export class SyntaxRulesError extends Error {
+export class SyntaxIssue extends Error {
 	constructor(
 		public code: SyntaxErrorCodeValue,
 		message?: string,
-		public line?: SyntaxErrorLine,
-		public context?: SyntaxErrorContext
+		public line?: SyntaxErrorLine
 	) {
 		super(message ?? SyntaxErrorMessages[code]);
-		this.name = 'SyntaxRulesError';
+		this.name = 'SyntaxIssue';
 	}
+}
+
+/** Default syntax wording for source-aware diagnostic construction. */
+export function syntaxErrorMessage(code: SyntaxErrorCodeValue): string {
+	return SyntaxErrorMessages[code];
 }

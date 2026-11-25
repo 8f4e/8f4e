@@ -1,9 +1,9 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits, jumpToCodeBlock, removeDirective } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { getProjectOpenerKeyword } from '@8f4e/project-preparser';
 
-function isFavorite(block: CodeBlockGraphicData): boolean {
+function isFavorite(block: EditorCodeBlock): boolean {
 	return block.parsedDirectives.some(directive => directive.name === 'favorite');
 }
 
@@ -11,7 +11,7 @@ export const favoritesPlugin: EditorPlugin = {
 	id: 'favorites',
 	setup: ({ store, events, menus }) => {
 		store.set('envConstantContributions.favorites', ['; @favorite']);
-		const onToggle = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
+		const onToggle = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
 			if (store.getState().editorMode !== 'edit') return;
 
 			const favorite = isFavorite(codeBlock);
@@ -20,14 +20,14 @@ export const favoritesPlugin: EditorPlugin = {
 				const headerIndex = codeBlock.code.findIndex(line => getProjectOpenerKeyword(line.trim()) !== null);
 				code.splice(headerIndex + 1, 0, '; @favorite');
 			}
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits(store, [{ codeBlock, code }]);
 		};
 
 		events.on('toggleFavoriteDirective', onToggle);
-		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex);
+		const onJump = ({ creationIndex }: { creationIndex: number }) => jumpToCodeBlock(store, creationIndex, events);
 		events.on('jumpToFavoriteCodeBlock', onJump);
-		const unregisterBlockMenu = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (state.editorMode !== 'edit') return;
+		const unregisterBlockMenu = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
+			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
 			return {
 				title: isFavorite(codeBlock) ? 'Unfavorite' : 'Favorite',
 				action: 'toggleFavoriteDirective',
@@ -42,7 +42,7 @@ export const favoritesPlugin: EditorPlugin = {
 			close: false,
 		}));
 		const unregisterFavoritesMenu = menus.registerMenu('favoritesMenu', state => {
-			const favorites = state.codeBlockRendering.currentProject.blocks
+			const favorites = state.project.activeLevel.blocks
 				.filter(isFavorite)
 				.sort((a, b) => a.creationIndex - b.creationIndex);
 			return favorites.length

@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { resolvePalette } from '@8f4e/editor-palette';
-import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initState, { applyCodeBlockSourceEdits, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type FrameBlockPosition } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createFakeWebGl } from './__tests__/fake-webgl';
 import { createTextureRuntimePlugin } from './index';
@@ -74,6 +75,7 @@ async function setup({
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const state = store.getState();
 	Object.assign(state.viewport, { x: 0, y: 0, width: 640, height: 480 });
 	const publishMetadata = ({
@@ -86,6 +88,7 @@ async function setup({
 		hasCompilerMemory = true;
 		store.set('compiler.isCompiling', true);
 		store.set('compiler.result', {
+			...state.compiler.result,
 			compiledFunctions,
 			compiledModules,
 			projectMemoryExposuresByGroupPath,
@@ -95,14 +98,14 @@ async function setup({
 		store.set('compiler.isCompiling', false);
 	};
 	if (!deferMetadata) publishMetadata(current.compiled);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = createTextureRuntimePlugin({
 		getMemory: () => (hasCompilerMemory ? current.memory : null),
 		getCodeBuffer: () => current.compiled.codeBuffer,
 	}).setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 		menus: store.menus,
 		directives: store.directives,
 		layout: store.layout,
@@ -111,14 +114,20 @@ async function setup({
 	events.dispatch('loadProject', { project: current.project });
 	const gl = createFakeWebGl();
 	Object.assign(gl, { drawingBufferHeight: 180 });
-	const layers = drawers.attachRenderLayers({ gl, palette: resolvePalette() });
-	const block = state.codeBlockRendering.currentProject.blocks.find(
-		block => block.name === 'screen' || block.name === 'visuals'
-	)!;
-	const frame = () => {
+	const layers = renderRegistry.attachRenderLayers({ gl, palette: resolvePalette() });
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'screen' || block.name === 'visuals')!;
+	const frame = (
+		blocks: readonly FrameBlockPosition[] = state.project.activeLevel.blocks.map(codeBlock => ({
+			codeBlock,
+			x: codeBlock.x - state.viewport.x,
+			y: codeBlock.y - state.viewport.y,
+		}))
+	) => {
 		const buffer = current.memory.buffer;
-		layers.draw({
+		layers.draw('afterSprites', {
 			state,
+			viewport: state.viewport,
+			blockPositions: { ordered: blocks, byCodeBlock: new Map(blocks.map(block => [block.codeBlock, block])) },
 			memoryViews: {
 				int8: new Int8Array(buffer),
 				uint8: new Uint8Array(buffer),
@@ -147,6 +156,7 @@ async function setup({
 		events,
 		frame,
 		releaseMemory: layers.releaseMemory,
+		loadPalette: layers.loadPalette,
 		settle,
 		dispose,
 		instantiate,
@@ -160,15 +170,11 @@ async function setup({
 		editTextures: (directives: string) => {
 			const code = block.code.filter(line => !line.includes('@texture'));
 			code.splice(2, 0, ...directives.split('\n').filter(Boolean));
-			applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code }], { affectsCompilation: false });
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code }]);
 		},
 		editConfig: (source: string) => {
-			const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'config')!;
-			applyCodeBlockSourceEdits(
-				{ store, events },
-				[{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }],
-				{ affectsCompilation: false }
-			);
+			const block = state.project.activeLevel.blocks.find(block => block.name === 'config')!;
+			applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note config', ...source.split('\n'), 'noteEnd'] }]);
 		},
 		release: async () =>
 			resolvePending(
@@ -181,6 +187,27 @@ async function setup({
 		},
 	};
 }
+
+it('uses the current palette for one-bit views and follows color edits without recreating GPU resources', async () => {
+	const test = await setup({ config: '' });
+	test.editTextures('; @textureUpload &rgba 1bit 1 1\n; @texture &rgba 32 1 1');
+	const first = resolvePalette({ surface: '#203040', ink: '#c0d0e0' });
+	test.loadPalette(first);
+	test.frame();
+	const colors = () =>
+		test.gl.uniform4f.mock.calls
+			.filter(call => ['u_bitZeroColor', 'u_bitOneColor'].includes((call[0] as { name: string }).name))
+			.slice(-2)
+			.map(call => call.slice(1));
+	expect(colors()).toEqual([first.rgba.surfaceBase, first.rgba.inkBase]);
+	const second = resolvePalette({ surface: '#c4c797', ink: '#28362a' });
+	test.loadPalette(second);
+	test.frame();
+	expect(colors()).toEqual([second.rgba.surfaceBase, second.rgba.inkBase]);
+	expect(test.gl.createProgram).toHaveBeenCalledOnce();
+	expect(test.gl.createTexture).toHaveBeenCalledOnce();
+	expect(test.instantiate).not.toHaveBeenCalled();
+});
 
 it('executes once per frame for multiple textures, uploads updated pixels, and follows block movement', async () => {
 	const test = await setup();
@@ -205,22 +232,75 @@ it('executes once per frame for multiple textures, uploads updated pixels, and f
 	expect(test.instantiate).toHaveBeenCalledOnce();
 });
 
+it('uses rendered block positions for both texture placement and visibility', async () => {
+	const test = await setup({ config: '' });
+	const originalX = test.block.x - test.state.viewport.x;
+	const originalY = test.block.y - test.state.viewport.y;
+	const rectangles = () =>
+		test.gl.uniform4f.mock.calls
+			.filter(call => (call[0] as { name: string }).name === 'u_rectangle')
+			.map(call => call.slice(1));
+	test.frame();
+	const [original] = rectangles();
+	// Only the presentation moves even while editor-state considers the block offscreen.
+	test.block.x = -10000;
+	test.frame([{ codeBlock: test.block, x: originalX + 25, y: originalY - 10 }]);
+	expect(rectangles()).toEqual([original, [Number(original[0]) + 25, Number(original[1]) - 10, 32, 32]]);
+	// Visibility follows presentation rather than the block's logical position, in both directions.
+	test.block.x = 50;
+	test.frame([{ codeBlock: test.block, x: -10000, y: originalY }]);
+	expect(rectangles()).toHaveLength(2);
+});
+
 it('reserves declared view space before compiler memory exists', async () => {
 	const test = await setup({ deferMetadata: true });
 	test.editTextures('');
 	const sourceHeight = test.block.height;
 	test.editTextures(
-		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2 300 20\n; @textureUpload &other mono 1 17\n; @texture &other 1 1 17'
+		'; @textureUpload &missing rgba 300 20\n; @texture &missing 2:4 300 20\n; @textureUpload &other mono 1 17\n; @texture &other 1 1 17'
 	);
 	expect(test.block.width).toBeGreaterThanOrEqual(
 		600 + (test.block.lineNumberColumnWidth + 3) * test.state.viewport.vGrid
 	);
-	expect(test.block.height).toBe(sourceHeight + 9 * test.state.viewport.hGrid);
+	expect(test.block.minGridWidth).toBe(
+		test.block.lineNumberColumnWidth + 3 + Math.ceil(600 / test.state.viewport.vGrid)
+	);
+	expect(test.block.height).toBe(sourceHeight + 11 * test.state.viewport.hGrid);
 	test.frame();
 	expect(test.gl.createTexture).not.toHaveBeenCalled();
 	test.editTextures('');
 	expect(test.block.minGridWidth).toBeUndefined();
 	expect(test.block.height).toBe(sourceHeight);
+});
+
+it.each([
+	['2', 2, 2],
+	['2:2', 2, 2],
+	['2:4', 2, 4],
+	['4:2', 4, 2],
+	['16:32', 16, 32],
+	['32:16', 32, 16],
+] as const)('lays out and renders cropped views with magnification %s', async (magnification, x, y) => {
+	const test = await setup({ config: '' });
+	test.editTextures(
+		`; @textureUpload &rgba mono 2 2 @texture &rgba ${magnification} 1 2 1 0 @texture &rgba ${magnification} 2 1 0 1`
+	);
+	test.frame();
+	const rectangles = test.gl.uniform4f.mock.calls
+		.filter(call => (call[0] as { name: string }).name === 'u_rectangle')
+		.map(call => call.slice(1));
+	expect(rectangles).toHaveLength(2);
+	expect(rectangles[0].slice(2)).toEqual([x, 2 * y]);
+	expect(rectangles[1]).toEqual([
+		rectangles[0][0],
+		Number(rectangles[0][1]) + Math.ceil((2 * y) / test.state.viewport.hGrid) * test.state.viewport.hGrid,
+		2 * x,
+		y,
+	]);
+	expect(test.block.minGridWidth).toBe(
+		test.block.lineNumberColumnWidth + 3 + Math.ceil((2 * x) / test.state.viewport.vGrid)
+	);
+	expect(test.gl.texImage2D).toHaveBeenCalledOnce();
 });
 
 it('displays memory with execution disabled and can enable, disable, and restart the entry', async () => {
@@ -439,7 +519,41 @@ entryEnd`,
 	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
 });
 
-it('resolves pointers after entry execution and follows double buffering', async () => {
+it.each(['pointer', '*address'])(
+	'resolves %s after entry execution and follows double buffering',
+	async addressSource => {
+		const test = await setup({
+			source: `8f4e/v1
+note config
+${settings}
+noteEnd
+entry main
+module screen
+; @pos 4 4
+int first 0x44332211
+int second 0x88776655
+int8u* pointer &first
+int8u** address &pointer
+int frames 0
+; @textureUpload ${addressSource} rgba 1 1
+; @texture ${addressSource} 16 1 1
+push &pointer
+push &second
+store
+moduleEnd
+entryEnd`,
+		});
+		await test.settle();
+		test.frame();
+		expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([85, 102, 119, 136]);
+		// A view may use a different pointer symbol as long as its current address matches.
+		test.editTextures(`; @textureUpload &second rgba 1 1\n; @texture ${addressSource} 16 1 1`);
+		test.frame();
+		expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
+	}
+);
+
+it('follows a changing pointer in another module without a separate display slot', async () => {
 	const test = await setup({
 		source: `8f4e/v1
 note config
@@ -450,23 +564,39 @@ module screen
 ; @pos 4 4
 int first 0x44332211
 int second 0x88776655
-int8u* pointer &first
-int frames 0
-; @textureUpload pointer rgba 1 1
-; @texture pointer 16 1 1
-push &pointer
-push &second
+; @textureUpload simulation:current rgba 1 1
+; @texture simulation:current 16 1 1
+moduleEnd
+module simulation
+int8u* current &screen:first
+push current
+push &screen:first
+equal
+if
+push &current
+push &screen:second
 store
+else
+push &current
+push &screen:first
+store
+ifEnd
 moduleEnd
 entryEnd`,
 	});
 	await test.settle();
-	test.frame();
-	expect([...(test.gl.texImage2D.mock.calls[0].at(-1) as Uint8Array)]).toEqual([85, 102, 119, 136]);
-	// A view may use a different pointer symbol as long as its current address matches.
-	test.editTextures('; @textureUpload &second rgba 1 1\n; @texture pointer 16 1 1');
-	test.frame();
-	expect(test.gl.texSubImage2D).toHaveBeenCalledOnce();
+
+	for (const pixel of [
+		[85, 102, 119, 136],
+		[17, 34, 51, 68],
+		[85, 102, 119, 136],
+	]) {
+		test.frame();
+		const upload = test.gl.texImage2D.mock.calls.at(-1) ?? test.gl.texSubImage2D.mock.calls.at(-1);
+		expect(upload?.at(-1)).toEqual(Uint8Array.from(pixel));
+		test.gl.texImage2D.mockClear();
+		test.gl.texSubImage2D.mockClear();
+	}
 });
 
 it('rejects conflicting uploads at an address and recovers after the conflict is removed', async () => {
@@ -530,7 +660,7 @@ int8u* pixels &screen:rgba
 moduleEnd
 entryEnd`,
 	});
-	const block = test.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'viewer')!;
+	const block = test.state.project.activeLevel.blocks.find(block => block.name === 'viewer')!;
 	expect(block.gaps.get(3)?.size).toBe(1);
 	const height = block.height;
 	test.frame();

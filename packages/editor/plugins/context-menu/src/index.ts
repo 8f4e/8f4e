@@ -1,11 +1,11 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import type { ActivateContextMenuItemEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
 import drawMenu from './drawMenu';
-import layoutMenu from './layoutMenu';
+import layoutMenu, { projectMenuAnchor } from './layoutMenu';
 
 export const contextMenuPlugin: EditorPlugin = {
 	id: 'context-menu',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const state = store.getState();
 		let layout: ReturnType<typeof layoutMenu> | undefined;
 		let highlighted = 0;
@@ -37,8 +37,13 @@ export const contextMenuPlugin: EditorPlugin = {
 					y: event.y,
 				} satisfies ActivateContextMenuItemEvent);
 		};
-		const unregisterDrawer = drawers.registerContextMenuOverlay(({ draw }) => {
-			if (layout) drawMenu(draw, state.contextMenu.items, layout, highlighted);
+		const unregisterDrawer = renderRegistry.registerContextMenuOverlay(({ draw, viewport }) => {
+			if (!layout) return;
+			const displayedLayout =
+				viewport.x === state.viewport.x && viewport.y === state.viewport.y
+					? layout
+					: { ...layout, ...projectMenuAnchor(state.contextMenu, viewport, layout.width, layout.height) };
+			drawMenu(draw, state.contextMenu.items, displayedLayout, highlighted);
 		});
 		store.subscribe('contextMenu', updateMenu);
 		events.on('resize', updateLayout);

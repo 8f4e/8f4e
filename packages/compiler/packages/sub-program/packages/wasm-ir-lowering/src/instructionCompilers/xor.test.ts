@@ -9,11 +9,7 @@ describe('xor instruction compiler', () => {
 
 		compileInstructionForTest(
 			xor,
-			{
-				lineNumber: 1,
-				instruction: 'xor',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'xor', arguments: [] },
 			context
 		);
 

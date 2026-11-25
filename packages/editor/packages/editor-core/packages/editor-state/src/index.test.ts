@@ -1,30 +1,13 @@
+import { EventEmitter } from 'node:events';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
 import { describe, expect, it, vi } from 'vitest';
-import { EMPTY_DEFAULT_PROJECT } from './features/project-loading/emptyDefaultProject';
-import animateViewport, { advanceViewportAnimation } from './features/viewport/animateViewport';
-import initState from './index';
-import { createMockCodeBlock } from './pureHelpers/testingUtils/testUtils';
-import { createMockEventDispatcherWithVitest } from './pureHelpers/testingUtils/vitestTestUtils';
+import { createMockCodeBlock } from './__tests__/helpers/mockEditorState';
+import { createMockEventDispatcherWithVitest } from './__tests__/helpers/mockEventDispatcher';
+import initState, { setGridSize } from './index';
+import { EMPTY_DEFAULT_PROJECT } from './project/emptyDefaultProject';
 
 describe('editor state lifecycle', () => {
-	it.each(['view', 'edit'] as const)('cancels active viewport animation when disposing in %s mode', editorMode => {
-		const events = createMockEventDispatcherWithVitest();
-		const store = initState(events, {
-			callbacks: {},
-		});
-		store.set('editorMode', editorMode);
-		const state = store.getState();
-		animateViewport(state, 80, 160);
-		expect(state.viewportAnimation.active).toBe(true);
-
-		store.dispose();
-		expect(state.viewportAnimation.active).toBe(false);
-
-		advanceViewportAnimation(state, 250, events);
-		expect(state.viewport.x).toBe(0);
-		expect(state.viewport.y).toBe(0);
-	});
-
 	it('starts in view mode before a project is loaded', () => {
 		const events = createMockEventDispatcherWithVitest();
 		const store = initState(events, {
@@ -32,33 +15,68 @@ describe('editor state lifecycle', () => {
 		});
 
 		expect(store.getState().editorMode).toBe('view');
+		expect(store.getState().gridSizeReady).toBe(false);
+		expect(store.getState().viewport).toMatchObject({ vGrid: 0, hGrid: 0 });
+
+		store.dispose();
+	});
+
+	it('initializes feature flags with per-editor defaults and host overrides', () => {
+		const first = initState(createMockEventDispatcherWithVitest(), { callbacks: {} });
+		const second = initState(createMockEventDispatcherWithVitest(), {
+			callbacks: {},
+			featureFlags: { contextMenu: false },
+		});
+		try {
+			expect(first.getState().featureFlags).toEqual({ contextMenu: true, canvasOverlays: true });
+			expect(second.getState().featureFlags).toEqual({ contextMenu: false, canvasOverlays: true });
+			second.set('featureFlags.canvasOverlays', false);
+			expect(first.getState().featureFlags).toEqual({ contextMenu: true, canvasOverlays: true });
+		} finally {
+			first.dispose();
+			second.dispose();
+		}
+	});
+
+	it('can install a known grid after initialization', () => {
+		const events = createMockEventDispatcherWithVitest();
+		const store = initState(events, {
+			callbacks: {},
+		});
+		setGridSize(store.getState(), events, { vGrid: 6, hGrid: 12 });
+
+		expect(store.getState().viewport).toMatchObject({ vGrid: 6, hGrid: 12 });
+		expect(store.getState().gridSizeReady).toBe(true);
 
 		store.dispose();
 	});
 
 	it('keeps configuration notes in their project and clears them when an empty project is loaded', () => {
-		const events = createMockEventDispatcherWithVitest();
+		const emitter = new EventEmitter();
+		const events = {
+			on: emitter.on.bind(emitter),
+			off: emitter.off.bind(emitter),
+			dispatch: emitter.emit.bind(emitter),
+		};
 		const store = initState(events, {
 			callbacks: {},
 		});
 		store.set('editorConfigSchemaContributions.test', { root: 'testSetting', schema: { type: 'string' } });
 		const code = ['note local.editorConfig', '; @config testSetting sample', 'noteEnd'];
 
-		store.set('initialProjectState', { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] });
+		events.dispatch('loadProject', { project: { ...EMPTY_DEFAULT_PROJECT, notes: [{ id: 0, code }] } });
 
 		expect(
 			store
 				.getState()
-				.codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')
+				.project.rootLevel.blocks.filter(block => block.blockType === 'note')
 				.map(block => block.code)
 		).toEqual([code]);
 		expect(store.getState().editorConfig.testSetting).toBe('sample');
 
-		store.set('initialProjectState', EMPTY_DEFAULT_PROJECT);
+		events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 
-		expect(store.getState().codeBlockRendering.rootProject.blocks.filter(block => block.blockType === 'note')).toEqual(
-			[]
-		);
+		expect(store.getState().project.rootLevel.blocks.filter(block => block.blockType === 'note')).toEqual([]);
 		expect(store.getState().editorConfig.testSetting).toBeUndefined();
 		store.dispose();
 	});
@@ -85,6 +103,7 @@ describe('editor state lifecycle', () => {
 		const store = initState(events, {
 			callbacks: {},
 		});
+		setGridSize(store.getState(), events, TEST_GRID_SIZE);
 		events.dispatch('enterEditMode');
 		const state = store.getState();
 		const codeBlock = createMockCodeBlock({
@@ -97,8 +116,8 @@ describe('editor state lifecycle', () => {
 		});
 		state.viewport.x = 0;
 		state.viewport.y = 0;
-		state.codeBlockRendering.currentProject.blocks = [codeBlock];
-		state.codeBlockRendering.selectedCodeBlock = codeBlock;
+		state.project.activeLevel.blocks = [codeBlock];
+		state.project.selectedCodeBlock = codeBlock;
 		state.contextMenu.open = true;
 		state.contextMenu.items = [
 			{
@@ -135,7 +154,7 @@ describe('editor state lifecycle', () => {
 		expect(onCodeBlockPointerDown).not.toHaveBeenCalled();
 		expect(onMenuAction).toHaveBeenCalledTimes(activate ? 1 : 0);
 		expect(codeBlock.code[1]).toBe('int value 2');
-		expect(state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(state.project.draggedCodeBlock).toBeUndefined();
 
 		store.dispose();
 	});

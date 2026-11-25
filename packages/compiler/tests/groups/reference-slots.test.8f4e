@@ -14,20 +14,21 @@ push *signal
 assertEqual 41
 push count(*signal)
 assertEqual 1
+push end(*signal)
+assertEqual end(audio:exposed)
 moduleEnd
 
 group audio
 expose exposed &source:value
-prototype inheritedState
-int value 41
-prototypeEnd
 entry main
 module source
-shape inheritedState
+int value 41
 int& localValue &value
 int& indexedValue &this:0
 push *localValue
 assertEqual 41
+push end(*localValue)
+assertEqual end(value)
 push *indexedValue
 assertEqual 41
 moduleEnd

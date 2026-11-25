@@ -81,23 +81,24 @@ constantsEnd
 
 note
 ; @pos -346 -42
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_aimo4_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_aimo5_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_matthew1_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_matthew4_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_peaceful_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_1_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_2_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_3_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_4_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_5_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_guitar_6_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_1_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_2_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_3_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_4_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_5_48khz_16s.raw
-; @config bin.piano.url https://static.8f4e.com/assets/samples/lubadh_violin_6_48khz_16s.raw
+; @config bin.baseUrl https://static.8f4e.com/assets/samples/
+; @config bin.piano.path lubadh_aimo4_48khz_16s.raw
+; @config bin.piano.path lubadh_aimo5_48khz_16s.raw
+; @config bin.piano.path lubadh_matthew1_48khz_16s.raw
+; @config bin.piano.path lubadh_matthew4_48khz_16s.raw
+; @config bin.piano.path lubadh_peaceful_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_1_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_2_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_3_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_4_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_5_48khz_16s.raw
+; @config bin.piano.path lubadh_guitar_6_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_1_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_2_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_3_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_4_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_5_48khz_16s.raw
+; @config bin.piano.path lubadh_violin_6_48khz_16s.raw
 noteEnd
 
 note
@@ -1138,8 +1139,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer& 
-greaterThan 
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -1176,8 +1177,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer& 
-greaterThan 
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

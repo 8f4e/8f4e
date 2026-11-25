@@ -1,5 +1,5 @@
 import type { CodegenContext, SourceLocalBinding } from '@8f4e/language-spec';
-import { functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
+import { functionValueTypeToLocalMetadata, WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
 import { createBlockState } from '@8f4e/semantic-utils';
 import { allocateLocal } from './localStorage';
 
@@ -12,6 +12,7 @@ export function createCodegenContext(
 		instructions: [],
 		locals: [],
 		enableMemoryGuards: true,
+		minimumMemoryBytes: WASM_MEMORY_PAGE_SIZE,
 		...overrides,
 		...createBlockState(overrides.blockStack),
 	};

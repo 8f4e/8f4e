@@ -1,20 +1,23 @@
 import type { PlannedMemoryDeclaration, PointeeBaseType } from './memory';
 
 /** Declared element types for fixed references, independent of memory layout. */
-export const referenceSlotBaseTypes = {
-	'int&': 'int',
-	'int8&': 'int8',
-	'int8u&': 'int8u',
-	'int16&': 'int16',
-	'int16u&': 'int16u',
-	'float&': 'float',
-	'float64&': 'float64',
-} as const satisfies Record<string, PointeeBaseType>;
+export const referenceSlotTargetTypes = {
+	'int&': { baseType: 'int', pointerDepth: 0 },
+	'int8&': { baseType: 'int8', pointerDepth: 0 },
+	'int8u&': { baseType: 'int8u', pointerDepth: 0 },
+	'int16&': { baseType: 'int16', pointerDepth: 0 },
+	'int16u&': { baseType: 'int16u', pointerDepth: 0 },
+	'float&': { baseType: 'float', pointerDepth: 0 },
+	'float64&': { baseType: 'float64', pointerDepth: 0 },
+	'int*&': { baseType: 'int', pointerDepth: 1 },
+	'int16*&': { baseType: 'int16', pointerDepth: 1 },
+	'float*&': { baseType: 'float', pointerDepth: 1 },
+} as const satisfies Record<string, { baseType: PointeeBaseType; pointerDepth: 0 | 1 }>;
 
-export type ReferenceSlotInstruction = keyof typeof referenceSlotBaseTypes;
+export type ReferenceSlotInstruction = keyof typeof referenceSlotTargetTypes;
 
 /** Fixed reference instructions reserve no storage and resolve after allocation. */
-export const referenceSlotInstructions = Object.keys(referenceSlotBaseTypes) as ReferenceSlotInstruction[];
+export const referenceSlotInstructions = Object.keys(referenceSlotTargetTypes) as ReferenceSlotInstruction[];
 
 const referenceSlotInstructionSet: ReadonlySet<string> = new Set(referenceSlotInstructions);
 

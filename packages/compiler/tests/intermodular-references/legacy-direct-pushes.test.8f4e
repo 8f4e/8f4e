@@ -4,7 +4,6 @@ note
 ; @config testRuntime.enabled true
 Legacy direct operands intentionally remain legal during the fixed-reference migration.
 When direct pushes are removed, convert these cases to rejection fixtures.
-See docs/intermodular-push-audit.md.
 noteEnd
 
 entry test
@@ -26,9 +25,9 @@ assertEqual values
 push &source:
 load
 assertEqual 11
-push source:values&
-assertEqual values+8
-push source:&
+push end(source:values)
+assertEqual values+12
+push end(source:)-4
 load
 assertEqual 99
 

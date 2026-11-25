@@ -1,5 +1,6 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EventDispatcher } from '@8f4e/editor-core';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { removeMemoryConnectionsPlugin } from '../src/index';
 
@@ -24,6 +25,7 @@ entryEnd`;
 	let events!: EventDispatcher;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(source),
 			plugins: [
 				{
@@ -37,11 +39,9 @@ entryEnd`;
 		});
 		editor.state.editorMode = 'edit';
 		const state = editor.state;
-		await vi.waitFor(() =>
-			expect(state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'target')).toBe(true)
-		);
+		await vi.waitFor(() => expect(state.project.activeLevel.blocks.some(block => block.name === 'target')).toBe(true));
 		editor.pauseRendering();
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const pointer = (type: string, x: number, y: number) => {
 			events.dispatch(type, {
 				x,

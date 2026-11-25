@@ -1,5 +1,7 @@
-import { mountLandingEditor } from '@8f4e/editor-landing';
+import { type LandingEditorInstance, mountLandingEditor } from '@8f4e/editor-landing';
+import type {} from '@vitest/browser-playwright';
 import { afterEach, expect, test, vi } from 'vitest';
+import { cdp } from 'vitest/browser';
 import { mountHomepageEditors } from './homepage';
 import { getHomepageProjectUrl } from './homepage-projects';
 
@@ -46,7 +48,7 @@ function setup(response?: () => Promise<Response>) {
 		await started();
 		return await vi.mocked(mountLandingEditor).mock.results[0].value;
 	};
-	return { canvas, frame, started, mounted };
+	return { canvas, frame, started, mounted, dispose };
 }
 
 test('reveals the homepage editor after its initial project load completes', async () => {
@@ -62,11 +64,59 @@ test('reveals the homepage editor after its initial project load completes', asy
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
 });
 
+test.each([false, true])('waits for the editor mount and respects disposal (disposed=%s)', async disposed => {
+	let finish!: (editor: LandingEditorInstance) => void;
+	const pending = new Promise<LandingEditorInstance>(resolve => {
+		finish = resolve;
+	});
+	const editor = {
+		dispose: vi.fn(),
+		pauseRendering: vi.fn(),
+		resumeRendering: vi.fn(),
+		releaseRenderingResources: vi.fn(),
+	} as unknown as LandingEditorInstance;
+	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
+	const view = setup(async () => new Response('8f4e/v1'));
+	await view.started();
+	await new Promise(requestAnimationFrame);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+
+	if (disposed) view.dispose();
+	finish(editor);
+	await view.mounted();
+	if (disposed) {
+		expect(editor.dispose).toHaveBeenCalledOnce();
+		await new Promise(requestAnimationFrame);
+		expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+	} else {
+		await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
+	}
+});
+
+test('reports a rejected renderer mount without revealing the editor', async () => {
+	let fail!: (error: Error) => void;
+	const pending = new Promise<LandingEditorInstance>((_, reject) => {
+		fail = reject;
+	});
+	vi.mocked(mountLandingEditor).mockImplementationOnce(() => pending);
+	const view = setup(async () => new Response('8f4e/v1'));
+	await view.started();
+	await new Promise(requestAnimationFrame);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+	const error = new Error('Font unavailable');
+	fail(error);
+	await expect(view.mounted()).rejects.toBe(error);
+	await vi.waitFor(() =>
+		expect(view.frame.querySelector('[role="alert"]')?.textContent).toContain('This project could not be loaded.')
+	);
+	expect(view.canvas.classList.contains('editor-ready')).toBe(false);
+});
+
 test('reports URL loading failures on the homepage without revealing an empty editor', async () => {
 	const view = setup(async () => {
 		throw new Error('Offline');
 	});
-	await view.mounted();
+	await expect(view.mounted()).rejects.toThrow('Offline');
 	await vi.waitFor(() =>
 		expect(view.frame.querySelector('[role="alert"]')?.textContent).toContain('This project could not be loaded.')
 	);
@@ -77,11 +127,86 @@ test('reveals an initialized empty editor when no project URL is supplied', asyn
 	const view = setup();
 	const editor = await view.mounted();
 	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
-	expect(editor.state.initialProjectState.execution).toEqual([]);
+	expect(editor.state.project.rootLevel.blocks).toEqual([
+		expect.objectContaining({ name: 'env', blockType: 'constants' }),
+	]);
 	const enterEdit = new KeyboardEvent('keydown', { key: 'e', cancelable: true });
 	view.canvas.dispatchEvent(enterEdit);
 	expect(enterEdit.defaultPrevented).toBe(false);
 	expect(editor.state.editorMode).toBe('view');
+});
+
+test.each(['release', 'blur'])('continues panning a homepage demo outside its canvas until %s', async end => {
+	const view = setup();
+	const editor = await view.mounted();
+	await vi.waitFor(() => expect(view.canvas.classList.contains('editor-ready')).toBe(true));
+	await vi.dynamicImportSettled();
+
+	const { x, y } = editor.state.viewport;
+	const rect = view.canvas.getBoundingClientRect();
+	const frame = window.frameElement!.getBoundingClientRect();
+	const point = (dx: number, dy: number) => ({
+		x: frame.left + rect.right - 35 + dx,
+		y: frame.top + rect.top + 80 + dy,
+	});
+	const mouse = cdp();
+	const panned = { x: x - 74, y: y - 11 };
+	await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 0, ...point(0, 0) });
+	await mouse.send('Input.dispatchMouseEvent', {
+		type: 'mousePressed',
+		button: 'left',
+		buttons: 1,
+		clickCount: 1,
+		...point(0, 0),
+	});
+	try {
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...point(20, 5) });
+		expect(editor.state.viewport).toMatchObject({ x: x - 20, y: y - 5 });
+		await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...point(74, 11) });
+		expect(editor.state.viewport).toMatchObject(panned);
+		if (end === 'blur') {
+			window.dispatchEvent(new Event('blur'));
+			expect(editor.state.viewport).toMatchObject(panned);
+		}
+	} finally {
+		await mouse.send('Input.dispatchMouseEvent', {
+			type: 'mouseReleased',
+			button: 'left',
+			buttons: 0,
+			clickCount: 1,
+			...point(74, 11),
+		});
+	}
+	expect(editor.state.viewport).toMatchObject(panned);
+	await mouse.send('Input.dispatchMouseEvent', { type: 'mouseMoved', buttons: 0, ...point(10, 50) });
+	expect(editor.state.viewport).toMatchObject(panned);
+});
+
+test('keeps touch panning horizontal on the homepage', async () => {
+	const input = cdp();
+	await input.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+	try {
+		const view = setup();
+		const editor = await view.mounted();
+		await expect.poll(() => view.canvas.style.touchAction).toBe('pan-y');
+		const { x, y } = editor.state.viewport;
+		const rect = view.canvas.getBoundingClientRect();
+		const frame = window.frameElement!.getBoundingClientRect();
+		const point = (dx: number, dy: number) => ({
+			x: frame.left + rect.left + 100 + dx,
+			y: frame.top + rect.top + 100 + dy,
+		});
+		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(0, 0)] });
+		try {
+			await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(37, 4)] });
+			expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
+		} finally {
+			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		}
+		expect(editor.state.viewport).toMatchObject({ x: x - 37, y });
+	} finally {
+		await input.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
 });
 
 test('runs landing-page projects without opening an invisible context menu', async () => {

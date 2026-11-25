@@ -10,8 +10,7 @@ import { classifyIdentifier, decodeStringLiteral, parseArgument } from './parseA
  * correct referenceKind for tokens that would be misclassified if the order were violated:
  *
  * 1. intermodular-module-reference (&mod:) before intermodular-reference (&mod:mem)
- *    — &mod: would match isIntermodularReference if checked first (the memory
- *      name part would be empty, but the module-base form must win).
+ *    — the module selector must win over a named-memory selector with an empty name.
  * 2. intermodular-module-nth-reference (&mod:0) before intermodular-reference (&mod:mem)
  *    — digits are valid [^\s&:.] characters, so &mod:0 silently classifies as a
  *      named memory reference if the nth check comes second.
@@ -25,8 +24,8 @@ describe('classifyIdentifier – check ordering regression', () => {
 			expect(classifyIdentifier('&mod:').referenceKind).toBe('intermodular-module-reference');
 		});
 
-		it('classifies module:& as intermodular-module-reference', () => {
-			expect(classifyIdentifier('module:&').referenceKind).toBe('intermodular-module-reference');
+		it('classifies end(module:) as an end-address query', () => {
+			expect(classifyIdentifier('end(module:)').referenceKind).toBe('end-address');
 		});
 	});
 
@@ -56,7 +55,7 @@ describe('classifyIdentifier – check ordering regression', () => {
 			expect(result.scope).toBe('intermodule');
 		});
 
-		it.each(['&module:', 'module:0', '&module:0&', '&module:-1', '&module:1.5'])(
+		it.each(['&module:', 'module:0', '&module:-1', '&module:1.5'])(
 			'does not classify malformed nth reference %s as an nth reference',
 			value => {
 				expect(classifyIdentifier(value).referenceKind).not.toBe('intermodular-module-nth-reference');
@@ -69,8 +68,8 @@ describe('classifyIdentifier – check ordering regression', () => {
 			expect(classifyIdentifier('&mod:mem').referenceKind).toBe('intermodular-reference');
 		});
 
-		it('classifies mod:mem& as intermodular-reference', () => {
-			expect(classifyIdentifier('mod:mem&').referenceKind).toBe('intermodular-reference');
+		it('classifies end(mod:mem) as an end-address query', () => {
+			expect(classifyIdentifier('end(mod:mem)').referenceKind).toBe('end-address');
 		});
 	});
 
@@ -81,9 +80,9 @@ describe('classifyIdentifier – check ordering regression', () => {
 			expect(result.scope).toBe('local');
 		});
 
-		it('classifies name& as memory-reference', () => {
-			const result = classifyIdentifier('name&');
-			expect(result.referenceKind).toBe('memory-reference');
+		it('classifies end(name) as an end-address query', () => {
+			const result = classifyIdentifier('end(name)');
+			expect(result.referenceKind).toBe('end-address');
 			expect(result.scope).toBe('local');
 		});
 	});
@@ -94,8 +93,7 @@ describe('classifyIdentifier – check ordering regression', () => {
 			classifyIdentifier('sizeof(*source:buffer)'),
 			classifyIdentifier('sizeof(*source:path:buffer)'),
 			classifyIdentifier('count(source:path:buffer)'),
-			classifyIdentifier('count(source:buffer)&'),
-			classifyIdentifier('*buffer&'),
+			classifyIdentifier('end(*buffer)'),
 			classifyIdentifier('*buffer'),
 			classifyIdentifier('**buffer'),
 			classifyIdentifier('count(*buffer)'),
@@ -142,20 +140,11 @@ describe('classifyIdentifier – check ordering regression', () => {
 			},
 			{
 				type: ArgumentType.IDENTIFIER,
-				value: 'count(source:buffer)&',
-				referenceKind: 'intermodular-reference',
-				scope: 'intermodule',
-				targetModuleId: 'count(source',
-				targetMemoryId: 'buffer)',
-				isEndAddress: true,
-			},
-			{
-				type: ArgumentType.IDENTIFIER,
-				value: '*buffer&',
-				referenceKind: 'memory-reference',
+				value: 'end(*buffer)',
+				referenceKind: 'end-address',
 				scope: 'local',
-				targetMemoryId: '*buffer',
-				isEndAddress: true,
+				targetKind: 'pointee',
+				targetMemoryId: 'buffer',
 			},
 			{
 				type: ArgumentType.IDENTIFIER,

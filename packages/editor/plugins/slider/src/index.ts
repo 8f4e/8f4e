@@ -1,10 +1,10 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { drawSliders } from './drawer/draw';
 import { getSliderDefaultEdits } from './helpers/saveDefaults';
 import { registerSliderInteraction } from './state/interaction';
-import { registerSliderLayout } from './state/layout';
+import { registerSliderPreparation } from './state/layout';
 import type { Slider } from './types';
 
 const saveAction = 'saveSliderValuesToCode';
@@ -16,16 +16,16 @@ export function createSliderPlugin({
 }): EditorPlugin {
 	return {
 		id: 'slider',
-		setup: ({ store, events, menus, layout, drawers }) => {
+		setup: ({ store, events, menus, layout, renderRegistry }) => {
 			const state = store.getState();
-			const slidersByBlock = new WeakMap<CodeBlockGraphicData, Slider[]>();
-			const unregisterLayout = registerSliderLayout(layout, slidersByBlock);
-			const unregisterDrawer = drawers.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
+			const slidersByBlock = new WeakMap<EditorCodeBlock, Slider[]>();
+			const unregisterPreparation = registerSliderPreparation(store, layout, slidersByBlock);
+			const unregisterDrawer = renderRegistry.registerCodeBlockDrawer(({ draw, codeBlock, memoryViews }) => {
 				drawSliders(draw, state, slidersByBlock.get(codeBlock) ?? [], memoryViews);
 			});
 			const unregisterInteraction = registerSliderInteraction(state, events, slidersByBlock, writeMemory);
-			const unregisterMenuItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-				if (state.editorMode !== 'edit' || !slidersByBlock.get(codeBlock)?.length) return;
+			const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
+				if (state.editorMode !== 'edit' || codeBlock.readOnly || !slidersByBlock.get(codeBlock)?.length) return;
 				return {
 					title: 'Save slider values to code',
 					action: saveAction,
@@ -34,14 +34,10 @@ export function createSliderPlugin({
 					disabled: !state.callbacks.getWordFromMemory,
 				};
 			});
-			const onSave = ({
-				codeBlock = state.codeBlockRendering.selectedCodeBlock,
-			}: {
-				codeBlock?: CodeBlockGraphicData;
-			} = {}) => {
+			const onSave = ({ codeBlock = state.project.selectedCodeBlock }: { codeBlock?: EditorCodeBlock } = {}) => {
 				if (state.editorMode !== 'edit' || !codeBlock) return;
 				const edits = getSliderDefaultEdits(state, slidersByBlock.get(codeBlock) ?? []);
-				applyCodeBlockSourceEdits({ store, events }, edits, { affectsCompilation: true });
+				applyCodeBlockSourceEdits(store, edits);
 			};
 			events.on(saveAction, onSave);
 			return () => {
@@ -49,7 +45,7 @@ export function createSliderPlugin({
 				unregisterMenuItem();
 				unregisterInteraction();
 				unregisterDrawer();
-				unregisterLayout();
+				unregisterPreparation();
 			};
 		},
 	};

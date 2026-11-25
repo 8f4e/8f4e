@@ -1,5 +1,5 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import { displayRowToGridRow, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { parseTextureDirective, type TextureDirective } from './directive';
 
 interface BlockTexture extends TextureDirective {
@@ -8,7 +8,7 @@ interface BlockTexture extends TextureDirective {
 }
 
 export function createTextureLayout(layout: EditorLayoutRegistry) {
-	const viewsByBlock = new WeakMap<CodeBlockGraphicData, BlockTexture[]>();
+	const viewsByBlock = new WeakMap<EditorCodeBlock, BlockTexture[]>();
 	const contribution = layout.createContribution();
 	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
 		const items = matchEditorDirectives(codeBlock.parsedDirectives, [{ name: 'texture' }]).flatMap(directive => {
@@ -20,11 +20,13 @@ export function createTextureLayout(layout: EditorLayoutRegistry) {
 		contribution.update(codeBlock, {
 			verticalSpaceAfterSourceLine: items.map(({ data, line }) => ({
 				sourceLineIndex: line,
-				heightInRows: Math.ceil((data.crop.height * data.magnification) / state.viewport.hGrid),
+				heightInRows: Math.ceil((data.crop.height * data.magnification.y) / state.viewport.hGrid),
 			})),
 			minGridWidth: items.length
 				? leftColumns +
-					Math.ceil(Math.max(...items.map(({ data }) => data.crop.width * data.magnification)) / state.viewport.vGrid) +
+					Math.ceil(
+						Math.max(...items.map(({ data }) => data.crop.width * data.magnification.x)) / state.viewport.vGrid
+					) +
 					1
 				: undefined,
 		});
@@ -33,11 +35,11 @@ export function createTextureLayout(layout: EditorLayoutRegistry) {
 			codeBlock,
 			items.map(({ data, line, displayRow }) => {
 				const preceding = usedRows.get(line) ?? 0;
-				usedRows.set(line, preceding + Math.ceil((data.crop.height * data.magnification) / state.viewport.hGrid));
+				usedRows.set(line, preceding + Math.ceil((data.crop.height * data.magnification.y) / state.viewport.hGrid));
 				return {
 					...data,
 					x: leftColumns * state.viewport.vGrid,
-					y: (gapCalculator(displayRow, codeBlock.gaps) + 1 + preceding) * state.viewport.hGrid,
+					y: (displayRowToGridRow(displayRow, codeBlock.gaps) + 1 + preceding) * state.viewport.hGrid,
 				};
 			})
 		);

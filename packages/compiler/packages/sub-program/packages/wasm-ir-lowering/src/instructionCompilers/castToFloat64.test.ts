@@ -11,7 +11,7 @@ describe('castToFloat64 instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToFloat64,
-			{ instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
+			{ diagnosticSource: { kind: 'document' }, instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: true }] })
 		);
@@ -26,7 +26,7 @@ describe('castToFloat64 instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToFloat64,
-			{ instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
+			{ diagnosticSource: { kind: 'document' }, instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: true }] })
 		);
@@ -41,7 +41,7 @@ describe('castToFloat64 instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToFloat64,
-			{ instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
+			{ diagnosticSource: { kind: 'document' }, instruction: 'castToFloat64', lineNumber: 1, arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: true }] })
 		);

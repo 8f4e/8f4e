@@ -1,0 +1,245 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Integer stores use the destination
+pointer's element width and leave
+neighboring elements intact.
+noteEnd
+
+function writeByte
+#impure
+param int8u* buffer
+param int index
+param int value
+push buffer
+push index
+add
+push value
+store
+functionEnd
+
+function writeShort
+#impure
+param int16u* buffer
+param int index
+param int value
+push buffer
+push index
+push 2
+mul
+add
+push value
+store
+functionEnd
+
+entry test
+module byteStoreAssertions
+int8u[] bytes 4 17 34 51 68
+int8[] signedBytes 2 -2 -3
+int8u* pointer &bytes
+
+; A byte store truncates the value without
+; overwriting the next three bytes.
+push &bytes
+push 0x1ff
+store
+push &bytes
+load8u
+assertEqual 255
+push &bytes
+push 1
+add
+load8u
+assertEqual 34
+push &bytes
+push 2
+add
+load8u
+assertEqual 51
+push &bytes
+push 3
+add
+load8u
+assertEqual 68
+
+push &signedBytes
+push -129
+store
+push &signedBytes
+load8s
+assertEqual 127
+push &signedBytes
+push 1
+add
+load8s
+assertEqual -3
+
+; Pointer arithmetic and function parameters
+; preserve the byte destination type.
+push pointer
+push 1
+push 0x123
+call writeByte
+push &bytes
+load8u
+assertEqual 255
+push &bytes
+push 1
+add
+load8u
+assertEqual 35
+push &bytes
+push 2
+add
+load8u
+assertEqual 51
+push &bytes
+push 3
+add
+load8u
+assertEqual 68
+moduleEnd
+
+module shortStoreAssertions
+int16u[] shorts 3 4369 8738 13107
+int16[] signedShorts 2 -2 -3
+
+push &shorts
+push 0x1ffff
+store
+push &shorts
+load16u
+assertEqual 65535
+push &shorts
+push 2
+add
+load16u
+assertEqual 8738
+push &shorts
+push 4
+add
+load16u
+assertEqual 13107
+
+push &signedShorts
+push -32769
+store
+push &signedShorts
+load16s
+assertEqual 32767
+push &signedShorts
+push 2
+add
+load16s
+assertEqual -3
+
+push &shorts
+push 1
+push 0x12345
+call writeShort
+push &shorts
+load16u
+assertEqual 65535
+push &shorts
+push 2
+add
+load16u
+assertEqual 9029
+push &shorts
+push 4
+add
+load16u
+assertEqual 13107
+moduleEnd
+
+module pointerSlotAssertions
+int8u[] bytes 300
+int8u* pointer &bytes
+int8u** slot &pointer
+
+; The address of a byte pointer points at
+; a four-byte pointer slot, not a pixel.
+push &pointer
+push &bytes
+push 256
+add
+store
+push pointer
+push &bytes
+push 256
+add
+sub
+assertEqual 0
+
+push slot
+push &bytes
+store
+push pointer
+assertEqual &bytes
+
+push pointer
+push 255
+store
+push &bytes
+load8u
+assertEqual 255
+push &bytes
+push 1
+add
+load8u
+assertEqual 0
+moduleEnd
+
+module guardedStoreAssertions
+int8u[] bytes 1
+int16u[] shorts 1
+int8u* bytePointer &bytes
+int16u* shortPointer &shorts
+
+; A byte store fits at the final byte of
+; linear memory, even though a word does not.
+push bytePointer
+push 1000000000
+add
+clampGlobalAddress 1
+push 127
+store
+push bytePointer
+push 1000000000
+add
+clampGlobalAddress 1
+load8u
+assertEqual 127
+
+; A short store fits in the final two bytes.
+push shortPointer
+push 1000000000
+add
+clampGlobalAddress 2
+push 0x1234
+store
+push shortPointer
+push 1000000000
+add
+clampGlobalAddress 2
+load16u
+assertEqual 4660
+
+; A short store at the final single byte
+; must skip the complete write.
+push shortPointer
+push 1000000000
+add
+clampGlobalAddress 1
+push 65535
+store
+push shortPointer
+push 1000000000
+add
+clampGlobalAddress 2
+load16u
+assertEqual 4660
+moduleEnd
+entryEnd

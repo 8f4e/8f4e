@@ -235,7 +235,6 @@
               "value": "copySourceSource",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "source",
@@ -277,7 +276,6 @@
               "value": "copySourceSource",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "dest",

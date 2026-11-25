@@ -4,20 +4,17 @@ import type createEvents from './index';
 
 it('requires lifecycle payloads and infers them from their event names', () => {
 	// Compile this contract without executing its deliberately invalid examples.
-	const check = (events: EventDispatcher, project: ProjectLevel) => {
+	const check = (events: EventDispatcher, level: ProjectLevel) => {
 		events.dispatch('ready');
-		events.dispatch('codeBlockLayoutsChanged', { project, codeBlocks: [] });
-		events.dispatch('codeBlockSourcesChanged', { codeBlocks: [] });
+		events.dispatch('codeBlockLayoutsChanged', { level, codeBlocks: [] });
 		events.on('codeBlockLayoutsChanged', event => {
 			expectTypeOf(event).toEqualTypeOf<CodeBlockLayoutsChangedEvent>();
 		});
 		events.on('customPluginAction', (event: { value: number }) => event.value);
 		// @ts-expect-error The completed-block list is required.
 		events.dispatch('codeBlockLayoutsChanged');
-		// @ts-expect-error A completed layout must identify its owning project.
+		// @ts-expect-error A completed layout must identify its owning level.
 		events.dispatch('codeBlockLayoutsChanged', { codeBlocks: [] });
-		// @ts-expect-error A source update must identify its blocks.
-		events.dispatch('codeBlockSourcesChanged', {});
 		// @ts-expect-error Compiler completion supplies accepted memory.
 		events.dispatch('compilationSucceeded', { memoryRef: 'memory' });
 		// @ts-expect-error A lifecycle handler cannot replace its declared payload.
@@ -26,9 +23,9 @@ it('requires lifecycle payloads and infers them from their event names', () => {
 		events.dispatch('ready', { unexpected: true });
 	};
 	expectTypeOf(check).toBeFunction();
-	const checkAsync = (events: ReturnType<typeof createEvents>, project: ProjectLevel) => {
-		events.dispatchAsync('init');
-		events.dispatchAsync('codeBlockLayoutsChanged', { project, codeBlocks: [] });
+	const checkAsync = (events: ReturnType<typeof createEvents>, level: ProjectLevel) => {
+		events.dispatchAsync('prepareInitialProject');
+		events.dispatchAsync('codeBlockLayoutsChanged', { level, codeBlocks: [] });
 		// @ts-expect-error Async delivery enforces the same required payload.
 		events.dispatchAsync('codeBlockLayoutsChanged');
 	};

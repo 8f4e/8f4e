@@ -1,5 +1,4 @@
 {
-  "code": [],
   "constants": [],
   "entries": [
     "main",
@@ -34,7 +33,6 @@
       "includes": [],
       "name": "audio",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -86,7 +84,6 @@
           "includes": [],
           "name": "shaderHelpers",
           "notes": [],
-          "prototypes": [],
           "type": "group",
           "unknown": [],
         },
@@ -97,7 +94,6 @@
       "includes": [],
       "name": "visuals",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -141,7 +137,6 @@
       "includes": [],
       "name": "assertions",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -149,6 +144,5 @@
   "functions": [],
   "includes": [],
   "notes": [],
-  "prototypes": [],
   "unknown": [],
 }

@@ -1,4 +1,4 @@
-import { getTabStopsByLine, getVisualLineWidth } from '@8f4e/editor-state';
+import { getVisualLineWidth } from '@8f4e/editor-state';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
 import { setup } from './__tests__/setup';
@@ -7,6 +7,78 @@ import { createWatchPlugin } from './index';
 const plugin = createWatchPlugin({ prefersReducedMotion: () => true });
 const source = ['module audio', 'int value 7 ; @watch', 'moduleEnd'];
 describe('watch plugin', () => {
+	it.each(['int8u', 'float', 'float64'])(
+		'reads named and inline %s& references without a runtime pointer slot',
+		async type => {
+			const test = await setup(plugin, [
+				'module audio',
+				`${type}[] samples 2 3 4`,
+				`${type}& buffer &samples ; @watch`,
+				`${type}& value &samples ; @watch *[1]`,
+				'; @watch buffer',
+				'; @watch *buffer[1]',
+				'; @watch &buffer',
+				'moduleEnd',
+			]);
+			test.render();
+			const address = String(test.compiled.memoryPlan.modules.audio.memory.samples.byteAddress);
+			const value = type === 'int8u' ? '4' : '4.0000';
+			expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([
+				address,
+				value,
+				address,
+				value,
+			]);
+			const memory = test.compiled.memoryPlan.modules.audio.memory.samples;
+			const samples = test.memoryViews[type === 'int8u' ? 'uint8' : type === 'float' ? 'float32' : 'float64'];
+			samples[memory.byteAddress / memory.elementWordSize + 1] = 6;
+			test.render();
+			const nextValue = type === 'int8u' ? '6' : '6.0000';
+			expect(vi.mocked(test.draw.drawNumericText).mock.calls.map(call => call[2])).toEqual([
+				address,
+				nextValue,
+				address,
+				nextValue,
+			]);
+		}
+	);
+	it('reads the bound pointer slot and follows its live pointee in named and inline watches', async () => {
+		const test = await setup(plugin, [
+			'module audio',
+			'int16[] first 2 -32768 123',
+			'int16[] second 2 32767 -123',
+			'int16* selected &first',
+			'int16** indirect &selected',
+			'int16*& ref &selected ; @watch **[1]',
+			'; @watch ref',
+			'; @watch *ref',
+			'; @watch **ref',
+			'; @watch **indirect',
+			'; @watch &ref',
+			'moduleEnd',
+		]);
+		const { first, second, selected } = test.compiled.memoryPlan.modules.audio.memory;
+		const renderValues = () => {
+			test.render();
+			return vi.mocked(test.draw.drawNumericText).mock.calls.map(([, , value]) => value);
+		};
+
+		expect(renderValues()).toEqual([
+			'123',
+			String(selected.byteAddress),
+			String(first.byteAddress),
+			'-32768',
+			'-32768',
+		]);
+		test.memoryViews.int32[selected.allocationUnitAddress] = second.byteAddress;
+		expect(renderValues()).toEqual([
+			'-123',
+			String(selected.byteAddress),
+			String(second.byteAddress),
+			'32767',
+			'32767',
+		]);
+	});
 	it.each(['watch', 'w'])('resolves @%s and infers anonymous inline declarations', async directive => {
 		const test = await setup(plugin, ['module audio', `int 7 ; @${directive}`, 'moduleEnd']);
 		test.render();
@@ -39,7 +111,7 @@ describe('watch plugin', () => {
 			'int8[] buffer 4 1 2 3 4',
 			'; @watch buffer[2]',
 			'; @watch &buffer[2]',
-			'; @watch buffer&',
+			'; @watch end(buffer)',
 			'moduleEnd',
 		]);
 		test.render();
@@ -86,7 +158,7 @@ describe('watch plugin', () => {
 				],
 				{ mode }
 			);
-			const selected = test.state.codeBlockRendering.selectedCodeBlock;
+			const selected = test.state.project.selectedCodeBlock;
 			const revision = test.state.projectChange.revision;
 			const layoutChanged = vi.fn();
 			test.events.on('codeBlockLayoutsChanged', layoutChanged);
@@ -104,7 +176,7 @@ describe('watch plugin', () => {
 			expectValue('12');
 			test.run();
 			expectValue('13');
-			expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(selected);
+			expect(test.state.project.selectedCodeBlock).toBe(selected);
 			expect(test.state.projectChange.revision).toBe(revision);
 			expect(layoutChanged).not.toHaveBeenCalled();
 		}
@@ -166,7 +238,7 @@ describe('watch plugin', () => {
 		const code = ['module audio', '; @tab 8 16', 'int\tvalue\t7 ; @watch', 'moduleEnd'];
 		const test = await setup(plugin, code);
 		test.render();
-		const width = getVisualLineWidth(code[2], getTabStopsByLine(code)[2]);
+		const width = getVisualLineWidth(code[2], test.block.tabStopsByLine[2]);
 		expect(test.draw.drawNumericText).toHaveBeenCalledWith(
 			test.state.viewport.vGrid * (4 + test.block.lineNumberColumnWidth + width),
 			expect.any(Number),
@@ -209,7 +281,6 @@ describe('watch plugin', () => {
 			expect.any(Number)
 		);
 		test.store.set('compiler.result.projectMemoryExposuresByGroupPath', {});
-		test.events.dispatch('memoryValuesChanged');
 		test.render();
 		expect(test.draw.drawNumericText).not.toHaveBeenCalled();
 	});

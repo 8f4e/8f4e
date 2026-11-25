@@ -23,7 +23,6 @@ const source = [
 
 const directProject: ProjectObjectModel = {
 	entries: ['main'],
-	code: [],
 	execution: [
 		{
 			type: 'module',
@@ -34,7 +33,6 @@ const directProject: ProjectObjectModel = {
 	],
 	functions: [{ id: 3, code: ['function one', 'push 1', 'functionEnd int'] }],
 	constants: [],
-	prototypes: [],
 	includes: [],
 	notes: [],
 	unknown: [],

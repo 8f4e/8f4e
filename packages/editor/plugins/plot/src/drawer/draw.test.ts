@@ -1,7 +1,7 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec, type PreparedBuffer } from '@8f4e/editor-state/memory';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
-import { createMemory } from '../__tests__/memory';
 import { createDrawContextMock } from '../__tests__/rendering';
 import type { Plot } from '../types';
 import drawPlotters from './draw';
@@ -22,6 +22,18 @@ function createMockEngine(): Engine {
 	return createDrawContextMock();
 }
 
+function createBuffer(elementCount: number): PreparedBuffer {
+	return {
+		target: {} as never,
+		samples: {
+			address: { kind: 'fixed', byteAddress: 0 },
+			elementIndex: 0,
+			spec: getMemoryValueSpec({ elementWordSize: 1, isInteger: true, isUnsigned: false }),
+		},
+		elementCount,
+	};
+}
+
 describe('drawPlotters', () => {
 	it('renders one sample per point for short arrays', () => {
 		const engine = createMockEngine();
@@ -31,14 +43,7 @@ describe('drawPlotters', () => {
 				y: 0,
 				width: 12,
 				height: 32,
-				startAddress: {
-					showAddress: true,
-					bufferPointer: 0,
-					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 }),
-				},
-				baseSampleShift: 0,
-				length: 4,
-				valueType: 'int8',
+				buffer: createBuffer(4),
 				minValue: 0,
 				maxValue: 3,
 			},
@@ -62,14 +67,7 @@ describe('drawPlotters', () => {
 				y: 0,
 				width: 13,
 				height: 32,
-				startAddress: {
-					showAddress: true,
-					bufferPointer: 0,
-					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 4 }),
-				},
-				baseSampleShift: 0,
-				length: 4,
-				valueType: 'int8',
+				buffer: createBuffer(4),
 				minValue: 0,
 				maxValue: 3,
 			},
@@ -90,14 +88,7 @@ describe('drawPlotters', () => {
 				y: 0,
 				width: 12,
 				height: 32,
-				startAddress: {
-					showAddress: true,
-					bufferPointer: 0,
-					memory: createMemory({ byteAddress: 0, allocationUnitAddress: 0, allocationUnitCount: 24 }),
-				},
-				baseSampleShift: 0,
-				length: 24,
-				valueType: 'int8',
+				buffer: createBuffer(24),
 				minValue: 0,
 				maxValue: 10,
 			},

@@ -12,6 +12,7 @@ describe('pushLocal', () => {
 
 		pushLocal(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [identifier('temp')],

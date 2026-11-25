@@ -1,0 +1,42 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Across included source files, the later file replaces matching signatures.
+Reversing the include order changes the winner and preserves other overloads.
+noteEnd
+
+entry test
+group forward
+includes
+include test/signature-overrides increment selected
+include test/signature-replacement
+includesEnd
+
+entry main
+module assertions
+call selected 3
+assertEqual 30
+call selected 1.5
+assertEqual 2.5
+moduleEnd
+entryEnd
+groupEnd
+
+group reverse
+includes
+include test/signature-replacement
+include test/signature-overrides increment selected
+includesEnd
+
+entry main
+module assertions
+call selected 3
+assertEqual 4
+call selected 1.5
+assertEqual 2.5
+moduleEnd
+entryEnd
+groupEnd
+entryEnd

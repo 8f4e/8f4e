@@ -1416,7 +1416,6 @@
               "value": "ptr",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "floatSamples",
@@ -1474,7 +1473,6 @@
               "value": "smallPtr",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "smallSamples",

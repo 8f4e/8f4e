@@ -18,11 +18,7 @@ describe('blockEnd instruction compiler', () => {
 
 		compileInstructionForTest(
 			blockEnd,
-			{
-				lineNumber: 1,
-				instruction: 'blockEnd',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'blockEnd', arguments: [] },
 			context
 		);
 

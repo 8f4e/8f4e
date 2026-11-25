@@ -1,0 +1,82 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/math/log2
+includesEnd
+
+entry test
+module log2FloatAssertions
+call log2 1.0
+assertEqual 0.0
+call log2 2.0
+assertEqual 1.0
+call log2 0.5
+assertEqual -1.0
+call log2 256.0
+assertEqual 8.0
+call log2 1.401298464324817e-45
+assertEqual -149.0
+call log2 1.1754943508222875e-38
+assertEqual -126.0
+call log2 1.7014118346046923e38
+assertEqual 127.0
+call log2 3.0
+sub 1.584962500721156
+abs
+push 0.00001
+lessOrEqual
+assert
+call log2 1.999
+sub 0.9992784720825405
+abs
+push 0.00001
+lessOrEqual
+assert
+call log2 0.7
+sub -0.5145731728297583
+abs
+push 0.00001
+lessOrEqual
+assert
+moduleEnd
+
+module log2DoubleAssertions
+call log2 1.0f64
+assertEqual 0.0f64
+call log2 2.0f64
+assertEqual 1.0f64
+call log2 0.5f64
+assertEqual -1.0f64
+call log2 256.0f64
+assertEqual 8.0f64
+call log2 5e-324f64
+assertEqual -1074.0f64
+call log2 2.2250738585072014e-308f64
+assertEqual -1022.0f64
+call log2 8.98846567431158e307f64
+assertEqual 1023.0f64
+call log2 3.0f64
+sub 1.584962500721156f64
+abs
+push 0.00000000016f64
+lessOrEqual
+assert
+call log2 1.999f64
+sub 0.9992784720825405f64
+abs
+push 0.00000000016f64
+lessOrEqual
+assert
+call log2 0.7f64
+sub -0.5145731728297583f64
+abs
+push 0.00000000016f64
+lessOrEqual
+assert
+moduleEnd
+
+entryEnd

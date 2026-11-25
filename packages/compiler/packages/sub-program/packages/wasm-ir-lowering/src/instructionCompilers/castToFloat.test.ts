@@ -9,11 +9,7 @@ describe('castToFloat instruction compiler', () => {
 
 		compileInstructionForTest(
 			castToFloat,
-			{
-				lineNumber: 1,
-				instruction: 'castToFloat',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'castToFloat', arguments: [] },
 			context
 		);
 

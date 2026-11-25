@@ -1,11 +1,13 @@
 {
   "code": 2,
-  "context": {
+  "domain": "syntax",
+  "instruction": "include",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 1,
     "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "include",
-    "lineNumber": 2,
+    "projectGroupPath": "",
   },
   "message": "Invalid argument for function: expected identifier.",
 }

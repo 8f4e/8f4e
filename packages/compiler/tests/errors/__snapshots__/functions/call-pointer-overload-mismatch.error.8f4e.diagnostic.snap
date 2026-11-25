@@ -1,25 +1,18 @@
 {
   "code": 68,
-  "context": {
-    "codeBlockId": "pointerOverloadMismatch",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "readInterpolated",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 6,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "No matching function overload: readInterpolated. Calls must exactly match one parameter signature. (68)
 Inferred call: readInterpolated(int, int16*, int, float)
 Available overloads:
 - readInterpolated(int, float*, int, float)
 - readInterpolated(int, int*, int, float)",
+  "symbol": "pointerOverloadMismatch",
 }

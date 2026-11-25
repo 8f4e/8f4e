@@ -96,7 +96,7 @@ moduleEnd
 
 module constantExpressionAssertions
 ; Constants can reference
-; constants and shape memory
+; constants and memory
 ; sizes.
 const SIZE 8
 int[] dividedBuffer SIZE/2

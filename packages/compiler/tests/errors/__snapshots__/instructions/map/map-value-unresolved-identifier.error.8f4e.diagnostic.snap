@@ -1,26 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "mapValueUnresolvedIdentifier",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 1,
-      },
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "MISSING_CONST",
-      },
-    ],
-    "instruction": "map",
+  "domain": "semantic",
+  "instruction": "map",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 6,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Undeclared identifier: MISSING_CONST. (5)",
 }

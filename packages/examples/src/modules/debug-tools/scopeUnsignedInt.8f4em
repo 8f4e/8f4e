@@ -17,8 +17,8 @@ add
 store
 
 push bufferPointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &bufferPointer
 push &buffer

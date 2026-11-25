@@ -1,8 +1,9 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { EventDispatcher } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSwitchPlugin } from './index';
 
@@ -48,8 +49,8 @@ async function setup(code = source, installed = true) {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
-	events.dispatch('enterEditMode');
-	const drawers = createEditorDrawerRegistry();
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	const renderRegistry = createEditorRenderRegistry();
 	const disposePlugin = installed
 		? createSwitchPlugin({ writeMemory: write }).setup({
 				store,
@@ -58,7 +59,7 @@ async function setup(code = source, installed = true) {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -66,13 +67,10 @@ async function setup(code = source, installed = true) {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'controls')!;
+	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+	events.dispatch('enterEditMode');
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === 'controls')!;
 	const address = compiled.memoryPlan.modules.controls.memory.gate.allocationUnitAddress;
 	const draw = {
 		drawSprite: vi.fn(),
@@ -85,7 +83,7 @@ async function setup(code = source, installed = true) {
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const press = () =>
 		events.dispatch('codeBlockPointerDown', {
@@ -93,10 +91,30 @@ async function setup(code = source, installed = true) {
 			x: codeBlock.x + codeBlock.width - 4 * state.viewport.vGrid - state.viewport.x + 1,
 			y: codeBlock.y + 2 * state.viewport.hGrid - state.viewport.y + 1,
 		});
-	return { store, state, events, drawers, codeBlock, memoryViews, draw, write, render, press, address, disposePlugin };
+	return {
+		store,
+		state,
+		events,
+		renderRegistry,
+		codeBlock,
+		memoryViews,
+		draw,
+		write,
+		render,
+		press,
+		address,
+		disposePlugin,
+	};
 }
 
 describe('switch plugin', () => {
+	it('toggles the target of a fixed reference', async () => {
+		const test = await setup(['module controls', 'int gate 0', 'int& output &gate ; @switch output', 'moduleEnd']);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(test.address, 1, true);
+		test.press();
+		expect(test.write).toHaveBeenLastCalledWith(test.address, 0, true);
+	});
 	afterEach(() => {
 		while (cleanups.length) cleanups.pop()!();
 	});
@@ -157,12 +175,21 @@ describe('switch plugin', () => {
 
 	it('replaces widgets after source edits and removes them when the directive is deleted', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @switch &gate 0 7';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @switch &gate 0 7' : line)),
+				},
+			],
+		});
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address, 7, true);
-		test.codeBlock.code[2] = '; no widget';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no widget' : line)) },
+			],
+		});
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		test.write.mockClear();
@@ -202,15 +229,18 @@ describe('switch plugin', () => {
 		expect(test.memoryViews.int32[test.address]).toBe(0);
 	});
 
-	it('rebinds after runtime memory metadata changes and drops unresolved widgets', async () => {
+	it('rebinds after compiler memory metadata changes and drops unresolved widgets', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.controls.memory;
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.controls.memory };
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
 		memory.gate = { ...memory.gate, allocationUnitAddress: test.address + 4 };
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', { ...memory });
+		expect(layoutsChanged).not.toHaveBeenCalled();
 		test.press();
 		expect(test.write).toHaveBeenLastCalledWith(test.address + 4, 1, true);
 		delete memory.gate;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.controls.memory', memory);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 	});

@@ -1,13 +1,6 @@
 export { getDocumentProjectBlockType, getProjectBlockType } from './blockClassification';
 export { BLOCK_DELIMITERS, FORMAT_HEADER, INCLUDES_BLOCK_DELIMITER } from './delimiters';
-export {
-	collectProjectIncludeIdsFromBlock,
-	collectProjectIncludeIdsFromText,
-	ProjectIncludeError,
-	resolveFunctionIncludeSource,
-	resolveProjectIncludes,
-	resolveProjectIncludesAsync,
-} from './functionIncludes';
+export { resolveProjectIncludesAsync } from './functionIncludes';
 export { parseProjectSource } from './parseProjectSource';
 export { getExpectedProjectCloserPrefix, getProjectCloserKeyword, getProjectOpenerKeyword } from './projectKeywords';
 export {
@@ -16,4 +9,5 @@ export {
 	tryParseProjectMemoryExposureLine,
 } from './projectMemoryExposure';
 export { validateProjectCodeBlock } from './projectSource';
-export { extractProjectTemplates, inlineProjectTemplates } from './projectTemplates';
+export { extractProjectTemplates } from './projectTemplates';
+export { validateUniqueSiblingGroupNames } from './validateUniqueSiblingGroupNames';

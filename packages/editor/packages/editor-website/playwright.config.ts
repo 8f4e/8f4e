@@ -4,7 +4,12 @@ export default defineConfig({
 	testDir: './browser-tests',
 	workers: 1,
 	timeout: 60_000,
-	expect: { timeout: 15_000 },
+	expect: {
+		timeout: 15_000,
+		toHaveScreenshot: {
+			pathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}-{projectName}{ext}',
+		},
+	},
 	outputDir: '.playwright-results',
 	use: {
 		baseURL: 'http://localhost:3103',

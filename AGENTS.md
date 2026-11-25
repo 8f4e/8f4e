@@ -29,7 +29,6 @@
   and consume production inputs from dependencies.
 - Exclude test-only paths narrowly. Keep shipped fixtures, catalogs, stdlib, bundled modules, workers and
   worklets in production inputs. Verify changes with `nx show target inputs <project>:<target> --json`.
-  See [the build input audit](docs/build-input-audit.md).
 - Keep fixture data local when dependency integration is outside the test's scope. Preserve required build and
   test dependencies. Nx also derives project edges from `devDependencies`.
 

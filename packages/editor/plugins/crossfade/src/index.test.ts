@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
@@ -6,6 +7,57 @@ import { createCrossfadePlugin } from './index';
 
 const source = ['module audio', 'float dry 0.25', 'float wet 0.75', '; @crossfade &dry &wet', 'moduleEnd'];
 describe('crossfade plugin', () => {
+	it('rebinds controls after compilation relocates memory without changing layout', async () => {
+		const test = await setup(createCrossfadePlugin, source);
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+				startingMemoryAllocationUnitAddress: 32,
+			}
+		);
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
+		const previous = test.compiled.memoryPlan.modules.audio.memory;
+		const memory = replacement.memoryPlan.modules.audio.memory;
+		expect(memory.dry.allocationUnitAddress).not.toBe(previous.dry.allocationUnitAddress);
+		expect(memory.wet.allocationUnitAddress).not.toBe(previous.wet.allocationUnitAddress);
+
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		expect(layoutsChanged).not.toHaveBeenCalled();
+		test.render();
+		const [x, y] = vi.mocked(test.draw.startGroup).mock.calls[0];
+		test.events.dispatch('codeBlockPointerDown', {
+			codeBlock: test.block,
+			x: test.block.x + x - test.state.viewport.x,
+			y: test.block.y + y + 1 - test.state.viewport.y,
+		});
+		expect(test.writeMemory.mock.calls).toEqual([
+			[memory.dry.allocationUnitAddress, 1, false],
+			[memory.wet.allocationUnitAddress, 0, false],
+		]);
+	});
+	it('writes both fixed-reference targets while dragging', async () => {
+		const test = await setup(createCrossfadePlugin, [
+			'module audio',
+			'float dry 0.25',
+			'float wet 0.75',
+			'float& left &dry',
+			'float& right &wet',
+			'; @crossfade left right',
+			'moduleEnd',
+		]);
+		test.render();
+		const [x, y] = vi.mocked(test.draw.startGroup).mock.calls[0];
+		test.events.dispatch('codeBlockPointerDown', {
+			codeBlock: test.block,
+			x: test.block.x + x - test.state.viewport.x,
+			y: test.block.y + y + 1 - test.state.viewport.y,
+		});
+		const memory = test.compiled.memoryPlan.modules.audio.memory;
+		expect(test.memoryViews.float32[memory.dry.allocationUnitAddress]).toBe(1);
+		expect(test.memoryViews.float32[memory.wet.allocationUnitAddress]).toBe(0);
+	});
 	it.each(['view', 'edit'] as const)('drags through pointer events in %s mode without moving the block', async mode => {
 		const test = await setup(createCrossfadePlugin, source, { mode });
 		test.render();

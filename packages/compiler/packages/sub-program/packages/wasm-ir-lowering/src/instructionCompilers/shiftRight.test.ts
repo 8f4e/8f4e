@@ -9,11 +9,7 @@ describe('shiftRight instruction compiler', () => {
 
 		compileInstructionForTest(
 			shiftRight,
-			{
-				lineNumber: 1,
-				instruction: 'shiftRight',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'shiftRight', arguments: [] },
 			context
 		);
 

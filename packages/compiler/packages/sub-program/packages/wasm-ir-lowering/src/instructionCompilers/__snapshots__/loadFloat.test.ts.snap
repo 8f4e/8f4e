@@ -11,23 +11,9 @@ exports[`loadFloat instruction compiler > loads float64 with +0 proven bytes and
     "kind": "local.get",
   },
   {
-    "kind": "memory.size",
-  },
-  {
-    "kind": "i32.const",
-    "value": 1,
-  },
-  107,
-  {
-    "kind": "i32.const",
-    "value": 16,
-  },
-  116,
-  {
     "kind": "i32.const",
     "value": 65528,
   },
-  106,
   77,
   {
     "kind": "block",
@@ -66,23 +52,9 @@ exports[`loadFloat instruction compiler > loads float64 with 4 proven bytes and 
     "kind": "local.get",
   },
   {
-    "kind": "memory.size",
-  },
-  {
-    "kind": "i32.const",
-    "value": 1,
-  },
-  107,
-  {
-    "kind": "i32.const",
-    "value": 16,
-  },
-  116,
-  {
     "kind": "i32.const",
     "value": 65528,
   },
-  106,
   77,
   {
     "kind": "block",
@@ -146,23 +118,9 @@ exports[`loadFloat instruction compiler > loads from an unsafe memory address wi
       "kind": "local.get",
     },
     {
-      "kind": "memory.size",
-    },
-    {
-      "kind": "i32.const",
-      "value": 1,
-    },
-    107,
-    {
-      "kind": "i32.const",
-      "value": 16,
-    },
-    116,
-    {
       "kind": "i32.const",
       "value": 65532,
     },
-    106,
     77,
     {
       "kind": "block",

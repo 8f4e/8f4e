@@ -1,5 +1,5 @@
-import { createMockCodeBlock, createMockState } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData, EventDispatcher, State } from '@8f4e/editor-state-types';
+import { createMockCodeBlock, createMockMemoryDeclarationSource, createMockState } from '@8f4e/editor-state-testing';
+import type { EditorCodeBlock, EventDispatcher, State } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
@@ -7,7 +7,7 @@ import type { PianoKeyboard } from '../types';
 import { registerPianoInteraction } from './interaction';
 
 describe('piano interaction', () => {
-	let keyboardsByBlock: WeakMap<CodeBlockGraphicData, PianoKeyboard[]>;
+	let keyboardsByBlock: WeakMap<EditorCodeBlock, PianoKeyboard[]>;
 	let mockEvents: EventDispatcher;
 	let mockState: State;
 	let onCallbacks: Map<string, (...args: unknown[]) => void>;
@@ -70,6 +70,7 @@ describe('piano interaction', () => {
 				})),
 				pressedKeysListMemory: {
 					id: 'notes',
+					source: createMockMemoryDeclarationSource('int[]', 1, 'notes', 10),
 					allocationUnitAddress: 5,
 					allocationUnitCount: 10,
 					numberOfElements: 10,
@@ -77,6 +78,7 @@ describe('piano interaction', () => {
 				},
 				pressedKeyCountMemory: {
 					id: 'noteCount',
+					source: createMockMemoryDeclarationSource('int', 2, 'noteCount'),
 					allocationUnitAddress: 20,
 					allocationUnitCount: 1,
 					numberOfElements: 1,

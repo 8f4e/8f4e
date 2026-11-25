@@ -1,23 +1,24 @@
 import type { CodeBlockLayoutsChangedEvent } from '../features/code-blocks/layout';
-import type { CodeBlockGraphicData } from '../features/code-blocks/types';
+import type { EditorCodeBlock, ProjectLevel } from '../features/code-blocks/types';
 import type { ProgramArtifacts } from '../features/program-compiler/types';
+import type { Position } from './types';
 
 /** Core lifecycle notifications. Plugin action names remain open and infer payloads from their handlers. */
 export interface EditorLifecycleEvents {
-	init: void;
+	/** Prepare initial project source before the font atlas or grid becomes available. Handlers must not await rendering or geometry. */
+	prepareInitialProject: void;
+	/** Initial project, grid, and viewport have settled and the first frame has drawn. */
 	ready: void;
 	dispose: void;
 	beforeProjectEdit: void;
-	compilationInputChanged: void;
 	compilationSucceeded: ProgramArtifacts;
-	/** Source arrays have changed; core synchronously refreshes their derived metadata and layout. */
-	codeBlockSourcesChanged: { codeBlocks: readonly CodeBlockGraphicData[] };
-	codeBlockLayoutContributionsChanged: { codeBlock?: CodeBlockGraphicData };
+	codeBlockLayoutContributionsChanged: { codeBlock?: EditorCodeBlock };
 	codeBlockLayoutsChanged: CodeBlockLayoutsChangedEvent;
 	gridSizeChanged: void;
-	memoryValuesChanged: void;
-	viewportResized: void;
-	viewportChanged: { previousX: number; previousY: number; x: number; y: number };
+	/** Resolve first-visit placement after the destination project source and layout have settled. */
+	resolveInitialProjectViewport: { level: ProjectLevel; position: Position };
+	/** The logical viewport has reached the supplied coordinates. The source describes the operation, not timing. */
+	viewportChanged: { previousX: number; previousY: number; x: number; y: number; source?: 'navigation' | 'pan' };
 }
 
 export type EditorEventPayload<Name extends string, Payload = unknown> = Name extends keyof EditorLifecycleEvents

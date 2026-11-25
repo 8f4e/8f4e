@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { getClampAccessByteWidth, getClampedAddressStackItem, getModuleAddressRange } from '@8f4e/semantic-utils';
 import { consume, createStackValue, produce } from './stack';
 import type { InstructionAnalysisResult } from './types';
@@ -40,11 +41,11 @@ export function analyzeClampAddress(line: CompilerASTLine, context: CompilationC
 				: undefined;
 
 	if (line.instruction === 'clampAddress' && !range) {
-		throw getError(ErrorCode.ADDRESS_RANGE_REQUIRED, line, context);
+		throw getError(ErrorCode.ADDRESS_RANGE_REQUIRED, line, { symbol: context.codeBlockId });
 	}
 
 	if (range && range.safeByteLength < accessByteWidth) {
-		throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
+		throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 	}
 
 	const produced = [getClampedAddressStackItem(consumed[0], range, accessByteWidth)];

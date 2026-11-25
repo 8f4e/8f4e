@@ -1,14 +1,14 @@
 {
   "code": 21,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [],
-    "instruction": "store",
+  "domain": "semantic",
+  "instruction": "store",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 7,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Memory IO in functions requires #impure. (21)",
+  "symbol": "invalid",
 }

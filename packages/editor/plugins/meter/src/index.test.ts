@@ -1,11 +1,23 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
 import { setup } from './__tests__/setup';
 import { meterPlugin } from './index';
 
 const source = ['module audio', 'float level 0.5 ; @meter', 'moduleEnd'];
 describe('meter plugin', () => {
+	it.each(['', 'level'])('reads an inline fixed reference with @meter %s', async expression => {
+		const test = await setup(meterPlugin, [
+			'module audio',
+			'float sample 0.5',
+			`float& level &sample ; @meter ${expression}`,
+			'moduleEnd',
+		]);
+		test.render();
+		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.positiveBase, Math.round(width / 2), 16);
+	});
 	it('uses the compiled declaration for an anonymous inline meter', async () => {
 		const test = await setup(meterPlugin, ['module audio', 'float 0.5 ; @meter', 'moduleEnd']);
 		test.render();
@@ -46,12 +58,13 @@ describe('meter plugin', () => {
 			test.state.viewport.hGrid
 		);
 	});
-	it('reads pointer sources and honors explicit ranges', async () => {
+	it.each(['pointer', '*address'])('reads %s and honors explicit ranges', async source => {
 		const test = await setup(meterPlugin, [
 			'module audio',
 			'float level 0.5',
 			'float* pointer &level',
-			'; @meter pointer 0 1',
+			'float** address &pointer',
+			`; @meter ${source} 0 1`,
 			'moduleEnd',
 		]);
 		test.render();
@@ -95,17 +108,39 @@ describe('meter plugin', () => {
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
-	it('reserves space for an inline declaration while waiting for compilation', async () => {
+	it('reserves space for an inline declaration and binds its memory when compilation succeeds without changing layout', async () => {
 		const test = await setup(meterPlugin, source);
 		test.update(['module audio', '; @meter', 'moduleEnd']);
 		test.render();
 		expect(test.block.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 
-		test.update(['module audio', 'float renamed 0.5 ; @meter', 'moduleEnd']);
+		const renamed = ['module audio', 'float renamed 0.5 ; @meter', 'moduleEnd'];
+		test.update(renamed);
 		test.render();
 		expect(test.block.gaps.get(1)?.size).toBe(1);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
+
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...renamed, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+			}
+		);
+		test.memoryViews.float32[replacement.memoryPlan.modules.audio.memory.renamed.allocationUnitAddress] = 0.5;
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		test.render();
+		const width = test.block.width - (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+		expect(test.draw.drawFill).toHaveBeenCalledWith(
+			0,
+			0,
+			PALETTE_INDICES.positiveBase,
+			Math.round(width / 2),
+			test.state.viewport.hGrid
+		);
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 	it('is optional, disposes its contributions, and isolates editors', async () => {
 		const omitted = await setup(meterPlugin, source, { installed: false });

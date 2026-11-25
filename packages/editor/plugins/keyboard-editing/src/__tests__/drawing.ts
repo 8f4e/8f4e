@@ -1,8 +1,8 @@
-import type { CodeBlockDrawerContext, CodeBlockGraphicData, State } from '@8f4e/editor-core';
+import type { CodeBlockDrawerContext, EditorCodeBlock, State } from '@8f4e/editor-core';
 import type { DrawContext } from '@8f4e/web-ui';
 import { vi } from 'vitest';
 
-export function createDrawingContext(state: State, codeBlock: CodeBlockGraphicData) {
+export function createDrawingContext(state: State, codeBlock: EditorCodeBlock) {
 	const draw = { drawGlyphs: vi.fn() };
 	const context: CodeBlockDrawerContext = {
 		draw: draw as unknown as DrawContext,

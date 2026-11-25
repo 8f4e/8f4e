@@ -13,6 +13,7 @@ describe('greaterOrEqualUnsigned stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'greaterOrEqualUnsigned',
 				arguments: [],

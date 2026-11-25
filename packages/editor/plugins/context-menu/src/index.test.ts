@@ -3,7 +3,7 @@ import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockState, createMockViewport } from '@8f4e/editor-state-testing';
 import type { ContextMenuItem } from '@8f4e/editor-state-types';
 import createStateManager from '@8f4e/state-manager';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { contextMenuPlugin } from './index';
@@ -31,7 +31,7 @@ function setup({
 	const events = createEvents();
 	const state = createMockState({ viewport: createMockViewport(0, 0, 640, 480) });
 	const store = createStateManager(state);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const activate = vi.fn();
 	const close = vi.fn();
 	events.on('activateContextMenuItem', activate);
@@ -41,7 +41,7 @@ function setup({
 	const dispose = contextMenuPlugin.setup({
 		store,
 		events,
-		drawers,
+		renderRegistry,
 	} as unknown as EditorPluginContext);
 	if (!openBeforeInstall) open();
 	cleanups.push(() => {
@@ -49,9 +49,15 @@ function setup({
 		store.dispose();
 	});
 	const draw = { startGroup: vi.fn(), endGroup: vi.fn(), drawFill: vi.fn(), drawGlyphs: vi.fn() };
-	const render = () => {
+	const render = (viewport = state.viewport) => {
 		for (const fn of Object.values(draw)) fn.mockClear();
-		drawers.drawContextMenuOverlays({ draw: draw as unknown as DrawContext, state, memoryViews: {} as MemoryViews });
+		renderRegistry.drawContextMenuOverlays({
+			draw: draw as unknown as DrawContext,
+			state,
+			viewport,
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	};
 	return { events, state, draw, render, dispose, activate, close };
 }
@@ -138,6 +144,20 @@ it('reflows on resize, grid changes, and viewport movement without changing the 
 	expect(test.state.contextMenu).toMatchObject(anchor);
 	test.events.dispatch('contextMenuPointerDown', { x: 48, y: 45 });
 	expect(test.activate).toHaveBeenCalledExactlyOnceWith({ index: 1, x: 48, y: 45 });
+});
+it('draws at the presented viewport without rebuilding labels or moving logical hit areas', () => {
+	const test = setup({ x: 160, y: 160 });
+	Object.assign(test.state.viewport, { x: 112, y: 80 });
+	test.events.dispatch('viewportChanged', { previousX: 0, previousY: 0, x: 112, y: 80, source: 'navigation' });
+	test.render();
+	expect(test.draw.startGroup).toHaveBeenCalledWith(48, 80);
+	const firstLabel = test.draw.drawGlyphs.mock.calls[0][2];
+
+	test.render({ ...test.state.viewport, x: 24, y: 32 });
+	expect(test.draw.startGroup).toHaveBeenCalledWith(136, 128);
+	expect(test.draw.drawGlyphs.mock.calls[0][2]).toBe(firstLabel);
+	test.events.dispatch('contextMenuPointerDown', { x: 56, y: 104 });
+	expect(test.activate).toHaveBeenCalledExactlyOnceWith({ index: 1, x: 56, y: 104 });
 });
 it('isolates editors and unregisters its presentation without clearing core menu content', () => {
 	const first = setup();

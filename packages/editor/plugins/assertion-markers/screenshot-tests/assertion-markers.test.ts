@@ -2,6 +2,7 @@ import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, type EditorPluginContext } from '@8f4e/editor-core';
 import { serializeToProject } from '@8f4e/editor-state';
 import { runTests } from '@8f4e/test-runner';
+import { Engine } from 'glugglugglug';
 import { afterEach, expect, test, vi } from 'vitest';
 import { assertionMarkersPlugin } from '../src/index';
 
@@ -19,6 +20,7 @@ async function setup(source: string) {
 	document.body.appendChild(canvas);
 	let store!: EditorPluginContext['store'];
 	const editor: Editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: parseProjectSource(source),
 		plugins: [
 			assertionMarkersPlugin,
@@ -36,7 +38,7 @@ async function setup(source: string) {
 		canvas.remove();
 	});
 	await vi.waitFor(() =>
-		expect(editor.state.codeBlockRendering.currentProject.blocks.some(block => block.name === 'checks')).toBe(true)
+		expect(editor.state.project.activeLevel.blocks.some(block => block.name === 'checks')).toBe(true)
 	);
 	editor.pauseRendering();
 	const compiled = await compileProject(serializeToProject(editor.state), {

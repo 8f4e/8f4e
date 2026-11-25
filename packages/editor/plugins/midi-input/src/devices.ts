@@ -65,7 +65,7 @@ export default function createMidiDeviceManager({
 	navigator,
 	onPortsChanged,
 }: {
-	store: EditorPluginContext['store'];
+	store: Pick<EditorPluginContext['store'], 'set'>;
 	navigator: Navigator;
 	onPortsChanged: () => void;
 }) {

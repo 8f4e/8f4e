@@ -1,4 +1,4 @@
-import { getCodeBlockGridWidth, serializeToProject, upsertDirective } from '@8f4e/editor-state';
+import { serializeToProject, upsertDirective } from '@8f4e/editor-state';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setup as createEditor, source } from './__tests__/editor';
 
@@ -25,7 +25,7 @@ const editingActions = [
 describe('grouping plugin', () => {
 	it('contributes actions for the clicked group, with current labels', async () => {
 		const test = setup();
-		test.state.codeBlockRendering.selectedCodeBlock = test.block('other');
+		test.state.project.selectedCodeBlock = test.block('other');
 		const items = await test.openMenu();
 		for (const action of [...editingActions, 'copyGroupBlocks']) {
 			expect(items.find(item => item.action === action)?.payload?.codeBlock).toBe(test.block('first'));
@@ -81,8 +81,9 @@ describe('grouping plugin', () => {
 		expect(second.x).toBe(originalSecondX);
 		expect(other.x).toBe(originalOtherX + test.state.viewport.vGrid);
 		const first = test.block('first');
-		first.code = upsertDirective(first.code, 'group', ['audio']);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [first] });
+		test.store.projectTransactions.apply({
+			updates: [{ codeBlock: first, code: upsertDirective(first.code, 'group', ['audio']) }],
+		});
 		test.drag(first);
 		expect(second.x).toBe(originalSecondX + test.state.viewport.vGrid);
 	});
@@ -108,7 +109,7 @@ describe('grouping plugin', () => {
 		expect(other.x).toBe(otherX);
 		expect(first.code).toContain(`; @pos ${first.gridX} ${first.gridY}`);
 		expect(test.state.projectChange.revision).toBe(revision + 1);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 	});
 
 	it.each(editingActions)('does not edit in view mode: %s', async action => {
@@ -121,13 +122,9 @@ describe('grouping plugin', () => {
 		expect(serializeToProject(test.state)).toEqual(before);
 	});
 
-	it('leaves dragging disabled when editing or module dragging is disabled', () => {
+	it('leaves dragging disabled in view mode', () => {
 		const test = setup({ mode: 'view' });
 		const before = serializeToProject(test.state);
-		test.drag(test.block('first'));
-		expect(serializeToProject(test.state)).toEqual(before);
-		test.store.set('editorMode', 'edit');
-		test.state.featureFlags.moduleDragging = false;
 		test.drag(test.block('first'));
 		expect(serializeToProject(test.state)).toEqual(before);
 	});
@@ -172,18 +169,20 @@ describe('grouping plugin', () => {
 
 	it('deletes the whole group in place and clears references to deleted blocks', () => {
 		const test = setup();
-		const blocks = test.state.codeBlockRendering.currentProject.blocks;
+		const blocks = test.state.project.activeLevel.blocks;
 		const first = test.block('first');
-		test.state.codeBlockRendering.selectedCodeBlock = first;
-		test.state.codeBlockRendering.draggedCodeBlock = test.block('second');
+		const second = test.block('second');
+		test.startDrag(second);
+		test.store.set('project.selectedCodeBlock', first);
+		expect(test.state.project.draggedCodeBlock).toBe(second);
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
 		test.events.dispatch('deleteGroup', { codeBlock: first });
-		expect(test.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+		expect(test.state.project.activeLevel.blocks).toBe(blocks);
 		expect(blocks.some(block => ['first', 'second'].includes(block.name))).toBe(false);
 		expect(test.block('other')).toBeDefined();
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.draggedCodeBlock).toBeUndefined();
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('deleteGroup', { codeBlock: first });
@@ -191,7 +190,7 @@ describe('grouping plugin', () => {
 	});
 
 	it.each(['removeFromGroupDirective', 'ungroupByName', 'setGroupNonstick'])(
-		'publishes one metadata edit and no compiler change: %s',
+		'publishes one project and compilation-input change: %s',
 		action => {
 			const test = setup();
 			const first = test.block('first');
@@ -199,7 +198,7 @@ describe('grouping plugin', () => {
 			const compilerRevision = test.state.compilerInputRevision;
 			test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
 			expect(test.state.projectChange.revision).toBe(revision + 1);
-			expect(test.state.compilerInputRevision).toBe(compilerRevision);
+			expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 			test.events.dispatch(action, { codeBlock: first, makeNonstick: true });
 			expect(test.state.projectChange.revision).toBe(revision + 1);
 			if (action === 'removeFromGroupDirective') expect(test.block('second').code).toContain('; @group audio');
@@ -250,7 +249,7 @@ describe('grouping plugin', () => {
 		const test = setup();
 		const first = test.block('first');
 		const second = test.block('second');
-		const x = first.gridX + getCodeBlockGridWidth(first.code, first.minGridWidth) + 4;
+		const x = first.gridX + first.width / test.state.viewport.vGrid + 4;
 		const otherCode = [...test.block('other').code];
 		const revision = test.state.projectChange.revision;
 		const compilerRevision = test.state.compilerInputRevision;
@@ -261,25 +260,25 @@ describe('grouping plugin', () => {
 		expect(second.code).toContain(`; @pos ${x} ${first.gridY}`);
 		expect(test.block('other').code).toEqual(otherCode);
 		expect(test.state.projectChange.revision).toBe(revision + 1);
-		expect(test.state.compilerInputRevision).toBe(compilerRevision);
+		expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		test.events.dispatch('alignGroupBlocksInRow', { codeBlock: second });
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 	});
 
 	it.each(['deleteGroup', 'setGroupNonstick', 'ungroupByName', 'alignGroupBlocksInRow'])(
-		'records one undo step for the entire operation and restores membership on redo: %s',
-		async action => {
-			vi.useFakeTimers();
+		'publishes one project change for the entire operation: %s',
+		action => {
 			const test = setup();
 			const before = serializeToProject(test.state);
+			const revision = test.state.projectChange.revision;
+			const compilerRevision = test.state.compilerInputRevision;
+			const onChange = vi.fn();
+			test.store.subscribe('projectChange', onChange);
 			test.events.dispatch(action, { codeBlock: test.block('first'), makeNonstick: true });
-			const after = serializeToProject(test.state);
-			await vi.advanceTimersByTimeAsync(1000);
-			expect(test.state.historyStack).toHaveLength(1);
-			test.events.dispatch('undo');
-			expect(serializeToProject(test.state)).toEqual(before);
-			test.events.dispatch('redo');
-			expect(serializeToProject(test.state)).toEqual(after);
+			expect(serializeToProject(test.state)).not.toEqual(before);
+			expect(onChange).toHaveBeenCalledOnce();
+			expect(test.state.projectChange.revision).toBe(revision + 1);
+			expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
 		}
 	);
 });

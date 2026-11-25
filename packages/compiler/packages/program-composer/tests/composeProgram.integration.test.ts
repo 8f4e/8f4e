@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getProjectGroups } from '@8f4e/language-spec';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { describe, expect, it } from 'vitest';
 import { composeProgram, createCompilerCache } from '../src';
@@ -49,6 +50,34 @@ describe('composeProgram fixtures', () => {
 
 	it('has project fixtures', () => {
 		expect(fixtureNames.length).toBeGreaterThan(0);
+	});
+
+	it('binds exposure declarations to their owning block while preserving stored rows', () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group outer
+entry main
+group inner
+; keep this row
+expose value &source:value
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		const [inner] = getProjectGroups(getProjectGroups(project)[0]);
+		expect(composeProgram(project).memoryExposures).toEqual([
+			{
+				name: 'value',
+				targetModuleName: 'source',
+				targetMemoryName: 'value',
+				lineNumber: 2,
+				groupPath: 'outer/inner',
+				targetModuleId: 'outer/inner/source',
+				targetMemoryId: 'value',
+				diagnosticSource: { kind: 'block', projectBlockId: inner.id, projectGroupPath: 'outer' },
+				instruction: 'expose',
+			},
+		]);
 	});
 
 	it('recomputes function passes without changing cached source calls', () => {

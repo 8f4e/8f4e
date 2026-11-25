@@ -1,6 +1,20 @@
-import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
+import { getError } from '@8f4e/compiler-diagnostics';
+import type { CompilationContext, CompilerASTLine, ResolvedLoopLine } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { cloneStack, consume } from './stack';
 import type { InstructionAnalysisResult } from './types';
+
+/** Consumes a normalized loop bound and checks that it is a scalar integer. */
+export function analyzeLoop(line: ResolvedLoopLine, context: CompilationContext): InstructionAnalysisResult {
+	if (!line.runtimeBound) return { consumed: [], produced: [] };
+
+	const consumed = consume(context, 1);
+	const [bound] = consumed;
+	if (bound?.kind !== 'value' || bound.valueType !== 'int') {
+		throw getError(ErrorCode.TYPE_MISMATCH, line, { symbol: context.codeBlockId });
+	}
+	return { consumed, produced: [] };
+}
 
 /**
  * Consumes an exit condition and marks the remaining stack as dropped for the conditional branch.

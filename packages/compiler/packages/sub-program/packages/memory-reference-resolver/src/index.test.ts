@@ -1,5 +1,12 @@
-import { ArgumentType, type ValidatedModuleAST } from '@8f4e/language-spec';
+import {
+	ArgumentType,
+	type CompilerDiagnosticLine,
+	isArrayMemoryDeclarationInstructionName,
+	type MemoryDeclarationLine,
+	type ValidatedModuleAST,
+} from '@8f4e/language-spec';
 import type { MemoryLayoutPlan, PlannedMemoryDeclaration, PlannedMemoryModule } from '@8f4e/memory-planner';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import type { MemoryReferenceResolutionContext } from './context';
 import { resolveMemoryReferences } from './index';
@@ -9,16 +16,18 @@ import { tryResolveValueArgument } from './tryResolveValueArgument';
 
 const { classifyIdentifier, parseArgument, parseCompileTimeOperand } = await import('@8f4e/tokenizer');
 
+const valueLine: CompilerDiagnosticLine = {
+	diagnosticSource: { kind: 'document' },
+	lineNumber: 1,
+	instruction: 'push',
+};
+
 function getAllocatedByteLength(allocationUnitCount: number): number {
 	return Math.max(0, allocationUnitCount) * 4;
 }
 
 function getEndByteAddress(byteAddress: number, allocationUnitCount: number): number {
-	return allocationUnitCount <= 0 ? byteAddress : byteAddress + (allocationUnitCount - 1) * 4;
-}
-
-function getEndAddressSafeByteLength(allocationUnitCount: number): number {
-	return allocationUnitCount > 0 ? 4 : 0;
+	return allocationUnitCount <= 0 ? byteAddress : byteAddress + allocationUnitCount * 4;
 }
 
 function createMemoryDeclaration(
@@ -29,7 +38,7 @@ function createMemoryDeclaration(
 		id: 0,
 		name,
 		lineNumber: 0,
-		type: 'int',
+		type: 'int' as const,
 		numberOfElements: 1,
 		elementWordSize: 4,
 		allocationUnitAddress: 0,
@@ -40,14 +49,28 @@ function createMemoryDeclaration(
 		isUnsigned: false,
 		...overrides,
 	};
+	const firstArgument = syntaxValue(classifyIdentifier(name));
+	const location = { diagnosticSource: { kind: 'document' as const }, lineNumber: declaration.lineNumber };
+	const arrayInstruction = `${declaration.type}[]`;
+	const source: MemoryDeclarationLine =
+		declaration.numberOfElements !== 1 && isArrayMemoryDeclarationInstructionName(arrayInstruction)
+			? {
+					...location,
+					instruction: arrayInstruction,
+					arguments: [
+						firstArgument,
+						{ type: ArgumentType.LITERAL, value: declaration.numberOfElements, isInteger: true },
+					],
+				}
+			: { ...location, instruction: declaration.type, arguments: [firstArgument] };
 
 	return {
 		...declaration,
+		source: overrides.source ?? source,
 		elementByteLength: declaration.numberOfElements * declaration.elementWordSize,
 		allocatedByteLength: getAllocatedByteLength(declaration.allocationUnitCount),
-		endByteAddress: getEndByteAddress(declaration.byteAddress, declaration.allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(declaration.allocationUnitCount),
-	} as PlannedMemoryDeclaration;
+		endByteAddress: declaration.byteAddress + declaration.numberOfElements * declaration.elementWordSize,
+	};
 }
 
 function createPlannedModule(
@@ -66,7 +89,6 @@ function createPlannedModule(
 		allocationUnitCount: 5,
 		memory,
 		declarations,
-		declarationSources: [],
 		...overrides,
 	};
 
@@ -74,7 +96,6 @@ function createPlannedModule(
 		...module,
 		allocatedByteLength: getAllocatedByteLength(module.allocationUnitCount),
 		endByteAddress: getEndByteAddress(module.byteAddress, module.allocationUnitCount),
-		endAddressSafeByteLength: getEndAddressSafeByteLength(module.allocationUnitCount),
 	} as PlannedMemoryModule;
 }
 
@@ -113,7 +134,6 @@ function withRemoteModules(
 
 function noConstantReferences() {
 	return {
-		prototypes: [],
 		modules: [],
 		constants: [],
 		functions: [],
@@ -123,14 +143,16 @@ function noConstantReferences() {
 describe('resolveMemoryReferences', () => {
 	it('resolves memory references across a sub-program AST using the memory plan', () => {
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
-			arguments: [classifyIdentifier('main')],
+			arguments: [syntaxValue(classifyIdentifier('main'))],
 		};
 		const pushLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'push',
-			arguments: [parseArgument('&buffer+4')],
+			arguments: [syntaxValue(parseArgument('&buffer+4'))],
 		};
 		const ast = {
 			type: 'module',
@@ -153,7 +175,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -183,24 +204,31 @@ describe('resolveMemoryReferences', () => {
 
 	it.each([0, 1, 4])('preserves a known pointee count of %i from a pointer declaration default', count => {
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
-			arguments: [classifyIdentifier('main')],
+			arguments: [syntaxValue(classifyIdentifier('main'))],
 		};
 		const samplesLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'float[]',
-			arguments: [classifyIdentifier('samples'), { type: ArgumentType.LITERAL, value: count, isInteger: true }],
-		};
+			arguments: [
+				syntaxValue(classifyIdentifier('samples')),
+				{ type: ArgumentType.LITERAL, value: count, isInteger: true },
+			],
+		} as const;
 		const pointerLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'float*',
-			arguments: [classifyIdentifier('ptr'), classifyIdentifier('&samples')],
-		};
+			arguments: [syntaxValue(classifyIdentifier('ptr')), syntaxValue(classifyIdentifier('&samples'))],
+		} as const;
 		const pushLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
-			arguments: [classifyIdentifier('count(*ptr)')],
+			arguments: [syntaxValue(classifyIdentifier('count(*ptr)'))],
 		};
 		const ast = {
 			type: 'module',
@@ -209,6 +237,7 @@ describe('resolveMemoryReferences', () => {
 			moduleLine,
 		} as unknown as ValidatedModuleAST;
 		const samples = createMemoryDeclaration('samples', {
+			source: samplesLine,
 			lineNumber: 2,
 			type: 'float',
 			numberOfElements: count,
@@ -219,6 +248,7 @@ describe('resolveMemoryReferences', () => {
 			isInteger: false,
 		});
 		const ptr = createMemoryDeclaration('ptr', {
+			source: pointerLine,
 			lineNumber: 3,
 			type: 'float*',
 			allocationUnitAddress: 8,
@@ -232,7 +262,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -252,14 +281,16 @@ describe('resolveMemoryReferences', () => {
 
 	it('applies constant facts before resolving memory references', () => {
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
-			arguments: [classifyIdentifier('main')],
+			arguments: [syntaxValue(classifyIdentifier('main'))],
 		};
 		const pushLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'push',
-			arguments: [parseArgument('&buffer+OFFSET')],
+			arguments: [syntaxValue(parseArgument('&buffer+OFFSET'))],
 		};
 		const ast = {
 			type: 'module',
@@ -282,7 +313,6 @@ describe('resolveMemoryReferences', () => {
 
 		const result = resolveMemoryReferences({
 			ast: {
-				prototypes: [],
 				modules: [ast],
 				constants: [],
 				functions: [],
@@ -291,13 +321,12 @@ describe('resolveMemoryReferences', () => {
 			memoryAliases: new Map(),
 			projectMemoryInitializerScopes: [],
 			constantReferences: {
-				prototypes: [],
 				modules: [
 					{
 						lineFacts: [
 							undefined,
 							{
-								arguments: [parseArgument('&buffer+4')],
+								arguments: [syntaxValue(parseArgument('&buffer+4'))],
 							},
 						],
 					},
@@ -307,7 +336,7 @@ describe('resolveMemoryReferences', () => {
 			},
 		});
 
-		expect(pushLine.arguments[0]).toEqual(parseArgument('&buffer+OFFSET'));
+		expect(pushLine.arguments[0]).toEqual(syntaxValue(parseArgument('&buffer+OFFSET')));
 		expect(result.references.modules[0].lineFacts[1]?.arguments?.[0]).toMatchObject({
 			type: ArgumentType.LITERAL,
 			value: 20,
@@ -316,29 +345,34 @@ describe('resolveMemoryReferences', () => {
 
 	it('resolves group aliases without changing source identifiers', () => {
 		const moduleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
-			arguments: [classifyIdentifier('consumer')],
+			arguments: [syntaxValue(classifyIdentifier('consumer'))],
 		};
 		const pointerLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'int*',
-			arguments: [classifyIdentifier('pointer'), classifyIdentifier('&audio:level')],
-		};
+			arguments: [syntaxValue(classifyIdentifier('pointer')), syntaxValue(classifyIdentifier('&audio:level'))],
+		} as const;
 		const endAddressLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
-			arguments: [classifyIdentifier('audio:level&')],
+			arguments: [syntaxValue(classifyIdentifier('end(audio:level)'))],
 		};
 		const countLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
-			arguments: [classifyIdentifier('count(audio:level)')],
+			arguments: [syntaxValue(classifyIdentifier('count(audio:level)'))],
 		};
 		const expressionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 5,
 			instruction: 'push',
-			arguments: [parseArgument('sizeof(audio:level)+1')],
+			arguments: [syntaxValue(parseArgument('sizeof(audio:level)+1'))],
 		};
 		const ast = {
 			type: 'module',
@@ -347,6 +381,7 @@ describe('resolveMemoryReferences', () => {
 			moduleLine,
 		} as unknown as ValidatedModuleAST;
 		const pointer = createMemoryDeclaration('pointer', {
+			source: pointerLine,
 			type: 'int*',
 			byteAddress: 16,
 			pointeeBaseType: 'int',
@@ -367,7 +402,7 @@ describe('resolveMemoryReferences', () => {
 		]);
 
 		const result = resolveMemoryReferences({
-			ast: { prototypes: [], modules: [ast], constants: [], functions: [] },
+			ast: { modules: [ast], constants: [], functions: [] },
 			memoryPlan,
 			memoryAliases,
 			projectMemoryInitializerScopes: [],
@@ -399,6 +434,80 @@ describe('resolveMemoryReferences', () => {
 		});
 		expect(result.references.pointerMetadataByModuleId.consumer[pointer.id]).toEqual({
 			pointeeElementCount: 8,
+		});
+	});
+});
+
+describe('min/max result types', () => {
+	const createFloat64Memory = () => ({
+		value: createMemoryDeclaration('value', {
+			type: 'float64',
+			elementWordSize: 8,
+			allocationUnitCount: 2,
+			isInteger: false,
+			isFloat64: true,
+		}),
+		doubles: createMemoryDeclaration('doubles', {
+			type: 'float64',
+			numberOfElements: 2,
+			elementWordSize: 8,
+			allocationUnitCount: 4,
+			isInteger: false,
+			isFloat64: true,
+		}),
+	});
+	const context = withRemoteModules(
+		createTestContext(
+			createPlannedModule('main', {
+				...createFloat64Memory(),
+				single: createMemoryDeclaration('single', { type: 'float', isInteger: false }),
+				integer: createMemoryDeclaration('integer', { type: 'int16u', elementWordSize: 2, isUnsigned: true }),
+				pointer: createMemoryDeclaration('pointer', {
+					type: 'float64*',
+					pointeeBaseType: 'float64',
+					pointerDepth: 1,
+				}),
+			})
+		),
+		[createPlannedModule('source', createFloat64Memory())]
+	);
+
+	it.each(['value', 'doubles', 'source:value', 'source:doubles'])('preserves float64 min/max types for %s', target => {
+		for (const [query, expected] of [
+			['min', -Number.MAX_VALUE],
+			['max', Number.MAX_VALUE],
+		] as const) {
+			expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`${query}(${target})`)), valueLine)).toEqual({
+				value: expected,
+				isInteger: false,
+				isFloat64: true,
+			});
+		}
+	});
+
+	it.each([
+		['single', -3.4028234663852886e38, 3.4028234663852886e38, false],
+		['integer', 0, 65535, true],
+		['pointer', -2147483648, 2147483647, true],
+	] as const)('preserves existing min/max types for %s', (target, min, max, isInteger) => {
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`min(${target})`)), valueLine)).toEqual({
+			value: min,
+			isInteger,
+		});
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`max(${target})`)), valueLine)).toEqual({
+			value: max,
+			isInteger,
+		});
+	});
+
+	it.each([
+		['min', -Number.MAX_VALUE / 2],
+		['max', Number.MAX_VALUE / 2],
+	] as const)('preserves float64 when folding %s(value)/2', (query, expected) => {
+		expect(tryResolveValueArgument(context, syntaxValue(parseArgument(`${query}(value)/2`)), valueLine)).toEqual({
+			value: expected,
+			isInteger: false,
+			isFloat64: true,
 		});
 	});
 });
@@ -440,93 +549,119 @@ describe('tryResolveValueArgument', () => {
 	});
 
 	it('resolves memory expression operands without resolving constant identifiers', () => {
-		expect(resolveMemoryExpressionOperand(parseCompileTimeOperand('sizeof(samples)'), mockContext)).toEqual({
+		expect(
+			resolveMemoryExpressionOperand(syntaxValue(parseCompileTimeOperand('sizeof(samples)')), mockContext, valueLine)
+		).toEqual({
 			value: 2,
 			isInteger: true,
 		});
-		expect(resolveMemoryExpressionOperand(parseCompileTimeOperand('SIZE'), mockContext)).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('SIZE'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('SIZE*2'))).toBeUndefined();
+		expect(
+			resolveMemoryExpressionOperand(syntaxValue(parseCompileTimeOperand('SIZE')), mockContext, valueLine)
+		).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('SIZE')), valueLine)).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('SIZE*2')), valueLine)).toBeUndefined();
 	});
 
 	it('resolves sizeof(name) * literal', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)*2'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(samples)*2')), valueLine)).toEqual({
 			value: 4,
 			isInteger: true,
 		});
 	});
 
 	it('resolves literal * sizeof(name)', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('123*sizeof(samples)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('123*sizeof(samples)')), valueLine)).toEqual({
 			value: 246,
 			isInteger: true,
 		});
 	});
 
 	it('resolves count(name) * literal', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('count(samples)*2'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('count(samples)*2')), valueLine)).toEqual({
 			value: 16,
 			isInteger: true,
 		});
 	});
 
 	it('applies explicit rounding after resolving memory expressions', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('round(count(samples)/3)'))).toEqual({
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('round(count(samples)/3)')), valueLine)
+		).toEqual({
 			value: 3,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('floor(count(samples)/3)'))).toEqual({
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('floor(count(samples)/3)')), valueLine)
+		).toEqual({
 			value: 2,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('ceil(sizeof(samples))'))).toEqual({
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('ceil(sizeof(samples))')), valueLine)
+		).toEqual({
 			value: 2,
 			isInteger: true,
 		});
 	});
 
 	it('resolves local memory metadata queries', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('count(*floatPtr)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('count(*floatPtr)')), valueLine)).toEqual({
 			value: 4,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(*floatPtr)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(*floatPtr)')), valueLine)).toEqual({
 			value: 4,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('max(*floatPtr)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('max(*floatPtr)')), valueLine)).toEqual({
 			value: 3.4028234663852886e38,
 			isInteger: false,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('min(*floatPtr)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('min(*floatPtr)')), valueLine)).toEqual({
 			value: -3.4028234663852886e38,
 			isInteger: false,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('max(samples)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('max(samples)')), valueLine)).toEqual({
 			value: 32767,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(mockContext, parseArgument('min(samples)'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('min(samples)')), valueLine)).toEqual({
 			value: -32768,
 			isInteger: true,
 		});
 	});
 
 	it('returns undefined for unresolved local memory metadata queries', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('count(missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('max(missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('min(missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(*missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('max(*missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('min(*missing)'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('count(*missing)'))).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(missing)')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('count(missing)')), valueLine)
+		).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('max(missing)')), valueLine)).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('min(missing)')), valueLine)).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(*missing)')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('max(*missing)')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('min(*missing)')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('count(*missing)')), valueLine)
+		).toBeUndefined();
 	});
 
 	it('returns undefined for unresolved or chained expressions', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('MISSING'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('SIZE/2/2'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('SIZE*2/2'))).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('MISSING')), valueLine)).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('SIZE/2/2')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('SIZE*2/2')), valueLine)
+		).toBeUndefined();
 	});
 
 	it('resolves intermodule sizeof expressions', () => {
@@ -536,7 +671,9 @@ describe('tryResolveValueArgument', () => {
 		});
 		const intermodularNamespace = withRemoteModules(mockContext, [createPlannedModule('source', { buffer })]);
 
-		expect(tryResolveValueArgument(intermodularNamespace, parseArgument('2*sizeof(source:buffer)'))).toEqual({
+		expect(
+			tryResolveValueArgument(intermodularNamespace, syntaxValue(parseArgument('2*sizeof(source:buffer)')), valueLine)
+		).toEqual({
 			value: 4,
 			isInteger: true,
 		});
@@ -555,11 +692,15 @@ describe('tryResolveValueArgument', () => {
 			},
 		} as unknown as MemoryReferenceResolutionContext;
 
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('max(*floatPtrPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('max(*floatPtrPtr)')), valueLine)
+		).toEqual({
 			value: 2147483647,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('min(*floatPtrPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('min(*floatPtrPtr)')), valueLine)
+		).toEqual({
 			value: -2147483648,
 			isInteger: true,
 		});
@@ -579,19 +720,27 @@ describe('tryResolveValueArgument', () => {
 			},
 		} as unknown as MemoryReferenceResolutionContext;
 
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('count(*localFloatPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('count(*localFloatPtr)')), valueLine)
+		).toEqual({
 			value: 7,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('sizeof(*localFloatPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('sizeof(*localFloatPtr)')), valueLine)
+		).toEqual({
 			value: 4,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('max(*localFloatPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('max(*localFloatPtr)')), valueLine)
+		).toEqual({
 			value: 3.4028234663852886e38,
 			isInteger: false,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('min(*localFloatPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('min(*localFloatPtr)')), valueLine)
+		).toEqual({
 			value: -3.4028234663852886e38,
 			isInteger: false,
 		});
@@ -610,8 +759,12 @@ describe('tryResolveValueArgument', () => {
 			},
 		} as unknown as MemoryReferenceResolutionContext;
 
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('count(*localFloatPtr)'))).toBeUndefined();
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('sizeof(*localFloatPtr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('count(*localFloatPtr)')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('sizeof(*localFloatPtr)')), valueLine)
+		).toEqual({
 			value: 4,
 			isInteger: true,
 		});
@@ -642,15 +795,21 @@ describe('tryResolveValueArgument', () => {
 			},
 		} as unknown as MemoryReferenceResolutionContext;
 
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('sizeof(*int8Ptr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('sizeof(*int8Ptr)')), valueLine)
+		).toEqual({
 			value: 1,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('sizeof(*int16Ptr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('sizeof(*int16Ptr)')), valueLine)
+		).toEqual({
 			value: 2,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(localPointerContext, parseArgument('sizeof(*float64Ptr)'))).toEqual({
+		expect(
+			tryResolveValueArgument(localPointerContext, syntaxValue(parseArgument('sizeof(*float64Ptr)')), valueLine)
+		).toEqual({
 			value: 8,
 			isInteger: true,
 		});
@@ -658,12 +817,16 @@ describe('tryResolveValueArgument', () => {
 
 	it('resolves explicit value expression nodes', () => {
 		expect(
-			tryResolveValueArgument(mockContext, {
-				type: ArgumentType.COMPILE_TIME_EXPRESSION,
-				left: parseCompileTimeOperand('2'),
-				operator: '*',
-				right: parseCompileTimeOperand('sizeof(samples)'),
-			})
+			tryResolveValueArgument(
+				mockContext,
+				{
+					type: ArgumentType.COMPILE_TIME_EXPRESSION,
+					left: syntaxValue(parseCompileTimeOperand('2')),
+					operator: '*',
+					right: syntaxValue(parseCompileTimeOperand('sizeof(samples)')),
+				},
+				valueLine
+			)
 		).toEqual({
 			value: 4,
 			isInteger: true,
@@ -671,21 +834,21 @@ describe('tryResolveValueArgument', () => {
 	});
 
 	it('resolves exponentiation with sizeof: sizeof(name)^literal', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)^2'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(samples)^2')), valueLine)).toEqual({
 			value: 4,
 			isInteger: true,
 		});
 	});
 
 	it('resolves addition with sizeof: sizeof(name)+1', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)+1'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(samples)+1')), valueLine)).toEqual({
 			value: 3,
 			isInteger: true,
 		});
 	});
 
 	it('resolves subtraction with sizeof: sizeof(name)-1', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)-1'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(samples)-1')), valueLine)).toEqual({
 			value: 1,
 			isInteger: true,
 		});
@@ -702,7 +865,9 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:buffer'))).toEqual({
+		expect(
+			tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('&source:buffer')), valueLine)
+		).toEqual({
 			value: 8,
 			isInteger: true,
 			address: {
@@ -717,7 +882,7 @@ describe('tryResolveValueArgument', () => {
 		});
 	});
 
-	it('resolves intermodule end-address reference (module:memory&) once module is laid out', () => {
+	it('resolves intermodule end-address reference (end(module:memory)) once module is laid out', () => {
 		const buffer = createMemoryDeclaration('buffer', {
 			byteAddress: 8,
 			allocationUnitCount: 4,
@@ -728,15 +893,17 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', { buffer }, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		// End address = byteAddress + (allocationUnitCount - 1) * 4 = 8 + 3 * 4 = 20
-		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('source:buffer&'))).toEqual({
-			value: 20,
+		// End address = byteAddress + element count * element size = 8 + 4 * 4 = 24
+		expect(
+			tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('end(source:buffer)')), valueLine)
+		).toEqual({
+			value: 24,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'memory-end',
-					byteAddress: 20,
-					safeByteLength: 4,
+					byteAddress: 24,
+					safeByteLength: 0,
 					moduleId: 'source',
 					memoryId: 0,
 				},
@@ -749,7 +916,7 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', {}, { byteAddress: 12, allocationUnitCount: 3 }),
 		]);
 
-		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:'))).toEqual({
+		expect(tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('&source:')), valueLine)).toEqual({
 			value: 12,
 			isInteger: true,
 			address: {
@@ -763,20 +930,22 @@ describe('tryResolveValueArgument', () => {
 		});
 	});
 
-	it('resolves intermodule module-base end-address (module:&) once module is laid out', () => {
+	it('resolves intermodule module-base end-address (end(module:)) once module is laid out', () => {
 		const laidOutNamespace = withRemoteModules(mockContext, [
 			createPlannedModule('source', {}, { byteAddress: 12, allocationUnitCount: 3 }),
 		]);
 
-		// End address = 12 + (3 - 1) * 4 = 12 + 8 = 20
-		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('source:&'))).toEqual({
-			value: 20,
+		// End address = 12 + 3 * 4 = 24
+		expect(
+			tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('end(source:)')), valueLine)
+		).toEqual({
+			value: 24,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'module-end',
-					byteAddress: 20,
-					safeByteLength: 4,
+					byteAddress: 24,
+					safeByteLength: 0,
 					moduleId: 'source',
 				},
 			},
@@ -784,8 +953,12 @@ describe('tryResolveValueArgument', () => {
 	});
 
 	it('returns undefined for missing intermodule address references', () => {
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('&source:buffer'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('&source:'))).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('&source:buffer')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('&source:')), valueLine)
+		).toBeUndefined();
 	});
 
 	it('returns undefined for unresolved intermodule nth references', () => {
@@ -793,12 +966,16 @@ describe('tryResolveValueArgument', () => {
 			createPlannedModule('source', {}, { byteAddress: 8, allocationUnitCount: 4 }),
 		]);
 
-		expect(tryResolveValueArgument(laidOutNamespace, classifyIdentifier('&source:99'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('&source:99'))).toBeUndefined();
+		expect(
+			tryResolveValueArgument(laidOutNamespace, syntaxValue(classifyIdentifier('&source:99')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('&source:99')), valueLine)
+		).toBeUndefined();
 	});
 
 	it('resolves current-module shorthands from compilation context', () => {
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('&this'))).toEqual({
+		expect(tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('&this')), valueLine)).toEqual({
 			value: 24,
 			isInteger: true,
 			address: {
@@ -810,14 +987,14 @@ describe('tryResolveValueArgument', () => {
 				},
 			},
 		});
-		expect(tryResolveValueArgument(mockContext, classifyIdentifier('this&'))).toEqual({
-			value: 40,
+		expect(tryResolveValueArgument(mockContext, syntaxValue(classifyIdentifier('end(this)')), valueLine)).toEqual({
+			value: 44,
 			isInteger: true,
 			address: {
 				safeRange: {
 					source: 'module-end',
-					byteAddress: 40,
-					safeByteLength: 4,
+					byteAddress: 44,
+					safeByteLength: 0,
 					moduleId: 'main',
 				},
 			},
@@ -830,8 +1007,12 @@ describe('tryResolveValueArgument', () => {
 			currentModule: undefined,
 		} as unknown as MemoryReferenceResolutionContext;
 
-		expect(tryResolveValueArgument(contextWithoutCurrentModule, classifyIdentifier('&this'))).toBeUndefined();
-		expect(tryResolveValueArgument(contextWithoutCurrentModule, classifyIdentifier('this&'))).toBeUndefined();
+		expect(
+			tryResolveValueArgument(contextWithoutCurrentModule, syntaxValue(classifyIdentifier('&this')), valueLine)
+		).toBeUndefined();
+		expect(
+			tryResolveValueArgument(contextWithoutCurrentModule, syntaxValue(classifyIdentifier('end(this)')), valueLine)
+		).toBeUndefined();
 	});
 
 	it('keeps address metadata when adding an in-range integer offset to an address expression', () => {
@@ -843,7 +1024,7 @@ describe('tryResolveValueArgument', () => {
 		});
 		const addressContext = createTestContext(createPlannedModule('main', { arr }));
 
-		expect(tryResolveValueArgument(addressContext, parseArgument('&arr+4'))).toEqual({
+		expect(tryResolveValueArgument(addressContext, syntaxValue(parseArgument('&arr+4')), valueLine)).toEqual({
 			value: 20,
 			isInteger: true,
 			address: {
@@ -867,7 +1048,7 @@ describe('tryResolveValueArgument', () => {
 		});
 		const addressContext = createTestContext(createPlannedModule('main', { arr }));
 
-		expect(tryResolveValueArgument(addressContext, parseArgument('4+&arr'))).toEqual({
+		expect(tryResolveValueArgument(addressContext, syntaxValue(parseArgument('4+&arr')), valueLine)).toEqual({
 			value: 20,
 			isInteger: true,
 			address: {
@@ -891,19 +1072,21 @@ describe('tryResolveValueArgument', () => {
 		});
 		const addressContext = createTestContext(createPlannedModule('main', { arr }));
 
-		expect(tryResolveValueArgument(addressContext, parseArgument('&arr+1024'))).toEqual({
+		expect(tryResolveValueArgument(addressContext, syntaxValue(parseArgument('&arr+1024')), valueLine)).toEqual({
 			value: 1040,
 			isInteger: true,
 		});
-		expect(tryResolveValueArgument(addressContext, parseArgument('&arr-4'))).toEqual({
+		expect(tryResolveValueArgument(addressContext, syntaxValue(parseArgument('&arr-4')), valueLine)).toEqual({
 			value: 12,
 			isInteger: true,
 		});
 	});
 
 	it('returns undefined for division by zero and non-identifier arguments', () => {
-		expect(tryResolveValueArgument(mockContext, parseArgument('sizeof(samples)/0'))).toBeUndefined();
-		expect(tryResolveValueArgument(mockContext, parseArgument('123'))).toBeUndefined();
+		expect(
+			tryResolveValueArgument(mockContext, syntaxValue(parseArgument('sizeof(samples)/0')), valueLine)
+		).toBeUndefined();
+		expect(tryResolveValueArgument(mockContext, syntaxValue(parseArgument('123')), valueLine)).toBeUndefined();
 	});
 });
 
@@ -982,7 +1165,9 @@ describe('metadata query compatibility', () => {
 		'resolves all queries for %s through the same memory facts',
 		target => {
 			for (const [index, query] of queries.entries()) {
-				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toEqual({
+				expect(
+					resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(${target})`)), context, valueLine)
+				).toEqual({
 					value: [7, 2, 65535, 0][index],
 					isInteger: true,
 				});
@@ -994,7 +1179,9 @@ describe('metadata query compatibility', () => {
 		'keeps %s unresolved for every query',
 		target => {
 			for (const query of queries) {
-				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(${target})`), context)).toBeUndefined();
+				expect(
+					resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(${target})`)), context, valueLine)
+				).toBeUndefined();
 			}
 		}
 	);
@@ -1015,9 +1202,16 @@ describe('metadata query compatibility', () => {
 		});
 		for (const target of ['memoryPtr', 'localPtr']) {
 			for (const [index, query] of queries.entries()) {
-				expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*${target})`), pointerContext)).toEqual({
+				expect(
+					resolveMemoryExpressionOperand(
+						syntaxValue(classifyIdentifier(`${query}(*${target})`)),
+						pointerContext,
+						valueLine
+					)
+				).toEqual({
 					value: [1, size, max, min][index],
 					isInteger: index < 2 || isInteger,
+					...(baseType === 'float64' && index >= 2 ? { isFloat64: true } : {}),
 				});
 			}
 		}
@@ -1037,7 +1231,11 @@ describe('metadata query compatibility', () => {
 				}
 			);
 			for (const [index, query] of queries.entries()) {
-				const result = resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext);
+				const result = resolveMemoryExpressionOperand(
+					syntaxValue(classifyIdentifier(`${query}(*ptr)`)),
+					pointerContext,
+					valueLine
+				);
 				expect(result).toEqual(
 					index === 0 && count === undefined
 						? undefined
@@ -1053,13 +1251,17 @@ describe('metadata query compatibility', () => {
 			locals: { ptr: { isInteger: true, pointeeBaseType: 'float64', pointerDepth: 1, pointeeElementCount: 3 } },
 		});
 		for (const [index, query] of queries.entries()) {
-			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*ptr)`), pointerContext)).toEqual({
+			expect(
+				resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(*ptr)`)), pointerContext, valueLine)
+			).toEqual({
 				value: [3, 1, 127, -128][index],
 				isInteger: true,
 			});
 		}
 		pointerContext.pointerMetadata = { main: { [pointer.id]: { pointeeElementCount: 0 } } };
-		expect(resolveMemoryExpressionOperand(classifyIdentifier('count(*ptr)'), pointerContext)).toEqual({
+		expect(
+			resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier('count(*ptr)')), pointerContext, valueLine)
+		).toEqual({
 			value: 0,
 			isInteger: true,
 		});
@@ -1068,11 +1270,15 @@ describe('metadata query compatibility', () => {
 	it('preserves nonpointer memory results and rejects scalar locals as pointee targets', () => {
 		const scalarContext = { ...context, locals: { scalar: { isInteger: true } } };
 		for (const query of queries) {
-			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*scalar)`), scalarContext)).toBeUndefined();
-			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(scalar)`), scalarContext)).toBeUndefined();
-			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(*samples)`), scalarContext)).toEqual(
-				query === 'count' ? undefined : { value: 0, isInteger: query === 'sizeof' }
-			);
+			expect(
+				resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(*scalar)`)), scalarContext, valueLine)
+			).toBeUndefined();
+			expect(
+				resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(scalar)`)), scalarContext, valueLine)
+			).toBeUndefined();
+			expect(
+				resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(*samples)`)), scalarContext, valueLine)
+			).toEqual(query === 'count' ? undefined : { value: 0, isInteger: query === 'sizeof' });
 		}
 	});
 
@@ -1083,7 +1289,14 @@ describe('metadata query compatibility', () => {
 			})
 		);
 		for (const query of queries) {
-			expect(resolveMemoryExpressionOperand(classifyIdentifier(`${query}(**ptr)`), pointerContext)).toBeUndefined();
+			expect(
+				resolveMemoryExpressionOperand(syntaxValue(classifyIdentifier(`${query}(**ptr)`)), pointerContext, valueLine)
+			).toBeUndefined();
 		}
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

@@ -3,8 +3,7 @@
  * These types do not belong to any single feature and are used by multiple subsystems.
  */
 
-import type { ProjectGroupPath } from '@8f4e/language-spec';
-import type { CodeBlockGraphicData } from '../features/code-blocks/types';
+import type { EditorCodeBlock } from '../features/code-blocks/types';
 import type { EditorEventArguments, EditorEventPayload } from './events';
 
 /**
@@ -85,9 +84,10 @@ export interface InternalPointerEvent {
 export interface CodeBlockPointerDownEvent {
 	x: number;
 	y: number;
+	buttons: number;
 	relativeX: number;
 	relativeY: number;
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 	/** A control sets this when it takes ownership of the pointer. */
 	stopPropagation: boolean;
 }
@@ -96,10 +96,8 @@ export interface CodeBlockPointerDownEvent {
  * A raw source error contributed to shared editor state.
  */
 export interface CodeError {
-	lineNumber: number;
+	lineNumber?: number;
 	message: string;
 	/** Creation index of the code block that owns the error. */
-	codeBlockId: number;
-	/** Project scope that owns an error not associated with a document block id. */
-	projectGroupPath?: ProjectGroupPath;
+	codeBlockId?: number;
 }

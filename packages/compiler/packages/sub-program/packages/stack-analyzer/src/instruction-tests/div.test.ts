@@ -13,11 +13,7 @@ describe('div stack analysis', () => {
 
 		expect(() => {
 			analyzeInstruction(
-				{
-					lineNumber: 1,
-					instruction: 'div',
-					arguments: [],
-				} as CompilerASTLine,
+				{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] } as CompilerASTLine,
 				context
 			);
 		}).toThrowError();
@@ -31,11 +27,7 @@ describe('div stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'div',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -50,11 +42,7 @@ describe('div stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'div',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'div', arguments: [] } as CompilerASTLine,
 			context
 		);
 

@@ -6,7 +6,8 @@
 ; @piano <pressedKeysListAddress> <pressedKeyCountAddress> [startingMidiNote]
 ```
 
-Both memory arguments are addresses, including group-exposed addresses. The starting note defaults to zero.
+Both memory arguments accept allocated addresses, including group-exposed addresses, or bare `int&` fixed references.
+The starting note defaults to zero.
 The note array must use `int[]` (32-bit integers), and the count must be a single `int`. Other memory types,
 including `float[]` and `float64[]` notes, do not create an interactive keyboard or a save action.
 The keyboard adds six rows below its directive and requests enough block width for its keys. Clicking a key toggles
@@ -19,7 +20,8 @@ const editor = await initEditor(canvas, { ...options, plugins: [createPianoPlugi
 ```
 
 Each installation keeps keyboard geometry and resolved memory in a private
-`keyboardsByBlock` map. The plugin owns layout contributions, a layout subscription, drawer, pointer listener, and
+`keyboardsByBlock` map. The plugin observes compiler metadata for memory bindings and layout for geometry, and owns
+its layout contributions, drawer, pointer listener, and
 **Save piano values to code** context-menu action. Saving updates the notes and count together in their original
 declarations, including when they belong to different modules. Sliders have their own save action.
 

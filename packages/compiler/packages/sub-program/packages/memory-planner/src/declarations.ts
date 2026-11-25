@@ -1,19 +1,23 @@
 import type {
 	ArrayDeclarationInstruction,
+	MemoryDeclarationLayout,
 	MemoryType,
 	PointeeBaseType,
 	ScalarMemoryDeclarationInstruction,
 } from '@8f4e/language-spec';
-import { ALLOCATION_UNIT_BYTE_SIZE } from '@8f4e/language-spec';
+import { ALLOCATION_UNIT_BYTE_SIZE, BASE_TYPE_METADATA } from '@8f4e/language-spec';
 import {
 	alignAbsoluteAllocationUnitOffset,
 	getAbsoluteAllocationUnitOffset,
 	getAllocatedByteLength,
 	getByteAddressFromAllocationUnitOffset,
-	getEndAddressSafeByteLength,
-	getEndByteAddress,
 } from './layoutAddresses';
 import getMemoryFlags from './memoryFlags';
+
+interface DeclarationLayoutResult {
+	declaration: MemoryDeclarationLayout;
+	nextLocalAllocationUnitOffset: number;
+}
 
 function getPointerDepth(instruction: string): number {
 	return instruction.endsWith('**') || instruction.includes('**[]') ? 2 : instruction.includes('*') ? 1 : 0;
@@ -24,23 +28,10 @@ function getScalarBaseType(instruction: ScalarMemoryDeclarationInstruction): Poi
 }
 
 function getArrayElementWordSize(instruction: ArrayDeclarationInstruction): number {
-	if (instruction.startsWith('float64') && !instruction.includes('*')) return 8;
+	if (instruction.startsWith('float64')) return 8;
 	if (instruction.includes('8')) return 1;
 	if (instruction.includes('16')) return 2;
 	return 4;
-}
-
-function getArrayPointeeBaseType(instruction: ArrayDeclarationInstruction): PointeeBaseType | undefined {
-	if (!instruction.includes('*')) {
-		return undefined;
-	}
-	if (instruction.startsWith('float64')) {
-		return 'float64';
-	}
-	if (instruction.startsWith('int')) {
-		return 'int';
-	}
-	return 'float';
 }
 
 /**
@@ -54,7 +45,7 @@ export function planScalarDeclarationLayout(input: {
 	startingByteAddress: number;
 	localAllocationUnitOffset: number;
 	instruction: ScalarMemoryDeclarationInstruction;
-}) {
+}): DeclarationLayoutResult {
 	const pointerDepth = getPointerDepth(input.instruction);
 	const baseType = getScalarBaseType(input.instruction);
 	const flags = getMemoryFlags(baseType, pointerDepth);
@@ -80,8 +71,7 @@ export function planScalarDeclarationLayout(input: {
 				allocatedByteLength: getAllocatedByteLength(allocationUnitCount),
 				byteAddress,
 				elementByteLength: numberOfElements * elementWordSize,
-				endByteAddress: getEndByteAddress(byteAddress, allocationUnitCount),
-				endAddressSafeByteLength: getEndAddressSafeByteLength(allocationUnitCount),
+				endByteAddress: byteAddress + numberOfElements * elementWordSize,
 				lineNumber: input.lineNumber,
 				type: input.instruction,
 				...flags,
@@ -113,8 +103,7 @@ export function planScalarDeclarationLayout(input: {
 			allocatedByteLength: getAllocatedByteLength(occupiedAllocationUnitCount),
 			byteAddress,
 			elementByteLength: numberOfElements * nonPointerElementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
+			endByteAddress: byteAddress + numberOfElements * nonPointerElementWordSize,
 			lineNumber: input.lineNumber,
 			type: input.instruction,
 			...flags,
@@ -135,9 +124,11 @@ export function planArrayDeclarationLayout(input: {
 	localAllocationUnitOffset: number;
 	instruction: ArrayDeclarationInstruction;
 	numberOfElements: number;
-}) {
-	const elementWordSize = getArrayElementWordSize(input.instruction);
+}): DeclarationLayoutResult {
+	const type = input.instruction.slice(0, -2) as MemoryType;
 	const pointerDepth = getPointerDepth(input.instruction);
+	const elementWordSize =
+		pointerDepth > 0 ? BASE_TYPE_METADATA.pointer.wordSize : getArrayElementWordSize(input.instruction);
 	const absoluteAllocationUnitOffset = getAbsoluteAllocationUnitOffset(
 		input.startingByteAddress,
 		input.localAllocationUnitOffset
@@ -149,7 +140,7 @@ export function planArrayDeclarationLayout(input: {
 	const alignmentPaddingUnitCount = alignedAbsoluteAllocationUnitOffset - absoluteAllocationUnitOffset;
 	const occupiedAllocationUnitCount = Math.ceil((input.numberOfElements * elementWordSize) / ALLOCATION_UNIT_BYTE_SIZE);
 	const allocationUnitCount = alignmentPaddingUnitCount + occupiedAllocationUnitCount;
-	const pointeeBaseType = getArrayPointeeBaseType(input.instruction);
+	const pointeeBaseType = pointerDepth > 0 ? getScalarBaseType(type) : undefined;
 	const byteAddress = getByteAddressFromAllocationUnitOffset(0, alignedAbsoluteAllocationUnitOffset);
 
 	return {
@@ -162,13 +153,12 @@ export function planArrayDeclarationLayout(input: {
 			lineNumber: input.lineNumber,
 			byteAddress,
 			elementByteLength: input.numberOfElements * elementWordSize,
-			endByteAddress: getEndByteAddress(byteAddress, occupiedAllocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(occupiedAllocationUnitCount),
+			endByteAddress: byteAddress + input.numberOfElements * elementWordSize,
 			isInteger: input.instruction.startsWith('int') || input.instruction.includes('*'),
 			...(input.instruction === 'float64[]' ? { isFloat64: true } : {}),
 			pointerDepth,
 			...(pointeeBaseType ? { pointeeBaseType } : {}),
-			type: input.instruction.slice(0, -2) as MemoryType,
+			type,
 			isUnsigned: input.instruction.endsWith('u[]'),
 		},
 		nextLocalAllocationUnitOffset: input.localAllocationUnitOffset + allocationUnitCount,

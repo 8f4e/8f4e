@@ -80,7 +80,7 @@ Key requirements:
 
 ## Affected Components
 
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features` - URL directive parsing and graphic-data integration
+- `packages/editor/packages/editor-core/packages/editor-state/src/directives/` - URL directive parsing and graphic-data integration
 - `packages/editor/packages/editor-core/packages/web-ui/src/drawers/codeBlocks` - URL rendering and interaction handling
 - `packages/editor/docs/editor-directives.md` - directive documentation
 

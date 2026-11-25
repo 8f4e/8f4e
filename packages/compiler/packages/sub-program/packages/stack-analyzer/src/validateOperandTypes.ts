@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, OperandRule, StackItem } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { areAllOperandsIntegers } from '@8f4e/semantic-utils';
 import { inferErrorCodeFromRule } from './inferErrorCodeFromRule';
 
@@ -35,18 +36,18 @@ export function validateOperandTypes(
 			const expectedType = rule[i];
 
 			if (expectedType === 'int' && operand.valueType !== 'int') {
-				throw getError(errorCode, line, context);
+				throw getError(errorCode, line, { symbol: context.codeBlockId });
 			} else if (expectedType === 'float' && operand.valueType === 'int') {
-				throw getError(errorCode, line, context);
+				throw getError(errorCode, line, { symbol: context.codeBlockId });
 			}
 		}
 	} else if (rule === 'int') {
 		if (!areAllOperandsIntegers(...operands)) {
-			throw getError(errorCode, line, context);
+			throw getError(errorCode, line, { symbol: context.codeBlockId });
 		}
 	} else if (rule === 'float') {
 		if (!areAllOperandsFloats(...operands)) {
-			throw getError(errorCode, line, context);
+			throw getError(errorCode, line, { symbol: context.codeBlockId });
 		}
 	} else if (rule === 'sameType') {
 		const [left, right] = operands;
@@ -58,15 +59,15 @@ export function validateOperandTypes(
 				(left.pointsTo?.baseType !== right.pointsTo?.baseType ||
 					left.pointsTo?.pointerDepth !== right.pointsTo?.pointerDepth))
 		) {
-			throw getError(errorCode, line, context);
+			throw getError(errorCode, line, { symbol: context.codeBlockId });
 		}
 	} else if (rule === 'matching') {
 		if (!areAllOperandsIntegers(...operands) && !areAllOperandsFloats(...operands)) {
-			throw getError(errorCode, line, context);
+			throw getError(errorCode, line, { symbol: context.codeBlockId });
 		}
 
 		if (hasMixedFloatWidth(...operands)) {
-			throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, context);
+			throw getError(ErrorCode.MIXED_FLOAT_WIDTH, line, { symbol: context.codeBlockId });
 		}
 	}
 }

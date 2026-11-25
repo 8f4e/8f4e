@@ -1,5 +1,8 @@
 # Declarations and locals
 
+Named memory declarations must be unique within their module, even when their types differ. The same name can be
+used in other modules. Anonymous declarations do not have a name and can appear more than once.
+
 ### const
 
 The const instruction declares a constant value that can be referenced elsewhere in the program.
@@ -43,7 +46,7 @@ Anonymous scalar declarations are supported in three forms:
 
 This bare zero-initialized form applies to scalar declarations only (including pointer variants such as `int*`). Array declarations (`int[]`) still require an element count.
 
-Default values can be specified as literals, constants, or memory references (using `&name` for start address or `name&` for end address).
+Default values can be specified as literals, constants, or memory references (using `&name` for start address or `end(name)` for end address).
 Constant expressions are also supported with the same one-operator rule (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`).
 Quoted string literals are supported for scalar defaults and use the same byte encoding as `push "..."`.
 Single-character strings become their byte value. Multi-character strings are packed as split bytes; for example, `int "AB"` is equivalent to `int 0x41 0x42`.
@@ -88,7 +91,7 @@ int count 4
 int halfCount MAX/2
 int*
 int* ptr &count
-int* endPtr count&
+int* endPtr end(count)
 int colorARGB 0xA8 0xFF 0x00 0x00
 int colorAR   0xA8 0xFF
 int 0xA8 0xFF
@@ -178,7 +181,7 @@ The float instruction declares a 32-bit floating-point value in module memory. U
 
 A bare `float` (no arguments) allocates an anonymous `float` with default `0`. This zero-initialized form applies to scalar declarations only (including pointer variants such as `float*`).
 
-Default values can be specified as literals, constants, or memory references (using `&name` for start address or `name&` for end address).
+Default values can be specified as literals, constants, or memory references (using `&name` for start address or `end(name)` for end address).
 Constant expressions are also supported with the same one-operator rule (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`).
 
 #### Examples
@@ -191,7 +194,7 @@ float halfGain MAX_GAIN/2
 float[] samples 4 0.0 0.25 0.5 0.75
 float*
 float* ptr &samples
-float* endPtr samples&
+float* endPtr end(samples)
 ```
 
 ### float64
@@ -243,7 +246,7 @@ entryEnd
 
 ### int[]
 
-The int[] instruction declares a buffer of integers in module memory. Variants include `int8[]`, `int8u[]`, `int16[]`, `int16u[]`, `int32[]`, `int*[]`, and `int**[]`.
+The int[] instruction declares a buffer of integers in module memory. Variants include `int8[]`, `int8u[]`, `int16[]`, `int16u[]`, `int32[]`, `int*[]`, `int16*[]`, and `int**[]`.
 
 Unsigned variants (`int8u[]`, `int16u[]`) interpret values as unsigned integers (0-255 for int8u, 0-65535 for int16u) in debuggers, plotters, and when using min/max prefixes.
 Buffer size arguments also support constant expressions with exactly one operator (`CONST+number`, `CONST-number`, `CONST*number`, or `CONST/number`). Fractional results can be converted explicitly with `round(...)`, `floor(...)`, or `ceil(...)`.
@@ -314,29 +317,57 @@ push max(*samples)
 push min(*samples)
 ```
 
-A fixed slot reserves no memory and needs no runtime initialization. It resolves after memory allocation, and reading
-through it emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
+A fixed reference reserves no memory and needs no runtime initialization. Its binding resolves after memory
+allocation. Dereferencing a scalar reference emits the target address followed by one typed load. The target contents remain mutable: pushing `signal`
 and a float value followed by `store` updates `oscillator:output`.
 
 Targets can be selected by name or by their zero-based declaration index: `&memories:0` selects the first memory
-declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations, including
-inherited memory; they are not byte offsets or array element indices.
+declaration in `memories`, and `&this:0` selects the first in the current module. Indices count declarations,
+not byte offsets or array elements.
 
 The declared type must match the target's element type, including integer signedness and floating-point width.
-Scalar and array targets are supported, including inherited memory and memory exposed by project groups. The slot
+Scalar and array targets are supported, including memory exposed by project groups. The slot
 keeps the target's element count and type for `count(*slot)`, `sizeof(*slot)`, `min(*slot)`, and `max(*slot)`.
 Fixed slots are module-scoped and available throughout their module; their names must be distinct from memory and
 local names and follow the same non-constant naming convention as memory declarations.
 
-Fixed slots have no addressable storage of their own: `&slot` and `slot&` report this explicitly. Use `push slot` for
+Fixed slots have no addressable storage of their own: `&slot` and `end(slot)` report this explicitly. Use `push slot` for
 the target address. `localSet slot` reports that the binding cannot be rebound; the target contents remain mutable.
-Initializers must select an allocated, non-pointer memory item by name or declaration index. Numeric addresses,
+Initializers must select an allocated memory declaration of the matching type. Numeric addresses,
 address arithmetic, end addresses, module addresses, and references to other fixed slots are not initializers.
 Slots cannot determine allocation sizes or ordinary `const` values, which resolve before memory layout.
 
 The editor draws an input connector at each fixed declaration and resolves its wire from the compiled target.
-Use allocated pointers such as `float*` for connections that must change during execution. Direct intermodular
-operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+Direct intermodular operands, including `push &oscillator:output` and `push count(sampleData:buffer)`, remain supported.
+
+#### Fixed references to pointer slots
+
+`int*&`, `int16*&`, and `float*&` bind to allocations of `int*`, signed `int16*`, and `float*` respectively.
+Each form accepts a single pointer slot or the start of an array of matching pointer slots. The scalar reference
+forms above require non-pointer targets.
+
+```8f4e
+int16*& selected &sampleSelector:current
+
+push selected    ; address of current, typed int16**
+drop
+push *selected   ; address currently stored in current, typed int16*
+drop
+push **selected  ; signed sample at the current address, typed int
+drop
+
+push selected
+push &sampleSelector:nextBuffer
+store            ; writes a four-byte pointer to current
+```
+
+The first dereference reads one four-byte pointer word. The second follows that live pointer and reads an integer
+word, signed 16-bit value, or float32 value according to the declaration. With memory guards enabled, the compiler
+bounds-checks accesses through the live pointer. To write a sample, push `*selected` and a value, then use `store`.
+
+`sizeof(*selected)` is `4`, and `count(*selected)` is the number of pointer elements in the bound allocation.
+`end(*selected)` gives the end of that allocation. Supply the current buffer's length separately.
+In the editor, the fixed wire ends at the pointer slot's `[&]` connector. The pointer's own wire follows its current address.
 
 ### local
 
@@ -359,6 +390,11 @@ Floating-point assignments must match the destination local or parameter's decla
 
 Pointer assignments must exactly match the destination's pointee base type and pointer depth. A raw `int`, a different
 pointer type, or a pointer assigned to an `int` local is a compiler error.
+
+Assignments preserve known values, nonzero facts, and proven address bounds for subsequent reads in the same
+straight-line control-flow region. For example, saving a clamped pointer to a local preserves its safe access width.
+Reassignment replaces these facts. Branches, joins, and loops discard local value proofs until a later assignment
+establishes them again.
 
 #### Examples
 

@@ -55,7 +55,7 @@ Only memory-start provenance should carry allocation-level element count unless 
 
 - Do not treat pointer type declarations as proof of array length.
 - Do not keep pointee count metadata after pointer arithmetic or assignment from an unknown address.
-- Do not infer whole-array count from `name&` end-address initializers.
+- Do not infer whole-array count from `end(name)` end-address initializers.
 - Do not make `count(*name)` depend on raw pointer numeric values.
 
 ## Implementation Plan
@@ -74,7 +74,7 @@ Only memory-start provenance should carry allocation-level element count unless 
 - Make `count(*name)` use provenance facts and fall back only by explicit rule.
 
 ### Step 4: Add regression tests
-- Cover `&buffer`, `buffer&`, intermodule memory starts, localSet from known and unknown addresses, and pointer arithmetic.
+- Cover `&buffer`, `end(buffer)`, intermodule memory starts, localSet from known and unknown addresses, and pointer arithmetic.
 
 ## Validation Checkpoints
 

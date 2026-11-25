@@ -18,7 +18,8 @@ export interface TextureCrop {
 }
 export interface TextureDirective {
 	address: string;
-	magnification: number;
+	/** Horizontal and vertical positive integer scale factors. */
+	magnification: { x: number; y: number };
 	crop: TextureCrop;
 }
 
@@ -38,14 +39,19 @@ export function parseTextureUploadDirective(args: string[]): TextureUploadDirect
 
 export function parseTextureDirective(args: string[]): TextureDirective | undefined {
 	if ((args.length !== 4 && args.length !== 6) || !isPointerSource(args[0])) return;
-	const magnification = parseInteger(args[1]);
+	const factors = args[1].split(':');
+	if (factors.length > 2) return;
+	const magnificationX = parseInteger(factors[0]);
+	const magnificationY = parseInteger(factors[1] ?? factors[0]);
 	const width = parseInteger(args[2]);
 	const height = parseInteger(args[3]);
 	const x = args.length === 6 ? parseInteger(args[4]) : 0;
 	const y = args.length === 6 ? parseInteger(args[5]) : 0;
 	if (
-		!magnification ||
-		magnification < 1 ||
+		!magnificationX ||
+		magnificationX < 1 ||
+		!magnificationY ||
+		magnificationY < 1 ||
 		x === undefined ||
 		x < 0 ||
 		y === undefined ||
@@ -54,9 +60,9 @@ export function parseTextureDirective(args: string[]): TextureDirective | undefi
 		width < 1 ||
 		!height ||
 		height < 1 ||
-		!Number.isSafeInteger(width * magnification) ||
-		!Number.isSafeInteger(height * magnification)
+		!Number.isSafeInteger(width * magnificationX) ||
+		!Number.isSafeInteger(height * magnificationY)
 	)
 		return;
-	return { address: args[0], magnification, crop: { x, y, width, height } };
+	return { address: args[0], magnification: { x: magnificationX, y: magnificationY }, crop: { x, y, width, height } };
 }

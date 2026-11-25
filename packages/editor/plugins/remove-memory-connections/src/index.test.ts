@@ -1,7 +1,8 @@
 import { parseProjectSource } from '@8f4e/compiler';
-import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { removeMemoryConnectionsPlugin } from './index';
 
@@ -17,6 +18,7 @@ function setup(
 	const store = initState(events, {
 		callbacks: {},
 	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const disposePlugin = installed
 		? removeMemoryConnectionsPlugin.setup({
@@ -26,7 +28,7 @@ function setup(
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -40,7 +42,7 @@ function setup(
 	});
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();
-	const block = state.codeBlockRendering.rootProject.blocks.find(candidate => candidate.name === 'target')!;
+	const block = state.project.rootLevel.blocks.find(candidate => candidate.name === 'target')!;
 
 	const openMenu = async () => {
 		events.dispatch('contextmenu', { x: block.x + 8, y: block.y + 8 });
@@ -75,8 +77,8 @@ describe('remove memory connections plugin', () => {
 
 	it('targets the clicked block through the menu and disables the action after removal', async () => {
 		const test = setup();
-		const other = test.state.codeBlockRendering.rootProject.blocks.find(block => block !== test.block)!;
-		test.state.codeBlockRendering.selectedCodeBlock = other;
+		const other = test.state.project.rootLevel.blocks.find(block => block !== test.block)!;
+		test.state.project.selectedCodeBlock = other;
 		const originalOtherCode = [...other.code];
 		await test.openMenu();
 		const index = test.state.contextMenu.items.findIndex(item => item.action === 'removeConnections');
@@ -109,15 +111,6 @@ describe('remove memory connections plugin', () => {
 		expect(test.block.code).toEqual(code);
 		expect(test.state.compilerInputRevision).toBe(revision);
 		expect(test.state.projectChange.revision).toBe(projectRevision);
-	});
-
-	it('announces changed inputs with the disconnected source', () => {
-		const test = setup();
-		const changed = vi.fn(() => [...test.block.code]);
-		test.events.on('compilationInputChanged', changed);
-		test.events.dispatch('removeConnections', { codeBlock: test.block });
-		expect(changed).toHaveBeenCalledOnce();
-		expect(changed.mock.results[0].value).toEqual(test.block.code);
 	});
 
 	it('hides the action and does not edit in view mode', async () => {

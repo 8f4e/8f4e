@@ -1,14 +1,13 @@
 import { PALETTE_INDICES, type PaletteIndex } from '@8f4e/editor-palette';
-import { getTabStopsByLine } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import type { SpriteCell } from '@8f4e/web-ui';
 import getLineNumberPrefix from './getLineNumberPrefix';
 import resolveCodeCells from './resolveCodeCells';
 import highlightSyntax from './syntax-highlighting/highlightSyntax';
 import { expandLineColorsToCells, expandLineToCells } from './tabExpansion';
 
-export default function deriveCodeBlockCodeCells(block: CodeBlockGraphicData): Array<Array<SpriteCell | null>> {
-	const tabStopsByLine = getTabStopsByLine(block.code);
+export default function deriveCodeBlockCodeCells(block: EditorCodeBlock): Array<Array<SpriteCell | null>> {
+	const tabStopsByLine = block.tabStopsByLine;
 	const characters = block.displayModel.lines.map(({ text, sourceLineIndex, isPlaceholder }, displayRow) => {
 		const prefix = getLineNumberPrefix(displayRow, block.lineNumberColumnWidth, text, isPlaceholder ?? false);
 		return [...prefix]

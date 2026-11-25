@@ -12,11 +12,7 @@ describe('notZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			notZero,
-			{
-				lineNumber: 1,
-				instruction: 'notZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
@@ -31,11 +27,7 @@ describe('notZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			notZero,
-			{
-				lineNumber: 1,
-				instruction: 'notZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);
@@ -50,11 +42,7 @@ describe('notZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			notZero,
-			{
-				lineNumber: 1,
-				instruction: 'notZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'notZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'float64', isNonZero: false }] })
 		);

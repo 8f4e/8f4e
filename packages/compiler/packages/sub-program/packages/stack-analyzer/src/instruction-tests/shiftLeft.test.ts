@@ -13,6 +13,7 @@ describe('shiftLeft stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'shiftLeft',
 				arguments: [],

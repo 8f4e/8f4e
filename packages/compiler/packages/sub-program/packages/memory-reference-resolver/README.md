@@ -11,9 +11,9 @@ The intended order is:
 1. Parse and validate source into ASTs.
 2. Resolve constants with `@8f4e/constant-resolver`.
 3. Normalize layout declaration counts into planner-ready source lines.
-4. Plan memory layout with `@8f4e/memory-planner`, including `shape` expansion.
-5. Resolve memory references once with `@8f4e/memory-reference-resolver`.
-6. Resolve memory defaults and pointer target metadata with `@8f4e/memory-default-resolver`.
+4. Plan memory layout with `@8f4e/memory-planner`.
+5. Resolve memory references and pointer target metadata with `@8f4e/memory-reference-resolver`.
+6. Resolve memory defaults with `@8f4e/memory-default-resolver`.
 7. Run semantic analysis and code generation on the original AST plus pass reports.
 
 This pass should not be used to make memory declarations plan-able. Declaration sizes handed to the memory planner must already be literal layout input. Layout-dependent declaration sizes, such as `int[] dest count(source)`, are not part of this pass.
@@ -48,9 +48,9 @@ initializer diagnostics retain the group's path and the initializer's source lin
 
 The pass returns `references`, a report containing:
 
-- `prototypes`, `modules`, `constants`, and `functions`: per-line argument facts aligned with the input AST arrays.
+- `modules`, `constants`, and `functions`: per-line argument facts aligned with the input AST arrays.
 - Each module's `referenceSlots`: fixed bindings with source identity and canonical targets; empty when unused.
-- `declarationSourcesByModuleId`: per-line argument facts aligned with each planned module's effective declaration sources.
+- `declarationSourcesByModuleId`: per-declaration argument facts indexed by module ID and declaration ID.
 - `pointerMetadataByModuleId`: pointer target facts derived from resolved declaration-source address defaults.
 
 When a resolved value is an address, the literal should keep the address metadata needed by later compiler stages, such as safe range and clamp range.
@@ -63,12 +63,11 @@ There should be one sub-program-level call during compilation:
 
 ```ts
 const memoryPlan = planSubProgramMemoryLayout({
-	prototypes,
 	modules,
+	constantReferences,
 });
 const memoryReferences = resolveMemoryReferences({
 	ast: {
-		prototypes,
 		modules,
 		constants,
 		functions,
@@ -91,13 +90,15 @@ The memory reference resolver owns value resolution for memory-layout expression
 - `min(name)`
 - `max(name)`
 - `&name`
-- `name&`
+- `end(name)`
 - `&this`
-- `this&`
+- `end(this)`
 - `&module:`
-- `module:&`
+- `end(module:)`
 - `&module:name`
-- `module:name&`
+- `end(module:name)`
+- `end(module:index)`
+- `end(*fixedReference)`
 - `&module:index`
 - `&this:index`
 - Arithmetic around resolved memory-layout values, such as `sizeof(buffer)*2`, `&buffer+4`, or `4+&buffer`.
@@ -118,7 +119,6 @@ This package must not:
 
 - Resolve constants. That belongs to `@8f4e/constant-resolver`.
 - Decide module or declaration addresses. That belongs to `@8f4e/memory-planner`.
-- Expand `shape` declarations. That belongs to `@8f4e/memory-planner`.
 - Apply scalar defaults or array initializer defaults.
 - Resolve calls, function overloads, locals, stack effects, or code generation details.
 - Validate duplicate module ids, duplicate declarations, instruction arity, or syntax.
@@ -139,7 +139,6 @@ The package entry point is an `index.ts` function that returns an explicit resul
 ```ts
 const result = resolveMemoryReferences({
 	ast: {
-		prototypes,
 		modules,
 		constants,
 		functions,

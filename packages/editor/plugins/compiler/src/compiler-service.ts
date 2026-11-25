@@ -1,4 +1,4 @@
-import { serializeDiagnostic } from '@8f4e/compiler';
+import { CompilerError, serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type { ResolveIncludeRequestMessage, ResolveIncludeResultMessage } from '@8f4e/compiler-worker';
 import CompilerWorker from '@8f4e/compiler-worker?worker';
 import type {
@@ -67,7 +67,7 @@ export function createCompilerService({
 				type: 'resolveIncludeResult',
 				payload: {
 					requestId: request.payload.requestId,
-					error: serializeDiagnostic(error),
+					error: serializeDiagnostic(error, 'include loading'),
 				},
 			};
 		}
@@ -112,7 +112,7 @@ export function createCompilerService({
 						case 'compilationError':
 							worker.removeEventListener('message', handleMessage);
 							pendingCompilation = undefined;
-							reject(data.payload as CompilerDiagnostic);
+							reject(new CompilerError(data.payload as CompilerDiagnostic));
 							break;
 					}
 				};

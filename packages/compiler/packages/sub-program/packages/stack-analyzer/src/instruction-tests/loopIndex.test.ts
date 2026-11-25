@@ -21,6 +21,7 @@ describe('loopIndex stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 10,
 				instruction: 'loopIndex',
 				arguments: [],

@@ -1,3 +1,4 @@
+import { serializeDiagnostic } from '@8f4e/compiler-diagnostics';
 import type {
 	AST,
 	CompiledFunction,
@@ -8,7 +9,6 @@ import type {
 	MemoryPointerMetadata,
 	PlannedMemoryDeclaration,
 	PlannedMemoryModule,
-	ProjectBlock,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
 import { WASM_MEMORY_PAGE_SIZE } from '@8f4e/language-spec';
@@ -16,7 +16,7 @@ import { formatTestFailures, hasTestEntry, runTests } from '@8f4e/test-runner';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { compileProject, parseProjectSource, serializeDiagnostic } from '../src';
+import { compileProject, parseProjectSource } from '../src';
 import { resolveTestInclude } from './testIncludeResolver';
 
 export interface FixtureCompileSnapshots {
@@ -39,7 +39,6 @@ export interface InstantiatedFixtureProgram extends CompiledFixtureProgram {
 }
 
 export interface FixtureProgramCompileOptions {
-	extraPrototypes?: ProjectBlock[];
 	includeStackAnalysis?: boolean;
 	cache?: CompileResult['cache'];
 }
@@ -88,9 +87,9 @@ export function getExportedFunction(
 }
 
 export function formatCompileError(relativePath: string, error: unknown): Error {
-	const diagnostic = serializeDiagnostic(error);
-	const line = diagnostic.line.instruction ? ` at ${diagnostic.line.instruction}` : '';
-	const context = diagnostic.context.codeBlockId ? ` in ${diagnostic.context.codeBlockId}` : '';
+	const diagnostic = serializeDiagnostic(error, 'compile');
+	const line = diagnostic.kind === 'source' && diagnostic.instruction ? ` at ${diagnostic.instruction}` : '';
+	const context = diagnostic.kind === 'source' && diagnostic.symbol ? ` in ${diagnostic.symbol}` : '';
 
 	return new Error(`${relativePath}: ${diagnostic.message}${context}${line}`);
 }
@@ -129,7 +128,6 @@ function serializeMemoryData(
 		allocationUnitAddress: data.allocationUnitAddress,
 		default: serializeDefaultValue(memoryDefault?.value ?? 0),
 		...(memoryDefault?.hasExplicitDefault ? { hasExplicitDefault: true } : {}),
-		...(memoryDefault?.isInherited ? { isInherited: true } : {}),
 		isInteger: data.isInteger,
 		...(data.isFloat64 ? { isFloat64: true } : {}),
 		...(data.pointeeBaseType ? { pointeeBaseType: data.pointeeBaseType } : {}),
@@ -145,6 +143,7 @@ function serializeAstLine(line: CompilerASTLine): Record<string, unknown> {
 	const lineSnapshot: Record<string, unknown> = { ...line };
 
 	delete lineSnapshot.lineNumber;
+	delete lineSnapshot.diagnosticSource;
 	delete lineSnapshot.ifBlock;
 	delete lineSnapshot.ifEndBlock;
 	delete lineSnapshot.blockBlock;
@@ -214,7 +213,6 @@ function serializeCompiledFunctionOverview(func: CompiledFunction): Record<strin
 		signature: func.signature,
 		...(func.import ? { import: func.import } : {}),
 		...(func.exportName ? { exportName: func.exportName } : {}),
-		...(func.paramShapeExpansions ? { paramShapeExpansions: func.paramShapeExpansions } : {}),
 	};
 }
 
@@ -263,15 +261,10 @@ export async function compileFixtureProgramSource(
 ): Promise<CompiledFixtureProgram> {
 	const normalizedSource = source.trimStart();
 	const project = parseProjectSource(normalizedSource);
-	const compileProjectModel: ProjectObjectModel = {
-		...project,
-		prototypes: [...project.prototypes, ...(options.extraPrototypes ?? [])],
-	};
-
 	return {
 		source: normalizedSource,
 		project,
-		compileResult: await compileProject(compileProjectModel, {
+		compileResult: await compileProject(project, {
 			includeStackAnalysis: options.includeStackAnalysis,
 			resolveInclude: resolveTestInclude,
 			cache: options.cache,

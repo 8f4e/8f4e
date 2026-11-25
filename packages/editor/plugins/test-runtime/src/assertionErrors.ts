@@ -2,9 +2,9 @@ import { walkProjectBlocks } from '@8f4e/editor-state';
 import type { CodeError, ProjectLevel } from '@8f4e/editor-state-types';
 import { formatAssertionExpectation, type TestAssertionResult } from '@8f4e/test-runner';
 
-export default function assertionErrors(assertions: TestAssertionResult[], rootProject: ProjectLevel): CodeError[] {
+export default function assertionErrors(assertions: TestAssertionResult[], rootLevel: ProjectLevel): CodeError[] {
 	const disabledBlocks = new Set(
-		[...walkProjectBlocks(rootProject)].filter(block => block.disabled).map(block => block.creationIndex)
+		[...walkProjectBlocks(rootLevel)].filter(block => block.disabled).map(block => block.creationIndex)
 	);
 	const failedSites = new Set<number>();
 	return assertions.flatMap(assertion => {

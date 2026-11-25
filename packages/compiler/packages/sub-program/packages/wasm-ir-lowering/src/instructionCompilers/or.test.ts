@@ -9,11 +9,7 @@ describe('or instruction compiler', () => {
 
 		compileInstructionForTest(
 			or,
-			{
-				lineNumber: 1,
-				instruction: 'or',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'or', arguments: [] },
 			context
 		);
 

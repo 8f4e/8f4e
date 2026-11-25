@@ -1,0 +1,34 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+
+Overloads distinguish pointers to
+integers from pointers to floats.
+noteEnd
+
+function readState
+#impure
+param int* value
+push *value
+functionEnd int
+
+function readState
+#impure
+param float* value
+push *value
+functionEnd float
+
+entry test
+module integerCaller
+int value 7
+call readState &value
+assertEqual 7
+moduleEnd
+
+module floatCaller
+float value 2.5
+call readState &value
+assertEqual 2.5
+moduleEnd
+entryEnd

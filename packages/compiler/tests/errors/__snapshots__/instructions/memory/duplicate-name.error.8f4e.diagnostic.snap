@@ -1,0 +1,14 @@
+{
+  "code": 45,
+  "domain": "semantic",
+  "instruction": "int[]",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
+  },
+  "message": "Duplicate identifier: value. (45)",
+  "symbol": "probe",
+}

@@ -7,6 +7,7 @@ import type {
 	PlannedMemoryModule,
 } from '@8f4e/language-spec';
 import { ArgumentType, createFunctionId, ErrorCode } from '@8f4e/language-spec';
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import createStackAnalyzerTestContext from '../../tests/testUtils';
 import { analyzeInstruction } from '../analyzeInstruction';
@@ -43,9 +44,10 @@ describe('call stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'call',
-				arguments: [classifyIdentifier('foo64')],
+				arguments: [syntaxValue(classifyIdentifier('foo64'))],
 			} as CompilerASTLine,
 			context
 		);
@@ -71,9 +73,10 @@ describe('call stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'call',
-				arguments: [classifyIdentifier('convert')],
+				arguments: [syntaxValue(classifyIdentifier('convert'))],
 			},
 			context
 		);
@@ -107,9 +110,10 @@ describe('call stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'call',
-				arguments: [classifyIdentifier('wrap')],
+				arguments: [syntaxValue(classifyIdentifier('wrap'))],
 			},
 			context
 		);
@@ -121,11 +125,11 @@ describe('call stack analysis', () => {
 
 	it('resolves pointer overloads from known memory address literals', () => {
 		const previousTrigger: PlannedMemoryDeclaration = {
-			id: 'previousTrigger',
+			id: 0,
+			name: 'previousTrigger',
 			elementByteLength: 4,
 			allocatedByteLength: 4,
-			endByteAddress: 0,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 4,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			allocationUnitAddress: 0,
@@ -136,6 +140,14 @@ describe('call stack analysis', () => {
 			isUnsigned: false,
 			type: 'int',
 			lineNumber: 1,
+			source: {
+				diagnosticSource: { kind: 'document' },
+				lineNumber: 1,
+				instruction: 'int',
+				arguments: [
+					{ type: ArgumentType.IDENTIFIER, value: 'previousTrigger', referenceKind: 'plain', scope: 'local' },
+				],
+			},
 		};
 		const plannedModule: PlannedMemoryModule = {
 			id: 'test',
@@ -143,11 +155,9 @@ describe('call stack analysis', () => {
 			byteAddress: 0,
 			allocationUnitCount: 1,
 			allocatedByteLength: 4,
-			endByteAddress: 0,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 4,
 			memory: { previousTrigger },
 			declarations: [previousTrigger],
-			declarationSources: [],
 		};
 		const context = createStackAnalyzerTestContext({
 			currentPlannedModule: plannedModule,
@@ -171,6 +181,7 @@ describe('call stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'push',
 				arguments: [{ type: ArgumentType.LITERAL, value: 1, isInteger: true }],
@@ -179,6 +190,7 @@ describe('call stack analysis', () => {
 		);
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'push',
 				arguments: [
@@ -202,9 +214,10 @@ describe('call stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 3,
 				instruction: 'call',
-				arguments: [classifyIdentifier('risingEdge')],
+				arguments: [syntaxValue(classifyIdentifier('risingEdge'))],
 			},
 			context
 		);
@@ -227,9 +240,10 @@ describe('call stack analysis', () => {
 		expect(() => {
 			analyzeInstruction(
 				{
+					diagnosticSource: { kind: 'document' },
 					lineNumber: 1,
 					instruction: 'call',
-					arguments: [classifyIdentifier('foo64')],
+					arguments: [syntaxValue(classifyIdentifier('foo64'))],
 				} as CompilerASTLine,
 				context
 			);
@@ -254,9 +268,10 @@ describe('call stack analysis', () => {
 		try {
 			analyzeInstruction(
 				{
+					diagnosticSource: { kind: 'document' },
 					lineNumber: 1,
 					instruction: 'call',
-					arguments: [classifyIdentifier('convert')],
+					arguments: [syntaxValue(classifyIdentifier('convert'))],
 				},
 				context
 			);
@@ -287,9 +302,10 @@ describe('call stack analysis', () => {
 		try {
 			analyzeInstruction(
 				{
+					diagnosticSource: { kind: 'document' },
 					lineNumber: 1,
 					instruction: 'call',
-					arguments: [classifyIdentifier('wrap')],
+					arguments: [syntaxValue(classifyIdentifier('wrap'))],
 				},
 				context
 			);
@@ -313,9 +329,10 @@ describe('call stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'call',
-				arguments: [classifyIdentifier('addr')],
+				arguments: [syntaxValue(classifyIdentifier('addr'))],
 			} as CompilerASTLine,
 			context
 		);
@@ -328,3 +345,8 @@ describe('call stack analysis', () => {
 		});
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

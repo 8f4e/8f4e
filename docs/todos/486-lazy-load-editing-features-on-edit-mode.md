@@ -12,8 +12,8 @@ completed: null
 
 ## Problem Description
 
-Editor-state initialization still eagerly imports edit history and block-manipulation effects. Runtime feature flags
-can disable their behavior, but do not remove their download cost for editors initialized in view mode. Keyboard editing
+Editor-state initialization still eagerly imports edit history and block-manipulation effects, including for editors
+initialized in view mode. Keyboard editing
 now lives in a plugin and loads its text-editing implementation on first entry into edit mode.
 
 This is a larger structural opportunity for viewer use cases. Projects can select edit mode at startup through
@@ -28,10 +28,10 @@ that already work in view mode, such as project controls, available according to
 ## Implementation Plan
 
 1. Audit effects, keyboard handlers, and shared helpers to identify an actual authoring-only dependency boundary.
-   Check history flags and programmatic edit paths individually instead of assuming all mutations require edit mode.
+   Check history requirements and programmatic edit paths individually instead of assuming all mutations require edit mode.
 2. Add a cached module loader and per-editor registration lifecycle. Await readiness during initial edit-mode mounting
    and gate mode transitions so the first editing action cannot be lost while handlers are loading.
-3. Preserve registration order, history behavior, feature flags, and cleanup. Repeated toggles must not duplicate
+3. Preserve registration order, history behavior, and cleanup. Repeated toggles must not duplicate
    listeners or reset history unexpectedly; handle mode reversal and disposal during loading.
 4. Compare view-mode and edit-mode startup bytes and readiness, and validate both initial modes and transitions.
 
@@ -41,18 +41,18 @@ that already work in view mode, such as project controls, available according to
 - [ ] Loading, compilation, rendering, navigation, and existing view-mode controls retain their behavior.
 - [ ] Initial edit-mode mounting waits until editing handlers are ready.
 - [ ] The first action after a mode transition is handled correctly, including under delayed loading.
-- [ ] History, programmatic edits, and independent feature flags retain their existing contracts.
+- [ ] History and programmatic edits retain their existing contracts.
 - [ ] Repeated toggles, concurrent editors, failed loading, and disposal do not leak or duplicate effects.
 - [ ] Production measurements report both viewer savings and edit-mode startup/transition costs.
 
 ## Affected Components
 
 - `packages/editor/packages/editor-core/packages/editor-state/src/index.ts`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/editor-mode/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/input/editorMode.ts`
 - `packages/editor/plugins/keyboard-editing/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/text-geometry/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/edit-history/`
-- `packages/editor/packages/editor-core/packages/editor-state/src/features/code-blocks/features/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/layout/text-geometry/`
+- `packages/editor/packages/editor-core/packages/editor-state/src/project/undoRedo.ts`
+- `packages/editor/packages/editor-core/packages/editor-state/src/project/` and `packages/editor/packages/editor-core/packages/editor-state/src/input/`
 - `packages/editor/plugins/keyboard-navigation/`
 - `packages/editor/plugins/keyboard-mode-switching/`
 - Default/gallery browser composition

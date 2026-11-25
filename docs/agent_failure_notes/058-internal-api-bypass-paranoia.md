@@ -13,26 +13,10 @@ The agent added defensive fallbacks for callers bypassing an internal tokenizer 
 
 ## Original Problem
 
-Prototype shape expansion needed a cheap module-level hint: while the project tokenizer is already reading module lines, it should set a flag when it encounters a `shape` instruction. Later compiler shape resolution should check that flag instead of scanning the whole module source again.
-
-The user clarified that this was meant to happen in the tokenizer's main parsing loop:
-
-```ts
-let containsShape = false;
-
-// while reading module lines:
-if (isShapeInstructionLine(trimmed)) {
-	containsShape = true;
-}
-```
-
-Instead of keeping the change there, the agent kept a fallback helper that rescanned source:
-
-```ts
-containsShape: block.containsShape ?? containsShapeInstruction(block.code)
-```
-
-That was wrong. A bypassed internal API should fail or be updated, not get a hidden compatibility path.
+The tokenizer already visited every module line. It could record a required flag during that pass so the compiler
+would not need to scan the source again. The agent instead made the flag optional and kept a fallback that rescanned
+modules whose callers did not supply it. A caller bypassing the internal API should fail or be updated rather than
+receive a hidden compatibility path.
 
 ## Anti-Patterns
 
@@ -51,7 +35,7 @@ Protecting impossible or unsupported internal call paths after the user explicit
 
 Keep ownership narrow:
 
-- The project tokenizer owns the parse-time `containsShape` flag.
+- The project tokenizer owns its parse-time metadata.
 - The compiler consumes the flag directly.
 - Internal callers, tests, and fixtures must be updated to provide the new required metadata.
 - Do not add fallback scans, compatibility helpers, or UI/editor metadata just in case something bypasses the tokenizer.

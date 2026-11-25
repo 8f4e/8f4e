@@ -9,7 +9,6 @@ export const projectInstructions = {
 	init: 'init',
 	pass: 'pass',
 	template: { opener: 'template', closer: 'templateEnd' },
-	useTemplate: 'useTemplate',
 } as const;
 
 export const projectInstructionNames = [
@@ -22,7 +21,6 @@ export const projectInstructionNames = [
 	projectInstructions.pass,
 	projectInstructions.template.opener,
 	projectInstructions.template.closer,
-	projectInstructions.useTemplate,
 ] as const;
 
 export type ProjectInstructionName = (typeof projectInstructionNames)[number];
@@ -51,6 +49,7 @@ export type ProjectModuleId = string;
 
 /** Explicit same-name namespace forwarding from an immediate parent project scope. */
 export interface ProjectConstantNamespacePassLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'pass';
 	arguments: [ArgumentIdentifier];
@@ -59,12 +58,13 @@ export interface ProjectConstantNamespacePassLine {
 /** Ordered namespace passes and their canonical parent relationship. */
 export interface ProjectConstantNamespaceScope {
 	groupPath: ProjectGroupPath;
-	parentGroupPath?: ProjectGroupPath;
+	parentGroupPath: ProjectGroupPath;
 	passes: ProjectConstantNamespacePassLine[];
 }
 
 /** A default for group-local exposed scalar memory, using a number or immediate-parent memory address. */
 export interface ProjectMemoryInitializerLine {
+	readonly diagnosticSource: import('./diagnostics').DiagnosticSource;
 	lineNumber: number;
 	instruction: 'init';
 	arguments: [
@@ -76,7 +76,7 @@ export interface ProjectMemoryInitializerLine {
 /** Initializers and the project scopes used to resolve their destinations and address sources. */
 export interface ProjectMemoryInitializerScope {
 	groupPath: ProjectGroupPath;
-	parentGroupPath?: ProjectGroupPath;
+	parentGroupPath: ProjectGroupPath;
 	initializers: ProjectMemoryInitializerLine[];
 }
 
@@ -127,16 +127,12 @@ export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectMode
 export interface ProjectObjectModel {
 	/** Entry definitions local to this scope, including empty entries. */
 	entries: ProjectEntryName[];
-	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
-	code: string[];
 	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
 	execution: ProjectExecutableBlock[];
 	/** Hoisted function blocks. */
 	functions: ProjectBlock[];
 	/** Hoisted constants blocks. */
 	constants: ProjectBlock[];
-	/** Hoisted prototype blocks. */
-	prototypes: ProjectBlock[];
 	/** Ordered include declarations expanded privately by the compiler. */
 	includes: ProjectBlock[];
 	/** Non-compiling project note blocks. */
@@ -145,13 +141,15 @@ export interface ProjectObjectModel {
 	unknown: ProjectBlock[];
 }
 
-/** A group-owned public memory name backed by a memory item in one of the group's direct modules. */
+/** A group-owned public memory name backed by a direct module's memory item or a child group's exposure. */
 export interface ProjectMemoryExposure {
+	/** Zero-based row in the owning group's code, after nested blocks have been extracted. */
+	lineNumber: number;
 	/** Public name used by the enclosing project. */
 	name: string;
-	/** Source-level name of the direct child module that owns the target memory item. */
+	/** Source-level name of the direct child module or group that supplies the target memory item. */
 	targetModuleName: string;
-	/** Source-level memory item name in the target module. */
+	/** Source-level memory item or exposure name in the target module or group. */
 	targetMemoryName: string;
 }
 
@@ -181,6 +179,8 @@ export interface ProjectGroupObjectModel extends ProjectObjectModel {
 	type: 'group';
 	id: ProjectBlockId;
 	name: ProjectGroupName;
+	/** Group wrapper and declarations, excluding recursively owned blocks. */
+	code: string[];
 	/** Entry in the parent scope that invokes this project's main entry. */
 	entry: ProjectEntryName;
 	/** Ordered public memory aliases exposed to the enclosing project. */
@@ -191,11 +191,9 @@ export interface ProjectGroupObjectModel extends ProjectObjectModel {
 export function createProjectObjectModel(): ProjectObjectModel {
 	return {
 		entries: [],
-		code: [],
 		execution: [],
 		functions: [],
 		constants: [],
-		prototypes: [],
 		includes: [],
 		notes: [],
 		unknown: [],

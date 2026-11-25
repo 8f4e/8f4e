@@ -1,21 +1,14 @@
 {
   "code": 19,
-  "context": {
-    "codeBlockId": "floatLoopCap",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "constant",
-        "scope": "local",
-        "type": "identifier",
-        "value": "LOOP_COUNT",
-      },
-    ],
-    "instruction": "loop",
+  "domain": "semantic",
+  "instruction": "loop",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Type mismatch. (19)",
+  "symbol": "floatLoopCap",
 }

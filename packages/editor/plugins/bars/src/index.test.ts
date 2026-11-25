@@ -1,3 +1,4 @@
+import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { describe, expect, it, vi } from 'vitest';
 import { exposedSource } from './__tests__/exposed-source';
@@ -6,6 +7,18 @@ import { barsPlugin } from './index';
 
 const source = ['module audio', 'int8[] samples 4 0 1 2 3', '; @bars &samples count(samples) 0 3', 'moduleEnd'];
 describe('bars plugin', () => {
+	it('draws a fixed-reference buffer using its backing element count', async () => {
+		const test = await setup(barsPlugin, [
+			'module audio',
+			'float[] samples 3 0.25 0.5 1',
+			'float& buffer &samples',
+			'; @bars buffer count(buffer) 0 1',
+			'moduleEnd',
+		]);
+		test.render();
+		const bars = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.detailBase);
+		expect(bars.map(call => call[4])).toEqual([32, 64, 128]);
+	});
 	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
 		'lays out and draws %s arrays',
 		async type => {
@@ -27,14 +40,15 @@ describe('bars plugin', () => {
 			expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeGreaterThan(1);
 		}
 	);
-	it('reads an indirect buffer and a runtime length on each frame', async () => {
+	it.each(['pointer', '*address'])('reads %s and a runtime length on each frame', async source => {
 		const test = await setup(barsPlugin, [
 			'module audio',
 			'int8[] samples 4 0 1 2 3',
 			'int8[] alternate 4 3 2 1 0',
 			'int8* pointer &samples',
+			'int8** address &pointer',
 			'int length 4',
-			'; @bars pointer length 0 3',
+			`; @bars ${source} length 0 3`,
 			'moduleEnd',
 		]);
 		test.render();
@@ -51,6 +65,26 @@ describe('bars plugin', () => {
 		const test = await setup(barsPlugin, exposedSource);
 		test.render();
 		expect(vi.mocked(test.draw.drawFill).mock.calls.length).toBeGreaterThan(1);
+	});
+	it('rebinds relocated samples without recalculating block layout', async () => {
+		const test = await setup(barsPlugin, source);
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+				startingMemoryAllocationUnitAddress: 16,
+			}
+		);
+		const samples = replacement.memoryPlan.modules.audio.memory.samples;
+		expect(samples.byteAddress).not.toBe(test.compiled.memoryPlan.modules.audio.memory.samples.byteAddress);
+		test.memoryViews.int8.fill(3, samples.byteAddress, samples.byteAddress + 4);
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		test.render();
+		const bars = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.detailBase);
+		expect(bars.map(call => call[4])).toEqual(Array(4).fill(test.state.viewport.hGrid * 8));
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 	it('removes stale data after source changes and restores it when memory becomes available', async () => {
 		const test = await setup(barsPlugin, source);

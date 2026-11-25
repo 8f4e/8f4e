@@ -1,21 +1,14 @@
 {
   "code": 0,
-  "context": {
-    "codeBlockId": "insufficientArguments",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "addInts",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Insufficient number of elements in the stack for the operation to proceed. (0)",
+  "symbol": "insufficientArguments",
 }

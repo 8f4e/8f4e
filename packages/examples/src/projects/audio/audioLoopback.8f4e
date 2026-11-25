@@ -1,7 +1,7 @@
 8f4e/v1
 
 function buffer
-; @pos -126 23
+; @pos -36 17
 #export buffer
 use env
 
@@ -11,8 +11,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -126 33
-; @favorite
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -22,7 +21,17 @@ const AUDIO_BUFFER_SIZE 128
 constantsEnd
 
 note
-; @pos -126 6
+; @pos 0 -10
+; This is a stereo loopback example
+; that reads input audio from a
+; shared buffer and writes the same
+; signal into left and right output
+; buffers using circular-buffer
+; pointer logic.
+noteEnd
+
+note
+; @pos 0 10
 ; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioInBufferLAddress audioin:buffer
@@ -32,7 +41,7 @@ note
 noteEnd
 
 note colors
-; @pos -176 6
+; @pos 0 20
 ; @config color.canvas #160f11
 ; @config color.surface #2d1d21
 ; @config color.ink #ddcfca
@@ -48,19 +57,9 @@ note colors
 ; @config color.detail #c44845
 noteEnd
 
-note
-; @pos 47 -10
-; This is a stereo loopback example
-; that reads input audio from a
-; shared buffer and writes the same
-; signal into left and right output
-; buffers using circular-buffer
-; pointer logic.
-noteEnd
-
 entry main
 module audioin
-; @pos 5 1
+; @pos 117 2
 use env
 
 ; Audio buffer
@@ -82,8 +81,8 @@ add
 store
 
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -92,7 +91,7 @@ ifEnd
 
 moduleEnd
 module audiooutL
-; @pos 48 1
+; @pos 160 2
 ; @home
 use env
 
@@ -123,8 +122,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -133,7 +132,7 @@ ifEnd
 
 moduleEnd
 module audiooutR
-; @pos 89 1
+; @pos 204 2
 
 use env
 
@@ -164,8 +163,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

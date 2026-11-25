@@ -1,4 +1,5 @@
 import type { PaletteIndex, PaletteToken } from '@8f4e/editor-palette';
+import type { PreparedNumericRead } from '@8f4e/editor-state/memory';
 import type { GlyphIds } from '@8f4e/web-ui';
 
 /**
@@ -42,41 +43,9 @@ export interface SelectedLineTooltipContent {
 	liveValueTargets: TooltipLiveValueTarget[];
 }
 
-export interface TooltipLiveValueMemoryFormat {
-	elementWordSize: number;
-	isInteger: boolean;
-	isUnsigned: boolean;
-}
-
-export interface TooltipMemoryAddressLiveValueSource {
-	kind: 'memoryAddress';
-	moduleId: string;
-	memoryId: string;
-}
-
-export interface TooltipMemoryValueLiveValueSource {
-	kind: 'memoryValue';
-	moduleId: string;
-	memoryId: string;
-	elementIndex?: number;
-}
-
-export interface TooltipMemoryDereferenceLiveValueSource {
-	kind: 'memoryDereference';
-	moduleId: string;
-	memoryId: string;
-	format: TooltipLiveValueMemoryFormat;
-}
-
-export type TooltipReferenceLiveValueSource =
-	| { kind: 'referenceValue'; moduleId: string; referenceId: string }
-	| { kind: 'referenceDereference'; moduleId: string; referenceId: string };
-
 export type TooltipLiveValueSource =
-	| TooltipMemoryAddressLiveValueSource
-	| TooltipMemoryValueLiveValueSource
-	| TooltipMemoryDereferenceLiveValueSource
-	| TooltipReferenceLiveValueSource;
+	| { kind: 'staticText'; text: string }
+	| { kind: 'numericRead'; read: PreparedNumericRead };
 
 export interface TooltipLiveValue {
 	x: number;

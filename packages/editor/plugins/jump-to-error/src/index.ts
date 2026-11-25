@@ -1,12 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import {
-	createCodeErrorBlockLookup,
-	gapCalculator,
-	stopViewportAnimation,
-	updateViewport,
-	walkProjectBlocks,
-} from '@8f4e/editor-state';
+import { createCodeErrorBlockLookup, displayRowToGridRow, updateViewport, walkProjectBlocks } from '@8f4e/editor-state';
 import type { InternalPointerEvent, State } from '@8f4e/editor-state-types';
 import { textToGlyphIds } from '@8f4e/web-ui';
 
@@ -15,10 +9,16 @@ const LABEL = textToGlyphIds('Jump to error');
 function findTarget(state: State) {
 	const errors = Object.values(state.codeErrors).flat();
 	if (!errors.length) return;
-	const findBlock = createCodeErrorBlockLookup(state.codeBlockRendering.rootProject);
+	const findBlock = createCodeErrorBlockLookup(state.project.rootLevel);
 	for (const error of errors) {
 		const codeBlock = findBlock(error);
-		if (codeBlock && error.lineNumber >= 0 && error.lineNumber < codeBlock.code.length) return { error, codeBlock };
+		if (
+			codeBlock &&
+			error.lineNumber !== undefined &&
+			error.lineNumber >= 0 &&
+			error.lineNumber < codeBlock.code.length
+		)
+			return { error: { ...error, lineNumber: error.lineNumber }, codeBlock };
 	}
 }
 
@@ -36,7 +36,7 @@ function buttonBounds(state: State) {
 export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlugin {
 	return {
 		id: 'jump-to-error',
-		setup: ({ store, events, drawers }) => {
+		setup: ({ store, events, renderRegistry }) => {
 			const state = store.getState();
 			let target = findTarget(state);
 			const refreshTarget = () => {
@@ -44,7 +44,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 			};
 			store.subscribe('codeErrors', refreshTarget);
 			store.subscribe('projectChange', refreshTarget);
-			store.subscribe('codeBlockRendering.rootProject', refreshTarget);
+			store.subscribe('project.rootLevel', refreshTarget);
 			let pressed = false;
 			const onPointerDown = (event: InternalPointerEvent) => {
 				pressed = false;
@@ -68,20 +68,17 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 				event.stopPropagation = true;
 				pressed = true;
 				const { codeBlock, error } = target;
-				const { rootProject, currentProject } = state.codeBlockRendering;
-				if (!currentProject.blocks.includes(codeBlock)) {
-					const parent = [...walkProjectBlocks(rootProject)].find(block =>
-						block.childProject?.blocks.includes(codeBlock)
-					);
+				const { rootLevel, activeLevel } = state.project;
+				if (!activeLevel.blocks.includes(codeBlock)) {
+					const parent = [...walkProjectBlocks(rootLevel)].find(block => block.childLevel?.blocks.includes(codeBlock));
 					if (parent) events.dispatch('openProjectGroup', { codeBlock: parent });
 					else events.dispatch('goToRootProjectGroup');
 				}
-				store.set('codeBlockRendering.selectedCodeBlock', codeBlock);
+				store.set('project.selectedCodeBlock', codeBlock);
 				// Selection reveals folded source before resolving its displayed row.
 				const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[error.lineNumber];
 				if (row === undefined) return;
-				const lineY = codeBlock.y + (gapCalculator(row, codeBlock.gaps) + 0.5) * state.viewport.hGrid;
-				stopViewportAnimation(state);
+				const lineY = codeBlock.y + (displayRowToGridRow(row, codeBlock.gaps) + 0.5) * state.viewport.hGrid;
 				updateViewport(
 					state,
 					codeBlock.x + codeBlock.width / 2 - state.viewport.width / 2,
@@ -100,7 +97,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 			const reset = () => {
 				pressed = false;
 			};
-			const removeDrawer = drawers.registerCanvasOverlay(({ draw }) => {
+			const removeDrawer = renderRegistry.registerCanvasOverlay(({ draw }) => {
 				if (!target) return;
 				const button = buttonBounds(state);
 				draw.startGroup(0, 0);
@@ -122,7 +119,7 @@ export function createJumpToErrorPlugin({ layer }: { layer: number }): EditorPlu
 				removeDrawer();
 				store.unsubscribe('codeErrors', refreshTarget);
 				store.unsubscribe('projectChange', refreshTarget);
-				store.unsubscribe('codeBlockRendering.rootProject', refreshTarget);
+				store.unsubscribe('project.rootLevel', refreshTarget);
 				events.off('pointerdown', onPointerDown);
 				events.off('pointermove', onPointerMove);
 				events.off('pointerup', release);

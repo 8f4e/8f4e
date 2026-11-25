@@ -1,21 +1,19 @@
+import type { EditorPluginContext } from '@8f4e/editor-core';
 import {
-	gapCalculator,
+	displayRowToGridRow,
 	getCompiledFunctionForCodeBlock,
 	getCompiledModuleForCodeBlock,
-	getTabStopsByLine,
 	getVisualLineWidth,
 	matchEditorDirectives,
+	subscribeToBlockPreparation,
 } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry, State } from '@8f4e/editor-state-types';
 import type { CompiledStackAnalysisLine } from '@8f4e/language-spec';
 import { textToGlyphIds } from '@8f4e/web-ui';
 import { formatStack } from '../helpers/formatStack';
 import type { StackLabel } from '../types';
 
-function getStackAnalysisLines(
-	graphicData: CodeBlockGraphicData,
-	state: State
-): CompiledStackAnalysisLine[] | undefined {
+function getStackAnalysisLines(graphicData: EditorCodeBlock, state: State): CompiledStackAnalysisLine[] | undefined {
 	if (graphicData.blockType === 'function') {
 		return getCompiledFunctionForCodeBlock(graphicData, state)?.stackAnalysis;
 	}
@@ -42,44 +40,50 @@ function findStackAnalysisLine(
 	return precedingLine;
 }
 
-export function registerStackLayout(
+export function registerStackPreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	labelsByBlock: WeakMap<CodeBlockGraphicData, StackLabel[]>
+	labelsByBlock: WeakMap<EditorCodeBlock, StackLabel[]>
 ): () => void {
-	const unsubscribe = layout.subscribe(({ codeBlock: graphicData, state }) => {
-		const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'stack', aliases: ['s'] }]).filter(
-			directive => directive.args.length === 0
-		);
-		labelsByBlock.set(graphicData, []);
-		items.forEach(directive => {
-			const stackAnalysisLines = getStackAnalysisLines(graphicData, state);
-			if (!stackAnalysisLines) {
-				return;
-			}
-
-			const stackAnalysisLine = findStackAnalysisLine(
-				stackAnalysisLines,
-				directive.sourceLineIndex,
-				directive.isTrailing
+	const unsubscribe = subscribeToBlockPreparation(
+		store,
+		layout,
+		'compiler.result',
+		({ codeBlock: graphicData, state }) => {
+			const items = matchEditorDirectives(graphicData.parsedDirectives, [{ name: 'stack', aliases: ['s'] }]).filter(
+				directive => directive.args.length === 0
 			);
-			if (!stackAnalysisLine) {
-				return;
-			}
+			labelsByBlock.set(graphicData, []);
+			items.forEach(directive => {
+				const stackAnalysisLines = getStackAnalysisLines(graphicData, state);
+				if (!stackAnalysisLines) {
+					return;
+				}
 
-			const displayRow =
-				graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex] ?? directive.sourceLineIndex;
-			const tabStopsByLine = getTabStopsByLine(graphicData.code);
-			const visualLineWidth = getVisualLineWidth(
-				graphicData.code[directive.sourceLineIndex] || '',
-				tabStopsByLine[directive.sourceLineIndex] || []
-			);
+				const stackAnalysisLine = findStackAnalysisLine(
+					stackAnalysisLines,
+					directive.sourceLineIndex,
+					directive.isTrailing
+				);
+				if (!stackAnalysisLine) {
+					return;
+				}
 
-			labelsByBlock.get(graphicData)!.push({
-				x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
-				y: gapCalculator(displayRow, graphicData.gaps) * state.viewport.hGrid,
-				glyphs: textToGlyphIds(formatStack(stackAnalysisLine.stackAnalysis.stackAfter)),
+				const displayRow =
+					graphicData.displayModel.sourceLineIndexToDisplayRow[directive.sourceLineIndex] ?? directive.sourceLineIndex;
+				const tabStopsByLine = graphicData.tabStopsByLine;
+				const visualLineWidth = getVisualLineWidth(
+					graphicData.code[directive.sourceLineIndex] || '',
+					tabStopsByLine[directive.sourceLineIndex] || []
+				);
+
+				labelsByBlock.get(graphicData)!.push({
+					x: state.viewport.vGrid * (3 + graphicData.lineNumberColumnWidth + visualLineWidth),
+					y: displayRowToGridRow(displayRow, graphicData.gaps) * state.viewport.hGrid,
+					glyphs: textToGlyphIds(formatStack(stackAnalysisLine.stackAnalysis.stackAfter)),
+				});
 			});
-		});
-	});
+		}
+	);
 	return unsubscribe;
 }

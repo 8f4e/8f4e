@@ -1,19 +1,13 @@
 {
   "code": 67,
-  "context": {
-    "codeBlockType": "function",
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "sameName",
-      },
-    ],
-    "instruction": "function",
+  "domain": "semantic",
+  "instruction": "function",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Invalid function overload set: sameName. Function overloads must have the same positive parameter count; zero-parameter functions cannot be overloaded. (67)",
 }

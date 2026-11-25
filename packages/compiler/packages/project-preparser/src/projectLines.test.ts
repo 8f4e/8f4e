@@ -1,30 +1,39 @@
 import { describe, expect, it } from 'vitest';
 
-import { getProjectBlockName, isProjectGapLine } from './projectLines';
+import { getEntryName, parseGroupHeader } from './projectLines';
 
-describe('getProjectBlockName', () => {
-	it('reads the single required name from entry and group openers', () => {
-		expect(getProjectBlockName('entry main', 1, 'entry')).toBe('main');
-		expect(getProjectBlockName('group audio', 2, 'group')).toBe('audio');
-		expect(getProjectBlockName('group\toscillator', 3, 'group')).toBe('oscillator');
+describe('getEntryName', () => {
+	it('reads the single required name from entry openers', () => {
+		expect(getEntryName('entry main', 1)).toBe('main');
 	});
 
 	it('rejects missing or extra names', () => {
-		expect(() => getProjectBlockName('entry', 4, 'entry')).toThrow('entry requires exactly one name');
-		expect(() => getProjectBlockName('group audio nested', 5, 'group')).toThrow('group requires exactly one name');
+		expect(() => getEntryName('entry', 4)).toThrow('entry requires exactly one name');
+		expect(() => getEntryName('entry main extra', 5)).toThrow('entry requires exactly one name');
 	});
 });
 
-describe('isProjectGapLine', () => {
-	it('treats blank lines and project comments as gaps between project blocks', () => {
-		expect(isProjectGapLine('')).toBe(true);
-		expect(isProjectGapLine('# project comment')).toBe(true);
-		expect(isProjectGapLine('; project comment')).toBe(true);
-		expect(isProjectGapLine('// project comment')).toBe(true);
+describe('parseGroupHeader', () => {
+	it('reads plain and template-backed group names independently of whitespace and comments', () => {
+		expect(parseGroupHeader('group audio', 1)).toEqual({ name: 'audio' });
+		expect(parseGroupHeader('group use; comment', 2)).toEqual({ name: 'use' });
+		expect(parseGroupHeader('group\toscillator use\tvoice; comment', 3)).toEqual({
+			name: 'oscillator',
+			template: 'voice',
+		});
+		expect(parseGroupHeader('group use use use', 4)).toEqual({ name: 'use', template: 'use' });
 	});
 
-	it('does not treat code as a project gap', () => {
-		expect(isProjectGapLine('module counter')).toBe(false);
-		expect(isProjectGapLine('push 1')).toBe(false);
+	it.each(['group', 'group audio nested', 'group audio from voice', 'group audio use voice use other'])(
+		'rejects malformed headers: %s',
+		header => {
+			expect(() => parseGroupHeader(header, 5)).toThrow('expected group NAME or group NAME use TEMPLATE');
+		}
+	);
+
+	it('validates both names', () => {
+		expect(() => parseGroupHeader('group bad/name use voice', 1)).toThrow('invalid group name');
+		expect(() => parseGroupHeader('group audio use bad/name', 1)).toThrow('Expected one template name');
+		expect(() => parseGroupHeader('group audio use; comment', 1)).toThrow('Expected one template name');
 	});
 });

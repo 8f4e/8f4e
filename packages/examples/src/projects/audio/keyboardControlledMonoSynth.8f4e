@@ -1,7 +1,9 @@
 8f4e/v1
 
 includes
+include std/audio/hzToRadians
 include std/events/risingEdge
+include std/math/trig/sine
 includesEnd
 
 function buffer
@@ -13,71 +15,6 @@ loop AUDIO_BUFFER_SIZE
 call main
 loopEnd
 functionEnd
-
-function sine
-; @pos 36 93
-; Polynomial approximation
-; of the sine function with
-; Taylor series (7th order)
-; Only works in the range of
-; [-PI, PI]
-param float x
-
-use math
-
-; Fold to [-pi/2, pi/2]
-push x
-push HALF_PI
-greaterThan
-if
-push PI
-push x
-sub
-localSet x
-ifEnd
-
-push x
-push HALF_PI
-push -1.0
-mul
-lessThan
-if
-push PI
-push -1.0
-mul
-push x
-sub
-localSet x
-ifEnd
-
-local float x2
-push x
-push x
-mul
-localSet x2
-
-; Taylor coefficients
-const T1 -0.1666666666
-const T2 0.0083333333
-const T3 -0.000198412
-
-push x2
-push T3
-mul
-push T2
-add
-push x2
-mul
-push T1
-add
-push x2
-mul
-push 1.0
-add
-push x
-mul
-
-functionEnd float
 
 function jankoMap
 ; @pos 210 48
@@ -591,17 +528,10 @@ float out
 
 use math
 
-; Advance phase by
-; TAU * frequency / SAMPLE_RATE
+; Advance phase in radians.
 push &phase
 push phase
-push TAU
-push *frequency
-mul
-push SAMPLE_RATE
-castToFloat
-ensureNonZero
-div
+call hzToRadians *frequency SAMPLE_RATE
 add
 store
 
@@ -668,8 +598,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

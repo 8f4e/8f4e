@@ -5,6 +5,7 @@ import { SyntaxErrorCode } from './syntax/syntaxError';
 describe('parseProjectMemoryInitializerLine', () => {
 	it('preserves structured references and accepts an inline comment', () => {
 		expect(parseProjectMemoryInitializerLine('init &input &source:output ; connection', 4)).toMatchObject({
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'init',
 			arguments: [
@@ -49,8 +50,8 @@ describe('parseProjectMemoryInitializerLine', () => {
 		'init &input output',
 		'init &input &output',
 		'init &input "text"',
-		'init input& &source:output',
-		'init &input source:output&',
+		'init end(input) &source:output',
+		'init &input end(source:output)',
 		'init &input &outer/source:output',
 		'init &input &source:output+4',
 	])('rejects unsupported initializer syntax: %s', source => {

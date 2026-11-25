@@ -1,11 +1,13 @@
 {
   "code": 12,
-  "context": {
-    "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "#loopCap",
+  "domain": "syntax",
+  "instruction": "#loopCap",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Instruction is not allowed in this block.",
 }

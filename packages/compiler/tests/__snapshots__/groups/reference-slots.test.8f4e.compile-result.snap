@@ -85,10 +85,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "processing/audio/inheritedState",
+              "value": "value",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 41,
             },
           ],
-          "instruction": "shape",
+          "instruction": "int",
         },
         {
           "arguments": [
@@ -99,7 +104,6 @@
               "value": "localValue",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",
@@ -147,6 +151,32 @@
               "isInteger": true,
               "type": "literal",
               "value": 41,
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "localValue",
+              "type": "identifier",
+              "value": "end(*localValue)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "memory",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "end(value)",
             },
           ],
           "instruction": "assertEqual",
@@ -204,7 +234,6 @@
               "value": "signal",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "exposed",
@@ -262,6 +291,33 @@
           "instruction": "assertEqual",
         },
         {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "local",
+              "targetKind": "pointee",
+              "targetMemoryId": "signal",
+              "type": "identifier",
+              "value": "end(*signal)",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "end-address",
+              "scope": "intermodule",
+              "targetKind": "memory",
+              "targetMemoryId": "exposed",
+              "targetModuleId": "processing/audio",
+              "type": "identifier",
+              "value": "end(audio:exposed)",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
           "arguments": [],
           "instruction": "moduleEnd",
         },
@@ -283,7 +339,6 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 0,
-          "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

@@ -1,0 +1,54 @@
+import { parseProjectSource } from '@8f4e/compiler';
+import initEditor, { type Editor } from '@8f4e/editor-core';
+import { codeRenderingPlugin } from '@8f4e/editor-plugin-code-rendering';
+import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
+import { createAsciiCanvasRenderer, readAsciiViewport } from '@8f4e/web-ui-testing';
+import { expect, test, vi } from 'vitest';
+
+test('restores a retained project in a new editor instance', async () => {
+	const canvas = document.createElement('canvas');
+	canvas.width = 640;
+	canvas.height = 320;
+	canvas.style.width = '640px';
+	canvas.style.height = '320px';
+	document.body.appendChild(canvas);
+	const values = new Map<string, string>();
+	const storage = {
+		getItem: (key: string) => values.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			values.set(key, value);
+		},
+	};
+	let editor: Editor | undefined;
+	try {
+		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
+			initialProject: parseProjectSource(
+				'8f4e/v1\nconstants env\n; @pos 120 60\nconstantsEnd\nnote retained\n; @pos 3 10\nRetained across editor instances.\nnoteEnd'
+			),
+			plugins: [createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true })],
+		});
+		editor.state.editorMode = 'edit';
+		expect(values.has('session')).toBe(true);
+		editor.dispose();
+		editor = await initEditor(canvas, {
+			renderer: createAsciiCanvasRenderer(canvas),
+			plugins: [
+				codeRenderingPlugin,
+				createSessionPersistencePlugin({ storage, storageKey: 'session', restoreOnStartup: true }),
+			],
+		});
+		editor.state.editorMode = 'edit';
+		await vi.waitFor(() =>
+			expect(
+				editor!.state.project.activeLevel.blocks.some(block => block.code.includes('Retained across editor instances.'))
+			).toBe(true)
+		);
+		editor.pauseRendering();
+		editor.renderFrame();
+		await expect(readAsciiViewport(canvas)).toMatchFileSnapshot('./__snapshots__/restored-session.viewport.snap');
+	} finally {
+		editor?.dispose();
+		canvas.remove();
+	}
+});

@@ -7,7 +7,6 @@ export default function extractPublicBlockFromModuleSource(source: string): stri
 		...project.execution.filter(block => block.type === 'module' && block.entry !== 'test'),
 		...project.functions,
 		...project.constants,
-		...project.prototypes,
 		...project.notes,
 	].find(block => parseBlockDirectives(block.code).some(directive => directive.name === 'public'));
 	if (!publicBlock) {

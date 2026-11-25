@@ -1,3 +1,4 @@
+import { WASM_IF } from '@8f4e/compiler-wasm-utils';
 import { ArgumentType } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import createInstructionCompilerTestContext, {
@@ -14,6 +15,7 @@ describe('storeBytes instruction compiler', () => {
 		compileInstructionForTest(
 			storeBytes,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],
@@ -51,6 +53,7 @@ describe('storeBytes instruction compiler', () => {
 		compileInstructionForTest(
 			storeBytes,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'storeBytes',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2, isInteger: true }],
@@ -77,6 +80,6 @@ describe('storeBytes instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 	});
 });

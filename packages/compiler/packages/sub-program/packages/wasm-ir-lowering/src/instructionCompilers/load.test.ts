@@ -1,3 +1,4 @@
+import { WASM_IF } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -12,11 +13,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 1,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -47,11 +44,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 2,
-				instruction: 'load8u',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'load8u', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
@@ -66,11 +59,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 3,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -91,7 +80,7 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 	});
 
 	it('does not guard when an explicit clamp proves the access width is safe', () => {
@@ -99,11 +88,7 @@ describe('load instruction compiler', () => {
 
 		compileInstructionForTest(
 			load,
-			{
-				lineNumber: 4,
-				instruction: 'load',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 4, instruction: 'load', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -112,6 +97,6 @@ describe('load instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 	});
 });

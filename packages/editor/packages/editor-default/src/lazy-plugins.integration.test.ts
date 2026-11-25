@@ -2,8 +2,9 @@ import { EventEmitter } from 'node:events';
 import { parseProjectSource } from '@8f4e/compiler';
 import { createLazyPluginLoaderPlugin } from '@8f4e/editor-plugin-lazy-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createLazyPluginRegistry } from './lazy-plugins';
 
@@ -36,6 +37,7 @@ function restoreSession(directive: string, nested = false) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	const context = {
 		store,
 		events,
@@ -43,7 +45,7 @@ function restoreSession(directive: string, nested = false) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	};
 	const disposeSession = createSessionPersistencePlugin({
 		storage,
@@ -70,17 +72,18 @@ function restoreSession(directive: string, nested = false) {
 	});
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	for (const entry of entries) expect(entry.load).not.toHaveBeenCalled();
-	events.dispatch('init');
+	events.dispatch('prepareInitialProject');
 	const state = store.getState();
-	const outer = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'outer');
-	const inner = outer?.childProject?.blocks.find(block => block.name === 'inner');
-	const blocks = inner?.childProject?.blocks ?? state.codeBlockRendering.currentProject.blocks;
+	const outer = state.project.activeLevel.blocks.find(block => block.name === 'outer');
+	const inner = outer?.childLevel?.blocks.find(block => block.name === 'inner');
+	const blocks = inner?.childLevel?.blocks ?? state.project.activeLevel.blocks;
 	const block = blocks.find(block => block.name === 'audio')!;
 	return { block, entries, state, events, outer, inner };
 }
 
 it.each([
 	['plot &points 4', 'plot', 8],
+	['scope value 30 0 100', 'scope', 8],
 	['wave &points 4', 'wave', 2],
 	['wave2 &points 4', 'wave', 4],
 	['wave4 &points 4', 'wave', 8],
@@ -93,6 +96,25 @@ it.each([
 	const { block, entries } = restoreSession(directive);
 	await vi.waitFor(() => expect(block.gaps.get(7)?.size).toBe(rows));
 	expect(entries.filter(entry => entry.load.mock.calls.length).map(entry => entry.id)).toEqual([plugin]);
+});
+
+it('loads scope to report unsupported rates when entering a group', async () => {
+	const { block, entries, state, events, outer, inner } = restoreSession('scope value 500', true);
+	const scope = entries.find(entry => entry.id === 'scope')!;
+	expect(scope.load).not.toHaveBeenCalled();
+	events.dispatch('openProjectGroup', { codeBlock: outer });
+	events.dispatch('openProjectGroup', { codeBlock: inner });
+	await vi.waitFor(() =>
+		expect(state.codeErrors.scope).toEqual([
+			{
+				codeBlockId: block.creationIndex,
+				lineNumber: 7,
+				message: '@scope: sample rate must not exceed 250 Hz.',
+			},
+		])
+	);
+	expect(scope.load).toHaveBeenCalledOnce();
+	expect(block.gaps.size).toBe(0);
 });
 
 it('loads MIDI from restored raw configuration and registers its schema', async () => {
@@ -142,7 +164,7 @@ it('loads binary assets from a restored session and announces their size as comp
 	);
 	const revision = state.compilerInputRevision;
 	await vi.waitFor(() =>
-		expect(state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!.code).toContain(
+		expect(state.project.rootLevel.blocks.find(block => block.name === 'env')!.code).toContain(
 			'const ASSET_SOUND_SIZE 6'
 		)
 	);

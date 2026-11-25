@@ -1,6 +1,6 @@
 # Memory instructions
 
-For identifier prefixes and suffixes that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
+For identifier prefixes and metadata queries that expand memory identifiers, see [Identifier prefixes](../prefixes.md).
 
 In functions, memory instructions require the `#impure` compiler directive. Impure functions may use
 intermodular addresses such as `&source:value` and target metadata such as `sizeof(source:buffer)`. Memory
@@ -8,6 +8,11 @@ access remains address-driven: functions cannot read unqualified module memory i
 their own memory.
 
 Memory access instructions are non-trapping for out-of-bounds addresses. When the compiler cannot prove that an address is within a safe memory range, it emits a runtime bounds guard. Guarded loads return `0` when the address is out of bounds, and guarded stores skip the write.
+
+Bounds cover the complete imported WebAssembly memory, including page padding. Accesses may cross 8f4e declarations
+and modules. Known addresses and proven access widths eliminate redundant guards for loads, stores, byte stores,
+copies, and fills. Each copy range is checked independently. The memory import has equal minimum and maximum page
+counts, so remaining guards compare against a constant memory size.
 
 ### load
 
@@ -97,7 +102,17 @@ loadFloat
 ### store
 
 The store instruction consumes a value and an address from the stack and stores the value at the address.
-If the address is out of bounds, the write is skipped instead of trapping.
+For integer values, a typed `int8*` or `int8u*` destination writes one byte, and an `int16*` or `int16u*`
+destination writes two bytes. Narrow stores truncate the value to its low 8 or 16 bits. An `int*` destination
+or an address without pointee type information writes four bytes. Ordinary pointer arithmetic preserves
+the destination type.
+
+Storing an address into a pointer variable writes four bytes: `push pointer` addresses the pointed-to element,
+while `push &pointer` addresses the pointer variable itself. Floating-point values write four bytes for `float`
+and eight bytes for `float64`.
+
+Bounds checks use the selected write width. If the complete value is out of bounds, the write is skipped instead
+of trapping.
 
 #### Examples
 
@@ -105,6 +120,14 @@ If the address is out of bounds, the write is skipped instead of trapping.
 int output
 push &output
 push 10
+store
+```
+
+```
+int8u[] pixels 4
+int8u* pixel &pixels
+push pixel
+push 255
 store
 ```
 
@@ -143,6 +166,33 @@ int[] target 5
 push &target
 push &source
 memoryCopy 20
+```
+
+### fill
+
+The fill instruction consumes a destination address, integer byte value, and runtime byte count from the
+stack. It fills that many bytes with the low eight bits of the value using WebAssembly `memory.fill`.
+It takes no source arguments. The operation works in bytes regardless of the destination pointer type.
+
+With memory guards enabled, a negative byte count or any range outside linear memory skips the entire fill.
+A zero byte count writes nothing. Disabling memory guards exposes WebAssembly's native out-of-bounds trap.
+Functions using fill require `#impure`.
+
+When the address and byte count are known, the compiler omits the guard if the range fits in the minimum imported
+WebAssembly memory size, including page padding. The range may span multiple 8f4e declarations or modules.
+Existing proven address-range metadata can also eliminate the guard when it covers a known byte count.
+Unknown ranges retain their runtime check; no additional language annotation is required for static ranges.
+
+Stack layout before call: `... , dstAddress , byteValue , byteCount`
+
+#### Examples
+
+```
+int8u[] pixels 256
+push &pixels
+push 0
+push count(pixels)
+fill
 ```
 
 ### clampAddress

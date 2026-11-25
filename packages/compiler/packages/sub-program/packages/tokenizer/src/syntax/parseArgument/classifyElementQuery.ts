@@ -1,6 +1,6 @@
 import type { ArgumentIdentifier } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
-import { SyntaxErrorCode, SyntaxRulesError } from '../syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from '../syntaxError';
 
 /**
  * Classifies local, intermodular, and pointee metadata query identifier forms.
@@ -187,7 +187,7 @@ function extractQueryInner(value: string, prefix: string): string | null {
 
 	const inner = value.slice(prefix.length, -1);
 	if (inner.trim().length === 0) {
-		throw new SyntaxRulesError(SyntaxErrorCode.INVALID_IDENTIFIER, `Metadata query target is missing: ${value}`);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_IDENTIFIER, `Metadata query target is missing: ${value}`);
 	}
 
 	return inner;
@@ -196,10 +196,7 @@ function extractQueryInner(value: string, prefix: string): string | null {
 function getPointeeQueryTarget(value: string, targetMemoryId: string): string {
 	const pointeeTargetMemoryId = targetMemoryId.slice(1);
 	if (pointeeTargetMemoryId.trim().length === 0) {
-		throw new SyntaxRulesError(
-			SyntaxErrorCode.INVALID_IDENTIFIER,
-			`Pointee metadata query target is missing: ${value}`
-		);
+		throw new SyntaxIssue(SyntaxErrorCode.INVALID_IDENTIFIER, `Pointee metadata query target is missing: ${value}`);
 	}
 
 	return pointeeTargetMemoryId;

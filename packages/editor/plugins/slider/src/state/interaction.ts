@@ -1,6 +1,6 @@
 import type {
-	CodeBlockGraphicData,
 	CodeBlockPointerDownEvent,
+	EditorCodeBlock,
 	EventDispatcher,
 	InternalPointerEvent,
 	State,
@@ -10,13 +10,13 @@ import type { Slider } from '../types';
 
 interface ActiveSlider {
 	slider: Slider;
-	codeBlock: CodeBlockGraphicData;
+	codeBlock: EditorCodeBlock;
 }
 
 export function registerSliderInteraction(
 	state: State,
 	events: EventDispatcher,
-	slidersByBlock: WeakMap<CodeBlockGraphicData, Slider[]>,
+	slidersByBlock: WeakMap<EditorCodeBlock, Slider[]>,
 	writeMemory: (address: number, value: number, isInteger: boolean) => void
 ): () => void {
 	let activeSlider: ActiveSlider | null = null;

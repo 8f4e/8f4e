@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { CP437_CHARACTERS } from '../src/characterSet';
 import { writeGlyph } from '../src/font';
-import loadFontAtlas, { FILL_SPRITE_ID, FONT_NAMES, getGlyphSpriteId, textToGlyphIds } from '../src/index';
+import loadFontAtlas, {
+	FILL_SPRITE_ID,
+	FONT_CATALOG,
+	FONT_NAMES,
+	getGlyphSpriteId,
+	textToGlyphIds,
+} from '../src/index';
 
 describe('R8 font atlases', () => {
+	it('lists all fonts in increasing order of pixel-cell area', () => {
+		expect(new Set(FONT_NAMES)).toEqual(new Set(Object.keys(FONT_CATALOG)));
+		expect(FONT_NAMES[0]).toBe('spleen5x8');
+		expect(FONT_NAMES.at(-1)).toBe('spleen16x32');
+		const sizes = FONT_NAMES.map(font => FONT_CATALOG[font].width * FONT_CATALOG[font].height);
+		expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
+	});
 	it('prepares Unicode text and spaces as shared glyph IDs', () => {
 		expect(textToGlyphIds('0 -1.5 é☺')).toEqual([48, 32, 45, 49, 46, 53, 32, 130, 1]);
 	});

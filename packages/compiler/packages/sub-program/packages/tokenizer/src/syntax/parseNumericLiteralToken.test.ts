@@ -63,7 +63,7 @@ describe('parseNumericLiteralToken', () => {
 		['negative binary', `-0b${'1'.repeat(1025)}`],
 	])('rejects overflowing %s literals', (_name, token) => {
 		expect(() => parseNumericLiteralToken(token)).toThrowError(
-			expect.objectContaining({ name: 'SyntaxRulesError', code: SyntaxErrorCode.INVALID_NUMERIC_LITERAL })
+			expect.objectContaining({ name: 'SyntaxIssue', code: SyntaxErrorCode.INVALID_NUMERIC_LITERAL })
 		);
 	});
 

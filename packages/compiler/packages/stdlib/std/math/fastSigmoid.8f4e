@@ -1,0 +1,29 @@
+includes
+include std/math/softsign
+includesEnd
+
+function fastSigmoid
+#export
+; @doc Maps a finite number into 0..1 using a scaled
+; - softsign.
+; @returns The sigmoid approximation.
+; @param value Finite input value.
+param float value
+
+call softsign value
+mul 0.5
+add 0.5
+functionEnd float
+
+function fastSigmoid
+#export
+; @doc Maps a finite number into 0..1 using a scaled
+; - softsign.
+; @returns The sigmoid approximation.
+; @param value Finite input value.
+param float64 value
+
+call softsign value
+mul 0.5f64
+add 0.5f64
+functionEnd float64

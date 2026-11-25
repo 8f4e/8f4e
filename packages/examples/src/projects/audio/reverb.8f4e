@@ -11,28 +11,18 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -69 -24
-; @favorite
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
-
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
 
 ; Binary asset sizes in bytes
 ; 'lubadh_guitar_3_48khz_16s.raw'
 const ASSET_PIANO_SIZE 921600
 
-constantsEnd
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
 
-note
-; @pos -217 -43
-; @config audioRuntime.enabled true
-; @config audioRuntime.sampleRate 48000
-; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
-; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
-; @config export.fileName Reverb
-noteEnd
+constantsEnd
 
 note colors
 ; @pos -268 -43
@@ -49,6 +39,15 @@ note colors
 ; @config color.tertiary #7b8580
 ; @config color.highlight #ed6176
 ; @config color.detail #35aaa5
+noteEnd
+
+note
+; @pos -217 -43
+; @config audioRuntime.enabled true
+; @config audioRuntime.sampleRate 48000
+; @config audioRuntime.audioOutBufferLAddress audiooutL:buffer
+; @config audioRuntime.audioOutBufferRAddress audiooutR:buffer
+; @config export.fileName Reverb
 noteEnd
 
 note
@@ -73,7 +72,7 @@ note
 noteEnd
 
 note
-; @pos 38 -37
+; @pos 120 -38
 ;
 ; This project implements a Dattorro reverb
 ; with hardcoded parameters copied from
@@ -83,7 +82,7 @@ noteEnd
 
 entry main
 module pcmPlayer
-; @pos -5 -27
+; @pos 71 -28
 ; @home left
 use env
 
@@ -114,8 +113,8 @@ store
 ; Reset playhead
 ; when reaches buffer end
 push playhead
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &playhead
 push &buffer
@@ -124,7 +123,7 @@ ifEnd
 
 moduleEnd
 group reverb
-; @pos 46 -27
+; @pos 121 -28
 expose in &reverbInput:in
 expose outL &tank1OutputMix:out
 expose outR &tank2OutputMix:out
@@ -143,6 +142,9 @@ expose damping &controlValues:damping
 
 pass env
 
+
+
+
 includes
 ; @pos -64 3
 include std/math/lerp
@@ -154,16 +156,6 @@ include std/memory/advancePointer
 include std/math/trig/advancePhase
 
 includesEnd
-
-constants cloudsReverb
-; @pos -76 -8
-use env
-
-const CLOUDS_SAMPLE_RATE 32000
-const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
-
-constantsEnd
-
 function allpassStep
 ; @pos -116 8
 #impure
@@ -196,7 +188,14 @@ call advancePointer
 - pointer buffer itemCount
 
 functionEnd float
+constants cloudsReverb
+; @pos -76 -8
+use env
 
+const CLOUDS_SAMPLE_RATE 32000
+const CLOUDS_RATIO SAMPLE_RATE/CLOUDS_SAMPLE_RATE
+
+constantsEnd
 entry main
 module reverbInput
 ; @pos -5 -27
@@ -255,7 +254,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& mod &lfo1:out
 float out
@@ -304,7 +303,7 @@ use cloudsReverb
 
 float& buffer
 - &allpassDiffuser:buffer
-float** pointer
+float*& pointer
 - &allpassDiffuser:pointer
 float& in &modulatedDelayTap:out
 
@@ -467,7 +466,7 @@ module tank1ModulatedTap
 use cloudsReverb
 
 float& buffer &tank1DelayRead:buffer
-float** pointer
+float*& pointer
 - &tank1DelayRead:pointer
 float& mod &tank1DelayLfo:out
 float out
@@ -682,7 +681,7 @@ module tank2DelayWrite
 ; Writes Clouds del2.
 
 float& buffer &tank1DelayRead:buffer
-float** pointer &tank1DelayRead:pointer
+float*& pointer &tank1DelayRead:pointer
 float& in &tank2AllpassB:out
 
 push *pointer
@@ -699,7 +698,7 @@ module tank1DelayWrite
 ; Writes Clouds del1.
 
 float& buffer &tank2DelayRead:buffer
-float** pointer &tank2DelayRead:pointer
+float*& pointer &tank2DelayRead:pointer
 float& in &tank1AllpassB:out
 
 push *pointer
@@ -741,7 +740,7 @@ moduleEnd
 entryEnd
 groupEnd
 module audiooutL
-; @pos 101 -27
+; @pos 173 -28
 use env
 
 float& in &reverb:outL
@@ -769,8 +768,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer
@@ -779,7 +778,7 @@ ifEnd
 
 moduleEnd
 module audiooutR
-; @pos 142 -27
+; @pos 216 -28
 use env
 
 float& in &reverb:outR
@@ -807,8 +806,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

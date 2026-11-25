@@ -1,5 +1,5 @@
 import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createScreenshotPlugin } from './index';
@@ -36,7 +36,7 @@ function setup(installed = true, mode: 'edit' | 'view' = 'edit') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {

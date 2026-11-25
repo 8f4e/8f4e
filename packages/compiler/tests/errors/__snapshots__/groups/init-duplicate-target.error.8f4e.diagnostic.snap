@@ -1,26 +1,13 @@
 {
   "code": 76,
-  "context": {
-    "projectGroupPath": "synth",
-  },
-  "line": {
-    "arguments": [
-      {
-        "isEndAddress": false,
-        "referenceKind": "memory-reference",
-        "scope": "local",
-        "targetMemoryId": "alias",
-        "type": "identifier",
-        "value": "&alias",
-      },
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 12,
-      },
-    ],
-    "instruction": "init",
+  "domain": "semantic",
+  "instruction": "init",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Multiple initializers target the same memory item: alias. (76)",
 }

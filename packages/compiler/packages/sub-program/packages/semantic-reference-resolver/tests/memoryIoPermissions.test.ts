@@ -5,13 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { resolveSemanticReferences } from '../src';
 
 function resolveFunction(body: string[], isImpure = false) {
-	const ast = compileToAST([
-		'function caller',
-		...(isImpure ? ['#impure'] : []),
-		'param int* pointer',
-		...body,
-		'functionEnd',
-	]) as ValidatedFunctionAST;
+	const ast = compileToAST(
+		['function caller', ...(isImpure ? ['#impure'] : []), 'param int* pointer', ...body, 'functionEnd'],
+		{ kind: 'document' }
+	) as ValidatedFunctionAST;
 	const metadata: FunctionMetadata = {
 		id: 'caller__int_p',
 		name: 'caller',
@@ -25,14 +22,13 @@ function resolveFunction(body: string[], isImpure = false) {
 	};
 
 	return resolveSemanticReferences({
-		ast: { prototypes: [], modules: [], constants: [] },
+		ast: { modules: [], constants: [] },
 		registeredFunctions: [{ ast, metadata }],
 		memoryPlan: { modules: {}, moduleList: [] },
 		memoryAliases: new Map(),
 		pointerMetadataByModuleId: {},
-		constantReferences: { prototypes: [], modules: [], constants: [], functions: [{ lineFacts: [] }] },
+		constantReferences: { modules: [], constants: [], functions: [{ lineFacts: [] }] },
 		memoryReferences: {
-			prototypes: [],
 			modules: [],
 			constants: [],
 			functions: [{ lineFacts: [] }],
@@ -43,7 +39,6 @@ function resolveFunction(body: string[], isImpure = false) {
 			byId: { [metadata.id]: metadata, [consumer.id]: consumer },
 			arityByName: { caller: 1, consume: 1 },
 		},
-		prototypeShapes: {},
 	}).references.functions[metadata.id];
 }
 
@@ -55,6 +50,7 @@ const memoryIoBodies = [
 	{ name: 'store', body: ['push pointer', 'push 1', 'store'] },
 	{ name: 'storeBytes', body: ['push pointer', 'push "ab"', 'storeBytes 2'] },
 	{ name: 'memoryCopy', body: ['push pointer', 'push pointer', 'memoryCopy 4'] },
+	{ name: 'fill', body: ['push pointer', 'push 0', 'push 4', 'fill'] },
 	{ name: 'pointer dereference', body: ['push *pointer', 'drop'] },
 	{ name: 'inline pointer dereference', body: ['call consume *pointer'] },
 ];

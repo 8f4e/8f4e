@@ -6,13 +6,12 @@ import type { ProjectObjectModel } from '@8f4e/language-spec';
 export function createProjectUrlLoaderPlugin({
 	fetch,
 	initialProjectUrl,
-	onLoaded,
-	onError,
+	failureMode = 'reject',
 }: {
 	fetch: typeof globalThis.fetch;
 	initialProjectUrl?: string;
-	onLoaded?: () => void;
-	onError?: (error: unknown) => void;
+	/** By default an initial source failure rejects mounting; authoring hosts can recover with an empty project. */
+	failureMode?: 'reject' | 'empty-project';
 }): EditorPlugin {
 	return {
 		id: 'project-url-loader',
@@ -33,14 +32,13 @@ export function createProjectUrlLoaderPlugin({
 						project = parseProjectSource(source);
 					} catch (error) {
 						if (disposed) return;
-						indicator.fail();
 						logError(store.getState(), `Failed to load project from ${initialProjectUrl}: ${String(error)}`);
+						if (failureMode === 'reject') throw error;
+						indicator.fail();
 						events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
-						onError?.(error);
 						return;
 					}
 					events.dispatch('loadProject', { project });
-					onLoaded?.();
 					indicator.done();
 				} catch (error) {
 					indicator.fail();
@@ -50,10 +48,10 @@ export function createProjectUrlLoaderPlugin({
 					indicator.cancel();
 				}
 			};
-			events.on('init', loadInitialProject);
+			events.on('prepareInitialProject', loadInitialProject);
 			return () => {
 				disposed = true;
-				events.off('init', loadInitialProject);
+				events.off('prepareInitialProject', loadInitialProject);
 				for (const indicator of pendingLoads) indicator.cancel();
 				pendingLoads.clear();
 			};

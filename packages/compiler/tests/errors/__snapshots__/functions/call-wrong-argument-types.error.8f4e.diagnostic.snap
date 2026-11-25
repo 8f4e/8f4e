@@ -1,24 +1,17 @@
 {
   "code": 68,
-  "context": {
-    "codeBlockId": "wrongArgumentTypes",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "addInts",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 6,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "No matching function overload: addInts. Calls must exactly match one parameter signature. (68)
 Inferred call: addInts(float, float)
 Available overloads:
 - addInts(int, int)",
+  "symbol": "wrongArgumentTypes",
 }

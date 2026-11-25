@@ -24,11 +24,7 @@ describe('store stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 3,
-				instruction: 'store',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'store', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -46,11 +42,7 @@ describe('store stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 5,
-				instruction: 'store',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 5, instruction: 'store', arguments: [] } as CompilerASTLine,
 			context
 		);
 

@@ -1,5 +1,4 @@
 {
-  "code": [],
   "constants": [],
   "entries": [
     "main",
@@ -52,11 +51,13 @@
       ],
       "exposures": [
         {
+          "lineNumber": 1,
           "name": "exposedValue",
           "targetMemoryName": "value",
           "targetModuleName": "source",
         },
         {
+          "lineNumber": 2,
           "name": "exposedInput",
           "targetMemoryName": "input",
           "targetModuleName": "consumer",
@@ -67,7 +68,6 @@
       "includes": [],
       "name": "audio",
       "notes": [],
-      "prototypes": [],
       "type": "group",
       "unknown": [],
     },
@@ -75,6 +75,5 @@
   "functions": [],
   "includes": [],
   "notes": [],
-  "prototypes": [],
   "unknown": [],
 }

@@ -11,7 +11,7 @@ module triggerPatternSequencer
 int* trigger
 int previousTrigger
 int* bufferIn    ; &module:buffer
-int* bufferEndIn ; module:buffer&
+int* bufferEndIn ; end(module:buffer)
 
 int _offset
 int out
@@ -48,7 +48,7 @@ push bufferIn
 push _offset
 add
 push bufferEndIn
-greaterThan
+greaterOrEqual
 if
 push &_offset
 push 0

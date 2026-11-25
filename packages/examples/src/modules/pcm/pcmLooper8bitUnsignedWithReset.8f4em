@@ -40,8 +40,8 @@ store
 ; Reset playhead
 ; when reaches buffer end
 push playhead
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 ; when reset signal
 push *reset
 call risingEdge &previousReset

@@ -1,20 +1,14 @@
 {
   "code": 14,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isInteger": true,
-        "type": "literal",
-        "value": 0,
-      },
-    ],
-    "instruction": "div",
+  "domain": "semantic",
+  "instruction": "div",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Possible division by zero. (14)",
+  "symbol": "invalid",
 }

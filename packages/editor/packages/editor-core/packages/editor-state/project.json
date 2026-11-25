@@ -5,7 +5,9 @@
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
       "options": {
         "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build",
         "cwd": "{projectRoot}"
@@ -13,29 +15,41 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/@8f4e/editor-state"],
+      "outputs": [
+        "{workspaceRoot}/coverage/@8f4e/editor-state"
+      ],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/editor-state"
-      }
+      },
+      "dependsOn": [
+        "^build"
+      ]
     },
     "test-update": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/@8f4e/editor-state"],
+      "outputs": [
+        "{workspaceRoot}/coverage/@8f4e/editor-state"
+      ],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/editor-state",
         "updateSnapshot": true
       }
     },
-  "typecheck": {
-    "executor": "nx:run-commands",
-    "options": {
-      "command": "tsc --noEmit",
-      "cwd": "{projectRoot}"
-    },
-    "dependsOn": ["^build"]
-  }
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    }
   },
-  "tags": ["type:library", "scope:editor"]
+  "tags": [
+    "type:library",
+    "scope:editor"
+  ]
 }

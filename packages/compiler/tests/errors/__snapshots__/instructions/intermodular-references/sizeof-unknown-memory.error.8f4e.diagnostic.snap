@@ -1,29 +1,13 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "sizeofUnknownMemoryTarget",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "size",
-      },
-      {
-        "referenceKind": "intermodular-element-word-size",
-        "scope": "intermodule",
-        "targetMemoryId": "missing",
-        "targetModuleId": "sizeofUnknownMemorySource",
-        "type": "identifier",
-        "value": "sizeof(sizeofUnknownMemorySource:missing)",
-      },
-    ],
-    "instruction": "int",
+  "domain": "semantic",
+  "instruction": "int",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
-  "message": "Undeclared identifier: missing. (5)",
+  "message": "Unknown memory declaration in memory default.",
 }

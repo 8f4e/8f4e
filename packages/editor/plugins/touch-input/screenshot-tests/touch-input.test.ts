@@ -1,6 +1,7 @@
 import initEditor from '@8f4e/editor-core';
 import { EMPTY_DEFAULT_PROJECT, serializeToProject } from '@8f4e/editor-state';
 import type {} from '@vitest/browser-playwright';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
 import { createTouchInputPlugin } from '../src/index';
@@ -13,6 +14,7 @@ test('native one-finger dragging pans without clicking or moving blocks, while t
 	const pressed = vi.fn();
 	canvas.addEventListener('mousedown', pressed);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			notes: [{ id: 0, code: ['note target', '; @pos 10 7', 'Touch navigation', 'noteEnd'] }],
@@ -32,15 +34,15 @@ test('native one-finger dragging pans without clicking or moving blocks, while t
 	try {
 		const source = serializeToProject(editor.state);
 		const revision = editor.state.projectChange.revision;
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+		const block = editor.state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 		const { x: blockX, y: blockY } = block;
 		const { x, y } = editor.state.viewport;
 		await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(100, 130) });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(120, 146) });
-		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(140, 162) });
+		await input.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(137, 159) });
 		await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-		await expect.poll(() => editor.state.viewport.x).toBe(x - 40);
-		expect(editor.state.viewport.y).toBe(y - 32);
+		await expect.poll(() => editor.state.viewport.x).toBe(x - 37);
+		expect(editor.state.viewport.y).toBe(y - 29);
 		expect({ x: block.x, y: block.y }).toEqual({ x: blockX, y: blockY });
 		expect(pressed).not.toHaveBeenCalled();
 		expect(serializeToProject(editor.state)).toEqual(source);
@@ -75,6 +77,7 @@ test('horizontal panning leaves vertical swipes to page scrolling', async () => 
 	document.body.append(canvas);
 	window.scrollTo(0, 0);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		plugins: [createTouchInputPlugin({ inputTarget: canvas, axis: 'horizontal' })],
 	});
 	editor.pauseRendering();

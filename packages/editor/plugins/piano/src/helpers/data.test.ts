@@ -4,6 +4,7 @@ import { createPianoDirectiveData } from './data';
 describe('piano arguments', () => {
 	it.each([
 		{ args: ['&notes', '&count'], startingMidiNote: 0 },
+		{ args: ['notes', 'count'], startingMidiNote: 0 },
 		{ args: ['&notes', '&count', '48'], startingMidiNote: 48 },
 		{ args: ['&group:notes', '&other:count', '60'], startingMidiNote: 60 },
 	])('reads note addresses and starting note from $args', ({ args, startingMidiNote }) => {
@@ -17,8 +18,8 @@ describe('piano arguments', () => {
 	it.each([
 		[],
 		['&notes'],
-		['notes', '&count'],
-		['&notes', 'count'],
+		['*notes', '&count'],
+		['&notes', '*count'],
 		['&notes', '&count', '-1'],
 		['&notes', '&count', '60.5'],
 		['&notes', '&count', 'invalid'],

@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { readElementCount, readElementIndex } from '@8f4e/editor-state/memory';
 import type { DrawContext, MemoryViews } from '@8f4e/web-ui';
 import type { Bars } from '../types';
 
@@ -19,22 +20,16 @@ export default function drawBars(engine: DrawContext, displays: Bars[], memoryVi
 	const colors = PALETTE_INDICES;
 
 	for (const bars of displays) {
-		const { x, y, width, height, startAddress, baseSampleShift, length, valueType, minValue, inverseValueRange } = bars;
+		const { x, y, width, height, buffer, minValue, inverseValueRange } = bars;
 		engine.startGroup(x, y);
 
-		const baseValueIndex =
-			(startAddress.showAddress
-				? startAddress.memory.byteAddress
-				: memoryViews.int32[startAddress.memory.allocationUnitAddress + startAddress.bufferPointer]) >> baseSampleShift;
-		const values = memoryViews[valueType];
-		const arrayLength =
-			typeof length === 'number'
-				? length
-				: memoryViews.int32[length.memory.allocationUnitAddress + length.bufferPointer];
+		const baseValueIndex = readElementIndex(buffer.samples, memoryViews.int32);
+		const values = memoryViews[buffer.samples.spec.valueType];
+		const arrayLength = readElementCount(buffer.elementCount, memoryViews) ?? 0;
 
 		engine.drawFill(0, 0, colors.darkSurface, width, height);
 
-		if (arrayLength <= 0) {
+		if (arrayLength <= 0 || baseValueIndex === undefined) {
 			engine.endGroup();
 			continue;
 		}

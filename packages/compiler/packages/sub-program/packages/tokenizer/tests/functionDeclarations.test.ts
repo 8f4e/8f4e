@@ -15,24 +15,14 @@ describe('function declaration syntax', () => {
 			parameter: 'param int value',
 			instruction: 'param',
 		},
-		{
-			name: 'paramShape after a local declaration',
-			body: 'local int temporary',
-			parameter: 'paramShape state',
-			instruction: 'paramShape',
-		},
-		{
-			name: 'paramShape after an executable instruction',
-			body: 'push 1',
-			parameter: 'paramShape state',
-			instruction: 'paramShape',
-		},
 	])('rejects $name', ({ body, parameter, instruction }) => {
-		expect(() => compileToAST(['function example', body, parameter, 'functionEnd'])).toThrowError(
+		expect(() => compileToAST(['function example', body, parameter, 'functionEnd'], { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY,
-				line: expect.objectContaining({ lineNumber: 2, instruction }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY,
+					instruction: instruction,
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});
@@ -42,11 +32,13 @@ describe('function declaration syntax', () => {
 		{ first: '#export first', second: '#export second' },
 		{ first: '#export same', second: '#export same' },
 	])('rejects $first followed by $second', ({ first, second }) => {
-		expect(() => compileToAST(['function example', first, second, 'functionEnd'])).toThrowError(
+		expect(() => compileToAST(['function example', first, second, 'functionEnd'], { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT,
-				line: expect.objectContaining({ lineNumber: 2, instruction: '#export' }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT,
+					instruction: '#export',
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});
@@ -55,11 +47,13 @@ describe('function declaration syntax', () => {
 		{ first: '#import first', second: '#import second' },
 		{ first: '#import "host.read"', second: '#import "host.read"' },
 	])('rejects $first followed by $second', ({ first, second }) => {
-		expect(() => compileToAST(['function example', first, second, 'functionEnd'])).toThrowError(
+		expect(() => compileToAST(['function example', first, second, 'functionEnd'], { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT,
-				line: expect.objectContaining({ lineNumber: 2, instruction: '#import' }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT,
+					instruction: '#import',
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});
@@ -68,11 +62,13 @@ describe('function declaration syntax', () => {
 		{ first: '#import read', second: '#export read', instruction: '#export' },
 		{ first: '#export read', second: '#import read', instruction: '#import' },
 	])('rejects $first followed by $second', ({ first, second, instruction }) => {
-		expect(() => compileToAST(['function example', first, second, 'functionEnd'])).toThrowError(
+		expect(() => compileToAST(['function example', first, second, 'functionEnd'], { kind: 'document' })).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.IMPORT_EXPORT_CONFLICT,
-				line: expect.objectContaining({ lineNumber: 2, instruction }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.IMPORT_EXPORT_CONFLICT,
+					instruction: instruction,
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});
@@ -84,26 +80,33 @@ describe('function declaration syntax', () => {
 		{ body: ['local int temporary'], instruction: 'local' },
 		{ body: ['loop', 'loopEnd'], instruction: 'loop' },
 	])('rejects $instruction in an imported function', ({ body, instruction }) => {
-		expect(() => compileToAST(['function example', '#import read', ...body, 'functionEnd'])).toThrowError(
+		expect(() =>
+			compileToAST(['function example', '#import read', ...body, 'functionEnd'], { kind: 'document' })
+		).toThrowError(
 			expect.objectContaining({
-				name: 'SyntaxRulesError',
-				code: SyntaxErrorCode.IMPORTED_FUNCTION_BODY,
-				line: expect.objectContaining({ lineNumber: 2, instruction }),
+				diagnostic: expect.objectContaining({
+					code: SyntaxErrorCode.IMPORTED_FUNCTION_BODY,
+					instruction: instruction,
+					location: expect.objectContaining({ lineNumber: 2 }),
+				}),
 			})
 		);
 	});
 
 	it('preserves export metadata with parameters before locals and executable instructions', () => {
-		const ast = compileToAST([
-			'function increment',
-			'#export addOne',
-			'param int value',
-			'local int temporary',
-			'push value',
-			'push 1',
-			'add',
-			'functionEnd int',
-		]);
+		const ast = compileToAST(
+			[
+				'function increment',
+				'#export addOne',
+				'param int value',
+				'local int temporary',
+				'push value',
+				'push 1',
+				'add',
+				'functionEnd int',
+			],
+			{ kind: 'document' }
+		);
 		expect(ast).toMatchObject({
 			type: 'function',
 			name: 'increment',
@@ -112,35 +115,47 @@ describe('function declaration syntax', () => {
 		});
 	});
 
-	it('accepts an imported signature with prologue directives and unresolved paramShape', () => {
-		const ast = compileToAST([
-			'function read',
-			'#import "host.read"',
-			'#impure',
-			'#loopCap 4',
-			'param int address',
-			'paramShape state',
-			'functionEnd int',
-		]);
+	it('accepts an imported signature with prologue directives and pointer parameters', () => {
+		const ast = compileToAST(
+			[
+				'function read',
+				'#import "host.read"',
+				'#impure',
+				'#loopCap 4',
+				'param int address',
+				'param int* state',
+				'functionEnd int',
+			],
+			{ kind: 'document' }
+		);
 		expect(ast).toMatchObject({
 			type: 'function',
 			importLine: { instruction: '#import', arguments: [{ value: 'host.read' }] },
 			functionEndLine: { instruction: 'functionEnd', arguments: [{ value: 'int' }] },
+			signature: {
+				parameters: [
+					{ name: 'address', type: 'int' },
+					{ name: 'state', type: 'int*' },
+				],
+				returns: ['int'],
+			},
 		});
-		expect(ast.lines.find(line => line.instruction === 'paramShape')).toMatchObject({
-			arguments: [{ value: 'state' }],
+		expect(ast.lines.find(line => line.instruction === 'param' && line.arguments[1].value === 'state')).toMatchObject({
+			arguments: [{ value: 'int*' }, { value: 'state' }],
 		});
 	});
 
 	it('accepts parameters after constant declarations that do not start the function body', () => {
 		expect(() =>
-			compileToAST(['function example', 'const VALUE 1', 'param int value', 'push value', 'functionEnd int'])
+			compileToAST(['function example', 'const VALUE 1', 'param int value', 'push value', 'functionEnd int'], {
+				kind: 'document',
+			})
 		).not.toThrow();
 	});
 
 	it('leaves export-name uniqueness between functions to namespace validation', () => {
-		const first = compileToAST(['function first', '#export shared', 'functionEnd']);
-		const second = compileToAST(['function second', '#export shared', 'functionEnd']);
+		const first = compileToAST(['function first', '#export shared', 'functionEnd'], { kind: 'document' });
+		const second = compileToAST(['function second', '#export shared', 'functionEnd'], { kind: 'document' });
 		expect(first).toMatchObject({ name: 'first', exportLine: { arguments: [{ value: 'shared' }] } });
 		expect(second).toMatchObject({ name: 'second', exportLine: { arguments: [{ value: 'shared' }] } });
 	});

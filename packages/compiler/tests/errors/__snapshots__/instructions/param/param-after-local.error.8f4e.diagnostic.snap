@@ -1,25 +1,13 @@
 {
   "code": 17,
-  "context": {
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "int",
-      },
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "x",
-      },
-    ],
-    "instruction": "param",
+  "domain": "syntax",
+  "instruction": "param",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Parameters must be declared before the function body.",
 }

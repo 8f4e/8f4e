@@ -1,21 +1,14 @@
 {
   "code": 5,
-  "context": {
-    "codeBlockId": "bad",
-    "codeBlockType": "function",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "undeclared",
-      },
-    ],
-    "instruction": "push",
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Undeclared identifier: undeclared. (5)",
+  "symbol": "bad",
 }

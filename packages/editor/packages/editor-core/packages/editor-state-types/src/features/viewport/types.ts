@@ -12,22 +12,23 @@ export interface ProjectViewport {
 	gridCoordinates: GridCoordinates;
 }
 
-export interface Viewport {
-	width: number;
-	height: number;
-	roundedWidth: number;
-	roundedHeight: number;
+/** Character-cell dimensions in pixels. Supplied grid sizes must be positive. */
+export interface GridSize {
 	vGrid: number;
 	hGrid: number;
+}
+
+export interface Viewport extends GridSize {
+	width: number;
+	height: number;
 	x: number;
 	y: number;
 }
 
-export interface ViewportAnimation {
-	startX: number;
-	startY: number;
-	targetX: number;
-	targetY: number;
-	active: boolean;
-	startTime?: number;
+/** Canvas movement from wheel input, independent of pointer button state. */
+export interface ViewportScrollEvent {
+	movementX: number;
+	movementY: number;
+	/** An input layer may consume the scroll before the viewport pans. */
+	stopPropagation: boolean;
 }

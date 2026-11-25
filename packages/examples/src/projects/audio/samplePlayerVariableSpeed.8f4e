@@ -42,19 +42,19 @@ noteEnd
 
 note colors
 ; @pos -159 -64
-; @config color.canvas #11171a
-; @config color.surface #b8bfbc
-; @config color.ink #172126
-; @config color.primary #004e56
-; @config color.secondary #594500
-; @config color.positive #75a66a
-; @config color.warning #d5aa42
-; @config color.negative #c6574a
-; @config color.muted #3f4e53
-; @config color.stroke rgba(39,105,122,0.42)
-; @config color.tertiary #39484d
-; @config color.highlight #a9d49a
-; @config color.detail #006b75
+; @config color.canvas #818c8e
+; @config color.surface #96a1a3
+; @config color.ink #1d282e
+; @config color.primary #5b1a29
+; @config color.secondary #09324f
+; @config color.positive #2a554a
+; @config color.warning #efb567
+; @config color.negative #85283a
+; @config color.muted #29373d
+; @config color.stroke rgba(23,37,47,0.82)
+; @config color.tertiary #27353b
+; @config color.highlight #80d2dc
+; @config color.detail #364b5d
 noteEnd
 
 note
@@ -153,8 +153,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

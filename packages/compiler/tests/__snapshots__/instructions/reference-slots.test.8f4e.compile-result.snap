@@ -181,7 +181,6 @@
               "value": "integer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -201,7 +200,6 @@
               "value": "signal",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "signal",
@@ -221,7 +219,6 @@
               "value": "precise",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "precise",
@@ -241,7 +238,6 @@
               "value": "signedByte",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "signedBytes",
@@ -261,7 +257,6 @@
               "value": "unsignedByte",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "unsignedBytes",
@@ -281,7 +276,6 @@
               "value": "signedWord",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "signedWords",
@@ -301,7 +295,6 @@
               "value": "unsignedWord",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "unsignedWords",
@@ -321,7 +314,6 @@
               "value": "word",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "words",
@@ -367,7 +359,6 @@
               "value": "localReference",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "localBuffer",

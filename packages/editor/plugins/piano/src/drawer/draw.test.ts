@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { createMockMemoryDeclarationSource } from '@8f4e/editor-state-testing';
 import type { PlannedMemoryDeclaration } from '@8f4e/language-spec';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { textToGlyphIds } from '@8f4e/web-ui';
@@ -26,6 +27,7 @@ function createMockEngine(): Engine {
 function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): PlannedMemoryDeclaration {
 	return {
 		id: 0,
+		source: createMockMemoryDeclarationSource('int', 0, overrides.name ?? 'memory'),
 		name: 'memory',
 		numberOfElements: 1,
 		elementWordSize: 4,
@@ -36,7 +38,6 @@ function createMockMemory(overrides: Partial<PlannedMemoryDeclaration> = {}): Pl
 		allocatedByteLength: 4,
 		allocationUnitAddress: 0,
 		endByteAddress: 4,
-		endAddressSafeByteLength: 4,
 		lineNumber: 0,
 		isInteger: true,
 		pointerDepth: 0,
@@ -79,6 +80,7 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 		keys: createPianoKeyboardKeys(),
 		pressedKeysListMemory: createMockMemory({
 			id: 0,
+			source: createMockMemoryDeclarationSource('int[]', 0, 'notes', 12),
 			name: 'notes',
 			byteAddress: 16,
 			allocationUnitAddress: 4,
@@ -97,7 +99,7 @@ function createPianoKeyboard(overrides: Partial<PianoKeyboard> = {}): PianoKeybo
 }
 
 describe('drawPianoKeyboards', () => {
-	const pressedOverlay = textToGlyphIds('░░');
+	const pressedOverlay = textToGlyphIds('▓▓');
 
 	it('draws piano keys as fill-color rectangles', () => {
 		const engine = createMockEngine();

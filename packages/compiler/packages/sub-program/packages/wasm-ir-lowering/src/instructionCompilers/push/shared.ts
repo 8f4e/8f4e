@@ -1,4 +1,4 @@
-import type { CodegenContext, PointerMetadata, WasmIRInstruction } from '@8f4e/language-spec';
+import type { CodegenContext, PointerMetadata, StackItem, WasmIRInstruction } from '@8f4e/language-spec';
 import {
 	getDereferencedValueKindFromMetadata,
 	getDereferencedValueWordSizeFromMetadata,
@@ -8,7 +8,7 @@ import {
 import { allocateLocal } from '../../localStorage';
 import { f32const, f64const, i32const, i32load } from '../../operations';
 import { type PushValueKind, valueKindToWasmType } from '../../pushValueKind';
-import { guardedLoadWithLocal } from '../utils/memoryAccessGuard';
+import { guardedLoadWithLocal, isSafeMemoryAccess } from '../utils/memoryAccessGuard';
 import { typedLoad } from './typedLoad';
 
 type PointerValueSource = 'pointer-slot' | 'pointer-value';
@@ -27,21 +27,25 @@ export const constOpcode: Record<PushValueKind, (value: number) => WasmIRInstruc
 function buildGuardedPointerLoadChain(
 	context: CodegenContext,
 	kind: PushValueKind,
-	steps: PointerLoadStep[]
+	steps: PointerLoadStep[],
+	inputAddress?: StackItem
 ): WasmIRInstruction[] {
 	const resultType = valueKindToWasmType(kind);
 	// Each step consumes its address before the next step overwrites the same slot.
 	const addressLocalIndex = allocateLocal(context, { isInteger: true });
 
-	return steps.reduceRight<WasmIRInstruction[]>(
-		(continuation, step) =>
-			guardedLoadWithLocal(addressLocalIndex, {
-				accessByteWidth: step.accessByteWidth,
-				resultType,
-				loadByteCode: [...step.loadByteCode, ...continuation],
-			}),
-		[]
-	);
+	return steps.reduceRight<WasmIRInstruction[]>((continuation, step, index) => {
+		const loadByteCode = [...step.loadByteCode, ...continuation];
+		return index === 0 &&
+			inputAddress &&
+			isSafeMemoryAccess(inputAddress, step.accessByteWidth, context.minimumMemoryBytes)
+			? loadByteCode
+			: guardedLoadWithLocal(context, addressLocalIndex, {
+					accessByteWidth: step.accessByteWidth,
+					resultType,
+					loadByteCode,
+				});
+	}, []);
 }
 
 /**
@@ -59,7 +63,8 @@ export function buildPointerDereferenceByteCode(
 	pointerMetadata: PointerMetadata,
 	baseAddressByteCode: WasmIRInstruction[],
 	pointerValueSource: PointerValueSource,
-	dereferenceDepth: number
+	dereferenceDepth: number,
+	inputAddress?: StackItem
 ): { kind: PushValueKind; byteCode: WasmIRInstruction[] } {
 	const declaredPointerDepth = getPointerDepthFromMetadata(pointerMetadata);
 	const isFinalDereference = dereferenceDepth === declaredPointerDepth;
@@ -68,7 +73,7 @@ export function buildPointerDereferenceByteCode(
 	const finalLoad = typedLoad(pointerMetadata.pointeeBaseType!);
 	const pointerLoadCount = isFinalDereference ? dereferenceDepth - 1 : dereferenceDepth;
 
-	if (pointerValueSource === 'pointer-slot' || !context.enableMemoryGuards) {
+	if (!context.enableMemoryGuards) {
 		const loadCount = pointerLoadCount + (pointerValueSource === 'pointer-slot' ? 1 : 0);
 		const pointerLoads = Array.from({ length: loadCount }, () => i32load(2, 0)).flat();
 
@@ -88,6 +93,11 @@ export function buildPointerDereferenceByteCode(
 
 	return {
 		kind,
-		byteCode: [...baseAddressByteCode, ...buildGuardedPointerLoadChain(context, kind, guardedLoadSteps)],
+		byteCode: [
+			...baseAddressByteCode,
+			// The declared slot is safe; the address loaded from it can change at runtime.
+			...(pointerValueSource === 'pointer-slot' ? i32load(2, 0) : []),
+			...buildGuardedPointerLoadChain(context, kind, guardedLoadSteps, inputAddress),
+		],
 	};
 }

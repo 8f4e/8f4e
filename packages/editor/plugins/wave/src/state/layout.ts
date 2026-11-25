@@ -1,21 +1,24 @@
-import { gapCalculator, matchEditorDirectives } from '@8f4e/editor-state';
+import type { EditorPluginContext } from '@8f4e/editor-core';
+import { displayRowToGridRow, matchEditorDirectives, subscribeToBlockPreparation } from '@8f4e/editor-state';
 import {
 	getCodeBlockMemoryScope,
-	resolveElementCount,
-	resolveMemoryIdentifier,
-	resolveTypedValueSpec,
+	prepareAddressBinding,
+	prepareBuffer,
+	prepareMemoryAccess,
 } from '@8f4e/editor-state/memory';
-import type { CodeBlockGraphicData, EditorLayoutRegistry } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock, EditorLayoutRegistry } from '@8f4e/editor-state-types';
 import { createWaveDirectiveData } from '../helpers/data';
+import { createWaveformPeaks } from '../helpers/peaks';
 import type { Wave } from '../types';
 
-export function registerWaveLayout(
+export function registerWavePreparation(
+	store: EditorPluginContext['store'],
 	layout: EditorLayoutRegistry,
-	wavesByBlock: WeakMap<CodeBlockGraphicData, Wave[]>
+	wavesByBlock: WeakMap<EditorCodeBlock, Wave[]>
 ): () => void {
 	const contribution = layout.createContribution();
 	const heights = { wave: 2, wave2: 4, wave4: 8 };
-	const unsubscribe = layout.subscribe(({ codeBlock, state }) => {
+	const unsubscribe = subscribeToBlockPreparation(store, layout, 'compiler.result', ({ codeBlock, state }, reason) => {
 		const items = matchEditorDirectives(
 			codeBlock.parsedDirectives,
 			Object.keys(heights).map(name => ({ name }))
@@ -30,36 +33,41 @@ export function registerWaveLayout(
 					]
 				: [];
 		});
-		contribution.update(codeBlock, {
-			verticalSpaceAfterSourceLine: items.map(item => ({
-				sourceLineIndex: item.data.lineNumber,
-				heightInRows: item.heightRows,
-			})),
-		});
-		wavesByBlock.set(codeBlock, []);
+		if (reason === 'layout') {
+			contribution.update(codeBlock, {
+				verticalSpaceAfterSourceLine: items.map(item => ({
+					sourceLineIndex: item.data.lineNumber,
+					heightInRows: item.heightRows,
+				})),
+			});
+		}
+		const waves: Wave[] = [];
 		items.forEach(({ data, heightRows }) => {
 			const scope = getCodeBlockMemoryScope(codeBlock);
-			const source = resolveMemoryIdentifier(state, scope, data.startAddressMemoryId);
-			const elementCount = resolveElementCount(data.length, scope, state);
-			const spec = source ? resolveTypedValueSpec(source) : undefined;
-			if (!source || !elementCount || !spec) return;
+			const buffer = prepareBuffer(state, scope, data.startAddressMemoryId, data.length);
+			if (!buffer) return;
+			const spec = buffer.samples.spec;
+			const playhead = prepareMemoryAccess(state, scope, data.pointerMemoryId);
 			const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[data.lineNumber] ?? data.lineNumber;
-			wavesByBlock.get(codeBlock)!.push({
-				width: codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
+			const width = codeBlock.width - (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid;
+			const columnWidth = Math.max(1, Math.floor(state.viewport.vGrid / 2));
+			const peaks = createWaveformPeaks(Math.max(1, Math.floor(width / columnWidth)));
+			waves.push({
+				width,
+				columnWidth: Math.max(1, Math.floor(width / peaks.minima.length)),
 				height: state.viewport.hGrid * heightRows,
 				x: (codeBlock.lineNumberColumnWidth + 2) * state.viewport.vGrid,
-				y: (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
-				source,
-				elementCount,
-				playhead: resolveMemoryIdentifier(state, scope, data.pointerMemoryId),
+				y: (displayRowToGridRow(row, codeBlock.gaps) + 1) * state.viewport.hGrid,
+				buffer,
+				playhead: playhead && prepareAddressBinding(playhead),
 				inverseElementByteSize: 1 / spec.elementByteSize,
-				baseSampleShift: spec.baseSampleShift,
-				valueType: spec.valueType,
 				minValue: spec.minValue,
 				maxValue: spec.maxValue,
 				inverseValueRange: 1 / (spec.maxValue - spec.minValue),
+				peaks,
 			});
 		});
+		wavesByBlock.set(codeBlock, waves);
 	});
 	return () => {
 		unsubscribe();

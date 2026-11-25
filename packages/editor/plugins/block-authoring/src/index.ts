@@ -1,11 +1,10 @@
-import type { CodeBlockGraphicData, EditorPlugin } from '@8f4e/editor-core';
-import { deleteCodeBlocks } from '@8f4e/editor-state';
+import type { EditorCodeBlock, EditorPlugin } from '@8f4e/editor-core';
+import { deleteCodeBlocks, insertCodeBlock } from '@8f4e/editor-state';
 import { documentBlockInstructionByType } from '@8f4e/language-spec';
 
 const newBlocks = [
 	{ type: 'module', title: 'New Module' },
 	{ type: 'function', title: 'New Function' },
-	{ type: 'prototype', title: 'New Prototype' },
 	{ type: 'note', title: 'New Note' },
 ] as const;
 
@@ -61,10 +60,10 @@ export const blockAuthoringPlugin: EditorPlugin = {
 			if (store.getState().editorMode !== 'edit') return;
 			const block = documentBlockInstructionByType[blockType];
 			const name = blockType === 'note' ? '' : ` ${getRandomCodeBlockName()}`;
-			events.dispatch('insertCodeBlock', { x, y, code: [block.start + name, '', '', block.end] });
+			insertCodeBlock(store, { x, y, code: [block.start + name, '', '', block.end] });
 		};
-		const onDelete = ({ codeBlock }: { codeBlock: CodeBlockGraphicData }) => {
-			if (store.getState().editorMode !== 'edit') return;
+		const onDelete = ({ codeBlock }: { codeBlock: EditorCodeBlock }) => {
+			if (store.getState().editorMode !== 'edit' || codeBlock.readOnly) return;
 			deleteCodeBlocks(store, [codeBlock]);
 		};
 		const removeNewItems = newBlocks.map(({ type, title }) =>
@@ -73,16 +72,9 @@ export const blockAuthoringPlugin: EditorPlugin = {
 				return { title, action: 'createCodeBlock', payload: { blockType: type }, close: true };
 			})
 		);
-		const removeDeleteItem = menus.registerItem('moduleMenu', ({ state, codeBlock }) => {
-			if (state.editorMode !== 'edit') return;
-			const label = codeBlock.childProject
-				? 'group'
-				: codeBlock.blockType === 'function'
-					? 'function'
-					: codeBlock.blockType === 'note'
-						? 'note'
-						: 'module';
-			return { title: `Delete ${label}`, action: 'deleteCodeBlock', payload: { codeBlock }, close: true };
+		const removeDeleteItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
+			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
+			return { title: `Delete ${codeBlock.blockType}`, action: 'deleteCodeBlock', payload: { codeBlock }, close: true };
 		});
 		events.on('createCodeBlock', onCreate);
 		events.on('deleteCodeBlock', onDelete);

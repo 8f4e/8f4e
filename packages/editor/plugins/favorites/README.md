@@ -10,8 +10,8 @@ initEditor(canvas, { ...options, plugins: [favoritesPlugin] });
 ```
 
 In edit mode, the block-menu action adds `; @favorite` after the block opener or removes the existing directive while
-retaining other source and directives. These metadata edits participate in project revisions, undo, and session
-persistence without scheduling compilation.
+retaining other source and directives. These edits participate in project revisions, undo, and session persistence.
+Core also schedules compilation for every directive edit so compiler-owned source positions stay current.
 
 The background menu's **Jump to...** submenu lists favorites in the current project level, ordered by creation index
 and labeled with block type and name. Navigation works in edit and view modes through core's generic block-jump helper.

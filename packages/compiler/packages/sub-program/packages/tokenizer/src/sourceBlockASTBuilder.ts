@@ -6,12 +6,13 @@ import type {
 	ExportLine,
 	FunctionEndLine,
 	FunctionLine,
+	FunctionSignature,
+	FunctionValueType,
 	ImportLine,
 	ModuleLine,
-	PrototypeLine,
 } from '@8f4e/language-spec';
 import { isFunctionBodyInstructionName, isImportedFunctionDeclarationInstructionName } from '@8f4e/language-spec';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 /** Accumulates module-specific lines while the tokenizer builds a validated AST. */
 type ModuleASTBuilder = {
@@ -25,6 +26,7 @@ type FunctionASTBuilder = {
 	type: 'function';
 	name: string;
 	functionLine: FunctionLine;
+	signature: FunctionSignature;
 	functionEndLine?: FunctionEndLine;
 	exportLine?: ExportLine;
 	importLine?: ImportLine;
@@ -38,15 +40,8 @@ type ConstantsASTBuilder = {
 	constantsLine: ConstantsLine;
 };
 
-/** Accumulates prototype memory declarations while the tokenizer builds a validated AST. */
-type PrototypeASTBuilder = {
-	type: 'prototype';
-	id: string;
-	prototypeLine: PrototypeLine;
-};
-
 /** Source block builder selected from the first valid source block in parsed input. */
-export type SourceBlockASTBuilder = ModuleASTBuilder | FunctionASTBuilder | ConstantsASTBuilder | PrototypeASTBuilder;
+export type SourceBlockASTBuilder = ModuleASTBuilder | FunctionASTBuilder | ConstantsASTBuilder;
 
 /**
  * Creates the source-block builder represented by a parsed block-start line.
@@ -67,18 +62,13 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 				type: 'function',
 				name: line.arguments[0].value,
 				functionLine: line,
+				signature: { parameters: [], returns: [] },
 			};
 		case 'constants':
 			return {
 				type: 'constants',
 				id: line.arguments[0].value,
 				constantsLine: line,
-			};
-		case 'prototype':
-			return {
-				type: 'prototype',
-				id: line.arguments[0].value,
-				prototypeLine: line,
 			};
 		default:
 			return undefined;
@@ -87,39 +77,48 @@ export function createSourceBlockASTBuilder(line: CompilerASTLine): SourceBlockA
 
 /** Validates function declaration structure while collecting its AST metadata. */
 function applyFunctionASTLine(builder: FunctionASTBuilder, line: CompilerASTLine): void {
-	if (builder.bodyStarted && (line.instruction === 'param' || line.instruction === 'paramShape')) {
-		throw new SyntaxRulesError(SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY, undefined, line);
+	if (builder.bodyStarted && line.instruction === 'param') {
+		throw new SyntaxIssue(SyntaxErrorCode.PARAM_AFTER_FUNCTION_BODY, undefined, line);
 	}
 
 	switch (line.instruction) {
 		case '#export':
 			if (builder.importLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
 			}
 			if (builder.exportLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.DUPLICATE_FUNCTION_EXPORT, undefined, line);
 			}
 			builder.exportLine = line;
 			return;
 		case '#import':
 			if (builder.importLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.DUPLICATE_FUNCTION_IMPORT, undefined, line);
 			}
 			if (builder.exportLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
+				throw new SyntaxIssue(SyntaxErrorCode.IMPORT_EXPORT_CONFLICT, undefined, line);
 			}
 			builder.importLine = line;
 			return;
 	}
 
 	if (builder.importLine && !isImportedFunctionDeclarationInstructionName(line.instruction)) {
-		throw new SyntaxRulesError(SyntaxErrorCode.IMPORTED_FUNCTION_BODY, undefined, line);
+		throw new SyntaxIssue(SyntaxErrorCode.IMPORTED_FUNCTION_BODY, undefined, line);
 	}
 	if (isFunctionBodyInstructionName(line.instruction)) {
 		builder.bodyStarted = true;
 	}
-	if (line.instruction === 'functionEnd') {
-		builder.functionEndLine = line;
+	switch (line.instruction) {
+		case 'param':
+			builder.signature.parameters.push({
+				name: line.arguments[1].value,
+				type: line.arguments[0].value as FunctionValueType,
+			});
+			break;
+		case 'functionEnd':
+			builder.functionEndLine = line;
+			builder.signature.returns = line.arguments.map(argument => argument.value as FunctionValueType);
+			break;
 	}
 }
 
@@ -138,8 +137,6 @@ export function applySourceBlockASTLine(builder: SourceBlockASTBuilder, line: Co
 			applyFunctionASTLine(builder, line);
 			return;
 		case 'constants':
-			return;
-		case 'prototype':
 			return;
 	}
 }
@@ -162,7 +159,7 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 			};
 		case 'function':
 			if (!builder.functionEndLine) {
-				throw new SyntaxRulesError(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a matching functionEnd.', {
+				throw new SyntaxIssue(SyntaxErrorCode.INVALID_BLOCK_STRUCTURE, 'Expected a matching functionEnd.', {
 					lineNumber: builder.functionLine.lineNumber,
 					instruction: builder.functionLine.instruction,
 				});
@@ -172,6 +169,7 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 				type: 'function',
 				name: builder.name,
 				lines,
+				signature: builder.signature,
 				functionLine: builder.functionLine,
 				functionEndLine: builder.functionEndLine,
 				...(builder.exportLine ? { exportLine: builder.exportLine } : {}),
@@ -183,13 +181,6 @@ export function createASTFromBuilder(lines: CompilerASTLines, builder: SourceBlo
 				id: builder.id,
 				lines,
 				constantsLine: builder.constantsLine,
-			};
-		case 'prototype':
-			return {
-				type: 'prototype',
-				id: builder.id,
-				lines,
-				prototypeLine: builder.prototypeLine,
 			};
 	}
 }

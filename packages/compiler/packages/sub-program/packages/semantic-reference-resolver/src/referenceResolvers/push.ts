@@ -1,10 +1,8 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
 	ArgumentType,
-	BASE_TYPE_METADATA,
 	type CodegenPushLine,
 	ErrorCode,
-	getError,
-	getMemoryBaseType,
 	getPointerDepthFromMetadata,
 	type LocalValueMetadata,
 	type MemoryPointerIdentifier,
@@ -31,8 +29,11 @@ function validateDereferenceDepth(
 	context: ReferenceResolutionContext
 ): void {
 	if (pointerArgument.dereferenceDepth > declaredPointerDepth) {
-		throw getError(ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED, line, context, {
-			identifier: pointerArgument.value,
+		throw getError(ErrorCode.POINTER_DEREFERENCE_DEPTH_EXCEEDED, line, {
+			symbol: context.codeBlockId,
+			details: {
+				identifier: pointerArgument.value,
+			},
 		});
 	}
 }
@@ -46,7 +47,10 @@ function throwIfPointeeCountIsUnknown(line: PushLine, context: ReferenceResoluti
 	const base = argument.targetMemoryId;
 	const pointerMetadata = getResolvedMemoryDeclaration(context, base) ?? context.locals[base];
 	if (pointerMetadata?.pointeeBaseType && pointerMetadata.pointeeElementCount === undefined) {
-		throw getError(ErrorCode.POINTEE_ELEMENT_COUNT_UNKNOWN, line, context, { identifier: argument.value });
+		throw getError(ErrorCode.POINTEE_ELEMENT_COUNT_UNKNOWN, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: argument.value },
+		});
 	}
 }
 
@@ -93,9 +97,10 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			const pointerArgument = argument as MemoryPointerIdentifier;
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
-				validateDereferenceDepth(pointerArgument, 1, line, context);
-				if (slot.targetMemory.allocatedByteLength < BASE_TYPE_METADATA[getMemoryBaseType(slot.targetMemory)].wordSize) {
-					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, context);
+				const memory = slot.targetMemory;
+				validateDereferenceDepth(pointerArgument, memory.pointerDepth + 1, line, context);
+				if (memory.allocatedByteLength < memory.elementWordSize) {
+					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 				}
 				return { ...line, arguments: [pointerArgument], resolvedTarget: { kind: 'reference', slot } };
 			}
@@ -126,7 +131,10 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 		}
 
-		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, context, { identifier: value });
+		throw getError(ErrorCode.UNDECLARED_IDENTIFIER, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: value },
+		});
 	}
 
 	return { ...line, arguments: [argument] };

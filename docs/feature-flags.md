@@ -4,22 +4,19 @@ Hosts configure editor capabilities through the `featureFlags` mounting option. 
 source editing is allowed when `state.editorMode === 'edit'`. Projects choose their initial mode with `; @mode edit`
 or `; @mode view`; projects without a valid, unique declaration start in view mode.
 
-There is no `editing` feature flag. Changing modes or loading another project preserves every feature flag,
-including `codeLineSelection`.
+Selection, caret navigation, viewport panning, and project history are always available. Block repositioning and
+source editing still follow editor mode and read-only block rules. Changing modes or loading another project
+preserves the host's feature flags.
 
 ## Available Flags
 
 All flags default to `true` in the core and default editor:
 
 - `contextMenu` — Show right-click context menus.
-- `moduleDragging` — Allow repositioning blocks while in edit mode.
-- `codeLineSelection` — Allow selecting source lines and moving the caret, independently of editor mode.
-- `viewportDragging` — Allow panning the viewport.
 - `canvasOverlays` — Show plugin canvas overlays and offscreen block decorations, such as the keyboard mode hint and arrows.
-- `historyTracking` — Track source changes for undo and redo.
-- `projectCreation` — Show the New Project action while in edit mode.
 
-The gallery editor disables `projectCreation` by default. Its other flags use the core defaults.
+The landing editor disables `contextMenu`. The gallery uses the core defaults. The New Project action belongs to
+the project-new plugin, which the default composition installs and gallery and landing omit.
 
 ## Configure a Host
 
@@ -29,15 +26,13 @@ import { mountDefaultEditor } from '@8f4e/editor-default';
 const editor = await mountDefaultEditor(canvas, {
   initialProjectUrl: '/projects/demo.8f4e',
   featureFlags: {
-    moduleDragging: false,
-    codeLineSelection: false,
+    contextMenu: false,
   },
 });
 ```
 
-The project can still declare `; @mode edit` in one of its blocks. That enables source-editing commands without
-reenabling dragging or line selection. The editor applies the declaration only when loading the project; later
-source edits and undo/redo preserve the active mode.
+The project can still declare `; @mode edit` in one of its blocks. The editor applies the declaration only when
+loading the project; later source edits and undo/redo preserve the active mode.
 
 ## Omit Keyboard Mode Switching
 
@@ -57,15 +52,13 @@ const editor = await mountDefaultEditor(canvas, {
   includeKeyboardModeSwitching: false,
   featureFlags: {
     contextMenu: false,
-    moduleDragging: false,
-    codeLineSelection: false,
   },
 });
 ```
 
 `includeKeyboardModeSwitching` controls whether default/gallery import and install that plugin and its hint. It is
 a mounting option, with no state flag or runtime guard in the plugin. The source declaration still chooses initial
-mode, and trusted plugins can change the mode programmatically. Leave `viewportDragging` enabled when readers should be able to pan.
+mode, and trusted plugins can change the mode programmatically. Readers can still pan and select code in view mode.
 
 ## Runtime State and Types
 
@@ -80,6 +73,6 @@ import type { FeatureFlagsConfig } from '@8f4e/editor-core';
 
 const featureFlags: FeatureFlagsConfig = {
   contextMenu: false,
-  codeLineSelection: false,
+  canvasOverlays: false,
 };
 ```

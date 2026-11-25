@@ -1,19 +1,43 @@
-export {
-	resolveDirectOrPointerTypedValueSpec,
-	resolveElementCount,
-	resolveTypedValueSpec,
-} from './features/code-blocks/features/directives/shared/typedValueSpec';
-export { default as getCodeBlockMemoryScope } from './pureHelpers/getCodeBlockMemoryScope';
-export { default as getMemoryDeclarationAtSourceLine } from './pureHelpers/getMemoryDeclarationAtSourceLine';
+export { default as getCodeBlockMemoryScope } from './memory/getCodeBlockMemoryScope';
 export {
 	getMemoryDefaultEdits,
 	type MemoryDefaultEdit,
 	type MemoryDefaultValue,
-} from './pureHelpers/getMemoryDefaultEdits';
+} from './memory/getMemoryDefaultEdits';
+export { default as getMemoryTargetAtSourceLine } from './memory/getMemoryTargetAtSourceLine';
+export {
+	isAddressAccess,
+	type NumericMemoryViews,
+	type PreparedAddressBinding,
+	type PreparedBuffer,
+	type PreparedElementCount,
+	type PreparedNumericRead,
+	prepareAddressBinding,
+	prepareAddressedRead,
+	prepareBuffer,
+	prepareElementCount,
+	prepareNumericRead,
+	readByteAddress,
+	readDeclarationEndAddress,
+	readElementCount,
+	readElementIndex,
+	readNumericValue,
+} from './memory/preparedMemory';
+export { getProjectGroupMemoryExposures } from './memory/projectGroupMemoryExposures';
 export {
 	default as resolveMemoryIdentifier,
+	getDeclarationsByByteAddress,
 	type MemoryAccessOptions,
+	type PreparedMemoryAccess,
+	prepareMemoryAccess,
+	type ResolvedMemoryAccess,
 	resolveMemoryAccess,
-} from './pureHelpers/resolveMemoryIdentifier';
-export type { MemoryScope, ResolvedMemoryTarget } from './pureHelpers/resolveMemoryTarget';
-export { default as resolveMemoryTarget } from './pureHelpers/resolveMemoryTarget';
+	resolveMemoryAddress,
+} from './memory/resolveMemoryIdentifier';
+export type { MemoryScope, ResolvedMemoryTarget } from './memory/resolveMemoryTarget';
+export { default as resolveMemoryTarget } from './memory/resolveMemoryTarget';
+export {
+	getMemoryValueSpec,
+	getPointeeValueSpec,
+	type TypedValueSpec,
+} from './memory/typedValueSpec';

@@ -13,11 +13,7 @@ describe('lessOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'lessOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('lessOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'lessOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('lessOrEqual instruction compiler', () => {
 
 		compileInstructionForTest(
 			lessOrEqual,
-			{
-				lineNumber: 1,
-				instruction: 'lessOrEqual',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'lessOrEqual', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

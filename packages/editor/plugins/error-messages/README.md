@@ -13,14 +13,16 @@ store.set('codeErrors.my-plugin', [{
 }]);
 ```
 
-Use zero-based source lines. Project-scope errors use `codeBlockId: -1` with `projectGroupPath`. Compiler errors use
+Use zero-based source lines. Group declarations use the same `codeBlockId` and `lineNumber` as other blocks. An error with only a
+`message` has no source target and remains visible in the canvas error banner. Errors with missing blocks or invalid
+source rows also appear in that banner. Compiler errors use
 the `compiler` key, core directive validation uses `editor-directives`, and test-runtime publishes failed source
 assertions under `test-runtime`. Contributors clear or remove their own lists; display-plugin disposal preserves raw errors.
 
-The plugin owns wrapping, the `Error:` heading, colors, source-to-display mapping, and prepared pixel coordinates.
+The plugin owns wrapping, the `Error:` heading, colors, source-to-display mapping, the persistent banner, and prepared pixel coordinates.
 It reserves space through `layout.createContribution` and draws through the ordered `registerCodeBlockDrawer` registry.
 Messages on the same row stack after other contributed space. Hidden source lines reserve no rows and draw no message.
-Core's `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` supplies document/project-scope matching.
+Core's `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` supplies block-identity matching.
 Prepared render data stays private; navigation uses core's source-line geometry independently.
 
 Removing errors or disposing the plugin releases its layout requests and drawer. Layout changes do not change source

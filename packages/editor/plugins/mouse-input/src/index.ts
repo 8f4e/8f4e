@@ -1,7 +1,6 @@
 import type { EditorPlugin } from '@8f4e/editor-core';
-import type { InternalPointerEvent } from '@8f4e/editor-state-types';
+import type { InternalPointerEvent, ViewportScrollEvent } from '@8f4e/editor-state-types';
 
-const WHEEL_SCROLL_END_DELAY_MS = 120;
 const POINTER_EVENTS = {
 	mousedown: 'pointerdown',
 	mousemove: 'pointermove',
@@ -18,11 +17,9 @@ export function createMouseInputPlugin({
 }): EditorPlugin {
 	return {
 		id: 'mouse-input',
-		setup: ({ store, events }) => {
-			const state = store.getState();
+		setup: ({ events }) => {
 			let previousX = 0;
 			let previousY = 0;
-			let wheelScrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
 
 			function onMouseEvent(event: MouseEvent) {
 				if (event.type === 'mousedown') {
@@ -55,21 +52,15 @@ export function createMouseInputPlugin({
 			}
 
 			function onWheelEvent(event: WheelEvent) {
-				if (!state.featureFlags.viewportDragging) return;
 				event.preventDefault();
 				const movementX = event.deltaX * -1;
 				const movementY = event.deltaY * -1;
 
-				events.dispatch('viewportscroll', { movementX, movementY });
-
-				if (wheelScrollEndTimeout) {
-					clearTimeout(wheelScrollEndTimeout);
-				}
-
-				wheelScrollEndTimeout = setTimeout(() => {
-					wheelScrollEndTimeout = undefined;
-					events.dispatch('viewportscrollend', { movementX, movementY });
-				}, WHEEL_SCROLL_END_DELAY_MS);
+				events.dispatch('viewportscroll', {
+					movementX,
+					movementY,
+					stopPropagation: false,
+				} satisfies ViewportScrollEvent);
 			}
 
 			if (captureWheel) {
@@ -81,10 +72,6 @@ export function createMouseInputPlugin({
 			inputTarget.addEventListener('contextmenu', onMouseEvent);
 
 			return () => {
-				if (wheelScrollEndTimeout) {
-					clearTimeout(wheelScrollEndTimeout);
-				}
-
 				inputTarget.removeEventListener('wheel', onWheelEvent);
 				inputTarget.removeEventListener('mouseup', onMouseEvent);
 				inputTarget.removeEventListener('mousedown', onMouseEvent);

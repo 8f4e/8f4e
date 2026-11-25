@@ -20,6 +20,7 @@ import ensureNonZero from './ensureNonZero';
 import equal from './equal';
 import equalToZero from './equalToZero';
 import exitIfTrue from './exitIfTrue';
+import fill from './fill';
 import greaterOrEqual from './greaterOrEqual';
 import greaterOrEqualUnsigned from './greaterOrEqualUnsigned';
 import greaterThan from './greaterThan';
@@ -44,7 +45,6 @@ import notEqual from './notEqual';
 import notZero from './notZero';
 import or from './or';
 import push from './push';
-import pushShape from './pushShape';
 import remainder from './remainder';
 import _return from './return';
 import round from './round';
@@ -88,7 +88,6 @@ const instructions = {
 	branchIfTrue,
 	exitIfTrue,
 	push,
-	pushShape,
 	block,
 	blockEnd,
 	lessOrEqual,
@@ -123,6 +122,7 @@ const instructions = {
 	mapEnd,
 	storeBytes,
 	memoryCopy,
+	fill,
 } as const;
 
 export default instructions;

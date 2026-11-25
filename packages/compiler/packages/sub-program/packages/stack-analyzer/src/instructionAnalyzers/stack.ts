@@ -11,11 +11,14 @@ export function createStackValue(
 	valueType: StackValueType,
 	metadata: Pick<StackItem, 'isNonZero' | 'knownValue'> = {}
 ): StackItem {
+	const knownValue =
+		valueType === 'int' && metadata.knownValue !== undefined ? metadata.knownValue | 0 : metadata.knownValue;
+	const isNonZero = valueType === 'int' && knownValue !== undefined ? knownValue !== 0 : metadata.isNonZero;
 	return {
 		kind: 'value',
 		valueType,
-		...(metadata.isNonZero !== undefined ? { isNonZero: metadata.isNonZero } : {}),
-		...(metadata.knownValue !== undefined ? { knownValue: metadata.knownValue } : {}),
+		...(isNonZero !== undefined ? { isNonZero } : {}),
+		...(knownValue !== undefined ? { knownValue } : {}),
 	};
 }
 

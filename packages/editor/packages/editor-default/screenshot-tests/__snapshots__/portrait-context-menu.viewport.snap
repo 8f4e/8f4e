@@ -1,0 +1,45 @@
+                                                 
+  m...... Open From Disk                         
+   ...... Export Project                        +
+   ........ Jump to... >                         
+   .. Export WebAssembly environment constants   
+   ..... Take Screenshotols             +        
+      4   1 ; @pos 4 3                           
+      5 ; 2 float gain 0.25           [*]        
+      6   3 ; @slider &gain 0 1 0.01             
+     +7 c                                       +
+                                                 
+         +4 moduleEnd                   +        
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 

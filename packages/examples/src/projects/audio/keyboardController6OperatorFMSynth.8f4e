@@ -12,7 +12,15 @@ function adsrEnv
 
 ; @tab 8
 #impure
-paramShape adsrEnvState
+param int** trigger
+param int* previousTrigger
+param int* attackTime
+param int* decayTime
+param float* sustainLevel
+param int* releaseTime
+param float* out
+param int* _state
+param int* _counter
 
 const	ATTACK 1
 const	DECAY 2
@@ -355,18 +363,32 @@ const G9  127
 
 constantsEnd
 
-prototype adsrEnvState
-; @pos -79 58
+template adsrEnvelope
+entry main
+module envelope
+; @pos 0 0
+; @home left
 int* trigger
 int previousTrigger
-int attackTime
-int decayTime
-float sustainLevel
-int releaseTime
+int* attackTime
+int* decayTime
+float sustainLevel 0.5
+int* releaseTime
 float out
 int _state 4
 int _counter
-prototypeEnd
+
+; @watch _counter
+; @watch out
+; @watch _state
+
+call adsrEnv
+- &trigger &previousTrigger attackTime
+- decayTime &sustainLevel releaseTime
+- &out &_state &_counter
+moduleEnd
+entryEnd
+templateEnd
 
 note
 ; @pos 2 41
@@ -594,67 +616,107 @@ float	11839.8215
 float	12543.8540
 
 moduleEnd
-module adsrEnv2
+group envelopeTimings
+; @pos 253 0
+; Envelope times in samples, per operator.
+pass env
+
+expose attack1 &timing:attack1
+expose decay1 &timing:decay1
+expose release1 &timing:release1
+expose attack2 &timing:attack2
+expose decay2 &timing:decay2
+expose release2 &timing:release2
+expose attack3 &timing:attack3
+expose decay3 &timing:decay3
+expose release3 &timing:release3
+expose attack4 &timing:attack4
+expose decay4 &timing:decay4
+expose release4 &timing:release4
+expose attack5 &timing:attack5
+expose decay5 &timing:decay5
+expose release5 &timing:release5
+expose attack6 &timing:attack6
+expose decay6 &timing:decay6
+expose release6 &timing:release6
+
+entry main
+module timing
+; @pos 0 0
+use env
+
+int attack1 SAMPLE_RATE/100
+int decay1 SAMPLE_RATE/10
+int release1 SAMPLE_RATE/10
+
+int attack2 SAMPLE_RATE/2000
+int decay2 SAMPLE_RATE/2000
+int release2 SAMPLE_RATE/10
+
+int attack3 SAMPLE_RATE/100
+int decay3 SAMPLE_RATE/100
+int release3 SAMPLE_RATE/1
+
+int attack4 SAMPLE_RATE/10000
+int decay4 SAMPLE_RATE/10000
+int release4 SAMPLE_RATE/1
+
+int attack5 SAMPLE_RATE/10000
+int decay5 SAMPLE_RATE/10000
+int release5 SAMPLE_RATE/1
+
+int attack6 SAMPLE_RATE/10000
+int decay6 SAMPLE_RATE/10000
+int release6 SAMPLE_RATE/2
+
+moduleEnd
+entryEnd
+groupEnd
+group adsrEnv2 use adsrEnvelope
 ; @pos 317 13
-; @tab 8
 ; @group operator2
-use env
-shape adsrEnvState
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/2000
-int	decayTime SAMPLE_RATE/2000
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/10
-
-; @watch _counter
-; @watch out
-; @watch _state
-
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
-module adsrEnv4
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack2
+init &decay &envelopeTimings:decay2
+init &release &envelopeTimings:release2
+pass adsrEnv
+groupEnd
+group adsrEnv4 use adsrEnvelope
 ; @pos 317 44
-; @tab 8
 ; @group operator4
-use env
-shape adsrEnvState
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/10000
-int	decayTime SAMPLE_RATE/10000
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/1
-float	out
-; @watch _counter
-; @watch out
-; @watch _state
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
-module adsrEnv6
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack4
+init &decay &envelopeTimings:decay4
+init &release &envelopeTimings:release4
+pass adsrEnv
+groupEnd
+group adsrEnv6 use adsrEnvelope
 ; @pos 317 74
-; @tab 8
 ; @group operator5
-use env
-shape adsrEnvState
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/10000
-int	decayTime SAMPLE_RATE/10000
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/2
-; @watch _counter
-; @watch out
-; @watch _state
-
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack6
+init &decay &envelopeTimings:decay6
+init &release &envelopeTimings:release6
+pass adsrEnv
+groupEnd
 module modulator4
 ; @pos 365 44
 ; @group operator4
@@ -739,69 +801,51 @@ mul
 store
 
 moduleEnd
-module adsrEnv1
+group adsrEnv1 use adsrEnvelope
 ; @pos 418 13
-; @tab 8
 ; @group operator1
-use env
-shape adsrEnvState
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/100
-int	decayTime SAMPLE_RATE/10
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/10
-
-; @watch _counter
-; @watch out
-; @watch _state
-
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
-module adsrEnv3
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack1
+init &decay &envelopeTimings:decay1
+init &release &envelopeTimings:release1
+pass adsrEnv
+groupEnd
+group adsrEnv3 use adsrEnvelope
 ; @pos 418 44
-; @tab 8
 ; @group operator3
-use env
-shape adsrEnvState
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/100
-int	decayTime SAMPLE_RATE/100
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/1
-
-; @watch _counter
-; @watch out
-; @watch _state
-
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
-module adsrEnv5
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack3
+init &decay &envelopeTimings:decay3
+init &release &envelopeTimings:release3
+pass adsrEnv
+groupEnd
+group adsrEnv5 use adsrEnvelope
 ; @pos 418 74
-; @tab 8
 ; @group operator6
-use env
-shape adsrEnvState
+expose trigger &envelope:trigger
+expose attack &envelope:attackTime
+expose decay &envelope:decayTime
+expose release &envelope:releaseTime
+expose out &envelope:out
 
-int*	trigger &keyboard:keyPressed
-int	attackTime SAMPLE_RATE/10000
-int	decayTime SAMPLE_RATE/10000
-float	sustainLevel 0.5
-int	releaseTime SAMPLE_RATE/1
-
-; @watch _counter
-; @watch out
-; @watch _state
-
-pushShape adsrEnvState
-call adsrEnv
-
-moduleEnd
+init &trigger &keyboard:keyPressed
+init &attack &envelopeTimings:attack5
+init &decay &envelopeTimings:decay5
+init &release &envelopeTimings:release5
+pass adsrEnv
+groupEnd
 module carrier1
 ; @pos 465 13
 use env
@@ -964,8 +1008,8 @@ store
 ; when it reaches the end
 ; of the buffer
 push pointer
-push buffer&
-greaterThan
+push end(buffer)
+greaterOrEqual
 if
 push &pointer
 push &buffer

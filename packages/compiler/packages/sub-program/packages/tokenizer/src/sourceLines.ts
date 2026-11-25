@@ -1,7 +1,7 @@
 import { parseInstructionTokens } from './parseLine';
 import isComment from './syntax/isComment';
 import isInstructionLikeLine from './syntax/isInstructionLikeLine';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 /** Physical source line after comment filtering and argument-continuation folding. */
 export type SourceLine = {
@@ -46,14 +46,14 @@ export function foldArgumentContinuationLines(code: string[]): SourceLine[] {
 		const instruction = '-';
 
 		if (!previousSourceLine) {
-			throw new SyntaxRulesError(SyntaxErrorCode.INVALID_ARGUMENT, 'Argument continuation has no instruction.', {
+			throw new SyntaxIssue(SyntaxErrorCode.INVALID_ARGUMENT, 'Argument continuation has no instruction.', {
 				lineNumber,
 				instruction,
 			});
 		}
 
 		if (tokens.length < 2) {
-			throw new SyntaxRulesError(SyntaxErrorCode.MISSING_ARGUMENT, 'Missing argument for continuation.', {
+			throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT, 'Missing argument for continuation.', {
 				lineNumber,
 				instruction,
 			});

@@ -1,0 +1,67 @@
+import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
+
+/** One block's presented origin in whole viewport-relative pixels, independent of its logical position. Frame-scoped. */
+export interface FrameBlockPosition {
+	readonly codeBlock: EditorCodeBlock;
+	readonly x: number;
+	readonly y: number;
+}
+
+/** Prepared block positions, including offscreen blocks. Read only during drawing; storage is reused next frame. */
+export interface FrameBlockPositions {
+	/** Block positions in drawing order. */
+	readonly ordered: readonly FrameBlockPosition[];
+	readonly byCodeBlock: ReadonlyMap<EditorCodeBlock, FrameBlockPosition>;
+}
+
+/** Resolve a block's visual translation in viewport pixels, or leave its position unchanged. */
+export type CodeBlockOffsetResolver = (codeBlock: EditorCodeBlock) => Readonly<{ x: number; y: number }> | undefined;
+
+/** Prepare a frame's visual translations using the renderer's high-resolution timestamp in milliseconds. */
+export type CodeBlockPositionEffect = (
+	state: Readonly<State>,
+	frameTime: number,
+	suppressOffsets: boolean
+) => CodeBlockOffsetResolver | undefined;
+
+interface StoredBlockPosition extends FrameBlockPosition {
+	x: number;
+	y: number;
+}
+
+/** Own one renderer's positions storage and prepare it once before each frame's drawing passes. */
+export function createFrameBlockPositions() {
+	const ordered: StoredBlockPosition[] = [];
+	const byCodeBlock = new Map<EditorCodeBlock, StoredBlockPosition>();
+	const positions: FrameBlockPositions = { ordered, byCodeBlock };
+	return {
+		/** Project logical block positions through the presented viewport, not the committed camera. */
+		prepare(
+			codeBlocks: readonly EditorCodeBlock[],
+			viewport: Readonly<Pick<State['viewport'], 'x' | 'y'>>,
+			resolveOffset?: CodeBlockOffsetResolver
+		): FrameBlockPositions {
+			const { x, y } = viewport;
+			let orderChanged = ordered.length !== codeBlocks.length;
+			for (let i = 0; i < codeBlocks.length; i++) {
+				const codeBlock = codeBlocks[i];
+				let position = ordered[i];
+				if (position?.codeBlock !== codeBlock) {
+					orderChanged = true;
+					position = byCodeBlock.get(codeBlock) ?? { codeBlock, x: 0, y: 0 };
+					ordered[i] = position;
+				}
+				const offset = resolveOffset?.(codeBlock);
+				// Snap after composing all translations to keep bitmap glyphs and decorations aligned while moving.
+				position.x = Math.round(codeBlock.x - x + (offset?.x ?? 0)) || 0;
+				position.y = Math.round(codeBlock.y - y + (offset?.y ?? 0)) || 0;
+			}
+			if (orderChanged) {
+				ordered.length = codeBlocks.length;
+				byCodeBlock.clear();
+				for (const block of ordered) byCodeBlock.set(block.codeBlock, block);
+			}
+			return positions;
+		},
+	};
+}

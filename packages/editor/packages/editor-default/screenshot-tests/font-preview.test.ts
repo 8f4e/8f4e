@@ -3,6 +3,7 @@ import initEditor, { type Editor, type EditorPluginContext, getEditorBlockId } f
 import { createDefaultEditorPlugins } from '@8f4e/editor-default';
 import { serializeToProject } from '@8f4e/editor-state';
 import { FONT_NAMES } from '@8f4e/sprite-generator';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 test('previews fonts through the default composition without changing saved source', async () => {
@@ -21,7 +22,6 @@ test('previews fonts through the default composition without changing saved sour
 			canvas,
 			storage: { getItem: () => null, setItem: () => {} } as Storage,
 			storageKey: 'font-preview-test',
-			showOpenMenuItem: false,
 			renderFrame: () => editor!.renderFrame(),
 			getMemory: () => null,
 			writeMemory: () => {},
@@ -29,6 +29,7 @@ test('previews fonts through the default composition without changing saved sour
 			getAssertionSites: () => undefined,
 		});
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: project,
 			plugins: [
 				...plugins,
@@ -46,13 +47,20 @@ test('previews fonts through the default composition without changing saved sour
 		const source = serializeToProject(editor.state);
 		const revision = editor.editing.getRevision();
 		const key = (key: string) => {
-			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
+			const event = new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true });
 			canvas.dispatchEvent(event);
 			return event;
 		};
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
-		for (let index = FONT_NAMES.indexOf(sourceFont); index < FONT_NAMES.length; index++) {
-			expect(key('F19').defaultPrevented).toBe(true);
+		expect(key('+').defaultPrevented).toBe(true);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
+		for (let index = FONT_NAMES.indexOf(sourceFont); index >= 0; index--) {
+			expect(key('-').defaultPrevented).toBe(true);
+		}
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(5);
+		expect(editor.state.viewport.hGrid).toBe(8);
+		for (let index = 0; index < FONT_NAMES.indexOf('x11miscfixed6x10'); index++) {
+			expect(key('+').defaultPrevented).toBe(true);
 		}
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
 		expect(editor.state.viewport.hGrid).toBe(10);
@@ -61,7 +69,7 @@ test('previews fonts through the default composition without changing saved sour
 		context.store.set('loadingIndicators', []);
 		editor.renderFrame();
 		await expect(canvas).toMatchScreenshot('font-preview');
-		const block = editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'settings')!;
+		const block = editor.state.project.rootLevel.blocks.find(block => block.name === 'settings')!;
 		editor.editing.applyEdits({
 			expectedRevision: revision,
 			edits: [
@@ -72,10 +80,25 @@ test('previews fonts through the default composition without changing saved sour
 				},
 			],
 		});
-		expect(editor.state.editorConfig.font).toBe('x11miscfixed6x10');
+		expect(editor.state.editorConfig.font).toBe('terminus10x18');
+		expect(editor.state.appearance.fontOverride).toBe('x11miscfixed6x10');
+		expect(editor.state.viewport).toMatchObject({ vGrid: 6, hGrid: 10 });
 		context.events.dispatch('loadProject', { project });
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
 		expect(editor.state.editorConfig.font).toBe(sourceFont);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
+		editor.resize(240, 400);
+		context.store.set('editorConfig.font', 'departuremono7x14');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(14);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-credits-portrait');
+		editor.resize(240, 256);
+		context.store.set('editorConfig.font', 'spleen16x32');
+		await expect.poll(() => editor!.state.viewport.hGrid).toBe(32);
+		context.store.set('loadingIndicators', []);
+		editor.renderFrame();
+		await expect(canvas).toMatchScreenshot('font-characters-small-viewport');
 	} finally {
 		editor?.dispose();
 		canvas.remove();

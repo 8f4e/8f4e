@@ -1,0 +1,27 @@
+includes
+include std/memory/loadAt
+includesEnd
+
+function loadRangeAt
+#export
+#impure
+; @doc Reads neighboring offsets and returns the range
+; - they describe.
+; @returns Start offset, then range length (top).
+; @param offsets Array of range boundaries.
+param int* offsets
+; @param index Index of the first offset in a valid
+; - adjacent pair.
+param int index
+local int start
+
+call loadAt offsets index
+localSet start
+push start
+push offsets
+push index
+add 1
+call loadAt
+push start
+sub
+functionEnd int int

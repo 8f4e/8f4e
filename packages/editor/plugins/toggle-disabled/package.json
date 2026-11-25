@@ -1,0 +1,29 @@
+{
+  "name": "@8f4e/editor-plugin-toggle-disabled",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Enable and disable code blocks from the 8f4e editor menu",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "author": "Andor Polgar",
+  "license": "MIT",
+  "dependencies": {
+    "@8f4e/editor-core": "*",
+    "@8f4e/editor-state": "*"
+  },
+  "devDependencies": {
+    "@8f4e/config": "*",
+    "@8f4e/editor-state-testing": "*",
+    "@8f4e/web-ui": "*",
+    "@types/node": "24.13.2",
+    "vitest": "4.1.12"
+  }
+}

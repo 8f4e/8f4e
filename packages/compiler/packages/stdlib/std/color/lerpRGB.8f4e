@@ -1,0 +1,105 @@
+function lerpRGB
+#export
+; @doc Blends packed RGB channel values, rounding to
+; - nearest with ties to even.
+; @returns Packed 0xRRGGBB color with high byte zero.
+; @param start Starting color (0xRRGGBB).
+param int start
+; @param end Target color (0xRRGGBB).
+param int end
+; @param amount Finite interpolation factor, 0..1.
+param float amount
+local int color
+local int shift
+local float first
+local float second
+
+loop 3
+loopIndex
+mul 8
+localSet shift
+push start
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat
+localSet first
+push end
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat
+localSet second
+
+push color
+push first
+push second
+push first
+sub
+mul amount
+add
+round
+castToInt
+push shift
+shiftLeft
+or
+localSet color
+loopEnd
+
+push color
+functionEnd int
+
+function lerpRGB
+#export
+; @doc Blends packed RGB channel values, rounding to
+; - nearest with ties to even.
+; @returns Packed 0xRRGGBB color with high byte zero.
+; @param start Starting color (0xRRGGBB).
+param int start
+; @param end Target color (0xRRGGBB).
+param int end
+; @param amount Finite interpolation factor, 0..1.
+param float64 amount
+local int color
+local int shift
+local float64 first
+local float64 second
+
+loop 3
+loopIndex
+mul 8
+localSet shift
+push start
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat64
+localSet first
+push end
+push shift
+shiftRightUnsigned
+push 255
+and
+castToFloat64
+localSet second
+
+push color
+push first
+push second
+push first
+sub
+mul amount
+add
+round
+castToInt
+push shift
+shiftLeft
+or
+localSet color
+loopEnd
+
+push color
+functionEnd int

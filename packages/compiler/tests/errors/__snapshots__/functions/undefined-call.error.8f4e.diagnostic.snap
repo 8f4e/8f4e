@@ -1,21 +1,14 @@
 {
   "code": 22,
-  "context": {
-    "codeBlockId": "undefinedCall",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "missingFunction",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Undefined function. (22)",
+  "symbol": "undefinedCall",
 }

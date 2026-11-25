@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilerASTLine,
 	ConstantResolutionBlockFacts,
@@ -14,7 +15,6 @@ import type {
 	MemoryReferenceResolutionReport,
 	ModuleAST,
 	ProjectMemoryAliasLookup,
-	PrototypeAST,
 	ReferenceSlotMap,
 	RegisteredFunction,
 	ResolvedMapLine,
@@ -23,58 +23,47 @@ import type {
 	ValidatedConstantsAST,
 	ValidatedFunctionAST,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
 	ArgumentType,
 	BlockType,
-	compilerSourceBlockInstructionByType,
 	EMPTY_REFERENCE_SLOTS,
 	ErrorCode,
 	functionValueTypeToLocalMetadata,
-	getError,
 	getInstructionSpec,
 	type InstructionSpec,
 	isCodegenInstructionName,
-	isSemanticInstructionLine,
 } from '@8f4e/language-spec';
 import { createCompilationContext, popBlock, pushBlock, withSourceDiagnostic } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from './context';
 import { normalizeOperands } from './normalizeOperands';
 import resolveLineReferences from './resolveLineReferences';
 
-const moduleBlockType = compilerSourceBlockInstructionByType.module.type;
-
 export interface SemanticReferenceResolverSubProgramAST<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 > {
-	prototypes: readonly TPrototype[];
 	modules: readonly TModule[];
 	constants: readonly TConstants[];
 }
 
 export interface ResolveSemanticReferencesInput<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 	TFunction extends FunctionAST = ValidatedFunctionAST,
 > {
-	ast: SemanticReferenceResolverSubProgramAST<TPrototype, TModule, TConstants>;
+	ast: SemanticReferenceResolverSubProgramAST<TModule, TConstants>;
 	registeredFunctions: readonly RegisteredFunction<TFunction>[];
 	memoryPlan: MemoryLayoutPlan;
 	memoryAliases: ProjectMemoryAliasLookup;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 	constantReferences: {
-		prototypes: readonly ConstantResolutionBlockFacts[];
 		modules: readonly ConstantResolutionBlockFacts[];
 		constants: readonly ConstantResolutionBlockFacts[];
 		functions: readonly ConstantResolutionBlockFacts[];
 	};
 	memoryReferences: MemoryReferenceResolutionReport;
 	functions: FunctionRegistry;
-	prototypeShapes: Readonly<Record<string, TPrototype>>;
 }
 
 export interface ResolvedOperation {
@@ -132,50 +121,6 @@ function applyResolvedArgumentFacts<TLine extends CompilerASTLine>(
 	return applyMemoryReferenceFacts(applyConstantFacts(line, constantFacts), memoryReferenceFacts);
 }
 
-function collectPrototypeShapeIds(ast: ModuleAST): string[] {
-	const prototypeShapeIds: string[] = [];
-	for (const line of ast.lines) {
-		if (line.instruction !== 'shape') {
-			continue;
-		}
-		const prototypeId = line.arguments[0].value;
-		if (!prototypeShapeIds.includes(prototypeId)) {
-			prototypeShapeIds.push(prototypeId);
-		}
-	}
-	return prototypeShapeIds;
-}
-
-function applySemanticLine(line: CompilerASTLine, context: ReferenceResolutionContext): void {
-	if (!isSemanticInstructionLine(line)) {
-		return;
-	}
-
-	switch (line.instruction) {
-		case 'const':
-		case 'use':
-			return;
-		case 'module': {
-			const moduleId = line.arguments[0].value;
-			pushBlock(context, { expectedResultTypes: [], blockType: BlockType.MODULE });
-			context.namespace.moduleName = moduleId;
-			context.codeBlockId = moduleId;
-			context.codeBlockType = moduleBlockType;
-			return;
-		}
-		case 'moduleEnd':
-			popBlock(context);
-			return;
-		case 'shape': {
-			const prototypeId = line.arguments[0].value;
-			if (!context.namespace.prototypeShapeIds.includes(prototypeId)) {
-				context.namespace.prototypeShapeIds.push(prototypeId);
-			}
-			return;
-		}
-	}
-}
-
 function getPlannedMemoryDeclaration(
 	context: ReferenceResolutionContext,
 	memoryId: string,
@@ -204,19 +149,9 @@ function registerFunctionParameter(
 	context: ReferenceResolutionContext
 ): void {
 	if (context.locals[paramName] !== undefined) {
-		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, context);
+		throw getError(ErrorCode.DUPLICATE_PARAMETER_NAME, line, { symbol: context.codeBlockId });
 	}
 	bindLocal(context, paramName, paramType);
-}
-
-function applyParamShapeLine(line: CompilerASTLine, context: ReferenceResolutionContext): void {
-	const expansion = context.currentFunctionMetadata!.paramShapeExpansions!.find(
-		expansion => expansion.lineNumber === line.lineNumber
-	)!;
-
-	for (const parameter of expansion.parameters) {
-		registerFunctionParameter(parameter.type, parameter.name, line, context);
-	}
 }
 
 function applyLocalLine(line: CompilerASTLine, context: ReferenceResolutionContext): void {
@@ -225,7 +160,10 @@ function applyLocalLine(line: CompilerASTLine, context: ReferenceResolutionConte
 	const localName = nameArg.value;
 
 	if (getPlannedMemoryDeclaration(context, localName)) {
-		throw getError(ErrorCode.LOCAL_NAME_COLLISION_WITH_MEMORY, line, context, { identifier: localName });
+		throw getError(ErrorCode.LOCAL_NAME_COLLISION_WITH_MEMORY, line, {
+			symbol: context.codeBlockId,
+			details: { identifier: localName },
+		});
 	}
 
 	bindLocal(context, localName, typeArg.value);
@@ -277,16 +215,19 @@ function applyMapLine(line: ResolvedMapLine, context: ReferenceResolutionContext
 
 function applyResolvedLineEffect(line: SemanticReferenceLine, context: ReferenceResolutionContext): void {
 	switch (line.instruction) {
-		case 'module':
+		case 'module': {
+			const moduleId = line.arguments[0].value;
+			pushBlock(context, { expectedResultTypes: [], blockType: BlockType.MODULE });
+			context.namespace.moduleName = moduleId;
+			context.codeBlockId = moduleId;
+			return;
+		}
 		case 'moduleEnd':
-		case 'shape':
-			applySemanticLine(line, context);
+		case 'functionEnd':
+			popBlock(context);
 			return;
 		case 'function':
 			pushBlock(context, { blockType: BlockType.FUNCTION, expectedResultTypes: [] });
-			return;
-		case 'functionEnd':
-			popBlock(context);
 			return;
 		case 'param': {
 			const paramType = line.arguments[0].value as FunctionValueType;
@@ -294,9 +235,6 @@ function applyResolvedLineEffect(line: SemanticReferenceLine, context: Reference
 			registerFunctionParameter(paramType, paramName, line, context);
 			return;
 		}
-		case 'paramShape':
-			applyParamShapeLine(line, context);
-			return;
 		case 'local':
 			applyLocalLine(line, context);
 			return;
@@ -316,7 +254,7 @@ function applyResolvedLineEffect(line: SemanticReferenceLine, context: Reference
 }
 
 function createModuleContext(
-	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
+	input: ResolveSemanticReferencesInput<ModuleAST, ConstantsAST, FunctionAST>,
 	ast: ModuleAST,
 	astIndex: number
 ): ReferenceResolutionContext {
@@ -326,7 +264,6 @@ function createModuleContext(
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
-			prototypeShapeIds: collectPrototypeShapeIds(ast),
 		},
 		locals: {},
 		bindings: [],
@@ -338,15 +275,11 @@ function createModuleContext(
 		currentPlannedModule: plannedModule,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
-		prototypeShapes: input.prototypeShapes,
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 	});
 }
 
 function createFunctionContext(
-	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
-	ast: FunctionAST,
+	input: ResolveSemanticReferencesInput<ModuleAST, ConstantsAST, FunctionAST>,
 	functionMetadata: FunctionMetadata
 ): ReferenceResolutionContext {
 	return createCompilationContext<ReferenceResolutionContext>({
@@ -354,7 +287,6 @@ function createFunctionContext(
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
-			prototypeShapeIds: [],
 		},
 		locals: {},
 		bindings: [],
@@ -365,14 +297,8 @@ function createFunctionContext(
 		memoryAliases: input.memoryAliases,
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
-		codeBlockType: 'function',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
-		currentFunctionId: functionMetadata.id,
-		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 		codeBlockId: functionMetadata.name,
-		prototypeShapes: input.prototypeShapes,
 	});
 }
 
@@ -389,7 +315,7 @@ function assertFunctionMemoryIoAllowed(line: SemanticReferenceLine, context: Ref
 			(push.resolvedTarget.kind === 'local-pointer' || push.resolvedTarget.kind === 'memory-pointer')
 	);
 	if (spec.effects?.memory || pointerPush || inlinePointerPush) {
-		throw getError(ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO, line, context);
+		throw getError(ErrorCode.IMPURE_DIRECTIVE_REQUIRED_FOR_MEMORY_IO, line, { symbol: context.codeBlockId });
 	}
 }
 
@@ -406,7 +332,7 @@ function resolveBody(
 			constantReferences?.lineFacts[sourceLineIndex],
 			memoryReferences?.lineFacts[sourceLineIndex]
 		);
-		withSourceDiagnostic(originalLine, () => {
+		withSourceDiagnostic(originalLine, 'semantic references', () => {
 			for (const operation of normalizeOperands(sourceLine)) {
 				const line = resolveLineReferences(operation, context);
 				applyResolvedLineEffect(line, context);
@@ -420,7 +346,7 @@ function resolveBody(
 }
 
 function resolveModuleReferences<TModule extends ModuleAST>(
-	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
+	input: ResolveSemanticReferencesInput<ModuleAST, ConstantsAST, FunctionAST>,
 	ast: TModule,
 	astIndex: number
 ): [string, ModuleSemanticReferences<TModule>] {
@@ -444,12 +370,12 @@ function resolveModuleReferences<TModule extends ModuleAST>(
 }
 
 function resolveFunctionReferences<TFunction extends FunctionAST>(
-	input: ResolveSemanticReferencesInput<PrototypeAST, ModuleAST, ConstantsAST, FunctionAST>,
+	input: ResolveSemanticReferencesInput<ModuleAST, ConstantsAST, FunctionAST>,
 	declaration: RegisteredFunction<TFunction>,
 	astIndex: number
 ): [string, FunctionSemanticReferences<TFunction>] {
 	const { ast, metadata } = declaration;
-	const context = createFunctionContext(input, ast, metadata);
+	const context = createFunctionContext(input, metadata);
 	const body = resolveBody(
 		ast.lines,
 		context,
@@ -466,12 +392,11 @@ function resolveFunctionReferences<TFunction extends FunctionAST>(
  * @returns Semantic reference facts keyed back to the original sub-program AST.
  */
 export function resolveSemanticReferences<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
 	TModule extends ModuleAST = ValidatedModuleAST,
 	TConstants extends ConstantsAST = ValidatedConstantsAST,
 	TFunction extends FunctionAST = ValidatedFunctionAST,
 >(
-	input: ResolveSemanticReferencesInput<TPrototype, TModule, TConstants, TFunction>
+	input: ResolveSemanticReferencesInput<TModule, TConstants, TFunction>
 ): ResolveSemanticReferencesResult<TModule, TFunction> {
 	return {
 		references: {

@@ -1,8 +1,9 @@
 import { EventEmitter } from 'node:events';
-import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import type { CodeBlockGraphicData, CodeError } from '@8f4e/editor-state-types';
+import initState, { applyCodeBlockSourceEdits, EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeError, EditorCodeBlock } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { errorMessagesPlugin } from './index';
 
@@ -11,10 +12,11 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(errors: Record<string, CodeError[]> = {}) {
+function setup(errors: Record<string, CodeError[]> = {}, initializeGrid = true) {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	if (initializeGrid) setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
@@ -26,8 +28,8 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 	});
 	for (const [id, list] of Object.entries(errors)) store.set(`codeErrors.${id}`, list);
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
-	const drawers = createEditorDrawerRegistry();
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = errorMessagesPlugin.setup({
 		store,
 		events,
@@ -35,32 +37,49 @@ function setup(errors: Record<string, CodeError[]> = {}) {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
-	const draw = { drawFill, drawGlyphs } as unknown as DrawContext;
-	const render = (codeBlock: CodeBlockGraphicData = block) =>
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
-	return { state, store, events, block, render, drawFill, drawGlyphs, dispose };
+	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
+	const render = (codeBlock: EditorCodeBlock = block) =>
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews: {} as MemoryViews });
+	const renderOverlay = () =>
+		renderRegistry.drawCanvasOverlays({
+			draw,
+			state,
+			viewport: state.viewport,
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
+	return { state, store, events, block, render, renderOverlay, drawFill, drawGlyphs, dispose };
 }
 
 describe('error messages plugin', () => {
+	it('prepares errors reported before the grid is available when layout initializes', () => {
+		const test = setup({}, false);
+		test.store.set('codeErrors.custom', [{ codeBlockId: 7, lineNumber: 2, message: 'Early error' }]);
+		expect(test.block.gaps.size).toBe(0);
+
+		setGridSize(test.state, test.events, TEST_GRID_SIZE);
+		expect(test.block.gaps.get(2)?.size).toBe(2);
+		test.render();
+		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Early error'), expect.any(Number));
+	});
+
 	it('reserves and draws only visible source rows while retaining the raw errors', () => {
 		const errors = [{ codeBlockId: 7, lineNumber: 2, message: 'Hidden error' }];
 		const test = setup({ custom: errors });
 		const original = [...test.block.code];
-		applyCodeBlockSourceEdits(
-			test,
-			[{ codeBlock: test.block, code: ['module target', '; @hide', 'push 1', 'drop', 'moduleEnd'] }],
-			{ affectsCompilation: false }
-		);
+		applyCodeBlockSourceEdits(test.store, [
+			{ codeBlock: test.block, code: ['module target', '; @hide', 'push 1', 'drop', 'moduleEnd'] },
+		]);
 		test.render();
 		expect(test.block.gaps.size).toBe(0);
 		expect(test.drawGlyphs).not.toHaveBeenCalled();
 		expect(test.state.codeErrors.custom).toBe(errors);
-		applyCodeBlockSourceEdits(test, [{ codeBlock: test.block, code: original }], { affectsCompilation: false });
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: test.block, code: original }]);
 		test.render();
 		expect(test.block.gaps.get(2)?.size).toBe(2);
 		expect(test.drawGlyphs).toHaveBeenLastCalledWith(0, 64, textToGlyphIds(' Hidden error'), expect.any(Number));
@@ -126,12 +145,13 @@ describe('error messages plugin', () => {
 		expect(test.block.gaps.size).toBe(0);
 	});
 
-	it('matches project-scope errors by group path and document errors by block identity', () => {
+	it('matches group and document errors by block identity', () => {
 		const test = setup();
 		test.events.dispatch('loadProject', {
 			project: parseProjectSource(`8f4e/v1
-pass missing
 entry main
+module root
+moduleEnd
 group audio
 pass nested
 entry main
@@ -142,16 +162,16 @@ entryEnd
 groupEnd
 entryEnd`),
 		});
-		const root = test.state.codeBlockRendering.currentProject.blocks;
-		const scope = root.find(block => block.isProjectScope)!;
+		const root = test.state.project.activeLevel.blocks;
+		const rootModule = root.find(block => block.name === 'root')!;
 		const group = root.find(block => block.name === 'audio')!;
-		const child = group.childProject!.blocks.find(block => block.name === 'child')!;
+		const child = group.childLevel!.blocks.find(block => block.name === 'child')!;
 		test.store.set('codeErrors.custom', [
-			{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
-			{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 1, message: 'Group error' },
+			{ codeBlockId: rootModule.creationIndex, lineNumber: 0, message: 'Root error' },
+			{ codeBlockId: group.creationIndex, lineNumber: 1, message: 'Group error' },
 			{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' },
 		]);
-		test.render(scope);
+		test.render(rootModule);
 		expect(test.drawGlyphs).toHaveBeenLastCalledWith(
 			0,
 			expect.any(Number),
@@ -175,5 +195,20 @@ entryEnd`),
 			textToGlyphIds(' Child error'),
 			expect.any(Number)
 		);
+	});
+	it('keeps unlocated and unmappable errors visible and clears them with their contributor', () => {
+		const test = setup({
+			custom: [{ message: 'Worker failed' }, { codeBlockId: 999, lineNumber: 2, message: 'Unmapped source' }],
+		});
+		test.store.set('viewport.width', 640);
+		test.renderOverlay();
+		expect(test.drawGlyphs.mock.calls.map(([, , glyphs]) => glyphs)).toEqual([
+			textToGlyphIds('Error: Worker failed'),
+			textToGlyphIds('Error: Unmapped source'),
+		]);
+		test.store.set('codeErrors.custom', []);
+		test.drawGlyphs.mockClear();
+		test.renderOverlay();
+		expect(test.drawGlyphs).not.toHaveBeenCalled();
 	});
 });

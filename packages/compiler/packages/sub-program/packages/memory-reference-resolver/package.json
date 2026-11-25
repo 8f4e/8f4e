@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/memory-reference-resolver",
-  "version": "5.2.0",
+  "version": "7.1.4",
   "private": true,
   "description": "8f4e AST memory reference resolver package",
   "type": "module",
@@ -26,7 +26,8 @@
   "dependencies": {
     "@8f4e/language-spec": "*",
     "@8f4e/memory-planner": "*",
-    "@8f4e/semantic-utils": "*"
+    "@8f4e/semantic-utils": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@8f4e/tokenizer": "*",

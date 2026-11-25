@@ -1,15 +1,15 @@
 # Identifier prefixes and metadata queries
 
-8f4e supports a small set of identifier prefixes/suffixes that expand memory identifiers into derived values, and function-style metadata queries.
+8f4e supports a small set of identifier prefixes that expand memory identifiers into derived values, and function-style metadata queries.
 
 ## Memory reference
 
 - `&name` pushes the start address (byte address) of the memory item.
-- `name&` pushes the start address (byte address) of the final 4-byte allocation unit covering the memory item.
+- `end(name)` pushes the exclusive byte address immediately after the declared elements, excluding allocation padding.
 - `&this` pushes the start byte address of the current module.
-- `this&` pushes the byte address of the current module's final allocation unit.
+- `end(this)` pushes the exclusive end of the current module allocation.
 
-These work in both `push` instructions and declaration initializers (e.g., `int* ptr &buffer` or `int* endPtr buffer&`) with the same address semantics.
+These work in both `push` instructions and declaration initializers (e.g., `int* ptr &buffer` or `int* endPtr end(buffer)`) with the same address semantics.
 
 Examples:
 
@@ -21,9 +21,38 @@ int8[] buffer 4
 push &buffer[0]
 
 int* moduleStart &this
-int* moduleEnd this&
+int* moduleEnd end(this)
 
 ```
+
+## Exclusive end queries
+
+`end(name)` is `start + count * element size`. It resolves during compilation in pushes, declaration initializers,
+and memory-aware arithmetic expressions. An empty buffer ends at its start. For byte and halfword buffers, alignment
+padding is outside the logical buffer. The returned boundary is not readable storage; use an explicit element offset
+such as `end(samples)-sizeof(samples)` to address the final element.
+
+A fixed connection exposes the complete target boundary through `end(*connection)`:
+
+```8f4e
+float& samples &recorder:buffer
+float* head samples
+
+push head
+push end(*samples)
+greaterOrEqual
+if
+push &head
+push samples
+store
+ifEnd
+```
+
+Mutable pointer variables do not provide a fixed allocation boundary; pass that boundary separately. `end(pointer)`
+queries the pointer variable's own storage. `end(module:N)` queries an indexed declaration, and `end(module:)` queries
+the complete module allocation. For a fixed reference to a pointer, `end(*connection)` gives the end of the bound
+pointer allocation. Leading `&` selects start addresses. Circular buffers wrap when
+`pointer >= end(buffer)`.
 
 ## Pointer dereference
 
@@ -31,6 +60,10 @@ int* moduleEnd this&
 - `**name` dereferences a pointer memory item twice (via `push`).
 - The pointer depth comes from the declared type (`int*`, `float*`, `int**`, `float**`).
 - The number of leading `*` characters in the `push` argument is the requested dereference depth. It must not exceed the declared pointer depth.
+
+With memory guards enabled, each unproven pointer dereference checks the complete accessed value against WebAssembly
+memory bounds and returns a zero of the result type if it is out of bounds. This applies to pointers stored in
+module memory and in locals. A declared pointer slot has a fixed safe address; its mutable target still needs proof.
 
 Example:
 
@@ -42,6 +75,11 @@ push *ptr
 int** pptr &ptr
 push *pptr    ; pushes the address stored in ptr
 push **pptr   ; loads target
+
+int*& fixed &ptr
+push fixed    ; pushes the address of ptr, typed int**
+push *fixed   ; pushes the address stored in ptr, typed int*
+push **fixed  ; loads target
 ```
 
 ## Element count
@@ -50,6 +88,7 @@ push **pptr   ; loads target
 - `count(*name)` pushes the known element count of the value pointed to by a pointer-typed memory item when the pointer is initialized from a tracked memory start address. Known counts of zero and one are preserved, including through group initializers.
 - If the pointer has no tracked pointee element count, `count(*name)` raises `POINTEE_ELEMENT_COUNT_UNKNOWN`. An end-address initializer does not establish a count; pass the length explicitly instead.
 - Metadata queries currently support one leading `*`. For double pointers, `count(*name)` describes the intermediate pointer slot. `count(**name)` is not supported yet.
+- For a fixed reference to a pointer, `count(*name)` gives the count of pointer elements in the bound allocation.
 
 Example:
 
@@ -92,6 +131,7 @@ Examples:
 | `float64* ptr`      | 4              | 8               |
 | `int** ptr`         | 4              | 4               |
 | `float64** ptr`     | 4              | 4               |
+| `int16*& ref`       | —              | 4               |
 
 ```
 int* ptr &someInt
@@ -106,6 +146,7 @@ push sizeof(*fptr)  ; 8  — size of the float64 it points to
 ## Element max value
 
 - `max(name)` pushes the maximum finite value for the element type of a memory item.
+- The result retains the element's numeric type: integer, float32, or float64.
 
 For signed integers:
 - `int32` / `int` / `int[]`: 2,147,483,647
@@ -118,6 +159,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: 3.4028234663852886e+38 (max finite float32)
+- `float64` / `float64[]`: 1.7976931348623157e+308 (max finite float64)
 
 Example:
 
@@ -132,6 +174,7 @@ push max(unsignedBuffer)
 ## Pointee element max value
 
 - `max(*name)` pushes the maximum finite value for the type pointed to by a pointer-typed memory item.
+- The result retains the numeric type of that pointee.
 - Only valid for pointer identifiers (`int*`, `int8*`, `int8u*`, `int16*`, `int16u*`, `float*`, `float64*`, etc.).
 - On a non-pointer memory identifier, current compiler behavior resolves `max(*name)` to `0`.
 - `max(name)` keeps its existing meaning (max of the memory item's own element type).
@@ -164,6 +207,7 @@ push max(*fptr)  ; 1.7976931348623157e+308  — max of the float64 it points to
 
 - `min(name)` pushes the lowest finite value (most negative) for the element type of a memory item.
 - `min(*name)` pushes the lowest finite value for the type pointed to by a pointer-typed memory item.
+- Both forms retain the numeric type of the queried element or pointee.
 - On a non-pointer memory identifier, current compiler behavior resolves `min(*name)` to `0`.
 - `min(name)` keeps its existing meaning (min of the memory item's own element type).
 - Metadata queries currently support one leading `*`. For double pointers, `min(*name)` describes the intermediate pointer slot. `min(**name)` is not supported yet.
@@ -181,6 +225,7 @@ For unsigned integers:
 
 For floats:
 - `float` / `float[]`: -3.4028234663852886e+38 (lowest finite float32)
+- `float64` / `float64[]`: -1.7976931348623157e+308 (lowest finite float64)
 
 Example:
 
@@ -249,24 +294,24 @@ All of the address and metadata forms above have intermodular counterparts that 
 ### Module base address
 
 - `&module:` — start byte address of the module's memory allocation.
-- `module:&` — byte address of the final allocation unit in the module's memory allocation.
+- `end(module:)` — exclusive end byte address of the module allocation.
 
 ```
 module targetModule
 int* start &sourceModule:
-int* end   sourceModule:&
+int* end   end(sourceModule:)
 moduleEnd
 ```
 
 ### Named memory item address
 
 - `&module:name` — start byte address of a named memory item in another module.
-- `module:name&` — byte address of the final allocation unit of a named memory item in another module.
+- `end(module:name)` — exclusive logical end of a named memory item in another module.
 
 ```
 module targetModule
 int* ptr    &sourceModule:buffer
-int* endPtr sourceModule:buffer&
+int* endPtr end(sourceModule:buffer)
 moduleEnd
 ```
 

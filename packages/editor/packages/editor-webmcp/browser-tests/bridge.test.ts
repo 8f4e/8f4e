@@ -1,10 +1,10 @@
 import { getEditorBlockId } from '@8f4e/editor-core';
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
-import { serializeToProject } from '@8f4e/editor-state';
+import { serializeCodeBlocks, serializeToProject } from '@8f4e/editor-state';
 import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
-import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import { afterEach, expect, test, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 const source = '8f4e/v1\nentry main\nmodule counter ; @mode edit\nint value 1\nmoduleEnd\nentryEnd';
 const cleanups: Array<() => void> = [];
@@ -25,19 +25,15 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 	canvas.style.height = '480px';
 	panel.append(canvas);
 	document.body.append(panel);
-	let loaded = false;
 	const pending = mountDefaultEditor(canvas, {
 		initialProjectUrl: `/webmcp-${id}.8f4e`,
 		storage: sessionStorage,
 		storageNamespace: `8f4e-webmcp-test-${id}`,
-		onInitialProjectLoaded: () => {
-			loaded = true;
-		},
 	});
 	const mounted = async (): Promise<DefaultEditorInstance> => {
 		const editor = await pending;
 		cleanups.push(() => editor.dispose());
-		await vi.waitFor(() => expect(loaded).toBe(true));
+		expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'project-url')?.status).toBe('done');
 		await vi.waitFor(() =>
 			expect(editor.state.loadingIndicators.find(indicator => indicator.id === 'editor-plugins')?.status).toBe('done')
 		);
@@ -48,7 +44,11 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 					.every(indicator => indicator.status === 'done')
 			).toBe(true)
 		);
-		const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
+		const bridge = createEditorWebMcp({
+			document,
+			editor,
+			getCompilerDiagnostics: editor.getCompilerDiagnostics,
+		});
 		cleanups.push(() => bridge.dispose());
 		await bridge.ready;
 		return editor;
@@ -87,7 +87,7 @@ test('ships documentation and examples through the built bridge without changing
 	const editor = await view.mounted();
 	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
 	const revision = editor.editing.getRevision();
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	const help = (await call('get_help')) as string;
 	expect(help).toContain('stack-based programming language');
 	const docs = (await call('search_docs', { query: '@pos' })) as { results: Array<{ topic: string }> };
@@ -113,7 +113,7 @@ test('ships documentation and examples through the built bridge without changing
 	expect(code).toMatch(/^module lowPassFilter\n/);
 	expect(code).not.toContain('@public');
 	expect(await call('get_example', { kind: 'project', path: 'audio/reverb' })).toContain('groupEnd');
-	expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(blocks);
+	expect(editor.state.project.activeLevel.blocks).toBe(blocks);
 	expect(editor.editing.getRevision()).toBe(revision);
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code }] })).toMatchObject({
 		error: { code: 'source_required' },
@@ -154,8 +154,8 @@ test('navigates the editor and returns only the currently expanded source string
 	expect(root).toContain('group audio');
 	expect(root).not.toContain('int value 2');
 	expect(await call('expand_group', { name: 'audio' })).toMatchObject({ projectPath: 'audio' });
-	expect(editor.state.codeBlockRendering.currentProject.blocks).toBe(
-		editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'audio')!.childProject?.blocks
+	expect(editor.state.project.activeLevel.blocks).toBe(
+		editor.state.project.rootLevel.blocks.find(block => block.name === 'audio')!.childLevel?.blocks
 	);
 	const expanded = await call('get_project');
 	expect(expanded).toContain('int value 2');
@@ -169,18 +169,16 @@ test('navigates the editor and returns only the currently expanded source string
 			code: 'module oscillator\nint value 3\nmoduleEnd',
 		})
 	).toBe('Block updated.');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'oscillator')!.code
-	).toContain('int value 3');
-	expect(editor.state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'oscillator')!.code).toContain(
+	expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'oscillator')!.code).toContain(
+		'int value 3'
+	);
+	expect(editor.state.project.rootLevel.blocks.find(block => block.name === 'oscillator')!.code).toContain(
 		'int value 1'
 	);
 	await call('expand_group', { name: 'voices' });
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio/voices' });
 	expect(await call('get_project')).toContain('module deepSecret');
-	expect(
-		editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'deepSecret')
-	).toBeDefined();
+	expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'deepSecret')).toBeDefined();
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toMatchObject({
 		error: { code: 'block_not_found' },
 	});
@@ -188,6 +186,50 @@ test('navigates the editor and returns only the currently expanded source string
 	expect(await call('get_project')).toContain('int value 3');
 	await call('go_to_root');
 	expect(await call('get_project')).toBe(root);
+});
+
+test('inserts into the active pasted group even when its source path matches the original', async () => {
+	const tools = siteTools();
+	const grouped =
+		'8f4e/v1\nentry main\nmodule counter ; @mode edit\n; @pos 70 20\nint value 1\nmoduleEnd\ngroup audio\n; @pos 6 14\nentry main\nmodule oscillator\nint value 2\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd';
+	const view = setup({ pastedGroup: async () => new Response(grouped) });
+	const editor = await view.mounted();
+	const canvas = view.panel().querySelector('canvas')!;
+	const { state } = editor;
+	const groups = () => state.project.rootLevel.blocks.filter(block => block.name === 'audio');
+	const [original] = groups();
+	vi.spyOn(navigator.clipboard, 'readText').mockResolvedValue(
+		JSON.stringify(serializeCodeBlocks([original], original))
+	);
+	const menuPosition = { x: 400, y: 16 };
+	await expect
+		.poll(async () => {
+			const rect = canvas.getBoundingClientRect();
+			canvas.dispatchEvent(
+				new MouseEvent('contextmenu', { clientX: rect.left + menuPosition.x, clientY: rect.top + menuPosition.y })
+			);
+			await Promise.resolve();
+			return state.contextMenu.items.some(item => item.action === 'pasteCodeBlocks');
+		})
+		.toBe(true);
+	const pasteIndex = state.contextMenu.items.findIndex(item => item.action === 'pasteCodeBlocks');
+	await userEvent.click(canvas, {
+		position: { x: menuPosition.x + 8, y: menuPosition.y + (pasteIndex + 0.5) * state.viewport.hGrid },
+	});
+	await expect.poll(() => groups().length).toBe(2);
+	const copy = groups().find(block => block !== original)!;
+	expect(original.childLevel!.path).toBe(copy.childLevel!.path);
+	editor.navigation.openGroup(getEditorBlockId(copy));
+	const call = (name: string, args = {}) => tools.get(name)!.execute(args);
+	expect(await call('get_project')).toContain('int value 2');
+	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
+	const noteCode = 'note copiedNote\nInserted in the copy\nnoteEnd';
+	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: noteCode }] })).toBe('Edits applied.');
+	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childLevel!;
+	expect(state.project.activeLevel).toBe(child(copy.creationIndex));
+	expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(true);
+	expect(child(original.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(false);
+	expect(await call('get_project')).toContain(noteCode);
 });
 
 test('targets named notes and modules through the same selectors without exposing identifiers', async () => {
@@ -226,7 +268,7 @@ test('targets named notes and modules through the same selectors without exposin
 		expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds|expectedRevision/);
 });
 
-test('patches one source span in the current group with persistence and one-step undo/redo', async () => {
+test('patches one source span in the current group and persists the change', async () => {
 	const tools = siteTools();
 	const grouped =
 		'8f4e/v1\nentry main\nmodule oscillator ; @mode edit\nfloat alpha 0.04\nmoduleEnd\ngroup audio\nentry main\nmodule oscillator\n; @pos 10 4\nfloat alpha 0.04\npush alpha\ndrop\npush alpha\ndrop\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd';
@@ -247,14 +289,11 @@ test('patches one source span in the current group with persistence and one-step
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toBe(
 		original.replace('float alpha 0.04', 'float alpha 0.1')
 	);
-	const childSource = () =>
-		getProjectModules(getProjectGroups(serializeToProject(editor.state)).find(group => group.name === 'audio')!)[0]
-			.code;
 	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('float alpha 0.04');
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-patched')).toContain('float alpha 0.1');
 	const project = serializeToProject(editor.state);
-	const historyLength = editor.state.historyStack.length;
+	const revision = editor.editing.getRevision();
 	for (const [oldText, error] of [
 		['float alpha 0.04', 'match_not_found'],
 		['push alpha', 'ambiguous_match'],
@@ -263,7 +302,7 @@ test('patches one source span in the current group with persistence and one-step
 			await call('patch_block', { type: 'module', name: 'oscillator', newText: 'float alpha 0.2', oldText })
 		).toMatchObject({ error: { code: error } });
 	expect(serializeToProject(editor.state)).toEqual(project);
-	expect(editor.state.historyStack).toHaveLength(historyLength);
+	expect(editor.editing.getRevision()).toBe(revision);
 	await vi.waitFor(async () =>
 		expect(await call('get_compiler_diagnostics')).toMatchObject({
 			diagnostics: { status: 'ready', compilationErrors: [] },
@@ -275,10 +314,6 @@ test('patches one source span in the current group with persistence and one-step
 	editor.resize(900, 480);
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-patch.png' });
-	expect(await call('undo')).toBe('Undo complete.');
-	expect(childSource().join('\n')).toBe(original);
-	expect(await call('redo')).toBe('Redo complete.');
-	expect(childSource().join('\n')).toBe(original.replace('float alpha 0.04', 'float alpha 0.1'));
 });
 
 test('tracks consecutive tool edits and requires source re-fetches after external edits', async () => {
@@ -304,11 +339,22 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: 'note colors\nblue\nnoteEnd' }] })).toBe(
 		'Edits applied.'
 	);
-	expect(await call('undo')).toBe('Undo complete.');
-	expect(await call('redo')).toBe('Redo complete.');
+	// Human keyboard history is still available and counts as an external source change to the bridge.
+	const canvas = view.panel().querySelector('canvas')!;
+	const key = (key: string) =>
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true }));
+	const notes = () => serializeToProject(editor.state).notes;
+	key('z');
+	await vi.waitFor(() => expect(notes()).toHaveLength(0));
+	expect(await patchValue(3, 4)).toMatchObject({ error: { code: 'stale_revision' } });
+	await call('get_project');
+	key('y');
+	await vi.waitFor(() => expect(notes()).toHaveLength(1));
+	expect(await patchValue(3, 4)).toMatchObject({ error: { code: 'stale_revision' } });
+	await call('get_project');
 	const externalEdit = (value: number) => {
 		const revision = editor.editing.getRevision();
-		const target = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'counter')!;
+		const target = editor.state.project.activeLevel.blocks.find(block => block.name === 'counter')!;
 		editor.editing.applyEdits({
 			expectedRevision: revision,
 			edits: [
@@ -322,13 +368,10 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	};
 	externalEdit(4);
 	const externalProject = serializeToProject(editor.state);
-	const externalHistory = editor.state.historyStack.length;
 	for (const [tool, args] of [
 		['update_block', { type: 'module', name: 'counter', code: source }],
 		['patch_block', { type: 'module', name: 'counter', oldText: 'int value 4', newText: 'int value 5' }],
 		['apply_edits', { edits: [{ operation: 'delete', type: 'module', name: 'counter' }] }],
-		['undo', {}],
-		['redo', {}],
 	] as const)
 		expect(await call(tool, args)).toMatchObject({
 			error: { code: 'stale_revision', message: expect.stringContaining('Re-fetch') },
@@ -342,7 +385,6 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	await call('get_project', { name: 'root' });
 	expect(await patchValue(4, 5)).toMatchObject({ error: { code: 'stale_revision' } });
 	expect(serializeToProject(editor.state)).toEqual(externalProject);
-	expect(editor.state.historyStack).toHaveLength(externalHistory);
 	expect(await call('get_block', { type: 'module', name: 'counter' })).toContain('int value 4');
 	expect(await patchValue(4, 5)).toBe('Block patched.');
 	externalEdit(6);
@@ -351,10 +393,17 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	expect(await patchValue(6, 7)).toBe('Block patched.');
 });
 
-test('exposes source strings through site tools and saves undoable named edits', async () => {
+test('exposes source strings through site tools and saves named edits without exposing history', async () => {
 	const tools = siteTools();
 	const view = setup({ bridged: async () => new Response(source) });
 	const editor = await view.mounted();
+	expect(tools.has('undo')).toBe(false);
+	expect(tools.has('redo')).toBe(false);
+	expect(await tools.get('get_project_metadata')!.execute({})).toEqual({
+		revision: editor.editing.getRevision(),
+		projectPath: '',
+		editable: true,
+	});
 	const canvas = view.panel().querySelector('canvas')!;
 	canvas.style.width = '900px';
 	canvas.style.height = '480px';
@@ -378,7 +427,7 @@ test('exposes source strings through site tools and saves undoable named edits',
 	).toBe('Edits applied.');
 	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 17');
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-bridged')).toContain('int value 17');
-	const blocks = editor.state.codeBlockRendering.currentProject.blocks;
+	const blocks = editor.state.project.activeLevel.blocks;
 	expect(blocks.find(block => block.name === 'counter')!).toMatchObject({
 		gridX: 0,
 		gridY: 14,
@@ -391,6 +440,4 @@ test('exposes source strings through site tools and saves undoable named edits',
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-bridged')).toContain('@pos 40 14');
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-edit.png' });
-	await tools.get('undo')!.execute({});
-	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 1');
 });

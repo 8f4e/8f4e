@@ -60,7 +60,7 @@ describe('remove intermodular memory connections from code', () => {
 		const result = removeIntermodularMemoryConnectionsFromCode([
 			'module synth',
 			'int countSource count(source:values)',
-			'int endSource source:values&',
+			'int endSource end(source:values)',
 			'moduleEnd',
 		]);
 

@@ -1,3 +1,4 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type {
 	CompilationContext,
 	CompiledStackAnalysisLine,
@@ -13,7 +14,7 @@ import type {
 	Stack,
 	StackAnalysisLineFacts,
 } from '@8f4e/language-spec';
-import { ArgumentType, BlockType, ErrorCode, functionValueTypeToLocalMetadata, getError } from '@8f4e/language-spec';
+import { ArgumentType, BlockType, ErrorCode, functionValueTypeToLocalMetadata } from '@8f4e/language-spec';
 import type {
 	FunctionSemanticReferences,
 	ModuleSemanticReferences,
@@ -30,6 +31,7 @@ import {
 import { analyzeInstruction } from './analyzeInstruction';
 import { cloneStack } from './instructionAnalyzers/stack';
 import { validateMapValueKind } from './mapValueKind';
+import { recordStackProducers, type UnattributedStackAnalysisLine } from './recordStackProducers';
 
 export interface AnalyzeStackSubProgramInput {
 	semanticReferences: SemanticReferenceReport;
@@ -60,7 +62,7 @@ function toCompiledStackAnalysisLine(
 	line: CompilerASTLine,
 	facts: StackAnalysisLineFacts,
 	functions: FunctionRegistry
-): CompiledStackAnalysisLine {
+): UnattributedStackAnalysisLine {
 	return {
 		lineNumber: line.lineNumber,
 		instruction: line.instruction,
@@ -206,13 +208,15 @@ function analyzeBodyOperations(
 	sourceLines: readonly CompilerASTLine[],
 	body: readonly ResolvedOperation[],
 	context: CompilationContext
-): { operationFacts: StackAnalysisLineFacts[]; stackAnalysis: CompiledStackAnalysisLine[] } {
+): { operationFacts: StackAnalysisLineFacts[]; stackAnalysis: UnattributedStackAnalysisLine[] } {
 	const operationFacts: StackAnalysisLineFacts[] = [];
-	const stackAnalysis: CompiledStackAnalysisLine[] = [];
+	const stackAnalysis: UnattributedStackAnalysisLine[] = [];
 	let previousSourceLineIndex = -1;
 	let untouchedSourceValues = 0;
 	for (const { sourceLineIndex, line } of body) {
-		const facts = withSourceDiagnostic(sourceLines[sourceLineIndex], () => analyzeSemanticReferenceLine(line, context));
+		const facts = withSourceDiagnostic(sourceLines[sourceLineIndex], 'stack analysis', () =>
+			analyzeSemanticReferenceLine(line, context)
+		);
 		operationFacts.push(facts);
 		const operation = facts.stackAnalysis;
 		const preservedInputCount = Math.max(
@@ -256,7 +260,6 @@ function createModuleContext(
 		namespace: {
 			moduleName: ast.id,
 			functions: input.functions,
-			prototypeShapeIds: [],
 		},
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
@@ -268,9 +271,6 @@ function createModuleContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'module',
 		codeBlockId: ast.id,
-		codeBlockType: 'module',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
 	});
 }
 
@@ -279,20 +279,22 @@ function analyzeModule(input: AnalyzeStackSubProgramInput, resolved: ModuleSeman
 	const context = createModuleContext(input, resolved);
 	const { operationFacts, stackAnalysis } = analyzeBodyOperations(ast.lines, body, context);
 	if (context.stack.length > 0)
-		throw getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, ast.lines[ast.lines.length - 1], context);
-	return { operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+		throw getError(ErrorCode.STACK_EXPECTED_ZERO_ELEMENTS, ast.lines[ast.lines.length - 1], {
+			symbol: context.codeBlockId,
+			stack: context.stack,
+		});
+	return { operationFacts, stackAnalysis: recordStackProducers(stackAnalysis), finalStack: cloneStack(context.stack) };
 }
 
 function createFunctionContext(
 	input: AnalyzeStackSubProgramInput,
 	resolved: FunctionSemanticReferences
 ): FunctionCompilationContext {
-	const { ast, metadata: functionMetadata } = resolved;
+	const { metadata: functionMetadata } = resolved;
 	return createCompilationContext<FunctionCompilationContext>({
 		namespace: {
 			moduleName: undefined,
 			functions: input.functions,
-			prototypeShapeIds: [],
 		},
 		locals: Object.fromEntries(
 			resolved.bindings.map(binding => [binding.id, functionValueTypeToLocalMetadata(binding.type)])
@@ -303,11 +305,6 @@ function createFunctionContext(
 		pointerMetadataByModuleId: input.pointerMetadataByModuleId,
 		mode: 'function',
 		codeBlockId: functionMetadata.name,
-		codeBlockType: 'function',
-		projectBlockId: ast.projectBlockId,
-		source: ast.source,
-		currentFunctionId: functionMetadata.id,
-		currentFunctionName: functionMetadata.name,
 		currentFunctionMetadata: functionMetadata,
 	});
 }
@@ -323,7 +320,12 @@ function analyzeFunction(
 		const facts = analyzeInstruction(ast.functionEndLine, context);
 		stackAnalysis.push(toCompiledStackAnalysisLine(ast.functionEndLine, facts, input.functions));
 	}
-	return { functionId: metadata.id, operationFacts, stackAnalysis, finalStack: cloneStack(context.stack) };
+	return {
+		functionId: metadata.id,
+		operationFacts,
+		stackAnalysis: recordStackProducers(stackAnalysis),
+		finalStack: cloneStack(context.stack),
+	};
 }
 
 export function analyzeStack(input: AnalyzeStackSubProgramInput): StackAnalysisSubProgramReport {

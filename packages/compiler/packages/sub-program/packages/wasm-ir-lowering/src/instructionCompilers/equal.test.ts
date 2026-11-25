@@ -13,11 +13,7 @@ describe('equal instruction compiler', () => {
 
 		compileInstructionForTest(
 			equal,
-			{
-				lineNumber: 1,
-				instruction: 'equal',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equal', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('equal instruction compiler', () => {
 
 		compileInstructionForTest(
 			equal,
-			{
-				lineNumber: 1,
-				instruction: 'equal',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equal', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('equal instruction compiler', () => {
 
 		compileInstructionForTest(
 			equal,
-			{
-				lineNumber: 1,
-				instruction: 'equal',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'equal', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

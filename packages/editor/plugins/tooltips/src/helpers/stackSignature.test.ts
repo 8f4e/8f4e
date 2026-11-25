@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getSourceInstruction } from './sourceLine';
+import { describeSourceLine } from './sourceLine';
 import { formatStackSignature, formatStackSignatureLines, resolveStackSignature } from './stackSignature';
 
 describe('signature resolution', () => {
@@ -17,7 +17,7 @@ describe('signature resolution', () => {
 			['storeBytes 3', 'storeBytes (int int int ptr -- )'],
 			['int value', 'int ( -- )'],
 		]) {
-			const signature = resolveStackSignature({ sourceInstruction: getSourceInstruction(sourceLine) });
+			const signature = resolveStackSignature({ sourceInstruction: describeSourceLine(sourceLine).sourceInstruction });
 			expect(formatStackSignature(signature!)).toBe(expected);
 		}
 	});

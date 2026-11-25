@@ -18,21 +18,21 @@ and opacity variants when resolving the palette. No colors are lightened, darken
 
 ## Configurable Colors
 
-| Path | Purpose | Default |
-| --- | --- | --- |
-| `color.canvas` | Canvas behind code blocks | `#060606` |
-| `color.surface` | Code blocks and panels | `#101010` |
-| `color.ink` | Main foreground | `#e3e3e3` |
-| `color.primary` | Main accent | `#cba6f7` |
-| `color.muted` | Subdued foreground | `#909090` |
-| `color.secondary` | Additional accent | `#fab387` |
-| `color.tertiary` | Supporting accent, including comments | `#7f849c` |
-| `color.highlight` | Bright accent for visualizations | `#94e2d5` |
-| `color.detail` | Additional contrasting accent | `#f5c2e7` |
-| `color.stroke` | Shared lines and outlines | `#858585` |
-| `color.positive` | Positive states | `#a6e3a1` |
-| `color.warning` | Caution states | `#f9e2af` |
-| `color.negative` | Negative states | `#f38ba8` |
+| Path              | Purpose                               | Default   |
+| ----------------- | ------------------------------------- | --------- |
+| `color.canvas`    | Canvas behind code blocks             | `#060606` |
+| `color.surface`   | Code blocks and panels                | `#101010` |
+| `color.ink`       | Main foreground                       | `#e3e3e3` |
+| `color.primary`   | Main accent                           | `#cba6f7` |
+| `color.muted`     | Subdued foreground                    | `#909090` |
+| `color.secondary` | Additional accent                     | `#fab387` |
+| `color.tertiary`  | Supporting accent, including comments | `#7f849c` |
+| `color.highlight` | Bright accent for visualizations      | `#94e2d5` |
+| `color.detail`    | Additional contrasting accent         | `#f5c2e7` |
+| `color.stroke`    | Shared lines and outlines             | `#858585` |
+| `color.positive`  | Positive states                       | `#a6e3a1` |
+| `color.warning`   | Caution states                        | `#f9e2af` |
+| `color.negative`  | Negative states                       | `#f38ba8` |
 
 The default adapts Catppuccin Mocha accents to neutral black surfaces, with a faint separation between the canvas and
 code blocks and quiet comments.
@@ -47,6 +47,14 @@ color and opacity; `color.canvas transparent` preserves the host background behi
 
 The former `color.text.*`, `color.fill.*`, and `color.icons.*` paths are removed. Features and plugins do not register
 additional configurable palette colors.
+
+### Monochrome recording preset
+
+In edit mode, choose **Add Built-in Block → Color Schemes → Monochrome Recording**. In a recording copy of a project,
+remove any existing `color.*` directives so only the new color note sets the palette. Leave other configuration in place.
+The preset uses nearly black surfaces and distinct gray levels for instructions, numbers, code, comments, wires, plots,
+and meter ranges, so fine details do not rely on differences in hue to stay visible in a video. The canvas is `#010101`
+instead of pure black to avoid the brighter grid accents generated for black canvases.
 
 ## Predefined Shades and Opacity
 
@@ -109,9 +117,10 @@ brackets in `secondaryBase`. Output stars select `primaryDark3`, `primaryDark2`,
 The sprite atlas contains color-independent R8 binary visibility masks: 256 CP437 glyphs and one fully covered fill cell,
 all on the same 16-column grid. Sprite IDs are their row-major cell positions; the vertex shader derives source
 coordinates from these IDs and shared cell dimensions without a rectangle lookup texture. All palette entries can color
-text, including `Alpha30/60/90` variants. Web-ui renders the
-background in a separate procedural pass before sprites, using the font's dot geometry and `canvasBase`,
-`canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose each dot color over the base so one triangle
+text, including `Alpha30/60/90` variants. The dotted-background plugin renders the
+canvas background in a separate procedural pass before sprites, deriving centered dot geometry from the installed
+cell dimensions and using `canvasBase`, `canvasDetail2`, and `canvasDetail1` colors. Palette changes precompose
+each dot color over the base so one triangle
 draws the complete background. Transparent pixels are discarded and a fully transparent background is skipped.
 The background uses no atlas entries, texture samples, or per-dot instance uploads.
 The renderer accepts straight-alpha RGBA8 palette bytes and prepares premultiplied float32 colors on changed uploads.
@@ -122,15 +131,16 @@ premultiplied-alpha blending.
 The buffer reserves 256 colors (4 KiB), with 196 active entries using 3,136 bytes from a 784-byte RGBA8 input.
 Sprite instances retain the 20-byte position/size/uint16-shape/uint16-palette layout.
 
-Web-ui owns the background, line, and RGBA texture render plugins under `src/plugins/`, including their shared WebGL
-setup helpers and resource lifetimes. Glugglugglug supplies sprite rendering and the generic render-hook contract.
+The dotted-background, wires and texture-runtime plugins own their rendering passes and GPU resources. Web-ui
+owns their shared WebGL setup helpers, before/after-sprite stages and render-layer lifecycle. Glugglugglug supplies
+sprite rendering and the generic render-hook contract.
 RGBA overlays establish their sampler binding and tightly packed pixel-upload state after raw hooks, including frames
 with no sprite pass. Their nearest filtering and straight-alpha uploads are independent of state left by other passes.
 
 `@8f4e/editor-palette` owns the pure color model, stable indices, and `toPaletteBytes()` conversion. The editor installs
 the generated masks and separately resolved palette. Theme changes update palette colors, the background's three
-premultiplied color uniforms, and line-rendered wire colors. Font changes load cached masks, install grid dimensions,
-and update the background's dot geometry from web-ui's font-specific settings. Glyph IDs remain stable, and editor
-state carries no sprite lookup tables. The background program and empty vertex array survive rendering-memory
+premultiplied color uniforms, and line-rendered wire colors. Font changes load cached masks and install grid dimensions.
+The dotted-background plugin reads the new cell dimensions from the presented viewport. Glyph IDs remain stable,
+and editor state carries no sprite lookup tables. The background program and empty vertex array survive rendering-memory
 release and are deleted when the view is destroyed. Font builds leave the active palette untouched, and
 stale asynchronous font builds are ignored.

@@ -1,13 +1,15 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import { createMockState } from '@8f4e/editor-state-testing';
 import type { MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
+import { createWaveformPeaks, MAX_WAVEFORM_SAMPLE_READS } from '../helpers/peaks';
 import type { Wave } from '../types';
 import drawWaves from './draw';
 
-function memoryViews(): MemoryViews {
-	const buffer = new ArrayBuffer(64);
+function memoryViews(byteLength = 64): MemoryViews {
+	const buffer = new ArrayBuffer(byteLength);
 	return {
 		int8: new Int8Array(buffer),
 		uint8: new Uint8Array(buffer),
@@ -23,15 +25,22 @@ function wave(): Wave {
 		x: 2,
 		y: 3,
 		width: 8,
+		columnWidth: 2,
 		height: 8,
-		source: { showAddress: true, bufferPointer: 0, memory: { byteAddress: 0, allocationUnitAddress: 0 } } as never,
-		elementCount: 4,
+		buffer: {
+			target: {} as never,
+			samples: {
+				address: { kind: 'fixed', byteAddress: 0 },
+				elementIndex: 0,
+				spec: getMemoryValueSpec({ elementWordSize: 1, isInteger: true, isUnsigned: false }),
+			},
+			elementCount: 4,
+		},
 		inverseElementByteSize: 1,
-		baseSampleShift: 0,
-		valueType: 'int8',
 		minValue: -128,
 		maxValue: 127,
 		inverseValueRange: 1 / 255,
+		peaks: createWaveformPeaks(4),
 	};
 }
 function state() {
@@ -57,16 +66,36 @@ describe('wave drawing', () => {
 		const data = wave();
 		memory.int8.set([-128, 0, 127, 0]);
 		memory.int32[4] = 2;
-		data.playhead = { showAddress: false, bufferPointer: 0, memory: { allocationUnitAddress: 4 } } as never;
+		data.playhead = { kind: 'pointer', pointerSlotIndex: 4, byteOffset: 0 };
 		drawWaves(draw, state(), [data], memory);
-		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.secondaryReadable, 2, 8);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(4, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
 	});
 	it('skips a waveform while its live element count is zero', () => {
 		const draw = createDrawContextMock();
 		const data = wave();
-		data.elementCount = { memory: { allocationUnitAddress: 4 }, bufferPointer: 0 } as never;
+		data.buffer.elementCount = {
+			address: { kind: 'fixed', byteAddress: 16 },
+			elementIndex: 4,
+			spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: true, isUnsigned: false }),
+		};
 		drawWaves(draw, state(), [data], memoryViews());
 		expect(draw.drawFill).not.toHaveBeenCalled();
 		expect(draw.endGroup).toHaveBeenCalledOnce();
+	});
+	it('keeps the playhead live while a large waveform is still being built', () => {
+		const draw = createDrawContextMock();
+		const length = MAX_WAVEFORM_SAMPLE_READS * 3;
+		const memory = memoryViews(length + 8);
+		const data = wave();
+		data.buffer.elementCount = length;
+		const pointerSlot = memory.int32.length - 1;
+		data.playhead = { kind: 'pointer', pointerSlotIndex: pointerSlot, byteOffset: 0 };
+		drawWaves(draw, state(), [data], memory);
+		expect(data.peaks.hasCompleteSweep).toBe(false);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
+		memory.int32[pointerSlot] = length - 1;
+		drawWaves(draw, state(), [data], memory);
+		expect(data.peaks.hasCompleteSweep).toBe(false);
+		expect(draw.drawFill).toHaveBeenLastCalledWith(6, 0, PALETTE_INDICES.onDarkAccent, 2, 8);
 	});
 });

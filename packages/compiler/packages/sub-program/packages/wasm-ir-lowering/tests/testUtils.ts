@@ -15,8 +15,6 @@ export default function createInstructionCompilerTestContext(overrides: Partial<
 	return createCodegenContext({
 		...overrides,
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
-		codeBlockId: overrides.codeBlockId ?? 'test',
-		codeBlockType: overrides.codeBlockType ?? 'module',
 	});
 }
 
@@ -76,7 +74,7 @@ export function expectGuardedDereference(
 	options: { prefix: WasmIRInstruction[]; finalLoad: WasmIRInstruction[]; guardCount: number; resultType: number }
 ): void {
 	expect(instructions.slice(0, options.prefix.length)).toEqual(options.prefix);
-	expect(instructions).toContainEqual({ kind: 'memory.size' });
+	expect(instructions).not.toContainEqual({ kind: 'memory.size' });
 	expect(instructions).toEqual(expect.arrayContaining(options.finalLoad));
 	expect(
 		instructions.filter(

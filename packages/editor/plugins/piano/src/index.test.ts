@@ -1,7 +1,8 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState, { gapCalculator } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import initState, { displayRowToGridRow, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
@@ -33,8 +34,8 @@ async function setup(code = source, installed = true, name = 'controls') {
 			getWordFromMemory: address => memoryViews.int32[address],
 		},
 	});
-	events.dispatch('enterEditMode');
-	const drawers = createEditorDrawerRegistry();
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? createPianoPlugin({ writeMemory: write }).setup({
 				store,
@@ -43,7 +44,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -51,24 +52,21 @@ async function setup(code = source, installed = true, name = 'controls') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+	events.dispatch('enterEditMode');
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.drawGlyphs).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	const point = (key = 0, sourceLineIndex = 3) => {
 		const row = codeBlock.displayModel.sourceLineIndexToDisplayRow[sourceLineIndex]!;
 		return {
 			x: codeBlock.x + key * 2 * state.viewport.vGrid - state.viewport.x + 1,
-			y: codeBlock.y + (gapCalculator(row, codeBlock.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
+			y: codeBlock.y + (displayRowToGridRow(row, codeBlock.gaps) + 1) * state.viewport.hGrid - state.viewport.y + 1,
 		};
 	};
 	const press = (key = 0, line = 3) => events.dispatch('codeBlockPointerDown', { codeBlock, ...point(key, line) });
@@ -87,7 +85,7 @@ async function setup(code = source, installed = true, name = 'controls') {
 	};
 	const initialRevision = state.compilerInputRevision;
 	const menuItems = async () => {
-		events.dispatch('openSubMenu', { menu: 'moduleMenu', payload: { codeBlock } });
+		events.dispatch('openSubMenu', { menu: 'codeBlockMenu', payload: { codeBlock } });
 		await Promise.resolve();
 		await Promise.resolve();
 		return state.contextMenu.items.filter(item => item.action === 'savePianoValuesToCode');
@@ -116,6 +114,46 @@ afterEach(() => {
 });
 
 describe('piano plugin', () => {
+	it('rebinds drawing and interaction after compilation relocates memory without changing layout', async () => {
+		const test = await setup();
+		const replacement = await compileProject(
+			parseProjectSource(['8f4e/v1', 'entry main', ...source, 'entryEnd'].join('\n')),
+			{
+				cache: test.compiled.cache,
+				startingMemoryAllocationUnitAddress: 32,
+			}
+		);
+		const layoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutsChanged);
+		const previous = test.compiled.memoryPlan.modules.controls.memory;
+		const memory = replacement.memoryPlan.modules.controls.memory;
+		expect(memory.notes.allocationUnitAddress).not.toBe(previous.notes.allocationUnitAddress);
+		expect(memory.count.allocationUnitAddress).not.toBe(previous.count.allocationUnitAddress);
+
+		test.store.set('compiler.result', { ...replacement, inputRevision: test.state.compilerInputRevision });
+		expect(layoutsChanged).not.toHaveBeenCalled();
+		test.press(2);
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
+		expect(test.memoryViews.int32[previous.count.allocationUnitAddress]).toBe(0);
+		test.render();
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
+	});
+	it('updates notes and count through fixed references', async () => {
+		const test = await setup([
+			'module controls',
+			'int[] notes 4',
+			'int count 0',
+			'int& keys &notes',
+			'int& length &count',
+			'; @piano keys length 48',
+			'moduleEnd',
+		]);
+		test.press(2, 5);
+		const memory = test.compiled.memoryPlan.modules.controls.memory;
+		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
+		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
+	});
 	it('reserves six rows, requires enough width, and draws 24 keys with note labels', async () => {
 		const test = await setup();
 		expect(test.codeBlock.gaps.get(3)).toEqual({ size: 6 });
@@ -136,7 +174,7 @@ describe('piano plugin', () => {
 		expect(test.memoryViews.int32[memory.notes.allocationUnitAddress]).toBe(50);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(1);
 		test.render();
-		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
 		test.press(2);
 		expect(test.memoryViews.int32[memory.count.allocationUnitAddress]).toBe(0);
 		expect(test.codeBlock.code).toEqual(original);
@@ -155,7 +193,7 @@ describe('piano plugin', () => {
 		test.memoryViews.int32[memory.count.allocationUnitAddress] = 2;
 		test.render();
 		for (const x of [32, 64]) {
-			expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
+			expect(test.draw.drawGlyphs).toHaveBeenCalledWith(x, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
 		}
 
 		test.click(2);
@@ -216,12 +254,14 @@ describe('piano plugin', () => {
 	});
 	it('updates source positions and clears data and minimum width when a directive is removed', async () => {
 		const test = await setup();
-		test.codeBlock.code.splice(3, 0, '; note');
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		const code = [...test.codeBlock.code];
+		code.splice(3, 0, '; note');
+		test.store.projectTransactions.apply({ updates: [{ codeBlock: test.codeBlock, code }] });
 		test.render();
 		expect(test.draw.startGroup).toHaveBeenCalledWith(0, 80);
-		test.codeBlock.code = test.codeBlock.code.filter(line => !line.includes('@piano'));
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [{ codeBlock: test.codeBlock, code: test.codeBlock.code.filter(line => !line.includes('@piano')) }],
+		});
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
@@ -268,7 +308,7 @@ describe('piano plugin', () => {
 	it('uses the selected block when saving without an explicit target', async () => {
 		const test = await setup();
 		test.press(0);
-		test.state.codeBlockRendering.selectedCodeBlock = test.codeBlock;
+		test.state.project.selectedCodeBlock = test.codeBlock;
 		test.events.dispatch('savePianoValuesToCode');
 		expect(test.codeBlock.code).toContain('int[] notes 4 48');
 	});
@@ -324,14 +364,12 @@ describe('piano plugin', () => {
 		test.press(2);
 		test.press(4);
 		test.render();
-		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('░░'), PALETTE_INDICES.darkOverlaySoft);
+		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(32, 16, textToGlyphIds('▓▓'), PALETTE_INDICES.darkOverlaySoft);
 		test.events.dispatch('savePianoValuesToCode', { codeBlock: test.codeBlock });
-		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'notesData')!.code).toContain(
+		expect(test.codeBlock.childLevel!.blocks.find(block => block.name === 'notesData')!.code).toContain(
 			'int[] notes 4 50 52'
 		);
-		expect(test.codeBlock.childProject!.blocks.find(block => block.name === 'countData')!.code).toContain(
-			'int count 2'
-		);
+		expect(test.codeBlock.childLevel!.blocks.find(block => block.name === 'countData')!.code).toContain('int count 2');
 		expect(test.codeBlock.code).toContain('expose keys &notesData:notes');
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision + 1);
 	});
@@ -361,7 +399,9 @@ describe('piano plugin', () => {
 		expect(test.write).not.toHaveBeenCalled();
 		expect(await test.menuItems()).toEqual([]);
 		expect(test.state.compilerInputRevision).toBe(test.initialRevision);
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
+		});
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.codeBlock.minGridWidth).toBeUndefined();
 	});

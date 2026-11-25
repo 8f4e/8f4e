@@ -17,8 +17,13 @@ and drawing hooks. Feature data lives in a WeakMap created by each installation 
 ```
 
 References use the public editor-state memory helpers, including memory exposed by project groups.
+Pointer sources accept `&samples`, a typed pointer name, or `*address` for a double pointer. For example,
+`; @bars *address length` follows both live pointer values and reads the final pointee's sample type.
+The shared `prepareBuffer` helper prepares the source, sample type, and literal/live count. Drawing reads the current
+typed-element index and count through shared readers; range overrides and bar geometry remain local.
+The plugin prepares bindings when accepted compiler metadata changes and responds to block layout separately.
 
-Cleanup releases layout subscriptions/contributions and the drawer. Omit the plugin to remove its behavior and layout space.
+Cleanup releases compiler and layout subscriptions, layout contributions, and the drawer. Omit the plugin to remove its behavior and layout space.
 
 ```sh
 npx nx run @8f4e/editor-plugin-bars:build

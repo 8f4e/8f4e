@@ -1,0 +1,80 @@
+import { EventEmitter } from 'node:events';
+import { parseProjectSource } from '@8f4e/compiler';
+import { afterEach, describe, expect, it } from 'vitest';
+import initState, { applyCodeBlockSourceEdits, serializeToProject } from '../index';
+import { EMPTY_DEFAULT_PROJECT } from './emptyDefaultProject';
+
+const cleanups: Array<() => void> = [];
+afterEach(() => {
+	while (cleanups.length) cleanups.pop()!();
+});
+
+function setup() {
+	const emitter = new EventEmitter();
+	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
+	const store = initState(events, {
+		callbacks: {},
+	});
+	cleanups.push(store.dispose);
+	const load = (source: string) => events.dispatch('loadProject', { project: parseProjectSource(source) });
+	return { store, state: store.getState(), events, load };
+}
+
+describe('project initial mode', () => {
+	it.each(['edit', 'view'] as const)('applies %s before publishing the loaded project', mode => {
+		const { state, store, load } = setup();
+		const notifications: unknown[] = [];
+		store.subscribe('projectChange', () => {
+			notifications.push([state.projectChange.kind, state.editorMode]);
+		});
+		load(`8f4e/v1\nnote mode\n; @mode ${mode}\nnoteEnd`);
+		expect(notifications).toEqual([['replace', mode]]);
+	});
+
+	it.each(['', '; @mode other', '; @mode edit\n; @mode view'])(
+		'starts each replacement in view for %s',
+		declaration => {
+			const { state, events, load } = setup();
+			load('8f4e/v1\nnote mode\n; @mode edit\nnoteEnd');
+			expect(state.editorMode).toBe('edit');
+			load(`8f4e/v1\nnote mode\n${declaration}\nnoteEnd`);
+			expect(state.editorMode).toBe('view');
+			expect(state.codeErrors['editor-directives']).toHaveLength(declaration ? 1 : 0);
+			events.dispatch('enterEditMode');
+			events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
+			expect(serializeToProject(state)).toMatchObject({ ...EMPTY_DEFAULT_PROJECT, constants: expect.any(Array) });
+			expect(state.editorMode).toBe('view');
+		}
+	);
+
+	it('finds a mode directive in a nested project group', () => {
+		const { state, load } = setup();
+		load(
+			'8f4e/v1\nentry main\ngroup child\nnote mode\n; @mode edit\nnoteEnd\nentry main\nentryEnd\ngroupEnd\nentryEnd'
+		);
+		expect(state.editorMode).toBe('edit');
+	});
+
+	it('keeps user mode changes through source edits, configuration updates, and snapshot restoration', () => {
+		const { state, store, events, load } = setup();
+		load('8f4e/v1\nnote mode\n; @mode edit\nnoteEnd');
+		const revision = state.projectChange.revision;
+		events.dispatch('exitToViewMode');
+		expect(state.editorMode).toBe('view');
+		expect(state.projectChange.revision).toBe(revision);
+		const block = state.project.rootLevel.blocks.find(block => block.blockType === 'note')!;
+		const original = store.projectTransactions.capture();
+		applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: ['note mode', '; @mode view', 'noteEnd'] }]);
+		store.set('editorConfigSchemaContributions', {});
+		expect(state.globalEditorDirectives.mode).toBe('view');
+		expect(state.editorMode).toBe('view');
+		const edited = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
+		expect(state.globalEditorDirectives.mode).toBe('edit');
+		expect(state.editorMode).toBe('view');
+		events.dispatch('enterEditMode');
+		store.projectTransactions.restore(edited);
+		expect(state.globalEditorDirectives.mode).toBe('view');
+		expect(state.editorMode).toBe('edit');
+	});
+});

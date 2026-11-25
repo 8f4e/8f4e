@@ -1,11 +1,13 @@
 {
   "code": 11,
-  "context": {
-    "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "init",
+  "domain": "syntax",
+  "instruction": "init",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Unrecognised instruction.",
 }

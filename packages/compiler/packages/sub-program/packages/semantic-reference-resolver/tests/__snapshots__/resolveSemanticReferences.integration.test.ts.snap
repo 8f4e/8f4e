@@ -27,6 +27,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "amount",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 4,
             "resolvedTarget": {
@@ -55,6 +58,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
               "name": "temp",
               "type": "int",
             },
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "localSet",
             "lineNumber": 5,
           },
@@ -70,6 +76,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "temp",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 6,
             "resolvedTarget": {
@@ -90,7 +99,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
         "signature": {
           "parameters": [
             {
-              "name": "value",
+              "name": "amount",
               "type": "int",
             },
           ],
@@ -115,6 +124,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "value",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 3,
             "resolvedTarget": {
@@ -126,8 +138,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "byteAddress": 4,
                 "elementByteLength": 4,
                 "elementWordSize": 4,
-                "endAddressSafeByteLength": 4,
-                "endByteAddress": 4,
+                "endByteAddress": 8,
                 "id": 0,
                 "isInteger": true,
                 "isUnsigned": false,
@@ -135,6 +146,21 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "name": "value",
                 "numberOfElements": 1,
                 "pointerDepth": 0,
+                "source": {
+                  "arguments": [
+                    {
+                      "referenceKind": "plain",
+                      "scope": "local",
+                      "type": "identifier",
+                      "value": "value",
+                    },
+                  ],
+                  "diagnosticSource": {
+                    "kind": "document",
+                  },
+                  "instruction": "int",
+                  "lineNumber": 2,
+                },
                 "type": "int",
               },
             },
@@ -159,6 +185,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": 4,
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 4,
           },
@@ -174,6 +203,9 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "value",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "push",
             "lineNumber": 5,
             "resolvedTarget": {
@@ -185,8 +217,7 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "byteAddress": 4,
                 "elementByteLength": 4,
                 "elementWordSize": 4,
-                "endAddressSafeByteLength": 4,
-                "endByteAddress": 4,
+                "endByteAddress": 8,
                 "id": 0,
                 "isInteger": true,
                 "isUnsigned": false,
@@ -194,6 +225,21 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "name": "value",
                 "numberOfElements": 1,
                 "pointerDepth": 0,
+                "source": {
+                  "arguments": [
+                    {
+                      "referenceKind": "plain",
+                      "scope": "local",
+                      "type": "identifier",
+                      "value": "value",
+                    },
+                  ],
+                  "diagnosticSource": {
+                    "kind": "document",
+                  },
+                  "instruction": "int",
+                  "lineNumber": 2,
+                },
                 "type": "int",
               },
             },
@@ -210,50 +256,13 @@ exports[`resolveSemanticReferences integration > resolves sub-program-level sema
                 "value": "increment",
               },
             ],
+            "diagnosticSource": {
+              "kind": "document",
+            },
             "instruction": "call",
             "lineNumber": 5,
           },
           "sourceLineIndex": 4,
-        },
-        {
-          "line": {
-            "arguments": [
-              {
-                "referenceKind": "plain",
-                "scope": "local",
-                "type": "identifier",
-                "value": "state",
-              },
-            ],
-            "instruction": "pushShape",
-            "lineNumber": 6,
-            "shapeExpansions": [
-              {
-                "pointerType": "int*",
-                "pushLine": {
-                  "arguments": [
-                    {
-                      "address": {
-                        "safeRange": {
-                          "byteAddress": 4,
-                          "memoryId": 0,
-                          "moduleId": "main",
-                          "safeByteLength": 4,
-                          "source": "memory-start",
-                        },
-                      },
-                      "isInteger": true,
-                      "type": "literal",
-                      "value": 4,
-                    },
-                  ],
-                  "instruction": "push",
-                  "lineNumber": 6,
-                },
-              },
-            ],
-          },
-          "sourceLineIndex": 5,
         },
       ],
       "referenceSlots": {},

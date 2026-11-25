@@ -1,21 +1,13 @@
 {
   "code": 69,
-  "context": {
-    "codeBlockId": "duplicateNamespace",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "duplicateNamespace",
-      },
-    ],
-    "instruction": "module",
+  "domain": "semantic",
+  "instruction": "module",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 0,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Duplicate constant namespace duplicateNamespace (DUPLICATE_NAMESPACE). (69)",
 }

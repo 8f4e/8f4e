@@ -13,6 +13,7 @@ describe('shiftRightUnsigned stack analysis', () => {
 
 		analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'shiftRightUnsigned',
 				arguments: [],

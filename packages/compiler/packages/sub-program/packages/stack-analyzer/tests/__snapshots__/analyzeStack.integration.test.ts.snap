@@ -148,6 +148,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
       ],
       "stackAnalysis": [
         {
+          "consumedOperandProducerLines": [],
           "instruction": "push",
           "lineNumber": 5,
           "stackAnalysis": {
@@ -170,6 +171,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [],
           "instruction": "push",
           "lineNumber": 6,
           "stackAnalysis": {
@@ -205,6 +207,10 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            5,
+            6,
+          ],
           "instruction": "add",
           "lineNumber": 7,
           "stackAnalysis": {
@@ -251,6 +257,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            7,
+          ],
           "instruction": "localSet",
           "lineNumber": 8,
           "stackAnalysis": {
@@ -273,6 +282,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [],
           "instruction": "push",
           "lineNumber": 9,
           "stackAnalysis": {
@@ -295,6 +305,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            9,
+          ],
           "instruction": "functionEnd",
           "lineNumber": 10,
           "stackAnalysis": {
@@ -625,6 +638,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
       ],
       "stackAnalysis": [
         {
+          "consumedOperandProducerLines": [],
           "instruction": "push",
           "lineNumber": 3,
           "stackAnalysis": {
@@ -689,6 +703,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            3,
+          ],
           "instruction": "clampAddress",
           "lineNumber": 4,
           "stackAnalysis": {
@@ -795,6 +812,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            4,
+          ],
           "instruction": "drop",
           "lineNumber": 5,
           "stackAnalysis": {
@@ -847,6 +867,7 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [],
           "instruction": "push",
           "lineNumber": 6,
           "stackAnalysis": {
@@ -871,6 +892,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            6,
+          ],
           "instruction": "call",
           "lineNumber": 7,
           "resolvedCall": {
@@ -919,6 +943,9 @@ exports[`analyzeStack integration > analyzes a sub-program-level module and func
           },
         },
         {
+          "consumedOperandProducerLines": [
+            7,
+          ],
           "instruction": "drop",
           "lineNumber": 8,
           "stackAnalysis": {

@@ -10,13 +10,13 @@ it('visits groups across reopened entries without crossing child scope boundarie
 	const changed = mapSourceScope(nodes, (node, context) => {
 		if (isBlock(node)) {
 			visited.push(`${context}:${node.start.text}`);
-			if (node.opener === 'group') return [{ ...node, start: { ...node.start, text: node.start.text + '_changed' } }];
+			if (node.opener === 'group') return [{ ...node, start: { ...node.start, text: node.start.text + ' ; changed' } }];
 		}
 		return [node];
 	});
 	expect(visited).toEqual(['entry:group a', 'entry:module tick', 'entry:group b']);
 	expect(sourceLines(nodes).join('\n')).toBe(source);
 	expect(sourceLines(changed).join('\n')).toContain('group hidden');
-	expect(sourceLines(changed).join('\n')).toContain('group a_changed');
-	expect(sourceLines(changed).join('\n')).toContain('group b_changed');
+	expect(sourceLines(changed).join('\n')).toContain('group a ; changed');
+	expect(sourceLines(changed).join('\n')).toContain('group b ; changed');
 });

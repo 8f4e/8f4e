@@ -1,6 +1,6 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createBinaryAssetsPlugin } from './index';
@@ -38,7 +38,7 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers: createEditorDrawerRegistry(),
+				renderRegistry: createEditorRenderRegistry(),
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -57,12 +57,10 @@ async function setup({ source = SOURCE, installed = true, withMemory = true, com
 		store.set('compiler.result.memoryPlan', compiled.memoryPlan);
 	}
 	const state = store.getState();
-	const env = () => state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'env')!;
+	const env = () => state.project.rootLevel.blocks.find(block => block.name === 'env')!;
 	const editConfig = (update: (code: string[]) => string[]) => {
-		const codeBlock = state.codeBlockRendering.rootProject.blocks.find(block => block.name === 'config')!;
-		applyCodeBlockSourceEdits({ store, events }, [{ codeBlock, code: update(codeBlock.code) }], {
-			affectsCompilation: true,
-		});
+		const codeBlock = state.project.rootLevel.blocks.find(block => block.name === 'config')!;
+		applyCodeBlockSourceEdits(store, [{ codeBlock, code: update(codeBlock.code) }]);
 	};
 	return { events, store, state, memory, getMemoryBytes, disposePlugin, env, editConfig };
 }
@@ -80,6 +78,77 @@ afterEach(() => {
 });
 
 describe('binary assets plugin', () => {
+	it.each([
+		['https://example.com/samples', 'sample.pcm', 'https://example.com/samples/sample.pcm'],
+		['https://example.com/samples/', 'sample.pcm', 'https://example.com/samples/sample.pcm'],
+		['https://example.com/samples', '/sample.pcm', 'https://example.com/samples/sample.pcm'],
+		['https://example.com/samples/', '/sample.pcm', 'https://example.com/samples/sample.pcm'],
+		['/samples/', 'kit/sample.pcm?version=1', '/samples/kit/sample.pcm?version=1'],
+		[undefined, '../samples/sample.pcm', '../samples/sample.pcm'],
+	])('loads a path using base URL %s and path %s', async (baseUrl, path, url) => {
+		vi.stubGlobal('location', { href: 'https://example.com/editor/' });
+		const source = SOURCE.replace(
+			'; @config bin.sound.url https://example.com/sample.pcm',
+			[...(baseUrl ? [`; @config bin.baseUrl ${baseUrl}`] : []), `; @config bin.sound.path ${path}`].join('\n')
+		);
+		const test = await setup({ source });
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
+		expect(test.state.codeErrors['editor-directives']).toEqual([]);
+		expect(fetchMock).toHaveBeenCalledExactlyOnceWith(url, { signal: expect.any(AbortSignal) });
+		expect(test.env().code).toContain("; 'sample.pcm'");
+		const target = test.state.compiler.result.memoryPlan.modules.player.memory.buffer;
+		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 6)]).toEqual([1, 2, 3, 4, 5, 6]);
+	});
+
+	it('prefers a standalone URL over a path and retains it when the base URL changes', async () => {
+		const source = SOURCE.replace(
+			'note config',
+			`note config
+; @config bin.baseUrl https://cdn.example.com/samples/
+; @config bin.sound.path other.pcm`
+		);
+		const test = await setup({ source });
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 6'));
+		expect(test.state.codeErrors['editor-directives']).toEqual([]);
+		const indicator = test.state.loadingIndicators[0];
+		test.editConfig(code => code.map(line => line.replace('cdn.example.com', 'other.example.com')));
+		await Promise.resolve();
+		expect(fetchMock).toHaveBeenCalledExactlyOnceWith('https://example.com/sample.pcm', {
+			signal: expect.any(AbortSignal),
+		});
+		expect(test.state.loadingIndicators[0]).toBe(indicator);
+	});
+
+	it.each(['changed', 'removed'])('replaces pending path downloads when the base URL is %s', async action => {
+		vi.stubGlobal('location', { href: 'https://example.com/editor/' });
+		const completions = new Map<string, (response: Response) => void>();
+		fetchMock.mockImplementation(url => new Promise(resolve => completions.set(String(url), resolve)));
+		const source = SOURCE.replace(
+			'; @config bin.sound.url https://example.com/sample.pcm',
+			`; @config bin.baseUrl https://example.com/samples/
+; @config bin.sound.path sample.pcm`
+		);
+		const test = await setup({ source });
+		const oldIndicator = test.state.loadingIndicators[0];
+		test.editConfig(code =>
+			action === 'changed'
+				? code.map(line => line.replace('https://example.com/samples/', 'https://cdn.example.com/'))
+				: code.filter(line => !line.includes('@config bin.baseUrl'))
+		);
+		const url = action === 'changed' ? 'https://cdn.example.com/sample.pcm' : 'sample.pcm';
+		await vi.waitFor(() =>
+			expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['https://example.com/samples/sample.pcm', url])
+		);
+		expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(true);
+		expect(oldIndicator.status).toBe('cancelled');
+		completions.get('https://example.com/samples/sample.pcm')!(new Response(new Uint8Array(20)));
+		completions.get(url)!(new Response(new Uint8Array([7, 8])));
+		await vi.waitFor(() => expect(test.env().code).toContain('const ASSET_SOUND_SIZE 2'));
+		expect(test.env().code).not.toContain('const ASSET_SOUND_SIZE 20');
+		const target = test.state.compiler.result.memoryPlan.modules.player.memory.buffer;
+		expect([...test.memory.slice(target.byteAddress, target.byteAddress + 2)]).toEqual([7, 8]);
+	});
+
 	it('retains completed assets when only another asset URL is edited', async () => {
 		const source = SOURCE.replace(
 			'; @config bin.sound.memory player:buffer',

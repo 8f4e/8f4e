@@ -19,7 +19,6 @@ const functionInstructionClassificationSamples = [
 	'local',
 	'call',
 	'param',
-	'paramShape',
 	'functionEnd',
 	'const',
 	'use',
@@ -71,7 +70,7 @@ describe('instruction name classification', () => {
 		expect(knownInstructionNameSet.has('init')).toBe(true);
 		expect(knownInstructionNameSet.has('bind')).toBe(false);
 		expect(knownInstructionNameSet.has('pass')).toBe(true);
-		for (const instruction of ['template', 'templateEnd', 'useTemplate']) {
+		for (const instruction of ['template', 'templateEnd']) {
 			expect(knownInstructionNameSet.has(instruction)).toBe(true);
 			expect(isSubProgramInstructionName(instruction)).toBe(false);
 		}

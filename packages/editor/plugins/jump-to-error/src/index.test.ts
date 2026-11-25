@@ -1,9 +1,15 @@
 import { EventEmitter } from 'node:events';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import initState, {
+	EMPTY_DEFAULT_PROJECT,
+	insertCodeBlocks,
+	serializeCodeBlocks,
+	setGridSize,
+} from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
-import { createEditorDrawerRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
+import { createEditorRenderRegistry, type DrawContext, type MemoryViews, textToGlyphIds } from '@8f4e/web-ui';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createJumpToErrorPlugin } from './index';
 
@@ -16,6 +22,7 @@ function setup() {
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('resize', { canvasWidth: 640, canvasHeight: 384 });
 	events.dispatch('loadProject', {
 		project: {
@@ -26,8 +33,8 @@ function setup() {
 		},
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
-	const drawers = createEditorDrawerRegistry();
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
+	const renderRegistry = createEditorRenderRegistry();
 
 	const dispose = createJumpToErrorPlugin({ layer: INPUT_LAYERS.canvasOverlay }).setup({
 		store,
@@ -36,13 +43,20 @@ function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers,
+		renderRegistry,
 	});
 	cleanups.push(store.dispose, dispose);
 	const drawFill = vi.fn();
 	const drawGlyphs = vi.fn();
 	const draw = { drawFill, drawGlyphs, startGroup: vi.fn(), endGroup: vi.fn() } as unknown as DrawContext;
-	const render = () => drawers.drawCanvasOverlays({ draw, state, memoryViews: {} as MemoryViews });
+	const render = () =>
+		renderRegistry.drawCanvasOverlays({
+			draw,
+			state,
+			viewport: state.viewport,
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
+			memoryViews: {} as MemoryViews,
+		});
 	const press = (overrides: Partial<InternalPointerEvent> = {}) => {
 		const event = {
 			x: state.viewport.width - 2 * state.viewport.vGrid,
@@ -84,12 +98,18 @@ it('centers the error source line with reserved rows above it and preserves sour
 	contribution.update(test.block, { verticalSpaceAfterSourceLine: [{ sourceLineIndex: 0, heightInRows: 3 }] });
 	const revision = test.state.projectChange.revision;
 	const compilerRevision = test.state.compilerInputRevision;
-	test.state.viewportAnimation.active = true;
+	const viewportChanged = vi.fn();
+	test.events.on('viewportChanged', viewportChanged);
 	expect(test.press().stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(test.block);
+	expect(test.state.project.selectedCodeBlock).toBe(test.block);
 	expect(test.state.viewport.x).toBe(test.block.x + test.block.width / 2 - 320);
 	expect(test.state.viewport.y).toBe(test.block.y + 5.5 * test.state.viewport.hGrid - 192);
-	expect(test.state.viewportAnimation.active).toBe(false);
+	expect(viewportChanged).toHaveBeenCalledExactlyOnceWith({
+		previousX: 0,
+		previousY: 0,
+		x: test.state.viewport.x,
+		y: test.state.viewport.y,
+	});
 	expect(test.state.projectChange.revision).toBe(revision);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision);
 	const release = { stopPropagation: false } as InternalPointerEvent;
@@ -108,11 +128,10 @@ it('ignores outside presses, non-primary presses, and stale errors', () => {
 	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });
 
-it('opens a nested project for document errors and returns to root for root-scope errors', () => {
+it('opens a nested project for document errors and targets a copied group by its identity', () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {
 		project: parseProjectSource(`8f4e/v1
-pass missing
 entry main
 group audio
 entry main
@@ -127,20 +146,21 @@ entryEnd
 groupEnd
 entryEnd`),
 	});
-	const root = test.state.codeBlockRendering.rootProject;
+	const root = test.state.project.rootLevel;
 	const audio = root.blocks.find(block => block.name === 'audio')!;
-	const nested = audio.childProject!.blocks.find(block => block.name === 'nested')!;
-	const child = nested.childProject!.blocks[0];
+	test.events.dispatch('enterEditMode');
+	const [copy] = insertCodeBlocks(test.store, { x: 240, y: 128, blocks: serializeCodeBlocks([audio], audio) });
+	expect(copy.childLevel!.path).toBe(audio.childLevel!.path);
+	const nested = audio.childLevel!.blocks.find(block => block.name === 'nested')!;
+	const child = nested.childLevel!.blocks[0];
 	test.store.set('codeErrors.custom', [{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' }]);
 	test.press();
-	expect(test.state.codeBlockRendering.currentProject).toBe(nested.childProject);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(child);
-	test.store.set('codeErrors.custom', [
-		{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
-	]);
+	expect(test.state.project.activeLevel).toBe(nested.childLevel);
+	expect(test.state.project.selectedCodeBlock).toBe(child);
+	test.store.set('codeErrors.custom', [{ codeBlockId: copy.creationIndex, lineNumber: 0, message: 'Group error' }]);
 	test.press();
-	expect(test.state.codeBlockRendering.currentProject).toBe(root);
-	expect(test.state.codeBlockRendering.selectedCodeBlock?.isProjectScope).toBe(true);
+	expect(test.state.project.activeLevel).toBe(root);
+	expect(test.state.project.selectedCodeBlock).toBe(copy);
 });
 
 it('releases its drawer, subscriptions, and input handlers on disposal', () => {

@@ -1,3 +1,4 @@
+import { WASM_IF } from '@8f4e/compiler-wasm-utils';
 import { describe, expect, it } from 'vitest';
 
 import createInstructionCompilerTestContext, {
@@ -7,16 +8,39 @@ import createInstructionCompilerTestContext, {
 import store from './store';
 
 describe('store instruction compiler', () => {
+	it.each([
+		['int8', 1, 58, 0],
+		['int8u', 1, 58, 0],
+		['int16', 2, 59, 1],
+		['int16u', 2, 59, 1],
+	] as const)('uses the %s pointee width when proving a store safe', (baseType, width, opcode, alignment) => {
+		const context = createInstructionCompilerTestContext();
+		compileInstructionForTest(
+			store,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'store', arguments: [] },
+			context,
+			createStackFacts({
+				consumedOperands: [
+					{
+						kind: 'address',
+						valueType: 'int',
+						address: { safeAccessByteWidth: width },
+						pointsTo: { baseType, pointerDepth: 1 },
+					},
+					{ kind: 'value', valueType: 'int' },
+				],
+			})
+		);
+
+		expect(context.instructions).toEqual([{ kind: 'memoryAccess', opcode, alignment, offset: 0 }]);
+	});
+
 	it('stores to a safe memory address', () => {
 		const context = createInstructionCompilerTestContext();
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 1,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -48,11 +72,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 2,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 2, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -72,11 +92,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 3,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 3, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -108,11 +124,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 4,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 4, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -143,11 +155,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 5,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 5, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -166,11 +174,7 @@ describe('store instruction compiler', () => {
 
 		compileInstructionForTest(
 			store,
-			{
-				lineNumber: 6,
-				instruction: 'store',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 6, instruction: 'store', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -180,6 +184,6 @@ describe('store instruction compiler', () => {
 			})
 		);
 
-		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).not.toContainEqual(expect.objectContaining({ kind: 'block', opcode: WASM_IF }));
 	});
 });

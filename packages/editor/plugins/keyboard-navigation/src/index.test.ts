@@ -6,10 +6,16 @@ describe('keyboard navigation', () => {
 	it('selects lines in view mode while leaving horizontal arrows unhandled', () => {
 		const test = setup(createKeyboardNavigationPlugin, 'view');
 		const revision = test.state.projectChange.revision;
+		const positions: { row: number; col: number }[] = [];
+		test.store.subscribe('project.selectedCodeBlock.cursor', () => {
+			const { row, col } = test.block.cursor;
+			positions.push({ row, col });
+		});
 		expect(test.key('ArrowDown').defaultPrevented).toBe(true);
 		expect(test.block.cursor.row).toBe(2);
 		expect(test.key('ArrowLeft').defaultPrevented).toBe(false);
 		expect(test.block.cursor.col).toBe(4);
+		expect(positions).toEqual([{ row: 2, col: 4 }]);
 		expect(test.state.projectChange.revision).toBe(revision);
 	});
 	it('leaves edit-mode caret movement to the editing plugin', () => {
@@ -30,11 +36,8 @@ describe('keyboard navigation', () => {
 		expect(test.key('ArrowRight', { [modifier]: true }).defaultPrevented).toBe(true);
 		expect(navigate).toHaveBeenCalledWith({ direction: 'right' });
 	});
-	it('honors codeLineSelection and removes its listener', () => {
+	it('removes its listener on disposal', () => {
 		const test = setup(createKeyboardNavigationPlugin, 'view');
-		test.state.featureFlags.codeLineSelection = false;
-		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
-		test.state.featureFlags.codeLineSelection = true;
 		test.disposePlugin();
 		expect(test.key('ArrowDown').defaultPrevented).toBe(false);
 		expect(test.block.cursor.row).toBe(1);

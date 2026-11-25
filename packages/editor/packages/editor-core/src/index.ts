@@ -1,22 +1,23 @@
 import initState, {
-	advanceViewportAnimation,
-	createEditorEditingHandle,
+	createEditorCommandApi,
 	type EditorEditingHandle,
 	type EditorNavigationHandle,
 	EMPTY_DEFAULT_PROJECT,
 } from '@8f4e/editor-state';
 import type {
 	EditorConfigSchemaContributionRegistry,
+	FeatureFlagsConfig,
 	InfoRecord,
 	ProgramArtifacts,
 	State,
 } from '@8f4e/editor-state-types';
 import type { ProjectObjectModel } from '@8f4e/language-spec';
 import initView, {
-	createEditorDrawerRegistry,
+	createEditorRenderRegistry,
 	type MemoryViews,
 	type RenderStats,
 	registerWebUiConfig,
+	type SpriteEngine,
 	type WebUiOptions,
 } from '@8f4e/web-ui';
 
@@ -43,8 +44,8 @@ export {
 } from '@8f4e/editor-state';
 // Re-export types that consumers might need
 export type {
-	CodeBlockGraphicData,
 	CodeError,
+	EditorCodeBlock,
 	EditorConfig,
 	EditorConfigSchemaContribution,
 	EditorConfigSchemaContributionRegistry,
@@ -71,10 +72,16 @@ export type {
 	CanvasDrawerContext,
 	CodeBlockDrawer,
 	CodeBlockDrawerContext,
-	EditorDrawerRegistry,
+	CodeBlockOffsetResolver,
+	CodeBlockPositionEffect,
+	EditorRenderRegistry,
+	FrameBlockPosition,
+	FrameBlockPositions,
 	OffscreenCodeBlockDrawer,
+	SpriteEngine,
 } from '@8f4e/web-ui';
 export type { EventDispatcher } from './events';
+export { createMemoryViewManager, type MemoryRef } from './memoryViewManager';
 export type { EditorPlugin, EditorPluginContext } from './plugins';
 // Re-export helper functions
 
@@ -94,15 +101,16 @@ export interface Editor {
 }
 
 export interface EditorOptions {
+	/** Renderer supplied by the host. The editor takes ownership, including on initialization failure. */
+	renderer: SpriteEngine;
 	/** Initial project content; defaults to an empty project. */
 	initialProject?: ProjectObjectModel;
 	/** Font used when the project does not select one. Defaults to ibmvga8x16. */
 	defaultFont?: WebUiOptions['defaultFont'];
 	/** Trusted plugins, installed before rendering, initialization, and initial project loading. */
 	plugins?: readonly EditorPlugin[];
-	featureFlags?: Partial<State['featureFlags']>;
+	featureFlags?: FeatureFlagsConfig;
 	editorConfigSchemaContributions?: EditorConfigSchemaContributionRegistry;
-	renderStatsIntervalFrames?: number;
 }
 
 interface CanvasSize {
@@ -133,8 +141,16 @@ function toGraphicsInfoRecord(stats: RenderStats): InfoRecord {
 	};
 }
 
-export default async function init(canvas: HTMLCanvasElement, options: EditorOptions): Promise<Editor> {
-	const cleanups: Array<() => void> = [];
+export default async function init(
+	canvas: HTMLCanvasElement,
+	{ renderer, ...options }: EditorOptions
+): Promise<Editor> {
+	let rendererOwnedByView = false;
+	const cleanups: Array<() => void> = [
+		() => {
+			if (!rendererOwnedByView) renderer.destroy();
+		},
+	];
 	let beforeDispose = () => {};
 	let disposed = false;
 	const dispose = () => {
@@ -168,16 +184,14 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		store = initState(events, {
 			...options,
 			callbacks: {
-				getWordFromMemory: (allocationUnitAddress: number) => {
-					return memoryViews.int32[allocationUnitAddress] || 0;
-				},
+				getWordFromMemory: (allocationUnitAddress: number) => memoryViews.int32[allocationUnitAddress],
 			},
 		});
 		cleanups.push(() => store.dispose());
 		registerWebUiConfig(store);
-		const editing = createEditorEditingHandle(store, events);
+		const editing = createEditorCommandApi(store, events);
 		cleanups.push(editing.dispose);
-		const drawers = createEditorDrawerRegistry();
+		const renderRegistry = createEditorRenderRegistry();
 		cleanups.push(
 			installEditorPlugins(options.plugins ?? [], {
 				store,
@@ -186,7 +200,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		);
 		const state = store.getState();
@@ -197,14 +211,16 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 		};
 		events.dispatch('resize', { canvasWidth: initialCanvasSize.width, canvasHeight: initialCanvasSize.height });
 		events.dispatch('loadProject', { project: options.initialProject ?? EMPTY_DEFAULT_PROJECT });
-		const initialProjectReady = events.dispatchAsync('init');
+		await events.dispatchAsync('prepareInitialProject');
+		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
+		const reducedMotion = browserWindow?.matchMedia?.('(prefers-reduced-motion: reduce)');
 
-		view = await initView(store, events, canvas, memoryViews, {
+		rendererOwnedByView = true;
+		view = await initView(store, events, renderer, memoryViews, {
 			loading: store.loading,
 			defaultFont: options.defaultFont,
-			initialProjectReady,
-			drawers,
-			renderStatsIntervalFrames: options.renderStatsIntervalFrames,
+			prefersReducedMotion: () => reducedMotion?.matches ?? false,
+			renderRegistry,
 			onRenderStats: stats => {
 				store.set('info.graphics', toGraphicsInfoRecord(stats));
 			},
@@ -213,10 +229,7 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 
 		let rendering = false;
 		let animationFrameRequest: number | null = null;
-		const renderFrame = (frameTime = performance.now()) => {
-			advanceViewportAnimation(state, frameTime, events);
-			view.renderFrame();
-		};
+		const renderFrame = (frameTime = performance.now()) => view.renderFrame(frameTime);
 		const pauseRendering = () => {
 			rendering = false;
 			if (animationFrameRequest !== null) {
@@ -254,7 +267,6 @@ export default async function init(canvas: HTMLCanvasElement, options: EditorOpt
 				renderFrame();
 			}
 		};
-		const browserWindow = canvas.ownerDocument?.defaultView ?? globalThis.window;
 		const resizeObserver = browserWindow?.ResizeObserver
 			? new browserWindow.ResizeObserver(() => {
 					const size = getCanvasDisplaySize(canvas);

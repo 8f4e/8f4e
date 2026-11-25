@@ -9,11 +9,7 @@ describe('round stack analysis', () => {
 		context.stack.push({ kind: 'value', valueType: 'float64', isNonZero: true });
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'round',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'round', arguments: [] } as CompilerASTLine,
 			context
 		);
 

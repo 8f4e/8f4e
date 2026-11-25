@@ -11,6 +11,7 @@ configuration with project scope.
 ; @textureUpload &screen:color rgba 64 64
 ; @texture &screen:color 4 64 64
 ; @texture &screen:color 4 32 32 16 16
+; @texture &screen:color 2:4 64 64
 ```
 
 `@textureUpload <address> <1bit|mono|rgb|rgba> <width> <height>` describes the complete source texture.
@@ -19,32 +20,46 @@ Width and height are in source pixels; the optional source origin defaults to `(
 no image space. Each view reserves its own rows and minimum block width immediately, independent of compiler memory
 and matching uploads. Views retain the uploaded texture's row stride, including byte-aligned packed 1bit rows.
 
+Magnification accepts one positive integer for both axes, or `<horizontal>:<vertical>` factors. For example, `2:4`
+scales each source pixel to 2 pixels wide and 4 pixels tall; `2:2` and `2` both give uniform 2× magnification.
+The reserved block space follows the scaled width and height.
+
 Both directives accept pointer sources: `&pixels` or `&screen:pixels` uses the storage's byte address; a plain typed
-pointer such as `framebufferPointer` reads the current address from memory. Qualified names and group exposures use
+pointer such as `framebufferPointer` reads the current address from memory. `*address` follows a double pointer to
+the current framebuffer. Qualified names and group exposures use
 the containing block's scope. Addresses are resolved after entry execution each frame, so pointer swaps affect the
 same frame. Uploads are discovered throughout the project, including unopened groups.
+Address sources are prepared through the shared editor-state memory API. Each frame uses its allocation-free byte
+address reader; texture span bounds, upload conflicts, formats, and GPU lifetime remain local to this plugin.
 
 Matching resolved byte addresses share one GPU texture and one upload per frame when at least one view is visible,
 regardless of the reference spelling, crop, magnification, or number of views. Identical upload declarations coalesce.
 Conflicting format/dimension declarations for one address suppress that resource and report an error in the editor
 console. The complete upload must fit current WASM memory; crop rectangles must fit the declared source dimensions.
-Dimensions and magnification are positive integers; source offsets are nonnegative integers. Pointer swaps never
+Dimensions and magnification factors are positive integers; source offsets are nonnegative integers. Pointer swaps never
 change the view geometry. Missing or undersized uploads skip drawing while the reserved space stays unchanged.
 
 | Type | Source layout |
 | --- | --- |
-| `1bit` | Black/white bits, MSB first; each row occupies `ceil(width / 8)` bytes and unused trailing bits are ignored |
+| `1bit` | Packed bits, MSB first; each row occupies `ceil(width / 8)` bytes and unused trailing bits are ignored |
 | `mono` | One unsigned grayscale byte per pixel, 0 black through 255 white |
 | `rgb` | Three unsigned bytes per pixel, red/green/blue; opaque |
 | `rgba` | Four unsigned bytes per pixel, red/green/blue/alpha |
+
+One-bit views map `0` to the project's resolved `surfaceBase` color and `1` to `inkBase`, including their alpha.
+The colors follow `color.surface` and `color.ink` configuration changes immediately, using the editor's default
+palette when those colors are unspecified. The directive syntax and packed source bytes are unchanged.
+
+![Game of Life using its project's surface and ink colors](docs/screenshots/project-palette.png)
 
 All formats use top-to-bottom rows and nearest sampling. Multiple directives can display different buffers, or view
 the same buffer at different scales. One WebGL program and rectangle serve every view; a format uniform controls
 interpretation, including GPU bit extraction. Views share storage by resolved upload address. Uploads with no visible views release
 storage, and GPU memory release/restoration recreates uploads without recompiling the shared program.
 
-Textures follow their block and the viewport in the existing canvas-wide overlay pass above sprites and wires. They
-may cover overlapping blocks and other editor content; they do not participate in block occlusion.
+Textures follow their block using the frame's web-ui rendering geometry in the existing canvas-wide overlay pass
+above sprites and wires. They may cover overlapping blocks and other editor content; they do not participate in
+block occlusion.
 
 `textureRuntime.enabled` defaults to false and controls only WASM execution. When enabled, `textureRuntime.entry`
 (default `main`) runs exactly once per editor frame before uploading all visible views, including frames with no

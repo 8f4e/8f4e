@@ -1,3 +1,4 @@
+import { withCompilerStage } from '@8f4e/compiler-diagnostics';
 import type { CompileOptions, CompileResult, CompilerCache, ProjectObjectModel } from '@8f4e/language-spec';
 import {
 	composeProgram,
@@ -13,6 +14,8 @@ export function compileProjectObjectModel(
 	cache: CompilerCache = createCompilerCache(),
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath = new Map()
 ): CompileResult {
-	const program = composeProgram(project, cache, includedFunctionsByProjectPath);
+	const program = withCompilerStage('program composition', () =>
+		composeProgram(project, cache, includedFunctionsByProjectPath)
+	);
 	return compileSubProgram(program, options);
 }

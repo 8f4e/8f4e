@@ -7,25 +7,42 @@ const value = { type: ArgumentType.LITERAL, value: 3, isInteger: true } as const
 
 describe('operand normalization', () => {
 	it('expands arithmetic into ordinary operations without changing the source AST', () => {
-		const source: CompilerASTLine = { lineNumber: 7, instruction: 'sub', arguments: [value] };
+		const source: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 7,
+			instruction: 'sub',
+			arguments: [value],
+		};
 		expect(normalizeOperands(source)).toEqual([
-			{ lineNumber: 7, instruction: 'push', arguments: [value] },
-			{ lineNumber: 7, instruction: 'sub', arguments: [] },
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 7, instruction: 'push', arguments: [value] },
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 7, instruction: 'sub', arguments: [] },
 		]);
 		expect(source.arguments).toEqual([value]);
 	});
 
 	it('expands call operands in order and leaves only the function target', () => {
 		const target = { type: ArgumentType.IDENTIFIER, value: 'mix', referenceKind: 'plain', scope: 'local' } as const;
-		expect(normalizeOperands({ lineNumber: 9, instruction: 'call', arguments: [target, value, value] })).toEqual([
-			{ lineNumber: 9, instruction: 'push', arguments: [value] },
-			{ lineNumber: 9, instruction: 'push', arguments: [value] },
-			{ lineNumber: 9, instruction: 'call', arguments: [target] },
+		expect(
+			normalizeOperands({
+				diagnosticSource: { kind: 'document' },
+				lineNumber: 9,
+				instruction: 'call',
+				arguments: [target, value, value],
+			})
+		).toEqual([
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 9, instruction: 'push', arguments: [value] },
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 9, instruction: 'push', arguments: [value] },
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 9, instruction: 'call', arguments: [target] },
 		]);
 	});
 
 	it('keeps stack-only operations unchanged', () => {
-		const source: CompilerASTLine = { lineNumber: 4, instruction: 'mul', arguments: [] };
+		const source: CompilerASTLine = {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 4,
+			instruction: 'mul',
+			arguments: [],
+		};
 		expect(normalizeOperands(source)).toEqual([source]);
 	});
 });

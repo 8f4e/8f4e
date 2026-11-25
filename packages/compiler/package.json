@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/compiler",
-  "version": "10.2.0",
+  "version": "14.1.4",
   "private": true,
   "description": "8f4e compiler package",
   "type": "module",
@@ -29,7 +29,8 @@
     "@8f4e/project-preparser": "*",
     "@8f4e/sub-program": "*",
     "@8f4e/tokenizer": "*",
-    "@8f4e/wasm-codegen": "*"
+    "@8f4e/wasm-codegen": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@8f4e/stdlib": "*",

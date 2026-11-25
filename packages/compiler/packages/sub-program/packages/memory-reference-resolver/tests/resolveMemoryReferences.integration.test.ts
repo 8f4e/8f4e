@@ -1,22 +1,19 @@
-import type { ConstantsAST, FunctionAST, ModuleAST, PrototypeAST } from '@8f4e/language-spec';
+import type { ConstantsAST, FunctionAST, FunctionSignature, ModuleAST } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { type ResolveMemoryReferencesInput, resolveMemoryReferences } from '../src';
 
-type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<
-	PrototypeAST,
-	ModuleAST,
-	ConstantsAST,
-	FunctionAST
->;
+type MemoryReferenceResolverIntegrationInput = ResolveMemoryReferencesInput<ModuleAST, ConstantsAST, FunctionAST>;
 
 describe('resolveMemoryReferences integration', () => {
 	it('resolves sub-program-level memory references from pass-shaped fixtures', () => {
 		const mainModuleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'main', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const samplesDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'float[]',
 			arguments: [
@@ -30,14 +27,15 @@ describe('resolveMemoryReferences integration', () => {
 			referenceKind: 'memory-reference',
 			scope: 'local',
 			targetMemoryId: 'samples',
-			isEndAddress: false,
 		} as const;
 		const pointerDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'float*',
 			arguments: [{ type: 'identifier', value: 'ptr', referenceKind: 'plain', scope: 'local' }, samplesStartReference],
 		} as const;
 		const localAddressExpressionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'push',
 			arguments: [
@@ -50,6 +48,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const pointeeCountLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 5,
 			instruction: 'push',
 			arguments: [
@@ -64,6 +63,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const audioAddressLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 6,
 			instruction: 'push',
 			arguments: [
@@ -74,21 +74,23 @@ describe('resolveMemoryReferences integration', () => {
 					scope: 'intermodule',
 					targetModuleId: 'audio',
 					targetMemoryId: 'samples',
-					isEndAddress: false,
 				},
 			],
 		} as const;
 		const mainModuleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 7,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const audioModuleLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 10,
 			instruction: 'module',
 			arguments: [{ type: 'identifier', value: 'audio', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const audioSamplesDeclarationLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 12,
 			instruction: 'int16u[]',
 			arguments: [
@@ -97,16 +99,19 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const audioModuleEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 13,
 			instruction: 'moduleEnd',
 			arguments: [],
 		} as const;
 		const constantsLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'constants',
 			arguments: [{ type: 'identifier', value: 'layout', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const audioCountConstantLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'const',
 			arguments: [
@@ -123,16 +128,19 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const constantsEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'constantsEnd',
 			arguments: [],
 		} as const;
 		const functionLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 1,
 			instruction: 'function',
 			arguments: [{ type: 'identifier', value: 'readPointer', referenceKind: 'plain', scope: 'local' }],
 		} as const;
 		const pointerParamLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 2,
 			instruction: 'param',
 			arguments: [
@@ -141,6 +149,7 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const pointeeSizeLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 3,
 			instruction: 'push',
 			arguments: [
@@ -155,11 +164,17 @@ describe('resolveMemoryReferences integration', () => {
 			],
 		} as const;
 		const functionEndLine = {
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 4,
 			instruction: 'functionEnd',
 			arguments: [{ type: 'identifier', value: 'int', referenceKind: 'plain', scope: 'local' }],
 		} as const;
+		const signature: FunctionSignature = {
+			parameters: [{ name: 'sourcePtr', type: 'float*' }],
+			returns: ['int'],
+		};
 		const samplesMemory = {
+			source: samplesDeclarationLine,
 			numberOfElements: 4,
 			elementWordSize: 4,
 			byteAddress: 4,
@@ -167,8 +182,7 @@ describe('resolveMemoryReferences integration', () => {
 			allocationUnitCount: 4,
 			allocatedByteLength: 16,
 			allocationUnitAddress: 1,
-			endByteAddress: 16,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 20,
 			lineNumber: 2,
 			isInteger: false,
 			id: 0,
@@ -178,6 +192,7 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: false,
 		} as const;
 		const ptrMemory = {
+			source: pointerDeclarationLine,
 			numberOfElements: 1,
 			elementWordSize: 4,
 			byteAddress: 20,
@@ -185,8 +200,7 @@ describe('resolveMemoryReferences integration', () => {
 			allocationUnitCount: 1,
 			allocatedByteLength: 4,
 			allocationUnitAddress: 5,
-			endByteAddress: 20,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 24,
 			lineNumber: 3,
 			isInteger: true,
 			id: 1,
@@ -197,6 +211,7 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: false,
 		} as const;
 		const audioSamplesMemory = {
+			source: audioSamplesDeclarationLine,
 			numberOfElements: 6,
 			elementWordSize: 2,
 			byteAddress: 4,
@@ -204,8 +219,7 @@ describe('resolveMemoryReferences integration', () => {
 			allocationUnitCount: 3,
 			allocatedByteLength: 12,
 			allocationUnitAddress: 1,
-			endByteAddress: 12,
-			endAddressSafeByteLength: 4,
+			endByteAddress: 16,
 			lineNumber: 12,
 			isInteger: true,
 			id: 0,
@@ -215,7 +229,6 @@ describe('resolveMemoryReferences integration', () => {
 			isUnsigned: true,
 		} as const;
 		const ast = {
-			prototypes: [],
 			modules: [
 				{
 					type: 'module',
@@ -250,6 +263,7 @@ describe('resolveMemoryReferences integration', () => {
 				{
 					type: 'function',
 					name: 'readPointer',
+					signature,
 					functionLine,
 					functionEndLine,
 					lines: [functionLine, pointerParamLine, pointeeSizeLine, functionEndLine],
@@ -264,17 +278,12 @@ describe('resolveMemoryReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 5,
 					allocatedByteLength: 20,
-					endByteAddress: 20,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 24,
 					memory: {
 						samples: samplesMemory,
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
 				},
 				audio: {
 					id: 'audio',
@@ -282,13 +291,11 @@ describe('resolveMemoryReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 3,
 					allocatedByteLength: 12,
-					endByteAddress: 12,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 16,
 					memory: {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
 				},
 			},
 			moduleList: [
@@ -298,17 +305,12 @@ describe('resolveMemoryReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 5,
 					allocatedByteLength: 20,
-					endByteAddress: 20,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 24,
 					memory: {
 						samples: samplesMemory,
 						ptr: ptrMemory,
 					},
 					declarations: [samplesMemory, ptrMemory],
-					declarationSources: [
-						{ line: samplesDeclarationLine, isInherited: false },
-						{ line: pointerDeclarationLine, isInherited: false },
-					],
 				},
 				{
 					id: 'audio',
@@ -316,18 +318,15 @@ describe('resolveMemoryReferences integration', () => {
 					byteAddress: 4,
 					allocationUnitCount: 3,
 					allocatedByteLength: 12,
-					endByteAddress: 12,
-					endAddressSafeByteLength: 4,
+					endByteAddress: 16,
 					memory: {
 						samples: audioSamplesMemory,
 					},
 					declarations: [audioSamplesMemory],
-					declarationSources: [{ line: audioSamplesDeclarationLine, isInherited: false }],
 				},
 			],
 		} as const;
 		const constantReferences = {
-			prototypes: [],
 			modules: [
 				{
 					lineFacts: [undefined, undefined, undefined, undefined, undefined, undefined, undefined],
@@ -357,5 +356,6 @@ describe('resolveMemoryReferences integration', () => {
 				constantReferences,
 			} satisfies MemoryReferenceResolverIntegrationInput)
 		).toMatchSnapshot();
+		expect(ptrMemory.source.arguments[1]).toMatchObject({ type: 'identifier', value: '&samples' });
 	});
 });

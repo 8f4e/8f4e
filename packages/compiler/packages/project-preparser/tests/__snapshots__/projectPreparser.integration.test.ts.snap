@@ -8,6 +8,16 @@ exports[`project-preparser integration > parses project source into typed collec
         "callTargets": Map {
           "risingEdge" => "risingEdge",
         },
+        "fileLocation": {
+          "includeId": "std/events/risingEdge",
+          "includeSite": {
+            "lineNumber": 1,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 0,
+        },
         "functionName": "risingEdge",
       },
       "code": [
@@ -15,6 +25,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd int",
       ],
+      "includeLineNumber": 1,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/events/risingEdge",
         "kind": "include",
@@ -26,6 +38,16 @@ exports[`project-preparser integration > parses project source into typed collec
         "callTargets": Map {
           "wrapPointer" => "wrapPointer",
         },
+        "fileLocation": {
+          "includeId": "std/memory/wrapPointer",
+          "includeSite": {
+            "lineNumber": 2,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 0,
+        },
         "functionName": "wrapPointer",
       },
       "code": [
@@ -33,6 +55,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd int*",
       ],
+      "includeLineNumber": 2,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/memory/wrapPointer",
         "kind": "include",
@@ -44,6 +68,16 @@ exports[`project-preparser integration > parses project source into typed collec
         "callTargets": Map {
           "wrapPointer" => "wrapPointer",
         },
+        "fileLocation": {
+          "includeId": "std/memory/wrapPointer",
+          "includeSite": {
+            "lineNumber": 2,
+            "projectBlockId": 3,
+            "projectGroupPath": "",
+          },
+          "kind": "include-file",
+          "lineNumber": 4,
+        },
         "functionName": "wrapPointer",
       },
       "code": [
@@ -51,6 +85,8 @@ exports[`project-preparser integration > parses project source into typed collec
         "",
         "functionEnd float*",
       ],
+      "includeLineNumber": 2,
+      "projectBlockId": 3,
       "source": {
         "includeId": "std/memory/wrapPointer",
         "kind": "include",
@@ -59,7 +95,6 @@ exports[`project-preparser integration > parses project source into typed collec
     },
   ],
   "project": {
-    "code": [],
     "constants": [
       {
         "code": [
@@ -77,12 +112,13 @@ exports[`project-preparser integration > parses project source into typed collec
       {
         "code": [
           "module main",
-          "shape state",
+          "float phase",
+          "int[] buffer 8",
           "int counter",
           "moduleEnd",
         ],
         "entry": "main",
-        "id": 26,
+        "id": 21,
         "type": "module",
       },
       {
@@ -103,7 +139,7 @@ exports[`project-preparser integration > parses project source into typed collec
               "moduleEnd",
             ],
             "entry": "main",
-            "id": 32,
+            "id": 28,
             "type": "module",
           },
         ],
@@ -114,14 +150,13 @@ exports[`project-preparser integration > parses project source into typed collec
               "function groupedHelper",
               "functionEnd int",
             ],
-            "id": 36,
+            "id": 32,
           },
         ],
-        "id": 30,
+        "id": 26,
         "includes": [],
         "name": "audio",
         "notes": [],
-        "prototypes": [],
         "type": "group",
         "unknown": [],
       },
@@ -153,17 +188,6 @@ exports[`project-preparser integration > parses project source into typed collec
           "; @pos 2 3",
           "Document-only project note.",
           "noteEnd",
-        ],
-        "id": 20,
-      },
-    ],
-    "prototypes": [
-      {
-        "code": [
-          "prototype state",
-          "float phase",
-          "int[] buffer 8",
-          "prototypeEnd",
         ],
         "id": 15,
       },

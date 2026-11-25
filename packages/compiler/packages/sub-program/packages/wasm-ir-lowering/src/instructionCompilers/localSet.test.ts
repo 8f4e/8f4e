@@ -13,6 +13,7 @@ describe('localSet instruction compiler', () => {
 		compileInstructionForTest(
 			_localSet,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'localSet',
 				arguments: [identifier('value')],

@@ -1,7 +1,8 @@
 import { EventEmitter } from 'node:events';
 import type { EditorPlugin } from '@8f4e/editor-core';
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach } from 'vitest';
 
 class TestKeyboardEvent extends Event {
@@ -33,7 +34,8 @@ export function setup(
 	}) as unknown as HTMLElement;
 	const emitter = new EventEmitter();
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
-	const store = initState(events, { callbacks: {}, featureFlags: { historyTracking: true } });
+	const store = initState(events, { callbacks: {} });
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
@@ -42,8 +44,8 @@ export function setup(
 	});
 	store.set('editorMode', mode);
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'main')!;
-	store.set('codeBlockRendering.selectedCodeBlock', block);
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'main')!;
+	store.set('project.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, y: 0 };
 	const disposePlugin = createPlugin({ inputTarget }).setup({
 		store,
@@ -52,7 +54,7 @@ export function setup(
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {

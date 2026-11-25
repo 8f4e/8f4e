@@ -1,11 +1,11 @@
-import type { CodeBlockGraphicData, ContextMenuItem, MenuGenerator, State } from '../../index';
+import type { ContextMenuItem, EditorCodeBlock, MenuGenerator, State } from '../../index';
 
 interface EditorMenuItemContexts {
 	mainMenu: { state: State };
-	moduleMenu: {
+	codeBlockMenu: {
 		state: State;
 		/** The block the menu was opened for, independently of the current selection. */
-		codeBlock: CodeBlockGraphicData;
+		codeBlock: EditorCodeBlock;
 	};
 }
 

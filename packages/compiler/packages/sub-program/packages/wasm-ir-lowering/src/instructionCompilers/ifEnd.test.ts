@@ -18,11 +18,7 @@ describe('ifEnd instruction compiler', () => {
 
 		compileInstructionForTest(
 			ifEnd,
-			{
-				lineNumber: 1,
-				instruction: 'ifEnd',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'ifEnd', arguments: [] },
 			context
 		);
 
@@ -45,11 +41,7 @@ describe('ifEnd instruction compiler', () => {
 
 		compileInstructionForTest(
 			ifEnd,
-			{
-				lineNumber: 1,
-				instruction: 'ifEnd',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'ifEnd', arguments: [] },
 			context
 		);
 

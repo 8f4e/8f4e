@@ -56,7 +56,8 @@ export const projects = [
 	{
 		id: 'audio-loopback-with-delay',
 		title: 'Audio loopback with delay',
-		description: 'Delay incoming audio through a circular buffer before routing it to the left and right outputs.',
+		description:
+			'Record and freeze incoming audio in a two-second circular buffer, with an independent read head feeding both outputs.',
 		path: 'audio/audioLoopbackWithDelay.8f4e',
 	},
 	{
@@ -72,10 +73,11 @@ export const projects = [
 		path: 'audio/samplePlayerVariableSpeed.8f4e',
 	},
 	{
-		id: 'cyclic-timestretch',
-		title: 'Cyclic time stretch',
-		description: 'Stretch a sample by repeating and crossfading short cycles while preserving their playback pitch.',
-		path: 'audio/cyclicTimestretch.8f4e',
+		id: 'self-playing-piano',
+		title: 'Self-playing piano',
+		description:
+			'Choose notes on the on-screen keyboard and shape a felt piano melody with tempo, pitch and velocity controls.',
+		path: 'audio/selfPlayingPiano.8f4e',
 	},
 	{
 		id: 'minblep',
@@ -89,18 +91,6 @@ export const projects = [
 		description:
 			'Play the original six-operator electric piano with simple one-shot envelopes inspired by DX7 E.PIANO 1.',
 		path: 'audio/keyboardController6OperatorFMSynth.8f4e',
-	},
-	{
-		id: 'dx7-algorithm-5',
-		title: 'DX7 Algorithm 5',
-		description: 'Play a six-operator DX7-style voice with movable factory presets.',
-		path: 'audio/dx7Algorithm5.8f4e',
-	},
-	{
-		id: 'dx7-stg-crescendo',
-		title: 'DX7 STG CRSNDO',
-		description: 'Hold a keyboard note to swell a DX7-style string voice with delayed vibrato and stereo reverb.',
-		path: 'audio/dx7StgCrescendo.8f4e',
 	},
 	{
 		id: 'formant-synth',
@@ -120,12 +110,6 @@ export const projects = [
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
 		path: 'audio/reverb.8f4e',
-	},
-	{
-		id: 'granular-sampler',
-		title: 'Granular sampler',
-		description: 'Explore sample playback driven by a clock, random positions and modulation, with stereo reverb.',
-		path: 'audio/granularSampler.8f4e',
 	},
 	{
 		id: 'risen',
@@ -211,16 +195,58 @@ export const projects = [
 		description: 'Watch a WebAssembly-generated RGBA image animate in the center of the editor.',
 		path: 'visuals/overlayTexture.8f4e',
 	},
+	{
+		id: 'elementary-cellular-automata',
+		title: 'Elementary cellular automata',
+		description: 'Explore one-dimensional cellular automata with adjustable rule and seed values.',
+		path: 'visuals/elementaryCellularAutomata.8f4e',
+	},
+	{
+		id: 'scrolling-cellular-automata',
+		title: 'Scrolling cellular automata',
+		description: 'Change the rule as new generations scroll upward, preserving the patterns already drawn.',
+		path: 'visuals/scrollingCellularAutomata.8f4e',
+	},
+	{
+		id: 'game-of-life',
+		title: 'Conway’s Game of Life',
+		description: 'Watch a seeded world evolve with Conway’s rules, and pause or restart the simulation.',
+		path: 'visuals/gameOfLife.8f4e',
+	},
+	{
+		id: 'modular-cellular-automata',
+		title: 'Modular cellular automata',
+		description: 'Patch a line through three rule stages with scrolling histories, bypass controls and feedback.',
+		path: 'visuals/modularCellularAutomata.8f4e',
+	},
+	{
+		id: 'mandelbrot-zoom-double-buffered',
+		title: 'Mandelbrot zoom (double buffering)',
+		description: 'Render into a spare buffer and display each completed frame with a buffer swap.',
+		path: 'visuals/mandelbrotZoomDoubleBuffered.8f4e',
+	},
+	{
+		id: 'mandelbrot-zoom-single-buffered',
+		title: 'Mandelbrot zoom (single buffering)',
+		description: 'Render directly into the displayed buffer and watch the image update progressively.',
+		path: 'visuals/mandelbrotZoomSingleBuffered.8f4e',
+	},
+	{
+		id: 'mandelbrot-smooth-zoom',
+		title: 'Mandelbrot smooth zoom',
+		description: 'Patch a Mandelbrot renderer through an antialiasing module into a buffered display.',
+		path: 'visuals/mandelbrotSmoothZoom.8f4e',
+	},
 ];
 
 export const projectCategories = [
-	{ path: 'misc', title: 'Basics' },
-	{ path: 'audio', title: 'Audio' },
-	{ path: 'audio/amigaMods', title: 'Amiga MODs' },
-	{ path: 'digital', title: 'Digital logic' },
-	{ path: 'midi', title: 'MIDI' },
-	{ path: 'machine-learning', title: 'Machine learning' },
-	{ path: 'visuals', title: 'Visuals' },
+	{ path: 'misc', title: 'Basic examples' },
+	{ path: 'audio', title: 'Audio examples' },
+	{ path: 'audio/amigaMods', title: 'Amiga MOD examples' },
+	{ path: 'digital', title: 'Digital logic examples' },
+	{ path: 'midi', title: 'MIDI examples' },
+	{ path: 'machine-learning', title: 'Machine learning examples' },
+	{ path: 'visuals', title: 'Visual examples' },
 ].map(category => ({
 	...category,
 	projects: projects.filter(project => project.path.slice(0, project.path.lastIndexOf('/')) === category.path),

@@ -1,10 +1,12 @@
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
-import initState from '@8f4e/editor-state';
-import { createEditorDrawerRegistry, type MemoryViews } from '@8f4e/web-ui';
+import initState, { setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import { createEditorRenderRegistry, type MemoryViews } from '@8f4e/web-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEvents } from './__tests__/events';
 import { createDrawContextMock } from './__tests__/rendering';
+import { MAX_WAVEFORM_SAMPLE_READS } from './helpers/peaks';
 import { wavePlugin } from './index';
 
 const cleanups: Array<() => void> = [];
@@ -30,8 +32,8 @@ async function setup(code = source, installed = true, name = 'audio') {
 	const store = initState(events, {
 		callbacks: {},
 	});
-	events.dispatch('enterEditMode');
-	const drawers = createEditorDrawerRegistry();
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
+	const renderRegistry = createEditorRenderRegistry();
 	const dispose = installed
 		? wavePlugin.setup({
 				store,
@@ -40,7 +42,7 @@ async function setup(code = source, installed = true, name = 'audio') {
 				directives: store.directives,
 				layout: store.layout,
 				loading: store.loading,
-				drawers,
+				renderRegistry,
 			})
 		: () => {};
 	cleanups.push(() => {
@@ -48,19 +50,16 @@ async function setup(code = source, installed = true, name = 'audio') {
 		store.dispose();
 	});
 	const state = store.getState();
-	state.compiler.result.memoryPlan = compiled.memoryPlan;
-	state.compiler.result.memoryDefaultsByModuleId = compiled.memoryDefaultsByModuleId;
-	state.compiler.result.compiledModules = compiled.compiledModules;
-	state.compiler.result.compiledFunctions = compiled.compiledFunctions;
-	state.compiler.result.projectMemoryExposuresByGroupPath = compiled.projectMemoryExposuresByGroupPath;
-	store.set('initialProjectState', project);
-	const codeBlock = state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
+	events.dispatch('loadProject', { project });
+	store.set('compiler.result', { ...compiled, inputRevision: state.compilerInputRevision });
+	events.dispatch('enterEditMode');
+	const codeBlock = state.project.activeLevel.blocks.find(block => block.name === name)!;
 	const draw = createDrawContextMock();
 	const render = () => {
 		vi.mocked(draw.drawFill).mockClear();
 		vi.mocked(draw.startGroup).mockClear();
 		vi.mocked(draw.endGroup).mockClear();
-		drawers.drawCodeBlock({ draw, state, codeBlock, memoryViews });
+		renderRegistry.drawCodeBlock({ draw, state, codeBlock, memoryViews });
 	};
 	return { store, state, codeBlock, events, draw, memoryViews, render, dispose };
 }
@@ -70,6 +69,25 @@ afterEach(() => {
 });
 
 describe('wave plugin', () => {
+	it('finishes a progressive scan while the caret moves between frames', async () => {
+		const length = MAX_WAVEFORM_SAMPLE_READS * 3 + 17;
+		const test = await setup([
+			'module audio',
+			`float[] samples ${length}`,
+			'; @wave &samples count(samples)',
+			'moduleEnd',
+		]);
+		test.store.set('project.selectedCodeBlock', test.codeBlock);
+		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory.samples;
+		test.memoryViews.float32[memory.allocationUnitAddress + 1] = 1;
+		for (let frame = 0; frame < 4; frame++) {
+			test.store.set('project.selectedCodeBlock.cursor.col', frame);
+			test.render();
+		}
+		const columns = vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+		expect(columns[0][1]).toBe(0);
+	});
+
 	it.each([
 		{ directive: 'wave', rows: 2 },
 		{ directive: 'wave2', rows: 4 },
@@ -143,7 +161,7 @@ describe('wave plugin', () => {
 		expect(test.draw.drawFill).toHaveBeenLastCalledWith(
 			Math.floor((2 / 3) * (width - 4)),
 			0,
-			PALETTE_INDICES.secondaryReadable,
+			PALETTE_INDICES.onDarkAccent,
 			4,
 			32
 		);
@@ -154,6 +172,83 @@ describe('wave plugin', () => {
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalled();
 	});
+
+	it.each(['wave', 'wave2', 'wave4'] as const)(
+		'draws %s through live double pointers with the final sample type',
+		async directive => {
+			const test = await setup([
+				'module samples',
+				'int16[] values 2 -32768 32767',
+				'int16[] alternate 2 32767 -32768',
+				'int length 2',
+				'moduleEnd',
+				'module audio',
+				'int16* start &samples:values',
+				'int16* next &samples:alternate',
+				'int16* cursor &samples:values',
+				'int16** address &start',
+				'int16** playhead &cursor',
+				'int& length &samples:length',
+				`; @${directive} *address length *playhead`,
+				'moduleEnd',
+			]);
+			const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
+			const samples = test.state.compiler.result.memoryPlan.modules.samples.memory;
+			const height = { wave: 32, wave2: 64, wave4: 128 }[directive]!;
+			const columns = () =>
+				vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+			test.render();
+			expect(columns()[0][1]).toBe(height - 1);
+			expect(columns().at(-1)![1]).toBe(0);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 4, height);
+			// Retarget the outer pointer and playhead without a layout refresh.
+			test.memoryViews.int32[memory.address.allocationUnitAddress] = memory.next.byteAddress;
+			test.memoryViews.int32[memory.cursor.allocationUnitAddress] = samples.alternate.byteAddress + 2;
+			test.render();
+			expect(columns()[0][1]).toBe(0);
+			expect(columns().at(-1)![1]).toBe(height - 1);
+			const width = test.codeBlock.width - (test.codeBlock.lineNumberColumnWidth + 2) * test.state.viewport.vGrid;
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(width - 4, 0, PALETTE_INDICES.onDarkAccent, 4, height);
+			// Retarget the inner pointer through the same prepared binding.
+			test.memoryViews.int32[memory.next.allocationUnitAddress] = samples.values.byteAddress;
+			test.render();
+			expect(columns()[0][1]).toBe(height - 1);
+			expect(columns().at(-1)![1]).toBe(0);
+			test.memoryViews.int32[memory.address.allocationUnitAddress] = -1;
+			test.render();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
+		}
+	);
+
+	it.each(['int8', 'int8u', 'int16', 'int16u', 'int', 'float', 'float64'])(
+		'draws a %s& buffer with a referenced count and playhead',
+		async type => {
+			const test = await setup([
+				'module samples',
+				`${type}[] values 4 0 0 1 0`,
+				'int length 4',
+				'moduleEnd',
+				'module audio',
+				`${type}& buffer &samples:values`,
+				'int& length &samples:length',
+				`${type}& playhead &samples:values`,
+				'; @wave buffer length playhead',
+				'moduleEnd',
+			]);
+			test.render();
+			expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 32);
+			const columns = vi
+				.mocked(test.draw.drawFill)
+				.mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase);
+			expect(columns.length).toBeGreaterThan(0);
+			expect(columns.every(call => Number.isFinite(call[1]) && Number.isFinite(call[4]))).toBe(true);
+			expect(test.draw.drawFill).toHaveBeenLastCalledWith(0, 0, PALETTE_INDICES.onDarkAccent, 4, 32);
+			const length = test.state.compiler.result.memoryPlan.modules.samples.memory.length;
+			test.memoryViews.int32[length.allocationUnitAddress] = 0;
+			test.render();
+			expect(test.draw.drawFill).not.toHaveBeenCalled();
+		}
+	);
 
 	it('resolves exposed group memory through the public memory API', async () => {
 		const test = await setup([
@@ -173,13 +268,22 @@ describe('wave plugin', () => {
 
 	it('replaces waves and layout gaps after source edits', async () => {
 		const test = await setup();
-		test.codeBlock.code[2] = '; @wave4 &samples count(samples)';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{
+					codeBlock: test.codeBlock,
+					code: test.codeBlock.code.map((line, i) => (i === 2 ? '; @wave4 &samples count(samples)' : line)),
+				},
+			],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.get(2)?.size).toBe(8);
 		expect(test.draw.drawFill).toHaveBeenNthCalledWith(1, 0, 0, PALETTE_INDICES.darkSurface, expect.any(Number), 128);
-		test.codeBlock.code[2] = '; no wave';
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [
+				{ codeBlock: test.codeBlock, code: test.codeBlock.code.map((line, i) => (i === 2 ? '; no wave' : line)) },
+			],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
@@ -205,22 +309,25 @@ describe('wave plugin', () => {
 
 	it('rebinds compiler memory metadata and removes unresolved waves', async () => {
 		const test = await setup();
-		const memory = test.state.compiler.result.memoryPlan.modules.audio.memory;
+		const layoutChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', layoutChanged);
+		const memory = { ...test.state.compiler.result.memoryPlan.modules.audio.memory };
 		memory.samples = {
 			...memory.samples,
 			byteAddress: memory.samples.byteAddress + 64,
 			allocationUnitAddress: memory.samples.allocationUnitAddress + 16,
 		};
 		test.memoryViews.float32[memory.samples.allocationUnitAddress] = -1;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.audio.memory', { ...memory });
 		test.render();
 		expect(
 			vi.mocked(test.draw.drawFill).mock.calls.filter(call => call[2] === PALETTE_INDICES.highlightBase)[0][1]
 		).toBe(31);
 		delete memory.samples;
-		test.events.dispatch('memoryValuesChanged');
+		test.store.set('compiler.result.memoryPlan.modules.audio.memory', memory);
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
+		expect(layoutChanged).not.toHaveBeenCalled();
 	});
 
 	it.each(['; @wave missing 4', '; @wave &samples missingCount', '; @wave &samples 0', '; @wave *samples 4'])(
@@ -245,7 +352,9 @@ describe('wave plugin', () => {
 	it('unregisters all definitions and the drawer on disposal', async () => {
 		const test = await setup();
 		test.dispose();
-		test.events.dispatch('codeBlockSourcesChanged', { codeBlocks: [test.codeBlock] });
+		test.store.projectTransactions.apply({
+			updates: [{ codeBlock: test.codeBlock, code: [...test.codeBlock.code, '; edited after disposal'] }],
+		});
 		test.render();
 		expect(test.codeBlock.gaps.size).toBe(0);
 		expect(test.draw.drawFill).not.toHaveBeenCalled();

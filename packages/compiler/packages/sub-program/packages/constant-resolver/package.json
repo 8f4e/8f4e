@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/constant-resolver",
-  "version": "5.2.0",
+  "version": "7.1.4",
   "private": true,
   "description": "8f4e compiler constant resolution pass",
   "type": "module",
@@ -25,7 +25,8 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/language-spec": "*",
-    "@8f4e/semantic-utils": "*"
+    "@8f4e/semantic-utils": "*",
+    "@8f4e/compiler-diagnostics": "*"
   },
   "devDependencies": {
     "@types/node": "24.13.2"

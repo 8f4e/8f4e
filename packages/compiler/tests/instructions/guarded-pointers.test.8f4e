@@ -1,0 +1,67 @@
+8f4e/v1
+
+entry test
+module pointerAssertions
+int value 42
+int* pointer &value
+int** chain &pointer
+float64 precise 3.5f64
+float64* precisePointer &precise
+float64** preciseChain &precisePointer
+int8u[] bytes 1
+int8u* bytePointer &bytes
+
+push *pointer
+assertEqual 42
+push **chain
+assertEqual 42
+push **preciseChain
+assertEqual 3.5f64
+
+; The slot is fixed, but its target is mutable.
+push &pointer
+push -1
+store
+push *pointer
+assertEqual 0
+push **chain
+assertEqual 0
+
+; Either hop of a pointer chain can be invalid.
+push &chain
+push -1
+store
+push **chain
+assertEqual 0
+push &precisePointer
+push -1
+store
+push **preciseChain
+assertEqual 0.0f64
+push &preciseChain
+push -1
+store
+push **preciseChain
+assertEqual 0.0f64
+
+; Targets may leave their declaration and use page padding.
+push 65532
+push 99
+store
+push &pointer
+push 65532
+store
+push *pointer
+assertEqual 99
+
+; A one-byte target can use the final memory byte.
+push 255
+push 65535
+storeBytes 1
+push &bytePointer
+push 65535
+store
+push *bytePointer
+assertEqual 255
+moduleEnd
+entryEnd

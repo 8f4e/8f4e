@@ -1,5 +1,5 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import {
-	type CompilerDiagnosticContext,
 	type ComposedFunctionAST,
 	createFunctionId,
 	DEFAULT_HOST_IMPORT_MODULE_NAME,
@@ -8,24 +8,15 @@ import {
 	type FunctionMetadata,
 	type FunctionMetadataLookup,
 	type FunctionRegistry,
-	getEffectiveFunctionMetadata,
-	getError,
+	MAX_FUNCTION_PARAMETERS,
+	MAX_FUNCTION_RETURN_VALUES,
 	type RegisteredFunction,
-	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
-
-function getAstDiagnosticContext(ast: ComposedFunctionAST): CompilerDiagnosticContext {
-	return {
-		codeBlockType: ast.type,
-		...(ast.projectBlockId !== undefined ? { projectBlockId: ast.projectBlockId } : {}),
-	};
-}
 
 /** Inputs for registering function metadata and validating whole-program function names. */
 type FunctionRegistrationOptions = {
 	reservedFunctionIds: readonly string[];
 	reservedExportNames: readonly string[];
-	prototypeShapes: Readonly<Record<string, ValidatedPrototypeAST>>;
 };
 
 interface FunctionRegistration<TFunction extends ComposedFunctionAST> {
@@ -48,8 +39,22 @@ function getFunctionExportName(ast: ComposedFunctionAST): string | undefined {
 	return ast.exportLine ? (ast.exportLine.arguments[0]?.value ?? ast.name) : undefined;
 }
 
+/** Checks arity limits with source ownership already bound to the function. */
+function validateFunctionArity(ast: ComposedFunctionAST): void {
+	if (ast.signature.parameters.length > MAX_FUNCTION_PARAMETERS) {
+		let parameterCount = 0;
+		const overflowLine = ast.lines.find(
+			line => line.instruction === 'param' && ++parameterCount > MAX_FUNCTION_PARAMETERS
+		)!;
+		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, overflowLine, { symbol: ast.name });
+	}
+	if (ast.signature.returns.length > MAX_FUNCTION_RETURN_VALUES) {
+		throw getError(ErrorCode.FUNCTION_SIGNATURE_OVERFLOW, ast.functionEndLine, { symbol: ast.name });
+	}
+}
+
 /**
- * Registers function declarations and resolves their metadata once for later compiler stages.
+ * Selects the last declaration of each parameter signature and registers its metadata for later compiler stages.
  * This allows semantic reference resolution (e.g. `call` target validation) and
  * function-body codegen to rely on the same registry before full function
  * compilation completes.
@@ -66,7 +71,17 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const byId: FunctionMetadataLookup = {};
 	// Source names may also be Object.prototype property names.
 	const arityByName: FunctionRegistry['arityByName'] = Object.create(null);
-	const overloadCountsByName = asts.reduce<Record<string, number>>((counts, ast) => {
+	const selectedFunctions = new Map<string, { id: string; ast: TFunction }>();
+	for (const ast of asts) {
+		validateFunctionArity(ast);
+		const parameters = ast.signature.parameters.map(parameter => parameter.type);
+		const id = createFunctionId(ast.name, parameters);
+		const key = JSON.stringify([ast.name, parameters]);
+		// Keep the selected declarations in their own source order.
+		selectedFunctions.delete(key);
+		selectedFunctions.set(key, { id, ast });
+	}
+	const overloadCountsByName = [...selectedFunctions.values()].reduce<Record<string, number>>((counts, { ast }) => {
 		counts[ast.name] = (counts[ast.name] ?? 0) + 1;
 		return counts;
 	}, Object.create(null));
@@ -74,30 +89,28 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 	const reservedFunctionNames = new Set(options.reservedFunctionIds);
 	const seenExportNames = new Set(options.reservedExportNames);
 
-	for (const ast of asts) {
-		const name = ast.name;
-		const functionMetadata = getEffectiveFunctionMetadata(ast, options.prototypeShapes);
-		const id = createFunctionId(
-			name,
-			functionMetadata.signature.parameters.map(parameter => parameter.type)
-		);
+	for (const { id, ast } of selectedFunctions.values()) {
+		const { name, signature } = ast;
 		if (reservedFunctionNames.has(name)) {
-			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, getAstDiagnosticContext(ast), {
-				identifier: name,
+			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, ast.functionLine, {
+				details: {
+					identifier: name,
+				},
 			});
 		}
 		if (seenFunctionIds.has(id)) {
-			throw getError(ErrorCode.DUPLICATE_FUNCTION_SIGNATURE, ast.functionLine, getAstDiagnosticContext(ast), {
-				identifier: id,
+			throw getError(ErrorCode.DUPLICATE_FUNCTION_SIGNATURE, ast.functionLine, {
+				details: { identifier: id },
 			});
 		}
-
 		const existingArity = arityByName[name];
-		const arity = functionMetadata.signature.parameters.length;
+		const arity = signature.parameters.length;
 		if (existingArity !== undefined) {
 			if (existingArity === 0 || arity === 0 || existingArity !== arity) {
-				throw getError(ErrorCode.INVALID_FUNCTION_OVERLOAD_SET, ast.functionLine, getAstDiagnosticContext(ast), {
-					identifier: name,
+				throw getError(ErrorCode.INVALID_FUNCTION_OVERLOAD_SET, ast.functionLine, {
+					details: {
+						identifier: name,
+					},
 				});
 			}
 		}
@@ -105,25 +118,19 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 		const importedFunction = getFunctionImportMetadata(ast);
 		const exportName = getFunctionExportName(ast);
 		if (exportName && overloadCountsByName[name] > 1) {
-			throw getError(
-				ErrorCode.OVERLOADED_FUNCTION_EXPORT_UNSUPPORTED,
-				ast.exportLine ?? ast.functionLine,
-				getAstDiagnosticContext(ast),
-				{
+			throw getError(ErrorCode.OVERLOADED_FUNCTION_EXPORT_UNSUPPORTED, ast.exportLine ?? ast.functionLine, {
+				details: {
 					identifier: name,
-				}
-			);
+				},
+			});
 		}
 		if (exportName) {
 			if (seenExportNames.has(exportName)) {
-				throw getError(
-					ErrorCode.DUPLICATE_EXPORT_NAME,
-					ast.exportLine ?? ast.functionLine,
-					getAstDiagnosticContext(ast),
-					{
+				throw getError(ErrorCode.DUPLICATE_EXPORT_NAME, ast.exportLine ?? ast.functionLine, {
+					details: {
 						identifier: exportName,
-					}
-				);
+					},
+				});
 			}
 			seenExportNames.add(exportName);
 		}
@@ -131,11 +138,10 @@ export function registerFunctions<TFunction extends ComposedFunctionAST>(
 		const metadata: FunctionMetadata = {
 			id,
 			name,
-			signature: functionMetadata.signature,
+			signature,
 			...(importedFunction ? { import: importedFunction } : {}),
 			...(exportName ? { exportName } : {}),
 			...(importedFunction || ast.lines.some(line => line.instruction === '#impure') ? { isImpure: true } : {}),
-			...(functionMetadata.paramShapeExpansions ? { paramShapeExpansions: functionMetadata.paramShapeExpansions } : {}),
 		};
 		seenFunctionIds.add(id);
 		byId[id] = metadata;

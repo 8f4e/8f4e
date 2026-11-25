@@ -3,7 +3,7 @@ import { ArgumentType, isSemanticInstructionLine } from '@8f4e/language-spec';
 import { describe, expect, it } from 'vitest';
 import { parseLine } from './parseLine';
 import { classifyIdentifier } from './syntax/parseArgument';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntax/syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntax/syntaxError';
 
 describe('parseLine', () => {
 	const fixtures: [number, string, CompilerASTLine][] = [
@@ -11,6 +11,7 @@ describe('parseLine', () => {
 			1,
 			'int alpha 1',
 			{
+				diagnosticSource: { kind: 'document' },
 				arguments: [
 					classifyIdentifier('alpha'),
 					{
@@ -27,6 +28,7 @@ describe('parseLine', () => {
 			100,
 			'push 0xff',
 			{
+				diagnosticSource: { kind: 'document' },
 				arguments: [
 					{
 						type: ArgumentType.LITERAL,
@@ -57,10 +59,10 @@ describe('parseLine', () => {
 	});
 
 	it('rejects wrong arity and raw argument shape in tokenizer', () => {
-		expect(() => parseLine('push', 0)).toThrowError(SyntaxRulesError);
-		expect(() => parseLine('mapBegin bool', 0)).toThrowError(SyntaxRulesError);
-		expect(() => parseLine('storeBytes -1', 0)).toThrowError(SyntaxRulesError);
-		expect(() => parseLine('map "AB" 1', 0)).toThrowError(SyntaxRulesError);
+		expect(() => parseLine('push', 0)).toThrowError(SyntaxIssue);
+		expect(() => parseLine('mapBegin bool', 0)).toThrowError(SyntaxIssue);
+		expect(() => parseLine('storeBytes -1', 0)).toThrowError(SyntaxIssue);
+		expect(() => parseLine('map "AB" 1', 0)).toThrowError(SyntaxIssue);
 	});
 
 	it('rejects unknown instruction names in tokenizer', () => {
@@ -83,8 +85,8 @@ describe('parseLine', () => {
 			parseLine('push "\\z"', 0);
 			throw new Error('Expected parseLine to reject the malformed escape');
 		} catch (error) {
-			expect(error).toBeInstanceOf(SyntaxRulesError);
-			expect((error as SyntaxRulesError).code).toBe(SyntaxErrorCode.INVALID_STRING_LITERAL);
+			expect(error).toBeInstanceOf(SyntaxIssue);
+			expect((error as SyntaxIssue).code).toBe(SyntaxErrorCode.INVALID_STRING_LITERAL);
 		}
 	});
 
@@ -97,6 +99,7 @@ describe('parseLine', () => {
 	it('parses inline call arguments', () => {
 		const result = parseLine('call foo 2 1.3', 0);
 		expect(result).toEqual({
+			diagnosticSource: { kind: 'document' },
 			lineNumber: 0,
 			instruction: 'call',
 			arguments: [
@@ -132,9 +135,9 @@ describe('parseLine', () => {
 			parseLine('push 1e309', 12);
 			throw new Error('Expected parseLine to throw');
 		} catch (error) {
-			expect(error).toBeInstanceOf(SyntaxRulesError);
-			expect((error as SyntaxRulesError).code).toBe(SyntaxErrorCode.INVALID_NUMERIC_LITERAL);
-			expect((error as SyntaxRulesError).line).toEqual(
+			expect(error).toBeInstanceOf(SyntaxIssue);
+			expect((error as SyntaxIssue).code).toBe(SyntaxErrorCode.INVALID_NUMERIC_LITERAL);
+			expect((error as SyntaxIssue).line).toEqual(
 				expect.objectContaining({
 					lineNumber: 12,
 					instruction: 'push',
@@ -144,13 +147,13 @@ describe('parseLine', () => {
 	});
 
 	it('exposes instruction in line metadata for argument-level errors', () => {
-		let thrownError: SyntaxRulesError | undefined;
+		let thrownError: SyntaxIssue | undefined;
 		try {
 			parseLine('push', 8);
 		} catch (error) {
-			thrownError = error as SyntaxRulesError;
+			thrownError = error as SyntaxIssue;
 		}
-		expect(thrownError).toBeInstanceOf(SyntaxRulesError);
+		expect(thrownError).toBeInstanceOf(SyntaxIssue);
 		expect(thrownError?.line?.lineNumber).toBe(8);
 		expect(thrownError?.line?.instruction).toBe('push');
 	});
@@ -189,13 +192,13 @@ describe('parseLine', () => {
 			]);
 
 			for (const badLiteral of ['-1', '0.5', '1.0', '1f64']) {
-				let thrownError: SyntaxRulesError | undefined;
+				let thrownError: SyntaxIssue | undefined;
 				try {
 					parseLine(`${instruction} ${badLiteral}`, 14);
 				} catch (error) {
-					thrownError = error as SyntaxRulesError;
+					thrownError = error as SyntaxIssue;
 				}
-				expect(thrownError).toBeInstanceOf(SyntaxRulesError);
+				expect(thrownError).toBeInstanceOf(SyntaxIssue);
 				expect(thrownError?.code).toBe(SyntaxErrorCode.INVALID_ARGUMENT);
 				expect(thrownError?.line).toEqual(
 					expect.objectContaining({

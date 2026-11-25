@@ -13,11 +13,7 @@ describe('exitIfTrue instruction compiler', () => {
 
 		compileInstructionForTest(
 			exitIfTrue,
-			{
-				lineNumber: 1,
-				instruction: 'exitIfTrue',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'exitIfTrue', arguments: [] },
 			context,
 			createStackFacts({ droppedStackItems: [{ kind: 'value', valueType: 'float', isNonZero: false }] })
 		);

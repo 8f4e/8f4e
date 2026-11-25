@@ -181,7 +181,6 @@ exports[`resolveMemoryReferences integration > resolves sub-program-level memory
         },
       },
     },
-    "prototypes": [],
   },
 }
 `;

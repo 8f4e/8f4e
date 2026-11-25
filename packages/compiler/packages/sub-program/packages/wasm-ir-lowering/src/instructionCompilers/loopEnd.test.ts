@@ -20,11 +20,7 @@ describe('loopEnd instruction compiler', () => {
 
 		compileInstructionForTest(
 			loopEnd,
-			{
-				lineNumber: 1,
-				instruction: 'loopEnd',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'loopEnd', arguments: [] },
 			context
 		);
 

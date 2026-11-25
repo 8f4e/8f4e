@@ -1,0 +1,30 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/audio/hzToRadians
+includesEnd
+
+entry test
+module angularFrequencyAssertions
+call hzToRadians 0.0 48000
+assertEqual 0.0
+
+; One quarter cycle per sample.
+call hzToRadians 1.0 4
+assertEqual 1.570796326794896
+
+call hzToRadians -1.0 4
+assertEqual -1.570796326794896
+
+; Equal normalized frequencies
+; at different sample rates.
+call hzToRadians 1000.0 48000
+call hzToRadians 2000.0 96000
+equal
+assert
+moduleEnd
+entryEnd

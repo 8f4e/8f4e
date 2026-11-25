@@ -1,21 +1,14 @@
 {
   "code": 22,
-  "context": {
-    "codeBlockId": "child/check",
-    "codeBlockType": "module",
-    "projectBlockId": 8,
-  },
-  "line": {
-    "arguments": [
-      {
-        "referenceKind": "plain",
-        "scope": "local",
-        "type": "identifier",
-        "value": "child/helper",
-      },
-    ],
-    "instruction": "call",
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 8,
+    "projectGroupPath": "child",
   },
   "message": "Undefined function. (22)",
+  "symbol": "child/check",
 }

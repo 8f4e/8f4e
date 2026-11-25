@@ -1,17 +1,17 @@
-import type { MemoryIdentifier, TypedValueKind } from '@8f4e/editor-state-types';
+import type { PreparedAddressBinding, PreparedBuffer } from '@8f4e/editor-state/memory';
+import type { WaveformPeaks } from './helpers/peaks';
 
 export interface Wave {
 	x: number;
 	y: number;
 	width: number;
+	columnWidth: number;
 	height: number;
-	source: MemoryIdentifier;
-	elementCount: number | MemoryIdentifier;
-	playhead?: MemoryIdentifier;
+	buffer: PreparedBuffer;
+	playhead?: PreparedAddressBinding;
 	inverseElementByteSize: number;
-	baseSampleShift: 0 | 1 | 2 | 3;
-	valueType: TypedValueKind;
 	minValue: number;
 	maxValue: number;
 	inverseValueRange: number;
+	peaks: WaveformPeaks;
 }

@@ -21,11 +21,7 @@ describe('sub stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -59,11 +55,7 @@ describe('sub stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -94,11 +86,7 @@ describe('sub stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -120,11 +108,7 @@ describe('sub stack analysis', () => {
 		);
 
 		analyzeInstruction(
-			{
-				lineNumber: 1,
-				instruction: 'sub',
-				arguments: [],
-			} as CompilerASTLine,
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'sub', arguments: [] } as CompilerASTLine,
 			context
 		);
 
@@ -137,10 +121,21 @@ describe('sub stack analysis', () => {
 			{ kind: 'value', valueType: 'int', isNonZero: false },
 			{ kind: 'address', valueType: 'int', isNonZero: false, address: {} }
 		);
-		const line = { lineNumber: 1, instruction: 'sub', arguments: [] } as CompilerASTLine;
+		const line = {
+			diagnosticSource: { kind: 'document' },
+			lineNumber: 1,
+			instruction: 'sub',
+			arguments: [],
+		} as CompilerASTLine;
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
-			expect.objectContaining({ code: ErrorCode.INVALID_ADDRESS_ARITHMETIC, line })
+			expect.objectContaining({
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.INVALID_ADDRESS_ARITHMETIC,
+					instruction: line.instruction,
+					location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+				}),
+			})
 		);
 	});
 });

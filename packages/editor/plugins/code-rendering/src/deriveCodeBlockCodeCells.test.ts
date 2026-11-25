@@ -1,6 +1,6 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
 import { createMockCodeBlock } from '@8f4e/editor-state-testing';
-import type { CodeBlockGraphicData } from '@8f4e/editor-state-types';
+import type { EditorCodeBlock } from '@8f4e/editor-state-types';
 import { createSpriteCell } from '@8f4e/web-ui';
 import type { SpriteId } from 'glugglugglug';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import deriveCodeBlockCodeCells from './deriveCodeBlockCodeCells';
 
 const cell = (id: number, color: number) => createSpriteCell(id as SpriteId, color);
 
-function createSource(code: string[], overrides: Partial<CodeBlockGraphicData> = {}): CodeBlockGraphicData {
+function createSource(code: string[], overrides: Partial<EditorCodeBlock> = {}): EditorCodeBlock {
 	return createMockCodeBlock({
 		code,
 		blockType: 'module',

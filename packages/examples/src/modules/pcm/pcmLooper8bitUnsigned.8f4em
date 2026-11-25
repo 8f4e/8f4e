@@ -33,7 +33,7 @@ store
 ; Reset playhead
 ; when reaches buffer end
 push playhead
-push buffer&
+push end(buffer)
 greaterOrEqual
 if
 push &playhead

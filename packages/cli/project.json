@@ -22,7 +22,7 @@
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/cli"],
 			"dependsOn": ["^build", "build"],
-			"inputs": ["default", "^default", { "projects": ["@8f4e/examples"], "input": "default" }],
+			"inputs": ["default", "^default", { "projects": ["@8f4e/examples"], "input": "production" }],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/cli"

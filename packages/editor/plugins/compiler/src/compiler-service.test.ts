@@ -90,7 +90,17 @@ describe('compiler service', () => {
 
 		const second = service.compileCode(EMPTY_DEFAULT_PROJECT, {}, () => true);
 		expect(service.getAssertionSites()).toBeUndefined();
-		worker.emitMessage({ type: 'compilationError', compilationId: 1, payload: { message: 'syntax error' } });
+		worker.emitMessage({
+			type: 'compilationError',
+			compilationId: 1,
+			payload: {
+				kind: 'source',
+				domain: 'syntax',
+				code: 1,
+				message: 'syntax error',
+				location: { kind: 'document', lineNumber: 1 },
+			},
+		});
 		await expect(second).rejects.toMatchObject({ message: 'syntax error' });
 		expect(service.getAssertionSites()).toBeUndefined();
 		service.dispose();

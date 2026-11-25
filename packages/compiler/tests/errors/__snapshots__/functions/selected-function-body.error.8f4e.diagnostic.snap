@@ -1,0 +1,14 @@
+{
+  "code": 22,
+  "domain": "semantic",
+  "instruction": "call",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 1,
+    "projectBlockId": 6,
+    "projectGroupPath": "",
+  },
+  "message": "Undefined function. (22)",
+  "symbol": "selected",
+}

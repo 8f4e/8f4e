@@ -11,6 +11,7 @@ describe('branch instruction compiler', () => {
 		compileInstructionForTest(
 			branch,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'branch',
 				arguments: [{ type: ArgumentType.LITERAL, value: 0, isInteger: true }],

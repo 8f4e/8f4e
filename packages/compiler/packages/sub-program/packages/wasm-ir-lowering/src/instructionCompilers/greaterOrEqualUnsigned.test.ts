@@ -13,11 +13,7 @@ describe('greaterOrEqualUnsigned instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqualUnsigned,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqualUnsigned',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqualUnsigned', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -38,11 +34,7 @@ describe('greaterOrEqualUnsigned instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqualUnsigned,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqualUnsigned',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqualUnsigned', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [
@@ -63,11 +55,7 @@ describe('greaterOrEqualUnsigned instruction compiler', () => {
 
 		compileInstructionForTest(
 			greaterOrEqualUnsigned,
-			{
-				lineNumber: 1,
-				instruction: 'greaterOrEqualUnsigned',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'greaterOrEqualUnsigned', arguments: [] },
 			context,
 			createStackFacts({
 				consumedOperands: [

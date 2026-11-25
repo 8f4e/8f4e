@@ -8,7 +8,6 @@ describe('getOrCreateMemory', () => {
 		const result = await compileProject(
 			{
 				entries: ['main'],
-				code: [],
 				execution: [
 					...moduleIds.map((id, projectBlockId) => ({
 						type: 'module' as const,
@@ -19,7 +18,6 @@ describe('getOrCreateMemory', () => {
 				],
 				functions: [],
 				constants: [],
-				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],

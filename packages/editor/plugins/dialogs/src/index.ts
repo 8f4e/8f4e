@@ -6,7 +6,7 @@ import type { DialogLayout } from './types';
 
 export const dialogsPlugin: EditorPlugin = {
 	id: 'dialogs',
-	setup: ({ store, events, drawers }) => {
+	setup: ({ store, events, renderRegistry }) => {
 		const state = store.getState();
 		let layout: DialogLayout | undefined;
 		const updateLayout = () => {
@@ -30,7 +30,7 @@ export const dialogsPlugin: EditorPlugin = {
 			if (!layout || buttonIndex === -1) return;
 			events.dispatch('activateDialogButton', { id: layout.id, buttonIndex } satisfies ActivateDialogButtonEvent);
 		};
-		const unregisterDrawer = drawers.registerModalOverlay(({ draw, state }) => {
+		const unregisterDrawer = renderRegistry.registerModalOverlay(({ draw, state }) => {
 			if (layout) drawDialog(draw, state, layout);
 		});
 		store.subscribe('dialogStack', updateLayout);

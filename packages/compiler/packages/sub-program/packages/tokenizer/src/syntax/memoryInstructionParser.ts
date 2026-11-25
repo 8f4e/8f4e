@@ -1,6 +1,6 @@
-import type { Argument, ArgumentLiteral, ArgumentStringLiteral } from '@8f4e/language-spec';
+import type { Argument, ArgumentLiteral, ArgumentStringLiteral, EndAddressIdentifier } from '@8f4e/language-spec';
 import { ArgumentType } from '@8f4e/language-spec';
-import { SyntaxErrorCode, SyntaxRulesError } from './syntaxError';
+import { SyntaxErrorCode, SyntaxIssue } from './syntaxError';
 
 /**
  * A single token within a split-byte sequence.
@@ -10,17 +10,17 @@ export type SplitByteToken = { type: 'literal'; value: number } | { type: 'ident
 
 export type MemoryArgumentShape =
 	| { type: 'literal'; value: number }
+	| { type: 'end-query'; query: EndAddressIdentifier }
 	| { type: 'identifier'; value: string }
 	| { type: 'constant-identifier'; value: string }
 	| { type: 'split-byte-tokens'; tokens: SplitByteToken[] }
-	| { type: 'memory-reference'; base: string; pattern: string; isEndAddress: boolean }
+	| { type: 'memory-reference'; base: string; pattern: string }
 	| { type: 'element-count'; base: string }
 	| { type: 'intermodular-reference'; pattern: string }
 	| {
 			type: 'intermodular-module-reference';
 			module: string;
 			pattern: string;
-			isEndAddress: boolean;
 	  }
 	| {
 			type: 'intermodular-element-count';
@@ -108,7 +108,7 @@ function collectSplitByteTokens(args: Array<Argument>, start: number): SplitByte
 	const tokens: SplitByteToken[] = [];
 	for (let i = start; i < args.length; i++) {
 		if (!isSplitByteCandidate(args[i])) {
-			throw new SyntaxRulesError(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
+			throw new SyntaxIssue(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
 		}
 		tokens.push(...toSplitByteTokens(args[i]));
 	}
@@ -132,11 +132,11 @@ function collectSplitByteTokens(args: Array<Argument>, start: number): SplitByte
  *
  * @param args - Array of parsed arguments
  * @returns Parsed memory instruction arguments with shape information
- * @throws {SyntaxRulesError} If required arguments are missing or the token sequence is invalid
+ * @throws {SyntaxIssue} If required arguments are missing or the token sequence is invalid
  */
 export function parseMemoryInstructionArgumentsShape(args: Array<Argument>): ParsedMemoryInstructionArguments {
 	if (!args[0]) {
-		throw new SyntaxRulesError(SyntaxErrorCode.MISSING_ARGUMENT);
+		throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT);
 	}
 
 	const result: ParsedMemoryInstructionArguments = {
@@ -149,7 +149,7 @@ export function parseMemoryInstructionArgumentsShape(args: Array<Argument>): Par
 	if (args[0].type === ArgumentType.STRING_LITERAL) {
 		if (args[1]) {
 			if (!isSplitByteCandidate(args[1])) {
-				throw new SyntaxRulesError(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
+				throw new SyntaxIssue(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
 			}
 			result.firstArg = { type: 'split-byte-tokens', tokens: collectSplitByteTokens(args, 0) };
 		}
@@ -160,7 +160,7 @@ export function parseMemoryInstructionArgumentsShape(args: Array<Argument>): Par
 	if (result.firstArg.type === 'literal' && isByteLiteral(args[0])) {
 		if (args[1]) {
 			if (!isSplitByteCandidate(args[1])) {
-				throw new SyntaxRulesError(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
+				throw new SyntaxIssue(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
 			}
 			// Two or more tokens: collect all as split-byte-tokens
 			const tokens: SplitByteToken[] = [
@@ -174,7 +174,7 @@ export function parseMemoryInstructionArgumentsShape(args: Array<Argument>): Par
 
 	// Case B: Anonymous path — out-of-range literal followed by extra args (reject to prevent silent miscompilation)
 	if (result.firstArg.type === 'literal' && args[1]) {
-		throw new SyntaxRulesError(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
+		throw new SyntaxIssue(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
 	}
 
 	// Case C: Anonymous path — starts with a constant-style identifier.
@@ -190,7 +190,7 @@ export function parseMemoryInstructionArgumentsShape(args: Array<Argument>): Par
 	) {
 		if (args[1]) {
 			if (!isSplitByteCandidate(args[1])) {
-				throw new SyntaxRulesError(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
+				throw new SyntaxIssue(SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS);
 			}
 			// Two or more tokens: collect all as split-byte-tokens
 			const tokens: SplitByteToken[] = [
@@ -249,12 +249,14 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 	}
 
 	if (arg.type !== ArgumentType.IDENTIFIER) {
-		throw new SyntaxRulesError(SyntaxErrorCode.MISSING_ARGUMENT);
+		throw new SyntaxIssue(SyntaxErrorCode.MISSING_ARGUMENT);
 	}
 
 	// Use the pre-classified referenceKind and extracted fields from the ArgumentIdentifier
 	// instead of re-detecting patterns from raw strings.
 	switch (arg.referenceKind) {
+		case 'end-address':
+			return { type: 'end-query', query: arg };
 		case 'intermodular-reference':
 			return {
 				type: 'intermodular-reference',
@@ -265,7 +267,6 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 				type: 'intermodular-module-reference',
 				module: arg.targetModuleId,
 				pattern: arg.value,
-				isEndAddress: !!arg.isEndAddress,
 			};
 		case 'intermodular-element-count':
 			return {
@@ -300,7 +301,6 @@ function classifyArgument(arg: Argument): MemoryArgumentShape {
 				type: 'memory-reference',
 				base: arg.targetMemoryId,
 				pattern: arg.value,
-				isEndAddress: arg.isEndAddress,
 			};
 		case 'element-count':
 			return {

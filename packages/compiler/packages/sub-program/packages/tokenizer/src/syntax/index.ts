@@ -6,9 +6,7 @@ export { default as extractIntermodularElementCountBase } from './extractIntermo
 export { default as extractIntermodularElementMaxBase } from './extractIntermodularElementMaxBase';
 export { default as extractIntermodularElementMinBase } from './extractIntermodularElementMinBase';
 export { default as extractIntermodularElementWordSizeBase } from './extractIntermodularElementWordSizeBase';
-export { default as extractIntermodularModuleReferenceBase } from './extractIntermodularModuleReferenceBase';
 export { default as extractMemoryPointerBase } from './extractMemoryPointerBase';
-export { default as extractMemoryReferenceBase } from './extractMemoryReferenceBase';
 export { default as extractPointeeElementMaxBase } from './extractPointeeElementMaxBase';
 export { default as extractPointeeElementWordSizeBase } from './extractPointeeElementWordSizeBase';
 export { default as extractUseDependencies } from './extractUseDependencies';
@@ -18,9 +16,6 @@ export { default as hasElementCountPrefix } from './hasElementCountPrefix';
 export { default as hasElementMaxPrefix } from './hasElementMaxPrefix';
 export { default as hasElementMinPrefix } from './hasElementMinPrefix';
 export { default as hasElementWordSizePrefix } from './hasElementWordSizePrefix';
-export { default as hasMemoryReferencePrefix } from './hasMemoryReferencePrefix';
-export { default as hasMemoryReferencePrefixEnd } from './hasMemoryReferencePrefixEnd';
-export { default as hasMemoryReferencePrefixStart } from './hasMemoryReferencePrefixStart';
 export { default as hasPointeeElementMaxPrefix } from './hasPointeeElementMaxPrefix';
 export { default as hasPointeeElementWordSizePrefix } from './hasPointeeElementWordSizePrefix';
 export { default as instructionParser } from './instructionParser';
@@ -31,21 +26,16 @@ export { default as isIntermodularElementCountReference } from './isIntermodular
 export { default as isIntermodularElementMaxReference } from './isIntermodularElementMaxReference';
 export { default as isIntermodularElementMinReference } from './isIntermodularElementMinReference';
 export { default as isIntermodularElementWordSizeReference } from './isIntermodularElementWordSizeReference';
-export { default as isIntermodularModuleReference } from './isIntermodularModuleReference';
-export { default as isIntermodularReference } from './isIntermodularReference';
-export { default as isIntermodularReferencePattern } from './isIntermodularReferencePattern';
 export { default as isMemoryPointerIdentifier } from './isMemoryPointerIdentifier';
 export { default as isSkipExecutionDirective } from './isSkipExecutionDirective';
-export {
-	type MemoryArgumentShape,
-	type ParsedMemoryInstructionArguments,
-	parseMemoryInstructionArgumentsShape,
-	type SplitByteToken,
+export type {
+	MemoryArgumentShape,
+	ParsedMemoryInstructionArguments,
+	SplitByteToken,
 } from './memoryInstructionParser';
-export { classifyIdentifier, decodeStringLiteral, parseArgument, parseCompileTimeOperand } from './parseArgument';
-export {
-	type CompileTimeMulDivExpression,
-	default as parseConstantMulDivExpression,
-} from './parseConstantMulDivExpression';
-export { default as parseLiteralMulDivExpression, type LiteralMulDivResult } from './parseLiteralMulDivExpression';
-export { SyntaxErrorCode, type SyntaxErrorLine, SyntaxRulesError } from './syntaxError';
+
+export type { CompileTimeMulDivExpression } from './parseConstantMulDivExpression';
+export type { LiteralMulDivResult } from './parseLiteralMulDivExpression';
+export { classifyProjectScopeLine, isProjectGapLine, type ProjectScopeDeclarationName } from './projectScopeLines';
+export * from './public';
+export { SyntaxErrorCode, type SyntaxErrorLine, syntaxErrorMessage } from './syntaxError';

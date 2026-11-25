@@ -25,7 +25,6 @@
               "value": "valuesAddress",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "address",
@@ -68,7 +67,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "output",
@@ -177,10 +175,15 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "values/state",
+              "value": "threshold",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 7,
             },
           ],
-          "instruction": "shape",
+          "instruction": "int",
         },
         {
           "arguments": [
@@ -294,7 +297,6 @@
               "value": "rawPointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "fallback",
@@ -480,7 +482,7 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "inherited",
+              "value": "threshold",
             },
           ],
           "instruction": "push",
@@ -679,21 +681,6 @@
           "pointerDepth": 0,
           "type": "float",
         },
-        "inherited": {
-          "allocationUnitAddress": 3,
-          "allocationUnitCount": 1,
-          "byteAddress": 12,
-          "default": 32,
-          "elementWordSize": 4,
-          "hasExplicitDefault": true,
-          "id": 0,
-          "isInherited": true,
-          "isInteger": true,
-          "isUnsigned": false,
-          "numberOfElements": 1,
-          "pointerDepth": 0,
-          "type": "int",
-        },
         "precise": {
           "allocationUnitAddress": 6,
           "allocationUnitCount": 2,
@@ -732,6 +719,20 @@
           "elementWordSize": 4,
           "hasExplicitDefault": true,
           "id": 5,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+        "threshold": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 32,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 1,

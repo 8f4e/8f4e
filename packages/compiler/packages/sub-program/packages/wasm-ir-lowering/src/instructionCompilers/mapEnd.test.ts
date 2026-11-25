@@ -34,7 +34,7 @@ describe('mapEnd instruction compiler', () => {
 		});
 		compileInstructionForTest(
 			mapEnd,
-			{ lineNumber: 1, instruction: 'mapEnd', arguments: [identifier('int')] },
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'mapEnd', arguments: [identifier('int')] },
 			context,
 			createStackFacts({ map: { inputKind: 'int32', outputKind: 'int32' } })
 		);
@@ -66,11 +66,7 @@ describe('mapEnd instruction compiler', () => {
 
 		compileInstructionForTest(
 			mapEnd,
-			{
-				lineNumber: 1,
-				instruction: 'mapEnd',
-				arguments: [identifier('int')],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'mapEnd', arguments: [identifier('int')] },
 			context,
 			createStackFacts({ map: { inputKind: 'int32', outputKind: 'int32' } })
 		);

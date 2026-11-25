@@ -1,0 +1,20 @@
++0 constants env                           +                    
+ 1 ; @pos 0 0                                                   
+ 2 ; Auto-generated environment constants                       
+ 3 ;+0 module player               +                            
+ 4   1 ; @pos 4 3                                               
+ 5   2 int[] buffer 4                                           
++6 c+3 moduleEnd                   +       +                    
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+      ???                                                       
+        ?  Loading plot plugin... 240 ms                        
+           Loading sound... 240 ms                              
+           Loading missing... 240 ms                            

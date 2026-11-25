@@ -6,6 +6,9 @@
 ; @slider <memoryAddress> [min] [max] [step]
 ```
 
+The target can be an allocated address (`&gain`) or a bare fixed reference (`gain` declared with `float&` or `int&`).
+Fixed references resolve to their backing module, including when saving slider values to code.
+
 The default range is `0..127` for integer memory and `0..1` for floating-point memory. An optional positive step snaps
 values within the range. Each slider adds two rows below its directive and fills the block's available content width.
 Clicks and drags update runtime memory; the handle reads live memory on each frame.
@@ -20,10 +23,11 @@ const editor = await initEditor(canvas, { ...options, plugins: [createSliderPlug
 
 Each installation owns its slider geometry and memory bindings in a private
 `slidersByBlock` map, plus its active drag. A capture listener consumes slider movement before viewport panning.
+Bindings refresh independently when accepted compiler metadata changes.
 The **Save slider values to code** menu action updates the original declaration defaults, including references through
 group aliases, and preserves inline comments. Runtime dragging leaves source text unchanged.
 
-Disposal removes layout subscriptions/contributions, the drawer, menu action, and event listeners. Generic parsing, layout, memory resolution,
+Disposal removes compiler and layout subscriptions, layout contributions, the drawer, menu action, and event listeners. Generic parsing, layout, memory resolution,
 and declaration editing remain in core.
 
 ```bash

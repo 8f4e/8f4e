@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine } from '@8f4e/language-spec';
-import { ErrorCode, getError } from '@8f4e/language-spec';
+import { ErrorCode } from '@8f4e/language-spec';
 import { deriveKnownIntegerValue } from '../../utils/knownIntegerValue';
 import { consume, produce } from '../stack';
 import type { InstructionAnalysisResult } from '../types';
@@ -17,7 +18,7 @@ export function analyzeRemainder(line: CompilerASTLine, context: CompilationCont
 	const divisor = consumed[1];
 
 	if (!divisor.isNonZero) {
-		throw getError(ErrorCode.DIVISION_BY_ZERO, line, context);
+		throw getError(ErrorCode.DIVISION_BY_ZERO, line, { symbol: context.codeBlockId });
 	}
 
 	const integerMetadata = deriveKnownIntegerValue(consumed[0], divisor, (dividend, divisorValue) => {

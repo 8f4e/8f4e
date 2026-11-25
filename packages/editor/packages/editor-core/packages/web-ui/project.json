@@ -21,7 +21,7 @@
     "test": {
       "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/@8f4e/web-ui"],
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/web-ui"
@@ -30,10 +30,10 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc --noEmit",
+        "command": "tsc --noEmit -p tsconfig.test.json",
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["^build"]
+      "dependsOn": ["build"]
     },
     "test:screenshot": {
       "executor": "nx:run-commands",

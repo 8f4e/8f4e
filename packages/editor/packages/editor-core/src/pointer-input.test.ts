@@ -1,5 +1,6 @@
-import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
-import type { CodeBlockPointerDownEvent, InternalPointerEvent } from '@8f4e/editor-state-types';
+import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
+import type { CodeBlockPointerDownEvent, InternalPointerEvent, ViewportScrollEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
 import { afterEach, expect, it, vi } from 'vitest';
 import createEvents from './events';
@@ -9,9 +10,12 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-function setup(moduleDragging = true) {
+function setup() {
 	const events = createEvents();
-	const store = initState(events, { callbacks: {}, featureFlags: { moduleDragging } });
+	const store = initState(events, {
+		callbacks: {},
+	});
+	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('loadProject', {
 		project: {
 			...EMPTY_DEFAULT_PROJECT,
@@ -19,7 +23,7 @@ function setup(moduleDragging = true) {
 		},
 	});
 	const state = store.getState();
-	const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'target')!;
+	const block = state.project.activeLevel.blocks.find(block => block.name === 'target')!;
 	const pointer: InternalPointerEvent = {
 		x: block.x - state.viewport.x + 8,
 		y: block.y - state.viewport.y + 8,
@@ -38,25 +42,33 @@ function setup(moduleDragging = true) {
 	return { events, store, state, block, pointer };
 }
 
-it.each([true, false])('routes controls before block selection with moduleDragging=%s', moduleDragging => {
-	const test = setup(moduleDragging);
+async function openBlockMenu(test: ReturnType<typeof setup>) {
+	cleanups.push(test.store.menus.registerItem('codeBlockMenu', () => ({ title: 'Inspect', action: 'inspect' })));
+	test.events.dispatch('contextmenu', { ...test.pointer });
+	await Promise.resolve();
+	expect(test.state.contextMenu.open).toBe(true);
+}
+
+it('routes controls before block selection', () => {
+	const test = setup();
 	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-		expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+		expect(test.state.project.selectedCodeBlock).toBeUndefined();
+		expect(test.state.project.draggedCodeBlock).toBeUndefined();
 		event.stopPropagation = true;
 	});
 	test.events.on('codeBlockPointerDown', pressed, { capture: true });
 	test.events.dispatch('pointerdown', test.pointer);
 	expect(pressed).toHaveBeenCalledOnce();
 	expect(pressed.mock.calls[0][0].codeBlock).toBe(test.block);
+	expect(pressed.mock.calls[0][0].buttons).toBe(test.pointer.buttons);
 	expect(test.pointer.stopPropagation).toBe(true);
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
 });
 
 it('delivers ordinary block presses after default selection', () => {
 	const test = setup();
 	const pressed = vi.fn((event: CodeBlockPointerDownEvent) => {
-		expect(test.state.codeBlockRendering.selectedCodeBlock).toBe(event.codeBlock);
+		expect(test.state.project.selectedCodeBlock).toBe(event.codeBlock);
 	});
 	test.events.on('codeBlockPointerDown', pressed);
 	test.events.dispatch('pointerdown', test.pointer);
@@ -70,8 +82,8 @@ it('probes interactions without committing default selection, dragging, or viewp
 	test.events.dispatch('pointerdown', test.pointer, { phase: 'capture' });
 	test.events.dispatch('pointermove', { ...test.pointer, movementX: 40, movementY: 30 }, { phase: 'capture' });
 	test.events.dispatch('pointerup', { ...test.pointer, buttons: 0 }, { phase: 'capture' });
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	expect(test.state.viewport).toMatchObject(viewport);
 	expect(test.state.projectChange.revision).toBe(revision);
 });
@@ -108,7 +120,7 @@ it('leaves dialog activation to the completed press after a capture-only probe',
 	expect(test.state.dialogStack).toHaveLength(0);
 });
 
-it('blocks menu movement and closing presses from reaching blocks or moving the viewport', () => {
+it('blocks menu movement and closing presses from reaching blocks or moving the viewport', async () => {
 	const test = setup();
 	const blockPressed = vi.fn();
 	const menuMoved = vi.fn();
@@ -117,7 +129,7 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	test.events.on('codeBlockPointerDown', blockPressed);
 	test.events.on('contextMenuPointerMove', menuMoved);
 	test.events.on('contextMenuPointerDown', menuPressed);
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
 	const revision = test.state.projectChange.revision;
 	const move = { ...test.pointer, x: 0, y: 0, movementX: 40, movementY: 30 };
@@ -130,18 +142,37 @@ it('blocks menu movement and closing presses from reaching blocks or moving the 
 	expect(test.pointer.stopPropagation).toBe(true);
 	expect(test.state.contextMenu.open).toBe(false);
 	expect(blockPressed).not.toHaveBeenCalled();
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
-	expect(test.state.codeBlockRendering.draggedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.draggedCodeBlock).toBeUndefined();
 	expect(test.state.projectChange.revision).toBe(revision);
 });
 
-it('forwards menu presses only after capture-only probes complete', () => {
+it('keeps viewport scrolling blocked while a menu or modal dialog is open', async () => {
+	const test = setup();
+	const viewport = { x: test.state.viewport.x, y: test.state.viewport.y };
+	const scroll: ViewportScrollEvent = { movementX: -17, movementY: -31, stopPropagation: false };
+
+	await openBlockMenu(test);
+	test.events.dispatch('viewportscroll', { ...scroll });
+	expect(test.state.viewport).toMatchObject(viewport);
+	test.events.dispatch('closeContextMenu');
+
+	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
+	test.events.dispatch('viewportscroll', { ...scroll });
+	expect(test.state.viewport).toMatchObject(viewport);
+	test.events.dispatch('removeDialog', 'modal');
+
+	test.events.dispatch('viewportscroll', scroll);
+	expect(test.state.viewport).toMatchObject({ x: viewport.x + 17, y: viewport.y + 31 });
+});
+
+it('forwards menu presses only after capture-only probes complete', async () => {
 	const test = setup();
 	const menuPressed = vi.fn();
 	const blockPressed = vi.fn();
 	test.events.on('contextMenuPointerDown', menuPressed);
 	test.events.on('codeBlockPointerDown', blockPressed, { capture: true });
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	test.events.dispatch('pointerdown', { ...test.pointer }, { phase: 'capture' });
 	expect(menuPressed).not.toHaveBeenCalled();
 	expect(blockPressed).not.toHaveBeenCalled();
@@ -151,13 +182,13 @@ it('forwards menu presses only after capture-only probes complete', () => {
 	expect(blockPressed).not.toHaveBeenCalled();
 });
 
-it('gives modal dialogs priority over menu pointer forwarding', () => {
+it('gives modal dialogs priority over menu pointer forwarding', async () => {
 	const test = setup();
 	const menuPressed = vi.fn();
 	const menuMoved = vi.fn();
 	test.events.on('contextMenuPointerDown', menuPressed);
 	test.events.on('contextMenuPointerMove', menuMoved);
-	test.events.dispatch('contextmenu', test.pointer);
+	await openBlockMenu(test);
 	test.events.dispatch('addDialog', { id: 'modal', title: 'Modal', text: 'Please wait', buttons: [] });
 	const move = { ...test.pointer };
 	test.events.dispatch('pointermove', move);
@@ -177,13 +208,13 @@ it.each(['pointerup', 'pointercancel'])('releases a claimed control on %s', type
 	expect(released).toHaveBeenCalledOnce();
 });
 
-it('gives dialogs and context menus precedence over a later overlay handler', () => {
+it('gives dialogs and context menus precedence over a later overlay handler', async () => {
 	const test = setup();
 	const overlay = vi.fn((event: InternalPointerEvent) => {
 		event.stopPropagation = true;
 	});
 	test.events.on('pointerdown', overlay, { capture: true, layer: INPUT_LAYERS.canvasOverlay });
-	test.events.dispatch('contextmenu', { ...test.pointer });
+	await openBlockMenu(test);
 	test.events.dispatch('pointerdown', { ...test.pointer });
 	expect(overlay).not.toHaveBeenCalled();
 	test.events.dispatch('closeContextMenu');
@@ -203,5 +234,5 @@ it('offers input to the most recently registered control inside the foremost blo
 	test.events.dispatch('pointerdown', test.pointer);
 	expect(upper).toHaveBeenCalledOnce();
 	expect(lower).not.toHaveBeenCalled();
-	expect(test.state.codeBlockRendering.selectedCodeBlock).toBeUndefined();
+	expect(test.state.project.selectedCodeBlock).toBeUndefined();
 });

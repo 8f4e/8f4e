@@ -36,16 +36,62 @@ entryEnd`),
 		}
 	);
 
-	it('rebinds cached references to the new layout without mutating earlier artifacts', async () => {
+	it.each([
+		['int', 'i32.load'],
+		['int16', 'i32.load16_s'],
+		['float', 'f32.load'],
+	])('emits the slot address and exact load sequence for %s*&', async (type, finalLoad) => {
+		const declaration = `${type}*& input &source:output`;
+		const source = (reference: string, body = '') =>
+			parseProjectSource(`8f4e/v1
+entry main
+module source
+${type}* output -1
+moduleEnd
+module sink
+${reference}
+${body}
+moduleEnd
+entryEnd`);
+		const options = { enableFunctionInlining: false, enableMemoryGuards: false };
+		const result = await compileProject(
+			source(declaration, 'push input\ndrop\npush *input\ndrop\npush **input\ndrop'),
+			options
+		);
+		const target = result.memoryPlan.modules.source.memory.output;
+		expect(result.memoryPlan.modules.sink.allocatedByteLength).toBe(0);
+		expect(result.memoryDefaultsByModuleId.sink).toEqual({});
+		expect(result.compiledModules.sink.referenceSlots.input).toMatchObject({
+			type: `${type}*&`,
+			lineNumber: 1,
+			targetModuleId: 'source',
+			targetMemory: { pointerDepth: 1, pointeeBaseType: type },
+		});
+		expect(result.compiledModules.sink.referenceSlots.input.targetMemory).toBe(target);
+
+		const wat = await disassembleWasm(result.codeBuffer);
+		const loadSequences = [
+			[`i32.const ${target.byteAddress}`, 'drop'],
+			[`i32.const ${target.byteAddress}`, 'i32.load', 'drop'],
+			[`i32.const ${target.byteAddress}`, 'i32.load', finalLoad, 'drop'],
+		];
+		expect(wat.replace(/\s+/g, ' ')).toContain(loadSequences.flat().join(' '));
+
+		const unusedReference = await compileProject(source(declaration), options);
+		const noReference = await compileProject(source(''), options);
+		expect(unusedReference.codeBuffer).toEqual(noReference.codeBuffer);
+	});
+
+	it.each(['float', 'float*'])('rebinds cached %s references without mutating earlier artifacts', async type => {
 		const source = (padding: string) =>
 			parseProjectSource(`8f4e/v1
 entry main
 module source
 ${padding}
-float output 1.5
+${type} output
 moduleEnd
 module sink
-float& input &source:output
+${type}& input &source:output
 push input
 drop
 moduleEnd

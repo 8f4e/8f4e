@@ -1,11 +1,13 @@
 {
   "code": 18,
-  "context": {
-    "projectGroupPath": "synth",
-  },
-  "line": {
-    "instruction": "init",
+  "domain": "syntax",
+  "instruction": "init",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Expected "init &<exposed-memory> <number>" or "init &<exposed-memory> &<module>:<memory>".",
 }

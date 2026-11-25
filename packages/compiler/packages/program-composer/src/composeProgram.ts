@@ -1,3 +1,4 @@
+import { getError, includeErrorAt, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import {
 	type CallLine,
 	type CompilerCache,
@@ -5,8 +6,11 @@ import {
 	type ComposedEntry,
 	createChildProjectGroupPath,
 	createProjectModuleId,
+	type DiagnosticSource,
+	ErrorCode,
 	type FunctionLine,
 	type IncludedFunctionBindings,
+	IncludeErrorCode,
 	type ProjectConstantNamespacePassLine,
 	type ProjectGroupPath,
 	type ProjectMemoryExposure,
@@ -16,13 +20,9 @@ import {
 	type ValidatedAST,
 	type ValidatedConstantsAST,
 	type ValidatedFunctionAST,
-	type ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
-import {
-	parseProjectConstantNamespacePassLine,
-	parseProjectMemoryInitializerLine,
-	SyntaxRulesError,
-} from '@8f4e/tokenizer';
+import { validateProjectCodeBlock } from '@8f4e/project-preparser';
+import { parseProjectConstantNamespacePassLine, parseProjectMemoryInitializerLine } from '@8f4e/tokenizer';
 import { compileSourceToAST, createCompilerSource } from './compilerSource';
 import { createCompilerCache } from './createCompilerCache';
 import { qualifyAst } from './qualifyAst';
@@ -30,32 +30,44 @@ import { resolveFunctionPasses } from './resolveFunctionPasses';
 import { selectModuleDefinitions } from './selectModuleDefinitions';
 import type { ComposedProgram, IncludedFunctionsByProjectGroupPath } from './types';
 
-function collectProjectScopePasses(
-	code: readonly string[],
-	projectPath: ProjectGroupPath
-): ProjectConstantNamespacePassLine[] {
-	const passes: ProjectConstantNamespacePassLine[] = [];
-	for (const [index, sourceLine] of code.entries()) {
-		if (!/^\s*pass(?:\s|$)/.test(sourceLine)) {
-			continue;
-		}
+type BlockDiagnosticSource = Extract<DiagnosticSource, { kind: 'block' }>;
 
-		try {
-			passes.push(parseProjectConstantNamespacePassLine(sourceLine, index));
-		} catch (error) {
-			if (error instanceof SyntaxRulesError) {
-				error.context = { ...error.context, projectGroupPath: projectPath };
-			}
-			throw error;
-		}
+function appendGroupDeclarations(
+	code: readonly string[],
+	groupPath: ProjectGroupPath,
+	parentGroupPath: ProjectGroupPath,
+	diagnosticSource: BlockDiagnosticSource,
+	program: ComposedProgram
+): void {
+	const passes: ProjectConstantNamespacePassLine[] = [];
+	const initializers: ProjectMemoryInitializerLine[] = [];
+	const declarations = validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' });
+	for (const { instruction, lineNumber } of declarations) {
+		if (instruction === 'expose') continue;
+		const sourceLine = code[lineNumber];
+		const result =
+			instruction === 'pass'
+				? parseProjectConstantNamespacePassLine(sourceLine, lineNumber)
+				: parseProjectMemoryInitializerLine(sourceLine, lineNumber);
+		if (!result.ok)
+			throw syntaxErrorAt(result.issue.code, result.issue.message, diagnosticSource, {
+				lineNumber,
+				instruction,
+			});
+		if (result.value.instruction === 'pass') passes.push({ ...result.value, diagnosticSource });
+		else initializers.push({ ...result.value, diagnosticSource });
 	}
-	return passes;
+	if (initializers.length > 0)
+		program.projectMemoryInitializerScopes.push({ groupPath, parentGroupPath, initializers });
+	if (passes.length > 0) program.projectConstantNamespaceScopes.push({ groupPath, parentGroupPath, passes });
 }
 
 function appendMemoryExposureAliases(
 	program: ComposedProgram,
 	groupPath: ProjectGroupPath,
-	exposures: ProjectMemoryExposure[]
+	exposures: readonly ProjectMemoryExposure[],
+	groupTargets: ReadonlySet<string>,
+	diagnosticSource: BlockDiagnosticSource
 ): void {
 	if (exposures.length === 0) {
 		return;
@@ -65,28 +77,33 @@ function appendMemoryExposureAliases(
 	const groupAliases = new Map(aliases.get(groupPath));
 
 	for (const exposure of exposures) {
+		const source = {
+			...exposure,
+			groupPath,
+			diagnosticSource,
+			instruction: 'expose' as const,
+		};
 		const targetModuleId = createProjectModuleId(groupPath, exposure.targetModuleName);
-		program.memoryExposures.push({ ...exposure, groupPath, targetModuleId });
-		groupAliases.set(exposure.name, { targetModuleId, targetMemoryId: exposure.targetMemoryName });
+		const targetMemoryId = exposure.targetMemoryName;
+		const target = groupTargets.has(exposure.targetModuleName)
+			? aliases.get(targetModuleId)?.get(targetMemoryId)
+			: { targetModuleId, targetMemoryId };
+		if (!target) {
+			throw getError(ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET, source, {
+				details: {
+					projectGroupPath: groupPath,
+					projectMemoryExposureName: exposure.name,
+					targetModuleId,
+					targetMemoryId,
+				},
+			});
+		}
+		program.memoryExposures.push({ ...source, ...target });
+		groupAliases.set(exposure.name, target);
 	}
 
 	aliases.set(groupPath, groupAliases);
 	program.memoryAliases = aliases;
-}
-
-function collectProjectMemoryInitializers(
-	code: readonly string[],
-	projectPath: ProjectGroupPath
-): ProjectMemoryInitializerLine[] {
-	return code.flatMap((line, index) => {
-		if (!/^\s*init(?:\s|$)/.test(line)) return [];
-		try {
-			return [parseProjectMemoryInitializerLine(line, index)];
-		} catch (error) {
-			if (error instanceof SyntaxRulesError) error.context = { ...error.context, projectGroupPath: projectPath };
-			throw error;
-		}
-	});
 }
 
 function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFunctionBindings): ValidatedFunctionAST {
@@ -102,12 +119,21 @@ function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFun
 			if (line === ast.functionLine) return functionLine;
 			if (line.instruction !== 'call') return line;
 			const target = line.arguments[0];
+			const boundName = bindings.callTargets.get(target.value);
+			if (boundName === null || boundName === undefined) {
+				const { fileLocation } = bindings;
+				const ambiguous = boundName === null;
+				throw includeErrorAt(
+					ambiguous ? IncludeErrorCode.AMBIGUOUS_CALL_TARGET : IncludeErrorCode.UNBOUND_CALL_TARGET,
+					ambiguous
+						? `include "${fileLocation.includeId}" call target "${target.value}" is ambiguous because that function name expands to multiple public/internal include names`
+						: `call target "${target.value}" is not defined or imported by this include`,
+					{ ...fileLocation, lineNumber: fileLocation.lineNumber + line.lineNumber }
+				);
+			}
 			return {
 				...line,
-				arguments: [
-					{ ...target, value: bindings.callTargets.get(target.value) ?? target.value },
-					...line.arguments.slice(1),
-				],
+				arguments: [{ ...target, value: boundName }, ...line.arguments.slice(1)],
 			} as CallLine;
 		}),
 	};
@@ -116,10 +142,9 @@ function renameIncludedFunction(ast: ValidatedFunctionAST, bindings: IncludedFun
 function appendUnit(
 	project: ProjectObjectModel,
 	projectPath: ProjectGroupPath,
-	parentProjectPath: ProjectGroupPath | undefined,
 	program: ComposedProgram,
 	includedFunctionsByProjectPath: IncludedFunctionsByProjectGroupPath
-): Map<string, ComposedEntry> {
+): { entries: Map<string, ComposedEntry>; groupTargets: Set<string> } {
 	const entries = new Map<string, ComposedEntry>();
 	const ensureEntry = (name: string): ComposedEntry => {
 		let entry = entries.get(name);
@@ -136,22 +161,6 @@ function appendUnit(
 	};
 	for (const name of project.entries) ensureEntry(name);
 	if (projectPath === ROOT_PROJECT_GROUP_PATH) ensureEntry('main');
-	const memoryInitializers = collectProjectMemoryInitializers(project.code, projectPath);
-	if (memoryInitializers.length > 0) {
-		program.projectMemoryInitializerScopes.push({
-			groupPath: projectPath,
-			...(parentProjectPath !== undefined ? { parentGroupPath: parentProjectPath } : {}),
-			initializers: memoryInitializers,
-		});
-	}
-	const constantNamespacePasses = collectProjectScopePasses(project.code, projectPath);
-	if (constantNamespacePasses.length > 0) {
-		program.projectConstantNamespaceScopes.push({
-			groupPath: projectPath,
-			...(parentProjectPath !== undefined ? { parentGroupPath: parentProjectPath } : {}),
-			passes: constantNamespacePasses,
-		});
-	}
 
 	const prefix = projectPath === ROOT_PROJECT_GROUP_PATH ? undefined : `${projectPath}/`;
 	const qualify = <TAst extends ValidatedAST>(
@@ -163,21 +172,10 @@ function appendUnit(
 			sourceIdentity: { projectGroupPath: projectPath, codeBlockId },
 		};
 	};
-	const prototypes = project.prototypes.filter(block => !block.disabled);
 	const constants = project.constants.filter(block => !block.disabled);
 	const functions = project.functions.filter(block => !block.disabled);
 	const includedFunctions = includedFunctionsByProjectPath.get(projectPath) ?? [];
 
-	program.ast.prototypes.push(
-		...prototypes.map((prototype, index) =>
-			qualify(
-				compileSourceToAST<ValidatedPrototypeAST>(
-					createCompilerSource(prototype, projectPath, `prototype:${index}`),
-					program.cache
-				)
-			)
-		)
-	);
 	program.ast.constants.push(
 		...constants.map((constantsBlock, index) =>
 			qualify(
@@ -189,6 +187,13 @@ function appendUnit(
 		)
 	);
 	program.ast.functions.push(
+		...includedFunctions.map((func, index) => {
+			const ast = compileSourceToAST<ValidatedFunctionAST>(
+				createCompilerSource(func, projectPath, `include:function:${index}`),
+				program.cache
+			);
+			return qualify(renameIncludedFunction(ast, func.bindings), ast.name);
+		}),
 		...functions.map((func, index) =>
 			qualify(
 				compileSourceToAST<ValidatedFunctionAST>(
@@ -196,30 +201,33 @@ function appendUnit(
 					program.cache
 				)
 			)
-		),
-		...includedFunctions.map((func, index) => {
-			const ast = compileSourceToAST<ValidatedFunctionAST>(
-				createCompilerSource(func, projectPath, `include:function:${index}`),
-				program.cache
-			);
-			return qualify(renameIncludedFunction(ast, func.bindings), ast.name);
-		})
+		)
 	);
 
 	const selectedModules = selectModuleDefinitions(project.execution, projectPath, program.cache);
+	// Only names whose last enabled declaration is a group can forward a child exposure.
+	const groupTargets = new Set<string>();
 	for (const block of project.execution) {
 		if (block.type === 'group') {
 			const groupPath = createChildProjectGroupPath(projectPath, block.name);
-			appendMemoryExposureAliases(program, groupPath, block.exposures);
-			const childEntries = appendUnit(block, groupPath, projectPath, program, includedFunctionsByProjectPath);
-			const childMain = childEntries.get('main');
+			const diagnosticSource: BlockDiagnosticSource = {
+				kind: 'block',
+				projectBlockId: block.id,
+				projectGroupPath: projectPath,
+			};
+			appendGroupDeclarations(block.code, groupPath, projectPath, diagnosticSource, program);
+			const child = appendUnit(block, groupPath, program, includedFunctionsByProjectPath);
+			appendMemoryExposureAliases(program, groupPath, block.exposures, child.groupTargets, diagnosticSource);
+			groupTargets.add(block.name);
+			const childMain = child.entries.get('main');
 			if (childMain) ensureEntry(block.entry).steps.push({ type: 'entry', id: childMain.id });
-			const childInit = childEntries.get('init');
+			const childInit = child.entries.get('init');
 			if (childInit) ensureEntry('init').steps.push({ type: 'entry', id: childInit.id });
 			continue;
 		}
 		const moduleAst = selectedModules.get(block);
 		if (!moduleAst) continue;
+		groupTargets.delete(moduleAst.id);
 		const entry = entries.get(block.entry)!;
 		const ast = {
 			...qualify(moduleAst),
@@ -229,12 +237,13 @@ function appendUnit(
 		program.ast.modules.push(ast);
 		entry.steps.push({ type: 'module', id: ast.id });
 	}
-	return entries;
+	return { entries, groupTargets };
 }
 
 /**
  * Parses and composes a recursive project tree into one globally planned compiler program.
- * Groups expand at their declaration positions; functions, constants, and prototypes remain hoisted.
+ * Groups expand at their declaration positions; functions and constants remain hoisted.
+ * Sibling group names are validated by the compiler facade before composition.
  */
 export function composeProgram(
 	project: ProjectObjectModel,
@@ -244,7 +253,6 @@ export function composeProgram(
 	const program: ComposedProgram = {
 		entries: [],
 		ast: {
-			prototypes: [],
 			modules: [],
 			constants: [],
 			functions: [],
@@ -256,7 +264,7 @@ export function composeProgram(
 		cache,
 	};
 
-	appendUnit(project, ROOT_PROJECT_GROUP_PATH, undefined, program, includedFunctionsByProjectPath);
+	appendUnit(project, ROOT_PROJECT_GROUP_PATH, program, includedFunctionsByProjectPath);
 	resolveFunctionPasses(program);
 	return program;
 }

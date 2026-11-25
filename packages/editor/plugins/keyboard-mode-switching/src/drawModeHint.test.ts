@@ -25,7 +25,13 @@ describe('keyboard mode hints', () => {
 	] as const)('draws the %s hint through its canvas overlay', (mode, hint) => {
 		const test = setup(mode);
 		const { draw, memoryViews } = drawing();
-		test.drawCanvasOverlays({ draw: draw as unknown as DrawContext, state: test.state, memoryViews });
+		test.drawCanvasOverlays({
+			draw: draw as unknown as DrawContext,
+			state: test.state,
+			viewport: test.state.viewport,
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
+			memoryViews,
+		});
 		expect(draw.drawGlyphs).toHaveBeenCalledWith(
 			test.state.viewport.vGrid,
 			0,
@@ -44,7 +50,13 @@ describe('keyboard mode hints', () => {
 		const test = setup();
 		test.disposePlugin();
 		const { draw, memoryViews } = drawing();
-		test.drawCanvasOverlays({ draw: draw as unknown as DrawContext, state: test.state, memoryViews });
+		test.drawCanvasOverlays({
+			draw: draw as unknown as DrawContext,
+			state: test.state,
+			viewport: test.state.viewport,
+			blockPositions: { ordered: [], byCodeBlock: new Map() },
+			memoryViews,
+		});
 		expect(draw.drawGlyphs).not.toHaveBeenCalled();
 	});
 });

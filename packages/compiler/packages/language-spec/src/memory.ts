@@ -30,6 +30,7 @@ export const arrayMemoryDeclarationInstructions = [
 	'int8[]',
 	'int8u[]',
 	'int16[]',
+	'int16*[]',
 	'int16u[]',
 	'int32[]',
 	'float*[]',
@@ -148,8 +149,8 @@ export const BASE_TYPE_METADATA: Record<BaseTypeMetadataKey, BaseTypeMetadata> =
 	},
 };
 
-/** Memory declaration metadata produced by layout planning before semantic defaults are applied. */
-export interface PlannedMemoryDeclaration {
+/** Storage layout and type metadata produced by declaration layout calculation. */
+export interface MemoryDeclarationLayout {
 	numberOfElements: number;
 	/** Byte width of one typed element, independent of the 4-byte allocation grid. */
 	elementWordSize: number;
@@ -163,10 +164,8 @@ export interface PlannedMemoryDeclaration {
 	allocatedByteLength: number;
 	/** Absolute address of the first element in 4-byte allocation units. */
 	allocationUnitAddress: number;
-	/** Last aligned byte address occupied by this declaration. */
+	/** Exclusive logical end address, excluding trailing allocation padding. */
 	endByteAddress: number;
-	/** Safe byte length when addressing this declaration through its end address. */
-	endAddressSafeByteLength: number;
 	lineNumber: number;
 	isInteger: boolean;
 	isFloat64?: boolean;
@@ -178,18 +177,19 @@ export interface PlannedMemoryDeclaration {
 	 * - `'int8u'` / `'int16u'`: narrow unsigned integer pointee
 	 */
 	pointeeBaseType?: PointeeBaseType;
-	/** Index in the owning module's expanded declarations. */
-	id: number;
-	/** Source name when the declaration is named. */
-	name?: string;
 	/** Number of pointer layers in the declaration. Non-pointers have depth 0. */
 	pointerDepth: number;
 	isUnsigned: boolean;
 }
 
-export interface PlannedMemoryDeclarationSource {
-	line: MemoryDeclarationLine;
-	isInherited: boolean;
+/** An allocated declaration with its identity and layout-normalized source attached. */
+export interface PlannedMemoryDeclaration extends MemoryDeclarationLayout {
+	/** Index in the owning module's declarations. */
+	id: number;
+	/** Source name when the declaration is named. */
+	name?: string;
+	/** Declaration line with array sizes and other constant arguments resolved. */
+	source: MemoryDeclarationLine;
 }
 
 export interface PlannedMemoryModule {
@@ -200,15 +200,12 @@ export interface PlannedMemoryModule {
 	allocationUnitCount: number;
 	/** Reserved byte length, equal to `allocationUnitCount * ALLOCATION_UNIT_BYTE_SIZE`. */
 	allocatedByteLength: number;
-	/** Last aligned byte address occupied by this module. */
+	/** Exclusive end address of this module allocation. */
 	endByteAddress: number;
-	/** Safe byte length when addressing this module through its end address. */
-	endAddressSafeByteLength: number;
-	/** Effective named declarations, keyed by source name. */
+	/** Named declarations, keyed by source name. */
 	memory: Record<string, PlannedMemoryDeclaration>;
-	/** All declarations in expanded source order, indexed by declaration ID. */
+	/** All declarations in source order, indexed by declaration ID. */
 	declarations: readonly PlannedMemoryDeclaration[];
-	declarationSources: readonly PlannedMemoryDeclarationSource[];
 }
 
 export interface MemoryLayoutPlan {
@@ -223,7 +220,6 @@ export type MemoryDefaultValue = number | Record<string, number>;
 export interface MemoryDefault {
 	value: MemoryDefaultValue;
 	hasExplicitDefault?: boolean;
-	isInherited: boolean;
 }
 
 export type MemoryDefaults = Record<number, MemoryDefault>;

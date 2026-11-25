@@ -1,0 +1,56 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/color/lerpRGB
+includesEnd
+
+entry test
+module lerpRGBFloatAssertions
+; Colors ignore the high byte and round ties to even.
+call lerpRGB 0x123456 0xabcdef 0.0
+assertEqual 0x123456
+call lerpRGB 0x123456 0xabcdef 1.0
+assertEqual 0xabcdef
+call lerpRGB 0x000000 0xffffff 0.5
+assertEqual 0x808080
+call lerpRGB 0x000000 0x010305 0.5
+assertEqual 0x000202
+call lerpRGB 0xff0000 0x0000ff 0.5
+assertEqual 0x800080
+call lerpRGB 0xabcdef 0xabcdef 0.37
+assertEqual 0xabcdef
+call lerpRGB 0xffffffff 0xff000000 0.0
+assertEqual 0xffffff
+call lerpRGB 0xffffffff 0xff000000 1.0
+assertEqual 0x000000
+call lerpRGB 0x000000 0xffffff 0.25
+assertEqual 0x404040
+moduleEnd
+
+module lerpRGBDoubleAssertions
+; Colors ignore the high byte and round ties to even.
+call lerpRGB 0x123456 0xabcdef 0.0f64
+assertEqual 0x123456
+call lerpRGB 0x123456 0xabcdef 1.0f64
+assertEqual 0xabcdef
+call lerpRGB 0x000000 0xffffff 0.5f64
+assertEqual 0x808080
+call lerpRGB 0x000000 0x010305 0.5f64
+assertEqual 0x000202
+call lerpRGB 0xff0000 0x0000ff 0.5f64
+assertEqual 0x800080
+call lerpRGB 0xabcdef 0xabcdef 0.37f64
+assertEqual 0xabcdef
+call lerpRGB 0xffffffff 0xff000000 0.0f64
+assertEqual 0xffffff
+call lerpRGB 0xffffffff 0xff000000 1.0f64
+assertEqual 0x000000
+call lerpRGB 0x000000 0xffffff 0.25f64
+assertEqual 0x404040
+moduleEnd
+
+entryEnd

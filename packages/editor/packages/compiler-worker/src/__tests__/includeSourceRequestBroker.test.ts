@@ -25,10 +25,9 @@ describe('createIncludeSourceRequestBroker', () => {
 		const broker = createIncludeSourceRequestBroker(vi.fn());
 		const sourcePromise = broker.request('std/missing');
 		const error: CompilerDiagnostic = {
-			code: -1,
+			kind: 'internal',
 			message: 'loading failed',
-			line: { lineNumber: 0 },
-			context: {},
+			stage: 'include loading',
 		};
 
 		broker.finish({
@@ -36,6 +35,6 @@ describe('createIncludeSourceRequestBroker', () => {
 			payload: { requestId: 0, error },
 		});
 
-		await expect(sourcePromise).rejects.toBe(error);
+		await expect(sourcePromise).rejects.toMatchObject({ diagnostic: error });
 	});
 });

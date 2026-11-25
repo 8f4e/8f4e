@@ -1,6 +1,6 @@
 import initState, { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
 import type { EventDispatcher, EventSubscriptionOptions } from '@8f4e/editor-state-types';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, vi } from 'vitest';
 import { createTouchInputPlugin, type TouchInputOptions } from '../index';
 
@@ -9,7 +9,7 @@ afterEach(() => {
 	while (cleanups.length) cleanups.pop()!();
 });
 
-export function setup(viewportDragging = true, axis?: TouchInputOptions['axis']) {
+export function setup(axis?: TouchInputOptions['axis']) {
 	const inputTarget = Object.assign(new EventTarget(), {
 		style: { touchAction: 'pan-y' },
 		getBoundingClientRect: () => ({ left: 0, top: 0 }),
@@ -39,7 +39,7 @@ export function setup(viewportDragging = true, axis?: TouchInputOptions['axis'])
 			}
 		},
 	};
-	const store = initState(events, { callbacks: {}, featureFlags: { viewportDragging } });
+	const store = initState(events, { callbacks: {} });
 	events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
 	const changed = vi.fn();
 	events.on('viewportChanged', changed);
@@ -50,7 +50,7 @@ export function setup(viewportDragging = true, axis?: TouchInputOptions['axis'])
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: createEditorDrawerRegistry(),
+		renderRegistry: createEditorRenderRegistry(),
 	});
 	cleanups.push(store.dispose, dispose);
 	const touch = (type: string, points: Array<{ clientX: number; clientY: number }> = []) => {

@@ -1,0 +1,27 @@
+function mapRange
+#export
+; @doc Linearly remaps a value between ranges,
+; - extrapolating beyond the input range.
+; @returns The mapped value.
+; @param value Finite input value.
+param float value
+; @param inputStart Start of the input range.
+param float inputStart
+; @param inputEnd Distinct end of the input range.
+param float inputEnd
+; @param outputStart Start of the output range.
+param float outputStart
+; @param outputEnd End of the output range.
+param float outputEnd
+
+push value
+sub inputStart
+push inputEnd
+sub inputStart
+ensureNonZero
+div
+push outputEnd
+sub outputStart
+mul
+add outputStart
+functionEnd float

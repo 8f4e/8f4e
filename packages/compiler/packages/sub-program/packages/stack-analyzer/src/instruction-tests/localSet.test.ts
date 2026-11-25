@@ -6,6 +6,7 @@ import { analyzeInstruction } from '../analyzeInstruction';
 
 function localSetLine(type: FunctionValueType): ResolvedLocalSetLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 7,
 		instruction: 'localSet',
 		arguments: [{ type: ArgumentType.IDENTIFIER, value: 'target', referenceKind: 'plain', scope: 'local' }],
@@ -69,7 +70,13 @@ describe('localSet stack analysis', () => {
 			const line = localSetLine(type);
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
-				expect.objectContaining({ code, line, context: expect.objectContaining({ codeBlockId: 'test' }) })
+				expect.objectContaining({
+					diagnostic: expect.objectContaining({
+						code: code,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
+				})
 			);
 		}
 	);
@@ -97,9 +104,11 @@ describe('localSet stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.TYPE_MISMATCH,
-				line,
-				context: expect.objectContaining({ codeBlockId: 'test' }),
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.TYPE_MISMATCH,
+					instruction: line.instruction,
+					location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+				}),
 			})
 		);
 	});

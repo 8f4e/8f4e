@@ -11,22 +11,21 @@ describe.each(['café', 'value🚀'])('compiler rejects non-ASCII entity name %s
 		{ code: `entry main\nmodule example\nint ${name} 7\nmoduleEnd\nentryEnd`, instruction: 'int', lineNumber: 1 },
 	])('fails at $instruction before emitting WebAssembly', async ({ code, instruction, lineNumber }) => {
 		await expect(compileProject(parseProjectSource(`8f4e/v1\n${code}`))).rejects.toMatchObject({
-			name: 'SyntaxRulesError',
-			code: SyntaxErrorCode.INVALID_IDENTIFIER,
-			line: expect.objectContaining({ lineNumber, instruction }),
+			diagnostic: expect.objectContaining({
+				code: SyntaxErrorCode.INVALID_IDENTIFIER,
+				instruction: instruction,
+				location: expect.objectContaining({ lineNumber: lineNumber }),
+			}),
 		});
 	});
 });
 
 describe('compiler ASCII entity names', () => {
-	it('compiles punctuation, constants, prototypes, and references into executable WebAssembly', async () => {
+	it('compiles punctuation in function, constant, and memory identifiers into executable WebAssembly', async () => {
 		const project = parseProjectSource(`8f4e/v1
 constants config!$
 const VALUE!$_0 7
 constantsEnd
-prototype state!$
-int field!$ 3
-prototypeEnd
 function compute!$
 #export result!$
 use config!$
@@ -40,7 +39,7 @@ add
 functionEnd int
 entry main
 module _example_1
-shape state!$
+int field!$ 3
 int output!$
 push &output!$
 call compute!$ field!$

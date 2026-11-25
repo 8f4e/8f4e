@@ -1,3 +1,4 @@
+import type { SyntaxResult } from '@8f4e/tokenizer';
 import { classifyIdentifier, parseCompileTimeOperand } from '@8f4e/tokenizer';
 import { describe, expect, it } from 'vitest';
 import { evaluateMetadataQuery, getMetadataQuery } from './metadataQuery';
@@ -9,7 +10,7 @@ describe('getMetadataQuery', () => {
 			['source:samples', 'intermodule', 0],
 			['*samples', 'local', 1],
 		] as const) {
-			const operand = { ...classifyIdentifier(`${query}(${name})`), value: 'already-classified' };
+			const operand = { ...syntaxValue(classifyIdentifier(`${query}(${name})`)), value: 'already-classified' };
 			expect(getMetadataQuery(operand)).toEqual({
 				query,
 				scope,
@@ -22,7 +23,7 @@ describe('getMetadataQuery', () => {
 
 	it.each(['123', 'plain', '&samples', '*samples', '&source:samples', '&source:'])(
 		'leaves nonmetadata operand %s to the other resolvers',
-		value => expect(getMetadataQuery(parseCompileTimeOperand(value))).toBeUndefined()
+		value => expect(getMetadataQuery(syntaxValue(parseCompileTimeOperand(value)))).toBeUndefined()
 	);
 });
 
@@ -62,3 +63,8 @@ describe('evaluateMetadataQuery', () => {
 		).toBeUndefined();
 	});
 });
+
+function syntaxValue<T>(result: SyntaxResult<T>): T {
+	if (!result.ok) throw new Error(result.issue.message);
+	return result.value;
+}

@@ -224,10 +224,16 @@
               "referenceKind": "plain",
               "scope": "local",
               "type": "identifier",
-              "value": "audio/state",
+              "value": "samples",
+            },
+            {
+              "referenceKind": "constant",
+              "scope": "local",
+              "type": "identifier",
+              "value": "BLOCK_SIZE",
             },
           ],
-          "instruction": "shape",
+          "instruction": "int[]",
         },
         {
           "arguments": [
@@ -548,7 +554,6 @@
           "default": {},
           "elementWordSize": 4,
           "id": 0,
-          "isInherited": true,
           "isInteger": true,
           "isUnsigned": false,
           "numberOfElements": 48,

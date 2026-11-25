@@ -10,6 +10,7 @@ describe('if instruction compiler', () => {
 		compileInstructionForTest(
 			_if,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'if',
 				arguments: [],
@@ -30,6 +31,7 @@ describe('if instruction compiler', () => {
 		compileInstructionForTest(
 			_if,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'if',
 				arguments: [],
@@ -50,6 +52,7 @@ describe('if instruction compiler', () => {
 		compileInstructionForTest(
 			_if,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'if',
 				arguments: [],
@@ -70,6 +73,7 @@ describe('if instruction compiler', () => {
 		compileInstructionForTest(
 			_if,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'if',
 				arguments: [],
@@ -90,6 +94,7 @@ describe('if instruction compiler', () => {
 		compileInstructionForTest(
 			_if,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 1,
 				instruction: 'if',
 				arguments: [],

@@ -1,5 +1,6 @@
 import initEditor, { type EditorPluginContext } from '@8f4e/editor-core';
 import type {} from '@vitest/browser-playwright';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 import { createMouseInputPlugin } from '../src/index';
@@ -15,6 +16,7 @@ test.each([true, false])('native mouse input with wheel capture %s', async captu
 	let context!: EditorPluginContext;
 	const pressed = vi.fn();
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		plugins: [
 			createMouseInputPlugin({ inputTarget: canvas, captureWheel }),
 			{

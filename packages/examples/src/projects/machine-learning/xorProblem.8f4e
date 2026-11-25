@@ -1,20 +1,9 @@
 8f4e/v1
 
-function sigmoid
+includes
 ; @pos 5 -73
-param float x
-; Polynomial sigmoid
-; func. approximation
-
-push x
-push x
-abs
-push 1.0
-add
-ensureNonZero
-div
-
-functionEnd float
+include std/math/softsign
+includesEnd
 
 constants env
 ; @pos -7 -57
@@ -140,7 +129,7 @@ float out
 
 push &out
 push *in
-call sigmoid
+call softsign
 store
 
 moduleEnd
@@ -152,7 +141,7 @@ float out
 
 push &out
 push *in
-call sigmoid
+call softsign
 store
 
 moduleEnd
@@ -190,7 +179,7 @@ int out
 push &out
 
 push *in
-call sigmoid
+call softsign
 
 push 0.5
 greaterThan

@@ -1,5 +1,5 @@
-import { type CodeBlockGraphicData, type Editor, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
-import { createSourceView, getCurrentProjectPath } from './source-view.js';
+import { type Editor, type EditorEdit, getEditorBlockId } from '@8f4e/editor-core';
+import { createSourceView, getCurrentGroupBlock, getCurrentProjectPath } from './source-view.js';
 import {
 	emptyInput,
 	objectArguments,
@@ -13,7 +13,7 @@ const code = { type: 'string', description: 'Complete source of the block, with 
 const entry = { type: 'string', minLength: 1, pattern: '^\\S+$' };
 const blockTypeInput = {
 	type: 'string',
-	enum: ['module', 'function', 'constants', 'prototype', 'includes', 'note', 'unknown', 'group', 'project'],
+	enum: ['module', 'function', 'constants', 'includes', 'note', 'unknown', 'group'],
 };
 const blockInput = objectInput({ type: blockTypeInput, name: { type: 'string' } }, ['type', 'name']);
 const editInputs = {
@@ -40,8 +40,6 @@ const editsInput = objectInput({ edits: { type: 'array', minItems: 1, items: { o
 ]);
 const helpHint = ' If you are unfamiliar with 8f4e, start with get_help.';
 const normalizeNewlines = (text: string) => text.replace(/\r\n|\r/g, '\n');
-const blockType = (block: CodeBlockGraphicData) =>
-	block.childProject !== undefined ? 'group' : block.isProjectScope ? 'project' : block.blockType;
 export function createEditorTools(
 	editor: Pick<Editor, 'editing' | 'navigation' | 'state'>,
 	getCompilerDiagnostics?: () => unknown
@@ -50,9 +48,7 @@ export function createEditorTools(
 	let observedRevision: string | undefined;
 	const namedBlock = (type: unknown, name: unknown) => {
 		if (typeof type !== 'string' || typeof name !== 'string') throw new Error('Block type and name are required');
-		const matches = state.codeBlockRendering.currentProject.blocks.filter(
-			block => blockType(block) === type && block.name === name
-		);
+		const matches = state.project.activeLevel.blocks.filter(block => block.blockType === type && block.name === name);
 		if (matches.length === 0)
 			return toolError('block_not_found', 'No matching block in the currently expanded group or root');
 		if (matches.length > 1)
@@ -64,6 +60,8 @@ export function createEditorTools(
 	};
 	const readEdits = (input: unknown): EditorEdit[] => {
 		if (!Array.isArray(input) || input.length === 0) throw new Error('Provide at least one edit');
+		const group = getCurrentGroupBlock(state);
+		const insertTarget = group ? { groupBlockId: getEditorBlockId(group) } : {};
 		return input.map(value => {
 			const operation = objectArguments(value, editProperties).operation;
 			if (operation !== 'insert' && operation !== 'update' && operation !== 'delete')
@@ -77,7 +75,7 @@ export function createEditorTools(
 				...('entry' in args ? { entry: args.entry as string } : {}),
 			};
 			return operation === 'insert'
-				? { type: 'insert', projectPath: getCurrentProjectPath(state), ...source }
+				? { type: 'insert', ...insertTarget, ...source }
 				: { type: 'update', blockId: getEditorBlockId(target!), ...source };
 		});
 	};
@@ -101,7 +99,7 @@ export function createEditorTools(
 			name: 'get_project',
 			title: 'Read the open 8f4e project',
 			description:
-				'Return only the currently expanded group or root as one 8f4e source string. A successful source fetch refreshes the bridge revision baseline for writes. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Location and history information are available through get_project_metadata; metadata reads do not refresh the write baseline.',
+				'Return only the currently expanded group or root as one 8f4e source string. A successful source fetch refreshes the bridge revision baseline for writes. Child groups are shown as declarations without their contents. Navigate with expand_group, go_to_parent, or go_to_root, then read again. Location and editability are available through get_project_metadata; metadata reads do not refresh the write baseline.',
 			inputSchema: emptyInput,
 			readOnly: true,
 			run: () => {
@@ -115,7 +113,7 @@ export function createEditorTools(
 			name: 'get_project_metadata',
 			title: 'Read 8f4e project metadata',
 			description:
-				'Read the current revision, location, editability, and undo/redo availability without source or block identifiers. This does not acknowledge source changes or refresh the bridge revision baseline; fetch source with get_project or get_block before writing.',
+				'Read the current revision, location, and editability without source or block identifiers. This does not acknowledge source changes or refresh the bridge revision baseline; fetch source with get_project or get_block before writing.',
 			inputSchema: emptyInput,
 			readOnly: true,
 			run: () => {
@@ -123,8 +121,6 @@ export function createEditorTools(
 					revision: editing.getRevision(),
 					projectPath: getCurrentProjectPath(state),
 					editable: state.editorMode === 'edit',
-					canUndo: state.historyStack.length > 0,
-					canRedo: state.redoStack.length > 0,
 				};
 			},
 		},
@@ -177,7 +173,7 @@ export function createEditorTools(
 			name: 'update_block',
 			title: 'Update an 8f4e block',
 			description:
-				'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires a prior source fetch and creates one undo step. External changes block writes until source is fetched again; consecutive bridge edits work without re-fetching.' +
+				'Replace the source of a block identified by type and name only within the currently expanded group or root. Requires a prior source fetch. External changes block writes until source is fetched again; consecutive bridge edits work without re-fetching.' +
 				helpHint,
 			inputSchema: objectInput({ type: blockTypeInput, name: { type: 'string' }, code }, ['type', 'name', 'code']),
 			readOnly: false,
@@ -195,7 +191,7 @@ export function createEditorTools(
 			name: 'patch_block',
 			title: 'Patch an 8f4e block',
 			description:
-				'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires a prior source fetch and creates one undo step. External changes require source to be fetched again; successful bridge edits advance the baseline automatically.' +
+				'Replace one exact occurrence of oldText with literal newText in a block identified by type and name in the currently expanded group or root. Text may span multiple lines; line endings are normalized to LF. Empty or missing matches and multiple matches are rejected. Requires a prior source fetch. External changes require source to be fetched again; successful bridge edits advance the baseline automatically.' +
 				helpHint,
 			inputSchema: objectInput(
 				{
@@ -255,7 +251,7 @@ export function createEditorTools(
 					revision,
 					block: {
 						projectPath: block.projectPath,
-						type: blockType(block),
+						type: block.blockType,
 						name: block.name,
 						x: block.gridX,
 						y: block.gridY,
@@ -268,7 +264,7 @@ export function createEditorTools(
 			name: 'apply_edits',
 			title: 'Edit the open 8f4e project',
 			description:
-				'Apply one atomic undoable batch within the currently expanded group or root. Insert/update code is a complete source string. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.' +
+				'Apply one atomic batch within the currently expanded group or root. Insert/update code is a complete source string. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again. Update/delete operations identify blocks by type and name in the current scope. Inserts use the current group and default to entry main. Set or change positions through the @pos directive in source code.' +
 				helpHint,
 			inputSchema: editsInput,
 			readOnly: false,
@@ -278,22 +274,6 @@ export function createEditorTools(
 				return applyEdits(revision, readEdits(args.edits), 'Edits applied.');
 			},
 		},
-		...(['undo', 'redo'] as const).map(action => ({
-			name: action,
-			title: `${action === 'undo' ? 'Undo' : 'Redo'} an 8f4e edit`,
-			description:
-				`${action === 'undo' ? 'Undo' : 'Redo'} one history step in the bound editor. Requires a prior source fetch; the bridge tracks revisions and rejects writes after external changes until source is fetched again.` +
-				helpHint,
-			inputSchema: emptyInput,
-			readOnly: false,
-			run: () => {
-				const revision = editing.getRevision();
-				checkRevision(revision);
-				const result = editing[action]({ expectedRevision: revision });
-				observedRevision = result.revision;
-				return action === 'undo' ? 'Undo complete.' : 'Redo complete.';
-			},
-		})),
 	];
 	if (getCompilerDiagnostics)
 		tools.push({

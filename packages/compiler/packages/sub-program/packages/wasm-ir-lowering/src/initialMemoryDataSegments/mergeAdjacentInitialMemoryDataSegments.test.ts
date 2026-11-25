@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { serializeSegments } from '../../tests/initialMemoryDataSegments/testUtils';
+import { serializeSegments } from '../../tests/memoryFixtures';
 import mergeAdjacentInitialMemoryDataSegments from './mergeAdjacentInitialMemoryDataSegments';
 
 describe('mergeAdjacentInitialMemoryDataSegments', () => {

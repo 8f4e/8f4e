@@ -17,14 +17,11 @@ import type {
 	LoopLine,
 	MapLine,
 	MemoryCopyLine,
-	PrototypeAST,
 	PushLine,
-	PushShapeLine,
 } from './ast';
-import type { FunctionMetadata, FunctionRegistry, SourceMetadata } from './compiled';
-import type { CompilerDiagnosticContext } from './diagnostics';
+import type { FunctionMetadata, FunctionRegistry } from './compiled';
 import type { FunctionValueType } from './functionTypes';
-import type { CodegenInstructionName, CompilerSourceBlockType, CompilerSourceCompilationMode } from './instructions';
+import type { CodegenInstructionName, CompilerSourceCompilationMode } from './instructions';
 import type {
 	ArrayDeclarationInstruction,
 	MemoryLayoutPlan,
@@ -108,7 +105,6 @@ export interface SourceLocalBinding {
 export interface Namespace {
 	moduleName: string | undefined;
 	functions?: FunctionRegistry;
-	prototypeShapeIds: string[];
 }
 
 export type CompilationMode = CompilerSourceCompilationMode;
@@ -117,20 +113,18 @@ export type CompilationMode = CompilerSourceCompilationMode;
 export interface CompilationContext extends BlockState {
 	namespace: Namespace;
 	locals: LocalMap;
+	/** Value facts for source locals in the current straight-line control-flow region. */
+	localValueFacts: Partial<Record<number, StackItem>>;
 	stack: Stack;
 	memoryPlan: MemoryLayoutPlan;
 	memoryAliases: ProjectMemoryAliasLookup;
 	currentPlannedModule?: PlannedMemoryModule;
 	pointerMetadataByModuleId: Record<string, MemoryPointerMetadataMap>;
 	mode: CompilationMode;
+	/** Symbol label supplied explicitly to semantic diagnostics. Source ownership belongs to each source line. */
 	codeBlockId?: string;
-	codeBlockType?: CompilerSourceBlockType;
-	projectBlockId?: number;
-	source?: SourceMetadata;
-	currentFunctionId?: string;
-	currentFunctionName?: string;
+	/** Function identity, signature and effect metadata used by semantic passes. */
 	currentFunctionMetadata?: FunctionMetadata;
-	prototypeShapes?: Readonly<Record<string, PrototypeAST>>;
 }
 
 /** Compilation context narrowed to a module body. */
@@ -141,9 +135,6 @@ export interface ModuleCompilationContext extends CompilationContext {
 /** Compilation context narrowed to a function body with function metadata resolved. */
 export interface FunctionCompilationContext extends CompilationContext {
 	mode: 'function';
-	codeBlockType: 'function';
-	currentFunctionId: string;
-	currentFunctionName: string;
 	currentFunctionMetadata: FunctionMetadata;
 }
 
@@ -161,14 +152,14 @@ export interface StackValue {
 	valueType: StackValueType;
 	/** A flag for the div operation to check if the divisor is zero. */
 	isNonZero?: boolean;
-	/** Exact scalar value when the compiler can still prove it at this stack position. */
+	/** Exact scalar value at this stack position; integers use signed WebAssembly i32 representation. */
 	knownValue?: number;
 }
 
 /**
  * Type and value facts known about one address-like integer.
- * `pointsTo` describes how to interpret the address; only `address.safeRange` or
- * `address.safeAccessByteWidth` proves that a memory access is statically safe.
+ * `pointsTo` describes how to interpret the address. Bounds metadata or a known
+ * value checked against imported memory limits can prove an access safe.
  */
 export interface StackAddress {
 	kind: 'address';
@@ -177,7 +168,7 @@ export interface StackAddress {
 	pointsTo?: PointeeMetadata;
 	/** A flag for the div operation to check if the divisor is zero. */
 	isNonZero?: boolean;
-	/** Exact integer address when the compiler can still prove it at this stack position. */
+	/** Exact i32 address value; interpret its bits as unsigned for linear-memory bounds checks. */
 	knownValue?: number;
 }
 
@@ -209,6 +200,8 @@ export interface StackAnalysisClampFact {
 
 export interface StackAnalysisLineFacts {
 	stackAnalysis: StackAnalysisResult;
+	/** Proven input address for a dereference through a source local. */
+	pointerAddress?: StackItem;
 	targetFunctionId?: string;
 	numericOperandKind?: StackAnalysisNumericValueKind;
 	map?: StackAnalysisMapFact;
@@ -236,7 +229,6 @@ export interface MemoryReferenceResolutionModuleFacts extends MemoryReferenceRes
 }
 
 export interface MemoryReferenceResolutionReport {
-	prototypes: readonly MemoryReferenceResolutionBlockFacts[];
 	modules: readonly MemoryReferenceResolutionModuleFacts[];
 	constants: readonly MemoryReferenceResolutionBlockFacts[];
 	functions: readonly MemoryReferenceResolutionBlockFacts[];
@@ -245,10 +237,12 @@ export interface MemoryReferenceResolutionReport {
 }
 
 /** Mutable state for lowering one resolved body to Wasm IR. */
-export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame>, CompilerDiagnosticContext {
+export interface CodegenContext extends BlockState<CodegenLoopBlockStackFrame> {
 	instructions: WasmIRInstruction[];
 	locals: LocalValueMetadata[];
 	enableMemoryGuards: boolean;
+	/** Imported linear-memory size in bytes, including page padding; import minimum and maximum are equal. */
+	minimumMemoryBytes: number;
 }
 
 export type ResolvedMapValueArgument = ResolvedArgumentLiteral | ArgumentStringLiteral;
@@ -265,9 +259,15 @@ export type ResolvedMemoryCopyLine = Omit<MemoryCopyLine, 'arguments'> & {
 	arguments: [ResolvedArgumentLiteral];
 };
 
-export type ResolvedLoopLine = Omit<LoopLine, 'arguments'> & {
-	arguments: [ResolvedArgumentLiteral];
+/** A normalized loop that takes its bound from the preceding push. */
+export type RuntimeLoopLine = LoopLine & {
+	arguments: [];
+	runtimeBound: true;
 };
+
+export type ResolvedLoopLine =
+	| (Omit<LoopLine, 'arguments'> & { arguments: [ResolvedArgumentLiteral]; runtimeBound?: never })
+	| RuntimeLoopLine;
 
 export type ArrayDeclarationInitializerArgument =
 	| ArgumentCompileTimeExpression
@@ -343,16 +343,6 @@ export type SemanticAssertEqualLine = AssertEqualLine & {
 	expectedPush: CodegenPushLine;
 };
 
-export type PushShapeExpansion = {
-	pushLine: CodegenPushLine;
-	pointerType: FunctionValueType;
-};
-
-export type ResolvedPushShapeLine = Omit<PushShapeLine, 'arguments'> & {
-	arguments: [ArgumentIdentifier];
-	shapeExpansions: PushShapeExpansion[];
-};
-
 export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLine> = TLine extends InlineOperandLine
 	? ResolvedInlineOperandLine
 	: TLine extends DefaultLine
@@ -367,15 +357,13 @@ export type SemanticReferenceLine<TLine extends CompilerASTLine = CompilerASTLin
 						? ResolvedLocalSetLine
 						: TLine extends PushLine
 							? CodegenPushLine
-							: TLine extends PushShapeLine
-								? ResolvedPushShapeLine
-								: TLine extends LoopLine
-									? ResolvedLoopLine
-									: TLine extends MemoryCopyLine
-										? ResolvedMemoryCopyLine | MemoryCopyLine
-										: TLine extends ArrayDeclarationLine
-											? ArrayDeclarationLine
-											: TLine;
+							: TLine extends LoopLine
+								? ResolvedLoopLine
+								: TLine extends MemoryCopyLine
+									? ResolvedMemoryCopyLine | MemoryCopyLine
+									: TLine extends ArrayDeclarationLine
+										? ArrayDeclarationLine
+										: TLine;
 
 /** Resolved instructions that remain after declaration processing. */
 export type ExecutableInstructionLine = Extract<SemanticReferenceLine, { instruction: CodegenInstructionName }>;

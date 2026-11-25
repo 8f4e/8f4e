@@ -30,6 +30,41 @@ Functions are reusable code blocks that:
 - Cannot read unqualified module memory identifiers by name
 - Cannot declare their own memory
 
+### Function documentation
+
+Use full-line `; @doc`, `; @param NAME`, and `; @returns` comments inside a function block to describe its
+purpose, named parameters, and returned values. The editor displays this documentation when a function, parameter,
+return declaration, or call is selected. Each overload has its own documentation. For readability, place each
+parameter's documentation directly above its `param` instruction.
+
+```8f4e
+function lerp
+; @doc Linearly interpolates between two values.
+; @returns The interpolated value.
+; @param start The starting value.
+param float start
+; @param end The target value.
+param float end
+; @param amount Interpolation factor, typically 0..1.
+; - Values outside that range extrapolate.
+param float amount
+push start
+push end
+push start
+sub
+mul amount
+add
+functionEnd float
+```
+
+Use adjacent `; -` comments to continue any documentation tag across multiple source lines. Their text is joined
+with spaces, and the tooltip wraps it for display. A blank line, other comment, instruction, or new tag ends the
+continuation. Each tag takes the remainder of its line as prose; `@` words in the prose are not editor directives.
+
+All tags are optional. An unknown parameter name or an empty tag is ignored, and the last nonempty description for
+the same tag (or parameter) wins. Use one `@returns` description for multiple return values in stack order.
+Documentation does not change the function signature, executable instructions, or generated WebAssembly.
+
 ### Overloads
 
 Functions may share the same source name when each version has a distinct parameter signature:
@@ -58,11 +93,45 @@ call convert
 
 Overload resolution is an exact match against the stack operand types. Return types do not distinguish overloads, and scalar types are not implicitly converted.
 
-Overload sets must use the same positive arity. A zero-parameter function name can only have one implementation. Duplicate parameter signatures are rejected, even when the return types differ.
+Overload sets must use the same positive arity. A zero-parameter function name can only have one selected implementation.
+When definitions in the same project or group share a name and parameter types, the last enabled definition wins, even
+when parameter names or return types differ. Other parameter signatures remain available as overloads.
 
 Pointer overloads require pointer type metadata. Known addresses such as `push &samples` carry their pointee type, but raw integer addresses are treated as integers.
 
 Overloaded functions cannot be exported directly. Use a uniquely named wrapper function when a host-visible export needs to call an overloaded helper.
+
+### Function overrides
+
+Selection follows function declaration order within each project or group. The editor serializes blocks from left to right,
+then top to bottom, so moving a matching definition to the right makes it take precedence. Disabled definitions do not hide
+earlier enabled definitions. Functions in different groups remain independent.
+
+```8f4e
+function offset
+param int value
+push value
+add 1
+functionEnd int
+
+function offset
+param int value
+push value
+add 2
+functionEnd int
+
+; call offset 10 returns 12.
+```
+
+Only the selected implementation contributes a body, import, or export. Calls from modules and other functions resolve
+against it regardless of where the caller is declared. Every enabled definition is syntax-checked, and its parameter
+signature is resolved before selection. Replaced bodies do not undergo further semantic
+checks or compilation.
+
+Included functions are applied before local function definitions. Included source files follow the order of their first
+include declaration; functions within each file follow that file's source order. A later included definition can replace
+a matching signature, and a local function can replace a matching included implementation while preserving its other
+overloads.
 
 ### `#impure`
 
@@ -208,7 +277,7 @@ functionEnd float
 
 ## param
 
-The param instruction declares a function parameter (`param int name`, `param float name`, or a pointer type such as `param int8u* bytes`). Parameters must be declared before any other function body instructions. A `param` or `paramShape` after a local declaration or executable instruction produces a `PARAM_AFTER_FUNCTION_BODY` syntax error.
+The param instruction declares a function parameter (`param int name`, `param float name`, or a pointer type such as `param int8u* bytes`). Parameters must be declared before any other function body instructions. A `param` after a local declaration or executable instruction produces a `PARAM_AFTER_FUNCTION_BODY` syntax error.
 
 ### Examples
 
@@ -243,52 +312,6 @@ Inline call arguments are compiled as `push` instructions before the call, so th
 - Parameters must be declared immediately after the function declaration
 - Parameter names must be unique within the function
 - Parameters can be accessed using `push` and modified using `localSet`
-
-## paramShape
-
-The `paramShape` instruction expands a prototype's scalar memory declarations into typed pointer parameters. It takes
-one prototype name and must appear with the other parameter declarations, before locals or executable instructions. Fields
-are expanded in prototype declaration order. Each scalar field becomes a pointer parameter with the same name and base type;
-read a field with `push *<field>` inside an impure function.
-
-The prototype and the function can be defined independently of the consuming module:
-
-```8f4e
-prototype mixerState
-int a 2
-float b 4.5
-prototypeEnd
-
-function sumMixer
-#impure
-paramShape mixerState
-push *a
-castToFloat
-push *b
-add
-functionEnd float
-```
-
-In a module, `shape` materializes the prototype fields and `pushShape` pushes their addresses in the same order. The
-function receives pointers, not copied field values, so `sumMixer` returns `6.5` here:
-
-```8f4e
-entry main
-module mixer
-shape mixerState
-pushShape mixerState
-call sumMixer
-; stack: 6.5
-moduleEnd
-entryEnd
-```
-
-Explicit parameters and `paramShape` share one positional signature and preserve source order. For example, with
-`param int base`, `paramShape mixerState`, and `param int tail`, callers push `base`, then `pushShape mixerState`, then
-`tail` before `call`; the shape pointers occupy the middle positions.
-
-The module's effective fields are used when a shape is overridden locally. Replacing the materialized fields with
-`int a 8` and `float b 1.5` makes the same `pushShape mixerState` and `call sumMixer` return `9.5`.
 
 ## functionEnd
 

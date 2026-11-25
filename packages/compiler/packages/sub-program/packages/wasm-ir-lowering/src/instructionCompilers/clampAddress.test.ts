@@ -20,6 +20,7 @@ function createLine(
 	accessByteWidth?: number
 ): ClampAddressLine {
 	return {
+		diagnosticSource: { kind: 'document' },
 		lineNumber: 1,
 		instruction,
 		arguments:
@@ -101,7 +102,7 @@ describe('clamp address instruction compilers', () => {
 			createStackFacts({ clamp: { accessByteWidth: 4 } })
 		);
 
-		expect(context.instructions).toContainEqual({ kind: 'memory.size' });
+		expect(context.instructions).not.toContainEqual({ kind: 'memory.size' });
 		expect(context.instructions).toContain(WASM_SELECT);
 	});
 });

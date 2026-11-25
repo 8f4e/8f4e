@@ -18,11 +18,7 @@ describe('return instruction compiler', () => {
 
 		compileInstructionForTest(
 			_return,
-			{
-				lineNumber: 1,
-				instruction: 'return',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'return', arguments: [] },
 			context
 		);
 

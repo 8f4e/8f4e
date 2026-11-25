@@ -10,6 +10,5 @@ export default function createStackAnalyzerTestContext(
 		namespace: { moduleName: 'test', ...overrides.namespace },
 		blockStack: overrides.blockStack ?? [{ blockType: BlockType.MODULE, expectedResultTypes: [] }],
 		codeBlockId: overrides.codeBlockId ?? 'test',
-		codeBlockType: overrides.codeBlockType ?? 'module',
 	});
 }

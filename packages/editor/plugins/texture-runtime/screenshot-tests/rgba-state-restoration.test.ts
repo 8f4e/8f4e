@@ -1,6 +1,9 @@
+import { resolvePalette } from '@8f4e/editor-palette';
 import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { TextureDrawer } from '../src/texture-drawer';
+
+const palette = resolvePalette();
 
 function readPixels(gl: WebGL2RenderingContext, width: number, height: number): Uint8Array {
 	const pixels = new Uint8Array(width * height * 4);
@@ -27,7 +30,7 @@ test('restores nearest overlay sampling after raw hooks without a sprite pass', 
 		context.clear(context.COLOR_BUFFER_BIT);
 	});
 	engine.hooks.postDraw.push(() =>
-		overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width: 2, height: 2 })
+		overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width: 2, height: 2 }, palette)
 	);
 	try {
 		for (const [stage, width, height] of [
@@ -100,7 +103,7 @@ for (const dirtyState of ['row layout', 'unpack buffer', 'flip and premultiplica
 		const overlay = new TextureDrawer(engine.gl);
 		engine.hooks.postDraw.push(() => {
 			overlay.upload(0, pixels, width, height, 'rgba');
-			overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width, height });
+			overlay.drawTexture(0, 0, 0, canvas.width, canvas.height, { x: 0, y: 0, width, height }, palette);
 		});
 		try {
 			for (const [version, stage] of ['allocate', 'update', 'resize', 'restore'].entries()) {

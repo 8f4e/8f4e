@@ -1,0 +1,29 @@
+function softsign
+#export
+; @doc Squashes a finite number using x / (1 + abs(x)).
+; @returns A value in -1..1.
+; @param value Finite input value.
+param float value
+
+push value
+push value
+abs
+add 1.0
+ensureNonZero
+div
+functionEnd float
+
+function softsign
+#export
+; @doc Squashes a finite number using x / (1 + abs(x)).
+; @returns A value in -1..1.
+; @param value Finite input value.
+param float64 value
+
+push value
+push value
+abs
+add 1.0f64
+ensureNonZero
+div
+functionEnd float64

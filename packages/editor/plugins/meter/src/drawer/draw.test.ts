@@ -1,4 +1,5 @@
 import { PALETTE_INDICES } from '@8f4e/editor-palette';
+import { getMemoryValueSpec } from '@8f4e/editor-state/memory';
 import type { DrawContext as Engine, MemoryViews } from '@8f4e/web-ui';
 import { describe, expect, it, vi } from 'vitest';
 import { createDrawContextMock } from '../__tests__/rendering';
@@ -36,18 +37,11 @@ function createMeterWidget(overrides: Partial<Meter> = {}): Meter {
 		yellowEndX: 18,
 		overloadMarkerX: 12,
 		overloadMarkerWidth: 8,
-		staticValueIndex: 0,
-		memory: {
-			showAddress: false,
-			bufferPointer: 0,
-			memory: {
-				byteAddress: 0,
-				allocationUnitAddress: 0,
-				allocationUnitCount: 1,
-			},
-		} as never,
-		baseSampleShift: 2,
-		valueType: 'float32',
+		read: {
+			address: { kind: 'fixed', byteAddress: 0 },
+			elementIndex: 0,
+			spec: getMemoryValueSpec({ elementWordSize: 4, isInteger: false, isUnsigned: false }),
+		},
 		...overrides,
 	};
 }

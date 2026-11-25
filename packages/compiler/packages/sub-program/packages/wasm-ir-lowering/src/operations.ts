@@ -14,6 +14,7 @@ import {
 	WASM_I32_LOAD_16_U,
 	WASM_I32_STORE,
 	WASM_I32_STORE8,
+	WASM_I32_STORE16,
 	WASM_IF,
 	WASM_TYPE_VOID,
 	type WasmTypeValue,
@@ -61,5 +62,6 @@ export const f32load = memoryAccess(WASM_F32_LOAD, 2);
 export const f64load = memoryAccess(WASM_F64_LOAD, 3);
 export const i32store = memoryAccess(WASM_I32_STORE, 2);
 export const i32store8 = memoryAccess(WASM_I32_STORE8, 0);
+export const i32store16 = memoryAccess(WASM_I32_STORE16, 1);
 export const f32store = memoryAccess(WASM_F32_STORE, 2);
 export const f64store = memoryAccess(WASM_F64_STORE, 3);

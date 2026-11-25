@@ -24,11 +24,7 @@ describe('loopIndex instruction compiler', () => {
 
 		compileInstructionForTest(
 			loopIndex,
-			{
-				lineNumber: 10,
-				instruction: 'loopIndex',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 10, instruction: 'loopIndex', arguments: [] },
 			context
 		);
 
@@ -58,11 +54,7 @@ describe('loopIndex instruction compiler', () => {
 
 		compileInstructionForTest(
 			loopIndex,
-			{
-				lineNumber: 10,
-				instruction: 'loopIndex',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 10, instruction: 'loopIndex', arguments: [] },
 			context
 		);
 

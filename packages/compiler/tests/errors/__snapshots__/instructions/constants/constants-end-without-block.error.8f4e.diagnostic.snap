@@ -1,11 +1,13 @@
 {
   "code": 9,
-  "context": {
-    "projectBlockId": 4,
-  },
-  "line": {
-    "instruction": "constantsEnd",
+  "domain": "syntax",
+  "instruction": "constantsEnd",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 3,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "Parse error at line 7: closer "constantsEnd" does not match opener "module"",
 }

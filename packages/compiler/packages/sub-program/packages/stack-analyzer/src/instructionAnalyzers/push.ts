@@ -4,10 +4,12 @@ import type {
 	CompilationContext,
 	LiteralPushLine,
 	LocalValueMetadata,
+	PointeeBaseType,
 	PointeeMetadata,
 	PointerLocalMetadata,
 	ResolvedMemoryDeclaration,
 	ResolvedPushLine,
+	ResolvedReferencePushLine,
 	Stack,
 } from '@8f4e/language-spec';
 import { ArgumentType, BASE_TYPE_METADATA, getMemoryBaseType, getPointerDepthFromMetadata } from '@8f4e/language-spec';
@@ -53,7 +55,8 @@ function pushLiteralStackItems(line: LiteralPushLine, context: CompilationContex
 	}
 
 	const kind = resolveArgumentValueKind(argument);
-	const knownValue = kind === 'float32' ? Math.fround(argument.value) : argument.value;
+	const knownValue =
+		kind === 'int32' ? argument.value | 0 : kind === 'float32' ? Math.fround(argument.value) : argument.value;
 	const address = argument.address
 		? {
 				...argument.address,
@@ -92,8 +95,10 @@ function pushDereferencedPointerStackItems(
 	// Reference resolution guarantees a pointer target and a valid dereference depth.
 	const baseType = pointerMetadata.pointeeBaseType!;
 
-	const dereferenceDepth = line.arguments[0].dereferenceDepth;
-	const remainingPointerDepth = pointerMetadata.pointerDepth - dereferenceDepth;
+	return dereferencedStackItems(baseType, pointerMetadata.pointerDepth - line.arguments[0].dereferenceDepth);
+}
+
+function dereferencedStackItems(baseType: PointeeBaseType, remainingPointerDepth: number): Stack {
 	if (remainingPointerDepth > 0) {
 		return [
 			kindToStackItem('int32', {
@@ -113,8 +118,14 @@ function pushDereferencedPointerStackItems(
 
 function pushResolvedTargetStackItems(line: ResolvedPushLine, context: CompilationContext): Stack {
 	switch (line.resolvedTarget.kind) {
-		case 'reference':
-			return [kindToStackItem(resolveMemoryValueKind(line.resolvedTarget.slot.targetMemory), { isNonZero: false })];
+		case 'reference': {
+			const { targetMemory } = line.resolvedTarget.slot;
+			const { dereferenceDepth } = (line as ResolvedReferencePushLine).arguments[0];
+			return dereferencedStackItems(
+				targetMemory.pointeeBaseType ?? getMemoryBaseType(targetMemory),
+				targetMemory.pointerDepth + 1 - dereferenceDepth
+			);
+		}
 		case 'memory': {
 			const { memoryItem } = line.resolvedTarget;
 			const kind = resolveMemoryValueKind(memoryItem);
@@ -144,18 +155,16 @@ function pushResolvedTargetStackItems(line: ResolvedPushLine, context: Compilati
 		default: {
 			const local = context.locals[line.resolvedTarget.binding.id]!;
 			const pointsTo = getPointeeMetadata(local);
+			const value = context.localValueFacts[line.resolvedTarget.binding.id];
+			const address = value?.kind === 'address' ? value.address : local.pointeeBaseType ? {} : undefined;
 
 			return [
-				local.pointeeBaseType
-					? kindToStackItem('int32', {
-							isNonZero: false,
-							address: {},
-							...(pointsTo ? { pointsTo } : {}),
-						})
-					: {
-							...createStackValue(local.isInteger ? 'int' : local.isFloat64 ? 'float64' : 'float'),
-							isNonZero: false,
-						},
+				kindToStackItem(local.isInteger ? 'int32' : local.isFloat64 ? 'float64' : 'float32', {
+					isNonZero: value?.isNonZero ?? false,
+					...(value?.knownValue !== undefined ? { knownValue: value.knownValue } : {}),
+					...(address ? { address: { ...address } } : {}),
+					...(pointsTo ? { pointsTo } : {}),
+				}),
 			];
 		}
 	}

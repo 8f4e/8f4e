@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { compileProject, parseProjectSource } from '@8f4e/compiler';
 import initState, { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import { createEditorRenderRegistry } from '@8f4e/web-ui';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAudioRuntimePlugin } from './index';
 
@@ -94,7 +94,7 @@ describe('AudioWorklet context lifetime', () => {
 			directives: store.directives,
 			layout: store.layout,
 			loading: store.loading,
-			drawers: createEditorDrawerRegistry(),
+			renderRegistry: createEditorRenderRegistry(),
 		});
 		const cleanup = () => {
 			cleanups.delete(cleanup);
@@ -113,17 +113,14 @@ describe('AudioWorklet context lifetime', () => {
 		);
 		events.dispatch('loadProject', { project });
 		const state = store.getState();
-		const block = state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'settings')!;
+		const block = state.project.activeLevel.blocks.find(block => block.name === 'settings')!;
 		return {
 			cleanup,
 			store,
 			state,
 			events,
 			project,
-			configure: (config: string[]) =>
-				applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: code(config) }], {
-					affectsCompilation: true,
-				}),
+			configure: (config: string[]) => applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: code(config) }]),
 			allow: () => emitter.listeners('grantAudioPermission')[0]() as Promise<void>,
 		};
 	}
@@ -276,7 +273,6 @@ describe('AudioWorklet context lifetime', () => {
 		port.onmessage({ data: { type: 'runtimeValues', payload: { audioBufferSize: 128 } } });
 
 		expect(editor.state.loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
-		expect(editor.events.dispatch).toHaveBeenCalledWith('memoryValuesChanged');
 		expect(editor.store.getState().info.audioRuntime).toEqual({ audioBufferSize: 128, sampleRate: 48000 });
 	});
 

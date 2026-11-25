@@ -21,9 +21,9 @@ export function createCompilationContext<TContext extends CompilationContext = C
 	const base: CompilationContext = {
 		namespace: {
 			moduleName: undefined,
-			prototypeShapeIds: [],
 		},
 		locals: {},
+		localValueFacts: {},
 		stack: [],
 		...createBlockState(),
 		memoryPlan: createEmptyMemoryPlan(),

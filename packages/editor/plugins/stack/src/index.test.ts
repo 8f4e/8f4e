@@ -81,7 +81,6 @@ describe('stack plugin', () => {
 			...test.state.compiler.result,
 			compiledFunctions: recompiled.compiledFunctions,
 		});
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalledWith(
 			expect.any(Number),
@@ -91,23 +90,23 @@ describe('stack plugin', () => {
 		);
 
 		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: {} });
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 
 		test.store.set('compiler.result', { ...test.state.compiler.result, compiledFunctions: undefined });
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
 	});
-	it('rebuilds after compiler results change and removes missing analysis', async () => {
+	it('removes missing analysis after compiler metadata changes without requiring layout', async () => {
 		const test = await setup(plugin, source);
 		test.render();
 		expect(test.draw.drawGlyphs).toHaveBeenCalled();
+		const onLayoutsChanged = vi.fn();
+		test.events.on('codeBlockLayoutsChanged', onLayoutsChanged);
 		test.store.set('compiler.result.compiledModules', {});
-		test.store.set('compiler.isCompiling', false);
 		test.render();
 		expect(test.draw.drawGlyphs).not.toHaveBeenCalled();
+		expect(onLayoutsChanged).not.toHaveBeenCalled();
 	});
 	it('honors the host motion preference', async () => {
 		vi.spyOn(performance, 'now').mockReturnValue(1100);

@@ -21,7 +21,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -35,7 +34,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -237,7 +235,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "buffer",
@@ -316,7 +313,6 @@
         {
           "arguments": [
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-module-reference",
               "scope": "intermodule",
               "targetModuleId": "source",
@@ -333,12 +329,21 @@
         {
           "arguments": [
             {
-              "isEndAddress": true,
-              "referenceKind": "intermodular-module-reference",
-              "scope": "intermodule",
-              "targetModuleId": "source",
-              "type": "identifier",
-              "value": "source:&",
+              "left": {
+                "referenceKind": "end-address",
+                "scope": "intermodule",
+                "targetKind": "module",
+                "targetModuleId": "source",
+                "type": "identifier",
+                "value": "end(source:)",
+              },
+              "operator": "-",
+              "right": {
+                "isInteger": true,
+                "type": "literal",
+                "value": 4,
+              },
+              "type": "compile_time_expression",
             },
           ],
           "instruction": "push",

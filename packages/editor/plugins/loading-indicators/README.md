@@ -6,17 +6,25 @@ with one decimal place otherwise. Done and failed results receive green and red 
 neutral label. Elapsed time stops at completion. Messages are clipped to the viewport, reserving room for status
 and time. By default, the list shows at most 20 rows, or fewer when the viewport cannot fit them.
 
-Install `loadingIndicatorsPlugin` through the ordinary plugin contract. This default instance is created by
-`createLoadingIndicatorsPlugin()` and keeps existing usage unchanged. Install it eagerly before the deferred
-loader so the initial feature imports can be shown. `canvasOverlays` controls drawing. There is no configuration
-schema or project directive.
+The 8×4 orbit and the bottom message share the last full row of the editor grid. Shrinking circles move along
+the square path one step every three rendered frames, with no background fill. With reduced motion, the orbit shows
+a stationary frame. The orbit disappears 500 ms after the last pending operation settles, leaving any remaining
+messages in place. If the viewport cannot fit the orbit and at least 16 text columns side by side, the text is
+hidden and the orbit is shown on its own where it fits.
+
+Create the plugin with `createLoadingIndicatorsPlugin` and install it eagerly before the deferred loader so
+initial feature imports can be shown. Supply a live `prefersReducedMotion` callback from the host; the plugin
+reads it when drawing the orbit. `canvasOverlays` controls drawing. There is no configuration schema or
+project directive.
 
 Pass optional settings to the factory for custom limits and timings; omitted settings keep their defaults:
 
 ```ts
 import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indicators';
 
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const loadingPlugin = createLoadingIndicatorsPlugin({
+	prefersReducedMotion: () => motionPreference.matches,
 	maxVisibleRows: 10,
 	hideIntervalMs: 50,
 });
@@ -38,9 +46,10 @@ operation-duration thresholds are inclusive.
 | `failedVisibleMs` | `5000` | Visibility after failure |
 | `cancelledVisibleMs` | `5000` | Visibility after cancellation |
 
-Text, clipping, colors, and positions are prepared when indicators, viewport size, or font metrics change. Frames
-only draw those prepared rows. By default, visible pending rows refresh elapsed labels every 100 ms outside rendering;
-completed rows retain their prepared text. The elapsed timer stops when no pending rows are visible.
+Text, clipping, colors, and positions are prepared when indicators, viewport size, or font metrics change. Drawing
+uses those prepared rows and selects from cached orbit frames without a separate animation timer. By default,
+visible pending rows refresh elapsed labels every 100 ms outside rendering; completed rows retain their prepared
+text. The elapsed timer stops when no pending rows are visible.
 
 Plugins contribute through `loading` in their setup context:
 

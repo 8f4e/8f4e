@@ -21,13 +21,12 @@ const snapshotDirectory = path.join(__dirname, '__snapshots__');
 
 const validModuleBlock = ['module counter', '', 'int count', '', 'moduleEnd'];
 const validFunctionBlock = ['function sine', 'param float x', 'functionEnd float'];
-const validPrototypeBlock = ['prototype oscillatorState', 'float phase', 'float frequency 440', 'prototypeEnd'];
+const validConstantsBlock = ['constants oscillator', 'const PHASE 0', 'const FREQUENCY 440', 'constantsEnd'];
 const validNoteBlock = ['note', '; @pos 2 3', 'remember to tune this later', 'noteEnd'];
 const noteContentMarkers = [
 	'module declarations hold state',
 	'function example',
 	'constants values',
-	'prototype state',
 	'includes',
 	'note another reminder',
 	'entry main',
@@ -35,7 +34,6 @@ const noteContentMarkers = [
 	'moduleEnd',
 	'functionEnd int',
 	'constantsEnd',
-	'prototypeEnd',
 	'includesEnd',
 	'entryEnd',
 	'groupEnd',
@@ -98,6 +96,28 @@ entryEnd`);
 });
 
 describe('parseProjectSource', () => {
+	it.each([
+		{ code: ['module sample', '; @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample ; @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', '; @pos 1 2 @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', 'int value 1 ; @watch @disabled', 'moduleEnd'], disabled: true },
+		{ code: ['module sample', '; mention @disabled in prose', 'moduleEnd'], disabled: undefined },
+		{ code: ['module sample', 'int value 1 ; mention @disabled in prose', 'moduleEnd'], disabled: undefined },
+		{ code: ['module sample', '; @disabledElsewhere', 'moduleEnd'], disabled: undefined },
+	])('sets disabled metadata from directive comments: $code', ({ code, disabled }) => {
+		const project = parseProjectSource(['8f4e/v1', 'entry main', ...code, 'entryEnd'].join('\n'));
+		const block = getProjectModules(project)[0];
+		expect(block.code).toEqual(code);
+		expect(block.disabled).toBe(disabled);
+	});
+
+	it('ignores disabled tags inside function documentation', () => {
+		const code = ['function sample', '; @doc For examples with @disabled', '; @returns @disabled', 'functionEnd int'];
+		const project = parseProjectSource(['8f4e/v1', ...code].join('\n'));
+		expect(project.functions[0].code).toEqual(code);
+		expect(project.functions[0].disabled).toBeUndefined();
+	});
+
 	it('parses multiple document blocks', () => {
 		const text = [
 			'8f4e/v1',
@@ -112,7 +132,7 @@ describe('parseProjectSource', () => {
 			'# project directive-style comment before a function',
 			...validFunctionBlock,
 			'',
-			...validPrototypeBlock,
+			...validConstantsBlock,
 			'',
 			...validNoteBlock,
 			'; trailing project comment',
@@ -121,52 +141,22 @@ describe('parseProjectSource', () => {
 
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 6, code: validModuleBlock, entry: 'main' }]);
 		expect(project.functions).toEqual([{ id: 15, code: validFunctionBlock }]);
-		expect(project.prototypes).toEqual([{ id: 19, code: validPrototypeBlock }]);
+		expect(project.constants).toEqual([{ id: 19, code: validConstantsBlock }]);
 		expect(project.notes).toEqual([{ id: 24, code: validNoteBlock }]);
 		expect(getProjectGroups(project)).toEqual([]);
 	});
 
-	it('preserves root declaration gaps while discarding comments around child blocks', () => {
-		const project = parseProjectSource(
-			[
-				'8f4e/v1',
-				'',
-				'   ',
-				'; first retained declaration',
-				'pass common',
-				'',
-				'// between declarations',
-				'pass shared',
-				'',
-				'; discarded before a child block',
-				'entry main',
-				'; discarded inside an entry',
-				'module first',
-				'moduleEnd',
-				'entryEnd',
-				'',
-				'; retained before another root declaration',
-				'pass last',
-				'',
-				'// retained at the end',
-			].join('\n')
+	it.each([
+		['pass', 'pass common'],
+		['init', 'init &out 1'],
+		['expose', 'expose out &voice:value'],
+	])('rejects root %s declarations at their document line', (instruction, source) => {
+		expect(() => parseProjectSource(`8f4e/v1\n; root comment\n\n${source}`)).toThrowError(
+			expect.objectContaining({
+				message: `Parse error at line 4: instruction "${instruction}" is only allowed in a group body`,
+				diagnostic: expect.objectContaining({ location: { kind: 'document', lineNumber: 3 } }),
+			})
 		);
-
-		expect(project.code).toEqual([
-			'; first retained declaration',
-			'pass common',
-			'',
-			'// between declarations',
-			'pass shared',
-			'',
-			'; retained before another root declaration',
-			'pass last',
-			'',
-			'// retained at the end',
-		]);
-		expect(getProjectModules(project)).toEqual([
-			{ type: 'module', id: 13, code: ['module first', 'moduleEnd'], entry: 'main' },
-		]);
 	});
 
 	it.each([
@@ -183,7 +173,7 @@ describe('parseProjectSource', () => {
 			message: 'Parse error at line 2: group blocks must be inside an entry block',
 		},
 	])('retains scope diagnostics: $message', ({ body, message }) => {
-		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(new Error(message));
+		expect(() => parseProjectSource(`8f4e/v1\n${body}`)).toThrowError(message);
 	});
 
 	it.each(noteContentMarkers)('preserves %s as root note content', marker => {
@@ -196,7 +186,6 @@ describe('parseProjectSource', () => {
 		expect(project.functions).toEqual([{ id: 10, code: validFunctionBlock }]);
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 14, code: validModuleBlock, entry: 'main' }]);
 		expect(project.constants).toEqual([]);
-		expect(project.prototypes).toEqual([]);
 		expect(project.includes).toEqual([]);
 		expect(getProjectGroups(project)).toEqual([]);
 	});
@@ -242,7 +231,6 @@ describe('parseProjectSource', () => {
 			execution: [{ type: 'module', id: 7 + noteCode.length, code: validModuleBlock, entry: 'main' }],
 			functions: [],
 			constants: [],
-			prototypes: [],
 			includes: [],
 			notes: [{ id: 6, code: noteCode }],
 			unknown: [],
@@ -266,19 +254,6 @@ describe('parseProjectSource', () => {
 
 		expect(project.includes).toEqual([{ id: 3, code: includesBlock }]);
 		expect(getProjectModules(project)).toEqual([{ type: 'module', id: 9, code: validModuleBlock, entry: 'main' }]);
-	});
-
-	it('parses module blocks that contain shape instructions', () => {
-		const project = parseProjectSource(
-			['8f4e/v1', '', 'entry main', 'module oscillator', 'shape oscillatorState', 'moduleEnd', 'entryEnd'].join('\n')
-		);
-
-		expect(getProjectModules(project)[0]).toEqual({
-			type: 'module',
-			id: 4,
-			code: ['module oscillator', 'shape oscillatorState', 'moduleEnd'],
-			entry: 'main',
-		});
 	});
 
 	it('allows empty entries', () => {
@@ -306,7 +281,7 @@ describe('parseProjectSource', () => {
 				...validFunctionBlock,
 				'entry main',
 				'group oscillator',
-				...validPrototypeBlock,
+				...validConstantsBlock,
 				...validNoteBlock,
 				'groupEnd',
 				'entryEnd',
@@ -317,7 +292,6 @@ describe('parseProjectSource', () => {
 
 		expect(getProjectModules(project)).toEqual([]);
 		expect(project.functions).toEqual([]);
-		expect(project.prototypes).toEqual([]);
 		expect(project.notes).toEqual([]);
 		expect(getProjectGroups(project)).toEqual([
 			{
@@ -342,8 +316,7 @@ describe('parseProjectSource', () => {
 						exposures: [],
 						execution: [],
 						functions: [],
-						constants: [],
-						prototypes: [{ id: 17, code: validPrototypeBlock }],
+						constants: [{ id: 17, code: validConstantsBlock }],
 						includes: [],
 						notes: [{ id: 21, code: validNoteBlock }],
 						unknown: [],
@@ -351,7 +324,6 @@ describe('parseProjectSource', () => {
 				],
 				functions: [{ id: 12, code: validFunctionBlock }],
 				constants: [],
-				prototypes: [],
 				includes: [],
 				notes: [],
 				unknown: [],
@@ -359,11 +331,11 @@ describe('parseProjectSource', () => {
 		]);
 	});
 
-	it('preserves every group-root source line while extracting nested blocks', () => {
+	it('preserves declarations and comments while extracting nested blocks', () => {
 		const groupCode = [
 			'group audio',
 			'; this comment belongs to the group block',
-			'futureInstruction anything',
+			'init &level 0',
 			'expose level &voice:level',
 			'',
 			'groupEnd',
@@ -387,11 +359,44 @@ describe('parseProjectSource', () => {
 		]);
 		expect(getProjectGroups(project)[0].exposures).toEqual([
 			{
+				lineNumber: 3,
 				name: 'level',
 				targetModuleName: 'voice',
 				targetMemoryName: 'level',
 			},
 		]);
+	});
+
+	it('records exposure rows in each owning group after extracting nested blocks', () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group outer
+expose outerValue &source:value
+entry main
+group inner
+; before the module
+expose first &source:value
+entry main
+module source
+int value
+moduleEnd
+entryEnd
+; after the module
+expose second &source:value
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		const outer = getProjectGroups(project)[0];
+		const inner = getProjectGroups(outer)[0];
+		expect(outer.exposures).toMatchObject([{ name: 'outerValue', lineNumber: 1 }]);
+		expect(inner.exposures).toMatchObject([
+			{ name: 'first', lineNumber: 2 },
+			{ name: 'second', lineNumber: 4 },
+		]);
+		for (const exposure of inner.exposures) {
+			expect(inner.code[exposure.lineNumber]).toBe(`expose ${exposure.name} &source:value`);
+		}
 	});
 
 	it('throws on invalid project shape', () => {
@@ -414,7 +419,7 @@ describe('parseProjectSource', () => {
 		).toThrow('duplicate sibling group "audio"');
 
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup\ngroupEnd\nentryEnd')).toThrow(
-			'group requires exactly one name'
+			'expected group NAME or group NAME use TEMPLATE'
 		);
 		expect(() => parseProjectSource('8f4e/v1\n\nentry main\ngroup invalid/name\ngroupEnd\nentryEnd')).toThrow(
 			'invalid group name'

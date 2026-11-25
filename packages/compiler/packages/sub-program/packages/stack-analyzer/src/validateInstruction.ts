@@ -1,5 +1,6 @@
+import { getError } from '@8f4e/compiler-diagnostics';
 import type { CompilationContext, CompilerASTLine, InstructionSpec } from '@8f4e/language-spec';
-import { ErrorCode, getError, getInstructionSpec } from '@8f4e/language-spec';
+import { ErrorCode, getInstructionSpec } from '@8f4e/language-spec';
 import { peekStackOperands } from './peekStackOperands';
 import { validateOperandTypes } from './validateOperandTypes';
 
@@ -24,7 +25,7 @@ export function validateInstruction(line: CompilerASTLine, context: CompilationC
 	const operands = peekStackOperands(context.stack, operandsNeeded);
 
 	if (operands.length < operandsNeeded) {
-		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, context);
+		throw getError(ErrorCode.INSUFFICIENT_OPERANDS, line, { symbol: context.codeBlockId });
 	}
 
 	if (operandTypes) {

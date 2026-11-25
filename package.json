@@ -22,23 +22,23 @@
   },
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "devDependencies": {
-    "@biomejs/biome": "2.6.4",
-    "@nx/js": "23.3.1",
-    "@nx/vite": "23.3.1",
-    "@playwright/test": "1.64.1",
-    "@types/audioworklet": "0.0.100",
+    "@biomejs/biome": "2.6.8",
+    "@nx/js": "23.3.2",
+    "@nx/vite": "23.3.2",
+    "@playwright/test": "1.65.1",
+    "@types/audioworklet": "0.0.102",
     "@types/node": "24.13.2",
     "@types/offscreencanvas": "2019.7.3",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",
     "@vitest/coverage-v8": "4.1.12",
     "@vitest/ui": "4.1.12",
-    "concurrently": "10.0.6",
+    "concurrently": "10.0.7",
     "husky": "9.1.7",
-    "lint-staged": "17.6.0",
-    "nx": "23.3.1",
+    "lint-staged": "17.6.1",
+    "nx": "23.3.2",
     "typescript": "6.0.3",
-    "vite": "7.3.7",
+    "vite": "7.3.8",
     "vite-plugin-static-copy": "4.1.1",
     "vitest": "4.1.12",
     "wabt": "1.0.39"
@@ -61,9 +61,9 @@
   },
   "overrides": {
     "nx": {
-      "axios": "1.21.0",
-      "brace-expansion": "5.0.12",
-      "follow-redirects": "1.16.2",
+      "axios": "1.21.1",
+      "brace-expansion": "5.0.13",
+      "follow-redirects": "1.16.3",
       "yaml": "2.9.1"
     }
   }

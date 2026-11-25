@@ -1,3 +1,4 @@
+import { CompilerError, getError } from '@8f4e/compiler-diagnostics';
 import type {
 	Argument,
 	CompilerASTLine,
@@ -8,31 +9,26 @@ import type {
 	ModuleAST,
 	ModuleLine,
 	PlannedMemoryDeclaration,
-	PlannedMemoryDeclarationSource,
 	PlannedMemoryModule,
-	PrototypeAST,
-	ShapeLine,
 	ValidatedModuleAST,
-	ValidatedPrototypeAST,
 } from '@8f4e/language-spec';
 import {
 	ALLOCATION_UNIT_BYTE_SIZE,
 	ArgumentType,
 	ErrorCode,
 	type ErrorCodeValue,
-	getError,
 	isArrayMemoryDeclarationLine,
 	isBinaryCompileTimeExpression,
 	isMemoryDeclarationLine,
 	isScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import { planArrayDeclarationLayout, planScalarDeclarationLayout } from './declarations';
-import { getAllocatedByteLength, getEndAddressSafeByteLength, getEndByteAddress } from './layoutAddresses';
+import { getAllocatedByteLength, getEndByteAddress } from './layoutAddresses';
 
 export type {
+	MemoryDeclarationLayout,
 	MemoryLayoutPlan,
 	PlannedMemoryDeclaration,
-	PlannedMemoryDeclarationSource,
 	PlannedMemoryModule,
 } from '@8f4e/language-spec';
 
@@ -41,52 +37,20 @@ interface MemoryPlannerErrorDetails {
 	reason?: string;
 }
 
-export class MemoryPlannerError extends Error {
-	readonly compilerErrorCode: ErrorCodeValue;
-	readonly line: CompilerASTLine;
-	readonly details?: MemoryPlannerErrorDetails;
-
-	constructor(
-		compilerErrorCode: ErrorCodeValue,
-		line: CompilerASTLine,
-		message: string,
-		details?: MemoryPlannerErrorDetails
-	) {
-		super(message);
-		this.name = 'MemoryPlannerError';
-		this.compilerErrorCode = compilerErrorCode;
-		this.line = line;
-		this.details = details;
-	}
-}
-
-interface MemoryLayoutSourcePrototype {
-	id: string;
-	declarationLines: readonly MemoryDeclarationLine[];
-}
-
-type MemoryLayoutSourceLine = MemoryDeclarationLine | ShapeLine;
-
 interface MemoryLayoutSourceModule {
 	id: string;
 	moduleLine: Pick<ModuleLine, 'lineNumber'>;
-	lines: readonly MemoryLayoutSourceLine[];
+	lines: readonly MemoryDeclarationLine[];
 }
 
 interface MemoryLayoutPlanInput {
-	prototypes: readonly MemoryLayoutSourcePrototype[];
 	modules: readonly MemoryLayoutSourceModule[];
 	startingByteAddress?: number;
 }
 
-export interface SubProgramMemoryLayoutPlanInput<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
-	TModule extends ModuleAST = ValidatedModuleAST,
-> {
-	prototypes: readonly TPrototype[];
+export interface SubProgramMemoryLayoutPlanInput<TModule extends ModuleAST = ValidatedModuleAST> {
 	modules: readonly TModule[];
 	constantReferences: {
-		prototypes: readonly ConstantResolutionBlockFacts[];
 		modules: readonly ConstantResolutionBlockFacts[];
 	};
 	startingByteAddress?: number;
@@ -95,10 +59,11 @@ export interface SubProgramMemoryLayoutPlanInput<
 function plannerError(
 	compilerErrorCode: ErrorCodeValue,
 	line: CompilerASTLine,
-	message = getError(compilerErrorCode, line).message,
+	message?: string,
 	details?: MemoryPlannerErrorDetails
-): MemoryPlannerError {
-	return new MemoryPlannerError(compilerErrorCode, line, message, details);
+) {
+	const error = getError(compilerErrorCode, line, { details: details });
+	return message ? new CompilerError({ ...error.diagnostic, message }) : error;
 }
 
 function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
@@ -109,44 +74,8 @@ function getDeclarationName(line: MemoryDeclarationLine): string | undefined {
 	}
 }
 
-function getPrototypeMap(
-	prototypes: readonly MemoryLayoutSourcePrototype[]
-): Readonly<Record<string, MemoryLayoutSourcePrototype>> {
-	return Object.fromEntries(prototypes.map(prototype => [prototype.id, prototype]));
-}
-
 function applyConstantFacts<TLine extends CompilerASTLine>(line: TLine, facts?: ConstantResolutionLineFacts): TLine {
 	return facts?.arguments ? ({ ...line, arguments: facts.arguments } as TLine) : line;
-}
-
-function getPrototypeSources(
-	prototypes: readonly PrototypeAST[],
-	constantReferences: readonly ConstantResolutionBlockFacts[]
-): MemoryLayoutSourcePrototype[] {
-	const seenPrototypeIds = new Set<string>();
-
-	return prototypes.map((prototype, prototypeIndex) => {
-		if (seenPrototypeIds.has(prototype.id)) {
-			throw plannerError(
-				ErrorCode.DUPLICATE_IDENTIFIER,
-				prototype.prototypeLine,
-				`Duplicate prototype shape id: ${prototype.id}`,
-				{ identifier: prototype.id }
-			);
-		}
-		seenPrototypeIds.add(prototype.id);
-		const blockFacts = constantReferences[prototypeIndex];
-
-		return {
-			id: prototype.id,
-			declarationLines: prototype.lines
-				.map((sourceLine, lineIndex) => {
-					const line = applyConstantFacts(sourceLine, blockFacts?.lineFacts[lineIndex]);
-					return isMemoryDeclarationLine(line) ? normalizeLayoutMemoryDeclarationLine(line, sourceLine) : line;
-				})
-				.filter(isMemoryDeclarationLine),
-		};
-	});
 }
 
 function getUnresolvedArgumentIdentifier(argument: Argument): string {
@@ -160,12 +89,9 @@ function getUnresolvedArgumentIdentifier(argument: Argument): string {
 	return argument.type === ArgumentType.IDENTIFIER ? argument.value : String(argument.type);
 }
 
-function normalizeLayoutMemoryDeclarationLine(
-	line: MemoryDeclarationLine,
-	sourceLine: CompilerASTLine = line
-): MemoryDeclarationLine {
+function validateLayoutMemoryDeclarationLine(line: MemoryDeclarationLine, sourceLine: CompilerASTLine): void {
 	if (!isArrayMemoryDeclarationLine(line)) {
-		return line;
+		return;
 	}
 
 	const elementCount = line.arguments[1];
@@ -178,35 +104,20 @@ function normalizeLayoutMemoryDeclarationLine(
 	if (!Number.isInteger(elementCount.value) || elementCount.value < 0) {
 		throw plannerError(ErrorCode.INVALID_ARRAY_SIZE, sourceLine);
 	}
-
-	return elementCount === line.arguments[1]
-		? line
-		: ({
-				...line,
-				arguments: [line.arguments[0], elementCount, ...line.arguments.slice(2)],
-			} as MemoryDeclarationLine);
-}
-
-function isShapeLine(line: CompilerASTLine): line is ShapeLine {
-	return line.instruction === 'shape';
 }
 
 function collectModuleMemoryLayoutSourceLines(
 	ast: ModuleAST,
 	constantReferences: ConstantResolutionBlockFacts | undefined
 ): MemoryLayoutSourceModule {
-	const lines: MemoryLayoutSourceLine[] = [];
+	const lines: MemoryDeclarationLine[] = [];
 
 	for (let lineIndex = 0; lineIndex < ast.lines.length; lineIndex++) {
 		const sourceLine = ast.lines[lineIndex];
 		const line = applyConstantFacts(sourceLine, constantReferences?.lineFacts[lineIndex]);
 
 		if (isMemoryDeclarationLine(line)) {
-			lines.push(normalizeLayoutMemoryDeclarationLine(line, sourceLine));
-			continue;
-		}
-
-		if (isShapeLine(line)) {
+			validateLayoutMemoryDeclarationLine(line, sourceLine);
 			lines.push(line);
 		}
 	}
@@ -223,40 +134,6 @@ function createMemoryLayoutSourceModules(
 	constantReferences: readonly ConstantResolutionBlockFacts[]
 ): MemoryLayoutSourceModule[] {
 	return asts.map((ast, index) => collectModuleMemoryLayoutSourceLines(ast, constantReferences[index]));
-}
-
-function getEffectiveMemoryDeclarationSources(
-	sourceModule: MemoryLayoutSourceModule,
-	prototypesById: Readonly<Record<string, MemoryLayoutSourcePrototype>>
-): PlannedMemoryDeclarationSource[] {
-	const declarationSources: PlannedMemoryDeclarationSource[] = [];
-
-	for (const line of sourceModule.lines) {
-		if (isMemoryDeclarationLine(line)) {
-			declarationSources.push({ line, isInherited: false });
-			continue;
-		}
-
-		const prototypeId = line.arguments[0].value;
-		const prototype = prototypesById[prototypeId];
-		if (!prototype) {
-			throw plannerError(ErrorCode.UNDECLARED_IDENTIFIER, line, 'Unknown prototype shape in memory layout.', {
-				identifier: prototypeId,
-			});
-		}
-
-		for (const declarationLine of prototype.declarationLines) {
-			declarationSources.push({
-				line: {
-					...declarationLine,
-					lineNumber: line.lineNumber,
-				},
-				isInherited: true,
-			});
-		}
-	}
-
-	return declarationSources;
 }
 
 function planDeclarationLine(
@@ -285,28 +162,24 @@ function planDeclarationLine(
 
 function planModuleMemory(
 	sourceModule: MemoryLayoutSourceModule,
-	moduleByteAddress: number,
-	prototypesById: Readonly<Record<string, MemoryLayoutSourcePrototype>>
-): Omit<
-	PlannedMemoryModule,
-	'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress' | 'endAddressSafeByteLength'
-> {
+	moduleByteAddress: number
+): Omit<PlannedMemoryModule, 'byteAddress' | 'id' | 'lineNumber' | 'allocatedByteLength' | 'endByteAddress'> {
 	let localAllocationUnitOffset = 0;
-	const memory: Record<string, PlannedMemoryDeclaration> = {};
+	const memory: Record<string, PlannedMemoryDeclaration> = Object.create(null);
 	const declarations: PlannedMemoryDeclaration[] = [];
-	const declarationSources = getEffectiveMemoryDeclarationSources(sourceModule, prototypesById);
 
-	for (const declarationSource of declarationSources) {
-		const plannedDeclaration = planDeclarationLine(
-			declarationSource.line,
-			moduleByteAddress,
-			localAllocationUnitOffset
-		);
-		const name = getDeclarationName(declarationSource.line);
-		const declaration = {
+	for (const line of sourceModule.lines) {
+		const name = getDeclarationName(line);
+		if (name !== undefined && Object.hasOwn(memory, name)) {
+			throw getError(ErrorCode.DUPLICATE_IDENTIFIER, line, { symbol: sourceModule.id, details: { identifier: name } });
+		}
+
+		const plannedDeclaration = planDeclarationLine(line, moduleByteAddress, localAllocationUnitOffset);
+		const declaration: PlannedMemoryDeclaration = {
 			...plannedDeclaration.declaration,
 			id: declarations.length,
 			...(name !== undefined ? { name } : {}),
+			source: line,
 		};
 
 		if (name !== undefined) memory[name] = declaration;
@@ -318,14 +191,12 @@ function planModuleMemory(
 		allocationUnitCount: localAllocationUnitOffset,
 		memory,
 		declarations,
-		declarationSources,
 	};
 }
 
 /** Plans module and declaration memory addresses from internal planner-ready source. */
 function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 	const startingByteAddress = input.startingByteAddress ?? ALLOCATION_UNIT_BYTE_SIZE;
-	const prototypesById = getPrototypeMap(input.prototypes);
 	let nextByteAddress = startingByteAddress;
 	const modules: Record<string, PlannedMemoryModule> = {};
 	const moduleList: PlannedMemoryModule[] = [];
@@ -334,7 +205,7 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 		left.id < right.id ? -1 : left.id > right.id ? 1 : 0
 	)) {
 		const moduleByteAddress = nextByteAddress;
-		const moduleMemory = planModuleMemory(sourceModule, moduleByteAddress, prototypesById);
+		const moduleMemory = planModuleMemory(sourceModule, moduleByteAddress);
 		const plannedModule: PlannedMemoryModule = {
 			id: sourceModule.id,
 			lineNumber: sourceModule.moduleLine.lineNumber,
@@ -342,10 +213,8 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
 			allocationUnitCount: moduleMemory.allocationUnitCount,
 			allocatedByteLength: getAllocatedByteLength(moduleMemory.allocationUnitCount),
 			endByteAddress: getEndByteAddress(moduleByteAddress, moduleMemory.allocationUnitCount),
-			endAddressSafeByteLength: getEndAddressSafeByteLength(moduleMemory.allocationUnitCount),
 			memory: moduleMemory.memory,
 			declarations: moduleMemory.declarations,
-			declarationSources: moduleMemory.declarationSources,
 		};
 
 		modules[plannedModule.id] = plannedModule;
@@ -367,12 +236,10 @@ function planMemoryLayout(input: MemoryLayoutPlanInput): MemoryLayoutPlan {
  * @param input - Validated sub-program ASTs plus optional layout settings.
  * @returns Address and size metadata for modules and memory declarations.
  */
-export function planSubProgramMemoryLayout<
-	TPrototype extends PrototypeAST = ValidatedPrototypeAST,
-	TModule extends ModuleAST = ValidatedModuleAST,
->(input: SubProgramMemoryLayoutPlanInput<TPrototype, TModule>): MemoryLayoutPlan {
+export function planSubProgramMemoryLayout<TModule extends ModuleAST = ValidatedModuleAST>(
+	input: SubProgramMemoryLayoutPlanInput<TModule>
+): MemoryLayoutPlan {
 	return planMemoryLayout({
-		prototypes: getPrototypeSources(input.prototypes, input.constantReferences.prototypes),
 		modules: createMemoryLayoutSourceModules(input.modules, input.constantReferences.modules),
 		startingByteAddress: input.startingByteAddress ?? ALLOCATION_UNIT_BYTE_SIZE,
 	});

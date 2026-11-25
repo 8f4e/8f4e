@@ -1,6 +1,6 @@
 import type { EditorPluginContext } from '@8f4e/editor-core';
-import { applyCodeBlockSourceEdits } from '@8f4e/editor-state';
-import type { Direction } from '@8f4e/editor-state-types';
+import { applyCodeBlockSourceEdits, clampSourcePosition } from '@8f4e/editor-state';
+import type { Direction, EditorCodeBlock } from '@8f4e/editor-state-types';
 import deleteBackward from './deleteBackward';
 import insertNewLine from './insertNewLine';
 import insertText from './insertText';
@@ -15,6 +15,17 @@ const directions: Record<string, Direction> = {
 	ArrowDown: 'down',
 };
 
+function applyTextEdit(
+	store: EditorPluginContext['store'],
+	block: EditorCodeBlock,
+	edit: ReturnType<typeof insertText>
+) {
+	applyCodeBlockSourceEdits(store, [{ codeBlock: block, code: edit.code }]);
+	if (store.getState().project.selectedCodeBlock !== block) return;
+	const [row, col] = clampSourcePosition(block.code, edit.row, edit.col);
+	store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
+}
+
 export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPluginContext): void {
 	const state = store.getState();
 	if (event.defaultPrevented || state.editorMode !== 'edit') return;
@@ -27,17 +38,16 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 		}
 		return;
 	}
-	const block = state.codeBlockRendering.selectedCodeBlock;
+	const block = state.project.selectedCodeBlock;
 	if (!block) return;
 	const direction = directions[key];
 	if (direction) {
-		if (!state.featureFlags.codeLineSelection) return;
 		event.preventDefault();
-		const [row, col] = moveCaret(block.code, block.cursor.row, block.cursor.col, direction);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.row', row);
-		store.set('codeBlockRendering.selectedCodeBlock.cursor.col', col);
+		const [row, col] = moveCaret(block.code, block.tabStopsByLine, block.cursor.row, block.cursor.col, direction);
+		store.set('project.selectedCodeBlock.cursor', { ...block.cursor, row, col });
 		return;
 	}
+	if (block.readOnly) return;
 	let edit: ReturnType<typeof insertText>;
 	if (key === 'Backspace') edit = deleteBackward(block.code, block.cursor.row, block.cursor.col);
 	else if (key === 'Enter') edit = insertNewLine(block.code, block.cursor.row, block.cursor.col);
@@ -45,21 +55,17 @@ export function handleKeydown(event: KeyboardEvent, { store, events }: EditorPlu
 		edit = insertText(block.code, block.cursor.row, block.cursor.col, key === 'Tab' ? '\t' : key);
 	} else return;
 	event.preventDefault();
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
+	applyTextEdit(store, block, edit);
 }
 
-export function handlePaste(event: ClipboardEvent, { store, events }: EditorPluginContext): void {
+export function handlePaste(event: ClipboardEvent, { store }: EditorPluginContext): void {
 	const state = store.getState();
 	if (event.defaultPrevented || state.editorMode !== 'edit') return;
-	const block = state.codeBlockRendering.selectedCodeBlock;
-	if (!block) return;
+	const block = state.project.selectedCodeBlock;
+	if (!block || block.readOnly) return;
 	const text = event.clipboardData!.getData('text/plain');
 	if (text.length === 0) return;
 	event.preventDefault();
 	const edit = insertText(block.code, block.cursor.row, block.cursor.col, text);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.row', edit.row);
-	store.set('codeBlockRendering.selectedCodeBlock.cursor.col', edit.col);
-	applyCodeBlockSourceEdits({ store, events }, [{ codeBlock: block, code: edit.code }], { affectsCompilation: true });
+	applyTextEdit(store, block, edit);
 }

@@ -1,5 +1,6 @@
 import initEditor from '@8f4e/editor-core';
-import { EMPTY_DEFAULT_PROJECT, stopViewportAnimation } from '@8f4e/editor-state';
+import { EMPTY_DEFAULT_PROJECT } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { offscreenBlockArrowsPlugin } from '../src/index';
 
@@ -9,6 +10,7 @@ test.each(['origin', 'panned'])('draws offscreen arrows at raw viewport edges: %
 	canvas.height = 383;
 	document.body.append(canvas);
 	const editor = await initEditor(canvas, {
+		renderer: new Engine(canvas),
 		initialProject: {
 			...EMPTY_DEFAULT_PROJECT,
 			constants: [{ id: 0, code: ['constants visible', '; @pos 0 0', 'constantsEnd'] }],
@@ -29,7 +31,6 @@ test.each(['origin', 'panned'])('draws offscreen arrows at raw viewport edges: %
 	});
 	editor.pauseRendering();
 	try {
-		stopViewportAnimation(editor.state);
 		editor.state.viewport.x = position === 'origin' ? 0 : 24;
 		editor.state.viewport.y = position === 'origin' ? 0 : 32;
 		editor.renderFrame();

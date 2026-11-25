@@ -1,11 +1,13 @@
 {
   "code": 12,
-  "context": {
-    "projectBlockId": 3,
-  },
-  "line": {
-    "instruction": "#skipExecution",
+  "domain": "syntax",
+  "instruction": "#skipExecution",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 1,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Instruction is not allowed in this block.",
 }

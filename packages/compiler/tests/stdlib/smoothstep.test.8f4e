@@ -33,4 +33,22 @@ mul
 castToInt
 assertEqual 100
 moduleEnd
+module smoothstepDoubleAssertions
+call smoothstep 0.0f64
+assertEqual 0.0f64
+call smoothstep 0.25f64
+assertEqual 0.15625f64
+call smoothstep 0.5f64
+assertEqual 0.5f64
+call smoothstep 0.75f64
+assertEqual 0.84375f64
+call smoothstep 1.0f64
+assertEqual 1.0f64
+; The cubic is evaluated without clamping.
+call smoothstep -1.0f64
+assertEqual 5.0f64
+call smoothstep 2.0f64
+assertEqual -4.0f64
+moduleEnd
+
 entryEnd

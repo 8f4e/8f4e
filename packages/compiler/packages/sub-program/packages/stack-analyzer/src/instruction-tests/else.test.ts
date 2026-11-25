@@ -16,6 +16,7 @@ describe('else stack analysis', () => {
 
 		const facts = analyzeInstruction(
 			{
+				diagnosticSource: { kind: 'block', projectBlockId: 12, projectGroupPath: '' },
 				lineNumber: 7,
 				instruction: 'else',
 				arguments: [],
@@ -35,8 +36,6 @@ describe('else stack analysis', () => {
 	it.each(['int', 'float64'] as const)('rejects a %s then-branch result when float is expected', valueType => {
 		const context = createStackAnalyzerTestContext({
 			codeBlockId: 'example',
-			codeBlockType: 'module',
-			projectBlockId: 12,
 			stack: [{ kind: 'value', valueType, isNonZero: true }],
 			blockStack: [
 				{ blockType: BlockType.MODULE, expectedResultTypes: [] },
@@ -44,6 +43,7 @@ describe('else stack analysis', () => {
 			],
 		});
 		const line = {
+			diagnosticSource: { kind: 'block', projectBlockId: 12, projectGroupPath: '' },
 			lineNumber: 7,
 			instruction: 'else',
 			arguments: [],
@@ -51,12 +51,15 @@ describe('else stack analysis', () => {
 
 		expect(() => analyzeInstruction(line, context)).toThrow(
 			expect.objectContaining({
-				code: ErrorCode.ONLY_FLOATS,
-				line,
-				context: expect.objectContaining({
-					codeBlockId: 'example',
-					codeBlockType: 'module',
-					projectBlockId: 12,
+				diagnostic: expect.objectContaining({
+					code: ErrorCode.ONLY_FLOATS,
+					symbol: 'example',
+					instruction: line.instruction,
+					location: expect.objectContaining({
+						...line.diagnosticSource,
+						lineNumber: line.lineNumber,
+						projectBlockId: 12,
+					}),
 				}),
 			})
 		);
@@ -76,6 +79,7 @@ describe('else stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 12, projectGroupPath: '' },
 				lineNumber: 8,
 				instruction: 'else',
 				arguments: [],
@@ -83,8 +87,11 @@ describe('else stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}
@@ -104,6 +111,7 @@ describe('else stack analysis', () => {
 				],
 			});
 			const line = {
+				diagnosticSource: { kind: 'block', projectBlockId: 12, projectGroupPath: '' },
 				lineNumber: 8,
 				instruction: 'else',
 				arguments: [],
@@ -111,8 +119,11 @@ describe('else stack analysis', () => {
 
 			expect(() => analyzeInstruction(line, context)).toThrow(
 				expect.objectContaining({
-					code: ErrorCode.ONLY_FLOATS,
-					line,
+					diagnostic: expect.objectContaining({
+						code: ErrorCode.ONLY_FLOATS,
+						instruction: line.instruction,
+						location: expect.objectContaining({ ...line.diagnosticSource, lineNumber: line.lineNumber }),
+					}),
 				})
 			);
 		}

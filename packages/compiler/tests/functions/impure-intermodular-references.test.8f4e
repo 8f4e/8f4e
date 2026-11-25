@@ -31,7 +31,7 @@ function readModuleEdges
 #impure
 push &source:
 load
-push source:&
+push end(source:)-4
 load
 functionEnd int int
 

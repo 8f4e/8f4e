@@ -8,11 +8,14 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import { createCompilerCache, type IncludedFunctionsByProjectGroupPath } from '@8f4e/program-composer/internal';
-import { parseProjectSource, resolveProjectIncludesAsync } from '@8f4e/project-preparser';
+import {
+	parseProjectSource,
+	resolveProjectIncludesAsync,
+	validateUniqueSiblingGroupNames,
+} from '@8f4e/project-preparser';
 import { deriveEffectiveMemorySize } from '@8f4e/wasm-codegen';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
-export { serializeDiagnostic } from './diagnostic';
 export { deriveEffectiveMemorySize, parseProjectSource };
 
 /**
@@ -26,7 +29,7 @@ async function resolveRecursiveProjectIncludes(
 	projectPath: ProjectGroupPath = ROOT_PROJECT_GROUP_PATH,
 	result: Map<ProjectGroupPath, Awaited<ReturnType<typeof resolveProjectIncludesAsync>>> = new Map()
 ): Promise<IncludedFunctionsByProjectGroupPath> {
-	const includedFunctions = await resolveProjectIncludesAsync(project.includes, resolveInclude);
+	const includedFunctions = await resolveProjectIncludesAsync(project.includes, resolveInclude, projectPath);
 	if (includedFunctions.length > 0) {
 		result.set(projectPath, includedFunctions);
 	}
@@ -66,6 +69,7 @@ export async function compileProject(
 	project: ProjectObjectModel,
 	options: CompileProjectOptions = {}
 ): Promise<CompileResult> {
+	validateUniqueSiblingGroupNames(project);
 	const { resolveInclude, cache = createCompilerCache(), ...compilerOptions } = options;
 	const memoizedResolveInclude = createMemoizedIncludeResolver(resolveInclude);
 	const includedFunctionsByProjectPath = await resolveRecursiveProjectIncludes(project, memoizedResolveInclude);

@@ -9,11 +9,7 @@ describe('remainder instruction compiler', () => {
 
 		compileInstructionForTest(
 			remainder,
-			{
-				lineNumber: 1,
-				instruction: 'remainder',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'remainder', arguments: [] },
 			context
 		);
 

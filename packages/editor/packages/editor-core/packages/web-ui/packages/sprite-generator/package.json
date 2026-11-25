@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/sprite-generator",
-  "version": "2.5.0",
+  "version": "3.0.6",
   "private": true,
   "description": "8f4e sprite generator package",
   "type": "module",
@@ -28,6 +28,6 @@
   },
   "devDependencies": {
     "@8f4e/editor-palette": "*",
-    "vite": "7.3.7"
+    "vite": "7.3.8"
   }
 }

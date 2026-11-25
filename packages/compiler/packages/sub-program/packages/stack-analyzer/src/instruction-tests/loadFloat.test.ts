@@ -19,7 +19,10 @@ describe('loadFloat stack analysis', () => {
 				pointsTo: { baseType, pointerDepth },
 			};
 			const context = createStackAnalyzerTestContext({ stack: [operand] });
-			const facts = analyzeInstruction({ instruction: 'loadFloat', lineNumber: 1, arguments: [] }, context);
+			const facts = analyzeInstruction(
+				{ diagnosticSource: { kind: 'document' }, instruction: 'loadFloat', lineNumber: 1, arguments: [] },
+				context
+			);
 			expect(facts.stackAnalysis.consumedOperands).toEqual([operand]);
 			expect(context.stack).toEqual([{ kind: 'value', valueType: expected, isNonZero: false }]);
 			expect(facts.stackAnalysis.producedStackItems).toEqual(context.stack);
@@ -28,7 +31,10 @@ describe('loadFloat stack analysis', () => {
 
 	it('keeps untyped addresses as float32 loads', () => {
 		const context = createStackAnalyzerTestContext({ stack: [{ kind: 'value', valueType: 'int' }] });
-		analyzeInstruction({ instruction: 'loadFloat', lineNumber: 1, arguments: [] }, context);
+		analyzeInstruction(
+			{ diagnosticSource: { kind: 'document' }, instruction: 'loadFloat', lineNumber: 1, arguments: [] },
+			context
+		);
 		expect(context.stack).toEqual([{ kind: 'value', valueType: 'float', isNonZero: false }]);
 	});
 
@@ -47,9 +53,15 @@ describe('loadFloat stack analysis', () => {
 			};
 			const offset: StackItem = { kind: 'value', valueType: 'int', knownValue: 8 };
 			const context = createStackAnalyzerTestContext({ stack: reverse ? [offset, pointer] : [pointer, offset] });
-			analyzeInstruction({ instruction, lineNumber: 1, arguments: [] }, context);
+			analyzeInstruction(
+				{ diagnosticSource: { kind: 'document' }, instruction, lineNumber: 1, arguments: [] },
+				context
+			);
 			expect(context.stack[0]).toMatchObject({ kind: 'address', address: {}, pointsTo: pointer.pointsTo });
-			analyzeInstruction({ instruction: 'loadFloat', lineNumber: 2, arguments: [] }, context);
+			analyzeInstruction(
+				{ diagnosticSource: { kind: 'document' }, instruction: 'loadFloat', lineNumber: 2, arguments: [] },
+				context
+			);
 			expect(context.stack).toEqual([{ kind: 'value', valueType: 'float64', isNonZero: false }]);
 		}
 	);

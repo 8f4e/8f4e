@@ -1,0 +1,63 @@
+function loadBitAt2D
+#export
+#impure
+; @doc Reads an MSB-first packed pixel. Out-of-bounds
+; - coordinates return zero.
+; @returns 0 or 1.
+; @param buffer Buffer with ceil(width/8) bytes per row.
+param int8u* buffer
+; @param width Non-negative width in pixels.
+param int width
+; @param height Non-negative height in pixels.
+param int height
+; @param x Horizontal pixel coordinate.
+param int x
+; @param y Vertical pixel coordinate.
+param int y
+
+push x
+push 0
+greaterOrEqual
+push x
+push width
+lessThan
+and
+push y
+push 0
+greaterOrEqual
+and
+push y
+push height
+lessThan
+and
+if
+push buffer
+push y
+push width
+push 1
+sub
+push 8
+div
+push 1
+add
+mul
+push x
+push 3
+shiftRightUnsigned
+add
+add
+load8u
+
+push 7
+push x
+push 7
+and
+sub
+shiftRightUnsigned
+push 1
+and
+else
+push 0
+ifEnd int
+
+functionEnd int

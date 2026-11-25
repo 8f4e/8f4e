@@ -11,12 +11,13 @@ it('keeps note examples opaque and preserves original source positions and text'
 		'template ignored',
 		'noteEnd',
 		'entry main',
-		'group voice',
+		'group voice use audio; comment',
 		'entry main',
 		'module oscillator',
 		'int phase',
 		'moduleEnd',
 		'entryEnd',
+		'expose output &oscillator:phase',
 		'groupEnd',
 		'entryEnd',
 	];
@@ -30,8 +31,12 @@ it('keeps note examples opaque and preserves original source positions and text'
 	]);
 	expect(blocks[1].start.lineNumber).toBe(7);
 	const group = blocks[1].children.filter(isBlock)[0];
+	expect(group).toMatchObject({ opener: 'group', header: { name: 'voice', template: 'audio' } });
 	expect(group.start.lineNumber).toBe(8);
 	expect(group.children.filter(isBlock)[0].children.filter(isBlock)[0].start.lineNumber).toBe(10);
+	expect(group.children.filter(node => !isBlock(node))).toEqual([
+		{ text: 'expose output &oscillator:phase', lineNumber: 14, declaration: 'expose' },
+	]);
 });
 
 it('only recognizes preprocessing scopes when the caller registers their delimiters', () => {
@@ -46,8 +51,25 @@ it('only recognizes preprocessing scopes when the caller registers their delimit
 it('validates a flat group shell while normal source reading accepts its separately owned children', () => {
 	const source = 'group voice\nentry main\nmodule oscillator\nmoduleEnd\nentryEnd\ngroupEnd';
 	expect(() => readProjectSource(source)).not.toThrow();
-	expect(() => validateProjectCodeBlock(source.split('\n'), 0)).toThrow('mixed block type markers');
-	expect(() => validateProjectCodeBlock(['group voice', 'pass env', 'groupEnd'], 0)).not.toThrow();
+	expect(() => validateProjectCodeBlock(source.split('\n'))).toThrow('mixed block type markers');
+	expect(
+		validateProjectCodeBlock([
+			'',
+			'group voice',
+			'; keep this row',
+			'pass env',
+			'',
+			'expose output &oscillator:phase',
+			'init &output 1',
+			'groupEnd',
+			'',
+		])
+	).toEqual([
+		{ instruction: 'pass', lineNumber: 3 },
+		{ instruction: 'expose', lineNumber: 5 },
+		{ instruction: 'init', lineNumber: 6 },
+	]);
+	expect(validateProjectCodeBlock(['note', 'pass env', 'noteEnd'])).toEqual([]);
 });
 
 it('reports unclosed notes rather than interpreting their embedded block markers', () => {
@@ -64,7 +86,9 @@ it('attaches block-relative source locations to structural diagnostics', () => {
 		error = caught;
 	}
 	expect(error).toMatchObject({
-		line: { instruction: 'constants', lineNumber: 2 },
-		context: { projectBlockId: 2 },
+		diagnostic: {
+			instruction: 'constants',
+			location: { kind: 'block', projectBlockId: 2, projectGroupPath: '', lineNumber: 2 },
+		},
 	});
 });

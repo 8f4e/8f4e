@@ -46,5 +46,8 @@ export const clampModuleAddress: InstructionCompiler = (_line, context, facts) =
 export const clampGlobalAddress: InstructionCompiler = (_line, context, facts) => {
 	const { accessByteWidth } = facts.clamp!;
 
-	return saveByteCode(context, clampAddressByteCode(context, 0, linearLastValidStartAddress(accessByteWidth)));
+	return saveByteCode(
+		context,
+		clampAddressByteCode(context, 0, linearLastValidStartAddress(accessByteWidth, context.minimumMemoryBytes))
+	);
 };

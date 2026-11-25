@@ -41,7 +41,6 @@
               "value": "emptyPointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "empty",
@@ -81,7 +80,6 @@
               "value": "singlePointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "single",
@@ -126,7 +124,6 @@
               "value": "multiplePointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "multiple",
@@ -146,7 +143,6 @@
             },
             {
               "left": {
-                "isEndAddress": false,
                 "referenceKind": "memory-reference",
                 "scope": "local",
                 "targetMemoryId": "multiple",
@@ -173,7 +169,6 @@
               "value": "indirect",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "singlePointer",
@@ -328,7 +323,6 @@
               "value": "scalarPointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "value",
@@ -348,7 +342,6 @@
               "value": "arrayPointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "intermodular-reference",
               "scope": "intermodule",
               "targetMemoryId": "single",
@@ -451,7 +444,6 @@
               "value": "pointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "value",
@@ -487,7 +479,6 @@
               "value": "widePointer",
             },
             {
-              "isEndAddress": false,
               "referenceKind": "memory-reference",
               "scope": "local",
               "targetMemoryId": "wide",

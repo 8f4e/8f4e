@@ -1,0 +1,123 @@
+8f4e/v1
+
+note
+; @config testRuntime.enabled true
+noteEnd
+
+includes
+include std/memory/storeRGB
+includesEnd
+
+entry test
+module rgbWrites
+; Two adjacent pixels with guarded, unaligned storage.
+int8u[] storage 8 0xa5 0xcc 0xcc 0xcc 0xcc 0xcc 0xcc 0x5a
+int8u* first &storage
+int8u* next &storage
+
+push &first
+push &storage
+add 1
+store
+push &next
+push &storage
+add 4
+store
+
+call storeRGB first 0x123456
+push &storage
+add 0
+load8u
+assertEqual 0xa5
+push &storage
+add 1
+load8u
+assertEqual 0x12
+push &storage
+add 2
+load8u
+assertEqual 0x34
+push &storage
+add 3
+load8u
+assertEqual 0x56
+push &storage
+add 4
+load8u
+assertEqual 0xcc
+push &storage
+add 7
+load8u
+assertEqual 0x5a
+; Ignore the high byte, including signed packed colors.
+call storeRGB next 0xffabcdef
+push &storage
+add 1
+load8u
+assertEqual 0x12
+push &storage
+add 2
+load8u
+assertEqual 0x34
+push &storage
+add 3
+load8u
+assertEqual 0x56
+push &storage
+add 4
+load8u
+assertEqual 0xab
+push &storage
+add 5
+load8u
+assertEqual 0xcd
+push &storage
+add 6
+load8u
+assertEqual 0xef
+push first
+push &storage
+add 1
+equal
+assert
+push next
+push &storage
+add 4
+equal
+assert
+call storeRGB first 0x000000
+call storeRGB next 0xffffff
+push &storage
+add 0
+load8u
+assertEqual 0xa5
+push &storage
+add 1
+load8u
+assertEqual 0
+push &storage
+add 2
+load8u
+assertEqual 0
+push &storage
+add 3
+load8u
+assertEqual 0
+push &storage
+add 4
+load8u
+assertEqual 255
+push &storage
+add 5
+load8u
+assertEqual 255
+push &storage
+add 6
+load8u
+assertEqual 255
+push &storage
+add 7
+load8u
+assertEqual 0x5a
+moduleEnd
+entryEnd

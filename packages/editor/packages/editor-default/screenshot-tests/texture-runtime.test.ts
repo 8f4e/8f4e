@@ -1,8 +1,10 @@
 import { parseProjectSource } from '@8f4e/compiler';
 import initEditor, { type Editor, getEditorBlockId } from '@8f4e/editor-core';
+import { resolvePalette } from '@8f4e/editor-palette';
 import { createCompilerPlugin } from '@8f4e/editor-plugin-compiler';
 import { createLazyPluginLoaderPlugin, hasConfig, hasDirective } from '@8f4e/editor-plugin-lazy-loader';
-import { gapCalculator } from '@8f4e/editor-state';
+import { displayRowToGridRow } from '@8f4e/editor-state';
+import { Engine } from 'glugglugglug';
 import { expect, test, vi } from 'vitest';
 
 const source = `8f4e/v1
@@ -56,6 +58,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	let editor: Editor | undefined;
 	try {
 		editor = await initEditor(canvas, {
+			renderer: new Engine(canvas),
 			initialProject: parseProjectSource(projectSource),
 			plugins: [
 				compiler.plugin,
@@ -77,7 +80,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			() => expect(compiler.getCodeBuffer().byteLength, JSON.stringify(compiler.getDiagnostics())).toBeGreaterThan(0),
 			{ timeout: 10000 }
 		);
-		const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!;
+		let block = editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!;
 		const gl = canvas.getContext('webgl2')!;
 		const origin = (name: string) => {
 			const line = block.code.findIndex(line => line.includes(`@texture &screen:${name} `));
@@ -85,7 +88,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 				block.x - editor!.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor!.state.viewport.vGrid,
 				block.y -
 					editor!.state.viewport.y +
-					(gapCalculator(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
+					(displayRowToGridRow(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
 						editor!.state.viewport.hGrid,
 			] as const;
 		};
@@ -112,16 +115,41 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		editor.renderFrame();
 		expect(frames[framesAddress]).toBe(before + (enabled ? 1 : 0));
 		const [bitsX, bitsY] = origin('bits');
+		const palette = resolvePalette();
 		for (let row = 0; row < 2; row++)
 			for (let column = 0; column < 10; column++) {
-				const value = (row + column) % 2 === 0 ? 255 : 0;
-				expect(readPixel(bitsX + column * 6, bitsY + row * 6)).toEqual([value, value, value, 255]);
+				const color = (row + column) % 2 === 0 ? palette.rgba.inkBase : palette.rgba.surfaceBase;
+				expect(readPixel(bitsX + column * 6, bitsY + row * 6)).toEqual(color.map(value => Math.round(value * 255)));
 			}
 		const [monoX, monoY] = origin('mono');
 		expect(readPixel(monoX + 16, monoY)).toEqual([128, 128, 128, 255]);
 		const [rgbX, rgbY] = origin('rgb');
 		expect(readPixel(rgbX + 16, rgbY + 16)).toEqual([0, 255, 255, 255]);
 		if (enabled) await expect(canvas).toMatchScreenshot('texture-directives');
+		const codeBuffer = compiler.getCodeBuffer();
+		editor.editing.applyEdits({
+			expectedRevision: editor.editing.getRevision(),
+			edits: [
+				{
+					type: 'update',
+					blockId: getEditorBlockId(block),
+					code: [
+						block.code[0],
+						'; @config color.surface #c4c797',
+						'; @config color.ink #28362a',
+						...block.code.slice(1),
+					],
+				},
+			],
+		});
+		block = editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!;
+		await vi.waitFor(() => {
+			editor!.renderFrame();
+			const [x, y] = origin('bits');
+			expect(readPixel(x, y)).toEqual([40, 54, 42, 255]);
+			expect(readPixel(x + 6, y)).toEqual([196, 199, 151, 255]);
+		});
+		expect(compiler.getCodeBuffer()).toBe(codeBuffer);
 		const previous = origin('rgba');
 		editor.state.viewport.x += 8;
 		editor.state.viewport.y += 16;
@@ -133,6 +161,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 		editor.resize(640, 480);
 		editor.renderFrame();
 		expect(readPixel(...origin('rgba'))).toEqual([255, 0, 0, 255]);
+		expect(readPixel(...origin('bits'))).toEqual([40, 54, 42, 255]);
 		const height = block.height;
 		editor.editing.applyEdits({
 			expectedRevision: editor.editing.getRevision(),
@@ -145,9 +174,7 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 			],
 		});
 		editor.renderFrame();
-		expect(
-			editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === 'views')!.height
-		).toBeLessThan(height);
+		expect(editor.state.project.activeLevel.blocks.find(block => block.name === 'views')!.height).toBeLessThan(height);
 		expect(gl.getError()).toBe(gl.NO_ERROR);
 	} finally {
 		editor?.dispose();
@@ -155,17 +182,25 @@ test.each([false, true])('renders multiple block-bound textures with entry execu
 	}
 });
 
-test('shares one upload per frame across direct and cross-module pointer views', async () => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 768;
-	canvas.height = 480;
-	document.body.append(canvas);
-	const compiler = createCompilerPlugin();
-	const { createTextureRuntimePlugin } = await import('@8f4e/editor-plugin-texture-runtime');
-	let editor: Editor | undefined;
-	try {
-		editor = await initEditor(canvas, {
-			initialProject: parseProjectSource(`8f4e/v1
+test.each([
+	['16', 16, 16],
+	['16:16', 16, 16],
+	['16:32', 16, 32],
+	['32:16', 32, 16],
+] as const)(
+	'shares one upload across direct and cross-module pointer views with magnification %s',
+	async (magnification, magnificationX, magnificationY) => {
+		const canvas = document.createElement('canvas');
+		canvas.width = 768;
+		canvas.height = 480;
+		document.body.append(canvas);
+		const compiler = createCompilerPlugin();
+		const { createTextureRuntimePlugin } = await import('@8f4e/editor-plugin-texture-runtime');
+		let editor: Editor | undefined;
+		try {
+			editor = await initEditor(canvas, {
+				renderer: new Engine(canvas),
+				initialProject: parseProjectSource(`8f4e/v1
 constants env
 ; @pos 150 100
 constantsEnd
@@ -174,50 +209,66 @@ module screen ; @mode edit
 ; @pos 4 3
 int8u[] rgba 16
 ; @textureUpload &rgba rgba 2 2
-; @texture &rgba 16 2 2
+; @texture &rgba ${magnification} 2 2
 moduleEnd
 module viewer
 ; @pos 50 3
 int8u* pixels &screen:rgba
-; @texture pixels 16 2 2
+; @texture pixels ${magnification} 2 2
 moduleEnd
 entryEnd`),
-			plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
-		});
-		editor.pauseRendering();
-		await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
-		expect(editor.state.codeErrors.compiler).toEqual([]);
-		const start = editor.state.compiler.result.memoryPlan.modules.screen.memory.rgba.byteAddress;
-		new Uint8Array(compiler.getMemory()!.buffer).set(
-			[255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255],
-			start
-		);
-		const gl = canvas.getContext('webgl2')!;
-		const allocations = vi.spyOn(gl, 'texImage2D');
-		const updates = vi.spyOn(gl, 'texSubImage2D');
-		editor.renderFrame();
-		editor.renderFrame();
-		expect(allocations.mock.calls.filter(call => call[2] === gl.RGBA8 && call[3] === 2 && call[4] === 2)).toHaveLength(
-			1
-		);
-		expect(updates.mock.calls.filter(call => call[4] === 2 && call[5] === 2 && call[6] === gl.RGBA)).toHaveLength(1);
-		for (const name of ['screen', 'viewer']) {
-			const block = editor.state.codeBlockRendering.currentProject.blocks.find(block => block.name === name)!;
-			const line = block.code.findIndex(line => line.includes('@texture '));
-			const x = block.x - editor.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor.state.viewport.vGrid;
-			const y =
-				block.y -
-				editor.state.viewport.y +
-				(gapCalculator(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
-					editor.state.viewport.hGrid;
-			const pixel = new Uint8Array(4);
-			gl.readPixels(x, canvas.height - 1 - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-			expect([...pixel], name).toEqual([255, 0, 0, 255]);
+				plugins: [compiler.plugin, createTextureRuntimePlugin(compiler)],
+			});
+			editor.pauseRendering();
+			await vi.waitFor(() => expect(compiler.getDiagnostics().status).toBe('ready'), { timeout: 10000 });
+			expect(editor.state.codeErrors.compiler).toEqual([]);
+			const start = editor.state.compiler.result.memoryPlan.modules.screen.memory.rgba.byteAddress;
+			new Uint8Array(compiler.getMemory()!.buffer).set(
+				[255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255],
+				start
+			);
+			const gl = canvas.getContext('webgl2')!;
+			const allocations = vi.spyOn(gl, 'texImage2D');
+			const updates = vi.spyOn(gl, 'texSubImage2D');
+			editor.renderFrame();
+			editor.renderFrame();
+			expect(
+				allocations.mock.calls.filter(call => call[2] === gl.RGBA8 && call[3] === 2 && call[4] === 2)
+			).toHaveLength(1);
+			expect(updates.mock.calls.filter(call => call[4] === 2 && call[5] === 2 && call[6] === gl.RGBA)).toHaveLength(1);
+			for (const name of ['screen', 'viewer']) {
+				const block = editor.state.project.activeLevel.blocks.find(block => block.name === name)!;
+				const line = block.code.findIndex(line => line.includes('@texture '));
+				const x = block.x - editor.state.viewport.x + (block.lineNumberColumnWidth + 2) * editor.state.viewport.vGrid;
+				const y =
+					block.y -
+					editor.state.viewport.y +
+					(displayRowToGridRow(block.displayModel.sourceLineIndexToDisplayRow[line], block.gaps) + 1) *
+						editor.state.viewport.hGrid;
+				const width = magnificationX * 2;
+				const height = magnificationY * 2;
+				const pixels = new Uint8Array(width * height * 4);
+				gl.readPixels(x, canvas.height - y - height, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+				const colors = [
+					[255, 0, 0, 255],
+					[0, 255, 0, 255],
+					[0, 0, 255, 255],
+					[255, 255, 255, 255],
+				];
+				for (let row = 0; row < height; row++)
+					for (let column = 0; column < width; column++) {
+						const offset = ((height - 1 - row) * width + column) * 4;
+						expect([...pixels.subarray(offset, offset + 4)], `${name}, ${column},${row}`).toEqual(
+							colors[Math.floor(row / magnificationY) * 2 + Math.floor(column / magnificationX)]
+						);
+					}
+			}
+			if (magnification === '16:32') await expect(canvas).toMatchScreenshot('stretched-texture-directives');
+			expect(gl.getError()).toBe(gl.NO_ERROR);
+		} finally {
+			editor?.dispose();
+			canvas.remove();
+			vi.restoreAllMocks();
 		}
-		expect(gl.getError()).toBe(gl.NO_ERROR);
-	} finally {
-		editor?.dispose();
-		canvas.remove();
-		vi.restoreAllMocks();
 	}
-});
+);

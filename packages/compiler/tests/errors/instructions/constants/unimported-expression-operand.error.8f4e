@@ -1,0 +1,10 @@
+8f4e/v1
+constants settings
+const OFFSET 4
+constantsEnd
+entry main
+module sample
+float[] values 8
+float* cursor &values+OFFSET
+moduleEnd
+entryEnd

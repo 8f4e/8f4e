@@ -1,11 +1,13 @@
 {
   "code": 2,
-  "context": {
-    "projectBlockId": 8,
-  },
-  "line": {
-    "instruction": "functionEnd",
+  "domain": "syntax",
+  "instruction": "functionEnd",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 4,
+    "projectBlockId": 8,
+    "projectGroupPath": "",
   },
   "message": "Invalid argument for functionEnd: expected function type identifier.",
 }

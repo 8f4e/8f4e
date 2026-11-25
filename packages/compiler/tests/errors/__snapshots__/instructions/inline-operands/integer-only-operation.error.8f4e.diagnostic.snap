@@ -1,20 +1,14 @@
 {
   "code": 2,
-  "context": {
-    "codeBlockId": "invalid",
-    "codeBlockType": "module",
-    "projectBlockId": 4,
-  },
-  "line": {
-    "arguments": [
-      {
-        "isInteger": false,
-        "type": "literal",
-        "value": 1,
-      },
-    ],
-    "instruction": "shiftRight",
+  "domain": "semantic",
+  "instruction": "shiftRight",
+  "kind": "source",
+  "location": {
+    "kind": "block",
     "lineNumber": 2,
+    "projectBlockId": 4,
+    "projectGroupPath": "",
   },
   "message": "The operation only accepts integer values as operands. (2)",
+  "symbol": "invalid",
 }

@@ -13,7 +13,8 @@ stays installed until editor disposal. For lazy installation, match cached raw c
 so configuration added during editing or inside unopened groups can trigger loading.
 
 The host supplies live memory, bytecode, and assertion-site getters. The plugin imports the worker entry from the
-separate `@8f4e/runtime-test-runner` execution package using Vite's `?worker` asset handling. It runs the compiled test
+nested [`@8f4e/runtime-test-runner`](packages/runtime-test-runner/README.md) execution package using Vite's
+`?worker` asset handling. It runs the compiled test
 entry once per successful compilation. It publishes `status`, `assertionCount`, and `failureCount` (or `error`) to
 `info.testRuntime`, and executed assertion source sites and outcomes through core's `assertionResults`. It terminates
 superseded workers and clears assertion markers on disable, recompilation, and disposal.

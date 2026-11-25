@@ -1,3 +1,4 @@
+import { CompilerError, getError, syntaxErrorAt } from '@8f4e/compiler-diagnostics';
 import type {
 	ArrayMemoryDeclarationLine,
 	CompilerASTLine,
@@ -14,13 +15,7 @@ import type {
 	ScalarMemoryDeclarationLine,
 } from '@8f4e/language-spec';
 import { ArgumentType, BASE_TYPE_METADATA, ErrorCode, isArrayMemoryDeclarationLine } from '@8f4e/language-spec';
-import {
-	type MemoryArgumentShape,
-	parseMemoryInstructionArgumentsShape,
-	type SplitByteToken,
-	SyntaxErrorCode,
-	SyntaxRulesError,
-} from '@8f4e/tokenizer';
+import { type MemoryArgumentShape, parseMemoryInstructionArgumentsShape, type SplitByteToken } from '@8f4e/tokenizer';
 
 export interface ResolveMemoryDefaultsInput {
 	memoryPlan: MemoryLayoutPlan;
@@ -30,25 +25,6 @@ export interface ResolveMemoryDefaultsInput {
 interface MemoryDefaultResolverErrorDetails {
 	identifier?: string;
 	reason?: string;
-}
-
-export class MemoryDefaultResolverError extends Error {
-	readonly compilerErrorCode: ErrorCodeValue;
-	readonly line: CompilerASTLine;
-	readonly details?: MemoryDefaultResolverErrorDetails;
-
-	constructor(
-		compilerErrorCode: ErrorCodeValue,
-		line: CompilerASTLine,
-		message: string,
-		details?: MemoryDefaultResolverErrorDetails
-	) {
-		super(message);
-		this.name = 'MemoryDefaultResolverError';
-		this.compilerErrorCode = compilerErrorCode;
-		this.line = line;
-		this.details = details;
-	}
 }
 
 interface ScalarDefaultResolution {
@@ -62,8 +38,9 @@ function resolverError(
 	line: CompilerASTLine,
 	message: string,
 	details?: MemoryDefaultResolverErrorDetails
-): MemoryDefaultResolverError {
-	return new MemoryDefaultResolverError(compilerErrorCode, line, message, details);
+) {
+	const error = getError(compilerErrorCode, line, { details: details });
+	return new CompilerError({ ...error.diagnostic, message });
 }
 
 function combineSplitHexBytes(bytes: readonly number[], maxBytes: number): number {
@@ -99,15 +76,10 @@ function resolveSplitByteTokens(tokens: readonly SplitByteToken[], line: Compile
 
 function parseScalarDeclarationShape(
 	line: ScalarMemoryDeclarationLine
-): ReturnType<typeof parseMemoryInstructionArgumentsShape> {
-	try {
-		return parseMemoryInstructionArgumentsShape(line.arguments);
-	} catch (error) {
-		if (error instanceof SyntaxRulesError && error.code === SyntaxErrorCode.SPLIT_HEX_MIXED_TOKENS) {
-			throw resolverError(ErrorCode.SPLIT_HEX_MIXED_TOKENS, line, 'Split hex default mixes literals and constants.');
-		}
-		throw error;
-	}
+): import('@8f4e/tokenizer').ParsedMemoryInstructionArguments {
+	const result = parseMemoryInstructionArgumentsShape(line.arguments);
+	if (!result.ok) throw syntaxErrorAt(result.issue.code, result.issue.message, line.diagnosticSource, line);
+	return result.value;
 }
 
 function assertDeclarableScalarIdentifier(shape: MemoryArgumentShape, line: ScalarMemoryDeclarationLine): void {
@@ -192,10 +164,10 @@ function resolveMemoryDefaultValue(
 			return shape.value;
 		case 'memory-reference': {
 			if (shape.base === 'this') {
-				return shape.isEndAddress ? module.endByteAddress : module.byteAddress;
+				return module.byteAddress;
 			}
 			const declaration = getMemoryDeclarationOrThrow(module, shape.base, line);
-			return shape.isEndAddress ? declaration.endByteAddress : declaration.byteAddress;
+			return declaration.byteAddress;
 		}
 		case 'element-count':
 			return getMemoryDeclarationOrThrow(module, shape.base, line).numberOfElements;
@@ -206,7 +178,7 @@ function resolveMemoryDefaultValue(
 					identifier: shape.module,
 				});
 			}
-			return shape.isEndAddress ? targetModule.endByteAddress : targetModule.byteAddress;
+			return targetModule.byteAddress;
 		}
 		case 'intermodular-element-count':
 			return getIntermoduleMemoryDeclaration(shape, line, memoryPlan).numberOfElements;
@@ -310,13 +282,11 @@ function setMemoryDefault(
 	defaults: MemoryDefaults,
 	memoryId: number,
 	value: MemoryDefault['value'],
-	line: MemoryDeclarationLine,
-	isInherited: boolean
+	line: MemoryDeclarationLine
 ): void {
 	defaults[memoryId] = {
 		value,
 		hasExplicitDefault: declarationHasExplicitDefault(line),
-		isInherited,
 	};
 }
 
@@ -335,19 +305,19 @@ function resolveModuleMemoryDefaults(
 	const memoryDefaults: MemoryDefaults = {};
 	const declarationSourceFacts = memoryReferences.declarationSourcesByModuleId[plannedModule.id]!.lineFacts;
 
-	plannedModule.declarationSources.forEach(({ line, isInherited }, index) => {
-		const plannedDeclaration = plannedModule.declarations[index]!;
-
-		const resolvedLine = applyMemoryReferenceFacts(line, declarationSourceFacts[index]);
+	for (const plannedDeclaration of plannedModule.declarations) {
+		const resolvedLine = applyMemoryReferenceFacts(
+			plannedDeclaration.source,
+			declarationSourceFacts[plannedDeclaration.id]
+		);
 		if (isArrayMemoryDeclarationLine(resolvedLine)) {
 			setMemoryDefault(
 				memoryDefaults,
 				plannedDeclaration.id,
 				createArrayDefaultValues(resolvedLine, plannedDeclaration),
-				resolvedLine,
-				isInherited
+				resolvedLine
 			);
-			return;
+			continue;
 		}
 
 		const { defaultValue } = resolveScalarDefault(resolvedLine, plannedModule, memoryPlan);
@@ -355,21 +325,8 @@ function resolveModuleMemoryDefaults(
 			memoryDefaults,
 			plannedDeclaration.id,
 			plannedDeclaration.isInteger ? Math.trunc(defaultValue) : defaultValue,
-			resolvedLine,
-			isInherited
+			resolvedLine
 		);
-	});
-
-	// A repeated name uses the winning default at each allocation of that name.
-	for (const declaration of plannedModule.declarations) {
-		if (declaration.name === undefined) continue;
-		const effective = plannedModule.memory[declaration.name]!;
-		if (effective.id !== declaration.id) {
-			memoryDefaults[declaration.id] = {
-				...memoryDefaults[effective.id]!,
-				isInherited: memoryDefaults[declaration.id]!.isInherited,
-			};
-		}
 	}
 
 	return memoryDefaults;
@@ -378,8 +335,7 @@ function resolveModuleMemoryDefaults(
 /**
  * Resolves memory defaults for a whole planned sub-program.
  *
- * The memory plan is the source of truth for declaration order, layout, and
- * effective declaration source lines after shape expansion.
+ * The memory plan is the source of truth for declaration order, layout, and declaration source lines.
  *
  * @param input - Completed memory plan and memory-reference facts for the sub-program.
  * @returns Memory defaults keyed by module id.

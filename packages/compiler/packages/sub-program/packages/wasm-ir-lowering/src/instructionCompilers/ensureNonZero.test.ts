@@ -13,11 +13,7 @@ describe('ensureNonZero instruction compiler', () => {
 
 		compileInstructionForTest(
 			ensureNonZero,
-			{
-				lineNumber: 1,
-				instruction: 'ensureNonZero',
-				arguments: [],
-			},
+			{ diagnosticSource: { kind: 'document' }, lineNumber: 1, instruction: 'ensureNonZero', arguments: [] },
 			context,
 			createStackFacts({ consumedOperands: [{ kind: 'value', valueType: 'int', isNonZero: false }] })
 		);
@@ -34,6 +30,7 @@ describe('ensureNonZero instruction compiler', () => {
 		compileInstructionForTest(
 			ensureNonZero,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 2,
 				instruction: 'ensureNonZero',
 				arguments: [{ type: ArgumentType.LITERAL, value: 2.5, isInteger: false }],
@@ -54,6 +51,7 @@ describe('ensureNonZero instruction compiler', () => {
 		compileInstructionForTest(
 			ensureNonZero,
 			{
+				diagnosticSource: { kind: 'document' },
 				lineNumber: 3,
 				instruction: 'ensureNonZero',
 				arguments: [

@@ -1,4 +1,5 @@
-import initView, { createEditorDrawerRegistry } from '@8f4e/web-ui';
+import initView, { createEditorRenderRegistry } from '@8f4e/web-ui';
+import { Engine } from 'glugglugglug';
 import { expect, test } from 'vitest';
 import { setup } from '../src/__tests__/setup';
 import { plotPlugin } from '../src/index';
@@ -9,7 +10,7 @@ test('plot plugin renders its directive', async () => {
 	canvas.height = 512;
 	canvas.style.background = '#000';
 	document.body.append(canvas);
-	const drawers = createEditorDrawerRegistry();
+	const renderRegistry = createEditorRenderRegistry();
 	const test = await setup(
 		plotPlugin,
 		[
@@ -21,7 +22,7 @@ test('plot plugin renders its directive', async () => {
 			'; @plot &points count(points) -1 1',
 			'moduleEnd',
 		],
-		{ drawers }
+		{ renderRegistry }
 	);
 	test.state.viewport.width = canvas.width;
 	test.state.viewport.height = canvas.height;
@@ -29,9 +30,9 @@ test('plot plugin renders its directive', async () => {
 	for (let index = 0; index < 64; index++)
 		test.memoryViews.float32[memory.allocationUnitAddress + index] = Math.sin((index * Math.PI) / 16);
 
-	const renderer = await initView(test.store, test.events, canvas, test.memoryViews, {
+	const renderer = await initView(test.store, test.events, new Engine(canvas), test.memoryViews, {
 		loading: test.store.loading,
-		drawers,
+		renderRegistry,
 	});
 
 	try {

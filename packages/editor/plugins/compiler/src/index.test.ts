@@ -22,7 +22,7 @@ function setup() {
 		directives: store.directives,
 		layout: store.layout,
 		loading: store.loading,
-		drawers: {} as EditorPluginContext['drawers'],
+		renderRegistry: {} as EditorPluginContext['renderRegistry'],
 	});
 	disposers.push(() => {
 		dispose();
@@ -111,7 +111,13 @@ describe('compiler plugin', () => {
 		test.worker.emitMessage({
 			type: 'compilationError',
 			compilationId: 0,
-			payload: { message: 'Invalid source', line: { lineNumber: 1 }, context: {} },
+			payload: {
+				kind: 'source',
+				domain: 'syntax',
+				code: 1,
+				message: 'Invalid source',
+				location: { kind: 'document', lineNumber: 1 },
+			},
 		});
 		await vi.advanceTimersByTimeAsync(0);
 		expect(test.store.getState().loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
@@ -122,8 +128,6 @@ describe('compiler plugin', () => {
 		expect(current.compilationErrors[0].message).toBe('Invalid source');
 		current.compilationErrors[0].message = 'mutated';
 		expect(test.compiler.getDiagnostics()!.compilationErrors[0].message).toBe('Invalid source');
-		test.events.dispatch('compilationInputChanged');
-		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'pending', compilationErrors: [] });
 		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 		expect(test.compiler.getDiagnostics()).toMatchObject({ status: 'pending', compilationErrors: [] });
 		test.dispose();
@@ -133,7 +137,7 @@ describe('compiler plugin', () => {
 	it('rejects an obsolete result even while the next compilation is still being debounced', async () => {
 		const test = setup();
 		await startCompilation(test);
-		test.events.dispatch('compilationInputChanged');
+		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 		test.worker.emitMessage(createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 })));
 		await vi.advanceTimersByTimeAsync(0);
 		expect(test.compiler.getMemory()).toBeNull();
@@ -160,15 +164,25 @@ describe('compiler plugin', () => {
 		async type => {
 			const test = setup();
 			await startCompilation(test);
-			test.events.dispatch('compilationInputChanged');
+			test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 			await vi.advanceTimersByTimeAsync(500);
-			test.events.dispatch('compilationInputChanged');
+			test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 			await vi.advanceTimersByTimeAsync(500);
 			expect(test.worker.postedMessages).toHaveLength(1);
 			test.worker.emitMessage(
 				type === 'success'
 					? createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 }))
-					: { type, compilationId: 0, payload: { message: 'Obsolete failure', line: { lineNumber: 1 }, context: {} } }
+					: {
+							type,
+							compilationId: 0,
+							payload: {
+								kind: 'source',
+								domain: 'syntax',
+								code: 1,
+								message: 'Obsolete failure',
+								location: { kind: 'document', lineNumber: 1 },
+							},
+						}
 			);
 			await vi.advanceTimersByTimeAsync(0);
 			expect(test.worker.postedMessages).toHaveLength(2);
@@ -190,9 +204,9 @@ describe('compiler plugin', () => {
 	it('respects the latest debounce interval when an earlier compilation was already queued', async () => {
 		const test = setup();
 		await startCompilation(test);
-		test.events.dispatch('compilationInputChanged');
+		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 		await vi.advanceTimersByTimeAsync(500);
-		test.events.dispatch('compilationInputChanged');
+		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 		test.worker.emitMessage(createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 })));
 		await vi.advanceTimersByTimeAsync(499);
 		expect(test.worker.postedMessages).toHaveLength(1);
@@ -203,16 +217,17 @@ describe('compiler plugin', () => {
 	it('cancels scheduled work and rejects pending worker requests without publishing after disposal', async () => {
 		const test = setup();
 		await startCompilation(test);
-		test.events.dispatch('compilationInputChanged');
+		test.store.set('compilerInputRevision', test.store.getState().compilerInputRevision + 1);
 		test.dispose();
 		expect(test.store.getState().loadingIndicators.filter(indicator => indicator.status === 'loading')).toEqual([]);
 		const set = vi.spyOn(test.store, 'set');
-		test.events.dispatch('compilationInputChanged');
+		const revision = test.store.getState().compilerInputRevision + 1;
+		test.store.set('compilerInputRevision', revision);
 		test.worker.emitMessage(createSuccessMessage(new Uint8Array([1]), new WebAssembly.Memory({ initial: 1 })));
 		await vi.advanceTimersByTimeAsync(1000);
 		expect(test.worker.terminate).toHaveBeenCalledOnce();
 		expect(test.worker.postedMessages).toHaveLength(1);
 		expect(test.accepted).not.toHaveBeenCalled();
-		expect(set).not.toHaveBeenCalled();
+		expect(set).toHaveBeenCalledExactlyOnceWith('compilerInputRevision', revision);
 	});
 });
