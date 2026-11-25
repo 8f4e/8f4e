@@ -2,8 +2,8 @@
   "sourceModuleOrder": [
     "phaseAccumulator",
     "audioout",
-    "env",
-    "math"
+    "math",
+    "env"
   ],
   "compiledModuleLayout": [
     {
