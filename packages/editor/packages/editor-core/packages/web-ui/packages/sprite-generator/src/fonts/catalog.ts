@@ -153,5 +153,10 @@ export const FONT_CATALOG = {
 } as const;
 
 export type Font = keyof typeof FONT_CATALOG;
-export const FONT_NAMES = Object.keys(FONT_CATALOG) as readonly Font[];
+/** Font names ordered by increasing pixel-cell area, retaining catalog order for equal sizes. */
+export const FONT_NAMES: readonly Font[] = (Object.keys(FONT_CATALOG) as Font[]).sort((a, b) => {
+	const first = FONT_CATALOG[a];
+	const second = FONT_CATALOG[b];
+	return first.width * first.height - second.width * second.height;
+});
 export const DEFAULT_FONT: Font = 'ibmvga8x16';

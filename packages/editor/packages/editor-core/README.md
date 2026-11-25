@@ -497,8 +497,9 @@ configuration subscriptions. State uses the resulting grid dimensions for layout
 ; @config font ibmvga8x16
 ```
 
-The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`. In the default and gallery desktop editors, the independent
-font-preview plugin uses F8/F9 to cycle through that catalog temporarily. Previewing does not change the resolved
+The supported catalog is `FONT_NAMES` from `@8f4e/sprite-generator`, ordered by pixel-cell area. In the default and gallery
+desktop editors, the independent font-preview plugin uses Cmd/Ctrl+- and Cmd/Ctrl++ (or Cmd/Ctrl+=) to step through
+that catalog temporarily, stopping at either end. Previewing does not change the resolved
 source configuration or saved files; loading a project clears the preview after its source configuration settles.
 Web-ui emits `fontChanged` with `{ font }` after installing a different font atlas and settling its grid. The
 font-preview plugin uses this notification to show the new font's name, credits and all 256 characters in a 16×16 grid

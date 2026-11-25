@@ -47,13 +47,20 @@ test('previews fonts through the default composition without changing saved sour
 		const source = serializeToProject(editor.state);
 		const revision = editor.editing.getRevision();
 		const key = (key: string) => {
-			const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
+			const event = new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true });
 			canvas.dispatchEvent(event);
 			return event;
 		};
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(16);
-		for (let index = FONT_NAMES.indexOf(sourceFont); index < FONT_NAMES.length; index++) {
-			expect(key('F9').defaultPrevented).toBe(true);
+		expect(key('+').defaultPrevented).toBe(true);
+		expect(editor.state.appearance.fontOverride).toBeUndefined();
+		for (let index = FONT_NAMES.indexOf(sourceFont); index >= 0; index--) {
+			expect(key('-').defaultPrevented).toBe(true);
+		}
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(5);
+		expect(editor.state.viewport.hGrid).toBe(8);
+		for (let index = 0; index < FONT_NAMES.indexOf('x11miscfixed6x10'); index++) {
+			expect(key('+').defaultPrevented).toBe(true);
 		}
 		await expect.poll(() => editor!.state.viewport.vGrid).toBe(6);
 		expect(editor.state.viewport.hGrid).toBe(10);
