@@ -7,7 +7,7 @@ include std/math/trig/sine
 includesEnd
 
 function buffer
-; @pos -120 23
+; @pos -30 27
 #export buffer
 use env
 
@@ -16,19 +16,8 @@ call main
 loopEnd
 functionEnd
 
-constants env
-; @pos -120 12
-; @favorite
-; Auto-generated environment constants
-; Changes will be overwritten
-
-const SAMPLE_RATE 48000
-const AUDIO_BUFFER_SIZE 128
-
-constantsEnd
-
 constants math
-; @pos -120 34
+; @pos -30 37
 
 const PI      3.141592653589793
 const NEG_PI -3.141592653589793
@@ -49,8 +38,18 @@ const E       2.718281828459045
 
 constantsEnd
 
+constants env
+; @pos 0 0
+; Auto-generated environment constants
+; Changes will be overwritten
+
+const SAMPLE_RATE 48000
+const AUDIO_BUFFER_SIZE 128
+
+constantsEnd
+
 note
-; @pos -120 0
+; @pos -43 -10
 ; @config audioRuntime.enabled true
 ; @config audioRuntime.sampleRate 48000
 ; @config audioRuntime.audioOutBufferLAddress audioout:buffer
@@ -59,7 +58,7 @@ note
 noteEnd
 
 note colors
-; @pos -172 0
+; @pos -30 10
 ; @config color.canvas #0c141b
 ; @config color.surface #1a2933
 ; @config color.ink #d3e0e1
@@ -76,7 +75,7 @@ note colors
 noteEnd
 
 note
-; @pos 131 7
+; @pos 210 7
 ; A minimal audio synthesis example
 ; that generates a sine wave
 ; (phaseAccumulator + sine)
@@ -87,7 +86,7 @@ noteEnd
 
 entry main
 module phaseAccumulator
-; @pos 46 1
+; @pos 116 -1
 use env
 
 float defaultFreq 440
@@ -100,7 +99,8 @@ use math
 ; Advance phase in radians.
 push &phase
 push phase
-call hzToRadians *frequency SAMPLE_RATE
+call hzToRadians 
+- *frequency SAMPLE_RATE
 add
 store
 
@@ -123,7 +123,7 @@ store
 
 moduleEnd
 module audioout
-; @pos 88 1
+; @pos 158 -1
 ; @home
 use env
 

@@ -1,16 +1,24 @@
 8f4e/v1
 
 constants env
-; @pos -84 14
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
-const SAMPLE_RATE 1
+const SAMPLE_RATE 2
 
 constantsEnd
 
+note
+; @pos 0 -8
+; @mode edit
+; @config workerRuntime.enabled true
+; @config workerRuntime.sampleRate 2
+; @config export.fileName landingPageDemo3
+noteEnd
+
 note colors
-; @pos -211 -11
+; @pos 0 9
 ; @config color.canvas #609
 ; @config color.surface #1a0b24
 ; @config color.ink #f6eff8
@@ -26,17 +34,9 @@ note colors
 ; @config color.detail #ca74e8
 noteEnd
 
-note
-; @pos -170 -11
-; @mode edit
-; @config workerRuntime.enabled true
-; @config workerRuntime.sampleRate 1
-; @config export.fileName landingPageDemo3
-noteEnd
-
 entry main
 module memories
-; @pos 29 2
+; @pos 213 -1
 ; @home left
 
 int foo1 1
@@ -57,7 +57,7 @@ int foo5 3
 
 moduleEnd
 module pointer
-; @pos 73 2
+; @pos 255 -1
 
 int* pointer &memories:0
 ; @watch pointer

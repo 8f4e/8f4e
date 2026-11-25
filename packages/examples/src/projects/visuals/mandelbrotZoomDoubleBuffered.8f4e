@@ -161,7 +161,7 @@ const TARGET_Y 0.131825904205330f64
 constantsEnd
 
 constants env
-; @pos -170 -3
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -209,7 +209,7 @@ noteEnd
 
 entry main
 module screen
-; @pos 40 -30
+; @pos 63 -30
 use view
 
 int8u[] rgb PIXEL_COUNT*3
@@ -219,7 +219,7 @@ int8u* display &rgb
 ; @texture display 1 512 512
 moduleEnd
 module camera
-; @pos 117 -30
+; @pos 136 -30
 ; @home right
 use view
 
@@ -262,7 +262,7 @@ add TARGET_Y
 store
 moduleEnd
 module renderer
-; @pos 164 -30
+; @pos 183 -30
 
 int8u* pixels &screen:spare
 int8u** display &screen:display

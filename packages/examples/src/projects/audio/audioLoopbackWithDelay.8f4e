@@ -11,7 +11,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -47 9
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -60,7 +60,7 @@ noteEnd
 
 entry main
 module audioin
-; @pos 0 0
+; @pos 101 2
 use env
 
 float[] buffer AUDIO_BUFFER_SIZE
@@ -92,7 +92,7 @@ ifEnd
 
 moduleEnd
 module recorder
-; @pos 43 0
+; @pos 145 2
 ; @home
 use env
 
@@ -139,7 +139,7 @@ ifEnd
 
 moduleEnd
 module player
-; @pos 94 0
+; @pos 196 2
 use env
 ; The initial read-head offset
 ; is measured in bytes.
@@ -174,7 +174,7 @@ ifEnd
 
 moduleEnd
 module audioout
-; @pos 145 0
+; @pos 242 2
 use env
 
 float& in &player:out

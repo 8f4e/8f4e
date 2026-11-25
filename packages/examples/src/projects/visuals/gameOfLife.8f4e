@@ -164,7 +164,7 @@ loopEnd
 functionEnd
 
 constants env
-; @pos -132 -5
+; @pos 0 0
 ; Auto-generated environment constants
 ; Changes will be overwritten
 
@@ -218,7 +218,7 @@ int8u[] next BYTE_COUNT
 ; @texture simulation:current 2 128 128
 moduleEnd
 module simulation
-; @pos 126 -30
+; @pos 139 -30
 use screen
 
 int running 1
