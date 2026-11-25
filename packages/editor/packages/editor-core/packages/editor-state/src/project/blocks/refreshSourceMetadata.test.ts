@@ -6,7 +6,9 @@ import { getProjectGroups } from '@8f4e/language-spec';
 import { afterEach, describe, expect, it } from 'vitest';
 import initState, {
 	applyCodeBlockSourceEdits,
+	insertCodeBlocks,
 	matchEditorDirectives,
+	serializeCodeBlocks,
 	serializeProjectLevel,
 	setGridSize,
 } from '../../index';
@@ -78,6 +80,41 @@ it('preserves edited group wrapper source and child scope in the serialized proj
 		expect(voice.entry).toBe('main');
 		expect(voice.childLevel?.blocks.find(block => block.name === 'oscillator')?.projectPath).toBe('parent/voice');
 	}
+});
+
+it('retains distinct block identities and updates the child path when renaming a copied group', () => {
+	const { store, state } = setup(
+		'8f4e/v1\nentry main\ngroup voice\nentry main\nmodule oscillator\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd'
+	);
+	const original = state.project.rootLevel.blocks.find(block => block.name === 'voice')!;
+	const [copy] = insertCodeBlocks(store, { x: 240, y: 128, blocks: serializeCodeBlocks([original], original) });
+	const groups = () => getProjectGroups(serializeProjectLevel(state.project.rootLevel));
+	expect(copy.creationIndex).not.toBe(original.creationIndex);
+	expect(groups()).toMatchObject([
+		{ id: original.creationIndex, name: 'voice' },
+		{ id: copy.creationIndex, name: 'voice' },
+	]);
+	const renamedCode = ['group voiceCopy', ...copy.code.slice(1)];
+	applyCodeBlockSourceEdits(store, [{ codeBlock: copy, code: renamedCode }]);
+	const originalChild = original.childLevel!.blocks[0];
+	const copiedChild = copy.childLevel!.blocks[0];
+	expect(original.childLevel!.path).toBe('voice');
+	expect(copy.childLevel!.path).toBe('voiceCopy');
+	expect(copiedChild.projectPath).toBe('voiceCopy');
+	expect(groups()).toMatchObject([
+		{
+			id: original.creationIndex,
+			name: 'voice',
+			code: original.code,
+			execution: [{ id: originalChild.creationIndex, type: 'module', code: originalChild.code }],
+		},
+		{
+			id: copy.creationIndex,
+			name: 'voiceCopy',
+			code: renamedCode,
+			execution: [{ id: copiedChild.creationIndex, type: 'module', code: copiedChild.code }],
+		},
+	]);
 });
 
 describe('cached directive records', () => {

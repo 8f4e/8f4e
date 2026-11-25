@@ -6,17 +6,13 @@ import { parseBlockDirectives } from '../../directives/parseBlockDirectives';
 import { clampSourcePosition } from '../../layout/text-geometry/clampSourcePosition';
 import { getTabStopsByLine } from '../../layout/text-geometry/tabLayout';
 import { updateProjectGroupMemoryExposureDeclarations } from '../../memory/projectGroupMemoryExposures';
+import { supportsExecutionEntry } from '../entries/supportsExecutionEntry';
 import type { ProjectMembership } from '../membership';
 import { updateProjectLevelPath } from '../tree';
 import getCodeBlockNameFromSource from './getCodeBlockNameFromSource';
 import getCodeBlockTypeFromSource from './getCodeBlockTypeFromSource';
 import replaceBlocksInPlace from './replaceBlocksInPlace';
 import { partitionCodeBlocksByAlwaysOnTop } from './zOrder';
-
-/** Modules and structural project-group blocks can own execution entries. */
-export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType'>): boolean {
-	return block.blockType === 'module' || block.blockType === 'group';
-}
 
 /** Keep the editor's entry table authoritative, including empty previously declared entries. */
 export function rememberEntry(project: ProjectLevel, block: EditorCodeBlock): void {

@@ -1,5 +1,5 @@
 import type { Editor, EditorCodeBlock } from '@8f4e/editor-core';
-import { findParentProjectLevel } from '@8f4e/editor-state';
+import { findParentProjectLevel, supportsExecutionEntry } from '@8f4e/editor-state';
 
 export function getCurrentGroupBlock(state: Editor['state']): EditorCodeBlock | undefined {
 	const { rootLevel, activeLevel } = state.project;
@@ -45,15 +45,14 @@ export function createSourceView(state: Editor['state']): string {
 		lines.push(...group.code.slice(0, closer));
 	} else lines.push('8f4e/v1');
 
-	const executable = (block: EditorCodeBlock) => block.blockType === 'module' || block.blockType === 'group';
-	for (const block of ordered.filter(block => !executable(block))) append(block);
+	for (const block of ordered.filter(block => !supportsExecutionEntry(block))) append(block);
 	let current: string | undefined;
 	const emitted = new Set<string>();
 	const close = () => {
 		if (current !== undefined) lines.push('entryEnd');
 		current = undefined;
 	};
-	for (const block of ordered.filter(executable)) {
+	for (const block of ordered.filter(supportsExecutionEntry)) {
 		if (current !== block.entry) {
 			close();
 			current = block.entry!;

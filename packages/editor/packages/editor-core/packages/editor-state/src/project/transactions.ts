@@ -28,8 +28,8 @@ import {
 	prepareProjectSourceMetadata,
 	refreshEditedBlocksMetadata,
 	rememberEntry,
-	supportsExecutionEntry,
 } from './blocks/refreshSourceMetadata';
+import { supportsExecutionEntry } from './entries/supportsExecutionEntry';
 import { generateEnvironmentSource, isEnvironmentSource } from './generatedEnvironment';
 import type { ProjectMembership } from './membership';
 import { reconstructProject } from './reconstruction';

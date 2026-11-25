@@ -35,12 +35,12 @@ type BlockDiagnosticSource = Extract<DiagnosticSource, { kind: 'block' }>;
 function appendGroupDeclarations(
 	code: readonly string[],
 	groupPath: ProjectGroupPath,
+	parentGroupPath: ProjectGroupPath,
 	diagnosticSource: BlockDiagnosticSource,
 	program: ComposedProgram
 ): void {
 	const passes: ProjectConstantNamespacePassLine[] = [];
 	const initializers: ProjectMemoryInitializerLine[] = [];
-	const parentGroupPath = diagnosticSource.projectGroupPath;
 	const declarations = validateProjectCodeBlock(code, { diagnosticSource, expectedOpener: 'group' });
 	for (const { instruction, lineNumber } of declarations) {
 		if (instruction === 'expose') continue;
@@ -215,7 +215,7 @@ function appendUnit(
 				projectBlockId: block.id,
 				projectGroupPath: projectPath,
 			};
-			appendGroupDeclarations(block.code, groupPath, diagnosticSource, program);
+			appendGroupDeclarations(block.code, groupPath, projectPath, diagnosticSource, program);
 			const child = appendUnit(block, groupPath, program, includedFunctionsByProjectPath);
 			appendMemoryExposureAliases(program, groupPath, block.exposures, child.groupTargets, diagnosticSource);
 			groupTargets.add(block.name);

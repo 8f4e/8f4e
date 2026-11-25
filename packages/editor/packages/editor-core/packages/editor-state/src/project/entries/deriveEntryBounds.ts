@@ -1,4 +1,5 @@
 import type { EditorCodeBlock, EntryBounds } from '@8f4e/editor-state-types';
+import { supportsExecutionEntry } from './supportsExecutionEntry';
 
 export default function deriveEntryBounds(
 	blocks: readonly EditorCodeBlock[],
@@ -7,7 +8,7 @@ export default function deriveEntryBounds(
 ): EntryBounds[] {
 	const boundsByEntry = new Map<string, EntryBounds>();
 	for (const block of blocks) {
-		if (block.blockType !== 'module' && block.blockType !== 'group') continue;
+		if (!supportsExecutionEntry(block)) continue;
 		const entryName = block.entry!;
 		const x = block.x - paddingX;
 		const y = block.y - paddingY;
