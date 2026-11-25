@@ -1,17 +1,8 @@
 import type { CodeError, EditorCodeBlock, ProjectLevel, State } from '@8f4e/editor-state-types';
-import { createChildProjectGroupPath } from '@8f4e/language-spec';
 import { walkProjectBlocks } from '../project/tree';
 
-function getProjectScopePath(codeBlock: EditorCodeBlock) {
-	return codeBlock.isProjectScope
-		? codeBlock.projectPath
-		: codeBlock.childLevel
-			? createChildProjectGroupPath(codeBlock.projectPath, codeBlock.name)
-			: undefined;
-}
-
 export default function getCodeBlockErrors(state: State, codeBlock: EditorCodeBlock) {
-	const projectScopePath = getProjectScopePath(codeBlock);
+	const projectScopePath = codeBlock.childLevel?.path;
 	return Object.values(state.codeErrors)
 		.flat()
 		.filter(
@@ -31,7 +22,7 @@ export function createCodeErrorBlockLookup(project: ProjectLevel) {
 	for (const codeBlock of walkProjectBlocks(project)) {
 		const entry = { codeBlock, order: order++ };
 		blocksById.set(codeBlock.creationIndex, entry);
-		const scope = getProjectScopePath(codeBlock);
+		const scope = codeBlock.childLevel?.path;
 		if (scope !== undefined && !blocksByScope.has(scope)) blocksByScope.set(scope, entry);
 	}
 	return (error: CodeError): EditorCodeBlock | undefined => {

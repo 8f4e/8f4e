@@ -16,9 +16,11 @@ with JSON. The plugin uses the public `serializeToProject` helper to save the en
 groups, even when the editor is displaying a child slice.
 
 On the source-only `prepareInitialProject` event, the plugin reads and restores the saved project through `loadProject`,
-then installs its autosave subscriptions and saves the resulting project once. Setup performs no storage I/O. Missing or unreadable
-storage leaves core's initial project in place; read/write failures are reported in the editor console. Stored object
-shapes are not validated or migrated. The host disables restoration when another source has initial-project priority.
+then installs its autosave subscriptions and saves the resulting project once. Setup performs no storage I/O. Missing storage
+leaves core's initial project in place. If reading or restoring a stored project fails, the plugin reports the failure in
+the editor console and skips the initial save to avoid overwriting the rejected session. Old sessions with an empty
+root `code` field restore normally; nonempty standalone root source is rejected. The host disables restoration when
+another source has initial-project priority.
 
 Autosaving starts during `prepareInitialProject` regardless of `restoreOnStartup`. It subscribes to completed `projectChange`
 notifications and saves once after each edit, API batch, undo/redo, or project replacement, with derived state ready.

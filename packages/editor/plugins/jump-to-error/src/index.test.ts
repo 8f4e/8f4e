@@ -123,11 +123,10 @@ it('ignores outside presses, non-primary presses, and stale errors', () => {
 	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });
 
-it('opens a nested project for document errors and returns to root for root-scope errors', () => {
+it('opens a nested project for document errors and returns to the group owner for scope errors', () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {
 		project: parseProjectSource(`8f4e/v1
-pass missing
 entry main
 group audio
 entry main
@@ -151,11 +150,11 @@ entryEnd`),
 	expect(test.state.project.activeLevel).toBe(nested.childLevel);
 	expect(test.state.project.selectedCodeBlock).toBe(child);
 	test.store.set('codeErrors.custom', [
-		{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
+		{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 0, message: 'Group error' },
 	]);
 	test.press();
 	expect(test.state.project.activeLevel).toBe(root);
-	expect(test.state.project.selectedCodeBlock?.isProjectScope).toBe(true);
+	expect(test.state.project.selectedCodeBlock).toBe(audio);
 });
 
 it('releases its drawer, subscriptions, and input handlers on disposal', () => {

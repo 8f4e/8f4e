@@ -101,19 +101,19 @@ describe('one-level 8f4e source views', () => {
 		expect(() => createSourceView(state)).toThrow('currently expanded group is unavailable');
 	});
 
-	it('preserves root-owned source, entry boundaries, blank lines, and empty group shells', () => {
+	it('preserves unfinished block source, entry boundaries, blank lines, and empty group shells', () => {
 		const { state, audio, root } = fixture();
 		audio.childLevel!.blocks = [];
 		root.entry = 'secondary';
-		const scope = createMockCodeBlock({
-			isProjectScope: true,
+		const draft = createMockCodeBlock({
+			blockType: 'unknown',
 			projectPath: '',
-			code: ['pass shared', '', '; root comment'],
+			code: ['int value', '', '; draft comment'],
 			creationIndex: 5,
 		});
-		state.project.rootLevel.blocks.push(scope);
+		state.project.rootLevel.blocks.push(draft);
 		const view = createSourceView(state);
-		expect(view).toContain('pass shared\n\n; root comment');
+		expect(view).toContain('int value\n\n; draft comment');
 		expect(view).toContain('entry main\n');
 		expect(view).toContain('entry secondary\n');
 		state.project.activeLevel = audio.childLevel!;

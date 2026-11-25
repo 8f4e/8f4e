@@ -155,7 +155,6 @@ describe('constant resolver', () => {
 			grandchildModuleLine
 		);
 		const projectConstantNamespaceScopes: ProjectConstantNamespaceScope[] = [
-			{ groupPath: '', passes: [] },
 			{
 				groupPath: 'child',
 				parentGroupPath: '',
@@ -200,10 +199,7 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: { modules: [childModule], constants: [env], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrow('Undeclared identifier: RATE');
 	});
@@ -220,8 +216,6 @@ describe('constant resolver', () => {
 			resolveConstants({
 				ast: { modules: [], constants: [env], functions: [] },
 				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [] },
 					{ groupPath: 'child/nested', parentGroupPath: 'child', passes: [passLine(1, 'env')] },
 				],
 			})
@@ -241,31 +235,16 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: { modules: [childEnv], constants: [env], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.DUPLICATE_NAMESPACE);
-	});
-
-	it('reports a root pass as an unresolved parent namespace', () => {
-		expect(() =>
-			resolveConstants({
-				ast: { modules: [], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [{ groupPath: '', passes: [passLine(1, 'env')] }],
-			})
-		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});
 
 	it('reports a child pass whose parent has no matching constants block', () => {
 		expect(() =>
 			resolveConstants({
 				ast: { modules: [], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});
@@ -280,10 +259,7 @@ describe('constant resolver', () => {
 		expect(() =>
 			resolveConstants({
 				ast: { modules: [rootModule], constants: [], functions: [] },
-				projectConstantNamespaceScopes: [
-					{ groupPath: '', passes: [] },
-					{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] },
-				],
+				projectConstantNamespaceScopes: [{ groupPath: 'child', parentGroupPath: '', passes: [passLine(1, 'env')] }],
 			})
 		).toThrowError(ConstantResolverErrorCode.UNRESOLVED_PASSED_NAMESPACE);
 	});

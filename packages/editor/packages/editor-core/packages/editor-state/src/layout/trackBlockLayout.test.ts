@@ -30,16 +30,6 @@ function setup(initializeGrid = true) {
 }
 
 describe('project loading and block layout', () => {
-	it('renders root project-scope source as an editable code block', () => {
-		const { state, load } = setup();
-		load({ ...EMPTY_DEFAULT_PROJECT, code: ['pass env'] });
-		expect(state.project.activeLevel.blocks.find(block => block.isProjectScope)).toMatchObject({
-			code: ['pass env'],
-			isProjectScope: true,
-			projectPath: '',
-		});
-	});
-
 	it('renders project-level includes blocks from imported project state', () => {
 		const { state, load } = setup();
 		const includesBlock = ['includes', 'include std/events/risingEdge', 'includesEnd'];

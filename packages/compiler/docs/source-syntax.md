@@ -45,6 +45,7 @@ Groups have isolated scopes. Use `pass NAME` in a child group to share a functio
 immediate parent. Repeat the pass at each group boundary when forwarding a name to deeper groups.
 
 Outside nested blocks, a group body accepts only `pass`, `expose`, `init`, blank lines, and comments.
+These three declarations are not allowed directly at the project root or inside an entry body.
 Unrecognized or misplaced statements are errors.
 
 Passed functions are called normally, without `use`. A pass shares the complete overload set and retains the

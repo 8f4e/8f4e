@@ -69,10 +69,7 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 		});
 	}
 
-	const blockStrings = [
-		...(project.code.length > 0 ? [project.code.join('\n')] : []),
-		...documentBlocks.map(block => block.code.join('\n')),
-	];
+	const blockStrings = documentBlocks.map(block => block.code.join('\n'));
 	const execution = serializeExecution(project);
 	if (execution.length) blockStrings.push(execution.join('\n'));
 

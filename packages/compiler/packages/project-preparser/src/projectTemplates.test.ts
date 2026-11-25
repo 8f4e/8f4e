@@ -268,7 +268,6 @@ entryEnd`);
 		const unused = parseProjectSource(source(definition));
 		expect(unused.execution).toEqual([]);
 		expect(unused.functions).toEqual([]);
-		expect(unused.code).toEqual([]);
 	});
 
 	it.each(['template voice', 'template voice\nentry main\ntemplateEnd', 'templateEnd'])(

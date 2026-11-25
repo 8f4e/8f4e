@@ -95,7 +95,6 @@ exports[`project-preparser integration > parses project source into typed collec
     },
   ],
   "project": {
-    "code": [],
     "constants": [
       {
         "code": [

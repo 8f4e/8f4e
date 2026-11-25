@@ -10,10 +10,6 @@ export default function serializeProjectLevel(level: ProjectLevel): ProjectObjec
 	const sortedBlocks = [...level.blocks].sort(compareCodeBlocksByPosition);
 
 	for (const codeBlock of sortedBlocks) {
-		if (codeBlock.isProjectScope) {
-			project.code.push(...codeBlock.code);
-			continue;
-		}
 		if (codeBlock.childLevel !== undefined) {
 			project.execution.push({
 				...serializeProjectLevel(codeBlock.childLevel),

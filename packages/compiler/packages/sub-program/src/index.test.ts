@@ -13,7 +13,6 @@ import { compileSubProgram } from '.';
 
 const emptyProject: ProjectObjectModel = {
 	entries: [],
-	code: [],
 	execution: [],
 	functions: [],
 	constants: [],

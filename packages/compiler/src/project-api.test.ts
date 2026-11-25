@@ -23,7 +23,6 @@ const source = [
 
 const directProject: ProjectObjectModel = {
 	entries: ['main'],
-	code: [],
 	execution: [
 		{
 			type: 'module',

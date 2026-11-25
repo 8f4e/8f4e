@@ -37,23 +37,6 @@ describe('serializeProjectLevel', () => {
 		}
 	});
 
-	it('stores the editable root project-scope block as project code', () => {
-		const result = serializeProjectLevel({
-			path: '',
-			entries: [],
-			blocks: [
-				createMockCodeBlock({
-					code: ['pass env'],
-					isProjectScope: true,
-					creationIndex: 1,
-				}),
-			],
-		});
-
-		expect(result.code).toEqual(['pass env']);
-		expect(result.unknown).toEqual([]);
-	});
-
 	it('places editor blocks in their canonical collections', () => {
 		const result = serializeProjectLevel({
 			path: '',
@@ -264,8 +247,8 @@ describe('serializeProjectLevel', () => {
 			},
 		]);
 	});
-	it('returns independent source arrays for root scope, blocks, and nested projects', () => {
-		const scope = createMockCodeBlock({ isProjectScope: true, code: ['pass env'] });
+	it('returns independent source arrays for document blocks and nested projects', () => {
+		const note = createMockCodeBlock({ blockType: 'note', code: ['note', 'original', 'noteEnd'] });
 		const module = createMockCodeBlock({
 			blockType: 'module',
 			entry: 'main',
@@ -282,28 +265,28 @@ describe('serializeProjectLevel', () => {
 			code: ['group voice', 'groupEnd'],
 			childLevel: { entries: ['main'], path: '', blocks: [child] },
 		});
-		const blocks = [scope, module, group];
+		const blocks = [note, module, group];
 		const saved = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
 		const other = serializeProjectLevel({ path: '', entries: ['main'], blocks: blocks });
 
-		scope.code[0] = 'pass changed';
+		note.code[1] = 'changed';
 		module.code[1] = 'int value 3';
 		group.code.splice(1, 0, '; @testDirective');
 		child.code[1] = 'int value 4';
-		expect(saved.code).toEqual(['pass env']);
+		expect(saved.notes[0].code).toEqual(['note', 'original', 'noteEnd']);
 		expect(getProjectModules(saved)[0].code).toEqual(['module root', 'int value 1', 'moduleEnd']);
 		expect(getProjectGroups(saved)[0].code).toEqual(['group voice', 'groupEnd']);
 		expect(getProjectModules(getProjectGroups(saved)[0])[0].code).toEqual(['module child', 'int value 2', 'moduleEnd']);
 
-		saved.code[0] = 'pass saved';
+		saved.notes[0].code[1] = 'saved';
 		getProjectModules(saved)[0].code[1] = 'int value 5';
 		getProjectGroups(saved)[0].code.splice(1, 0, '; @pos 5 6');
 		getProjectModules(getProjectGroups(saved)[0])[0].code[1] = 'int value 6';
-		expect(scope.code).toEqual(['pass changed']);
+		expect(note.code).toEqual(['note', 'changed', 'noteEnd']);
 		expect(module.code).toEqual(['module root', 'int value 3', 'moduleEnd']);
 		expect(group.code).toEqual(['group voice', '; @testDirective', 'groupEnd']);
 		expect(child.code).toEqual(['module child', 'int value 4', 'moduleEnd']);
-		expect(other.code).toEqual(['pass env']);
+		expect(other.notes[0].code).toEqual(['note', 'original', 'noteEnd']);
 		expect(getProjectModules(other)[0].code[1]).toBe('int value 1');
 		expect(getProjectGroups(other)[0].code).toEqual(['group voice', 'groupEnd']);
 		expect(getProjectModules(getProjectGroups(other)[0])[0].code[1]).toBe('int value 2');

@@ -11,7 +11,6 @@ const validNoteBlock = ['note', '; @pos 1 2', 'compiler should ignore this', 'no
 function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObjectModel {
 	return {
 		entries: [],
-		code: [],
 		execution: [],
 		functions: [],
 		constants: [],
@@ -22,7 +21,9 @@ function createProject(partial: Partial<ProjectObjectModel> = {}): ProjectObject
 	};
 }
 
-function createGroup(partial: Partial<ProjectGroupObjectModel>): ProjectGroupObjectModel {
+function createGroup(
+	partial: Partial<ProjectGroupObjectModel> & Pick<ProjectGroupObjectModel, 'code'>
+): ProjectGroupObjectModel {
 	return {
 		entry: 'main',
 
@@ -146,17 +147,6 @@ entryEnd`;
 		expect(serializeProjectTo8f4e(createProject())).toBe('8f4e/v1\n\n');
 	});
 
-	it('round-trips editable root project-scope source', () => {
-		const project = createProject({ code: ['; namespace contract', 'pass env'] });
-
-		const text = serializeProjectTo8f4e(project);
-		const parsed = parseProjectSource(text);
-
-		expect(text).toBe(['8f4e/v1', '', '; namespace contract', 'pass env'].join('\n'));
-		expect(parsed.code).toEqual(['; namespace contract', 'pass env']);
-		expect(serializeProjectTo8f4e(parsed)).toBe(text);
-	});
-
 	it('round-trips canonical block collections through project text', () => {
 		const project = createProject({
 			entries: ['main'],
@@ -173,7 +163,7 @@ entryEnd`;
 	});
 
 	it('round-trips recursively owned groups', () => {
-		const project = createGroup({
+		const project = createProject({
 			execution: [
 				createGroup({
 					entries: ['main'],

@@ -35,7 +35,6 @@ export function resolveFunctionPasses(program: ComposedProgram): void {
 	// Composition records scopes before their children, so forwarded names can be passed again.
 	const namespaceScopes = program.projectConstantNamespaceScopes.flatMap(scope => {
 		const passes = scope.passes.filter(line => {
-			if (scope.parentGroupPath === undefined) return true;
 			const name = line.arguments[0].value;
 			const local = createProjectModuleId(scope.groupPath, name);
 			const parent = createProjectModuleId(scope.parentGroupPath, name);

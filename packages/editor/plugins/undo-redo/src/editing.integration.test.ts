@@ -133,34 +133,34 @@ describe('undo and redo of public source edits through plugin events', () => {
 		expect(current()).toMatchObject({ gridX: 10, gridY: 20 });
 	});
 
-	it('preserves separately editable root project-scope blocks and their identities across history', () => {
+	it('preserves separate unfinished blocks and their identities across history', () => {
 		const { editing, events, state } = setup();
-		const scope = () => state.project.rootLevel.blocks.filter(block => block.isProjectScope);
+		const drafts = () => state.project.rootLevel.blocks.filter(block => block.blockType === 'unknown');
 		const result = editing.applyEdits({
 			expectedRevision: editing.getRevision(),
 			edits: [
-				{ type: 'insert', code: ['pass env'] },
-				{ type: 'insert', code: ['pass other'] },
+				{ type: 'insert', code: ['int first'] },
+				{ type: 'insert', code: ['int second'] },
 			],
 		});
 		const firstId = result.createdBlockIds[0];
 		const secondId = result.createdBlockIds[1];
-		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
+		expect(drafts().map(getEditorBlockId)).toEqual([firstId, secondId]);
 		editing.applyEdits({
 			expectedRevision: editing.getRevision(),
-			edits: [{ type: 'update', blockId: firstId, code: ['pass changed'] }],
+			edits: [{ type: 'update', blockId: firstId, code: ['int changed'] }],
 		});
 		events.dispatch('undo');
-		expect(scope().map(block => [getEditorBlockId(block), block.code])).toEqual([
-			[firstId, ['pass env']],
-			[secondId, ['pass other']],
+		expect(drafts().map(block => [getEditorBlockId(block), block.code])).toEqual([
+			[firstId, ['int first']],
+			[secondId, ['int second']],
 		]);
 		events.dispatch('undo');
-		expect(scope()).toHaveLength(0);
+		expect(drafts()).toHaveLength(0);
 		events.dispatch('redo');
-		expect(scope().map(getEditorBlockId)).toEqual([firstId, secondId]);
+		expect(drafts().map(getEditorBlockId)).toEqual([firstId, secondId]);
 		events.dispatch('redo');
-		expect(scope().map(block => block.code)).toEqual([['pass changed'], ['pass other']]);
+		expect(drafts().map(block => block.code)).toEqual([['int changed'], ['int second']]);
 	});
 
 	it('ignores final root env declarations while applying ordinary edits in the same API batch', () => {

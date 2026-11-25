@@ -96,18 +96,15 @@ describe('toggle disabled plugin', () => {
 		});
 	});
 
-	it.each([['group target', 'groupEnd'], ['pass']])(
-		'does not toggle unsupported structural source: %j',
-		async (...source) => {
-			const test = setup(source);
-			const revision = test.state.projectChange.revision;
-			expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
-			test.events.dispatch(action, { codeBlock: test.block });
-			expect(test.block.disabled).toBe(false);
-			expect(test.block.code).not.toContain('; @disabled');
-			expect(test.state.projectChange.revision).toBe(revision);
-		}
-	);
+	it('does not toggle structural groups', async () => {
+		const test = setup(['group target', 'groupEnd']);
+		const revision = test.state.projectChange.revision;
+		expect((await test.openMenu()).items.some(item => item.action === action)).toBe(false);
+		test.events.dispatch(action, { codeBlock: test.block });
+		expect(test.block.disabled).toBe(false);
+		expect(test.block.code).not.toContain('; @disabled');
+		expect(test.state.projectChange.revision).toBe(revision);
+	});
 
 	it('toggles the clicked block rather than the selected block and updates the menu label', async () => {
 		const test = setup();

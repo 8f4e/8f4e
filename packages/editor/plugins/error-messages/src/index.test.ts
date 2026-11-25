@@ -145,12 +145,13 @@ describe('error messages plugin', () => {
 		expect(test.block.gaps.size).toBe(0);
 	});
 
-	it('matches project-scope errors by group path and document errors by block identity', () => {
+	it('matches group-scope errors by group path and document errors by block identity', () => {
 		const test = setup();
 		test.events.dispatch('loadProject', {
 			project: parseProjectSource(`8f4e/v1
-pass missing
 entry main
+module root
+moduleEnd
 group audio
 pass nested
 entry main
@@ -162,15 +163,15 @@ groupEnd
 entryEnd`),
 		});
 		const root = test.state.project.activeLevel.blocks;
-		const scope = root.find(block => block.isProjectScope)!;
+		const rootModule = root.find(block => block.name === 'root')!;
 		const group = root.find(block => block.name === 'audio')!;
 		const child = group.childLevel!.blocks.find(block => block.name === 'child')!;
 		test.store.set('codeErrors.custom', [
-			{ codeBlockId: -1, projectGroupPath: '', lineNumber: 0, message: 'Root error' },
+			{ codeBlockId: rootModule.creationIndex, lineNumber: 0, message: 'Root error' },
 			{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 1, message: 'Group error' },
 			{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' },
 		]);
-		test.render(scope);
+		test.render(rootModule);
 		expect(test.drawGlyphs).toHaveBeenLastCalledWith(
 			0,
 			expect.any(Number),

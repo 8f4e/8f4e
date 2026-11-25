@@ -49,7 +49,6 @@ describe('serializeToProject', () => {
 
 		expect(serializeToProject(state)).toEqual({
 			entries: [],
-			code: [],
 			execution: [],
 			functions: [],
 			constants: [],

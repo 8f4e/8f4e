@@ -4,11 +4,11 @@ import { createMockCodeBlock } from '../__tests__/helpers/mockEditorState';
 import { createCodeErrorBlockLookup } from './getCodeBlockErrors';
 
 function fixture() {
-	const scope = createMockCodeBlock({
+	const root = createMockCodeBlock({
 		creationIndex: 0,
 		projectPath: '',
-		isProjectScope: true,
-		code: ['pass missing'],
+		name: 'root',
+		code: ['module root', 'moduleEnd'],
 	});
 	const voice = createMockCodeBlock({
 		creationIndex: 2,
@@ -23,7 +23,7 @@ function fixture() {
 		code: ['group audio', 'pass missing', 'groupEnd'],
 		childLevel: { path: 'audio', entries: [], blocks: [voice] },
 	});
-	const project: ProjectLevel = { path: '', entries: [], blocks: [scope, group] };
+	const project: ProjectLevel = { path: '', entries: [], blocks: [root, group] };
 	const findBlock = createCodeErrorBlockLookup(project);
 	const error = (fields: Partial<CodeError>): CodeError => ({
 		codeBlockId: -1,
@@ -31,21 +31,22 @@ function fixture() {
 		message: 'Fixture error',
 		...fields,
 	});
-	return { scope, voice, group, findBlock, error };
+	return { root, voice, group, findBlock, error };
 }
 
-it('indexes nested document identities and root/group source scopes', () => {
-	const { scope, voice, group, findBlock, error } = fixture();
+it('indexes document identities and group source scopes', () => {
+	const { root, voice, group, findBlock, error } = fixture();
+	expect(findBlock(error({ codeBlockId: root.creationIndex }))).toBe(root);
 	expect(findBlock(error({ codeBlockId: voice.creationIndex }))).toBe(voice);
 	expect(findBlock(error({ projectGroupPath: 'audio' }))).toBe(group);
-	expect(findBlock(error({ projectGroupPath: '' }))).toBe(scope);
+	expect(findBlock(error({ projectGroupPath: '' }))).toBeUndefined();
 	expect(findBlock(error({ codeBlockId: 999 }))).toBeUndefined();
 	expect(findBlock(error({ projectGroupPath: 'missing' }))).toBeUndefined();
 });
 
 it('retains project-tree precedence when a diagnostic matches both a document and a scope', () => {
-	const { scope, voice, group, findBlock, error } = fixture();
+	const { root, voice, group, findBlock, error } = fixture();
 	expect(findBlock(error({ codeBlockId: voice.creationIndex, projectGroupPath: 'audio' }))).toBe(group);
-	expect(findBlock(error({ codeBlockId: voice.creationIndex, projectGroupPath: '' }))).toBe(scope);
-	expect(findBlock(error({ codeBlockId: scope.creationIndex, projectGroupPath: 'audio' }))).toBe(scope);
+	expect(findBlock(error({ codeBlockId: voice.creationIndex, projectGroupPath: '' }))).toBe(voice);
+	expect(findBlock(error({ codeBlockId: root.creationIndex, projectGroupPath: 'audio' }))).toBe(root);
 });

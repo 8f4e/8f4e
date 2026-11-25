@@ -13,17 +13,6 @@ import getCodeBlockTypeFromSource from './getCodeBlockTypeFromSource';
 import replaceBlocksInPlace from './replaceBlocksInPlace';
 import { partitionCodeBlocksByAlwaysOnTop } from './zOrder';
 
-function isProjectScopeSourceLine(line: string): boolean {
-	const trimmed = line.trim();
-	return (
-		trimmed === '' ||
-		trimmed.startsWith(';') ||
-		trimmed.startsWith('#') ||
-		trimmed.startsWith('//') ||
-		/^pass(?:\s|$)/.test(trimmed)
-	);
-}
-
 /** Modules and structural project-group blocks can own execution entries. */
 export function supportsExecutionEntry(block: Pick<EditorCodeBlock, 'blockType' | 'childLevel'>): boolean {
 	return block.blockType === 'module' || block.childLevel !== undefined;
@@ -59,18 +48,11 @@ export function refreshBlockSourceMetadata(block: EditorCodeBlock, directives: E
 		block.gridY = position.y;
 	}
 	block.blockType = getCodeBlockTypeFromSource(block.code);
-	const hasProjectScopeInstruction = block.code.some(line => /^\s*pass(?:\s|$)/.test(line));
-	block.isProjectScope =
-		block.projectPath === '' &&
-		block.childLevel === undefined &&
-		block.blockType === 'unknown' &&
-		block.code.every(isProjectScopeSourceLine) &&
-		(hasProjectScopeInstruction || block.isProjectScope === true);
 	// Unknown source may be an incomplete module rather than a conversion. Keep its
 	// last entry until the user finishes declaring a non-execution block.
 	if (supportsExecutionEntry(block)) {
 		block.entry ??= 'main';
-	} else if (block.isProjectScope || block.blockType !== 'unknown') {
+	} else if (block.blockType !== 'unknown') {
 		block.entry = undefined;
 	}
 }

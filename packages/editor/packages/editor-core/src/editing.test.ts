@@ -211,7 +211,6 @@ describe('public editor editing handle', () => {
 		{ code: ['function converted', 'functionEnd'], requestedEntry: 'requested', expectedEntry: 'requested' },
 		{ code: ['constants converted', 'constantsEnd'], requestedEntry: undefined, expectedEntry: 'main' },
 		{ code: ['includes', 'includesEnd'], requestedEntry: undefined, expectedEntry: 'main' },
-		{ code: ['pass env'], requestedEntry: undefined, expectedEntry: 'main' },
 	])(
 		'settles entry assignment when converting a module to $code and back',
 		({ code, requestedEntry, expectedEntry }) => {
@@ -245,7 +244,7 @@ describe('public editor editing handle', () => {
 		}
 	);
 
-	it('preserves a module entry while its source is temporarily incomplete', () => {
+	it.each([['module original'], ['pass env']])('preserves a module entry while its source is temporarily %s', code => {
 		const { editing, state } = setup({
 			...structuredClone(EMPTY_DEFAULT_PROJECT),
 			entries: ['alternate'],
@@ -255,10 +254,11 @@ describe('public editor editing handle', () => {
 		const blockId = getEditorBlockId(target);
 		editing.applyEdits({
 			expectedRevision: editing.getRevision(),
-			edits: [{ type: 'update', blockId, code: ['module original'] }],
+			edits: [{ type: 'update', blockId, code: [code] }],
 		});
 		expect(target.blockType).toBe('unknown');
 		expect(target.entry).toBe('alternate');
+		expect(serializeToProject(state)).toMatchObject({ unknown: [{ id: 0, code: [code] }], execution: [] });
 		editing.applyEdits({
 			expectedRevision: editing.getRevision(),
 			edits: [{ type: 'update', blockId, code: ['module original', 'moduleEnd'] }],

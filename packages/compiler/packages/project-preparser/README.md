@@ -40,7 +40,7 @@ This package owns:
 - Parsing the expanded project source into `ProjectObjectModel` collections and groups.
 - Classifying project document blocks.
 - Preserving entry membership for module and group nodes.
-- Preserving project/group-level `pass <namespace>` declarations for the program composer.
+- Preserving group-level `pass <namespace>` declarations for the program composer, and rejecting standalone root declarations.
 - Preserving group-level `init` declarations for syntax validation and scoped composition.
 - Parsing `expose <name> &<module>:<memory>` declarations owned by groups.
 - Parsing and resolving include declarations for the public compiler facade.

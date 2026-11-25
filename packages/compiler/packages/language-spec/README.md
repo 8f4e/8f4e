@@ -14,6 +14,9 @@ This package is the place for data and types that describe the 8f4e language its
 
 The package is intentionally declarative. Other compiler packages import these facts so they agree on the same language model.
 
+`ProjectObjectModel` contains the shared block collections and entries. Only a `ProjectGroupObjectModel` has its
+own `code` for the group wrapper and declarations; the root project has no standalone source.
+
 `FunctionSignature.parameters` contains `{ name, type }` entries in declaration order.
 Function identities and WebAssembly types depend only on the parameter types. When stack analysis is
 requested, call lines expose `CompiledStackAnalysisLine.resolvedCall` with the selected target ID and its complete

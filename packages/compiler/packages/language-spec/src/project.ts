@@ -58,7 +58,7 @@ export interface ProjectConstantNamespacePassLine {
 /** Ordered namespace passes and their canonical parent relationship. */
 export interface ProjectConstantNamespaceScope {
 	groupPath: ProjectGroupPath;
-	parentGroupPath?: ProjectGroupPath;
+	parentGroupPath: ProjectGroupPath;
 	passes: ProjectConstantNamespacePassLine[];
 }
 
@@ -76,7 +76,7 @@ export interface ProjectMemoryInitializerLine {
 /** Initializers and the project scopes used to resolve their destinations and address sources. */
 export interface ProjectMemoryInitializerScope {
 	groupPath: ProjectGroupPath;
-	parentGroupPath?: ProjectGroupPath;
+	parentGroupPath: ProjectGroupPath;
 	initializers: ProjectMemoryInitializerLine[];
 }
 
@@ -127,8 +127,6 @@ export type ProjectExecutableBlock = ProjectModuleBlock | ProjectGroupObjectMode
 export interface ProjectObjectModel {
 	/** Entry definitions local to this scope, including empty entries. */
 	entries: ProjectEntryName[];
-	/** Source lines owned directly by this project scope, excluding recursively owned document and group blocks. */
-	code: string[];
 	/** Ordered modules and groups. A group expands recursively at its position in this sequence. */
 	execution: ProjectExecutableBlock[];
 	/** Hoisted function blocks. */
@@ -181,6 +179,8 @@ export interface ProjectGroupObjectModel extends ProjectObjectModel {
 	type: 'group';
 	id: ProjectBlockId;
 	name: ProjectGroupName;
+	/** Group wrapper and declarations, excluding recursively owned blocks. */
+	code: string[];
 	/** Entry in the parent scope that invokes this project's main entry. */
 	entry: ProjectEntryName;
 	/** Ordered public memory aliases exposed to the enclosing project. */
@@ -191,7 +191,6 @@ export interface ProjectGroupObjectModel extends ProjectObjectModel {
 export function createProjectObjectModel(): ProjectObjectModel {
 	return {
 		entries: [],
-		code: [],
 		execution: [],
 		functions: [],
 		constants: [],

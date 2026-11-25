@@ -1,12 +1,10 @@
 {
-  "code": 74,
-  "domain": "semantic",
-  "instruction": "init",
+  "code": 9,
+  "domain": "syntax",
   "kind": "source",
   "location": {
-    "kind": "scope",
-    "lineNumber": 0,
-    "projectGroupPath": "",
+    "kind": "document",
+    "lineNumber": 1,
   },
-  "message": "init can only be used at group level. (74)",
+  "message": "Parse error at line 2: instruction "init" is only allowed in a group body",
 }

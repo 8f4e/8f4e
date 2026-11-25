@@ -41,9 +41,9 @@ afterEach(() => {
 });
 
 describe('session persistence plugin', () => {
-	it('restores on init before starting autosaves', () => {
+	it.each([{}, { code: [] }])('restores on init before starting autosaves with stored fields %j', legacyFields => {
 		const storage = createStorage();
-		storage.setItem('session', JSON.stringify(project));
+		storage.setItem('session', JSON.stringify({ ...project, ...legacyFields }));
 		storage.setItem.mockClear();
 		const test = setup(storage);
 		test.events.dispatch('loadProject', { project: EMPTY_DEFAULT_PROJECT });
@@ -53,6 +53,7 @@ describe('session persistence plugin', () => {
 		test.events.dispatch('prepareInitialProject');
 		expect(test.state.project.activeLevel.blocks.some(block => block.name === 'retained')).toBe(true);
 		expect(getProjectModules(JSON.parse(storage.getItem('session')!))[0].code).toContain('module retained');
+		expect(JSON.parse(storage.getItem('session')!)).not.toHaveProperty('code');
 		expect(storage.setItem).toHaveBeenCalledOnce();
 	});
 
@@ -377,6 +378,22 @@ describe('session persistence plugin', () => {
 			execution: [],
 			notes: [],
 		});
+	});
+
+	it('reports rejected stored project source without replacing the session at startup', () => {
+		const storage = createStorage();
+		const saved = JSON.stringify({ ...project, code: ['pass env'] });
+		storage.setItem('session', saved);
+		storage.setItem.mockClear();
+		const test = setup(storage);
+		test.boot();
+		expect(
+			test.state.console.logs.some(log => log.message.includes('Root project source must be inside document blocks'))
+		).toBe(true);
+		expect(storage.setItem).not.toHaveBeenCalled();
+		expect(storage.getItem('session')).toBe(saved);
+		test.events.dispatch('loadProject', { project });
+		expect(getProjectModules(JSON.parse(storage.getItem('session')!))).toHaveLength(1);
 	});
 
 	it('reports storage write failures without interrupting source edits', () => {
