@@ -16,6 +16,11 @@ function resolveSliderLayout(
 		return;
 	}
 
+	const displayRow = graphicData.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex];
+	if (displayRow === undefined) {
+		return;
+	}
+
 	const memory = resolveMemoryAddress(state, getCodeBlockMemoryScope(graphicData), slider.memoryId);
 
 	if (!memory) {
@@ -24,9 +29,6 @@ function resolveSliderLayout(
 
 	const min = slider.min ?? 0;
 	const max = slider.max ?? (memory.memory.isInteger ? 127 : 1);
-
-	const displayRow =
-		graphicData.displayModel.sourceLineIndexToDisplayRow[slider.sourceLineIndex] ?? slider.sourceLineIndex;
 
 	sliders.push({
 		moduleId: memory.target.moduleId,

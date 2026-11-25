@@ -184,6 +184,44 @@ describe('slider plugin', () => {
 		expect(test.draw.drawFill).toHaveBeenCalledWith(0, 0, PALETTE_INDICES.surfaceRaised2, test.block.width - x, 32);
 		expect(vi.mocked(test.draw.drawGlyphs).mock.calls.map(call => call[1])).toEqual([0, 16]);
 	});
+	it('only draws and handles input for sliders on visible source lines', async () => {
+		const sliderLine = 3;
+		const test = await setup([
+			'module controls',
+			'float gain 0.25',
+			'; @hide',
+			'; @slider &gain 0 1 0.01',
+			'; @pos 40 20',
+			'moduleEnd',
+		]);
+		test.store.set('project.selectedCodeBlock', test.block);
+		test.store.set('project.selectedCodeBlock', undefined);
+		expect(test.block.displayModel.sourceLineIndexToDisplayRow[sliderLine]).toBeUndefined();
+		expect(test.block.gaps.size).toBe(0);
+
+		test.render();
+		expect.soft(test.draw.drawFill).not.toHaveBeenCalled();
+		test.events.dispatch('pointerdown', {
+			x: test.block.x + (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid - test.state.viewport.x + 1,
+			y: test.block.y + test.block.height - test.state.viewport.y,
+			buttons: 1,
+			altKey: false,
+			stopPropagation: false,
+		});
+		expect.soft(test.write).not.toHaveBeenCalled();
+		test.events.dispatch('pointerup');
+
+		test.store.set('project.selectedCodeBlock', test.block);
+		expect(test.block.gaps.get(sliderLine)).toEqual({ size: 2 });
+		test.render();
+		expect(test.draw.drawFill).toHaveBeenCalled();
+		test.press(0.75, sliderLine);
+		expect(test.write).toHaveBeenLastCalledWith(
+			test.compiled.memoryPlan.modules.controls.memory.gain.allocationUnitAddress,
+			0.75,
+			false
+		);
+	});
 	it.each([true, false])(
 		'drags through pointer events without moving blocks or viewport, editing=%s',
 		async editing => {
