@@ -17,6 +17,23 @@ it('projects the supplied blocks in draw order through the presented viewport, i
 	expect(geometry.ordered[1].codeBlock).toBe(offscreen);
 });
 
+it('rounds final block positions to whole pixels after applying visual offsets', () => {
+	const block = createMockCodeBlock({ x: 48.25, y: -16.25 });
+	const offscreen = createMockCodeBlock({ x: -512.75, y: 1200.75 });
+	const viewport = { x: 24, y: -32 };
+	const offset = { x: 0.3, y: -0.3 };
+	const geometry = createFrameBlockPositions().prepare([block, offscreen], viewport, candidate =>
+		candidate === block ? offset : undefined
+	);
+	expect(geometry.ordered).toEqual([
+		{ codeBlock: block, x: 25, y: 15 },
+		{ codeBlock: offscreen, x: -537, y: 1233 },
+	]);
+	expect(geometry.byCodeBlock.get(block)).toBe(geometry.ordered[0]);
+	expect(block).toMatchObject({ x: 48.25, y: -16.25 });
+	expect(offset).toEqual({ x: 0.3, y: -0.3 });
+});
+
 it('reuses the geometry, array, lookup map, and block records while preparing updated positions', () => {
 	const block = createMockCodeBlock({ x: 40, y: 32 });
 	const blocks = [block];

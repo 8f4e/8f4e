@@ -146,7 +146,8 @@ receive these shared block positions so cross-block drawing can use the presente
 during drawing, without retaining the positions or individual records across frames: web-ui reuses this storage and updates the
 positions before the next frame. Editor-state remains the owner of logical block positions and hit testing.
 The render registry can prepare one optional position effect per frame. Its per-block viewport-pixel translations
-are added when preparing shared block positions, before visibility checks or any drawing stage consumes them.
+are added when preparing shared block positions. The resulting origins are rounded to whole pixels before visibility
+checks or any drawing stage consumes them, keeping bitmap text and block decorations aligned during movement.
 Block plugins use one `registerCodeBlockDrawer()` registry, invoked in registration order once per visible block.
 The block drawer context includes the original `codeBlock`; its `draw` context already translates coordinates relative to
 the presented block origin. Web-ui retains traversal and culling, using presented positions for both. A single replaceable
@@ -166,7 +167,8 @@ and GPU render layers retain their own hooks.
 Without the code-block-background plugin, web-ui draws no block surface.
 
 Editor-state commits navigation immediately and emits a single navigation-tagged `viewportChanged`. Web-ui samples a
-200 ms visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`. It projects
+200 ms visual camera glide from the last presented origin using the timestamp supplied to `renderFrame()`. The presented
+camera origin stays aligned to whole pixels, including when no glide is active. Web-ui projects
 blocks, culling, and drawing layers from this same camera. Canvas drawers and GPU layers receive its frame-scoped
 `viewport`; layout and hit testing keep using `state.viewport`. The glide suppresses separate block offsets and new pointer
 presses, and is skipped for reduced motion. Core schedules frames; neither web-ui nor editor-state owns another frame loop.

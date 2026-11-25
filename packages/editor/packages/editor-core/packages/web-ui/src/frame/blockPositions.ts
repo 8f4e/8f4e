@@ -1,6 +1,6 @@
 import type { EditorCodeBlock, State } from '@8f4e/editor-state-types';
 
-/** One block's presented origin in viewport-relative pixels, independent of its logical position. Frame-scoped. */
+/** One block's presented origin in whole viewport-relative pixels, independent of its logical position. Frame-scoped. */
 export interface FrameBlockPosition {
 	readonly codeBlock: EditorCodeBlock;
 	readonly x: number;
@@ -52,12 +52,9 @@ export function createFrameBlockPositions() {
 					ordered[i] = position;
 				}
 				const offset = resolveOffset?.(codeBlock);
-				position.x = codeBlock.x - x;
-				position.y = codeBlock.y - y;
-				if (offset) {
-					position.x += offset.x;
-					position.y += offset.y;
-				}
+				// Snap after composing all translations to keep bitmap glyphs and decorations aligned while moving.
+				position.x = Math.round(codeBlock.x - x + (offset?.x ?? 0)) || 0;
+				position.y = Math.round(codeBlock.y - y + (offset?.y ?? 0)) || 0;
 			}
 			if (orderChanged) {
 				ordered.length = codeBlocks.length;

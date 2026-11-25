@@ -27,8 +27,8 @@ function easeInOutCubic(progress: number): number {
 /** Own the visual camera between logical viewport commits. Sample only when drawing a frame. */
 export function createCameraTransition(initialOrigin: ViewportOrigin) {
 	const frame: ViewportTransitionFrame = {
-		x: initialOrigin.x,
-		y: initialOrigin.y,
+		x: Math.round(initialOrigin.x) || 0,
+		y: Math.round(initialOrigin.y) || 0,
 		suppressBlockOffsets: false,
 	};
 	let transition: Transition | undefined;
@@ -75,8 +75,8 @@ export function createCameraTransition(initialOrigin: ViewportOrigin) {
 				}
 			}
 			if (!transition) {
-				frame.x = logical.x;
-				frame.y = logical.y;
+				frame.x = Math.round(logical.x) || 0;
+				frame.y = Math.round(logical.y) || 0;
 			}
 			return frame;
 		},

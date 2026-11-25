@@ -97,3 +97,16 @@ it('follows direct logical viewport changes without inventing a glide or moving 
 	expect(camera.sample(ORIGIN, 200, false)).toEqual({ ...ORIGIN, suppressBlockOffsets: true });
 	expect(camera.isTransitioning()).toBe(false);
 });
+
+it('presents whole pixels for fractional logical origins, including at the start and end of a glide', () => {
+	const initial = { x: 12.6, y: -7.6 };
+	const camera = createCameraTransition(initial);
+	const target = { x: 81.4, y: -35.6 };
+	camera.onViewportChanged({ ...target, source: 'navigation' });
+	expect(camera.sample(target, 0, false)).toMatchObject({ x: 13, y: -8 });
+	expect(camera.sample(target, 100, false)).toMatchObject({ x: 47, y: -22 });
+	expect(camera.sample(target, 200, false)).toMatchObject({ x: 81, y: -36 });
+	expect(camera.sample(target, 216, false)).toMatchObject({ x: 81, y: -36 });
+	expect(camera.sample(initial, 232, false)).toMatchObject({ x: 13, y: -8 });
+	expect(target).toEqual({ x: 81.4, y: -35.6 });
+});
