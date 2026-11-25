@@ -201,13 +201,15 @@ describe('slider plugin', () => {
 
 		test.render();
 		expect.soft(test.draw.drawFill).not.toHaveBeenCalled();
-		test.events.dispatch('codeBlockPointerDown', {
-			codeBlock: test.block,
+		test.events.dispatch('pointerdown', {
 			x: test.block.x + (test.block.lineNumberColumnWidth + 2) * test.state.viewport.vGrid - test.state.viewport.x + 1,
-			y: test.block.y + test.block.height - test.state.viewport.y + 1,
+			y: test.block.y + test.block.height - test.state.viewport.y,
+			buttons: 1,
+			altKey: false,
+			stopPropagation: false,
 		});
 		expect.soft(test.write).not.toHaveBeenCalled();
-		test.release();
+		test.events.dispatch('pointerup');
 
 		test.store.set('project.selectedCodeBlock', test.block);
 		expect(test.block.gaps.get(sliderLine)).toEqual({ size: 2 });
