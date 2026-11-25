@@ -106,6 +106,12 @@ export const projects = [
 		path: 'audio/gridsPatterns.8f4e',
 	},
 	{
+		id: 'polyrhythm',
+		title: 'Polyrhythm clocks',
+		description: 'Set a reference BPM and a ratio for two stereo 808 snare clocks, and reset both phases together.',
+		path: 'audio/polyrhythm.8f4e',
+	},
+	{
 		id: 'reverb',
 		title: 'Reverb',
 		description: 'Explore a stereo reverb built from modulated delays, diffusers and feedback paths.',
