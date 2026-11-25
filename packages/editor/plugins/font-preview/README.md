@@ -1,7 +1,10 @@
 # Font preview
 
-`@8f4e/editor-plugin-font-preview` cycles through sprite-generator's font catalog with **F8** (previous) and **F9**
-(next), wrapping at either end. It works in view and edit modes and ignores modified or already handled keys.
+`@8f4e/editor-plugin-font-preview` uses **Cmd/Ctrl+-** to step backward and **Cmd/Ctrl++** (or **Cmd/Ctrl+=**)
+to step forward through sprite-generator's catalog, ordered by pixel-cell area. It stops at either end. Fonts of
+equal area remain separate steps, and because cell proportions vary, a step need not increase or decrease both
+dimensions. With the editor focused, these shortcuts replace browser zoom in view and edit modes; unmodified and
+already handled keys are left alone.
 
 After a different font finishes loading, a small, nonmodal panel shows its display name, creator credits and
 license for three seconds. Switching again replaces the panel and restarts the timer. This also covers changes
@@ -16,7 +19,7 @@ const plugin = createFontPreviewPlugin({ inputTarget: canvas });
 ```
 
 The host chooses whether to install it based on keyboard and pointer capabilities. When the renderer has a custom
-`defaultFont`, pass the same option to this factory so cycling starts from that font when source has no font directive.
+`defaultFont`, pass the same option to this factory so previewing starts from that font when source has no font directive.
 
 The selected font sets `state.appearance.fontOverride`; web-ui gives it precedence over the resolved `editorConfig.font`
 when loading the atlas. Previewing changes neither project configuration nor source, history, revision, session content,

@@ -33,7 +33,8 @@ as read-only. No canvas is needed. The default 8×16 font has a 128×272 atlas, 
 The remaining cells in its last row are transparent.
 
 `FONT_CATALOG` defines font display names, credits, cell dimensions and lazy imports in `src/fonts/catalog.ts`.
-`FONT_NAMES` and the `Font` type come from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`:
+`FONT_NAMES` lists fonts by increasing pixel-cell area (width × height), retaining catalog order for equal sizes.
+The `Font` type also comes from that catalog. Font sources are ASCII art in `src/fonts/<font>/ascii.ts`:
 `#` sets a pixel, and spaces leave it empty. Each source has 256 glyphs in the shared CP437 display order defined in
 `src/characterSet.ts`. The build packs glyph rows into compact Base64 payloads under `src/generated/`.
 These generated modules are ignored by Git. The runtime decoder retains typed arrays for the packed rows.

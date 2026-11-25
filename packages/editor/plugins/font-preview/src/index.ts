@@ -25,14 +25,14 @@ export function createFontPreviewPlugin({
 				if (state.projectChange.kind === 'replace') resetPreview();
 			};
 			const onKeydown = (event: KeyboardEvent) => {
-				if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-				const direction = event.key === 'F8' ? -1 : event.key === 'F9' ? 1 : 0;
+				if (event.defaultPrevented || event.altKey || !(event.ctrlKey || event.metaKey)) return;
+				const direction = event.key === '-' ? -1 : event.key === '+' || event.key === '=' ? 1 : 0;
 				if (!direction) return;
 				event.preventDefault();
 				const currentFont = getAppearanceFont(state, defaultFont);
-				const previewFont =
-					FONT_NAMES[(FONT_NAMES.indexOf(currentFont) + direction + FONT_NAMES.length) % FONT_NAMES.length];
-				store.set('appearance.fontOverride', previewFont);
+				const nextIndex = FONT_NAMES.indexOf(currentFont) + direction;
+				const previewFont = FONT_NAMES[nextIndex];
+				if (previewFont !== undefined) store.set('appearance.fontOverride', previewFont);
 			};
 			// Use the settled replacement's font, not the outgoing project's configuration.
 			store.subscribe('projectChange', onProjectChange);

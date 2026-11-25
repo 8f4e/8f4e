@@ -48,17 +48,18 @@ describe('font credit notice', () => {
 
 	it('shows the applied font and credits for three seconds without opening a modal', () => {
 		const test = setupNotice();
-		test.key('F9');
+		test.key('+', { ctrlKey: true });
 		test.render();
 		expect(test.draw.drawFill).not.toHaveBeenCalled();
-		test.events.dispatch('fontChanged', { font: 'pixelcode6x12' });
+		const font = test.font();
+		test.events.dispatch('fontChanged', { font });
 		test.render();
-		expect(test.textRows(PALETTE_INDICES.floatingAccent)).toContainEqual(
-			textToGlyphIds(FONT_CATALOG.pixelcode6x12.name)
+		expect(test.textRows(PALETTE_INDICES.floatingAccent)).toContainEqual(textToGlyphIds(FONT_CATALOG[font].name));
+		expect(test.textRows(PALETTE_INDICES.floatingInk)).toContainEqual(
+			textToGlyphIds(FONT_CATALOG[font].credits.split('\n')[0])
 		);
-		expect(test.textRows(PALETTE_INDICES.floatingInk)).toContainEqual(textToGlyphIds('Qwerasd'));
 		expect(test.state.dialogStack).toEqual([]);
-		expect(test.key('F9').defaultPrevented).toBe(true);
+		expect(test.key('+', { ctrlKey: true }).defaultPrevented).toBe(true);
 		vi.advanceTimersByTime(2999);
 		test.render();
 		expect(test.draw.drawFill).toHaveBeenCalledOnce();

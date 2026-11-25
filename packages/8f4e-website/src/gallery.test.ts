@@ -223,7 +223,7 @@ test('keeps the wheel-panned viewport at its last pixel position after scrolling
 	}
 });
 
-test('cycles fonts with F8/F9 and shows credits without changing example source', async () => {
+test('steps through fonts with browser zoom shortcuts and shows credits without changing example source', async () => {
 	const view = setup({ fonts: async () => new Response(source) });
 	const editor = await view.mounted();
 	await vi.dynamicImportSettled();
@@ -237,18 +237,22 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	const revision = editor.editing.getRevision();
 	const sourceFont = editor.state.editorConfig.font;
 	const key = (key: string) => {
-		const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true });
+		const event = new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true });
 		canvas.dispatchEvent(event);
 		return event;
 	};
-	expect(key('F8').defaultPrevented).toBe(true);
-	await expect.poll(() => editor.state.viewport.hGrid).toBe(12);
-	expect(editor.state.appearance.fontOverride).toBe('spleen6x12');
-	expect(editor.state.editorConfig.font).toBe(sourceFont);
-	expect(key('F9').defaultPrevented).toBe(true);
-	await expect.poll(() => editor.state.viewport.hGrid).toBe(16);
-	expect(editor.state.appearance.fontOverride).toBe('ibmvga8x16');
-	expect(editor.state.editorConfig.font).toBe(sourceFont);
+	for (const [shortcut, font, width, height] of [
+		['-', 'olivettithin8x16', 8, 16],
+		['-', 'departuremono7x14', 7, 14],
+		['+', 'olivettithin8x16', 8, 16],
+		['=', 'ibmvga8x16', 8, 16],
+	] as const) {
+		expect(key(shortcut).defaultPrevented).toBe(true);
+		expect(editor.state.appearance.fontOverride).toBe(font);
+		await expect.poll(() => editor.state.gridSizeReady).toBe(true);
+		expect(editor.state.viewport).toMatchObject({ vGrid: width, hGrid: height });
+		expect(editor.state.editorConfig.font).toBe(sourceFont);
+	}
 	// Remove transient loading rows and refresh overlay layout for a stable canvas snapshot.
 	editor.state.loadingIndicators = [];
 	editor.resize(640, 400);
@@ -257,7 +261,7 @@ test('cycles fonts with F8/F9 and shows credits without changing example source'
 	expect(editor.editing.getRevision()).toBe(revision);
 	editor.dispose();
 	expect(editor.state.appearance.fontOverride).toBeUndefined();
-	expect(key('F9').defaultPrevented).toBe(false);
+	expect(key('+').defaultPrevented).toBe(false);
 });
 
 test('uses Departure Mono for touch devices unless the project sets its own font', async () => {
