@@ -28,7 +28,7 @@ The composition installs the compiler first, with lazy standard-library include 
 loading, project source export, keyboard input, assertion markers, watch and stack annotations, immediate stack
 producer highlights, and tooltips. Stack Connections draws links beside the selected code block from each operand
 producer to the highlighted instruction.
-Compiler coordination, URL loading, home navigation, the dotted canvas background, block backgrounds,
+Compiler coordination, undo/redo history, URL loading, home navigation, the dotted canvas background, block backgrounds,
 code rendering, and loading indicators are eager.
 `@8f4e/editor-plugin-home` supplies initial viewport placement through `; @home` and the Go @home menu action in edit mode.
 `@8f4e/editor-plugin-dotted-background` draws the world-anchored dot pattern before sprites using the presented
@@ -91,7 +91,8 @@ The host owns page URLs, loading/error UI, canvas layout, visibility management,
 `captureWheel`, `touchNavigation`, `includeKeyboardModeSwitching`, and `featureFlags`. A project selects its initial mode with
 `; @mode edit` or `; @mode view` in a project block; without a valid, unique declaration it starts in view mode.
 Set `includeKeyboardModeSwitching: false` to omit the mode-switching plugin and its hint; project mode still comes
-from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs, shared navigation operations, and history. Keyboard bindings belong to plugins.
+from the source declaration. Hosts can override generic feature flags. Core retains project editing APIs and shared
+navigation operations. History and keyboard bindings belong to plugins.
 
 After the first render, the gallery loads `group-path` to show the active group and its ancestors as an indented tree.
 The tree appears below the mode hint when it is available and starts on the first row otherwise. It is hidden at the

@@ -1,17 +1,14 @@
-import type { EditorProjectSnapshot, EventDispatcher, ProjectChange, State } from '@8f4e/editor-state-types';
-import type { StateManager } from '@8f4e/state-manager';
-import { sameProjectSnapshot } from './snapshots';
-import type { ProjectTransactionService } from './transactions';
+import type { EditorPlugin, EditorPluginContext } from '@8f4e/editor-core';
+import { sameProjectSnapshot } from '@8f4e/editor-state';
+import type { EditorProjectSnapshot, ProjectChange } from '@8f4e/editor-state-types';
 
 const DEBOUNCE_DELAY = 1000;
 const HISTORY_LIMIT = 10;
 
-export default function registerUndoRedo(
-	store: StateManager<State>,
-	events: EventDispatcher,
-	projectTransactions: Pick<ProjectTransactionService, 'capture' | 'restore'>
-): () => void {
-	const state = store.getState();
+function setup({ store, events }: EditorPluginContext): () => void {
+	const { projectTransactions } = store;
+	const undoStack: EditorProjectSnapshot[] = [];
+	const redoStack: EditorProjectSnapshot[] = [];
 	let present = projectTransactions.capture();
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let editPending = false;
@@ -23,8 +20,8 @@ export default function registerUndoRedo(
 	}
 
 	function pushHistory(project: EditorProjectSnapshot) {
-		if (state.historyStack.length >= HISTORY_LIMIT) state.historyStack.shift();
-		state.historyStack.push(project);
+		if (undoStack.length >= HISTORY_LIMIT) undoStack.shift();
+		undoStack.push(project);
 	}
 
 	function commitPendingEdit() {
@@ -42,7 +39,7 @@ export default function registerUndoRedo(
 		// Generated source is outside the authored snapshot.
 		if (change.kind === 'generated') return;
 		if (change.kind === 'edit' && change.history === 'debounced') {
-			state.redoStack = [];
+			redoStack.length = 0;
 			editPending = true;
 			if (saveTimeout) clearTimeout(saveTimeout);
 			saveTimeout = setTimeout(commitPendingEdit, DEBOUNCE_DELAY);
@@ -51,27 +48,27 @@ export default function registerUndoRedo(
 
 		cancelPendingEdit();
 		if (change.kind === 'replace') {
-			state.historyStack = [];
-			state.redoStack = [];
+			undoStack.length = 0;
+			redoStack.length = 0;
 		} else if (change.kind === 'edit' && change.history === 'checkpoint') {
 			pushHistory(present);
-			state.redoStack = [];
+			redoStack.length = 0;
 		}
 		present = projectTransactions.capture();
 	}
 
 	function undo() {
 		commitPendingEdit();
-		const previousState = state.historyStack.pop();
+		const previousState = undoStack.pop();
 		if (!previousState) return;
-		if (state.redoStack.length >= HISTORY_LIMIT) state.redoStack.shift();
-		state.redoStack.push(present);
+		if (redoStack.length >= HISTORY_LIMIT) redoStack.shift();
+		redoStack.push(present);
 		projectTransactions.restore(previousState);
 	}
 
 	function redo() {
 		commitPendingEdit();
-		const nextState = state.redoStack.pop();
+		const nextState = redoStack.pop();
 		if (!nextState) return;
 		pushHistory(present);
 		projectTransactions.restore(nextState);
@@ -84,9 +81,14 @@ export default function registerUndoRedo(
 
 	return () => {
 		cancelPendingEdit();
+		undoStack.length = 0;
+		redoStack.length = 0;
 		store.unsubscribe('projectChange', onProjectChange);
 		events.off('undo', undo);
 		events.off('redo', redo);
 		events.off('beforeProjectEdit', commitPendingEdit);
 	};
 }
+
+/** Retain authored project history independently for each editor installation. */
+export const undoRedoPlugin: EditorPlugin = { id: 'undo-redo', setup };

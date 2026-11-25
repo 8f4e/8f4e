@@ -159,16 +159,19 @@ describe('keyboard editing', () => {
 		test.key('Backspace');
 		expect(test.state.projectChange.revision).toBe(revision);
 	});
-	it.each(['ctrlKey', 'metaKey'])('undoes pending typing and redoes it using %s', modifier => {
+	it.each(['ctrlKey', 'metaKey'])('dispatches undo and redo shortcuts using %s', modifier => {
 		const test = setup(plugin);
-		test.key('2');
-		test.key('z', { [modifier]: true });
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 1');
-		test.key('z', { [modifier]: true, shiftKey: true });
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 12');
-		test.key('z', { [modifier]: true });
-		test.key('y', { [modifier]: true });
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toContain('push 12');
+		const undo = vi.fn();
+		const redo = vi.fn();
+		test.events.on('undo', undo);
+		test.events.on('redo', redo);
+		expect(test.key('z', { [modifier]: true }).defaultPrevented).toBe(true);
+		expect(undo).toHaveBeenCalledOnce();
+		expect(test.key('z', { [modifier]: true, shiftKey: true }).defaultPrevented).toBe(true);
+		expect(redo).toHaveBeenCalledOnce();
+		expect(test.key('y', { [modifier]: true }).defaultPrevented).toBe(true);
+		expect(redo).toHaveBeenCalledTimes(2);
+		expect(undo).toHaveBeenCalledOnce();
 	});
 	it('does not handle typing or history shortcuts in view mode', () => {
 		const test = setup(plugin, 'view');
@@ -201,16 +204,11 @@ describe('text pasting', () => {
 		expect(test.state.projectChange.revision).toBe(revision + 1);
 		expect(test.state.compilerInputRevision).toBe(compiler + 1);
 	});
-	it('keeps block-looking text inside the edited block and supports undo/redo', () => {
+	it('keeps block-looking text inside the edited block', () => {
 		const test = setup(plugin);
-		const original = [...test.block.code];
 		test.paste('module pasted\nmoduleEnd');
 		expect(test.state.project.activeLevel.blocks.filter(block => block.blockType === 'module')).toHaveLength(1);
-		const updated = [...test.block.code];
-		test.events.dispatch('undo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toEqual(original);
-		test.events.dispatch('redo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'main')!.code).toEqual(updated);
+		expect(test.block.code).toEqual(['module main', 'push 1module pasted', 'moduleEnd', 'drop', 'moduleEnd']);
 	});
 	it.each(['view mode', 'no selected block', 'empty text'])('leaves paste unhandled with %s', reason => {
 		const test = setup(plugin);

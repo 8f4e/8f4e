@@ -18,8 +18,6 @@ export interface EditorEditingHandle {
 	/** Opaque project token for validating writes after reading editor.state. */
 	getRevision(): string;
 	applyEdits(request: { expectedRevision: string; edits: readonly EditorEdit[] }): EditorEditResult;
-	undo(request: { expectedRevision: string }): { revision: string };
-	redo(request: { expectedRevision: string }): { revision: string };
 }
 
 export interface EditorNavigationHandle {

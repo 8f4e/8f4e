@@ -1,4 +1,8 @@
-# Edit History Feature
+# Undo and Redo Plugin
+
+Install `undoRedoPlugin` from `@8f4e/editor-plugin-undo-redo` to enable project history. The default, gallery and landing
+editor compositions install it before initial source loading; core editors can omit it. The plugin owns its stacks and
+debounce timer and depends on core's synchronous project transaction service, not the renderer or keyboard input.
 
 Undo and redo retain detached authored editor source snapshots, including block boundaries, identities, entries, and last
 valid grid positions even during incomplete edits. These are not compiler/file projections; the managed root environment,
@@ -9,13 +13,13 @@ rendering and view state are not captured. Each stack holds up to ten entries. H
 `state.projectChange` is the single completed-change record used by API concurrency checks, history, and session
 persistence. It contains a monotonic `revision`, a `kind` describing the operation and, for edits, a `history` policy:
 
-| Kind | Operation | History behavior |
-| --- | --- | --- |
-| `edit`, `history: 'debounced'` | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second |
-| `edit`, `history: 'checkpoint'` | Validated API edit batch | Record one immediate undo step after committing pending human edits |
-| `generated` | Only generated source changed | Leave history and its baseline entirely untouched |
-| `restore` | Undo or redo snapshot | Rebase the current snapshot and retain the remaining stacks |
-| `replace` | Opening or creating a project | Cancel pending edits and clear both stacks |
+| Kind                            | Operation                             | History behavior                                                    |
+| ------------------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| `edit`, `history: 'debounced'`  | Completed source or metadata mutation | Clear redo immediately and debounce one undo step for one second    |
+| `edit`, `history: 'checkpoint'` | Validated API edit batch              | Record one immediate undo step after committing pending human edits |
+| `generated`                     | Only generated source changed         | Leave history and its baseline entirely untouched                   |
+| `restore`                       | Undo or redo snapshot                 | Rebase the current snapshot and retain the remaining stacks         |
+| `replace`                       | Opening or creating a project         | Cancel pending edits and clear both stacks                          |
 
 The project transaction service owns mutation publication after source, generated source and derived state settle.
 Mixed and multi-block transactions announce once; no-op transactions do not announce.
@@ -45,7 +49,9 @@ the project transaction service for a live mutation batch with checkpoint histor
 `beforeProjectEdit` only for actual authored changes before applying the checkpoint batch. History listens to the before-event
 to commit pending typing and the completed change record to retain the checkpoint. No-op batches emit neither notification.
 The generated environment is read-only at a fixed origin, so attempted source edits do not commit pending typing.
-API edits preserve live block identity and work independently of whether the history effect is installed.
+API edits preserve live block identity and work independently of whether the history plugin is installed.
+The keyboard editing plugin dispatches `undo` and `redo` actions in edit mode. The history plugin subscribes to
+those actions; core and WebMCP expose no history commands.
 
 Project loading translates the compiler/file projection into an editor source tree. History restores its own editor
 snapshot directly through the same project transaction service. It captures the current view before same-project
@@ -60,4 +66,4 @@ and publish a `replace` change.
 
 The session-persistence plugin subscribes only to `projectChange`. It saves once after startup restoration, then
 saves once per completed project change. History also observes this record for completed changes. Disposal cancels pending
-history work and removes owned listeners and subscriptions.
+history work and removes owned listeners and subscriptions. Neither stack is stored in public editor state.

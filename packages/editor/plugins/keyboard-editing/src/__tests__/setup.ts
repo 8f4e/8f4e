@@ -48,7 +48,7 @@ export function setup(
 	store.set('project.selectedCodeBlock', block);
 	block.cursor = { row: 1, col: 6, y: 0 };
 	const renderRegistry = createEditorRenderRegistry();
-	const disposePlugin = createPlugin({ inputTarget }).setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -56,7 +56,8 @@ export function setup(
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry,
-	});
+	};
+	const disposePlugin = createPlugin({ inputTarget }).setup(context);
 	cleanups.push(store.dispose, disposePlugin);
 	const key = (key: string, options: KeyboardEventInit = {}) => {
 		const event = new TestKeyboardEvent('keydown', { key, ...options });

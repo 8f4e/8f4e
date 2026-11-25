@@ -218,24 +218,26 @@ entryEnd`);
 		expect(state.compilerInputRevision).toBe(compilerRevision);
 	});
 
-	it('retains the read-only environment and its current contributions during undo and redo', () => {
-		const { store, state, events, load, env } = setup();
+	it('retains the read-only environment and its current contributions during snapshot restoration', () => {
+		const { store, state, load, env } = setup();
 		load('8f4e/v1\nconstants env\n; @pos 7 9\nconstantsEnd\nentry main\nmodule authored\nmoduleEnd\nentryEnd');
 		const environment = env();
 		const authored = () => state.project.rootLevel.blocks.find(block => block.name === 'authored')!;
+		const original = store.projectTransactions.capture();
 		store.projectTransactions.apply(
 			{ updates: [{ codeBlock: authored(), code: ['module authored', 'push 1', 'moduleEnd'] }] },
 			{ history: 'checkpoint' }
 		);
 		store.set('envConstantContributions.provider', ['const PROVIDED 7']);
-		expect(state.historyStack).toHaveLength(1);
-		events.dispatch('undo');
+		const edited = store.projectTransactions.capture();
+		expect(edited.rootLevel.blocks.map(block => block.code[0])).not.toContain('constants env');
+		store.projectTransactions.restore(original);
 		expect(authored().code).toEqual(['module authored', 'moduleEnd']);
 		expect(env()).toBe(environment);
 		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });
 		expect(env().code).toContain('; @pos 0 0');
 		expect(env().code).toContain('const PROVIDED 7');
-		events.dispatch('redo');
+		store.projectTransactions.restore(edited);
 		expect(authored().code).toContain('push 1');
 		expect(env()).toBe(environment);
 		expect(env()).toMatchObject({ gridX: 0, gridY: 0, readOnly: true });

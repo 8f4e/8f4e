@@ -15,17 +15,16 @@ function setup(code = ['module target', 'moduleEnd'], installed = true, mode: 'e
 		callbacks: {},
 	});
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	let pluginCleanup = installed
-		? favoritesPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: undefined;
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	let pluginCleanup = installed ? favoritesPlugin.setup(context) : undefined;
 	const disposePlugin = () => {
 		pluginCleanup?.();
 		pluginCleanup = undefined;
@@ -101,26 +100,15 @@ describe('favorites plugin', () => {
 		expect(onInputChanged).toHaveBeenCalledTimes(1);
 	});
 
-	it('keeps favorite snapshots independent of later in-place source edits', async () => {
-		vi.useFakeTimers();
+	it('replaces source when toggling a favorite without mutating the previous source', () => {
 		const test = setup();
+		const initial = test.block.code;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		await vi.advanceTimersByTimeAsync(1000);
+		const favorited = test.block.code;
 		test.events.dispatch('toggleFavoriteDirective', { codeBlock: test.block });
-		await vi.advanceTimersByTimeAsync(1000);
-		expect(test.state.historyStack).toHaveLength(2);
-		expect(
-			test.state.historyStack[0].rootLevel.blocks.find(block => block.creationIndex === test.block.creationIndex)!.code
-		).not.toContain('; @favorite');
-		expect(
-			test.state.historyStack[1].rootLevel.blocks.find(block => block.creationIndex === test.block.creationIndex)!.code
-		).toContain('; @favorite');
-		test.events.dispatch('undo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).toContain('; @favorite');
-		test.events.dispatch('undo');
-		expect(test.state.project.activeLevel.blocks.find(block => block.name === 'target')!.code).not.toContain(
-			'; @favorite'
-		);
+		expect(initial).not.toContain('; @favorite');
+		expect(favorited).toContain('; @favorite');
+		expect(test.block.code).toEqual(initial);
 	});
 
 	it('uses the clicked block and updates the menu label after toggling', async () => {

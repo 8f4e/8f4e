@@ -240,13 +240,14 @@ it('does not remember an unplaced parent when entering a group before the first 
 	expect(test.position()).toEqual({ x: 80, y: 320 });
 });
 
-it('preserves unplaced first visits across undo without remembering their temporary origin', () => {
+it('preserves unplaced first visits across restoration without remembering their temporary origin', () => {
 	const test = setup();
 	test.load('note sample\n; @pos 10 20\nnoteEnd');
+	const original = test.store.projectTransactions.capture();
 	applyCodeBlockSourceEdits(test.store, [
 		{ codeBlock: test.block('sample'), code: ['note sample', '; @pos 30 40', 'noteEnd'] },
 	]);
-	test.events.dispatch('undo');
+	test.store.projectTransactions.restore(original);
 	expect(test.state.project.activeLevel.viewport).toBeUndefined();
 	expect(test.resolver).not.toHaveBeenCalled();
 	setGridSize(test.state, test.events, TEST_GRID_SIZE);

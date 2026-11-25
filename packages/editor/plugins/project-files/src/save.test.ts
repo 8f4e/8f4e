@@ -137,16 +137,18 @@ describe('project file saving', () => {
 		await test.events.dispatchAsync('saveProject');
 		expect(test.browserWindow.showSaveFilePicker).toHaveBeenCalledTimes(2);
 	});
-	it('retains the opened file across edits and history, but clears it on project replacement', async () => {
+	it('retains the opened file across edits and snapshot restoration, but clears it on project replacement', async () => {
 		const test = setup();
 		await test.events.dispatchAsync('importProject');
 		test.events.dispatch('enterEditMode');
 		const block = test.state.project.rootLevel.blocks.find(block => block.name === 'test')!;
+		const original = test.store.projectTransactions.capture();
 		test.store.projectTransactions.apply({
 			updates: [{ codeBlock: block, code: ['module test', 'int value 2', 'moduleEnd'] }],
 		});
-		test.events.dispatch('undo');
-		test.events.dispatch('redo');
+		const edited = test.store.projectTransactions.capture();
+		test.store.projectTransactions.restore(original);
+		test.store.projectTransactions.restore(edited);
 		await test.events.dispatchAsync('saveProject');
 		expect(test.browserWindow.showSaveFilePicker).not.toHaveBeenCalled();
 		expect(await test.handle.writable.write.mock.calls[0][0].text()).toContain('int value 2');

@@ -56,8 +56,6 @@ export default function createDefaultEditorState(featureFlags: FeatureFlagsConfi
 		appearance: {},
 		editorConfigValidators: {},
 		editorConfigSchemaContributions: {},
-		historyStack: [],
-		redoStack: [],
 		envConstantContributions: {},
 		codeErrors: {},
 		loadingIndicators: [],

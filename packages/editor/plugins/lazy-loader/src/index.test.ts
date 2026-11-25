@@ -104,7 +104,7 @@ describe('lazy plugin loader', () => {
 		await vi.waitFor(() => expect(pasted.plugin.setup).toHaveBeenCalledOnce());
 	});
 
-	it.each(['undo', 'redo'] as const)('loads automatically when %s restores a signal', async operation => {
+	it('loads automatically when a project snapshot restores a signal', async () => {
 		const { registration, plugin } = entry();
 		const editor = setup([registration], emptySource);
 		editor.events.dispatch('enterEditMode');
@@ -116,11 +116,11 @@ describe('lazy plugin loader', () => {
 				edits: [{ type: 'update', blockId: getEditorBlockId(block), code }],
 			});
 		update(['module audio', '; @custom', 'moduleEnd']);
-		if (operation === 'undo') update(['module audio', 'moduleEnd']);
-		else handle.undo({ expectedRevision: handle.getRevision() });
+		const matchingSnapshot = editor.store.projectTransactions.capture();
+		update(['module audio', 'moduleEnd']);
 		await Promise.resolve();
 		expect(registration.load).not.toHaveBeenCalled();
-		handle[operation]({ expectedRevision: handle.getRevision() });
+		editor.store.projectTransactions.restore(matchingSnapshot);
 		await vi.waitFor(() => expect(plugin.setup).toHaveBeenCalledOnce());
 	});
 

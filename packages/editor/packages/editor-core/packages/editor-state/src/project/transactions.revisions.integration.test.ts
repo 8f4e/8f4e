@@ -2,7 +2,13 @@ import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { parseProjectSource } from '@8f4e/project-preparser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFifoEventDispatcher } from '~/__tests__/helpers/fifoEventDispatcher';
-import initState, { applyCodeBlockSourceEdits, deleteCodeBlocks, insertCodeBlocks, setGridSize } from '~/index';
+import initState, {
+	applyCodeBlockSourceEdits,
+	deleteCodeBlocks,
+	insertCodeBlocks,
+	sameProjectSnapshot,
+	setGridSize,
+} from '~/index';
 import { createSchemaEditorConfigValidator } from '../editor-config/schemaValidator';
 
 const cleanups: Array<() => void> = [];
@@ -167,21 +173,37 @@ describe('project and compiler input revisions', () => {
 		expectChanges(1);
 	});
 
-	it('announce project loading, undo, and redo without requiring a selected block', () => {
-		const { store, state, events, block, load, expectChanges } = setup();
+	it('announce project loading and snapshot restoration without requiring a selected block', () => {
+		const { store, state, block, load, expectChanges } = setup();
 		load();
 		expect(state.project.selectedCodeBlock).toBeUndefined();
 		expect(state.projectChange).toEqual({ revision: 1, kind: 'replace' });
 		expectChanges(0);
+		const original = store.projectTransactions.capture();
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block('main'), code: ['module main', 'push 2', 'drop', 'moduleEnd'] },
 		]);
 		expectChanges(1);
-		events.dispatch('undo');
+		const edited = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
 		expect(block('main').code).toContain('push 1');
 		expectChanges(2);
-		events.dispatch('redo');
+		store.projectTransactions.restore(edited);
 		expect(block('main').code).toContain('push 2');
 		expectChanges(3);
+	});
+
+	it('compares authored snapshots without treating allocation as a source difference', () => {
+		const { store, state, load } = setup();
+		load();
+		const original = store.projectTransactions.capture();
+		const { insertedBlocks } = store.projectTransactions.apply({
+			inserts: [{ targetLevel: state.project.rootLevel, source: { code: ['note temporary', 'noteEnd'] } }],
+		});
+		expect(sameProjectSnapshot(original, store.projectTransactions.capture())).toBe(false);
+		deleteCodeBlocks(store, insertedBlocks);
+		const current = store.projectTransactions.capture();
+		expect(current.nextCodeBlockCreationIndex).toBeGreaterThan(original.nextCodeBlockCreationIndex);
+		expect(sameProjectSnapshot(original, current)).toBe(true);
 	});
 });

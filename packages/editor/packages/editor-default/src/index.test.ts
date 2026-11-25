@@ -81,6 +81,7 @@ describe('default editor plugins', () => {
 		const initialPlugins = vi.mocked(initEditor).mock.calls.at(-1)![1].plugins!;
 		expect(initialPlugins.map(plugin => plugin.id)).toEqual([
 			'compiler',
+			'undo-redo',
 			'home',
 			'project-url-loader',
 			'session-persistence',

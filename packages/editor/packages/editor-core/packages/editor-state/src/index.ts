@@ -72,6 +72,7 @@ export { applyCodeBlockSourceEdits } from './project/replaceBlockSources';
 export { type SerializedCodeBlock, serializeCodeBlocks } from './project/serialization/codeBlockSerialization';
 export { default as serializeProjectLevel } from './project/serialization/serializeProjectLevel';
 export { default as serializeToProject } from './project/serialization/serializeToProject';
+export { sameProjectSnapshot } from './project/snapshots';
 export { findParentProjectLevel, walkProjectBlocks, walkProjectLevels } from './project/tree';
 export type { CodeBlockBounds } from './viewport/centerViewportOnCodeBlock';
 export { default as centerViewportOnCodeBlock } from './viewport/centerViewportOnCodeBlock';

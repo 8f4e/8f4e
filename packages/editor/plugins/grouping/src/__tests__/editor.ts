@@ -36,17 +36,16 @@ export function setup({ code = source, installed = true, mode = 'edit' as 'edit'
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
-	const disposePlugin = installed
-		? createGroupingPlugin({ writeClipboardText }).setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: () => {};
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposePlugin = installed ? createGroupingPlugin({ writeClipboardText }).setup(context) : () => {};
 	events.dispatch('loadProject', { project: parseProjectSource(code) });
 	events.dispatch(mode === 'edit' ? 'enterEditMode' : 'exitToViewMode');
 	const state = store.getState();

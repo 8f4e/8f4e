@@ -2,7 +2,7 @@ import { getEditorBlockId } from '@8f4e/editor-core';
 import { type DefaultEditorInstance, mountDefaultEditor } from '@8f4e/editor-default';
 import { serializeCodeBlocks, serializeToProject } from '@8f4e/editor-state';
 import { createEditorWebMcp, type WebMcpTool } from '@8f4e/editor-webmcp';
-import { getProjectGroups, getProjectModules } from '@8f4e/language-spec';
+import { getProjectModules } from '@8f4e/language-spec';
 import { afterEach, expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
@@ -44,7 +44,11 @@ function setup(responses: Record<string, () => Promise<Response>>) {
 					.every(indicator => indicator.status === 'done')
 			).toBe(true)
 		);
-		const bridge = createEditorWebMcp({ document, editor, getCompilerDiagnostics: editor.getCompilerDiagnostics });
+		const bridge = createEditorWebMcp({
+			document,
+			editor,
+			getCompilerDiagnostics: editor.getCompilerDiagnostics,
+		});
 		cleanups.push(() => bridge.dispose());
 		await bridge.ready;
 		return editor;
@@ -222,17 +226,10 @@ test('inserts into the active pasted group even when its source path matches the
 	const noteCode = 'note copiedNote\nInserted in the copy\nnoteEnd';
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: noteCode }] })).toBe('Edits applied.');
 	const child = (owner: number) => groups().find(block => block.creationIndex === owner)!.childLevel!;
-	const assertInsertion = (inserted: boolean) => {
-		expect(state.project.activeLevel).toBe(child(copy.creationIndex));
-		expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(inserted);
-		expect(child(original.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(false);
-	};
-	assertInsertion(true);
+	expect(state.project.activeLevel).toBe(child(copy.creationIndex));
+	expect(child(copy.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(true);
+	expect(child(original.creationIndex).blocks.some(block => block.name === 'copiedNote')).toBe(false);
 	expect(await call('get_project')).toContain(noteCode);
-	await call('undo');
-	assertInsertion(false);
-	await call('redo');
-	assertInsertion(true);
 });
 
 test('targets named notes and modules through the same selectors without exposing identifiers', async () => {
@@ -271,7 +268,7 @@ test('targets named notes and modules through the same selectors without exposin
 		expect(JSON.stringify(tool.inputSchema)).not.toMatch(/blockId|createdBlockIds|expectedRevision/);
 });
 
-test('patches one source span in the current group with persistence and one-step undo/redo', async () => {
+test('patches one source span in the current group and persists the change', async () => {
 	const tools = siteTools();
 	const grouped =
 		'8f4e/v1\nentry main\nmodule oscillator ; @mode edit\nfloat alpha 0.04\nmoduleEnd\ngroup audio\nentry main\nmodule oscillator\n; @pos 10 4\nfloat alpha 0.04\npush alpha\ndrop\npush alpha\ndrop\nmoduleEnd\nentryEnd\ngroupEnd\nentryEnd';
@@ -292,14 +289,11 @@ test('patches one source span in the current group with persistence and one-step
 	expect(await call('get_block', { type: 'module', name: 'oscillator' })).toBe(
 		original.replace('float alpha 0.04', 'float alpha 0.1')
 	);
-	const childSource = () =>
-		getProjectModules(getProjectGroups(serializeToProject(editor.state)).find(group => group.name === 'audio')!)[0]
-			.code;
 	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('float alpha 0.04');
 	expect(await call('get_project_metadata')).toMatchObject({ projectPath: 'audio' });
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-patched')).toContain('float alpha 0.1');
 	const project = serializeToProject(editor.state);
-	const historyLength = editor.state.historyStack.length;
+	const revision = editor.editing.getRevision();
 	for (const [oldText, error] of [
 		['float alpha 0.04', 'match_not_found'],
 		['push alpha', 'ambiguous_match'],
@@ -308,7 +302,7 @@ test('patches one source span in the current group with persistence and one-step
 			await call('patch_block', { type: 'module', name: 'oscillator', newText: 'float alpha 0.2', oldText })
 		).toMatchObject({ error: { code: error } });
 	expect(serializeToProject(editor.state)).toEqual(project);
-	expect(editor.state.historyStack).toHaveLength(historyLength);
+	expect(editor.editing.getRevision()).toBe(revision);
 	await vi.waitFor(async () =>
 		expect(await call('get_compiler_diagnostics')).toMatchObject({
 			diagnostics: { status: 'ready', compilationErrors: [] },
@@ -320,10 +314,6 @@ test('patches one source span in the current group with persistence and one-step
 	editor.resize(900, 480);
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-patch.png' });
-	expect(await call('undo')).toBe('Undo complete.');
-	expect(childSource().join('\n')).toBe(original);
-	expect(await call('redo')).toBe('Redo complete.');
-	expect(childSource().join('\n')).toBe(original.replace('float alpha 0.04', 'float alpha 0.1'));
 });
 
 test('tracks consecutive tool edits and requires source re-fetches after external edits', async () => {
@@ -349,8 +339,19 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	expect(await call('apply_edits', { edits: [{ operation: 'insert', code: 'note colors\nblue\nnoteEnd' }] })).toBe(
 		'Edits applied.'
 	);
-	expect(await call('undo')).toBe('Undo complete.');
-	expect(await call('redo')).toBe('Redo complete.');
+	// Human keyboard history is still available and counts as an external source change to the bridge.
+	const canvas = view.panel().querySelector('canvas')!;
+	const key = (key: string) =>
+		canvas.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey: true, cancelable: true, bubbles: true }));
+	const notes = () => serializeToProject(editor.state).notes;
+	key('z');
+	await vi.waitFor(() => expect(notes()).toHaveLength(0));
+	expect(await patchValue(3, 4)).toMatchObject({ error: { code: 'stale_revision' } });
+	await call('get_project');
+	key('y');
+	await vi.waitFor(() => expect(notes()).toHaveLength(1));
+	expect(await patchValue(3, 4)).toMatchObject({ error: { code: 'stale_revision' } });
+	await call('get_project');
 	const externalEdit = (value: number) => {
 		const revision = editor.editing.getRevision();
 		const target = editor.state.project.activeLevel.blocks.find(block => block.name === 'counter')!;
@@ -367,13 +368,10 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	};
 	externalEdit(4);
 	const externalProject = serializeToProject(editor.state);
-	const externalHistory = editor.state.historyStack.length;
 	for (const [tool, args] of [
 		['update_block', { type: 'module', name: 'counter', code: source }],
 		['patch_block', { type: 'module', name: 'counter', oldText: 'int value 4', newText: 'int value 5' }],
 		['apply_edits', { edits: [{ operation: 'delete', type: 'module', name: 'counter' }] }],
-		['undo', {}],
-		['redo', {}],
 	] as const)
 		expect(await call(tool, args)).toMatchObject({
 			error: { code: 'stale_revision', message: expect.stringContaining('Re-fetch') },
@@ -387,7 +385,6 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	await call('get_project', { name: 'root' });
 	expect(await patchValue(4, 5)).toMatchObject({ error: { code: 'stale_revision' } });
 	expect(serializeToProject(editor.state)).toEqual(externalProject);
-	expect(editor.state.historyStack).toHaveLength(externalHistory);
 	expect(await call('get_block', { type: 'module', name: 'counter' })).toContain('int value 4');
 	expect(await patchValue(4, 5)).toBe('Block patched.');
 	externalEdit(6);
@@ -396,10 +393,17 @@ test('tracks consecutive tool edits and requires source re-fetches after externa
 	expect(await patchValue(6, 7)).toBe('Block patched.');
 });
 
-test('exposes source strings through site tools and saves undoable named edits', async () => {
+test('exposes source strings through site tools and saves named edits without exposing history', async () => {
 	const tools = siteTools();
 	const view = setup({ bridged: async () => new Response(source) });
 	const editor = await view.mounted();
+	expect(tools.has('undo')).toBe(false);
+	expect(tools.has('redo')).toBe(false);
+	expect(await tools.get('get_project_metadata')!.execute({})).toEqual({
+		revision: editor.editing.getRevision(),
+		projectPath: '',
+		editable: true,
+	});
 	const canvas = view.panel().querySelector('canvas')!;
 	canvas.style.width = '900px';
 	canvas.style.height = '480px';
@@ -436,6 +440,4 @@ test('exposes source strings through site tools and saves undoable named edits',
 	expect(window.sessionStorage.getItem('project_8f4e-webmcp-test-bridged')).toContain('@pos 40 14');
 	editor.renderFrame();
 	await page.screenshot({ element: view.panel(), path: '../.vitest-attachments/webmcp-edit.png' });
-	await tools.get('undo')!.execute({});
-	expect(getProjectModules(serializeToProject(editor.state))[0].code).toContain('int value 1');
 });

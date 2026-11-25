@@ -91,7 +91,6 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 	expect(state.projectChange.revision).toBe(revision);
 	expect(state.compilerInputRevision).toBe(compilerRevision);
 	expect(serializeToProject(state)).toEqual(original);
-	expect(state.historyStack).toHaveLength(0);
 	expect(beforeEdit).not.toHaveBeenCalled();
 	expect(compilationChanged).not.toHaveBeenCalled();
 
@@ -112,7 +111,6 @@ it.each(['public commands', 'plugin plans'] as const)('settles deletion conflict
 	expect(state.project.rootLevel.blocks).not.toContain(group);
 	expect(state.projectChange.revision).toBe(revision + 1);
 	expect(state.compilerInputRevision).toBe(compilerRevision + 1);
-	expect(state.historyStack).toHaveLength(1);
 	expect(beforeEdit).toHaveBeenCalledOnce();
 	expect(compilationChanged).toHaveBeenCalledOnce();
 });

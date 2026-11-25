@@ -52,7 +52,7 @@ export function captureProjectSnapshot(
 	};
 }
 
-/** Allocation alone is not a source edit, including insert-then-delete within a history debounce. */
+/** Compare authored snapshots; allocation alone does not change the project source. */
 export function sameProjectSnapshot(a: EditorProjectSnapshot, b: EditorProjectSnapshot): boolean {
 	return JSON.stringify(a.rootLevel) === JSON.stringify(b.rootLevel);
 }

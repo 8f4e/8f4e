@@ -47,7 +47,7 @@ export function setup({
 		body: { appendChild: vi.fn() },
 	};
 	const inputTarget = Object.assign(new EventTarget(), { ownerDocument: document }) as unknown as HTMLElement;
-	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -55,7 +55,8 @@ export function setup({
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
-	});
+	};
+	let pluginCleanup: (() => void) | undefined = createPlugin(inputTarget).setup(context);
 	const disposePlugin = () => {
 		pluginCleanup?.();
 		pluginCleanup = undefined;

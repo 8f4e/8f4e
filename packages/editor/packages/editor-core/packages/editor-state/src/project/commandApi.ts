@@ -147,16 +147,6 @@ export function createEditorCommandApi(store: EditingStore, events: EventDispatc
 				throw error;
 			}
 		},
-		undo({ expectedRevision }) {
-			checkWrite(expectedRevision);
-			events.dispatch('undo');
-			return { revision: revision() };
-		},
-		redo({ expectedRevision }) {
-			checkWrite(expectedRevision);
-			events.dispatch('redo');
-			return { revision: revision() };
-		},
 	};
 	const navigation: EditorNavigationHandle = {
 		openGroup(id) {

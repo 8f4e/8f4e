@@ -6,9 +6,9 @@
   Await source-only `prepareInitialProject` before loading the selected font and settling layout and first-visit
   placement. Draw the first frame, then emit `ready`.
   Dispose plugins in reverse installation order and continue cleanup if a disposer throws.
-- Editor-state owns the project tree, entry assignment and bounds, history, generic source operations, folding,
+- Editor-state owns the project tree, entry assignment and bounds, authored snapshots and restoration, generic source operations, folding,
   text geometry and pointer routing. Keep editor `@group` behavior, authoring commands and browser input in plugins.
-  Keep clipboard, file handling and session persistence in their owning plugins.
+  Keep clipboard, file handling, undo/redo history and session persistence in their owning plugins.
 - Keep raw menu items, dialog content, actions and input blocking in state. Presentation plugins own their
   geometry, hit testing and drawing. Entry assignment works independently of the outline drawer.
 - Web-ui owns font/color configuration, atlas loading, drawing and GPU resources. Register its configuration
@@ -31,10 +31,10 @@
   projections outside core and derive positions from source directives.
 - Publish `state.projectChange` once after a completed edit, history action or project replacement, after derived
   state settles. Navigation and no-ops leave the revision alone. Share this revision across history, editing and
-  persistence, with a separate compiler-input revision. Editing works without the history effect installed.
+  persistence, with a separate compiler-input revision. Editing works without the history plugin installed.
 - Preserve local entry tables, including empty entries, across loading, history, clipboard and serialization.
-  Keep remembered viewport and selection in memory. The editor source snapshot owns history, including retained
-  draft facts. Reconcile remembered views by owning block identity within each parent, not compiler-facing paths;
+  Keep remembered viewport and selection in memory. Authored editor snapshots retain draft facts. Reconcile
+  remembered views by owning block identity within each parent, not compiler-facing paths;
   `project/serialization` projects settled source into compiler/file data. Project-files
   owns the text file format.
 - Project membership tracks ownership per project level independently of source preparation and layout. The layout

@@ -9,6 +9,7 @@ import { createLoadingIndicatorsPlugin } from '@8f4e/editor-plugin-loading-indic
 import { createProjectUrlLoaderPlugin } from '@8f4e/editor-plugin-project-url-loader';
 import { createSessionPersistencePlugin } from '@8f4e/editor-plugin-session-persistence';
 import type { TouchInputOptions } from '@8f4e/editor-plugin-touch-input';
+import { undoRedoPlugin } from '@8f4e/editor-plugin-undo-redo';
 import { Engine } from 'glugglugglug';
 import { resolveStdlibInclude } from './stdlib-resolver';
 
@@ -36,6 +37,7 @@ export function createDefaultEditorPlugins(options: {
 	const motionPreference = options.canvas.ownerDocument.defaultView!.matchMedia('(prefers-reduced-motion: reduce)');
 	const prefersReducedMotion = () => motionPreference.matches;
 	return [
+		undoRedoPlugin,
 		homePlugin,
 		createProjectUrlLoaderPlugin({
 			fetch: globalThis.fetch,

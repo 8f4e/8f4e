@@ -21,6 +21,9 @@ editor.dispose();
 
 The editor website installs the bridge for its editor. The example and compiler test galleries install it after the selected project loads, dispose it before switching projects, and create a new bridge for the replacement editor. The homepage's independent preview editors are not bridged.
 
+Undo and redo remain interactive editor actions. Changes made through the bridge participate in the editor's
+normal history when that plugin is installed.
+
 ## Browser support and lifecycle
 
 The bridge checks for `document.modelContext.registerTool`. When it is unavailable, `supported` is false, `ready` resolves, and the editor continues normally. Registration failures reject `ready` and remove partial registrations; hosts should handle the rejection without treating it as a project-loading failure.
@@ -39,15 +42,14 @@ One active bridge is allowed per document. It keeps the supplied editor referenc
 | `search_examples` | `{ query, kind?, offset? }` | Example metadata and dependency paths, with `total` and `nextOffset`. `kind` is `block` or `project`; an empty query browses the catalog. |
 | `get_example` | `{ kind, path }` | A reusable public block or a complete project as a plain source string. |
 | `get_project` | `{}` | A plain 8f4e source string for the currently expanded group or root; refreshes the bridge revision baseline. Child groups show declarations without their contents. |
-| `get_project_metadata` | `{}` | Current revision, location, editability, and undo/redo availability. |
+| `get_project_metadata` | `{}` | Current revision, location, and editability. |
 | `expand_group` | `{ name }` | Navigates the editor into a child group of the current level. Returns location and revision only. |
 | `go_to_parent` / `go_to_root` | `{}` | Navigates the editor to the parent or root. Returns location and revision only. |
 | `get_block` | `{ type, name }` | A plain source string for the matching block in the current group or root; refreshes the bridge revision baseline. |
 | `update_block` | `{ type, name, code }` | Replaces that block's source in the current scope and returns a confirmation string. |
 | `patch_block` | `{ type, name, oldText, newText }` | Replaces exactly one matching source span in the current scope and returns a confirmation string. |
 | `get_block_metadata` | `{ type, name }` | Current revision and the block's group path, execution entry, type, name, and grid position. |
-| `apply_edits` | `{ edits }` | Confirmation string after one atomic undoable batch. |
-| `undo` / `redo` | `{}` | Confirmation string after one history step. |
+| `apply_edits` | `{ edits }` | Confirmation string after one atomic edit batch. |
 | `get_compiler_diagnostics` | `{}` | Project revision, compiler input revision, and diagnostics from the optional host-provided read handle. |
 
 The five reference tools are always included when the bridge registers its tools. `get_help` is the starting point for agents unfamiliar with 8f4e. Search results contain up to 20 matches; repeat the same query and optional kind with `offset: nextOffset` to continue. Use the returned topic or example kind/path for exact reads:
@@ -74,7 +76,7 @@ Each project read contains exactly one level. At the root it includes the `8f4e/
 
 All block-targeting tools use the same `{ type, name }` selector, such as `{ type: 'note', name: 'colors' }` for `note colors` or `{ type: 'module', name: 'oscillator' }` for `module oscillator`. Names come from source declarations. For an unnamed block use an empty name. Selectors resolve only within the currently expanded group or root. Multiple matches return `ambiguous_block` without applying edits; name blocks uniquely in source before targeting one. Tools do not accept or return editor block identifiers.
 
-The bridge manages source revisions for its lifetime; no tool accepts `expectedRevision`. Before the first write, fetch source with `get_project` or `get_block`. A successful source fetch records its exact revision internally. Each successful edit, undo, or redo advances the baseline to the revision returned by the editor, so consecutive writes need no intervening read. Revisions are opaque tokens; a completed edit batch publishes one change, and a no-op keeps the revision unchanged.
+The bridge manages source revisions for its lifetime; no tool accepts `expectedRevision`. Before the first write, fetch source with `get_project` or `get_block`. A successful source fetch records its exact revision internally. Each successful edit advances the baseline to the revision returned by the editor, so consecutive writes need no intervening read. Revisions are opaque tokens; a completed edit batch publishes one change, and a no-op keeps the revision unchanged.
 
 If the editor's current revision differs from that baseline, a write returns `stale_revision` with a message explaining that the project changed since the last source fetch or successful edit. Nothing is applied. Fetch source again to acknowledge the changes before retrying. Writes before any source fetch return `source_required`. Metadata, diagnostics, navigation, failed or cancelled reads, and failed writes do not refresh the baseline. Metadata may expose revision information for inspection, but agents do not need to track or echo it. Replacing a bridge starts a fresh baseline and requires a new source fetch.
 
@@ -109,9 +111,9 @@ Group blocks can be moved, deleted, or have their source updated while retaining
 
 ## Public editor API
 
-Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. The editor exposes validated `applyEdits({ expectedRevision, edits })`, `undo({ expectedRevision })`, and `redo({ expectedRevision })` commands. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. Insert into a group with `groupBlockId` set to its owning block handle, or omit it to insert at the root. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The bridge resolves type/name selectors and the insertion owner within the current live project level; source paths in metadata remain name-based.
+Consumers read the existing internals directly through `editor.state`. `editor.editing.getRevision()` returns the current opaque project revision without constructing or cloning a project snapshot. Core exposes validated `applyEdits({ expectedRevision, edits })` commands. Use `getEditorBlockId(block)` from `@8f4e/editor-core` for command targets read from state. Insert into a group with `groupBlockId` set to its owning block handle, or omit it to insert at the root. `editor.navigation.openGroup(blockId)`, `goToParentGroup()`, and `goToRoot()` control the shared editor view. The bridge resolves type/name selectors and the insertion owner within the current live project level; source paths in metadata remain name-based.
 
-`applyEdits` returns `{ revision, createdBlockIds }`. `undo` and `redo` return `{ revision }`.
+`applyEdits` returns `{ revision, createdBlockIds }`.
 
 The bridge collects and formats state synchronously. It selects only the source or metadata required by each tool and converts source line arrays to strings. Code remains authoritative for derived properties. Consumers retaining data across asynchronous work can copy the specific data they need; there is no separate `EditorProjectSnapshot` model or automatic full-graph clone.
 

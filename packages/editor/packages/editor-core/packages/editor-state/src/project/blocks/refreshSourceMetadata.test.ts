@@ -152,8 +152,8 @@ describe('cached directive records', () => {
 		expect(received.at(-1)).toEqual(['first']);
 	});
 
-	it('refreshes records before layout consumers run after source edits, undo, redo, and replacement', () => {
-		const { store, events, audio, load } = setup();
+	it('refreshes records before layout consumers run after source edits, restoration, and replacement', () => {
+		const { store, audio, load } = setup();
 		const seen: string[][] = [];
 		cleanups.push(
 			store.layout.subscribe(({ codeBlock }) => {
@@ -161,16 +161,18 @@ describe('cached directive records', () => {
 			})
 		);
 		const block = audio();
+		const original = store.projectTransactions.capture();
 		store.set('project.selectedCodeBlock', block);
 		block.cursor = { row: 1, col: block.code[1].length, y: 0 };
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: block, code: block.code.map((line, row) => (row === 1 ? `${line} changed` : line)) },
 		]);
 		expect(seen.at(-1)).toEqual(['first', 'changed']);
-		events.dispatch('undo');
+		const edited = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
 		expect(matched(audio())[0].args).toEqual(['first']);
 		expect(seen.at(-1)).toEqual(['first']);
-		events.dispatch('redo');
+		store.projectTransactions.restore(edited);
 		expect(seen.at(-1)).toEqual(['first', 'changed']);
 		load(source.replace('@future first', '@future replacement'));
 		expect(seen.at(-1)).toEqual(['replacement']);

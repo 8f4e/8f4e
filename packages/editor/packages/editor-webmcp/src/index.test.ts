@@ -37,8 +37,6 @@ function setup() {
 	const editing: EditorEditingHandle = {
 		getRevision: vi.fn(() => currentRevision),
 		applyEdits: vi.fn(() => ({ ...advance(), createdBlockIds: ['private-created-handle'] })),
-		undo: vi.fn(advance),
-		redo: vi.fn(advance),
 	};
 	const navigation = { openGroup: vi.fn(), goToParentGroup: vi.fn(), goToRoot: vi.fn() };
 	return {
@@ -79,8 +77,6 @@ const writes = [
 	['update_block', update],
 	['patch_block', patch],
 	['apply_edits', batch],
-	['undo', {}],
-	['redo', {}],
 ] as const;
 
 describe('single-editor WebMCP bridge', () => {
@@ -120,8 +116,6 @@ describe('single-editor WebMCP bridge', () => {
 			'patch_block',
 			'get_block_metadata',
 			'apply_edits',
-			'undo',
-			'redo',
 			'get_compiler_diagnostics',
 		]);
 		expect(await call('get_project')).toBe(
@@ -134,8 +128,6 @@ describe('single-editor WebMCP bridge', () => {
 			revision: 'editor-one:1',
 			projectPath: '',
 			editable: true,
-			canUndo: false,
-			canRedo: false,
 		});
 		expect(await call('get_block_metadata', { type: 'module', name: 'counter' })).toEqual({
 			revision: 'editor-one:1',
@@ -168,10 +160,9 @@ describe('single-editor WebMCP bridge', () => {
 			expect(await call(name, args)).not.toHaveProperty('error');
 		}
 		expect(view.state.project.rootLevel.blocks).toEqual(before);
-		expect(view.state.historyStack).toHaveLength(0);
 		expect(view.editing.getRevision).not.toHaveBeenCalled();
 		expect(view.navigation.openGroup).not.toHaveBeenCalled();
-		expect(await call('undo')).toMatchObject({ error: { code: 'source_required' } });
+		expect(await call('apply_edits', batch)).toMatchObject({ error: { code: 'source_required' } });
 		await call('get_project');
 		view.revision = 'external:2';
 		for (const [name, args] of referenceCalls) await call(name, args);
@@ -221,14 +212,12 @@ describe('single-editor WebMCP bridge', () => {
 		for (const [name, args] of writes)
 			expect(await call(name, args)).toMatchObject({ error: { code: 'source_required' } });
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
-		expect(view.editing.undo).not.toHaveBeenCalled();
-		expect(view.editing.redo).not.toHaveBeenCalled();
 		await call('get_block', { type: 'module', name: 'counter' });
 		expect(await call('update_block', update)).toBe('Block updated.');
 		bridge.dispose();
 	});
 
-	it('advances its baseline after consecutive edits and history actions using exact result tokens', async () => {
+	it('advances its baseline after consecutive edits using exact result tokens', async () => {
 		const view = setup();
 		const { bridge, call } = await connect(view);
 		for (const [name, args] of writes) expect(typeof (await call(name, args))).toBe('string');
@@ -237,8 +226,6 @@ describe('single-editor WebMCP bridge', () => {
 			'editor-one:8',
 			'editor-one:15',
 		]);
-		expect(view.editing.undo).toHaveBeenCalledWith({ expectedRevision: 'editor-one:22' });
-		expect(view.editing.redo).toHaveBeenCalledWith({ expectedRevision: 'editor-one:29' });
 		bridge.dispose();
 	});
 
@@ -264,8 +251,6 @@ describe('single-editor WebMCP bridge', () => {
 			await call('get_project', { name: 'root' });
 			expect(await call('update_block', update)).toMatchObject({ error: { code: 'stale_revision' } });
 			expect(view.editing.applyEdits).toHaveBeenCalledTimes(1);
-			expect(view.editing.undo).not.toHaveBeenCalled();
-			expect(view.editing.redo).not.toHaveBeenCalled();
 			expect(view.state.project.rootLevel.blocks).toEqual(changedSource);
 			expect(await call(sourceTool, sourceTool === 'get_block' ? { type: 'module', name: 'counter' } : {})).toContain(
 				'int value 9'
@@ -501,7 +486,9 @@ describe('single-editor WebMCP bridge', () => {
 		expect(await call('get_block_metadata', { blockId: '["",7]' })).toMatchObject({
 			error: { code: 'invalid_request' },
 		});
-		expect(await call('undo', { editorId: 'other' })).toMatchObject({ error: { code: 'invalid_request' } });
+		expect(await call('apply_edits', { ...batch, editorId: 'other' })).toMatchObject({
+			error: { code: 'invalid_request' },
+		});
 		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
@@ -535,12 +522,12 @@ describe('single-editor WebMCP bridge', () => {
 		expect(await view.tools.get('get_project')!.execute({}, { signal: controller.signal })).toMatchObject({
 			error: { code: 'cancelled' },
 		});
-		expect(await call('undo')).toMatchObject({ error: { code: 'source_required' } });
+		expect(await call('apply_edits', batch)).toMatchObject({ error: { code: 'source_required' } });
 		await call('get_project');
-		expect(await view.tools.get('undo')!.execute({}, { signal: controller.signal })).toMatchObject({
+		expect(await view.tools.get('apply_edits')!.execute(batch, { signal: controller.signal })).toMatchObject({
 			error: { code: 'cancelled' },
 		});
-		expect(view.editing.undo).not.toHaveBeenCalled();
+		expect(view.editing.applyEdits).not.toHaveBeenCalled();
 		bridge.dispose();
 	});
 

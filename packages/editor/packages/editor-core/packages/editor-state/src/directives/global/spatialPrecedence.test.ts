@@ -112,7 +112,8 @@ noteEnd`);
 	});
 
 	it('refreshes precedence after a position-only source edit', () => {
-		const { state, store, events } = setup(twoNotes);
+		const { state, store } = setup(twoNotes);
+		const original = store.projectTransactions.capture();
 		const left = state.project.rootLevel.blocks.find(block => block.name === 'left')!;
 		expect(state.editorConfig.export?.fileName).toBe('right');
 		applyCodeBlockSourceEdits(store, [
@@ -130,9 +131,10 @@ noteEnd`);
 		applyCodeBlockSourceEdits(store, [
 			{ codeBlock: left, code: left.code.map(line => line.replace('@pos 100 -', '@pos 100 0')) },
 		]);
-		events.dispatch('undo');
+		const moved = store.projectTransactions.capture();
+		store.projectTransactions.restore(original);
 		expect(state.editorConfig.export?.fileName).toBe('right');
-		events.dispatch('redo');
+		store.projectTransactions.restore(moved);
 		expect(state.editorConfig.export?.fileName).toBe('left');
 	});
 

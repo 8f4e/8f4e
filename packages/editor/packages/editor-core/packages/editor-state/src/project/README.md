@@ -61,7 +61,8 @@ The project and its related editor-state domains handle specific aspects:
 - `../layout/trackBlockLayout.ts` - Visual properties and cursor geometry
 
 New block templates, random names, Delete, and their menu contributions belong to `editor-plugin-block-authoring`.
-Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and history.
+Core retains insertion/removal helpers, entry assignment, identity allocation, folding, layout, and authored snapshot
+capture and restoration. The undo-redo plugin owns edit history and its policy.
 
 Source changes use `blocks/refreshSourceMetadata.ts` to parse directives and retain their block flags and display facts, update
 block type and valid grid coordinates, and settle stacking. The project transaction service owns synchronous mutation
@@ -151,7 +152,7 @@ marker plugin through the same contribution path as other source errors.
 
 - **Compiler**: Blocks are sorted by `creationIndex` and filtered by type for compilation
 - **Viewport**: Block positions are in viewport coordinates
-- **Edit History**: Block changes trigger history snapshots
+- **Edit History**: Completed project changes notify the optional undo-redo plugin, which captures authored snapshots.
 
 See [memory lookup and access](../memory/README.md) for resolving compiler memory targets and preparing runtime reads.
 

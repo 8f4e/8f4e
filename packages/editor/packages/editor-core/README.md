@@ -30,8 +30,9 @@ camera toward the committed viewport; it does not update navigation state.
 The editor supports view and edit modes. `@8f4e/editor-plugin-selection-animation` supplies the continuously circling
 segment around selected code blocks in both modes.
 Keyboard navigation, text editing, and mode switching are supplied by independent plugins composed by the host.
-Core retains project editing APIs, history, generic mode actions, and shared text/pointer geometry. The editing plugin
-owns edit-mode caret movement and drawing. Core installs no keyboard listeners.
+Core retains project editing APIs, snapshot capture and restoration, generic mode actions, and shared text/pointer geometry.
+The editing plugin owns edit-mode caret movement and drawing. The independent `undo-redo` plugin owns project history.
+Core installs no keyboard listeners.
 
 ## Plugins
 
@@ -425,6 +426,10 @@ retain block identities, boundaries and draft entry/position metadata. The manag
 restoration reuses the read-only block and regenerates its body from current contributions. Both use the same reconstruction,
 settlement and publication boundary, with `replace` and `restore` kinds. `compilerInputRevision` remains a separate signal for compilation
 inputs. History and session persistence consume completed `projectChange` records, not intermediate source mutations.
+The transaction service exposes `store.projectTransactions.capture()` and `restore(snapshot)`.
+`sameProjectSnapshot(a, b)` from editor-state compares authored snapshot contents independently of the allocation
+counter. The optional [undo/redo plugin](../../plugins/undo-redo/README.md) uses these services and owns the history
+action listeners. Core editors without it still apply and publish edits normally.
 Navigation follows attached project levels, and history restoration reconciles remembered views by the owning blocks' identities
 within each parent level. Renaming a group or temporarily using duplicate names therefore does not transfer its view to another
 group. Name-based project paths remain unchanged for compilation and file data.

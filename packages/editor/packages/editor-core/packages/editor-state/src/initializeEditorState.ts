@@ -25,7 +25,6 @@ import registerGroupNavigation from './project/groupNavigation';
 import { createProjectMembership } from './project/membership';
 import registerProjectLoading from './project/projectLoading';
 import { createProjectTransactionService, type ProjectTransactionService } from './project/transactions';
-import registerUndoRedo from './project/undoRedo';
 import registerDialogHandlers from './ui-state/dialog/dialogHandlers';
 import { createLoadingRegistry } from './ui-state/loadingRegistry';
 import registerContextMenuHandlers from './ui-state/menu/contextMenuHandlers';
@@ -86,7 +85,6 @@ export default function initializeEditorState(events: EventDispatcher, options: 
 	cleanups.push(registerBlockActionCommands(editingStore, events));
 	cleanups.push(registerGroupNavigation(store, events));
 	cleanups.push(trackEntryBounds(store, events));
-	cleanups.push(registerUndoRedo(store, events, projectTransactions));
 
 	const onConsoleLog = (event: unknown) => {
 		console.log(event);

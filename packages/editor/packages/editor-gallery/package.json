@@ -76,6 +76,7 @@
     "@8f4e/editor-plugin-texture-runtime": "*",
     "@8f4e/editor-plugin-tooltips": "*",
     "@8f4e/editor-plugin-touch-input": "*",
+    "@8f4e/editor-plugin-undo-redo": "*",
     "@8f4e/editor-plugin-watch": "*",
     "@8f4e/editor-plugin-wave": "*",
     "@8f4e/editor-plugin-worker-runtime": "*",

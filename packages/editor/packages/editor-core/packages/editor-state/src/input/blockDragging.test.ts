@@ -245,18 +245,19 @@ describe('codeBlockDragger', () => {
 		expect(test.revision()).toEqual(before);
 	});
 
-	it.each(['replace', 'undo'] as const)(
+	it.each(['replace', 'restore'] as const)(
 		'cancels the drag on %s even when the restored block has the same name',
 		kind => {
 			const test = setup();
 			const first = test.block('first');
+			const original = test.store.projectTransactions.capture();
 			const code = ['module first', '; @pos 8 8', 'moduleEnd'];
 			test.store.projectTransactions.apply({ updates: [{ codeBlock: first, code }] }, { history: 'checkpoint' });
 			const before = test.revision();
 			test.press(first);
 			test.move(10, 20);
 			expect(first).toMatchObject({ x: 90, y: 180 });
-			if (kind === 'undo') test.events.dispatch('undo');
+			if (kind === 'restore') test.store.projectTransactions.restore(original);
 			else test.load(projectSource(firstSource));
 			const restored = test.block('first');
 			expect(restored).not.toBe(first);

@@ -16,17 +16,16 @@ function setup(installed = true) {
 	const events = { on: emitter.on.bind(emitter), off: emitter.off.bind(emitter), dispatch: emitter.emit.bind(emitter) };
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
-	const disposePlugin = installed
-		? blockAuthoringPlugin.setup({
-				store,
-				events,
-				menus: store.menus,
-				directives: store.directives,
-				layout: store.layout,
-				loading: store.loading,
-				renderRegistry: createEditorRenderRegistry(),
-			})
-		: () => {};
+	const context = {
+		store,
+		events,
+		menus: store.menus,
+		directives: store.directives,
+		layout: store.layout,
+		loading: store.loading,
+		renderRegistry: createEditorRenderRegistry(),
+	};
+	const disposePlugin = installed ? blockAuthoringPlugin.setup(context) : () => {};
 	events.dispatch('loadProject', { project: structuredClone(EMPTY_DEFAULT_PROJECT) });
 	events.dispatch('enterEditMode');
 	cleanups.push(store.dispose, disposePlugin);
@@ -72,7 +71,7 @@ it('allows duplicate generated names without numbering them', () => {
 	expect(new Set(blocks.map(block => block.creationIndex)).size).toBe(2);
 });
 
-it('deletes the clicked block instead of the selected block and supports undo/redo', async () => {
+it('deletes the clicked block instead of the selected block', async () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {
 		project: {
@@ -98,10 +97,6 @@ it('deletes the clicked block instead of the selected block and supports undo/re
 	expect(test.state.project.selectedCodeBlock).toBe(other);
 	expect(test.state.projectChange.revision).toBe(revision + 1);
 	expect(test.state.compilerInputRevision).toBe(compilerRevision + 1);
-	test.events.dispatch('undo');
-	expect(blocks().some(block => block.name === 'target')).toBe(true);
-	test.events.dispatch('redo');
-	expect(blocks().some(block => block.name === 'target')).toBe(false);
 });
 
 it('hides authoring menu items and ignores commands in view mode', async () => {

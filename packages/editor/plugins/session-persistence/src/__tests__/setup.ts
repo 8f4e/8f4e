@@ -10,7 +10,7 @@ export function setupPlugin(plugin: EditorPlugin) {
 	const store = initState(events, { callbacks: {} });
 	setGridSize(store.getState(), events, TEST_GRID_SIZE);
 	events.dispatch('enterEditMode');
-	const disposePlugin = plugin.setup({
+	const context = {
 		store,
 		events,
 		menus: store.menus,
@@ -18,7 +18,8 @@ export function setupPlugin(plugin: EditorPlugin) {
 		layout: store.layout,
 		loading: store.loading,
 		renderRegistry: createEditorRenderRegistry(),
-	});
+	};
+	const disposePlugin = plugin.setup(context);
 	return {
 		store,
 		state: store.getState(),
