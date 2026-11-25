@@ -8,7 +8,11 @@ import {
 	ROOT_PROJECT_GROUP_PATH,
 } from '@8f4e/language-spec';
 import { createCompilerCache, type IncludedFunctionsByProjectGroupPath } from '@8f4e/program-composer/internal';
-import { parseProjectSource, resolveProjectIncludesAsync } from '@8f4e/project-preparser';
+import {
+	parseProjectSource,
+	resolveProjectIncludesAsync,
+	validateUniqueSiblingGroupNames,
+} from '@8f4e/project-preparser';
 import { deriveEffectiveMemorySize } from '@8f4e/wasm-codegen';
 import { compileProjectObjectModel } from './compileProjectObjectModel';
 
@@ -65,6 +69,7 @@ export async function compileProject(
 	project: ProjectObjectModel,
 	options: CompileProjectOptions = {}
 ): Promise<CompileResult> {
+	validateUniqueSiblingGroupNames(project);
 	const { resolveInclude, cache = createCompilerCache(), ...compilerOptions } = options;
 	const memoizedResolveInclude = createMemoizedIncludeResolver(resolveInclude);
 	const includedFunctionsByProjectPath = await resolveRecursiveProjectIncludes(project, memoizedResolveInclude);

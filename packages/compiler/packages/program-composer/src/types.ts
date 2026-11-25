@@ -31,7 +31,7 @@ export type IncludedFunctionsByProjectGroupPath = ReadonlyMap<
 
 /** A group memory exposure with its canonical group and backing-module identities. */
 export interface ComposedProjectMemoryExposure extends ProjectMemoryExposure, ProjectMemoryAliasTarget {
-	readonly diagnosticSource: Extract<DiagnosticSource, { kind: 'scope' }>;
+	readonly diagnosticSource: Extract<DiagnosticSource, { kind: 'block' }>;
 	readonly instruction: 'expose';
 	groupPath: ProjectGroupPath;
 }

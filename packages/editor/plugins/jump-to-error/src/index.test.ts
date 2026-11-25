@@ -1,5 +1,10 @@
 import { EventEmitter } from 'node:events';
-import initState, { EMPTY_DEFAULT_PROJECT, setGridSize } from '@8f4e/editor-state';
+import initState, {
+	EMPTY_DEFAULT_PROJECT,
+	insertCodeBlocks,
+	serializeCodeBlocks,
+	setGridSize,
+} from '@8f4e/editor-state';
 import { TEST_GRID_SIZE } from '@8f4e/editor-state-testing';
 import type { InternalPointerEvent } from '@8f4e/editor-state-types';
 import { INPUT_LAYERS } from '@8f4e/editor-state-types';
@@ -123,7 +128,7 @@ it('ignores outside presses, non-primary presses, and stale errors', () => {
 	expect(test.drawGlyphs).not.toHaveBeenCalled();
 });
 
-it('opens a nested project for document errors and returns to the group owner for scope errors', () => {
+it('opens a nested project for document errors and targets a copied group by its identity', () => {
 	const test = setup();
 	test.events.dispatch('loadProject', {
 		project: parseProjectSource(`8f4e/v1
@@ -143,18 +148,19 @@ entryEnd`),
 	});
 	const root = test.state.project.rootLevel;
 	const audio = root.blocks.find(block => block.name === 'audio')!;
+	test.events.dispatch('enterEditMode');
+	const [copy] = insertCodeBlocks(test.store, { x: 240, y: 128, blocks: serializeCodeBlocks([audio], audio) });
+	expect(copy.childLevel!.path).toBe(audio.childLevel!.path);
 	const nested = audio.childLevel!.blocks.find(block => block.name === 'nested')!;
 	const child = nested.childLevel!.blocks[0];
 	test.store.set('codeErrors.custom', [{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' }]);
 	test.press();
 	expect(test.state.project.activeLevel).toBe(nested.childLevel);
 	expect(test.state.project.selectedCodeBlock).toBe(child);
-	test.store.set('codeErrors.custom', [
-		{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 0, message: 'Group error' },
-	]);
+	test.store.set('codeErrors.custom', [{ codeBlockId: copy.creationIndex, lineNumber: 0, message: 'Group error' }]);
 	test.press();
 	expect(test.state.project.activeLevel).toBe(root);
-	expect(test.state.project.selectedCodeBlock).toBe(audio);
+	expect(test.state.project.selectedCodeBlock).toBe(copy);
 });
 
 it('releases its drawer, subscriptions, and input handlers on disposal', () => {

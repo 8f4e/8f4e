@@ -8,6 +8,41 @@ async function readProject(relativePath: string) {
 }
 
 describe('group compiler metadata and cache', () => {
+	it('rejects duplicate sibling names across entries but permits matching names under different parents', async () => {
+		const project = parseProjectSource(`8f4e/v1
+entry main
+group left
+entry first
+group voice
+groupEnd
+entryEnd
+entry second
+group spare
+groupEnd
+entryEnd
+groupEnd
+group right
+entry main
+group voice
+groupEnd
+entryEnd
+groupEnd
+entryEnd`);
+		await expect(compileProject(project)).resolves.toMatchObject({ compiledModules: {} });
+		const [left] = getProjectGroups(project);
+		const [, duplicate] = getProjectGroups(left);
+		duplicate.name = 'voice';
+		duplicate.code = ['', 'group voice', 'groupEnd'];
+		await expect(compileProject(project)).rejects.toMatchObject({
+			diagnostic: {
+				domain: 'syntax',
+				message: 'Duplicate sibling group "voice"',
+				instruction: 'group',
+				location: { kind: 'block', projectBlockId: duplicate.id, projectGroupPath: 'left', lineNumber: 1 },
+			},
+		});
+	});
+
 	it('preserves mixed declaration order per entry when reusing cached module ASTs', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
@@ -333,7 +368,12 @@ entryEnd`);
 			diagnostic: expect.objectContaining({
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				message: expect.stringContaining('outer/inner:out'),
-				location: { kind: 'scope', projectGroupPath: 'outer', lineNumber: 1 },
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
 			}),
 		});
 	});
@@ -349,7 +389,12 @@ entryEnd`);
 			diagnostic: expect.objectContaining({
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
 				message: expect.stringContaining(`${testCase.targetModuleId}:${testCase.targetMemoryId}`),
-				location: { kind: 'scope', projectGroupPath: 'audio', lineNumber: 1 },
+				location: {
+					kind: 'block',
+					projectBlockId: getProjectGroups(project)[0].id,
+					projectGroupPath: '',
+					lineNumber: 1,
+				},
 			}),
 		});
 	});

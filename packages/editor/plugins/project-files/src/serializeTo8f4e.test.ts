@@ -147,6 +147,16 @@ entryEnd`;
 		expect(serializeProjectTo8f4e(createProject())).toBe('8f4e/v1\n\n');
 	});
 
+	it('rejects duplicate sibling groups instead of exporting a file that cannot be loaded', () => {
+		const project = createProject({
+			execution: [
+				createGroup({ name: 'audio', id: 1, code: ['group audio', 'groupEnd'] }),
+				createGroup({ name: 'audio', id: 2, entry: 'alternate', code: ['group audio', 'groupEnd'] }),
+			],
+		});
+		expect(() => serializeProjectTo8f4e(project)).toThrow('Duplicate sibling group "audio"');
+	});
+
 	it('round-trips canonical block collections through project text', () => {
 		const project = createProject({
 			entries: ['main'],

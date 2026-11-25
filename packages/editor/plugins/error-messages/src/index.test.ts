@@ -145,7 +145,7 @@ describe('error messages plugin', () => {
 		expect(test.block.gaps.size).toBe(0);
 	});
 
-	it('matches group-scope errors by group path and document errors by block identity', () => {
+	it('matches group and document errors by block identity', () => {
 		const test = setup();
 		test.events.dispatch('loadProject', {
 			project: parseProjectSource(`8f4e/v1
@@ -168,7 +168,7 @@ entryEnd`),
 		const child = group.childLevel!.blocks.find(block => block.name === 'child')!;
 		test.store.set('codeErrors.custom', [
 			{ codeBlockId: rootModule.creationIndex, lineNumber: 0, message: 'Root error' },
-			{ codeBlockId: -1, projectGroupPath: 'audio', lineNumber: 1, message: 'Group error' },
+			{ codeBlockId: group.creationIndex, lineNumber: 1, message: 'Group error' },
 			{ codeBlockId: child.creationIndex, lineNumber: 1, message: 'Child error' },
 		]);
 		test.render(rootModule);

@@ -10,9 +10,8 @@ export const logBlockInfoPlugin: EditorPlugin = {
 		};
 		events.on(action, onLog);
 		const unregisterMenuItem = menus.registerItem('codeBlockMenu', ({ codeBlock }) => {
-			const label = codeBlock.childLevel ? 'group' : codeBlock.blockType;
 			return {
-				title: `Log ${label} info to console`,
+				title: `Log ${codeBlock.blockType} info to console`,
 				action,
 				payload: { codeBlock },
 				close: true,

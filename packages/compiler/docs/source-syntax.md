@@ -41,7 +41,8 @@ push; instruction comment
 
 ## Group scope passes
 
-Groups have isolated scopes. Use `pass NAME` in a child group to share a function or constant namespace from its
+Groups have isolated scopes. Group names must be unique among siblings, including across execution entries;
+groups in different parent scopes may share a name. Use `pass NAME` in a child group to share a function or constant namespace from its
 immediate parent. Repeat the pass at each group boundary when forwarding a name to deeper groups.
 
 Outside nested blocks, a group body accepts only `pass`, `expose`, `init`, blank lines, and comments.

@@ -84,7 +84,7 @@ export function createMockCodeBlock(options: Partial<EditorCodeBlock> & { cursor
 		lastUpdated: Date.now(),
 		isCollapsed: false,
 		creationIndex: 0,
-		blockType: 'unknown',
+		blockType: overrides.childLevel ? 'group' : 'unknown',
 		projectPath,
 		disabled: false,
 		alwaysOnTop: false,

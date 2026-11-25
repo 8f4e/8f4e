@@ -74,8 +74,7 @@ export const blockAuthoringPlugin: EditorPlugin = {
 		);
 		const removeDeleteItem = menus.registerItem('codeBlockMenu', ({ state, codeBlock }) => {
 			if (state.editorMode !== 'edit' || codeBlock.readOnly) return;
-			const label = codeBlock.childLevel ? 'group' : codeBlock.blockType;
-			return { title: `Delete ${label}`, action: 'deleteCodeBlock', payload: { codeBlock }, close: true };
+			return { title: `Delete ${codeBlock.blockType}`, action: 'deleteCodeBlock', payload: { codeBlock }, close: true };
 		});
 		events.on('createCodeBlock', onCreate);
 		events.on('deleteCodeBlock', onDelete);

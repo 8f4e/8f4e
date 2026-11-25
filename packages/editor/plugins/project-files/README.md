@@ -41,7 +41,8 @@ projects with files. The landing editor installs neither plugin.
 
 Both plugins use the configured export filename, and download a file when the Save picker is unavailable.
 Full file access uses a file input when the Open picker is unavailable; uploads have no writable association.
-Serialization and I/O errors appear in the editor console.
+Serialization and I/O errors appear in the editor console. In particular, duplicate sibling groups in an editor
+draft must be renamed before writing a valid source file.
 
 Validate with Nx `build`, `test` and `typecheck` for `@8f4e/editor-plugin-project-files`. Browser coverage lives
 in `@8f4e/editor-default:test:screenshot` and `@8f4e/8f4e-website:test:browser`.

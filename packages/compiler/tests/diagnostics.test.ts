@@ -95,13 +95,15 @@ entryEnd`);
 			errorCode: SyntaxErrorCode.MISSING_ARGUMENT,
 		},
 	])('reports $name at the original wrapper row', async ({ code, row, instruction, message, errorCode }) => {
-		expect(await diagnosticFor(projectWithEditedWrapper(code))).toMatchObject({
+		const project = projectWithEditedWrapper(code);
+		const [voice] = getProjectGroups(getProjectGroups(project)[0]);
+		expect(await diagnosticFor(project)).toMatchObject({
 			kind: 'source',
 			domain: 'syntax',
 			code: errorCode,
 			...(instruction ? { instruction } : {}),
 			message: expect.stringContaining(message),
-			location: { kind: 'scope', projectGroupPath: 'parent/voice', lineNumber: row },
+			location: { kind: 'block', projectBlockId: voice.id, projectGroupPath: 'parent', lineNumber: row },
 		});
 	});
 
@@ -112,7 +114,7 @@ entryEnd`);
 });
 
 describe('compiler source locations', () => {
-	it('locates an invalid exposure after nested blocks at its owning scope row', async () => {
+	it('locates an invalid exposure after nested blocks at its owning block row', async () => {
 		const project = parseProjectSource(`8f4e/v1
 entry main
 group outer
@@ -129,11 +131,12 @@ groupEnd
 entryEnd
 groupEnd
 entryEnd`);
+		const [inner] = getProjectGroups(getProjectGroups(project)[0]);
 		expect(await diagnosticFor(project)).toMatchObject({
 			kind: 'source',
 			domain: 'semantic',
 			instruction: 'expose',
-			location: { kind: 'scope', projectGroupPath: 'outer/inner', lineNumber: 2 },
+			location: { kind: 'block', projectBlockId: inner.id, projectGroupPath: 'outer', lineNumber: 2 },
 			message: expect.stringContaining('outer/inner/source:missing'),
 		});
 	});

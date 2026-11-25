@@ -4,9 +4,10 @@
   "instruction": "init",
   "kind": "source",
   "location": {
-    "kind": "scope",
+    "kind": "block",
     "lineNumber": 2,
-    "projectGroupPath": "synth",
+    "projectBlockId": 3,
+    "projectGroupPath": "",
   },
   "message": "Initialization target must be exposed scalar memory: values. (75)",
 }

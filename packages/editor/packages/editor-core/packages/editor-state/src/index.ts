@@ -66,6 +66,7 @@ export type {
 export { createEditorCommandApi, EditorEditingError, getEditorBlockId } from './project/commandApi';
 export { deleteCodeBlocks } from './project/deleteCodeBlocks';
 export { EMPTY_DEFAULT_PROJECT } from './project/emptyDefaultProject';
+export { supportsExecutionEntry } from './project/entries/supportsExecutionEntry';
 export { insertCodeBlock } from './project/insertCodeBlock';
 export { insertCodeBlocks } from './project/insertCodeBlocks';
 export { applyCodeBlockSourceEdits } from './project/replaceBlockSources';

@@ -40,7 +40,7 @@ export function createEditorCodeBlock(overrides: Partial<EditorCodeBlock> = {}):
 		lastUpdated: Date.now(),
 		isCollapsed: false,
 		creationIndex: 0,
-		blockType: 'unknown',
+		blockType: overrides.childLevel ? 'group' : 'unknown',
 		projectPath,
 		disabled: false,
 		alwaysOnTop: false,

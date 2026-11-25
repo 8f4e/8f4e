@@ -212,7 +212,7 @@ types. Plugins own their prepared data and disposal; core stores no widget prese
 
 Raw source errors live in `state.codeErrors: Record<string, CodeError[]>`. Contributors replace their own lists through
 `store.set('codeErrors.my-plugin', errors)` and clear or remove them on disposal. `CodeError` carries a zero-based
-source line, a message, and the target block identity or project-group scope. Compiler and directive errors use
+source line, a message, and the target block identity, including for group declarations. Compiler and directive errors use
 `compiler` and `editor-directives`; test-runtime publishes failed source assertions under `test-runtime`.
 `@8f4e/editor-plugin-error-messages` owns wrapping, reserved rows, colors, and drawing coordinates through the existing
 layout/drawer APIs. Core stores no prepared error widgets and applies only generic row contributions.
@@ -300,9 +300,8 @@ Unregister with the same `events.off` call as other listeners. Layer groups are 
 removed; dispatch traverses those snapshots without sorting or filtering registrations.
 
 Raw diagnostics remain in `state.codeErrors`. `getCodeBlockErrors(state, block)` from `@8f4e/editor-state` matches
-contributor errors to document blocks or group scopes, independently of any presentation or navigation plugin.
-`createCodeErrorBlockLookup(rootLevel)` indexes document identities and group scopes once for a batch of errors,
-retaining project-tree precedence when an error matches both. Rebuild the lookup after project changes.
+contributor errors to blocks by identity, independently of any presentation or navigation plugin.
+`createCodeErrorBlockLookup(rootLevel)` indexes block identities once for a batch of errors. Rebuild the lookup after project changes.
 
 Core dispatches `resolveCodeBlockDragTargets` with `{ codeBlock, altKey, targets: [codeBlock] }` before a drag.
 Plugins may synchronously replace `targets`; core then moves and snaps those blocks and publishes one position edit.

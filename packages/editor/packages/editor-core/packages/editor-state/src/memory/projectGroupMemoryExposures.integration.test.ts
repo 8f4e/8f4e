@@ -111,7 +111,7 @@ it('keeps settled exposure records current and preserves compiler diagnostics fo
 		await expect(compileProject(project)).rejects.toMatchObject({
 			diagnostic: {
 				code: ErrorCode.INVALID_PROJECT_MEMORY_EXPOSURE_TARGET,
-				location: { kind: 'scope', projectGroupPath: 'patch', lineNumber: 2 },
+				location: { kind: 'block', projectBlockId: test.group().creationIndex, projectGroupPath: '', lineNumber: 2 },
 			},
 		});
 	} finally {
