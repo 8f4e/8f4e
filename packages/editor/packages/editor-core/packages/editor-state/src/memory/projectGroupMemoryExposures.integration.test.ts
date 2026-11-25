@@ -123,7 +123,7 @@ it('keeps settled exposure records current and preserves compiler diagnostics fo
 	}
 });
 
-it('locates an invalid copied group wrapper by its own block ID', async () => {
+it('reports a duplicate copied group at its own block until it is renamed', async () => {
 	const test = setup();
 	try {
 		setGridSize(test.state, test.events, { vGrid: 8, hGrid: 16 });
@@ -131,13 +131,16 @@ it('locates an invalid copied group wrapper by its own block ID', async () => {
 		const original = test.group();
 		const [copy] = insertCodeBlocks(test.store, { x: 240, y: 128, blocks: serializeCodeBlocks([original], original) });
 		expect(copy.childLevel!.path).toBe(original.childLevel!.path);
-		applyCodeBlockSourceEdits(test.store, [{ codeBlock: copy, code: ['group patch', 'pass', 'groupEnd'] }]);
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: copy, code: ['', ...copy.code] }]);
 		await expect(compileProject(test.serialize())).rejects.toMatchObject({
 			diagnostic: {
-				instruction: 'pass',
+				instruction: 'group',
+				message: 'Duplicate sibling group "patch"',
 				location: { kind: 'block', projectBlockId: copy.creationIndex, projectGroupPath: '', lineNumber: 1 },
 			},
 		});
+		applyCodeBlockSourceEdits(test.store, [{ codeBlock: copy, code: ['', 'group patchCopy', ...copy.code.slice(2)] }]);
+		expect((await compileProject(test.serialize())).compiledModules['patchCopy/source']).toBeDefined();
 	} finally {
 		test.store.dispose();
 	}

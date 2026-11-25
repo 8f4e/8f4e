@@ -10,3 +10,4 @@ export {
 } from './projectMemoryExposure';
 export { validateProjectCodeBlock } from './projectSource';
 export { extractProjectTemplates } from './projectTemplates';
+export { validateUniqueSiblingGroupNames } from './validateUniqueSiblingGroupNames';

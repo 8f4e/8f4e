@@ -34,6 +34,9 @@ contexts. Copied template blocks receive distinct IDs based on expanded source o
 original document rows. Source-line preservation and exposure collection are handled separately from block classification and
 recursive entry/group traversal. Each context writes directly into the canonical project model.
 
+`validateUniqueSiblingGroupNames` checks authored project models recursively before compilation or file export.
+Unlike a document parse failure, it reports a duplicate at the owning group block and wrapper row.
+
 This package owns:
 
 - Inlining group-scoped source templates and extracting them from expanded serialized source.

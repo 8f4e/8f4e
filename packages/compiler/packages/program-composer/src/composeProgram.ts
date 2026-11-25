@@ -243,6 +243,7 @@ function appendUnit(
 /**
  * Parses and composes a recursive project tree into one globally planned compiler program.
  * Groups expand at their declaration positions; functions and constants remain hoisted.
+ * Sibling group names are validated by the compiler facade before composition.
  */
 export function composeProgram(
 	project: ProjectObjectModel,

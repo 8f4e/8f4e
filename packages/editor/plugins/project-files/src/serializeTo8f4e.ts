@@ -4,7 +4,12 @@ import type {
 	ProjectGroupObjectModel,
 	ProjectObjectModel,
 } from '@8f4e/language-spec';
-import { extractProjectTemplates, FORMAT_HEADER, validateProjectCodeBlock } from '@8f4e/project-preparser';
+import {
+	extractProjectTemplates,
+	FORMAT_HEADER,
+	validateProjectCodeBlock,
+	validateUniqueSiblingGroupNames,
+} from '@8f4e/project-preparser';
 
 function getDocumentBlocks(project: ProjectObjectModel) {
 	return [...project.includes, ...project.functions, ...project.constants, ...project.notes, ...project.unknown];
@@ -68,6 +73,7 @@ export function serializeProjectTo8f4e(project: ProjectObjectModel): string {
 			expectedOpener: 'type' in block && block.type === 'group' ? 'group' : undefined,
 		});
 	}
+	validateUniqueSiblingGroupNames(project);
 
 	const blockStrings = documentBlocks.map(block => block.code.join('\n'));
 	const execution = serializeExecution(project);
