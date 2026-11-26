@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-home",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Home viewport navigation for the 8f4e editor",
   "type": "module",

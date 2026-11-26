@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/cli",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "private": true,
   "description": "CLI for compiling 8f4e projects",
   "type": "module",
