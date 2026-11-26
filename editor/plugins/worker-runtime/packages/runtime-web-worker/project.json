@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/runtime-web-worker",
-  "sourceRoot": "editor/plugins/worker-runtime/packages/runtime-web-worker/src",
   "projectType": "library",
   "targets": {
     "build": {

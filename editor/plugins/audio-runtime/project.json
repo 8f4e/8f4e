@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-audio-runtime",
-  "sourceRoot": "editor/plugins/audio-runtime/src",
   "projectType": "library",
   "targets": {
     "build": {

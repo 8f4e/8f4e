@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/semantic-reference-resolver",
-	"sourceRoot": "compiler/packages/sub-program/packages/semantic-reference-resolver/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-stack-producers",
-  "sourceRoot": "editor/plugins/stack-producers/src",
   "projectType": "library",
   "targets": {
     "build": {

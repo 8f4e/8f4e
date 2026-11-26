@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-tooltips",
-  "sourceRoot": "editor/plugins/tooltips/src",
   "projectType": "library",
   "targets": {
     "build": {

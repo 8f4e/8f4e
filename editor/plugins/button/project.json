@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-button",
-  "sourceRoot": "editor/plugins/button/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-gallery",
-  "sourceRoot": "editor/compositions/editor-gallery/src",
   "projectType": "library",
   "targets": {
     "build": {

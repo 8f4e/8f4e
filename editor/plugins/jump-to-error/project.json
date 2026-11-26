@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-jump-to-error",
-  "sourceRoot": "editor/plugins/jump-to-error/src",
   "projectType": "library",
   "targets": {
     "build": {

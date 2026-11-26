@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/constant-resolver",
-	"sourceRoot": "compiler/packages/sub-program/packages/constant-resolver/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

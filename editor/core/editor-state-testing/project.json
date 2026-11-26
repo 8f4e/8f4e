@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-state-testing",
-  "sourceRoot": "editor/core/editor-state-testing/src",
   "projectType": "library",
   "targets": {
     "build": {

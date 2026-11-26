@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-stack-connections",
-  "sourceRoot": "editor/plugins/stack-connections/src",
   "projectType": "library",
   "targets": {
     "build": {

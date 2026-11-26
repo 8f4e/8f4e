@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-piano",
-  "sourceRoot": "editor/plugins/piano/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-test-runtime",
-  "sourceRoot": "editor/plugins/test-runtime/src",
   "projectType": "library",
   "targets": {
     "build": {

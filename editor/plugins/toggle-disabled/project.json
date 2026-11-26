@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-toggle-disabled",
-  "sourceRoot": "editor/plugins/toggle-disabled/src",
   "projectType": "library",
   "targets": {
     "build": {

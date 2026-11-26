@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-block-authoring",
-  "sourceRoot": "editor/plugins/block-authoring/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -97,14 +97,14 @@ workspaces by their package names; native applications without npm manifests dec
 - **package.json**: Updated scripts to use Nx commands
 - **Workspaces**: Still configured for package linking compatibility
 
-In `project.json`, `sourceRoot` is relative to the workspace root, not the package directory. For example,
-`@8f4e/editor-webapp` uses `apps/editor-webapp/src`. Target commands can use `{projectRoot}` to avoid repeating
-physical project locations. The independently maintained Glugglugglug submodule is the exception to the parent
-workspace's source-root convention.
+Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use conventional `src/` directories.
+Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
+physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
 
 Release metrics discover package names, roots, versions, and test targets from the Nx project graph. They select
 projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
-`package-lock.json` or recursively scanning the repository.
+`package-lock.json` or recursively scanning the repository. They use `src/` relative to each project's discovered root;
+nonstandard layouts declare only a local `metadata.metrics.sourceDirectory` (for example `std` in the standard library).
 
 ## Production and test inputs
 

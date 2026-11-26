@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/sub-program",
-  "sourceRoot": "compiler/packages/sub-program/src",
   "projectType": "library",
   "targets": {
     "build": {

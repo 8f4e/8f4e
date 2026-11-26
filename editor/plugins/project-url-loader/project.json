@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-project-url-loader",
-  "sourceRoot": "editor/plugins/project-url-loader/src",
   "projectType": "library",
   "targets": {
     "build": {

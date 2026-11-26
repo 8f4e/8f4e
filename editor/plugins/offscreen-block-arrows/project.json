@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-offscreen-block-arrows",
-  "sourceRoot": "editor/plugins/offscreen-block-arrows/src",
   "projectType": "library",
   "targets": {
     "build": {

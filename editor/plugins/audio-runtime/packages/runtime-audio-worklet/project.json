@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/runtime-audio-worklet",
-  "sourceRoot": "editor/plugins/audio-runtime/packages/runtime-audio-worklet/src",
   "projectType": "library",
   "targets": {
     "build": {

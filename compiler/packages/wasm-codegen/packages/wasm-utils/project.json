@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/compiler-wasm-utils",
-  "sourceRoot": "compiler/packages/wasm-codegen/packages/wasm-utils/src",
   "projectType": "library",
   "targets": {
     "build": {

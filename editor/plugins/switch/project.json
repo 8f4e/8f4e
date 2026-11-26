@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-switch",
-  "sourceRoot": "editor/plugins/switch/src",
   "projectType": "library",
   "targets": {
     "build": {

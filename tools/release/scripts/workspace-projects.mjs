@@ -53,22 +53,18 @@ export async function projectsFromGraph(workspaceRoot, graph, packageRoots = [])
 			version: metadata.packageVersion ?? null,
 			root,
 			relativeRoot: node.data.root,
-			sourceRoot: await resolveProjectSourceRoot(workspaceRoot, node),
+			sourceRoot: await resolveProjectSourceRoot(root, node.data.metadata?.metrics?.sourceDirectory ?? 'src'),
 			hasTestTarget: Boolean(node.data.targets?.test),
 		});
 	}
 	return projects.sort((left, right) => left.root.localeCompare(right.root));
 }
 
-/** Nx sourceRoot is workspace-relative. The standalone renderer submodule owns its own adapter. */
-async function resolveProjectSourceRoot(workspaceRoot, node) {
-	const { root, sourceRoot } = node.data;
-	if (!sourceRoot) return null;
-	const configured = node.name === 'glugglugglug' && sourceRoot === 'src' ? path.join(root, sourceRoot) : sourceRoot;
-	const projectRoot = path.resolve(workspaceRoot, root);
-	const absolute = path.resolve(workspaceRoot, configured);
-	if (path.isAbsolute(configured) || !containsPath(projectRoot, absolute)) {
-		throw new Error(`${node.name}: sourceRoot ${sourceRoot} must be workspace-relative and inside ${root}`);
+/** Resolve a conventional or explicitly configured source directory relative to its Nx project root. */
+async function resolveProjectSourceRoot(projectRoot, sourceDirectory) {
+	const absolute = path.resolve(projectRoot, sourceDirectory);
+	if (path.isAbsolute(sourceDirectory) || !containsPath(projectRoot, absolute)) {
+		throw new Error(`Metrics sourceDirectory ${sourceDirectory} must be project-relative and inside ${projectRoot}`);
 	}
 	try {
 		return (await fs.stat(absolute)).isDirectory() ? absolute : null;

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-code-block-copy-paste",
-  "sourceRoot": "editor/plugins/code-block-copy-paste/src",
   "projectType": "library",
   "targets": {
     "build": {

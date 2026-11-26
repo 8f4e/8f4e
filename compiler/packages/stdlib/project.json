@@ -1,6 +1,6 @@
 {
 	"name": "@8f4e/stdlib",
-	"sourceRoot": "compiler/packages/stdlib/std",
+	"metadata": { "metrics": { "sourceDirectory": "std" } },
 	"projectType": "library",
 	"targets": {
 		"test": {

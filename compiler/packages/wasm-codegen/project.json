@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/wasm-codegen",
-	"sourceRoot": "compiler/packages/wasm-codegen/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

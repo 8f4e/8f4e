@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/8f4e-website",
-	"sourceRoot": "apps/8f4e-website/src",
 	"projectType": "application",
 	"targets": {
 		"dev": {

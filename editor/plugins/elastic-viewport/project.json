@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-elastic-viewport",
-  "sourceRoot": "editor/plugins/elastic-viewport/src",
   "projectType": "library",
   "targets": {
     "build": {

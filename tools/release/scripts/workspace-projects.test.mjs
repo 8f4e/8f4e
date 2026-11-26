@@ -11,14 +11,16 @@ async function createWorkspace(t) {
 	return root;
 }
 
-function project(name, root, sourceRoot, { packageName = name, workspace = true, test = false } = {}) {
+function project(name, root, { packageName = name, workspace = true, test = false, sourceDirectory } = {}) {
 	return {
 		name,
 		data: {
 			root,
-			sourceRoot,
 			targets: test ? { test: {} } : {},
-			metadata: { js: { packageName, packageVersion: '1.0.0', isInPackageManagerWorkspaces: workspace } },
+			metadata: {
+				js: { packageName, packageVersion: '1.0.0', isInPackageManagerWorkspaces: workspace },
+				...(sourceDirectory ? { metrics: { sourceDirectory } } : {}),
+			},
 		},
 	};
 }
@@ -30,13 +32,14 @@ test('uses Nx package membership and project metadata without reading the lockfi
 	await fs.mkdir(path.join(root, 'tools/standalone/src'), { recursive: true });
 	const graph = {
 		nodes: {
-			stdlib: project('stdlib', 'compiler/stdlib', 'compiler/stdlib/std', {
+			stdlib: project('stdlib', 'compiler/stdlib', {
 				packageName: '@example/stdlib',
 				test: true,
+				sourceDirectory: 'std',
 			}),
-			ui: project('ui', 'apps/ui', 'apps/ui/src'),
-			tests: project('tests', 'apps/ui/tests', undefined, { test: true }),
-			standalone: project('standalone', 'tools/standalone', 'tools/standalone/src', { workspace: false }),
+			ui: project('ui', 'apps/ui'),
+			tests: project('tests', 'apps/ui/tests', { test: true }),
+			standalone: project('standalone', 'tools/standalone', { workspace: false }),
 			native: { name: 'native', data: { root: 'apps/native' } },
 		},
 	};
@@ -55,6 +58,7 @@ test('uses Nx package membership and project metadata without reading the lockfi
 		hasTestTarget: true,
 	});
 	assert.equal(projects[1].sourceRoot, null);
+	assert.equal(projects[0].sourceRoot, path.join(root, 'apps/ui/src'));
 	assert.deepEqual(
 		(await projectsFromGraph(root, graph, ['apps/ui'])).map(p => p.name),
 		['ui', 'tests']
@@ -65,19 +69,28 @@ test('uses Nx package membership and project metadata without reading the lockfi
 	);
 });
 
-test('uses only workspace-relative source roots, with the standalone renderer adapter as an explicit exception', async t => {
+test('derives source directories from graph roots without relying on sourceRoot metadata', async t => {
 	const root = await createWorkspace(t);
 	await fs.mkdir(path.join(root, 'apps/ui/src'), { recursive: true });
 	await fs.mkdir(path.join(root, 'editor/core/glugglugglug/src'), { recursive: true });
+	await fs.mkdir(path.join(root, 'elsewhere/ui/src'), { recursive: true });
+	await fs.mkdir(path.join(root, 'elsewhere/stdlib/std'), { recursive: true });
 	await fs.mkdir(path.join(root, 'src'));
 	const graph = {
 		nodes: {
-			renderer: project('glugglugglug', 'editor/core/glugglugglug', 'src'),
+			renderer: project('glugglugglug', 'editor/core/glugglugglug'),
+			ui: project('ui', 'apps/ui'),
+			stdlib: project('stdlib', 'elsewhere/stdlib', { sourceDirectory: 'std' }),
 		},
 	};
-	assert.equal((await projectsFromGraph(root, graph))[0].sourceRoot, path.join(root, 'editor/core/glugglugglug/src'));
-	graph.nodes.ui = project('ui', 'apps/ui', 'src');
-	await assert.rejects(projectsFromGraph(root, graph), /sourceRoot src must be workspace-relative/);
+	graph.nodes.renderer.data.sourceRoot = 'src'; // Standalone submodule metadata is not needed by the parent metrics.
+	const getSource = async name =>
+		(await projectsFromGraph(root, graph)).find(project => project.name === name).sourceRoot;
+	assert.equal(await getSource('glugglugglug'), path.join(root, 'editor/core/glugglugglug/src'));
+	assert.equal(await getSource('ui'), path.join(root, 'apps/ui/src'));
+	assert.equal(await getSource('stdlib'), path.join(root, 'elsewhere/stdlib/std'));
+	graph.nodes.ui.data.root = 'elsewhere/ui';
+	assert.equal(await getSource('ui'), path.join(root, 'elsewhere/ui/src'));
 });
 
 test('supports repeated project filters and alternate output directories', () => {

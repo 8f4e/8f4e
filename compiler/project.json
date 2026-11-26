@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/compiler",
-  "sourceRoot": "compiler/src",
   "projectType": "library",
   "namedInputs": {
     "galleryFixtures": ["{projectRoot}/tests/**/*.test.8f4e"]

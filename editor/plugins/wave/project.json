@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-wave",
-  "sourceRoot": "editor/plugins/wave/src",
   "projectType": "library",
   "targets": {
     "build": {

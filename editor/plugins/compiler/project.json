@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-compiler",
-  "sourceRoot": "editor/plugins/compiler/src",
   "projectType": "library",
   "targets": {
     "build": {

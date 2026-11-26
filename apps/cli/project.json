@@ -1,7 +1,6 @@
 {
 	"name": "@8f4e/cli",
 	"projectType": "application",
-	"sourceRoot": "apps/cli/src",
 	"targets": {
 		"build": {
 			"executor": "nx:run-commands",

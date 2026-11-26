@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-viewport-mouse-input",
-  "sourceRoot": "editor/plugins/viewport-mouse-input/src",
   "projectType": "library",
   "targets": {
     "build": {

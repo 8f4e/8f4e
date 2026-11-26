@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/wasm-ir-lowering",
-	"sourceRoot": "compiler/packages/sub-program/packages/wasm-ir-lowering/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

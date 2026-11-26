@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/memory-default-resolver",
-	"sourceRoot": "compiler/packages/sub-program/packages/memory-default-resolver/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

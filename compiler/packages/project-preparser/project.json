@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/project-preparser",
-	"sourceRoot": "compiler/packages/project-preparser/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

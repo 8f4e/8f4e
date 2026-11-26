@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-landing",
-  "sourceRoot": "editor/compositions/editor-landing/src",
   "projectType": "library",
   "targets": {
     "build": {

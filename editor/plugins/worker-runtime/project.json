@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-worker-runtime",
-  "sourceRoot": "editor/plugins/worker-runtime/src",
   "projectType": "library",
   "targets": {
     "build": {

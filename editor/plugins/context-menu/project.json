@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-context-menu",
-  "sourceRoot": "editor/plugins/context-menu/src",
   "projectType": "library",
   "targets": {
     "build": {

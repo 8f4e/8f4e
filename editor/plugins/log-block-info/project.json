@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-log-block-info",
-  "sourceRoot": "editor/plugins/log-block-info/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-default",
-  "sourceRoot": "editor/compositions/editor-default/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-coordinate-grid",
-  "sourceRoot": "editor/plugins/coordinate-grid/src",
   "projectType": "library",
   "targets": {
     "build": {

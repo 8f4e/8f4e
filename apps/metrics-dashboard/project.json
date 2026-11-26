@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/metrics-dashboard",
-	"sourceRoot": "apps/metrics-dashboard/src",
 	"projectType": "application",
 	"targets": {
 		"build": {

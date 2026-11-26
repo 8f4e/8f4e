@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-meter",
-  "sourceRoot": "editor/plugins/meter/src",
   "projectType": "library",
   "targets": {
     "build": {

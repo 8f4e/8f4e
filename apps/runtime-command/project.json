@@ -1,7 +1,6 @@
 {
 	"name": "@8f4e/runtime-command",
 	"projectType": "application",
-	"sourceRoot": "apps/runtime-command/src",
 	"targets": {
 		"test": {
 			"executor": "nx:run-commands",

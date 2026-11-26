@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-favorites",
-  "sourceRoot": "editor/plugins/favorites/src",
   "projectType": "library",
   "targets": {
     "build": {

@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/compiler-diagnostics",
-	"sourceRoot": "compiler/packages/diagnostics/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

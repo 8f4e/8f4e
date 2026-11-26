@@ -1,6 +1,5 @@
 {
 	"name": "@8f4e/test-runner",
-	"sourceRoot": "tools/test-runner/src",
 	"projectType": "library",
 	"targets": {
 		"build": {

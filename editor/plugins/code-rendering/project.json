@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-code-rendering",
-  "sourceRoot": "editor/plugins/code-rendering/src",
   "projectType": "library",
   "targets": {
     "build": {

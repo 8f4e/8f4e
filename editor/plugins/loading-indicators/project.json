@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-loading-indicators",
-  "sourceRoot": "editor/plugins/loading-indicators/src",
   "projectType": "library",
   "targets": {
     "build": {

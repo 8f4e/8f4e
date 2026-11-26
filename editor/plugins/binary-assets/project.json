@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-binary-assets",
-  "sourceRoot": "editor/plugins/binary-assets/src",
   "projectType": "library",
   "targets": {
     "build": {

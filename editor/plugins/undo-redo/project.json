@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-undo-redo",
-  "sourceRoot": "editor/plugins/undo-redo/src",
   "projectType": "library",
   "targets": {
     "build": {

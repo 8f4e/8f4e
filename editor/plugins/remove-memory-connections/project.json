@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-remove-memory-connections",
-  "sourceRoot": "editor/plugins/remove-memory-connections/src",
   "projectType": "library",
   "targets": {
     "build": {

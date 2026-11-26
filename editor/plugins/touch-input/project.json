@@ -1,6 +1,5 @@
 {
   "name": "@8f4e/editor-plugin-touch-input",
-  "sourceRoot": "editor/plugins/touch-input/src",
   "projectType": "library",
   "targets": {
     "build": {
