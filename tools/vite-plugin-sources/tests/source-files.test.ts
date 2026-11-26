@@ -327,36 +327,17 @@ describe('sourceUrls', () => {
 		}
 		expect(await sources.get('top')?.()).toBe('top');
 	});
-
-	it('refreshes the development URL collection when sources are added and removed', async () => {
-		const project = await fixture({ 'before.8f4e': 'before' }, 'url');
-		await mkdir(join(project.sources, 'nested'));
-		const server = await createServer({
-			...project.config,
-			optimizeDeps: { noDiscovery: true, include: [] },
-			server: { middlewareMode: true, hmr: false, preTransformRequests: false },
-		});
-		cleanups.push(() => server.close());
-		const moduleId = 'virtual:8f4e-source-urls/programs';
-		const initial = await server.transformRequest(moduleId);
-		expect(initial?.code).toContain('"before.8f4e"');
-		expect(initial?.code).toMatch(/[?&]url&no-inline/);
-		await expect
-			.poll(() => Object.values(server.watcher.getWatched()).flat().includes('before.8f4e'), { timeout: 5000 })
-			.toBe(true);
-		await project.write('nested/added.8f4e', 'new source');
-		await expect
-			.poll(async () => (await server.transformRequest(moduleId))?.code, { timeout: 5000 })
-			.toContain('"nested/added.8f4e"');
-		await unlink(join(project.sources, 'before.8f4e'));
-		await expect
-			.poll(async () => (await server.transformRequest(moduleId))?.code, { timeout: 5000 })
-			.not.toContain('"before.8f4e"');
-	});
 });
 
 it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matching files change', async kind => {
-	const project = await fixture({ 'before.test.8f4e': 'before', 'ignored/existing.test.8f4e': 'ignored' }, kind);
+	const project = await fixture(
+		{
+			'before.test.8f4e': 'before',
+			'nested/ready.test.8f4e': 'ready',
+			'ignored/existing.test.8f4e': 'ignored',
+		},
+		kind
+	);
 	const collection = kind === 'text' ? sourceFiles : sourceUrls;
 	const server = await createServer({
 		...project.config,
@@ -376,7 +357,7 @@ it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matc
 	const sources = await realpath(project.sources);
 	await expect
 		.poll(() => Object.values(server.watcher.getWatched()).flat(), { timeout: 5000 })
-		.toEqual(expect.arrayContaining(['before.test.8f4e', 'existing.test.8f4e']));
+		.toEqual(expect.arrayContaining(['before.test.8f4e', 'ready.test.8f4e', 'existing.test.8f4e']));
 
 	async function change(event: 'add' | 'unlink', path: string, action: () => Promise<unknown>) {
 		let observed = false;
@@ -398,7 +379,10 @@ it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matc
 
 	await add('unloaded.test.8f4e');
 	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
-	expect((await server.transformRequest(moduleId))?.code).toContain(id('unloaded'));
+	const initial = await server.transformRequest(moduleId);
+	expect(initial?.code).toContain(id('before'));
+	expect(initial?.code).toContain(id('unloaded'));
+	if (kind === 'url') expect(initial?.code).toMatch(/[?&]url&no-inline/);
 	const module = server.environments.client.moduleGraph.getModuleById(`\0${moduleId}`)!;
 	const cached = module.transformResult;
 	expect(cached).not.toBeNull();
@@ -410,9 +394,9 @@ it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matc
 	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
 	expect(module.transformResult).toBe(cached);
 
-	await add('later.test.8f4e');
+	await add('nested/later.test.8f4e');
 	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
-	expect((await server.transformRequest(moduleId))?.code).toContain(id('later'));
+	expect((await server.transformRequest(moduleId))?.code).toContain(id('nested/later'));
 	send.mockClear();
 	await remove('before.test.8f4e');
 	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
