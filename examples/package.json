@@ -5,8 +5,9 @@
   "description": "8f4e example modules and projects",
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
+    "./modules": "./src/modules",
     "./modules/*": "./src/modules/*",
+    "./projects": "./src/projects",
     "./projects/*": "./src/projects/*"
   },
   "sideEffects": false,

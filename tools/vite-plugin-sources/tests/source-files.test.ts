@@ -5,7 +5,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { InlineConfig, Rollup } from 'vite';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
-import { sourceFiles } from '../src/index';
+import { sourceFiles, sourceUrls } from '../src/index';
 
 const cleanups: Array<() => Promise<unknown>> = [];
 let blockedDirectory: string | undefined;
@@ -40,7 +40,7 @@ afterEach(async () => {
 	cleanups.length = 0;
 });
 
-async function fixture(files: Record<string, string>) {
+async function fixture(files: Record<string, string>, kind: 'text' | 'url' = 'text') {
 	const root = await mkdtemp(join(tmpdir(), '8f4e-sources-'));
 	cleanups.push(() => rm(root, { recursive: true, force: true }));
 	const host = join(root, 'host');
@@ -56,14 +56,16 @@ async function fixture(files: Record<string, string>) {
 	}
 	await Promise.all(Object.entries(files).map(([path, text]) => write(path, text)));
 	const entry = join(host, 'main.js');
-	await writeFile(entry, "export { default as sources } from 'virtual:8f4e-sources/programs';");
+	const namespace = kind === 'text' ? '8f4e-sources' : '8f4e-source-urls';
+	const collection = kind === 'text' ? sourceFiles : sourceUrls;
+	await writeFile(entry, `export { default as sources } from 'virtual:${namespace}/programs';`);
 	const config: InlineConfig = {
 		root: host,
 		configFile: false,
 		envFile: false,
 		publicDir: false,
 		logLevel: 'silent',
-		plugins: [sourceFiles({ name: 'programs', root: pathToFileURL(sources), exclude: ['ignored/**'] })],
+		plugins: [collection({ name: 'programs', root: pathToFileURL(sources), exclude: ['ignored/**'] })],
 		build: { outDir, minify: false, lib: { entry, formats: ['es'], fileName: () => 'index.js' } },
 	};
 	return { root, host, sources, outDir, entry, config, write };
@@ -207,8 +209,13 @@ describe('sourceFiles', () => {
 		expect(transformedSources()).toBe(1);
 	});
 
-	it.each(['normal', 'blocked'] as const)('discovers source changes with %s build-watch startup', async startup => {
-		const project = await fixture({ 'before.8f4e': 'before' });
+	it.each([
+		{ kind: 'text', startup: 'normal' },
+		{ kind: 'text', startup: 'blocked' },
+		{ kind: 'url', startup: 'normal' },
+		{ kind: 'url', startup: 'blocked' },
+	] as const)('discovers $kind changes with $startup build-watch startup', async ({ kind, startup }) => {
+		const project = await fixture({ 'before.8f4e': 'before' }, kind);
 		await mkdir(join(project.sources, 'empty'));
 		const sources = await realpath(project.sources);
 		const empty = join(sources, 'empty');
@@ -253,10 +260,145 @@ describe('sourceFiles', () => {
 		const addition = nextBuild();
 		await project.write('empty/added.8f4e', 'new source');
 		await addition;
-		expect(await readFile(join(project.outDir, 'index.js'), 'utf8')).toContain('"empty/added"');
+		const addedId = kind === 'text' ? 'empty/added' : 'empty/added.8f4e';
+		const beforeId = kind === 'text' ? 'before' : 'before.8f4e';
+		expect(await readFile(join(project.outDir, 'index.js'), 'utf8')).toContain(`"${addedId}"`);
 		const removal = nextBuild();
 		await unlink(join(project.sources, 'before.8f4e'));
 		await removal;
-		expect(await readFile(join(project.outDir, 'index.js'), 'utf8')).not.toContain('"before"');
+		expect(await readFile(join(project.outDir, 'index.js'), 'utf8')).not.toContain(`"${beforeId}"`);
 	});
+});
+
+describe('sourceUrls', () => {
+	it('exports stable paths with extensions and emits exact external assets without inlining', async () => {
+		const text = '; tiny source\r\n"quoted" \\ Unicode: 音\r\n';
+		const project = await fixture(
+			{
+				'math/fraction.8f4e': text,
+				'math/fraction.8f4em': 'other extension',
+				'top.8f4e': 'top',
+				'ignored/private.8f4e': 'excluded source',
+				'notes.txt': 'unmatched file',
+			},
+			'url'
+		);
+		await writeFile(
+			project.entry,
+			"export { default as urls } from 'virtual:8f4e-source-urls/programs';\n" +
+				"export { default as sources } from 'virtual:8f4e-sources/programs';"
+		);
+		const output = await buildOutput({
+			...project.config,
+			base: '/',
+			plugins: [
+				sourceUrls({
+					name: 'programs',
+					root: project.sources,
+					include: ['**/*.{8f4e,8f4em}'],
+					exclude: ['ignored/**'],
+				}),
+				sourceFiles({ name: 'programs', root: project.sources, include: ['top.8f4e'] }),
+			],
+			build: {
+				outDir: project.outDir,
+				minify: false,
+				rollupOptions: {
+					input: project.entry,
+					preserveEntrySignatures: 'strict',
+					output: { entryFileNames: 'index.js' },
+				},
+			},
+		});
+		const { urls, sources } = (await importCollection(project.outDir)) as Awaited<
+			ReturnType<typeof importCollection>
+		> & {
+			urls: ReadonlyMap<string, string>;
+		};
+		expect([...urls.keys()]).toEqual(['math/fraction.8f4e', 'math/fraction.8f4em', 'top.8f4e']);
+		expect(urls.get('__proto__')).toBeUndefined();
+		expect([...sources.keys()]).toEqual(['top']);
+		const assets = output.filter(file => file.type === 'asset');
+		expect(assets).toHaveLength(3);
+		for (const [path, url] of urls) {
+			expect(url).toMatch(/^\/assets\//);
+			expect(assets.some(asset => url === `/${asset.fileName}`)).toBe(true);
+			expect(await readFile(join(project.outDir, url.slice(1)))).toEqual(await readFile(join(project.sources, path)));
+		}
+		expect(await sources.get('top')?.()).toBe('top');
+	});
+});
+
+it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matching files change', async kind => {
+	const project = await fixture(
+		{
+			'before.test.8f4e': 'before',
+			'nested/ready.test.8f4e': 'ready',
+			'ignored/existing.test.8f4e': 'ignored',
+		},
+		kind
+	);
+	const collection = kind === 'text' ? sourceFiles : sourceUrls;
+	const server = await createServer({
+		...project.config,
+		plugins: [
+			collection({
+				name: 'programs',
+				root: project.sources,
+				include: ['**/*.test.8f4e'],
+				exclude: ['ignored/**'],
+			}),
+		],
+		optimizeDeps: { noDiscovery: true, include: [] },
+		server: { middlewareMode: true, hmr: false, preTransformRequests: false },
+	});
+	cleanups.push(() => server.close());
+	const send = vi.spyOn(server.ws, 'send');
+	const sources = await realpath(project.sources);
+	await expect
+		.poll(() => Object.values(server.watcher.getWatched()).flat(), { timeout: 5000 })
+		.toEqual(expect.arrayContaining(['before.test.8f4e', 'ready.test.8f4e', 'existing.test.8f4e']));
+
+	async function change(event: 'add' | 'unlink', path: string, action: () => Promise<unknown>) {
+		let observed = false;
+		const listener = (file: string) => {
+			if (resolve(file) === join(sources, path)) observed = true;
+		};
+		server.watcher.on(event, listener);
+		try {
+			await action();
+			await expect.poll(() => observed, { timeout: 5000 }).toBe(true);
+		} finally {
+			server.watcher.off(event, listener);
+		}
+	}
+	const add = (path: string) => change('add', path, () => project.write(path, 'new source'));
+	const remove = (path: string) => change('unlink', path, () => unlink(join(project.sources, path)));
+	const moduleId = `virtual:${kind === 'text' ? '8f4e-sources' : '8f4e-source-urls'}/programs`;
+	const id = (name: string) => `"${name}.test${kind === 'url' ? '.8f4e' : ''}"`;
+
+	await add('unloaded.test.8f4e');
+	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
+	const initial = await server.transformRequest(moduleId);
+	expect(initial?.code).toContain(id('before'));
+	expect(initial?.code).toContain(id('unloaded'));
+	if (kind === 'url') expect(initial?.code).toMatch(/[?&]url&no-inline/);
+	const module = server.environments.client.moduleGraph.getModuleById(`\0${moduleId}`)!;
+	const cached = module.transformResult;
+	expect(cached).not.toBeNull();
+
+	for (const path of ['diagnostic.error.8f4e', 'ignored/new.test.8f4e']) {
+		await add(path);
+		await remove(path);
+	}
+	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
+	expect(module.transformResult).toBe(cached);
+
+	await add('nested/later.test.8f4e');
+	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
+	expect((await server.transformRequest(moduleId))?.code).toContain(id('nested/later'));
+	send.mockClear();
+	await remove('before.test.8f4e');
+	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
+	expect((await server.transformRequest(moduleId))?.code).not.toContain(id('before'));
 });

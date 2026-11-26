@@ -2,6 +2,9 @@
   "name": "@8f4e/compiler",
   "sourceRoot": "src",
   "projectType": "library",
+  "namedInputs": {
+    "galleryFixtures": ["{projectRoot}/tests/**/*.test.8f4e"]
+  },
   "targets": {
     "build": {
       "executor": "nx:run-commands",

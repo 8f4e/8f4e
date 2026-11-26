@@ -2,7 +2,6 @@
 	"name": "@8f4e/8f4e-website",
 	"sourceRoot": "src",
 	"projectType": "application",
-	"implicitDependencies": ["@8f4e/examples"],
 	"targets": {
 		"dev": {
 			"continuous": true,
@@ -36,6 +35,7 @@
 		"test:browser": {
 			"executor": "nx:run-commands",
 			"dependsOn": ["^build"],
+			"inputs": ["default", "^production", { "projects": ["@8f4e/compiler"], "input": "galleryFixtures" }],
 			"options": {
 				"command": "vitest run",
 				"cwd": "{projectRoot}"
@@ -43,6 +43,7 @@
 		},
 		"build": {
 			"executor": "nx:run-commands",
+			"inputs": ["production", "^production", { "projects": ["@8f4e/compiler"], "input": "galleryFixtures" }],
 			"outputs": ["{projectRoot}/dist"],
 			"options": {
 				"command": "vite build",
@@ -83,13 +84,6 @@
 				"cwd": "{workspaceRoot}"
 			}
 		}
-	},
-	"namedInputs": {
-		"default": [
-			"{projectRoot}/**/*",
-			"sharedGlobals",
-			"{workspaceRoot}/compiler/tests/**/*.test.8f4e"
-		]
 	},
 	"tags": ["type:application", "scope:website"]
 }

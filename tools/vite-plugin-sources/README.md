@@ -1,7 +1,7 @@
 # @8f4e/vite-plugin-sources
 
-Discover source files and load their exact text on demand in Vite 7. Collections use a typed virtual module with
-`ReadonlyMap<string, () => Promise<string>>`. The plugin has no dependency on the 8f4e compiler or standard library.
+Discover source files as lazy text or external asset URLs in Vite 7. The plugin has no dependency on the 8f4e
+compiler or standard library. Text collections use a typed virtual module with `ReadonlyMap<string, () => Promise<string>>`.
 
 ```sh
 npm install --save-dev @8f4e/vite-plugin-sources
@@ -38,30 +38,58 @@ const text = load ? await load() : undefined;
 
 Importing the collection loads its IDs and import functions. Each source is a separate lazy module, loaded only when
 its function is called. Successful module imports are cached by the JavaScript module loader. Loading failures reject
-the returned promise. Unknown IDs have no map entry. The plugin returns text; consumers own parsing and compilation.
+the returned promise. Unknown IDs have no map entry. Consumers own parsing and compilation.
+
+## URL collections
+
+Use `sourceUrls()` with the same discovery options when a consumer needs downloadable assets rather than source text.
+For example, `@8f4e/examples/projects` resolves to the exported project directory without assuming a workspace path:
+
+```ts
+import { sourceUrls } from '@8f4e/vite-plugin-sources';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+	plugins: [sourceUrls({ name: 'projects', root: new URL(import.meta.resolve('@8f4e/examples/projects')) })],
+});
+```
+
+```ts
+import urls from 'virtual:8f4e-source-urls/projects';
+
+const url = urls.get('audio/synth.8f4e');
+const text = url === undefined ? undefined : await (await fetch(url)).text();
+```
+
+The virtual module is a `ReadonlyMap<string, string>`, keyed by paths relative to the collection root, including
+the filename extension. Vite emits the files as external assets (`?url&no-inline`), even below its inline-size limit.
+The URL map is eager, but consumers fetch the sources when needed. The same collection name can be used for a text
+collection and a URL collection because their virtual module namespaces are distinct.
 
 ## Configuration
 
-| Option | Meaning |
-| --- | --- |
-| `name` | Unique collection name containing letters, digits, `_`, `.`, or `-`. |
-| `root` | Source directory as a filesystem path or file URL. Relative paths resolve against Vite's root. |
-| `include` | Glob patterns relative to `root`; defaults to `['**/*.8f4e']`. |
-| `exclude` | Glob patterns relative to `root` to omit. |
+| Option    | Meaning                                                                                        |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `name`    | Unique collection name containing letters, digits, `_`, `.`, or `-`.                           |
+| `root`    | Source directory as a filesystem path or file URL. Relative paths resolve against Vite's root. |
+| `include` | Glob patterns relative to `root`; defaults to `['**/*.8f4e']`.                                 |
+| `exclude` | Glob patterns relative to `root` to omit.                                                      |
 
-IDs use `/` separators and remove the final filename extension. For example, `tests/stack.test.8f4e` becomes
-`tests/stack.test`. Multiple extensions such as `['**/*.{8f4e,8f4em}']` are supported. Colliding IDs cause a build error
+IDs use `/` separators. Text collections remove the final filename extension, so `tests/stack.test.8f4e` becomes
+`tests/stack.test`; URL collections preserve the extension. Multiple extensions such as `['**/*.{8f4e,8f4em}']` are supported. Colliding IDs cause a build error
 that identifies both files. Matching files must remain inside the configured root. An empty collection is valid.
 
 Collections are independent and may be registered together. Files are sorted for deterministic output. The plugin
-uses Vite's built-in `?raw` imports and supports development and build watch: additions and removals refresh the
-collection, with a full page reload during development. Existing source edits use Vite's normal module invalidation.
+uses Vite's built-in source and asset imports and supports development and build watch: additions and removals refresh the
+collection, with a full page reload during development only when the membership of a loaded collection changes.
+Existing source edits use Vite's normal module invalidation.
 Vite's usual restrictions on watching installed files inside `node_modules` also apply.
 The configured source directory is added to Vite's development file allowlist so collections can live outside
 the host application directory. Vite's file deny patterns remain in effect.
 
-To discover an installed package, resolve an exported file through Node's package resolution and use its directory
-as the root. For example, `dirname(createRequire(import.meta.url).resolve('@8f4e/stdlib/package.json'))` locates
+To discover an installed package, resolve an exported collection directory with `import.meta.resolve` as above,
+or resolve an exported file through Node's package resolution and use its directory as the root. For example,
+`dirname(createRequire(import.meta.url).resolve('@8f4e/stdlib/package.json'))` locates
 the stdlib package without assuming a `node_modules` location. Set `include: ['std/**/*.8f4e']` to retain its
 `std/math/fract` style IDs. The plugin discovers the files directly without a separate source catalog.
 
@@ -72,12 +100,13 @@ The integration tests use synthetic source trees and exercise Vite builds, consu
 
 ### Default editor integration
 
-The default editor's [Vite configuration](../../editor/compositions/editor-default/vite.config.ts) resolves the stdlib and
-examples package directories through their exported `package.json` paths. It registers collections matching
-`std/**/*.8f4e` and `src/modules/**/*.8f4em`. The [stdlib resolver](../../editor/compositions/editor-default/src/stdlib-resolver.ts)
+The default editor's [Vite configuration](../../editor/compositions/editor-default/vite.config.ts) resolves the stdlib
+through its exported `package.json` and resolves the exported examples module directory. It registers collections matching
+`std/**/*.8f4e` and `**/*.8f4em`, respectively. The [stdlib resolver](../../editor/compositions/editor-default/src/stdlib-resolver.ts)
 looks up IDs such as `std/math/fract`. The [module catalog](../../editor/plugins/example-modules/src/catalog.ts)
 derives metadata from paths and maps filename-based slugs to lazy source loaders. Parsing and compilation stay in
-the consuming packages. Example/test galleries continue using their existing file URLs.
+the consuming packages. The [product website](../../apps/8f4e-website/README.md) uses URL collections for its
+example and compiler test galleries, while keeping the homepage's explicit source URL imports separate.
 
 The plugin's integration tests own file discovery and exact source-text coverage using synthetic source trees. The
 editor's [resolver tests](../../editor/compositions/editor-default/src/stdlib-resolver.test.ts) verify compilation and execution

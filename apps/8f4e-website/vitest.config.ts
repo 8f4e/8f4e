@@ -1,8 +1,10 @@
 import { resolve } from 'node:path';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { projectSourcePlugins } from './vite.sources.mjs';
 
 export default defineConfig({
+	plugins: projectSourcePlugins(),
 	server: {
 		headers: {
 			'Cross-Origin-Embedder-Policy': 'require-corp',

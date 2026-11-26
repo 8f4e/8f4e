@@ -10,7 +10,9 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./docs": "./docs",
+    "./docs/*.md": "./docs/*.md"
   },
   "sideEffects": false,
   "repository": {

@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { projectSourcePlugins } from './vite.sources.mjs';
 
 export default defineConfig(() => ({
 	root: 'src',
 	plugins: [
+		...projectSourcePlugins(),
 		viteStaticCopy({
 			targets: [
 				{ src: '_headers', dest: '' },
