@@ -7,6 +7,11 @@ const fonts: Array<[Font, string]> = [
 	['eaglespcgaalt38x8', 'EagleSpCGA Alt3 · 8×8'],
 	['sergamon8x16', 'Sergamon · 8×16'],
 	['scientifica5x11', 'Scientifica · 5×11'],
+	['tomthumb4x6', 'Tom Thumb · 4×6'],
+	['notjammonoprophet8x8', 'Not Jam Mono Prophet · 8×8'],
+	['notjammonocrooked8x8', 'Not Jam Mono Crooked · 8×8'],
+	['kirsch6x16', 'Kirsch · 6×16'],
+	['unsciifantasy8x8', 'Unscii Fantasy · 8×8'],
 ];
 const lines = [
 	'module fonts',

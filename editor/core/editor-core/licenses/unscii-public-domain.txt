@@ -1,0 +1,8 @@
+Font: Unscii-8 Fantasy
+Author: Viznut
+Source: https://github.com/viznut/unscii
+Homepage: https://viznut.fi/unscii/
+
+The upstream README dedicates the Unscii font variants to the public domain
+(or CC0), except for parts derived from GNU Unifont. This asset uses only
+the unscii-8-fantasy bitmap variant, not the GPL-licensed unscii-16-full.

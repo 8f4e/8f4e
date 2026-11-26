@@ -81,6 +81,24 @@ node tools/import-bdf.mjs scientifica5x11.bdf scientifica5x11
 The Scientifica normalization retains its five-pixel advance and eleven-pixel line height; all imported CP437
 glyph pixels fit those bounds. The BDF importer accepts trailing whitespace emitted by bitmap exporters.
 
+Tom Thumb and the two Not Jam fonts have global bounding boxes narrower than their character advances.
+Expand the boxes to the advance before importing. Kirsch instead uses a larger glyph bounding box that
+allows overhang; normalize it to its native 6×16 cell, clipping only pixels outside that cell. Unscii Fantasy
+can be converted from its upstream HEX bitmap file using the Unscii project's converter:
+
+```sh
+sed 's/^FONTBOUNDINGBOX 3 6 0 -1$/FONTBOUNDINGBOX 4 6 0 -1/' tom-thumb.bdf > tomthumb4x6.bdf
+node tools/import-bdf.mjs tomthumb4x6.bdf tomthumb4x6
+sed 's/^FONTBOUNDINGBOX 7 8 0 0$/FONTBOUNDINGBOX 8 8 0 0/' Not-Jam-Mono-Prophet-8-8px.bdf > notjammonoprophet8x8.bdf
+node tools/import-bdf.mjs notjammonoprophet8x8.bdf notjammonoprophet8x8
+sed 's/^FONTBOUNDINGBOX 7 8 0 0$/FONTBOUNDINGBOX 8 8 0 0/' Not-Jam-Mono-Crooked-8-8px.bdf > notjammonocrooked8x8.bdf
+node tools/import-bdf.mjs notjammonocrooked8x8.bdf notjammonocrooked8x8
+sed 's/^FONTBOUNDINGBOX 12 17 -3 -5$/FONTBOUNDINGBOX 6 16 0 -4/' kirsch.bdf > kirsch6x16.bdf
+node tools/import-bdf.mjs kirsch6x16.bdf kirsch6x16
+perl /path/to/unscii/hex2bdf.pl --rows 8 --font Unscii --variant Fantasy --copyright 'Public domain (Viznut)' unscii-8-fantasy.hex > unscii-8-fantasy.bdf
+node tools/import-bdf.mjs unscii-8-fantasy.bdf unsciifantasy8x8
+```
+
 Code text preparation and syntax palette selection belong to `@8f4e/editor-plugin-code-rendering`. Web-ui owns the
 generic packed sprite-cell format, separately from font loading.
 Themes are resolved through `@8f4e/editor-palette` and never change mask pixels.

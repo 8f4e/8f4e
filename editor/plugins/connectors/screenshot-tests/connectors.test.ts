@@ -23,6 +23,11 @@ for (const font of [
 	'eaglespcgaalt38x8',
 	'sergamon8x16',
 	'scientifica5x11',
+	'tomthumb4x6',
+	'notjammonoprophet8x8',
+	'notjammonocrooked8x8',
+	'kirsch6x16',
+	'unsciifantasy8x8',
 ] satisfies Font[]) {
 	for (const { name, palette } of themes) {
 		test(`connectors with ${font} and ${name} colors`, async () => {

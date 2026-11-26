@@ -57,8 +57,8 @@ test('previews fonts through the default composition without changing saved sour
 		for (let index = FONT_NAMES.indexOf(sourceFont); index >= 0; index--) {
 			expect(key('-').defaultPrevented).toBe(true);
 		}
-		await expect.poll(() => editor!.state.viewport.vGrid).toBe(5);
-		expect(editor.state.viewport.hGrid).toBe(8);
+		await expect.poll(() => editor!.state.viewport.vGrid).toBe(4);
+		expect(editor.state.viewport.hGrid).toBe(6);
 		for (let index = 0; index < FONT_NAMES.indexOf('x11miscfixed6x10'); index++) {
 			expect(key('+').defaultPrevented).toBe(true);
 		}
