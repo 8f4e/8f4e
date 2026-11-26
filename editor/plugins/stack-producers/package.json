@@ -1,6 +1,6 @@
 {
   "name": "@8f4e/editor-plugin-stack-producers",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "private": true,
   "description": "Immediate stack producer line highlighting for the 8f4e editor",
   "type": "module",
