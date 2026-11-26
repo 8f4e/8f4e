@@ -26,5 +26,15 @@
     "vitest": "4.1.12",
     "@types/node": "24.13.2",
     "@8f4e/editor-state": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

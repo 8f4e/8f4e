@@ -91,5 +91,18 @@
     "vite": "7.3.8",
     "vitest": "4.1.12",
     "@8f4e/compiler": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "lint": {},
+      "dev": {
+        "command": "concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": { "command": "vitest run --config vitest.config.ts" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

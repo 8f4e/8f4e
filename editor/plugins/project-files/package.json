@@ -31,5 +31,15 @@
     "vitest": "4.1.12",
     "@8f4e/editor-state-testing": "*",
     "@8f4e/web-ui": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "typecheck": {},
+      "lint": {},
+      "test": { "command": "vitest run" }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

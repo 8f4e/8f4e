@@ -26,5 +26,15 @@
     "@8f4e/config": "*",
     "@8f4e/project-preparser": "*",
     "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "test": { "executor": "@nx/vitest:test" },
+      "lint": { "command": "biome check --write src vite.config.ts vitest.config.ts" },
+      "typecheck": {}
+    },
+    "tags": ["type:library", "scope:testing"]
   }
 }

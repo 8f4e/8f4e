@@ -26,5 +26,15 @@
   "dependencies": {},
   "devDependencies": {
     "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "dev": { "command": "tsc --watch" },
+      "test": { "executor": "@nx/vitest:test" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

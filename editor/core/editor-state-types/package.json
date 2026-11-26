@@ -25,5 +25,13 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "dependencies": {
     "@8f4e/language-spec": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

@@ -66,7 +66,9 @@ npx nx run @8f4e/compiler:dev
 Application entry points live under `apps/`; the `compiler/`, `editor/` and `examples/` directories own product libraries
 and sources. `tools/` holds shared tooling libraries and standalone development utilities. The root npm workspace
 lists these project locations explicitly, so standalone tools do not become npm workspaces accidentally. Nx discovers
-workspaces by their package names; native applications without npm manifests declare their projects in `project.json`.
+workspaces by their package names. Package-owned configuration lives in the package manifest's `nx` property; projects
+without npm manifests declare themselves in `project.json`. The stdlib keeps `project.json` because its custom project
+metadata must be available in the Nx graph.
 
 - `@8f4e/editor-default` (`editor/compositions/editor-default`)
 - `@8f4e/editor-webapp` (`apps/editor-webapp`)
@@ -94,12 +96,37 @@ workspaces by their package names; native applications without npm manifests dec
 ## Configuration
 
 - **nx.json**: Main Nx configuration with caching and dependency rules
-- **package.json**: Updated scripts to use Nx commands
+- **package.json**: Package name, dependencies, exports, and package-owned Nx configuration under `nx`
+- **project.json**: Configuration for projects without an npm manifest or those requiring custom project metadata
 - **Workspaces**: Still configured for package linking compatibility
 
 Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use conventional `src/` directories.
 Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
 physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
+
+Keep individual target declarations compact. For example, a typical TypeScript editor plugin declares the following
+`nx` property in its package manifest:
+
+```json
+{
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
+  }
+}
+```
+
+The shared target defaults supply the package-local working directory, conventional `dist/` build output, lint command,
+test-inclusive typecheck command, and screenshot command/prerequisite. Empty targets opt in to those commands.
+Build and test commands remain explicit where they differ; tests using the Nx Vitest executor inherit the local
+`vitest.config.ts` path. For nonstandard commands or outputs, use project-local overrides and inspect the resolved
+target to ensure its dependency and caching rules remain intact.
 
 Release metrics discover package names, roots, and versions from the Nx project graph. They select
 projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
@@ -125,7 +152,7 @@ conventions, generators, or shipped assets. Use `npx nx run <project>:<target> -
 
 - Vite configuration optimized for performance
 - All existing npm scripts still work
-- Package.json files in packages unchanged
+- Package names and exports are unchanged; package manifests own their Nx configuration
 - TypeScript builds work exactly as before
 - Dependency resolution works correctly
 

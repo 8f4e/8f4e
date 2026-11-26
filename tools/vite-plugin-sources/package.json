@@ -34,5 +34,15 @@
 		"@8f4e/config": "*",
 		"@types/node": "24.13.2",
 		"vitest": "4.1.12"
+	},
+	"nx": {
+		"projectType": "library",
+		"targets": {
+			"build": { "command": "rm -rf dist && tsc" },
+			"test": { "command": "vitest run" },
+			"typecheck": {},
+			"lint": { "command": "biome check --write ." }
+		},
+		"tags": ["type:library", "scope:tooling"]
 	}
 }

@@ -23,5 +23,31 @@
   "homepage": "https://github.com/8f4e/8f4e#readme",
   "devDependencies": {
     "@8f4e/config": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/src/modules/lookup-tables/sineLookupTable.8f4em",
+          "{projectRoot}/src/modules/lookup-tables/expLookupTable.8f4em",
+          "{projectRoot}/src/modules/lookup-tables/midiFreqLUT_12TET.8f4em",
+          "{projectRoot}/src/modules/constants/amigaPeriodIncrement.8f4em"
+        ],
+        "dependsOn": [],
+        "inputs": ["production"],
+        "command": "node ./src/module-generators/generateModules.ts"
+      },
+      "generate-minblep-lut": {
+        "cache": false,
+        "outputs": ["{projectRoot}/src/modules/lookup-tables/minBLEPLUT.8f4em"],
+        "options": { "cwd": "{projectRoot}" },
+        "command": "node ./src/module-generators/generate-minblep-lut.ts"
+      },
+      "lint": {},
+      "dev": { "command": "node ./src/module-generators/generateModules.ts && tsc --watch" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:examples"]
   }
 }

@@ -32,5 +32,16 @@
     "@8f4e/config": "*",
     "@types/node": "24.13.2",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "lint": {},
+      "dev": { "command": "tsc --watch" },
+      "test": { "executor": "@nx/vitest:test" },
+      "typecheck": {}
+    },
+    "tags": ["type:runtime", "scope:testing"]
   }
 }

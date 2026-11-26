@@ -29,5 +29,18 @@
   },
   "devDependencies": {
     "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "lint": { "command": "biome check --write src tests" },
+      "dev": {
+        "command": "rm -rf dist && concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": { "executor": "@nx/vitest:test" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:core"]
   }
 }

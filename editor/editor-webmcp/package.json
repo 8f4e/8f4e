@@ -30,5 +30,33 @@
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": {
+        "dependsOn": ["^build", "generate-content"],
+        "command": "rm -rf dist && tsc"
+      },
+      "test": {
+        "dependsOn": ["build"],
+        "command": "vitest run"
+      },
+      "typecheck": {
+        "dependsOn": ["build"],
+        "command": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.tools.json"
+      },
+      "lint": { "command": "biome check --write src browser-tests scripts" },
+      "test:browser": { "command": "vitest run --config vitest.browser.config.ts" },
+      "generate-content": {
+        "cache": true,
+        "inputs": ["production", "^production"],
+        "outputs": ["{projectRoot}/src/generated"],
+        "dependsOn": ["^build"],
+        "options": { "cwd": "{projectRoot}" },
+        "command": "vite build --config vite.content.config.ts && node .content-generator/generate-content.js"
+      }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

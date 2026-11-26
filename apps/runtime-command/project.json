@@ -5,14 +5,15 @@
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
-				"commands": [{ "command": "node --test tests/*.test.mjs", "forwardAllArgs": false }],
-				"cwd": "{projectRoot}"
+				"commands": [
+					{
+						"command": "node --test tests/*.test.mjs",
+						"forwardAllArgs": false
+					}
+				]
 			}
 		},
-		"lint": {
-			"executor": "nx:run-commands",
-			"options": { "command": "biome check --write .", "cwd": "{projectRoot}" }
-		}
+		"lint": { "command": "biome check --write ." }
 	},
 	"tags": ["type:tooling", "scope:runtime"]
 }

@@ -32,5 +32,16 @@
     "glugglugglug": "*",
     "@8f4e/sprite-generator": "*",
     "@8f4e/editor-palette": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {},
+      "test:screenshot": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

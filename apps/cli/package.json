@@ -36,5 +36,18 @@
   "devDependencies": {
     "@types/node": "24.13.2",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "application",
+    "targets": {
+      "build": { "command": "vite build && tsc -p tsconfig.build.json" },
+      "lint": {},
+      "test": {
+        "executor": "@nx/vitest:test",
+        "dependsOn": ["^build", "build"]
+      },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:tooling", "scope:core"]
   }
 }

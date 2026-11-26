@@ -31,5 +31,16 @@
     "@vitest/browser-playwright": "4.1.12",
     "@vitest/browser": "4.1.12",
     "@8f4e/sprite-generator": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {},
+      "test:screenshot": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

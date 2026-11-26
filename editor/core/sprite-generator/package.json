@@ -29,5 +29,45 @@
   "devDependencies": {
     "@8f4e/editor-palette": "*",
     "vite": "7.3.8"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "generate-fonts": {
+        "outputs": ["{projectRoot}/src/generated"],
+        "options": { "cwd": "{projectRoot}" },
+        "inputs": ["production"],
+        "command": "node --experimental-transform-types tools/generate-font-bitmaps.mjs"
+      },
+      "build": {
+        "dependsOn": ["^build", "generate-fonts"],
+        "command": "rm -rf dist && tsc"
+      },
+      "dev": {
+        "dependsOn": ["^build", "generate-fonts"],
+        "command": "tsc --watch"
+      },
+      "test": {
+        "executor": "@nx/vitest:test",
+        "dependsOn": ["^build", "generate-fonts"]
+      },
+      "typecheck": {
+        "dependsOn": ["^build", "generate-fonts"],
+        "command": "tsc --noEmit"
+      },
+      "test:screenshot": { "command": "playwright test" },
+      "test:screenshot:ui": { "command": "playwright test --ui" },
+      "test:screenshot:update": {
+        "dependsOn": ["build"],
+        "command": "playwright test --update-snapshots"
+      },
+      "test:screenshot:headed": { "command": "playwright test --headed" },
+      "test:screenshot:debug": { "command": "playwright test --debug" },
+      "dev:test": {
+        "options": { "cwd": "{projectRoot}" },
+        "command": "vite --config screenshot-tests/vite.config.ts"
+      }
+    },
+    "tags": ["type:library", "scope:graphics"]
   }
 }

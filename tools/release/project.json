@@ -4,14 +4,15 @@
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
-				"commands": [{ "command": "node --test scripts/*.test.mjs", "forwardAllArgs": false }],
-				"cwd": "{projectRoot}"
+				"commands": [
+					{
+						"command": "node --test scripts/*.test.mjs",
+						"forwardAllArgs": false
+					}
+				]
 			}
 		},
-		"lint": {
-			"executor": "nx:run-commands",
-			"options": { "command": "biome check --write scripts", "cwd": "{projectRoot}" }
-		},
+		"lint": { "command": "biome check --write scripts" },
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,
@@ -38,7 +39,6 @@
 			]
 		},
 		"bundle-sizes": {
-			"executor": "nx:run-commands",
 			"cache": false,
 			"dependsOn": [
 				{
@@ -46,26 +46,28 @@
 					"target": "build"
 				}
 			],
-			"options": {
-				"command": "node {projectRoot}/scripts/log-bundle-sizes.mjs",
-				"cwd": "{workspaceRoot}"
-			}
+			"options": { "cwd": "{workspaceRoot}" },
+			"command": "node {projectRoot}/scripts/log-bundle-sizes.mjs"
 		},
 		"docs-coverage": {
-			"executor": "nx:run-commands",
 			"cache": false,
 			"outputs": ["{workspaceRoot}/logs/tsdoc-coverage"],
-			"options": {
-				"command": "node {projectRoot}/scripts/tsdoc-coverage.mjs",
-				"cwd": "{workspaceRoot}"
-			}
+			"options": { "cwd": "{workspaceRoot}" },
+			"command": "node {projectRoot}/scripts/tsdoc-coverage.mjs"
 		},
 		"tests": {
 			"executor": "nx:noop",
 			"cache": false,
 			"dependsOn": [
 				{
-					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-webapp", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
+					"projects": [
+						"@8f4e/cli",
+						"*",
+						"!@8f4e/editor-webapp",
+						"!glugglugglug",
+						"!@8f4e/runtime-linux",
+						"!@8f4e/runtime-command"
+					],
 					"target": "test"
 				}
 			]

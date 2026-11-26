@@ -29,5 +29,16 @@
     "@vitest/browser-playwright": "4.1.12",
     "glugglugglug": "*",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": { "command": "biome check --write src screenshot-tests" },
+      "test:screenshot": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

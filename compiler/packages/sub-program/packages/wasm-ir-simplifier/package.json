@@ -28,5 +28,15 @@
   },
   "devDependencies": {
     "@types/node": "24.13.2"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "lint": {},
+      "dev": { "command": "rm -rf dist && tsc --watch" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:core"]
   }
 }
