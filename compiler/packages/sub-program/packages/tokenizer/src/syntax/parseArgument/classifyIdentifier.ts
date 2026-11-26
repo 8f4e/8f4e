@@ -66,6 +66,32 @@ export function classifyIdentifier(value: string): ArgumentIdentifier {
 		return classifySimpleIdentifier(value);
 	}
 
+	// &* is a local pointer-value read, not an intermodular start-address form.
+	// Keep it ahead of qualified-reference classification so unsupported qualified forms fail clearly.
+	if (value.startsWith('&*')) {
+		if (hasIntermoduleSeparator) {
+			throw new SyntaxIssue(
+				SyntaxErrorCode.INVALID_IDENTIFIER,
+				'Qualified pointee address references are not supported: ' + value
+			);
+		}
+		if (value[2] === '*') {
+			throw new SyntaxIssue(
+				SyntaxErrorCode.INVALID_POINTER_DEPTH,
+				'The pointee address prefix accepts exactly one pointer sigil: ' + value
+			);
+		}
+		const { targetMemoryId } = getMemoryPointerTarget(value.slice(1));
+		return {
+			type: ArgumentType.IDENTIFIER,
+			value,
+			referenceKind: 'memory-pointer',
+			scope: 'local',
+			targetMemoryId,
+			dereferenceDepth: 0,
+		};
+	}
+
 	// Intermodular module-base and memory references must be checked before local memory references.
 	if (hasIntermoduleSeparator) {
 		const intermodularReference = classifyIntermodularReference(value);

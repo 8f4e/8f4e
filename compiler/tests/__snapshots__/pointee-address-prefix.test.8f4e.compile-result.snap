@@ -1,0 +1,434 @@
+{
+  "functionAst": {
+    "address__int_p": {
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "address",
+            },
+          ],
+          "instruction": "function",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ptr",
+            },
+          ],
+          "instruction": "param",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 0,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "ptr",
+              "type": "identifier",
+              "value": "&*ptr",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "int*",
+            },
+          ],
+          "instruction": "functionEnd",
+        },
+      ],
+      "name": "address",
+      "type": "function",
+    },
+  },
+  "functionOverview": {
+    "address__int_p": {
+      "id": "address__int_p",
+      "signature": {
+        "parameters": [
+          {
+            "name": "ptr",
+            "type": "int*",
+          },
+        ],
+        "returns": [
+          "int*",
+        ],
+      },
+    },
+  },
+  "moduleAst": {
+    "allocatedPointer": {
+      "id": "allocatedPointer",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "allocatedPointer",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 123,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ptr",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 0,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "ptr",
+              "type": "identifier",
+              "value": "&*ptr",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "fixedPointerReference": {
+      "id": "fixedPointerReference",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "fixedPointerReference",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 789,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "ptr",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "int*",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "fixed",
+            },
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "ptr",
+              "type": "identifier",
+              "value": "&ptr",
+            },
+          ],
+          "instruction": "int*&",
+        },
+        {
+          "arguments": [
+            {
+              "dereferenceDepth": 0,
+              "referenceKind": "memory-pointer",
+              "scope": "local",
+              "targetMemoryId": "fixed",
+              "type": "identifier",
+              "value": "&*fixed",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+    "pureFunctionPointerParameter": {
+      "id": "pureFunctionPointerParameter",
+      "lines": [
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "pureFunctionPointerParameter",
+            },
+          ],
+          "instruction": "module",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "value",
+            },
+            {
+              "isInteger": true,
+              "type": "literal",
+              "value": 456,
+            },
+          ],
+          "instruction": "int",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "push",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "plain",
+              "scope": "local",
+              "type": "identifier",
+              "value": "address",
+            },
+          ],
+          "instruction": "call",
+        },
+        {
+          "arguments": [
+            {
+              "referenceKind": "memory-reference",
+              "scope": "local",
+              "targetMemoryId": "value",
+              "type": "identifier",
+              "value": "&value",
+            },
+          ],
+          "instruction": "assertEqual",
+        },
+        {
+          "arguments": [],
+          "instruction": "moduleEnd",
+        },
+      ],
+      "type": "module",
+    },
+  },
+  "moduleMemory": {
+    "allocatedPointer": {
+      "memory": {
+        "ptr": {
+          "allocationUnitAddress": 2,
+          "allocationUnitCount": 1,
+          "byteAddress": 8,
+          "default": 4,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+        "value": {
+          "allocationUnitAddress": 1,
+          "allocationUnitCount": 1,
+          "byteAddress": 4,
+          "default": 123,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+    "fixedPointerReference": {
+      "memory": {
+        "ptr": {
+          "allocationUnitAddress": 4,
+          "allocationUnitCount": 1,
+          "byteAddress": 16,
+          "default": 12,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 1,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointeeBaseType": "int",
+          "pointeeElementCount": 1,
+          "pointerDepth": 1,
+          "type": "int*",
+        },
+        "value": {
+          "allocationUnitAddress": 3,
+          "allocationUnitCount": 1,
+          "byteAddress": 12,
+          "default": 789,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+    "pureFunctionPointerParameter": {
+      "memory": {
+        "value": {
+          "allocationUnitAddress": 5,
+          "allocationUnitCount": 1,
+          "byteAddress": 20,
+          "default": 456,
+          "elementWordSize": 4,
+          "hasExplicitDefault": true,
+          "id": 0,
+          "isInteger": true,
+          "isUnsigned": false,
+          "numberOfElements": 1,
+          "pointerDepth": 0,
+          "type": "int",
+        },
+      },
+    },
+  },
+  "overview": {
+    "compiledFunctions": [
+      "address__int_p",
+    ],
+    "compiledModules": [
+      "allocatedPointer",
+      "fixedPointerReference",
+      "pureFunctionPointerParameter",
+    ],
+    "requiredMemoryBytes": 24,
+    "wasmExports": [
+      "initDefaults",
+      "main",
+      "test",
+    ],
+  },
+}

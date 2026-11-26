@@ -1,0 +1,14 @@
+{
+  "code": 50,
+  "domain": "semantic",
+  "instruction": "push",
+  "kind": "source",
+  "location": {
+    "kind": "block",
+    "lineNumber": 3,
+    "projectBlockId": 3,
+    "projectGroupPath": "",
+  },
+  "message": "Access width is larger than the address range. (50)",
+  "symbol": "emptyPointerArrayReference",
+}
