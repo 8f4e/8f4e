@@ -8,27 +8,39 @@ This package provides shared configuration helpers that allow packages to mainta
 
 ### TypeScript Configuration
 
-Packages can extend the shared TypeScript base configurations:
+Packages with the standard `src/` → `dist/` layout only need to select their environment:
 
 ```json
 {
-  "extends": "@8f4e/config/tsconfig.node.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/**/*.test.ts"]
+  "extends": "@8f4e/config/tsconfig.node.json"
 }
 ```
 
-Available base configurations:
-- `@8f4e/config/tsconfig.base.json` - Core compiler options (strict, module, etc.)
-- `@8f4e/config/tsconfig.node.json` - For pure library packages (es2023 lib)
-- `@8f4e/config/tsconfig.dom.json` - For browser/DOM packages (es2023 + DOM lib)
-- `@8f4e/config/tsconfig.webworker.json` - For web worker packages (es2023 + webworker lib)
+Available presets:
 
-Note: `outDir`, `rootDir`, `include`, and `exclude` must be specified in each package's tsconfig.json as they are path-relative.
+- `@8f4e/config/tsconfig.base.json` - Core compiler options without a prescribed layout, for applications and other nonstandard projects.
+- `@8f4e/config/tsconfig.library.json` - Adds the standard source and output paths without prescribing an environment or test exclusions.
+- `@8f4e/config/tsconfig.node.json` - Standard Node.js library (ES2023 and Node types, excluding colocated test files).
+- `@8f4e/config/tsconfig.dom.json` - Standard browser library (ES2023 and DOM, excluding colocated test files and `__tests__/` directories).
+- `@8f4e/config/tsconfig.webworker.json` - Standard web worker library (ES2023 and web worker APIs, excluding colocated test files).
+
+The library presets use TypeScript's `${configDir}` template (available since TypeScript 5.5) so source, output and exclusion
+paths resolve relative to the consuming project's configuration, not the shared package. Override options and file patterns
+locally only when a project differs from the defaults.
+
+For test type checking, extend the project's configuration followed by the shared test overlay:
+
+```json
+{
+  "extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+  "compilerOptions": { "rootDir": "." },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
+```
+
+The overlay disables emission, enables Vitest globals and excludes `node_modules/` and `dist/`. Specify additional types,
+source patterns or a different root directory locally when needed.
+The shared preset is named differently from project-local `tsconfig.test.json` files so Nx retains it in dependency inputs.
 
 For programmatic access to TypeScript options:
 

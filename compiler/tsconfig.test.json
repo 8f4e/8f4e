@@ -1,11 +1,5 @@
 {
-	"extends": "./tsconfig.json",
-	"compilerOptions": {
-		"noEmit": true,
-		"rootDir": ".",
-		"lib": ["es2023", "webworker"],
-		"types": ["node", "vitest"]
-	},
-	"include": ["src/**/*.ts", "tests/**/*.ts"],
-	"exclude": ["node_modules", "dist"]
+	"extends": ["./tsconfig.json", "@8f4e/config/tsconfig.testing.json"],
+	"compilerOptions": { "rootDir": ".", "lib": ["es2023", "webworker"], "types": ["node", "vitest"] },
+	"include": ["src/**/*.ts", "tests/**/*.ts"]
 }

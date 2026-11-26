@@ -1,6 +1,8 @@
 {
-	"extends": "@8f4e/config/tsconfig.node.json",
+	"extends": "@8f4e/config/tsconfig.base.json",
 	"compilerOptions": {
+		"lib": ["es2023"],
+		"types": ["node"],
 		"noEmit": true,
 		"allowImportingTsExtensions": true
 	},

@@ -1,18 +1,4 @@
 {
 	"extends": "@8f4e/config/tsconfig.node.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": "src",
-		"lib": [
-			"es2023",
-			"webworker"
-		]
-	},
-	"include": [
-		"src/**/*.ts"
-	],
-	"exclude": [
-		"node_modules",
-		"src/**/*.test.ts"
-	]
+	"compilerOptions": { "lib": ["es2023", "webworker"] }
 }
