@@ -81,7 +81,8 @@ that identifies both files. Matching files must remain inside the configured roo
 
 Collections are independent and may be registered together. Files are sorted for deterministic output. The plugin
 uses Vite's built-in source and asset imports and supports development and build watch: additions and removals refresh the
-collection, with a full page reload during development. Existing source edits use Vite's normal module invalidation.
+collection, with a full page reload during development only when the membership of a loaded collection changes.
+Existing source edits use Vite's normal module invalidation.
 Vite's usual restrictions on watching installed files inside `node_modules` also apply.
 The configured source directory is added to Vite's development file allowlist so collections can live outside
 the host application directory. Vite's file deny patterns remain in effect.

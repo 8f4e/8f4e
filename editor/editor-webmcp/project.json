@@ -59,8 +59,7 @@
       "cache": true,
       "inputs": [
         "production",
-        "^production",
-        { "projects": ["@8f4e/compiler", "@8f4e/editor-core"], "input": "referenceDocs" }
+        "^production"
       ],
       "outputs": [
         "{projectRoot}/src/generated"

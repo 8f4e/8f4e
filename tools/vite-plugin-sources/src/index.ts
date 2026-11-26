@@ -1,7 +1,7 @@
 import { realpath } from 'node:fs/promises';
 import { extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { glob } from 'tinyglobby';
+import { glob, globSync } from 'tinyglobby';
 import type { Plugin, ViteDevServer } from 'vite';
 
 export interface SourceFilesOptions {
@@ -34,20 +34,34 @@ function sourceCollection(options: SourceFilesOptions, kind: 'text' | 'url'): Pl
 	const pluginName = `${namespace}:${options.name}`;
 	const publicId = `virtual:${namespace}/${options.name}`;
 	const resolvedId = `\0${publicId}`;
+	const include = options.include ?? ['**/*.8f4e'];
 	let sourceRoot: string;
 	let building = false;
 	let server: ViteDevServer | undefined;
+	let knownFiles: Set<string> | undefined;
+
+	function discoverySettings() {
+		return { cwd: sourceRoot, absolute: true, ignore: options.exclude, expandDirectories: false };
+	}
 
 	function refreshCollection(file: string): void {
 		const path = relative(sourceRoot, file);
-		if (!server || path === '..' || path.startsWith(`..${sep}`) || isAbsolute(path)) {
+		const previousFiles = knownFiles;
+		if (!server || !previousFiles || path === '..' || path.startsWith(`..${sep}`) || isAbsolute(path)) {
 			return;
 		}
-		for (const environment of Object.values(server.environments)) {
+		const loaded = Object.values(server.environments).flatMap(environment => {
 			const module = environment.moduleGraph.getModuleById(resolvedId);
-			if (module) {
-				environment.moduleGraph.invalidateModule(module);
-			}
+			return module ? [{ graph: environment.moduleGraph, module }] : [];
+		});
+		if (loaded.length === 0) return;
+
+		// Use the same discovery rules as load, including exclusions and negated patterns.
+		const files = globSync(include, discoverySettings());
+		if (files.length === previousFiles.size && files.every(file => previousFiles.has(file))) return;
+		knownFiles = new Set(files);
+		for (const { graph, module } of loaded) {
+			graph.invalidateModule(module);
 		}
 		server.ws.send({ type: 'full-reload' });
 	}
@@ -72,9 +86,9 @@ function sourceCollection(options: SourceFilesOptions, kind: 'text' | 'url'): Pl
 			if (id !== resolvedId) {
 				return null;
 			}
-			const settings = { cwd: sourceRoot, absolute: true, ignore: options.exclude, expandDirectories: false };
+			const settings = discoverySettings();
 			const [files, directories] = await Promise.all([
-				glob(options.include ?? ['**/*.8f4e'], settings),
+				glob(include, settings),
 				building ? glob('**', { ...settings, onlyDirectories: true }) : Promise.resolve([]),
 			]);
 			// Directory dependencies also detect new files during Rollup's build watch.
@@ -106,6 +120,7 @@ function sourceCollection(options: SourceFilesOptions, kind: 'text' | 'url'): Pl
 				}
 				return `[${JSON.stringify(sourceId)}, () => import(${JSON.stringify(`${specifier}?raw`)}).then(m => m.default)]`;
 			});
+			knownFiles = new Set(files);
 			return [...imports, `export default new Map([${entries.join(',\n')}]);`].join('\n');
 		},
 		configureServer(devServer) {

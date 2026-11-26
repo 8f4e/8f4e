@@ -3,7 +3,6 @@
   "sourceRoot": "src",
   "projectType": "library",
   "namedInputs": {
-    "referenceDocs": ["{projectRoot}/docs/**/*.md"],
     "galleryFixtures": ["{projectRoot}/tests/**/*.test.8f4e"]
   },
   "targets": {

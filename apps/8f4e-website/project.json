@@ -61,7 +61,6 @@
 		},
 		"typecheck": {
 			"executor": "nx:run-commands",
-			"inputs": ["default", "^production", { "projects": ["@8f4e/compiler"], "input": "galleryFixtures" }],
 			"options": {
 				"command": "tsc --noEmit --project tsconfig.json",
 				"cwd": "{projectRoot}"
@@ -71,7 +70,7 @@
 		"typecheck:production": {
 			"executor": "nx:run-commands",
 			"dependsOn": ["^build"],
-			"inputs": ["production", "^production", { "projects": ["@8f4e/compiler"], "input": "galleryFixtures" }],
+			"inputs": ["production", "^production"],
 			"cache": true,
 			"options": {
 				"command": "tsc --noEmit --project tsconfig.production.json",

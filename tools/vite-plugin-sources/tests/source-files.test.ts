@@ -354,3 +354,67 @@ describe('sourceUrls', () => {
 			.not.toContain('"before.8f4e"');
 	});
 });
+
+it.each(['text', 'url'] as const)('reloads a loaded %s collection only when matching files change', async kind => {
+	const project = await fixture({ 'before.test.8f4e': 'before', 'ignored/existing.test.8f4e': 'ignored' }, kind);
+	const collection = kind === 'text' ? sourceFiles : sourceUrls;
+	const server = await createServer({
+		...project.config,
+		plugins: [
+			collection({
+				name: 'programs',
+				root: project.sources,
+				include: ['**/*.test.8f4e'],
+				exclude: ['ignored/**'],
+			}),
+		],
+		optimizeDeps: { noDiscovery: true, include: [] },
+		server: { middlewareMode: true, hmr: false, preTransformRequests: false },
+	});
+	cleanups.push(() => server.close());
+	const send = vi.spyOn(server.ws, 'send');
+	const sources = await realpath(project.sources);
+	await expect
+		.poll(() => Object.values(server.watcher.getWatched()).flat(), { timeout: 5000 })
+		.toEqual(expect.arrayContaining(['before.test.8f4e', 'existing.test.8f4e']));
+
+	async function change(event: 'add' | 'unlink', path: string, action: () => Promise<unknown>) {
+		let observed = false;
+		const listener = (file: string) => {
+			if (resolve(file) === join(sources, path)) observed = true;
+		};
+		server.watcher.on(event, listener);
+		try {
+			await action();
+			await expect.poll(() => observed, { timeout: 5000 }).toBe(true);
+		} finally {
+			server.watcher.off(event, listener);
+		}
+	}
+	const add = (path: string) => change('add', path, () => project.write(path, 'new source'));
+	const remove = (path: string) => change('unlink', path, () => unlink(join(project.sources, path)));
+	const moduleId = `virtual:${kind === 'text' ? '8f4e-sources' : '8f4e-source-urls'}/programs`;
+	const id = (name: string) => `"${name}.test${kind === 'url' ? '.8f4e' : ''}"`;
+
+	await add('unloaded.test.8f4e');
+	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
+	expect((await server.transformRequest(moduleId))?.code).toContain(id('unloaded'));
+	const module = server.environments.client.moduleGraph.getModuleById(`\0${moduleId}`)!;
+	const cached = module.transformResult;
+	expect(cached).not.toBeNull();
+
+	for (const path of ['diagnostic.error.8f4e', 'ignored/new.test.8f4e']) {
+		await add(path);
+		await remove(path);
+	}
+	expect(send).not.toHaveBeenCalledWith({ type: 'full-reload' });
+	expect(module.transformResult).toBe(cached);
+
+	await add('later.test.8f4e');
+	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
+	expect((await server.transformRequest(moduleId))?.code).toContain(id('later'));
+	send.mockClear();
+	await remove('before.test.8f4e');
+	expect(send).toHaveBeenCalledWith({ type: 'full-reload' });
+	expect((await server.transformRequest(moduleId))?.code).not.toContain(id('before'));
+});

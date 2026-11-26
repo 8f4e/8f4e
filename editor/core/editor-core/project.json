@@ -59,8 +59,5 @@
       }
     }
   },
-  "namedInputs": {
-    "referenceDocs": ["{projectRoot}/docs/**/*.md"]
-  },
   "tags": ["type:library", "scope:ui"]
 }
