@@ -16,7 +16,7 @@
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,
-			"dependsOn": ["build-and-metrics", "test-and-coverage"]
+			"dependsOn": ["build-and-metrics", "tests"]
 		},
 		"build-and-metrics": {
 			"executor": "nx:noop",
@@ -61,28 +61,15 @@
 				"cwd": "{workspaceRoot}"
 			}
 		},
-		"test-and-coverage": {
-			"executor": "nx:run-commands",
-			"cache": false,
-			"dependsOn": ["tests"],
-			"options": {
-				"command": "node {projectRoot}/scripts/log-test-coverage.mjs",
-				"cwd": "{workspaceRoot}"
-			}
-		},
 		"tests": {
 			"executor": "nx:noop",
 			"cache": false,
 			"dependsOn": [
 				{
 					"projects": ["@8f4e/cli", "*", "!@8f4e/editor-webapp", "!glugglugglug", "!@8f4e/runtime-linux", "!@8f4e/runtime-command"],
-					"target": "test",
-					"options": "forward"
+					"target": "test"
 				}
-			],
-			"options": {
-				"coverage": true
-			}
+			]
 		}
 	},
 	"tags": ["type:tooling", "scope:release"]

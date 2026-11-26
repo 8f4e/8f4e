@@ -59,7 +59,7 @@ jobs:
 
       - name: Commit release metrics
         run: |
-          git add logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage logs/test-coverage
+          git add logs/bundle-sizes logs/bytecode-size logs/compiler-coverage-counts logs/tsdoc-coverage
           if ! git diff --cached --quiet; then
             git commit -m "chore(release): record release metrics" --no-verify
           fi

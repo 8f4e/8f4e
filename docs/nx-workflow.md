@@ -101,7 +101,7 @@ Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use c
 Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
 physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
 
-Release metrics discover package names, roots, versions, and test targets from the Nx project graph. They select
+Release metrics discover package names, roots, and versions from the Nx project graph. They select
 projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
 `package-lock.json` or recursively scanning the repository. They use `src/` relative to each project's discovered root;
 nonstandard layouts declare only a local `metadata.metrics.sourceDirectory` (for example `std` in the standard library).
@@ -114,10 +114,10 @@ Tests build their workspace dependencies by default because imports resolve to b
 has a more specific dependency configuration.
 
 The shared Vitest preset measures authored production files in `src/`, including unimported files, and writes reports to
-`{projectRoot}/coverage`. Nx's test default caches this directory. Tests that do not produce coverage (such as native
-or integration-only suites) explicitly declare empty outputs. Release coverage collection requires a fresh or
-cache-restored report for each coverage-producing test target. Generated data remains a production build input but is
-excluded from source coverage.
+`{projectRoot}/coverage` when requested with `--coverage`. Nx's test default caches this directory. Tests that do not
+produce coverage (such as native or integration-only suites) explicitly declare empty outputs. Release validation runs
+regular tests without collecting coverage. Generated data remains a production build input but is excluded from source
+coverage.
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.

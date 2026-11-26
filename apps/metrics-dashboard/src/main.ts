@@ -7,12 +7,11 @@ import {
 	isCoverageDashboardTab,
 } from './reports/compiler-coverage';
 import type { CoverageMeasurementMode } from './reports/coverage-series';
-import { createTestReport, testsMarkup } from './reports/test-coverage';
 import { createTsdocReport, tsdocMarkup } from './reports/tsdoc';
 import { debounce, escapeHtml, getErrorMessage, requireElement } from './shared/dom';
 import './styles.css';
 
-type DashboardTab = 'bundles' | 'bytecode' | 'tsdoc' | 'tests' | CoverageDashboardTab;
+type DashboardTab = 'bundles' | 'bytecode' | 'tsdoc' | CoverageDashboardTab;
 
 const app = requireElement<HTMLDivElement>('#app');
 app.innerHTML = `
@@ -26,7 +25,6 @@ app.innerHTML = `
 				<button type="button" class="segment is-active" data-tab="bundles">Bundles</button>
 				<button type="button" class="segment" data-tab="bytecode">Bytecode</button>
 				<button type="button" class="segment" data-tab="tsdoc">TSDoc</button>
-				<button type="button" class="segment" data-tab="tests">Tests</button>
 				<button type="button" class="segment" data-tab="ranges">Ranges</button>
 				<button type="button" class="segment" data-tab="functionEntries">Function Entries</button>
 				<button type="button" class="segment" data-tab="coveredFunctions">Covered Functions</button>
@@ -46,7 +44,6 @@ app.innerHTML = `
 		${bundlesMarkup}
 		${bytecodeMarkup}
 		${tsdocMarkup}
-		${testsMarkup}
 		${coverageMarkup}
 	</main>
 `;
@@ -55,7 +52,6 @@ const lastUpdated = requireElement<HTMLParagraphElement>('#last-updated');
 const bundles = createBundleReport(lastUpdated);
 const bytecode = createBytecodeReport(lastUpdated);
 const tsdoc = createTsdocReport(lastUpdated);
-const tests = createTestReport(lastUpdated);
 const coverage = createCoverageReport(lastUpdated);
 
 const state = {
@@ -104,7 +100,7 @@ async function init() {
 
 	window.addEventListener('resize', debounce(render, 100));
 
-	await Promise.all([bundles.load(), bytecode.load(), tsdoc.load(), tests.load(), coverage.load()]);
+	await Promise.all([bundles.load(), bytecode.load(), tsdoc.load(), coverage.load()]);
 	state.coverageMode = coverage.preferredMode();
 	const runtimes = coverage.runtimeOptions();
 	coverageRuntimeControl.replaceChildren(...runtimes.map(runtime => new Option(runtime.label, runtime.key)));
@@ -116,7 +112,6 @@ function render() {
 	bundles.view.hidden = state.tab !== 'bundles';
 	bytecode.view.hidden = state.tab !== 'bytecode';
 	tsdoc.view.hidden = state.tab !== 'tsdoc';
-	tests.view.hidden = state.tab !== 'tests';
 	coverage.view.hidden = !isCoverageDashboardTab(state.tab);
 	metricControl.hidden = state.tab !== 'bundles';
 	coverageModeControl.hidden = !isCoverageDashboardTab(state.tab);
@@ -140,8 +135,6 @@ function render() {
 		bytecode.render();
 	} else if (state.tab === 'tsdoc') {
 		tsdoc.render();
-	} else if (state.tab === 'tests') {
-		tests.render();
 	} else if (isCoverageDashboardTab(state.tab)) {
 		coverage.render(state.tab, state.coverageMode, state.coverageRuntime);
 	} else {

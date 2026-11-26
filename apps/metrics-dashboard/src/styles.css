@@ -116,7 +116,6 @@ main > * {
 #bundles-view,
 #bytecode-view,
 #tsdoc-view,
-#tests-view,
 #ranges-view {
 	display: grid;
 	gap: 20px;

@@ -39,8 +39,7 @@ function metricsLogsPlugin(): Plugin {
 					!request.url?.startsWith('/bundle-sizes/') &&
 					!request.url?.startsWith('/bytecode-size/') &&
 					!request.url?.startsWith('/compiler-coverage-counts/') &&
-					!request.url?.startsWith('/tsdoc-coverage/') &&
-					!request.url?.startsWith('/test-coverage/')
+					!request.url?.startsWith('/tsdoc-coverage/')
 				) {
 					next();
 					return;
@@ -70,7 +69,6 @@ function metricsLogsPlugin(): Plugin {
 			const bytecodeManifest = await createBytecodeManifest();
 			const compilerCoverageManifest = await createCompilerCoverageManifest();
 			const tsdocCoverageManifest = await createTsdocCoverageManifest();
-			const testCoverageManifest = await createTestCoverageManifest();
 
 			this.emitFile({
 				type: 'asset',
@@ -131,21 +129,6 @@ function metricsLogsPlugin(): Plugin {
 					source: content,
 				});
 			}
-
-			this.emitFile({
-				type: 'asset',
-				fileName: 'test-coverage/manifest.json',
-				source: JSON.stringify(testCoverageManifest, null, '\t'),
-			});
-
-			for (const log of testCoverageManifest.logs) {
-				const content = await fs.readFile(getTestCoverageLogFilePath(log.path), 'utf8');
-				this.emitFile({
-					type: 'asset',
-					fileName: `test-coverage/${log.path}`,
-					source: content,
-				});
-			}
 		},
 	};
 }
@@ -171,13 +154,6 @@ async function readMetricsAsset(pathname: string) {
 		return relativePath === 'manifest.json'
 			? JSON.stringify(await createTsdocCoverageManifest(), null, '\t')
 			: await fs.readFile(getTsdocCoverageLogFilePath(relativePath), 'utf8');
-	}
-
-	if (pathname.startsWith('/test-coverage/')) {
-		const relativePath = decodeURIComponent(pathname.slice('/test-coverage/'.length));
-		return relativePath === 'manifest.json'
-			? JSON.stringify(await createTestCoverageManifest(), null, '\t')
-			: await fs.readFile(getTestCoverageLogFilePath(relativePath), 'utf8');
 	}
 
 	const compilerCoverageRelativePath = decodeURIComponent(pathname.slice('/compiler-coverage-counts/'.length));
@@ -216,15 +192,6 @@ async function createCompilerCoverageManifest() {
 
 async function createTsdocCoverageManifest() {
 	const logsRoot = getTsdocCoverageLogsRoot();
-	return createPackageCoverageManifest(logsRoot);
-}
-
-async function createTestCoverageManifest() {
-	const logsRoot = getTestCoverageLogsRoot();
-	return createPackageCoverageManifest(logsRoot);
-}
-
-async function createPackageCoverageManifest(logsRoot: string) {
 	const files = await collectJsonFiles(logsRoot, logsRoot);
 
 	return {
@@ -303,11 +270,6 @@ function getTsdocCoverageLogFilePath(relativePath: string) {
 	return getMetricsLogFilePath(logsRoot, relativePath, 'tsdoc-coverage');
 }
 
-function getTestCoverageLogFilePath(relativePath: string) {
-	const logsRoot = getTestCoverageLogsRoot();
-	return getMetricsLogFilePath(logsRoot, relativePath, 'test-coverage');
-}
-
 function getMetricsLogFilePath(logsRoot: string, relativePath: string, logType: string) {
 	const filePath = path.resolve(logsRoot, relativePath);
 	const relativeToLogsRoot = path.relative(logsRoot, filePath);
@@ -329,10 +291,6 @@ function getCompilerCoverageLogsRoot() {
 
 function getTsdocCoverageLogsRoot() {
 	return path.resolve(workspaceRoot, 'logs/tsdoc-coverage');
-}
-
-function getTestCoverageLogsRoot() {
-	return path.resolve(workspaceRoot, 'logs/test-coverage');
 }
 
 function getPackageLogRelativePath(packageName: string) {
