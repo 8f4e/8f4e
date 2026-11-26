@@ -28,5 +28,15 @@
     "@8f4e/state-manager": "*",
     "vitest": "4.1.12",
     "@8f4e/web-ui": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

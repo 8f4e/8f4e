@@ -39,5 +39,35 @@
     "@vitest/browser-playwright": "4.1.12",
     "playwright": "1.65.1",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "dev": {
+        "command": "concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": {
+        "executor": "@nx/vitest:test",
+        "dependsOn": ["build"]
+      },
+      "typecheck": {
+        "dependsOn": ["build"]
+      },
+      "test:screenshot": {},
+      "test:screenshot:ui": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --browser.headless=false --browser.ui=true"
+      },
+      "test:screenshot:update": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --run --update"
+      },
+      "test:screenshot:headed": {
+        "dependsOn": ["build"],
+        "command": "vitest --config=vitest.browser.config.ts --run --browser.headless=false"
+      }
+    },
+    "tags": ["type:library", "scope:ui"]
   }
 }

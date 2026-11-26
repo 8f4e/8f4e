@@ -31,21 +31,48 @@
         "production",
         "^production"
       ],
-      "cache": true
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "dev": {
-      "cache": false
+      "cache": false,
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
-    "test": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "default",
-        "^production"
-      ],
-      "cache": true
-    },
+    "test": [
+      {
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "default",
+          "^production"
+        ],
+        "cache": true
+      },
+      {
+        "filter": {
+          "executor": "nx:run-commands"
+        },
+        "options": {
+          "cwd": "{projectRoot}"
+        }
+      },
+      {
+        "filter": {
+          "executor": "@nx/vitest:test"
+        },
+        "options": {
+          "config": "{projectRoot}/vitest.config.ts"
+        }
+      }
+    ],
     "typecheck": {
       "dependsOn": [
         "^build"
@@ -54,49 +81,46 @@
         "default",
         "^production"
       ],
-      "cache": true
+      "cache": true,
+      "command": "tsc --noEmit -p tsconfig.test.json",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "lint": {
       "inputs": [
         "default",
         "^default"
       ],
-      "cache": true
+      "cache": true,
+      "command": "biome check --write src",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "test:browser": {
       "inputs": [
         "default",
         "^production"
+      ],
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build"
       ]
     },
     "test:screenshot": {
       "inputs": [
         "default",
         "^production"
-      ]
-    },
-    "test:screenshot:update": {
-      "inputs": [
-        "default",
-        "^production"
-      ]
-    },
-    "test:screenshot:ui": {
-      "inputs": [
-        "default",
-        "^production"
-      ]
-    },
-    "test:screenshot:headed": {
-      "inputs": [
-        "default",
-        "^production"
-      ]
-    },
-    "test:screenshot:debug": {
-      "inputs": [
-        "default",
-        "^production"
+      ],
+      "command": "vitest --config=vitest.browser.config.ts --run",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build"
       ]
     },
     "build-deps": {
@@ -104,6 +128,15 @@
         "production",
         "^production"
       ]
+    },
+    "test:screenshot:*": {
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     }
   },
   "generators": {

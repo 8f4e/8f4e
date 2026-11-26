@@ -1,6 +1,7 @@
 # Nx Workspace Workflow
 
-This project now uses Nx for improved monorepo management with Vite as the modern build tool.
+Nx discovers workspace projects, schedules their build and validation tasks, and caches the results. Vite builds and
+serves the web applications and bundled libraries; Vitest runs their tests through Nx.
 
 ## Key Benefits
 
@@ -8,44 +9,41 @@ This project now uses Nx for improved monorepo management with Vite as the moder
 - **Dependency Management**: Automatic build ordering based on project dependencies
 - **Affected Builds**: Only rebuild projects affected by changes
 - **Better Developer Experience**: Rich tooling and project graph visualization
-- **No Cloud Dependencies**: All caching and features work locally without external services
+- **Local development**: Nx tasks and local caching work without connecting to Nx Cloud
 
 ## Available Commands
 
 ### Building
 
 ```bash
-# Build all packages (uses Nx caching)
-npm run build
-
 # Build specific project
 npx nx run @8f4e/compiler:build
 
-# Build all projects with Nx
-npx nx run-many --target=build
+# Build all non-native projects
+npx nx run-many --target=build --exclude=@8f4e/runtime-linux,@8f4e/runtime-daisy
 
 # Build only affected projects
-npx nx affected --target=build --base=main
+npx nx affected --target=build --base=main --exclude=@8f4e/runtime-linux,@8f4e/runtime-daisy
 ```
 
 ### Testing
 
 ```bash
-# Run all tests
-npm test
+# Run the release test suite
+npx nx run @8f4e/release:tests
 
 # Run tests for specific project
 npx nx run @8f4e/compiler:test
 
 # Run only affected tests
-npx nx affected --target=test --base=main
+npx nx affected --target=test --base=main --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
 ```
 
 ### Type Checking
 
 ```bash
-# Type check all projects
-npm run typecheck
+# Type check all projects with a typecheck target
+npx nx run-many --target=typecheck
 
 # Type check specific project
 npx nx run @8f4e/compiler:typecheck
@@ -54,8 +52,11 @@ npx nx run @8f4e/compiler:typecheck
 ### Development
 
 ```bash
-# Start development server (unchanged)
-npm run dev
+# Start the editor development server
+npx nx run @8f4e/editor-webapp:dev
+
+# Start the product website development server
+npx nx run @8f4e/8f4e-website:dev
 
 # Watch build for specific project
 npx nx run @8f4e/compiler:dev
@@ -66,7 +67,9 @@ npx nx run @8f4e/compiler:dev
 Application entry points live under `apps/`; the `compiler/`, `editor/` and `examples/` directories own product libraries
 and sources. `tools/` holds shared tooling libraries and standalone development utilities. The root npm workspace
 lists these project locations explicitly, so standalone tools do not become npm workspaces accidentally. Nx discovers
-workspaces by their package names; native applications without npm manifests declare their projects in `project.json`.
+workspaces by their package names. Package-owned configuration lives in the package manifest's `nx` property; projects
+without npm manifests declare themselves in `project.json`. The stdlib keeps `project.json` because its custom project
+metadata must be available in the Nx graph.
 
 - `@8f4e/editor-default` (`editor/compositions/editor-default`)
 - `@8f4e/editor-webapp` (`apps/editor-webapp`)
@@ -94,12 +97,37 @@ workspaces by their package names; native applications without npm manifests dec
 ## Configuration
 
 - **nx.json**: Main Nx configuration with caching and dependency rules
-- **package.json**: Updated scripts to use Nx commands
+- **package.json**: Package name, dependencies, exports, and package-owned Nx configuration under `nx`
+- **project.json**: Configuration for projects without an npm manifest or those requiring custom project metadata
 - **Workspaces**: Still configured for package linking compatibility
 
 Nx's optional `sourceRoot` is workspace-relative, so omit it when projects use conventional `src/` directories.
 Nx discovers each project root from its configuration; target commands can use `{projectRoot}` without repeating
 physical project locations. The independently maintained Glugglugglug submodule owns its own project metadata.
+
+Keep individual target declarations compact. For example, a typical TypeScript editor plugin declares the following
+`nx` property in its package manifest:
+
+```json
+{
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {},
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
+  }
+}
+```
+
+The shared target defaults supply the package-local working directory, conventional `dist/` build output, lint command,
+test-inclusive typecheck command, and screenshot command/prerequisite. Empty targets opt in to those commands.
+Build and test commands remain explicit where they differ; tests using the Nx Vitest executor inherit the local
+`vitest.config.ts` path. For nonstandard commands or outputs, use project-local overrides and inspect the resolved
+target to ensure its dependency and caching rules remain intact.
 
 Release metrics discover package names, roots, and versions from the Nx project graph. They select
 projects that Nx identifies as npm workspace packages, preserving the existing measurement scope without parsing
@@ -120,13 +148,3 @@ release validation, do not collect coverage. Nx caches regular test results, not
 
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.
-
-## Migration Notes
-
-- Vite configuration optimized for performance
-- All existing npm scripts still work
-- Package.json files in packages unchanged
-- TypeScript builds work exactly as before
-- Dependency resolution works correctly
-
-This setup provides the foundation for modern development experience with the latest Vite build system.

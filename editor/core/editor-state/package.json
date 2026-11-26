@@ -39,5 +39,21 @@
     "@8f4e/editor-state-testing": "*",
     "@types/node": "24.13.2",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "test": { "executor": "@nx/vitest:test" },
+      "test-update": {
+        "executor": "@nx/vitest:test",
+        "options": {
+          "config": "{projectRoot}/vitest.config.ts",
+          "updateSnapshot": true
+        }
+      },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

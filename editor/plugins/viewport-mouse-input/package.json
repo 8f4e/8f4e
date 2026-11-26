@@ -22,5 +22,14 @@
   },
   "devDependencies": {
     "@8f4e/config": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "typecheck": { "command": "tsc --noEmit" },
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

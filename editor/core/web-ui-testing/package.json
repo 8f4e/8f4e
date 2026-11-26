@@ -18,5 +18,14 @@
   "devDependencies": {
     "@8f4e/config": "*",
     "vitest": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": { "command": "vitest run" },
+      "typecheck": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

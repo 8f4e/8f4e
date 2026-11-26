@@ -28,5 +28,16 @@
     "@8f4e/language-spec": "*",
     "@8f4e/compiler-diagnostics": "*"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "lint": {},
+      "dev": { "command": "tsc --watch" },
+      "test": { "executor": "@nx/vitest:test" },
+      "typecheck": { "command": "tsc --noEmit" }
+    },
+    "tags": ["type:runtime", "scope:editor"]
+  }
 }

@@ -21,5 +21,14 @@
     "@8f4e/editor-state": "*",
     "@8f4e/editor-state-types": "*",
     "@8f4e/web-ui": "*"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc" },
+      "typecheck": { "command": "tsc --noEmit" },
+      "lint": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }

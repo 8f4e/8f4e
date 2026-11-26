@@ -13,5 +13,24 @@
 		"@8f4e/stdlib": "*",
 		"@types/node": "24.13.2",
 		"vitest": "4.1.12"
+	},
+	"nx": {
+		"projectType": "library",
+		"targets": {
+			"test": {
+				"executor": "nx:run-commands",
+				"options": {
+					"commands": [
+						{
+							"command": "vitest run --config vitest.config.ts",
+							"forwardAllArgs": false
+						}
+					]
+				}
+			},
+			"typecheck": { "command": "tsc --noEmit" },
+			"lint": { "command": "biome check --write ." }
+		},
+		"tags": ["type:integration-test", "scope:examples"]
 	}
 }

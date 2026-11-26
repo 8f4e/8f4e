@@ -50,5 +50,25 @@
     "vitest": {
       "optional": true
     }
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "lint": { "command": "biome check --write src tests" },
+      "build": { "command": "rm -rf dist && tsc" },
+      "test": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["build"],
+        "options": {
+          "commands": [
+            {
+              "command": "node --test tests/*.test.mjs",
+              "forwardAllArgs": false
+            }
+          ]
+        }
+      }
+    },
+    "tags": ["type:config", "scope:tooling"]
   }
 }

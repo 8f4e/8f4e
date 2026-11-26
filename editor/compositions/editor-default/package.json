@@ -112,5 +112,19 @@
     "@8f4e/compiler": "*",
     "@vitest/browser": "4.1.12",
     "@vitest/browser-playwright": "4.1.12"
+  },
+  "nx": {
+    "projectType": "library",
+    "targets": {
+      "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
+      "lint": {},
+      "dev": {
+        "command": "concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
+      },
+      "test": { "command": "vitest run --config vitest.config.ts" },
+      "typecheck": { "command": "tsc --noEmit" },
+      "test:screenshot": {}
+    },
+    "tags": ["type:library", "scope:editor"]
   }
 }
