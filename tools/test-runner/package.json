@@ -32,7 +32,7 @@
     "targets": {
       "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
       "test": { "executor": "@nx/vitest:test" },
-      "lint": { "command": "biome check --write src vite.config.ts vitest.config.ts" },
+      "lint": { "command": "biome check src vite.config.ts vitest.config.ts" },
       "typecheck": {}
     },
     "tags": ["type:library", "scope:testing"]

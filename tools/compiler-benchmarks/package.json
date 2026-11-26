@@ -75,7 +75,7 @@
 					]
 				}
 			},
-			"lint": { "command": "biome check --write scripts" }
+			"lint": { "command": "biome check scripts" }
 		},
 		"tags": ["type:tooling", "scope:compiler"]
 	}

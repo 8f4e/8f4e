@@ -29,7 +29,7 @@
 				}
 			},
 			"typecheck": { "command": "tsc --noEmit" },
-			"lint": { "command": "biome check --write ." }
+			"lint": { "command": "biome check ." }
 		},
 		"tags": ["type:integration-test", "scope:examples"]
 	}

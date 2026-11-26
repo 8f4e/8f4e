@@ -51,7 +51,9 @@
 ## Code and Tests
 
 - Use TypeScript ES modules, kebab-case package directories and `@8f4e/<package>` imports across workspace packages.
-- Use Biome for formatting, linting and import organization (`npx biome check --write <files>`).
+- Use Biome for formatting, linting and import organization. Repository-owned Nx `lint` targets, CI lint checks and
+  staged-file checks are read-only; explicitly request fixes with `npx biome check --write <files>`. The independent
+  Glugglugglug submodule owns its lint configuration and is excluded from parent lint checks.
 - Express repository-owned API contracts with types and JSDoc. Trust callers to satisfy those contracts.
 - Use Vitest via Nx. Keep unit tests in `__tests__/` or colocated `*.test.ts` and `*.spec.ts` files unless local
   guidance specifies another location. Use shared helpers from `@8f4e/config/vitest`. Glugglugglug is a separate

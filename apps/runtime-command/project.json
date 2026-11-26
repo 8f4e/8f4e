@@ -13,7 +13,7 @@
 				]
 			}
 		},
-		"lint": { "command": "biome check --write ." }
+		"lint": { "command": "biome check ." }
 	},
 	"tags": ["type:tooling", "scope:runtime"]
 }

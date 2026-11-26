@@ -49,6 +49,25 @@ npx nx run-many --target=typecheck
 npx nx run @8f4e/compiler:typecheck
 ```
 
+### Linting
+
+```bash
+# Check a project without changing files
+npx nx run @8f4e/compiler:lint
+
+# Check all repository-owned projects
+npx nx run-many --target=lint --exclude=glugglugglug
+
+# Apply fixes explicitly to selected files
+npx biome check --write <files>
+```
+
+CI uses read-only lint checks and verifies that they leave tracked files unchanged; staged-file checks also report
+problems without fixing them. The shared Biome configuration and root ignore file are lint inputs, so changing them
+invalidates cached lint results and marks affected lint projects. The independent Glugglugglug submodule manages its
+own lint configuration and is excluded from parent lint checks. Its read-only check is available separately as
+`npx nx run glugglugglug:check`.
+
 ### Development
 
 ```bash

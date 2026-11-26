@@ -41,7 +41,7 @@
 			"build": { "command": "rm -rf dist && tsc" },
 			"test": { "command": "vitest run" },
 			"typecheck": {},
-			"lint": { "command": "biome check --write ." }
+			"lint": { "command": "biome check ." }
 		},
 		"tags": ["type:library", "scope:tooling"]
 	}

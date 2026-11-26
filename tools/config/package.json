@@ -54,7 +54,7 @@
   "nx": {
     "projectType": "library",
     "targets": {
-      "lint": { "command": "biome check --write src tests" },
+      "lint": { "command": "biome check src tests" },
       "build": { "command": "rm -rf dist && tsc" },
       "test": {
         "executor": "nx:run-commands",
