@@ -193,6 +193,10 @@ Thanks to everyone who has contributed to 8f4e.
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3Amouse-far">🔀 4</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
+<a href="https://github.com/Aaqibhafeezkhan"><img src="https://github.com/Aaqibhafeezkhan.png?size=96" width="72" alt="@Aaqibhafeezkhan"><br><sub><b>Aaqibhafeez Khan</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAaqibhafeezkhan">🔀 3</a></sub>
+</td>
+<td align="center" valign="top" width="25%">
 <a href="https://github.com/theTemple10"><img src="https://github.com/theTemple10.png?size=96" width="72" alt="@theTemple10"><br><sub><b>Victor Akinremi</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AtheTemple10">🔀 3</a></sub>
 </td>
@@ -200,15 +204,11 @@ Thanks to everyone who has contributed to 8f4e.
 <a href="https://github.com/MarioZhang420"><img src="https://github.com/MarioZhang420.png?size=96" width="72" alt="@MarioZhang420"><br><sub><b>Wenzhuo Zhang</b></sub></a><br>
 <sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AMarioZhang420">🔀 3</a></sub>
 </td>
-<td align="center" valign="top" width="25%">
-<a href="https://github.com/875612255-beep"><img src="https://github.com/875612255-beep.png?size=96" width="72" alt="@875612255-beep"><br><sub><b>875612255-beep</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3A875612255-beep">🔀 2</a></sub>
-</td>
 </tr>
 <tr>
 <td align="center" valign="top" width="25%">
-<a href="https://github.com/Aaqibhafeezkhan"><img src="https://github.com/Aaqibhafeezkhan.png?size=96" width="72" alt="@Aaqibhafeezkhan"><br><sub><b>Aaqibhafeez Khan</b></sub></a><br>
-<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3AAaqibhafeezkhan">🔀 2</a></sub>
+<a href="https://github.com/875612255-beep"><img src="https://github.com/875612255-beep.png?size=96" width="72" alt="@875612255-beep"><br><sub><b>875612255-beep</b></sub></a><br>
+<sub><a href="https://github.com/8f4e/8f4e/pulls?q=is%3Apr%20is%3Amerged%20label%3Acontributor%20author%3A875612255-beep">🔀 2</a></sub>
 </td>
 <td align="center" valign="top" width="25%">
 <a href="https://github.com/zFl4wless"><img src="https://github.com/zFl4wless.png?size=96" width="72" alt="@zFl4wless"><br><sub><b>Noah</b></sub></a><br>
