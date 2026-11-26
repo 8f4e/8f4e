@@ -90,10 +90,12 @@
     "lint": {
       "inputs": [
         "default",
-        "^default"
+        "^default",
+        "{workspaceRoot}/biome.jsonc",
+        "{workspaceRoot}/.gitignore"
       ],
       "cache": true,
-      "command": "biome check --write src",
+      "command": "biome check src",
       "options": {
         "cwd": "{projectRoot}"
       }

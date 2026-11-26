@@ -7,12 +7,12 @@ open the `dx7` group and move the `preset` block furthest right to select it for
 The library contains factory, song-inspired, and ambient preset blocks. Source tuning and gains are unchanged.
 Hold notes to hear the ambient patches' slow attacks.
 
-| Source | Example modules |
-| --- | --- |
-| Yamaha / original example | `dx7EPiano1`, `dx7TubBells`, `dx7EOrgan4` |
+| Source                                                                                             | Example modules                                                                                  |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Yamaha / original example                                                                          | `dx7EPiano1`, `dx7TubBells`, `dx7EOrgan4`                                                        |
 | [Vivolator / Famous patches, Dexed version](https://rekkerd.org/patches/sound-designer/vivolator/) | `dx7Suitcase73`, `dx7IFeel4U`, `dx7LivinVideo`, `dx7SunGoesDwn`, `dx7TrueHorns`, `dx7StreetNoNm` |
-| [The Introvert / AI Pads](https://theintrovert.net/dx7-sound-banks/) | `dx7Moidore`, `dx7Rauraci`, `dx7Eleoblast` |
-| [Solyaris / Alienazi](https://solyaris.altervista.org/mesmerism.html) | `dx7OpenSpace`, `dx7Nuvole2`, `dx7Penombra`, `dx7SoftWave` |
+| [The Introvert / AI Pads](https://theintrovert.net/dx7-sound-banks/)                               | `dx7Moidore`, `dx7Rauraci`, `dx7Eleoblast`                                                       |
+| [Solyaris / Alienazi](https://solyaris.altervista.org/mesmerism.html)                              | `dx7OpenSpace`, `dx7Nuvole2`, `dx7Penombra`, `dx7SoftWave`                                       |
 
 The Introvert and Solyaris entries are for local audition. Their banks permit use in music but restrict redistribution
 of the patches; obtain permission before publishing these entries in an example distribution. Source credits and

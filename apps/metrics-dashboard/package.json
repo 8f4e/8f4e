@@ -27,7 +27,7 @@
         "command": "vite build"
       },
       "test": { "command": "vitest run --config vitest.config.ts" },
-      "lint": { "command": "biome check --write src vite.config.ts vitest.config.ts" },
+      "lint": { "command": "biome check src vite.config.ts vitest.config.ts" },
       "serve": {
         "options": { "cwd": "{projectRoot}" },
         "command": "vite --host 0.0.0.0 --port 3002"

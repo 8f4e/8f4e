@@ -12,7 +12,7 @@
 				]
 			}
 		},
-		"lint": { "command": "biome check --write scripts" },
+		"lint": { "command": "biome check scripts" },
 		"check": {
 			"executor": "nx:noop",
 			"cache": false,

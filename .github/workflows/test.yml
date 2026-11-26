@@ -51,7 +51,9 @@ jobs:
           fi
 
       - name: Run affected Biome checks
-        run: npx nx affected --target=lint --exclude=@8f4e/runtime-linux,@8f4e/runtime-command
+        run: |
+          npx nx affected --target=lint --exclude=@8f4e/runtime-linux,@8f4e/runtime-command,glugglugglug
+          git diff HEAD --exit-code --ignore-submodules=none
 
       - name: Run affected typecheck
         run: npx nx affected --target=typecheck --exclude=@8f4e/runtime-linux,@8f4e/runtime-command

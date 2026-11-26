@@ -46,7 +46,7 @@
         "dependsOn": ["build"],
         "command": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.tools.json"
       },
-      "lint": { "command": "biome check --write src browser-tests scripts" },
+      "lint": { "command": "biome check src browser-tests scripts" },
       "test:browser": { "command": "vitest run --config vitest.browser.config.ts" },
       "generate-content": {
         "cache": true,

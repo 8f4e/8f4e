@@ -36,7 +36,7 @@
     "projectType": "library",
     "targets": {
       "build": { "command": "rm -rf dist && tsc --emitDeclarationOnly && vite build" },
-      "lint": { "command": "biome check --write src tests" },
+      "lint": { "command": "biome check src tests" },
       "dev": {
         "command": "rm -rf dist && concurrently -k -n types,bundle \"tsc --emitDeclarationOnly --watch\" \"vite build --watch\""
       },

@@ -36,7 +36,7 @@
       "build": { "command": "rm -rf dist && tsc" },
       "test": { "command": "vitest run" },
       "typecheck": {},
-      "lint": { "command": "biome check --write src screenshot-tests" },
+      "lint": { "command": "biome check src screenshot-tests" },
       "test:screenshot": {}
     },
     "tags": ["type:library", "scope:editor"]
