@@ -18,6 +18,8 @@ const benchmarkDir = fileURLToPath(new URL('../cases/', import.meta.url));
 const outputDir = path.resolve(workspaceRoot, 'logs/compiler-coverage-counts');
 const suiteName = 'compiler-coverage-counts';
 const schemaVersion = 3;
+const runtime = { measurementMode: 'jitless', nodeVersion: process.version, v8Version: process.versions.v8 };
+const runtimeLabel = `Node ${runtime.nodeVersion} / V8 ${runtime.v8Version}`;
 const compilerOptions = {
 	startingMemoryAllocationUnitAddress: 0,
 };
@@ -69,7 +71,7 @@ async function main() {
 		for (const benchmarkCase of parsedCases) {
 			const outputPath = getCaseLogPath(outputDir, benchmarkCase);
 
-			const existingEntry = await getLoggedBenchmarkVersion(outputPath, version);
+			const existingEntry = await getLoggedBenchmarkMeasurement(outputPath, version);
 
 			// Compile every case even on a partial rerun so later cases see the same initialization history.
 			await compileProject(benchmarkCase.project, {
@@ -92,9 +94,7 @@ async function main() {
 
 			const entry = {
 				schemaVersion,
-				measurementMode: 'jitless',
-				nodeVersion: process.version,
-				v8Version: process.versions.v8,
+				...runtime,
 				commit: gitMetadata.commit,
 				version,
 				benchmark: benchmarkCase.relativePath,
@@ -228,7 +228,7 @@ function assertCoverageMatched(coverage, benchmarkCase) {
 function printResults(loggedCases, skippedCases, version) {
 	if (loggedCases.length === 0) {
 		console.log(
-			`No compiler coverage count benchmark results were logged because compiler version ${version ?? 'unknown'} already has entries.`
+			`No compiler coverage count benchmark results were logged because compiler version ${version ?? 'unknown'} already has entries for ${runtimeLabel}.`
 		);
 		return;
 	}
@@ -259,7 +259,7 @@ function printResults(loggedCases, skippedCases, version) {
 		console.log(
 			[
 				benchmarkCase.sourcePath,
-				`compiler version ${benchmarkCase.version ?? 'unknown'} already logged`,
+				`compiler version ${benchmarkCase.version ?? 'unknown'} already logged for ${runtimeLabel}`,
 				path.relative(workspaceRoot, benchmarkCase.outputPath),
 				'skipped',
 			].join(' | ')
@@ -320,7 +320,7 @@ function getCaseLogPath(outputDir, benchmarkCase) {
 	return path.join(outputDir, benchmarkCase.logPath);
 }
 
-async function getLoggedBenchmarkVersion(filePath, version) {
+async function getLoggedBenchmarkMeasurement(filePath, version) {
 	if (!(await pathExists(filePath))) {
 		return null;
 	}
@@ -331,7 +331,16 @@ async function getLoggedBenchmarkVersion(filePath, version) {
 		throw new Error(`${path.relative(workspaceRoot, filePath)} must contain a JSON array`);
 	}
 
-	return existingEntries.find(entry => entry?.version === version && entry?.schemaVersion === schemaVersion) ?? null;
+	return (
+		existingEntries.find(
+			entry =>
+				entry?.version === version &&
+				entry?.schemaVersion === schemaVersion &&
+				entry?.measurementMode === runtime.measurementMode &&
+				entry?.nodeVersion === runtime.nodeVersion &&
+				entry?.v8Version === runtime.v8Version
+		) ?? null
+	);
 }
 
 async function appendLogEntry(filePath, entry) {

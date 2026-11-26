@@ -34,10 +34,7 @@
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/compiler-worker"
-      },
-      "dependsOn": [
-        "^build"
-      ]
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",

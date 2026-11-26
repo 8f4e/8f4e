@@ -34,9 +34,6 @@
       "outputs": [
         "{workspaceRoot}/coverage/@8f4e/runtime-test-runner"
       ],
-      "dependsOn": [
-        "^build"
-      ],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",
         "reportsDirectory": "{workspaceRoot}/coverage/@8f4e/runtime-test-runner"

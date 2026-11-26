@@ -28,9 +28,6 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        "^build"
-      ],
       "options": {
         "command": "vitest run",
         "cwd": "{projectRoot}"

@@ -39,6 +39,15 @@ test('measures a package in a relocated directory using only its name and packag
 	assert.equal(entry.bytes.raw, Buffer.byteLength(contents));
 	assert.ok(entry.bytes.gzip > 0);
 
+	delete config.packages[packageName].distDir;
+	const defaultContents = 'export const n = 123456;\n';
+	await fs.mkdir(path.join(packageRoot, 'dist'));
+	await fs.writeFile(path.join(packageRoot, 'dist/index.js'), defaultContents);
+	await fs.writeFile(configPath, JSON.stringify(config));
+	await execFileAsync(process.execPath, [script, '--out-dir', 'default-logs'], { cwd: root });
+	const [defaultEntry] = JSON.parse(await fs.readFile(path.join(root, 'default-logs', `${packageName}.json`), 'utf8'));
+	assert.equal(defaultEntry.bytes.raw, Buffer.byteLength(defaultContents));
+
 	config.packages[packageName].distDir = '../misplaced';
 	await fs.writeFile(configPath, JSON.stringify(config));
 	await assert.rejects(

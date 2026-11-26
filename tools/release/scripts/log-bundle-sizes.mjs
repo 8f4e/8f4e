@@ -13,6 +13,7 @@ const brotliCompressAsync = promisify(brotliCompress);
 const workspaceRoot = process.cwd();
 const defaultConfigPath = 'bundle-size.config.json';
 const defaultOutputDir = 'logs/bundle-sizes';
+const defaultDistDir = 'dist';
 
 const options = parseArgs(process.argv.slice(2));
 
@@ -52,7 +53,7 @@ for (const [packageName, packageConfig] of Object.entries(bundleSizeConfig.packa
 		continue;
 	}
 
-	const distRoot = path.resolve(packageRoot, packageConfig.distDir);
+	const distRoot = path.resolve(packageRoot, packageConfig.distDir ?? defaultDistDir);
 
 	if (!(await pathExists(distRoot))) {
 		console.warn(`Skipping ${packageName}: no dist directory at ${path.relative(workspaceRoot, distRoot)}`);
@@ -195,7 +196,8 @@ Options:
 Notes:
   - Packages and entry regexes are read from ${defaultConfigPath}.
   - Run package builds before this script.
-  - Each distDir is relative to the discovered package root; file patterns match within it.
+  - Package outputs default to ${defaultDistDir}/; a nonstandard distDir is relative to the discovered package root.
+  - File patterns match within the package output directory.
   - When a Vite manifest exists, bytes include the matched entry and its static imports.
   - Log entries contain aggregate numeric byte totals for graphing.
   - Scoped packages use their package name as a nested path, e.g. logs/bundle-sizes/@8f4e/compiler.json.`);
@@ -478,12 +480,8 @@ async function readBundleSizeConfig(configPath) {
 			throw new Error(`${configPath}: ${packageName} must contain an object`);
 		}
 
-		if (
-			typeof packageConfig.distDir !== 'string' ||
-			!packageConfig.distDir ||
-			path.isAbsolute(packageConfig.distDir) ||
-			packageConfig.distDir.split(/[\\/]/).includes('..')
-		) {
+		const distDir = packageConfig.distDir === undefined ? defaultDistDir : packageConfig.distDir;
+		if (typeof distDir !== 'string' || !distDir || path.isAbsolute(distDir) || distDir.split(/[\\/]/).includes('..')) {
 			throw new Error(`${configPath}: ${packageName}.distDir must be a package-relative path`);
 		}
 

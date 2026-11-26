@@ -1,4 +1,3 @@
-import type { CoverageMeasurementMode } from './coverage-series';
 import { bundlesMarkup, createBundleReport, type SizeMetric } from './reports/bundles';
 import { bytecodeMarkup, createBytecodeReport } from './reports/bytecode';
 import {
@@ -7,6 +6,7 @@ import {
 	createCoverageReport,
 	isCoverageDashboardTab,
 } from './reports/compiler-coverage';
+import type { CoverageMeasurementMode } from './reports/coverage-series';
 import { createTestReport, testsMarkup } from './reports/test-coverage';
 import { createTsdocReport, tsdocMarkup } from './reports/tsdoc';
 import { debounce, escapeHtml, getErrorMessage, requireElement } from './shared/dom';
@@ -39,6 +39,7 @@ app.innerHTML = `
 				<button type="button" class="segment" data-coverage-mode="jitless">Deterministic (JIT off)</button>
 				<button type="button" class="segment" data-coverage-mode="legacy">Historical (JIT on)</button>
 			</div>
+			<select class="runtime-select" id="coverage-runtime-control" aria-label="Deterministic runtime version" hidden></select>
 		</div>
 	</header>
 	<main>
@@ -61,10 +62,12 @@ const state = {
 	tab: 'bundles' as DashboardTab,
 	metric: 'gzip' as SizeMetric,
 	coverageMode: 'legacy' as CoverageMeasurementMode,
+	coverageRuntime: undefined as string | undefined,
 };
 
 const metricControl = requireElement<HTMLDivElement>('#metric-control');
 const coverageModeControl = requireElement<HTMLDivElement>('#coverage-mode-control');
+const coverageRuntimeControl = requireElement<HTMLSelectElement>('#coverage-runtime-control');
 const tabButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-tab]')];
 const metricButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-metric]')];
 const coverageModeButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-coverage-mode]')];
@@ -94,11 +97,18 @@ async function init() {
 			render();
 		});
 	}
+	coverageRuntimeControl.addEventListener('change', () => {
+		state.coverageRuntime = coverageRuntimeControl.value;
+		render();
+	});
 
 	window.addEventListener('resize', debounce(render, 100));
 
 	await Promise.all([bundles.load(), bytecode.load(), tsdoc.load(), tests.load(), coverage.load()]);
 	state.coverageMode = coverage.preferredMode();
+	const runtimes = coverage.runtimeOptions();
+	coverageRuntimeControl.replaceChildren(...runtimes.map(runtime => new Option(runtime.label, runtime.key)));
+	state.coverageRuntime = runtimes[0]?.key;
 	render();
 }
 
@@ -110,6 +120,8 @@ function render() {
 	coverage.view.hidden = !isCoverageDashboardTab(state.tab);
 	metricControl.hidden = state.tab !== 'bundles';
 	coverageModeControl.hidden = !isCoverageDashboardTab(state.tab);
+	coverageRuntimeControl.hidden =
+		!isCoverageDashboardTab(state.tab) || state.coverageMode !== 'jitless' || coverageRuntimeControl.options.length < 2;
 
 	for (const button of tabButtons) {
 		button.classList.toggle('is-active', button.dataset.tab === state.tab);
@@ -131,7 +143,7 @@ function render() {
 	} else if (state.tab === 'tests') {
 		tests.render();
 	} else if (isCoverageDashboardTab(state.tab)) {
-		coverage.render(state.tab, state.coverageMode);
+		coverage.render(state.tab, state.coverageMode, state.coverageRuntime);
 	} else {
 		bundles.render(state.metric);
 	}

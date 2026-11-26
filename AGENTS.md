@@ -29,6 +29,8 @@
   Preserve COOP/COEP where shared memory is used.
 - Use `npx nx show project <project>` to find available targets. Use Nx builds so workspace aliases resolve to
   built exports, including when changing an API used by a Vite consumer.
+- Tests inherit the `^build` prerequisite. Only declare a `test.dependsOn` override when the target needs a different
+  dependency sequence.
 - Omit redundant Nx `sourceRoot` declarations; derive conventional `src/` directories from the discovered project root
   and run commands from `{projectRoot}`. Only nonstandard release-metric source directories require project-relative
   `metadata.metrics.sourceDirectory`. The standalone Glugglugglug submodule owns its own project metadata.

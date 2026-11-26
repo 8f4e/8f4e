@@ -9,7 +9,6 @@
 		},
 		"test": {
 			"executor": "nx:run-commands",
-			"dependsOn": ["^build"],
 			"outputs": ["{projectRoot}/coverage"],
 			"options": { "command": "vitest run", "cwd": "{projectRoot}" }
 		},

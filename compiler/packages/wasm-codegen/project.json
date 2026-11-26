@@ -28,7 +28,6 @@
 		"test": {
 			"executor": "@nx/vitest:test",
 			"outputs": ["{workspaceRoot}/coverage/@8f4e/wasm-codegen"],
-			"dependsOn": ["^build"],
 			"options": {
 				"config": "{projectRoot}/vitest.config.ts",
 				"reportsDirectory": "{workspaceRoot}/coverage/@8f4e/wasm-codegen"

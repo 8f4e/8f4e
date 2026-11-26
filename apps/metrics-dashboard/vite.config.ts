@@ -1,11 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { workspaceRoot } from '@nx/devkit';
 
 import { defineConfig, type Plugin } from 'vite';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const workspaceRoot = path.resolve(__dirname, '../..');
 const configPath = path.join(workspaceRoot, 'bundle-size.config.json');
 
 type BundleSizeConfig = {

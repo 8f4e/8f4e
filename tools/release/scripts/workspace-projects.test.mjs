@@ -67,6 +67,10 @@ test('uses Nx package membership and project metadata without reading the lockfi
 		(await projectsFromGraph(root, graph, ['tools'])).map(p => p.name),
 		['standalone']
 	);
+	await assert.rejects(
+		projectsFromGraph(root, graph, ['apps/ui', 'missing']),
+		/No Nx package projects found under --package-root missing/
+	);
 });
 
 test('derives source directories from graph roots without relying on sourceRoot metadata', async t => {

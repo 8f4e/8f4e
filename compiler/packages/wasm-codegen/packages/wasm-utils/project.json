@@ -26,7 +26,6 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "dependsOn": ["^build"],
       "outputs": ["{workspaceRoot}/coverage/@8f4e/compiler-wasm-utils"],
       "options": {
         "config": "{projectRoot}/vitest.config.ts",

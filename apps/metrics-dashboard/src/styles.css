@@ -91,6 +91,16 @@ select {
 	color: #ffffff;
 }
 
+.runtime-select {
+	min-height: 38px;
+	max-width: 100%;
+	padding: 0 10px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	background: #ffffff;
+	color: #344054;
+}
+
 main {
 	display: grid;
 	gap: 20px;

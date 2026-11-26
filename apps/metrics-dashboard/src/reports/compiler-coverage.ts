@@ -1,10 +1,4 @@
 import * as Plot from '@observablehq/plot';
-import {
-	type CoverageMeasurementMode,
-	getCoverageMeasurementMode,
-	getPreferredCoverageMode,
-	selectCoverageSeries,
-} from '../coverage-series';
 import { getChartWidth, getCountDomain, getReleaseLabels, hasMultipleSnapshots, replaceChart } from '../shared/charts';
 import {
 	type BenchmarkLog,
@@ -15,6 +9,15 @@ import {
 } from '../shared/data';
 import { escapeHtml, renderReportCards, renderSummaryItem, requireElement } from '../shared/dom';
 import { formatCompactCount, formatCount, formatReleaseMeta, shortCommit } from '../shared/format';
+import {
+	type CoverageMeasurement,
+	type CoverageMeasurementMode,
+	type CoverageRuntime,
+	getCoverageMeasurement,
+	getCoverageRuntimes,
+	getPreferredCoverageMode,
+	selectCoverageSeries,
+} from './coverage-series';
 
 type CoverageComponent = string;
 
@@ -104,19 +107,18 @@ type CompilerCoverageBucket = {
 type CompilerCoverageEntry = {
 	schemaVersion?: number;
 	measurementMode?: string;
+	nodeVersion?: string;
+	v8Version?: string;
 	commit: string;
 	version: string | null;
 	benchmark: string;
 	coverage: Partial<Record<CoverageComponent, CompilerCoverageBucket>>;
 };
 
-type CoveragePoint = {
-	measurementMode: CoverageMeasurementMode;
+type CoveragePoint = CoverageMeasurement & {
 	benchmark: string;
-	label: string;
 	component: CoverageComponent;
 	componentLabel: string;
-	seriesLabel: string;
 	version: string;
 	releaseTag: string;
 	commit: string;
@@ -172,18 +174,25 @@ export function createCoverageReport(lastUpdated: HTMLParagraphElement) {
 	const coverageOverviewCaption = requireElement<HTMLSpanElement>('#coverage-overview-caption', view);
 	const coverageBenchmarkCaption = requireElement<HTMLSpanElement>('#coverage-benchmark-caption', view);
 	let data: ReportData<BenchmarkLog, CoveragePoint> = { logs: [], points: [] };
+	let runtimes: CoverageRuntime[] = [];
 
 	return {
 		view,
 		async load() {
 			data = await loadReportData('compiler-coverage-counts', 'compiler coverage count', toCoveragePoints);
+			runtimes = getCoverageRuntimes(data.points);
 		},
 		preferredMode() {
 			return getPreferredCoverageMode(data.points);
 		},
-		render(tab: CoverageDashboardTab, mode: CoverageMeasurementMode) {
+		runtimeOptions() {
+			return runtimes;
+		},
+		render(tab: CoverageDashboardTab, mode: CoverageMeasurementMode, runtimeKey?: string) {
 			const config = coverageMetricConfigs[tab];
-			const coveragePoints = withSequentialReleaseIndexes(selectCoverageSeries(data.points, mode));
+			const runtime =
+				mode === 'jitless' ? (runtimes.find(option => option.key === runtimeKey) ?? runtimes[0]) : undefined;
+			const coveragePoints = withSequentialReleaseIndexes(selectCoverageSeries(data.points, mode, runtime?.key));
 			const summaryPoints = toCoverageSummaryPoints(coveragePoints, config.metric);
 			const latestReleasePoints = getLatestReleasePoints(summaryPoints);
 			const latestPoint = latestReleasePoints[0] ?? null;
@@ -191,7 +200,8 @@ export function createCoverageReport(lastUpdated: HTMLParagraphElement) {
 			const latestCompilerPoint = latestReleasePoints.find(point => point.component === 'compiler') ?? null;
 			const latestTokenizerPoint = latestReleasePoints.find(point => point.component === 'tokenizer') ?? null;
 			const snapshotCount = new Set(coveragePoints.map(point => point.releaseKey)).size;
-			const seriesLabel = mode === 'jitless' ? 'Deterministic (JIT off)' : 'Historical (JIT on)';
+			const seriesLabel =
+				mode === 'jitless' ? `Deterministic (JIT off)${runtime ? ` · ${runtime.label}` : ''}` : 'Historical (JIT on)';
 
 			lastUpdated.textContent = latestPoint
 				? `${seriesLabel} · Latest compiler ${latestPoint.releaseTag} · ${shortCommit(latestPoint.commit)}`
@@ -243,6 +253,7 @@ function toCoveragePoints(log: BenchmarkLog, entries: CompilerCoverageEntry[]) {
 	return entries.flatMap(entry => {
 		const version = entry.version ?? 'unknown';
 		const releaseTag = `@8f4e/compiler@${version}`;
+		const measurement = getCoverageMeasurement(entry);
 
 		return getSortedCoverageComponents(Object.keys(entry.coverage)).flatMap(component => {
 			const bucket = entry.coverage[component];
@@ -250,12 +261,10 @@ function toCoveragePoints(log: BenchmarkLog, entries: CompilerCoverageEntry[]) {
 				return [];
 			}
 			return {
-				measurementMode: getCoverageMeasurementMode(entry),
+				...measurement,
 				benchmark: log.benchmark,
-				label: log.label,
 				component,
 				componentLabel: getCoverageComponentLabel(component),
-				seriesLabel: `${log.label} ${getCoverageComponentLabel(component)}`,
 				version,
 				releaseTag,
 				commit: entry.commit,

@@ -57,6 +57,11 @@ export async function projectsFromGraph(workspaceRoot, graph, packageRoots = [])
 			hasTestTarget: Boolean(node.data.targets?.test),
 		});
 	}
+	for (const [index, selected] of selectedRoots.entries()) {
+		if (!projects.some(project => containsPath(selected, project.root))) {
+			throw new Error(`No Nx package projects found under --package-root ${packageRoots[index]}`);
+		}
+	}
 	return projects.sort((left, right) => left.root.localeCompare(right.root));
 }
 

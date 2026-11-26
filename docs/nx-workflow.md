@@ -110,6 +110,9 @@ nonstandard layouts declare only a local `metadata.metrics.sourceDirectory` (for
 
 Builds use `production` and `^production`; tests use their own `default` files and dependency `production` files. Type checks keep their own test files. Test-only project imports still create graph edges even when declared as dev dependencies, so use local sample fixtures when the source package is not part of the behavior under test.
 
+Tests build their workspace dependencies by default because imports resolve to built package exports, unless a target
+has a more specific dependency configuration.
+
 Inspect resolved files with `npx nx show target inputs <project>:<target> --json` after changing dependencies, input
 conventions, generators, or shipped assets. Use `npx nx run <project>:<target> --graph` to inspect prerequisite tasks.
 
