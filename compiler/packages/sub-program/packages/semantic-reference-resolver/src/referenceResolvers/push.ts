@@ -11,6 +11,7 @@ import {
 	type ResolvedLocalPushLine,
 	type ResolvedMemoryPointerPushLine,
 	type ResolvedMemoryPushLine,
+	type ResolvedReferencePushLine,
 } from '@8f4e/language-spec';
 import { getResolvedMemoryDeclaration } from '@8f4e/semantic-utils';
 import type { ReferenceResolutionContext } from '../context';
@@ -95,10 +96,33 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 		}
 		if (referenceKind === 'memory-pointer') {
 			const pointerArgument = argument as MemoryPointerIdentifier;
+			const plainArgument = {
+				type: ArgumentType.IDENTIFIER,
+				value: pointerArgument.targetMemoryId,
+				referenceKind: 'plain' as const,
+				scope: 'local' as const,
+			};
 			const slot = context.referenceSlots[pointerArgument.targetMemoryId];
 			if (slot) {
 				const memory = slot.targetMemory;
-				validateDereferenceDepth(pointerArgument, memory.pointerDepth + 1, line, context);
+				const pointerDepth = getPointerDepthFromMetadata(memory);
+				if (pointerArgument.dereferenceDepth === 0) {
+					if (pointerDepth === 0) {
+						throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+							symbol: context.codeBlockId,
+							details: { identifier: pointerArgument.targetMemoryId },
+						});
+					}
+					if (memory.allocatedByteLength < memory.elementWordSize) {
+						throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
+					}
+					const resolvedLine: Omit<ResolvedReferencePushLine, 'resolvedTarget'> = {
+						...line,
+						arguments: [{ ...pointerArgument, dereferenceDepth: 1 }],
+					};
+					return { ...resolvedLine, resolvedTarget: { kind: 'reference' as const, slot } };
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth + 1, line, context);
 				if (memory.allocatedByteLength < memory.elementWordSize) {
 					throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
 				}
@@ -106,7 +130,24 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 			const memoryItem = getResolvedMemoryDeclaration(context, pointerArgument.targetMemoryId);
 			if (memoryItem) {
-				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(memoryItem), line, context);
+				const pointerDepth = getPointerDepthFromMetadata(memoryItem);
+				if (pointerArgument.dereferenceDepth === 0) {
+					if (pointerDepth === 0) {
+						throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+							symbol: context.codeBlockId,
+							details: { identifier: pointerArgument.targetMemoryId },
+						});
+					}
+					if (memoryItem.allocatedByteLength < memoryItem.elementWordSize) {
+						throw getError(ErrorCode.ADDRESS_RANGE_TOO_SMALL, line, { symbol: context.codeBlockId });
+					}
+					const resolvedLine: Omit<ResolvedMemoryPushLine, 'resolvedTarget'> = {
+						...line,
+						arguments: [plainArgument],
+					};
+					return { ...resolvedLine, resolvedTarget: { kind: 'memory' as const, memoryItem } };
+				}
+				validateDereferenceDepth(pointerArgument, pointerDepth, line, context);
 				const resolvedLine: Omit<ResolvedMemoryPointerPushLine, 'resolvedTarget'> = {
 					...line,
 					arguments: [pointerArgument],
@@ -115,6 +156,25 @@ export default function resolvePushReferences(line: PushLine, context: Reference
 			}
 
 			const local = context.locals[pointerArgument.targetMemoryId];
+			if (pointerArgument.dereferenceDepth === 0 && local) {
+				if (!isResolvedPointerLocal(local)) {
+					throw getError(ErrorCode.POINTEE_ADDRESS_REQUIRES_POINTER, line, {
+						symbol: context.codeBlockId,
+						details: { identifier: pointerArgument.targetMemoryId },
+					});
+				}
+				const resolvedLine: Omit<ResolvedLocalPushLine, 'resolvedTarget'> = {
+					...line,
+					arguments: [plainArgument],
+				};
+				return {
+					...resolvedLine,
+					resolvedTarget: {
+						kind: 'local' as const,
+						binding: context.bindingsByName[pointerArgument.targetMemoryId]!,
+					},
+				};
+			}
 			if (isResolvedPointerLocal(local)) {
 				validateDereferenceDepth(pointerArgument, getPointerDepthFromMetadata(local), line, context);
 				const resolvedLine: Omit<ResolvedLocalPointerPushLine, 'resolvedTarget'> = {
