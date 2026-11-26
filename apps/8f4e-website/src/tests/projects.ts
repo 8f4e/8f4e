@@ -1,11 +1,6 @@
+import fixtureUrls from 'virtual:8f4e-source-urls/compiler-fixtures';
 import type { GalleryCategory } from '../gallery';
 
-const fixtureRoot = '../../../../compiler/tests/';
-const fixtureUrls = import.meta.glob<string>('../../../../compiler/tests/**/*.test.8f4e', {
-	query: '?url&no-inline',
-	import: 'default',
-	eager: true,
-});
 const previewUrls = import.meta.glob<string>('../project-previews/compiler-test.gif', {
 	query: '?url&no-inline',
 	import: 'default',
@@ -25,8 +20,7 @@ const categoryTitles: Record<string, string> = {
 };
 
 const categories = new Map<string, GalleryCategory>();
-for (const [file, projectUrl] of Object.entries(fixtureUrls).sort(([left], [right]) => left.localeCompare(right))) {
-	const path = file.slice(fixtureRoot.length);
+for (const [path, projectUrl] of [...fixtureUrls].sort(([left], [right]) => left.localeCompare(right))) {
 	const directory = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
 	let category = categories.get(directory);
 	if (!category) {

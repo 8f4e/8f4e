@@ -1,11 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getDocs, getExample, getHelp, searchDocs, searchExamples } from './reference';
 import { normalizeSearch, plainMarkdown } from './reference-text';
-
-const examplesRoot = dirname(createRequire(import.meta.url).resolve('@8f4e/examples/package.json'));
 
 describe('bundled documentation and examples', () => {
 	it('keeps code spans literal while removing Markdown presentation wrappers', () => {
@@ -28,7 +24,7 @@ describe('bundled documentation and examples', () => {
 		expect(await getDocs(push.topic)).toContain('#### Local reads');
 		expect(await getDocs(push.topic)).not.toContain('### drop');
 		expect(await getDocs('compiler/instructions/stack')).toBe(
-			readFileSync(new URL('../../../compiler/docs/instructions/stack.md', import.meta.url), 'utf8')
+			readFileSync(new URL(import.meta.resolve('@8f4e/compiler/docs/instructions/stack.md')), 'utf8')
 		);
 		const skip = searchDocs('#skipExecution').results.find(
 			result => result.topic === 'compiler/directives#skipexecution'
@@ -118,7 +114,7 @@ describe('bundled documentation and examples', () => {
 		const project = searchExamples('reverb', 'project').results[0];
 		expect(project.path).toBe('audio/reverb');
 		expect(await getExample(project.kind, project.path)).toBe(
-			readFileSync(join(examplesRoot, 'src/projects/audio/reverb.8f4e'), 'utf8')
+			readFileSync(new URL(import.meta.resolve('@8f4e/examples/projects/audio/reverb.8f4e')), 'utf8')
 		);
 	});
 

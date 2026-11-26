@@ -1,8 +1,4 @@
-const projectUrls = import.meta.glob<string>('../../../examples/src/projects/**/*.8f4e', {
-	query: '?url&no-inline',
-	import: 'default',
-	eager: true,
-});
+import projectUrls from 'virtual:8f4e-source-urls/examples';
 
 const projectPreviewUrls = import.meta.glob<string>('./project-previews/examples/**/*.gif', {
 	query: '?url&no-inline',
@@ -11,7 +7,7 @@ const projectPreviewUrls = import.meta.glob<string>('./project-previews/examples
 });
 
 export function getExampleProjectUrl(path: string): string {
-	const url = projectUrls[`../../../examples/src/projects/${path}`];
+	const url = projectUrls.get(path);
 	if (!url) {
 		throw new Error(`Example project not found: ${path}`);
 	}

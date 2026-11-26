@@ -10,7 +10,11 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./docs": "./docs",
+    "./docs/*.md": "./docs/*.md",
+    "./test-fixtures": "./tests",
+    "./test-fixtures/*.test.8f4e": "./tests/*.test.8f4e"
   },
   "sideEffects": false,
   "repository": {

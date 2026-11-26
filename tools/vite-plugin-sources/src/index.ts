@@ -5,7 +5,7 @@ import { glob } from 'tinyglobby';
 import type { Plugin, ViteDevServer } from 'vite';
 
 export interface SourceFilesOptions {
-	/** Collection name used in `virtual:8f4e-sources/<name>`. */
+	/** Collection name used in the virtual module ID. */
 	name: string;
 	/** Source directory. Relative paths resolve against Vite's root. */
 	root: string | URL;
@@ -17,12 +17,22 @@ export interface SourceFilesOptions {
 
 /** Expose a discovered collection as an ID-to-lazy-source-loader map. */
 export function sourceFiles(options: SourceFilesOptions): Plugin {
+	return sourceCollection(options, 'text');
+}
+
+/** Expose a discovered collection as a relative-path-to-external-asset-URL map. */
+export function sourceUrls(options: SourceFilesOptions): Plugin {
+	return sourceCollection(options, 'url');
+}
+
+function sourceCollection(options: SourceFilesOptions, kind: 'text' | 'url'): Plugin {
 	if (!/^[\w.-]+$/.test(options.name)) {
 		throw new Error('Source collection names must contain only letters, numbers, underscores, dots, or hyphens.');
 	}
 
-	const pluginName = `8f4e-sources:${options.name}`;
-	const publicId = `virtual:8f4e-sources/${options.name}`;
+	const namespace = kind === 'text' ? '8f4e-sources' : '8f4e-source-urls';
+	const pluginName = `${namespace}:${options.name}`;
+	const publicId = `virtual:${namespace}/${options.name}`;
 	const resolvedId = `\0${publicId}`;
 	let sourceRoot: string;
 	let building = false;
@@ -75,22 +85,28 @@ export function sourceFiles(options: SourceFilesOptions): Plugin {
 			}
 
 			const pathsById = new Map<string, string>();
-			const entries = files.sort().map(file => {
+			const imports: string[] = [];
+			const entries = files.sort().map((file, index) => {
 				const path = relative(sourceRoot, file).split(sep).join('/');
 				if (path === '..' || path.startsWith('../') || isAbsolute(path)) {
 					throw new Error(`Source file is outside the collection root: ${file}`);
 				}
 				const extension = extname(path);
-				const sourceId = extension ? path.slice(0, -extension.length) : path;
+				const sourceId = kind === 'text' && extension ? path.slice(0, -extension.length) : path;
 				const previous = pathsById.get(sourceId);
 				if (previous) {
 					throw new Error(`Duplicate source ID "${sourceId}": ${previous} and ${path}`);
 				}
 				pathsById.set(sourceId, path);
-				const specifier = `${file.split(sep).join('/')}?raw`;
-				return `[${JSON.stringify(sourceId)}, () => import(${JSON.stringify(specifier)}).then(m => m.default)]`;
+				const specifier = file.split(sep).join('/');
+				if (kind === 'url') {
+					const variable = `url${index}`;
+					imports.push(`import ${variable} from ${JSON.stringify(`${specifier}?url&no-inline`)};`);
+					return `[${JSON.stringify(sourceId)}, ${variable}]`;
+				}
+				return `[${JSON.stringify(sourceId)}, () => import(${JSON.stringify(`${specifier}?raw`)}).then(m => m.default)]`;
 			});
-			return `export default new Map([${entries.join(',\n')}]);`;
+			return [...imports, `export default new Map([${entries.join(',\n')}]);`].join('\n');
 		},
 		configureServer(devServer) {
 			server = devServer;

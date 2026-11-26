@@ -10,6 +10,10 @@ Example modules and projects used by the editor and tooling. Exports example mod
 
 ## Loading Examples
 
+For a specific file, resolve the exported package subpath, such as `@8f4e/examples/projects/audio/audioBuffer.8f4e`.
+For discovery, `import.meta.resolve('@8f4e/examples/projects')` and `import.meta.resolve('@8f4e/examples/modules')`
+locate the respective collection directories without relying on the package's internal layout.
+
 - The default editor discovers `.8f4em` files with `@8f4e/vite-plugin-sources` and derives module titles and categories
   from their paths. Opening the module menu loads only catalog metadata; selecting a module loads its source chunk
   on demand. Module sources ship with each website build.

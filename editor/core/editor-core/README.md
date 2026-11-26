@@ -449,6 +449,8 @@ whose factory receives lazy source loaders. Core retains generic menus and block
 
 ## Docs
 
+The `@8f4e/editor-core/docs` collection directory and `@8f4e/editor-core/docs/*.md` subpaths are exported for reference tooling.
+
 - `docs/editor-directives.md` - Editor-only code-block directive syntax (`; @...`) and supported directives.
 
 ## Editor Config

@@ -71,6 +71,10 @@ source text. For executable assertions, see the [testing instructions](docs/inst
 [@8f4e/test-runner](../tools/test-runner/README.md). The [compiler design](docs/compiler-design.md) describes the pipeline in
 more detail.
 
+Tooling can resolve the exported `@8f4e/compiler/docs` and `@8f4e/compiler/test-fixtures` collection directories
+through `import.meta.resolve`. Individual Markdown files and `*.test.8f4e` fixtures are also available by package
+subpath, for example `@8f4e/compiler/docs/instructions/stack.md`.
+
 ## Compilation boundaries
 
 Expected source failures throw `CompilerError` from `@8f4e/compiler-diagnostics`. Its `diagnostic` contains a

@@ -59,7 +59,8 @@
       "cache": true,
       "inputs": [
         "production",
-        "^production"
+        "^production",
+        { "projects": ["@8f4e/compiler", "@8f4e/editor-core"], "input": "referenceDocs" }
       ],
       "outputs": [
         "{projectRoot}/src/generated"
@@ -76,13 +77,5 @@
   "tags": [
     "type:library",
     "scope:editor"
-  ],
-  "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals",
-      "{workspaceRoot}/compiler/docs/**/*.md",
-      "{workspaceRoot}/editor/core/editor-core/docs/**/*.md"
-    ]
-  }
+  ]
 }

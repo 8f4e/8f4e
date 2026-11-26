@@ -2,7 +2,7 @@
 	"extends": "@8f4e/config/tsconfig.dom.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"types": ["vite/client", "@vitest/browser/matchers"]
+		"types": ["vite/client", "@vitest/browser/matchers", "@8f4e/vite-plugin-sources/client"]
 	},
 	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules", "dist"]
